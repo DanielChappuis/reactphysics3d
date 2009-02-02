@@ -1,3 +1,21 @@
+/****************************************************************************
+ * Copyright (C) 2009      Daniel Chappuis                                  *
+ ****************************************************************************
+ * This file is part of ReactPhysics3D.                                     *
+ *                                                                          *
+ * ReactPhysics3D is free software: you can redistribute it and/or modify   *
+ * it under the terms of the GNU General Public License as published by     *
+ * the Free Software Foundation, either version 3 of the License, or        *
+ * (at your option) any later version.                                      *
+ *                                                                          *
+ * ReactPhysics3D is distributed in the hope that it will be useful,        *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+ * GNU General Public License for more details.                             *
+ *                                                                          *
+ * You should have received a copy of the GNU General Public License        *
+ * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
+ ***************************************************************************/
 
 // Libraries
 #include "Objects.h"
@@ -5,23 +23,6 @@
 //#include <windows.h>            // To avoid an error due to the #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include <math.h>
-
-
-// ----- Structure Vector ----- //
-
-// Constructor without arguments of the structure Vector
-Vector::Vector() {
-    x = 0.0;
-    y = 0.0;
-    z = 0.0;
-}
-
-// Constructor of the structure Vector
-Vector::Vector(double x, double y, double z) {
-    this->x = x;
-    this->y = y;
-    this->z = z;
-};
 
 // ----- Class Object ----- //
 
@@ -77,7 +78,7 @@ void Cube::draw() const {
 // ----- Class Plane ----- //
 
 // Constructor of the class Plane
-Plane::Plane(const Position& position, float width, float height, const Vector& d1, const Vector& d2)
+Plane::Plane(const Position& position, float width, float height, const Vector3D& d1, const Vector3D& d2)
       :Object(position) {
     this->width = width;
     this->height = height;
@@ -85,13 +86,7 @@ Plane::Plane(const Position& position, float width, float height, const Vector& 
     this->d2 = d2;
 
     // Compute the unit normal vector of the plane by a cross product
-    normalVector.x = d1.y * d2.z - d1.z * d2.y;
-    normalVector.y = d1.z * d2.x - d1.x * d2.z;
-    normalVector.z = d1.x * d2.y - d1.y * d2.x;
-    float length = sqrt(normalVector.x * normalVector.x + normalVector.y * normalVector.y + normalVector.z * normalVector.z);
-    normalVector.x = normalVector.x / length;
-    normalVector.y = normalVector.y / length;
-    normalVector.z = normalVector.z / length;
+    normalVector = d1.crossProduct(d2).getUnit();
 }
 
 // Destructor of the class Plane
@@ -110,17 +105,17 @@ void Plane::draw() const {
        // Draw the plane
        glBegin(GL_POLYGON);
             glColor3f(1.0, 1.0, 1.0);
-            glVertex3f(position.x + d1.x * halfWidth + d2.x * halfHeight , position.y + d1.y * halfWidth +  d2.y * halfHeight
-                        , position.z + d1.z * halfWidth + d2.z * halfHeight);
-            glNormal3f(normalVector.x, normalVector.y, normalVector.z);
-            glVertex3f(position.x + d1.x * halfWidth - d2.x * halfHeight , position.y + d1.y * halfWidth -  d2.y * halfHeight
-                        , position.z + d1.z * halfWidth - d2.z * halfHeight);
-            glNormal3f(normalVector.x, normalVector.y, normalVector.z);
-            glVertex3f(position.x - d1.x * halfWidth - d2.x * halfHeight , position.y - d1.y * halfWidth -  d2.y * halfHeight
-                        , position.z - d1.z * halfWidth - d2.z * halfHeight);
-            glNormal3f(normalVector.x, normalVector.y, normalVector.z);
-            glVertex3f(position.x - d1.x * halfWidth + d2.x * halfHeight , position.y - d1.y * halfWidth +  d2.y * halfHeight
-                        , position.z - d1.z * halfWidth + d2.z * halfHeight);
+            glVertex3f(position.x + d1.getX() * halfWidth + d2.getX() * halfHeight , position.y + d1.getY() * halfWidth +  d2.getY() * halfHeight
+                        , position.z + d1.getZ() * halfWidth + d2.getZ() * halfHeight);
+            glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
+            glVertex3f(position.x + d1.getX() * halfWidth - d2.getX() * halfHeight , position.y + d1.getY() * halfWidth -  d2.getY() * halfHeight
+                        , position.z + d1.getZ() * halfWidth - d2.getZ() * halfHeight);
+            glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
+            glVertex3f(position.x - d1.getX() * halfWidth - d2.getX() * halfHeight , position.y - d1.getY() * halfWidth -  d2.getY() * halfHeight
+                        , position.z - d1.getZ() * halfWidth - d2.getZ() * halfHeight);
+            glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
+            glVertex3f(position.x - d1.getX() * halfWidth + d2.getX() * halfHeight , position.y - d1.getY() * halfWidth +  d2.getY() * halfHeight
+                        , position.z - d1.getZ() * halfWidth + d2.getZ() * halfHeight);
        glEnd();
 }
 
