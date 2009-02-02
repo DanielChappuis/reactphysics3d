@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -26,6 +26,9 @@
 #include <stdexcept>
 #include <iostream>
 
+// ReactPhysics3D namespace
+namespace reactphysics3d {
+
 /*  -------------------------------------------------------------------
     Class Matrix :
         This class represents a matrix.
@@ -43,24 +46,24 @@ class Matrix {
         virtual ~Matrix();                                                              // Destructor of the class Matrix
         double getValue(int i, int j) const throw(std::invalid_argument);               // Return a value in the matrix
         void setValue(int i, int j, double value) throw(std::invalid_argument);         // Set a value in the matrix
-        int getNbRow() const;                                                              // Return the number of row of the matrix
-        int getNbColumn() const;                                                           // Return the number of column of the matrix
+        int getNbRow() const;                                                           // Return the number of row of the matrix
+        int getNbColumn() const;                                                        // Return the number of column of the matrix
         Matrix getCofactor(int i, int j) const throw(std::invalid_argument);            // Return the cofactor matrix by removing row i and column j
         Matrix getTranspose() const;                                                    // Return the transposed matrixs
-        Matrix getInverse() const throw(MatrixException);                               // Return the inverse of the matrix if there exists
-        double getDeterminant() const throw(MatrixException);                           // Return the determinant of the matrix
+        Matrix getInverse() const throw(MathematicsException);                          // Return the inverse of the matrix if there exists
+        double getDeterminant() const throw(MathematicsException);                      // Return the determinant of the matrix
         double getTrace() const;                                                        // Return the trace of the matrix
         static Matrix identityMatrix(int dimension) throw(std::invalid_argument);       // Return the identity matrix I of the given dimension
 
         void display() const;                                                           // TO DELETE
 
         // --- Overloaded operators --- //
-        Matrix operator + (const Matrix& matrix2) const throw(MatrixException);         // Overloaded operator for addition
-        Matrix operator - (const Matrix& matrix2) const throw(MatrixException);         // Overloaded operator for substraction
-        Matrix operator * (double nb) const;                                            // Overloaded operator for multiplication with a number
-        Matrix operator * (const Matrix& matrix2) const throw(MatrixException);         // Overloaded operator for multiplication with a matrix
-        Matrix& operator = (const Matrix& matrix2) throw(MatrixException);              // Overloaded operator for assignment
-        bool operator == (const Matrix& matrix2) const throw(MatrixException);          // Overloaded operator for equality condition
+        Matrix operator+(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for addition
+        Matrix operator-(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for substraction
+        Matrix operator*(double nb) const;                                              // Overloaded operator for multiplication with a number
+        Matrix operator*(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for multiplication with a matrix
+        Matrix& operator=(const Matrix& matrix2) throw(MathematicsException);           // Overloaded operator for assignment
+        bool operator==(const Matrix& matrix2) const throw(MathematicsException);       // Overloaded operator for equality condition
 };
 
 // Function to get a value in the matrix (inline)
@@ -98,10 +101,12 @@ inline int Matrix::getNbColumn() const {
 }
 
 // Overloaded operator for multiplication between a number and a Matrix (inline)
-inline Matrix operator * (double number, const Matrix& matrix) {
+inline Matrix operator*(double number, const Matrix& matrix) {
 
     // Return the result matrix
     return matrix * number;
 }
+
+} // End of the ReactPhysics3D namespace
 
 #endif

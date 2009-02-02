@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,8 +19,6 @@
 
 // TODO : Mathematics library : We have to use assert to debug
 // TODO : Mathematics library : Check everywhere that in member methods we use attributes access instead of getter and setter.
-
-// Mathematics library used in the react project
 
 #ifndef DCMATHS_H
 #define DCMATHS_H

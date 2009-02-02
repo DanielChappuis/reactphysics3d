@@ -1,5 +1,5 @@
 
-#include "dcmaths.h"
+#include "mathematics.h"
 
 #include <iostream>
 #include <stdexcept>

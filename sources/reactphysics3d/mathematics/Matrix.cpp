@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,6 +19,9 @@
 
 // Libraries
 #include "Matrix.h"
+
+// Namespaces
+using namespace reactphysics3d;
 
 // Constructor of the class Matrix
 Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
@@ -49,7 +52,7 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
 Matrix::Matrix(const Matrix& matrix)
        :nbRow(matrix.nbRow), nbColumn(matrix.nbColumn) {
 
-    // Create the two dimensional dynamic array
+    // Create the two dimensioCompiling: ../sources/reactphysics3d/mathematics/Matrix3x3.cpp
     array = new double*[nbRow];
     for(int i=0; i<nbRow; ++i) {
         array[i] = new double[nbColumn];
@@ -126,7 +129,7 @@ Matrix Matrix::getTranspose() const {
 
 
 // Function that return the inverse of the matrix if there exists
-Matrix Matrix::getInverse() const throw(MatrixException) {
+Matrix Matrix::getInverse() const throw(MathematicsException) {
     // Check if the matrix is a square-matrix
     if (nbRow==nbColumn) {
         // Compute the determinant of the matrix
@@ -160,18 +163,18 @@ Matrix Matrix::getInverse() const throw(MatrixException) {
             return inverseMatrix;
         }
         else {
-            // We throw an Matrix Exception
-            throw MatrixException("Exception : Inverse of the matrix can't be computed because the determinant is zero !");
+            // We throw a MathematicsException
+            throw MathematicsException("MathematicsException : Inverse of the matrix can't be computed because the determinant is zero !");
         }
     }
     else {
            // We throw an Matrix Exception
-            throw MatrixException("Exception : Inverse can't be computed for a non-square matrix !");
+            throw MathematicsException("MathematicsException : Inverse can't be computed for a non-square matrix !");
     }
 }
 
 // Function that return the determinant of the matrix
-double Matrix::getDeterminant() const throw(MatrixException) {
+double Matrix::getDeterminant() const throw(MathematicsException) {
     // If the matrix is a square matrix
     if (nbRow == nbColumn) {
         if(nbRow == 1) {
@@ -201,13 +204,12 @@ double Matrix::getDeterminant() const throw(MatrixException) {
         }
     }
     else {
-        // Throw a Matrix Multiplication Exception
-        throw MatrixException("Exception : The determinant of a non-square matrix isn't computable !");
+        // Throw a MathematicsException
+        throw MathematicsException("MathematicsException : The determinant of a non-square matrix isn't computable !");
     }
 }
 
 // Return the trace of the matrix
-// TODO Matrix::getTrace() : Test this method
 double Matrix::getTrace() const {
     double sum = 0.0;
 
@@ -246,13 +248,13 @@ Matrix Matrix::identityMatrix(int dimension) throw(std::invalid_argument) {
     }
     else {
         // Throw an exception
-        throw std::invalid_argument("Exception : The argument of identityMatrix has to be positive !");
+        throw std::invalid_argument("Exception : The argument of identityMatrix() has to be positive !");
     }
 }
 
 
 // Definition of the operator + for the sum of two matrices with references
-Matrix Matrix::operator + (const Matrix& matrix2) const throw(MatrixException) {
+Matrix Matrix::operator+(const Matrix& matrix2) const throw(MathematicsException) {
     if (nbRow == matrix2.nbRow && nbColumn == matrix2.nbColumn) {
         // Create a new matrix
         Matrix sumMatrix(nbRow,nbColumn);
@@ -268,13 +270,13 @@ Matrix Matrix::operator + (const Matrix& matrix2) const throw(MatrixException) {
         return sumMatrix;
     }
     else {
-        // We throw an Matrix Exception
-        throw MatrixException("Exception : Addition of the matrices isn't possible beacause the size of the matrices aren't the same");
+        // We throw an MathematicsException
+        throw MathematicsException("MathematicsException : Addition of the matrices isn't possible beacause the size of the matrices aren't the same");
     }
 }
 
 // Definition of the operator - for the substraction of two matrices with references
-Matrix Matrix::operator - (const Matrix& matrix2) const throw(MatrixException) {
+Matrix Matrix::operator-(const Matrix& matrix2) const throw(MathematicsException) {
     if (nbRow == matrix2.nbRow && nbColumn == matrix2.nbColumn) {
         // Create a new matrix
         Matrix sumMatrix(nbRow, nbColumn);
@@ -290,13 +292,13 @@ Matrix Matrix::operator - (const Matrix& matrix2) const throw(MatrixException) {
         return sumMatrix;
     }
     else {
-        // We throw an Matrix Exception
-        throw MatrixException("Exception : Substraction of the matrices isn't possible beacause the size of the matrices aren't the same");
+        // We throw a MathematicsException
+        throw MathematicsException("MathematicsException : Substraction of the matrices isn't possible beacause the size of the matrices aren't the same");
     }
 }
 
 // Overloaded operator * for the multiplication of the matrix with a number
-Matrix Matrix::operator * (double nb) const {
+Matrix Matrix::operator*(double nb) const {
     // Creation of the result matrix
     Matrix result(nbRow,nbColumn);
 
@@ -312,7 +314,7 @@ Matrix Matrix::operator * (double nb) const {
 }
 
 // Overloaded operator for multiplication with a matrix
-Matrix Matrix::operator * (const Matrix& matrix2) const throw(MatrixException) {
+Matrix Matrix::operator*(const Matrix& matrix2) const throw(MathematicsException) {
     // Check the sizes of the matrices
     if (nbColumn == matrix2.nbRow) {
         // Compute the result of the multiplication
@@ -334,12 +336,18 @@ Matrix Matrix::operator * (const Matrix& matrix2) const throw(MatrixException) {
     }
     else {
         // Throw an exception because the multiplication is impossible
-        throw MatrixException("Exception : The sizes of the matrices aren't compatible for the multiplication");
+        throw MathematicsException("MathematicsException : The sizes of the matrices aren't compatible for the multiplication");
     }
 }
 
 // Overloaded operator = for the assignment
-Matrix& Matrix::operator = (const Matrix& matrix2) throw(MatrixException) {
+Matrix& Matrix::operator=(const Matrix& matrix2) throw(MathematicsException) {
+
+    // Check for self-assignement
+    if(this == &matrix2) {
+        return *this;
+    }
+
     // Check the size of the matrix
     if (nbRow==matrix2.nbRow && nbColumn==matrix2.nbColumn) {
         // Check for self-assignment
@@ -355,13 +363,13 @@ Matrix& Matrix::operator = (const Matrix& matrix2) throw(MatrixException) {
         return *this;
     }
     else {
-        // Throw a Matrix Exception
-        throw MatrixException("Exception : Assignment impossible because the size of the matrices aren't the same !");
+        // Throw a MathematicsException
+        throw MathematicsException("MathematicsException : Assignment impossible because the size of the matrices aren't the same !");
     }
 }
 
 // Overloaded operator for equality condition
-bool Matrix::operator == (const Matrix& matrix2) const throw(MatrixException) {
+bool Matrix::operator==(const Matrix& matrix2) const throw(MathematicsException) {
     // Check if the matrices dimensions are compatible
     if (nbRow == matrix2.nbRow && nbColumn == matrix2.nbColumn) {
         for (int i=0; i<nbRow; ++i) {
@@ -376,7 +384,7 @@ bool Matrix::operator == (const Matrix& matrix2) const throw(MatrixException) {
     }
     else {
         // Throw an exception because the matrices dimensions aren't the same
-        throw MatrixException("Exception : Impossible to check if the matrices are equal because they don't have the same dimension");
+        throw MathematicsException("MathematicsException : Impossible to check if the matrices are equal because they don't have the same dimension");
     }
 
 }
@@ -391,4 +399,3 @@ void Matrix::display() const {
         std::cout << std::endl;
     }
 }
-

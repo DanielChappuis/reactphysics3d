@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,6 +19,9 @@
 
 // Libraries
 #include "Quaternion.h"
+
+// Namespaces
+using namespace reactphysics3d;
 
 // Constructor of the class
 Quaternion::Quaternion()

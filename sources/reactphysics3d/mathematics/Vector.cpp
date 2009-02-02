@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,6 +19,9 @@
 
 // Libraries
 #include "Vector.h"
+
+// Namespaces
+using namespace reactphysics3d;
 
 // Constructor of the class Vector
 Vector::Vector(int n) throw(std::invalid_argument) {
@@ -58,7 +61,7 @@ Vector::~Vector() {
 }
 
 // Return the corresponding unit vector
-Vector Vector::getUnit() const throw(VectorException) {
+Vector Vector::getUnit() const throw(MathematicsException) {
     double lengthVector = length();
 
     // Check if the length of the vector is equal to zero
@@ -77,12 +80,12 @@ Vector Vector::getUnit() const throw(VectorException) {
     }
     else {
         // Throw an exception because the length of the vector is zero
-        throw VectorException("Exception : Impossible to compute the unit vector because the length of the vector is zero");
+        throw MathematicsException("MathematicsException : Impossible to compute the unit vector because the length of the vector is zero");
     }
 }
 
 // Method to compute the scalar product of two vectors
-double Vector::scalarProduct(const Vector& vector) const throw(VectorException) {
+double Vector::scalarProduct(const Vector& vector) const throw(MathematicsException) {
     // Check the sizes of the two vectors
     if (nbComponent == vector.nbComponent) {
         double result = 0.0;
@@ -97,12 +100,12 @@ double Vector::scalarProduct(const Vector& vector) const throw(VectorException) 
     }
     else {
         // Throw an exception because the two vectors haven't the same size
-        throw VectorException("Exception : Impossible to compute the scalar product because the vectors haven't the same size");
+        throw MathematicsException("MathematicsException : Impossible to compute the scalar product because the vectors haven't the same size");
     }
 }
 
 // Method to compute the cross product of two vectors
-Vector Vector::crossProduct(const Vector& vector) const throw(VectorException) {
+Vector Vector::crossProduct(const Vector& vector) const throw(MathematicsException) {
     // Check if the vectors have 3 components
     if (nbComponent == 3 && vector.nbComponent == 3) {
         Vector result(3);
@@ -117,7 +120,7 @@ Vector Vector::crossProduct(const Vector& vector) const throw(VectorException) {
     }
     else {
         // Throw an exception because the vectors haven't three components
-        throw VectorException("Exception : Impossible to compute the cross product because the vectors haven't 3 components");
+        throw MathematicsException("MathematicsException : Impossible to compute the cross product because the vectors haven't 3 components");
     }
 }
 
@@ -129,7 +132,7 @@ void Vector::display() const {
 }
 
 // Overloaded operator for addition
-Vector Vector::operator + (const Vector& vector) const throw(VectorException) {
+Vector Vector::operator+(const Vector& vector) const throw(MathematicsException) {
     // Check the size of the two vectors
     if (nbComponent == vector.nbComponent) {
         Vector sum(nbComponent);
@@ -144,12 +147,12 @@ Vector Vector::operator + (const Vector& vector) const throw(VectorException) {
     }
     else {
         // Throw an exception because the sizes of the two vectors aren't the same
-        throw VectorException("Exception : Impossible two sum the two vectors because the sizes aren't the same !");
+        throw MathematicsException("MathematicsException : Impossible two sum the two vectors because the sizes aren't the same !");
     }
 }
 
 // Overloaded operator for substraction
-Vector Vector::operator - (const Vector& vector) const throw(VectorException) {
+Vector Vector::operator-(const Vector& vector) const throw(MathematicsException) {
     // Check the size of the two vectors
     if (nbComponent == vector.nbComponent) {
         Vector substraction(nbComponent);
@@ -164,12 +167,12 @@ Vector Vector::operator - (const Vector& vector) const throw(VectorException) {
     }
     else {
         // Throw an exception because the sizes of the two vectors aren't the same
-        throw VectorException("Exception : Impossible two substract the two vectors because the sizes aren't the same !");
+        throw MathematicsException("MathematicsException : Impossible two substract the two vectors because the sizes aren't the same !");
     }
 }
 
 // Overloaded operator for multiplication with a number
-Vector Vector::operator * (double number) const {
+Vector Vector::operator*(double number) const {
     Vector result(nbComponent);
 
     // Compute the multiplication
@@ -182,7 +185,13 @@ Vector Vector::operator * (double number) const {
 }
 
 // Overloaded operator for assigment to a Vector
-Vector& Vector::operator = (const Vector& vector) throw(VectorException) {
+Vector& Vector::operator=(const Vector& vector) throw(MathematicsException) {
+
+    // Check for self-assignment
+    if (this == &vector) {
+        return *this;
+    }
+
     // Check the size of the vectors
     if (nbComponent == vector.nbComponent) {
         // Check for self-assignment
@@ -197,12 +206,12 @@ Vector& Vector::operator = (const Vector& vector) throw(VectorException) {
     }
     else {
         // Throw an exception because the sizes of the vectors aren't the same
-        throw VectorException("Exception : The assigment to a Vector is impossible because the size of the vectors aren't the same");
+        throw MathematicsException("MathematicsException : The assigment to a Vector is impossible because the size of the vectors aren't the same");
     }
 }
 
 // Overloaded operator for the equality condition
-bool Vector::operator == (const Vector& vector) const throw(VectorException) {
+bool Vector::operator==(const Vector& vector) const throw(MathematicsException) {
     // Check if the sizes of the vectors are compatible
     if (nbComponent == vector.nbComponent) {
         for (int i=0; i<nbComponent; ++i) {
@@ -215,7 +224,7 @@ bool Vector::operator == (const Vector& vector) const throw(VectorException) {
     }
     else {
         // Throw an exception because the sizes of the vectors aren't the same
-        throw VectorException("Exception : Impossible to check if the vectors are equal because they don't have the same size");
+        throw MathematicsException("MathematicsException : Impossible to check if the vectors are equal because they don't have the same size");
     }
 }
 

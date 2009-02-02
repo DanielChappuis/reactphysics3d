@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -25,6 +25,9 @@
 #include "exceptions.h"
 #include "Quaternion.h"
 
+// ReactPhysics3D namespace
+namespace reactphysics3d {
+
 
 /*  -------------------------------------------------------------------
     Class Matrix3x3 :
@@ -33,7 +36,7 @@
 */
 class Matrix3x3 {
     private :
-        double array[3][3];                                                                    // Array with the values of the matrix
+        double array[3][3];                                                                     // Array with the values of the matrix
 
     public :
         Matrix3x3();                                                                            // Constructor of the class Matrix3x3
@@ -49,19 +52,19 @@ class Matrix3x3 {
         Matrix3x3 getTranspose() const;                                                         // Return the transpose matrix
         double getDeterminant() const;                                                          // Return the determinant of the matrix
         double getTrace() const;                                                                // Return the trace of the matrix
-        Matrix3x3 getInverse() const throw(MatrixException);                                    // Return the inverse matrix
+        Matrix3x3 getInverse() const throw(MathematicsException);                               // Return the inverse matrix
         Quaternion getQuaternion() const;                                                       // Return the quaternion corresponding to the matrix (it returns a unit quaternion)
         static Matrix3x3 identityMatrix();                                                      // Return the 3x3 identity matrix
 
         void display() const;                                                                   // TO DELETE
 
         // --- Overloaded operators --- //
-        Matrix3x3 operator + (const Matrix3x3& matrix2) const;                                  // Overloaded operator for addition
-        Matrix3x3 operator - (const Matrix3x3& matrix2) const ;                                 // Overloaded operator for substraction
-        Matrix3x3 operator * (double nb) const;                                                 // Overloaded operator for multiplication with a number
-        Matrix3x3 operator * (const Matrix3x3& matrix2) const;                                  // Overloaded operator for multiplication with a matrix
-        Matrix3x3& operator = (const Matrix3x3& matrix2);                                       // Overloaded operator for assignment
-        bool operator == (const Matrix3x3& matrix2) const;                                      // Overloaded operator for equality condition
+        Matrix3x3 operator+(const Matrix3x3& matrix2) const;                                  // Overloaded operator for addition
+        Matrix3x3 operator-(const Matrix3x3& matrix2) const ;                                 // Overloaded operator for substraction
+        Matrix3x3 operator*(double nb) const;                                                 // Overloaded operator for multiplication with a number
+        Matrix3x3 operator*(const Matrix3x3& matrix2) const;                                  // Overloaded operator for multiplication with a matrix
+        Matrix3x3& operator=(const Matrix3x3& matrix2);                                       // Overloaded operator for assignment
+        bool operator==(const Matrix3x3& matrix2) const;                                      // Overloaded operator for equality condition
 };
 
 
@@ -74,7 +77,7 @@ inline double Matrix3x3::getValue(int i, int j) const throw(std::invalid_argumen
     }
     else {
         // Throw an exception because of the wrong argument
-        throw MatrixException("Exception : The argument isn't in the bounds of the 3x3 matrix");
+        throw std::invalid_argument("Exception : The argument isn't in the bounds of the 3x3 matrix");
     }
 }
 
@@ -87,7 +90,7 @@ inline void Matrix3x3::setValue(int i, int j, double value) throw(std::invalid_a
     }
     else {
         // Throw an exception because of the wrong argument
-        throw MatrixException("Exception : The argument isn't in the bounds of the 3x3 matrix");
+        throw std::invalid_argument("Exception : The argument isn't in the bounds of the 3x3 matrix");
     }
 }       // End of the dcmaths namespace
 
@@ -124,23 +127,24 @@ inline double Matrix3x3::getDeterminant() const {
 }
 
 // Return the trace of the matrix
-// TODO Matrix3x3::getTrace() : Test this method
 inline double Matrix3x3::getTrace() const {
     // Compute and return the trace
     return (array[0][0] + array[1][1] + array[2][2]);
 }
 
 // Overloaded operator for multiplication between a number and a Matrix3x3 (inline)
-inline Matrix3x3 operator * (double number, const Matrix3x3& matrix) {
+inline Matrix3x3 operator*(double number, const Matrix3x3& matrix) {
     // Return the multiplied matrix
     return matrix * number;
 }
 
 // Overloaded operator for equality condition
-inline bool Matrix3x3::operator == (const Matrix3x3& matrix2) const {
+inline bool Matrix3x3::operator==(const Matrix3x3& matrix2) const {
     return (array[0][0] == matrix2.array[0][0] && array[0][1] == matrix2.array[0][1] && array[0][2] == matrix2.array[0][2] &&
             array[1][0] == matrix2.array[1][0] && array[1][1] == matrix2.array[1][1] && array[1][2] == matrix2.array[1][2] &&
             array[2][0] == matrix2.array[2][0] && array[2][1] == matrix2.array[2][1] && array[2][2] == matrix2.array[2][2]);
 }
+
+} // End of the ReactPhysics3D namespace
 
 #endif

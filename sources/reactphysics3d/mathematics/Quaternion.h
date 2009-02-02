@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -17,19 +17,16 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
 // Libraries
 #include <cmath>
-
 #include "Vector3D.h"
 #include "exceptions.h"
 
-// TODO : Test the Quaternion implementation
-// TODO : Test == operator of all classes
-// TODO : In every operator= overloading, we don't check for self-assignment, it's an error
+// ReactPhysics3D namespace
+namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Quaternion :
@@ -60,16 +57,16 @@ class Quaternion
         void setW(double w);                                                  // Set the value w
         Vector3D vectorV() const;                                             // Return the vector v=(x y z) of the quaternion
         double length() const;                                                // Return the length of the quaternion
-        Quaternion getUnit() const throw (QuaternionException);               // Return the unit quaternion
+        Quaternion getUnit() const throw (MathematicsException);              // Return the unit quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
-        Quaternion getInverse() const throw (QuaternionException);            // Return the inverse of the quaternion
+        Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
 
         // --- Overloaded operators --- //
-        Quaternion operator + (const Quaternion& quaternion) const;           // Overloaded operator for the addition
-        Quaternion operator - (const Quaternion& quaternion) const;           // Overloaded operator for the substraction
-        Quaternion operator * (const Quaternion& quaternion) const;           // Overloaded operator for the multiplication
-        Quaternion& operator = (const Quaternion& quaternion);                // Overloaded operator for assignment
-        bool operator == (const Quaternion& quaternion) const;                // Overloaded operator for equality condition
+        Quaternion operator+(const Quaternion& quaternion) const;             // Overloaded operator for the addition
+        Quaternion operator-(const Quaternion& quaternion) const;             // Overloaded operator for the substraction
+        Quaternion operator*(const Quaternion& quaternion) const;             // Overloaded operator for the multiplication
+        Quaternion& operator=(const Quaternion& quaternion);                  // Overloaded operator for assignment
+        bool operator==(const Quaternion& quaternion) const;                  // Overloaded operator for equality condition
 };
 
 
@@ -125,7 +122,7 @@ inline double Quaternion::length() const {
 }
 
 // Return the unit quaternion
-inline Quaternion Quaternion::getUnit() const throw(QuaternionException) {
+inline Quaternion Quaternion::getUnit() const throw(MathematicsException) {
     double lengthQuaternion = length();
 
     // Check if the length is not equal to zero
@@ -135,7 +132,7 @@ inline Quaternion Quaternion::getUnit() const throw(QuaternionException) {
     }
     else {
         // Throw an exception because it's impossible to compute a unit quaternion if its length is equal to zero
-        throw QuaternionException("Exception : Impossible to compute the unit quaternion if the length of the quaternion is zero");
+        throw MathematicsException("MathematicsException : Impossible to compute the unit quaternion if the length of the quaternion is zero");
     }
 }
 
@@ -145,7 +142,7 @@ inline Quaternion Quaternion::getConjugate() const {
 }
 
 // Return the inverse of the quaternion (inline)
-inline Quaternion Quaternion::getInverse() const throw(QuaternionException) {
+inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
     double lengthQuaternion = length();
     lengthQuaternion = lengthQuaternion * lengthQuaternion;
 
@@ -156,30 +153,30 @@ inline Quaternion Quaternion::getInverse() const throw(QuaternionException) {
     }
     else {
         // Throw an exception because the inverse cannot be computed
-        throw QuaternionException("Exception : Impossible to compute the inverse of the quaternion because it's length is zero");
+        throw MathematicsException("MathematicsException : Impossible to compute the inverse of the quaternion because it's length is zero");
     }
 }
 
 // Overloaded operator for the addition of two quaternions
-inline Quaternion Quaternion::operator + (const Quaternion& quaternion) const {
+inline Quaternion Quaternion::operator+(const Quaternion& quaternion) const {
     // Return the result quaternion
     return Quaternion(x + quaternion.x, y + quaternion.y, z + quaternion.z, w + quaternion.w);
 }
 
 // Overloaded operator for the substraction of two quaternions
-inline Quaternion Quaternion::operator - (const Quaternion& quaternion) const {
+inline Quaternion Quaternion::operator-(const Quaternion& quaternion) const {
     // Return the result of the substraction
     return Quaternion(x-quaternion.x, y - quaternion.y, z - quaternion.z, w - quaternion.w);
 }
 
 // Overloaded operator for the multiplication of two quaternions
-inline Quaternion Quaternion::operator * (const Quaternion& quaternion) const {
+inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
     // Return the result of the multiplication
     return Quaternion(w*quaternion.w - vectorV().scalarProduct(quaternion.vectorV()), w*quaternion.vectorV()+quaternion.w*vectorV() + vectorV().crossProduct(quaternion.vectorV()));
 }
 
 // Overloaded operator for the assignment
-inline Quaternion& Quaternion::operator = (const Quaternion& quaternion) {
+inline Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
     // Check for self-assignment
     if (this != &quaternion) {
         x = quaternion.x;
@@ -193,8 +190,10 @@ inline Quaternion& Quaternion::operator = (const Quaternion& quaternion) {
 }
 
 // Overloaded operator for equality condition
-inline bool Quaternion::operator == (const Quaternion& quaternion) const {
+inline bool Quaternion::operator==(const Quaternion& quaternion) const {
     return (x == quaternion.x && y == quaternion.y && z == quaternion.z && w == quaternion.w);
 }
+
+} // End of the ReactPhysics3D namespace
 
 #endif

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -17,15 +17,16 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-
 #ifndef VECTOR_H
 #define VECTOR_H
 
 // Libraries
 #include "exceptions.h"
-
 #include <cmath>
 #include <iostream>
+
+// ReactPhysics3D namespace
+namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Vector :
@@ -34,29 +35,29 @@
 */
 class Vector {
     private :
-        double* tab;                                                                // Array of the vector's components
-        int nbComponent;                                                            // number of components in the vector
+        double* tab;            // Array of the vector's components
+        int nbComponent;        // number of components in the vector
 
     public :
-        Vector(int n) throw(std::invalid_argument);                                 // Constructor of the class Vector
-        Vector(const Vector& vector);                                               // Copy-constructor of the class Vector
-        virtual ~Vector();                                                          // Destructor of the class Vector
-        double getValue(int n) const throw(std::invalid_argument);                  // Get a component of the vector
-        void setValue(int n, double value) throw(std::invalid_argument);            // Set the value of a component of the vector
-        int getNbComponent() const;                                                 // Get the number of components in the vector
-        double length() const;                                                      // Get the length of the vector
-        Vector getUnit() const throw(VectorException);                              // Return the corresponding unit vector
-        double scalarProduct(const Vector& vector) const throw(VectorException);    // Scalar product of two vectors
-        Vector crossProduct(const Vector& vector) const throw(VectorException);     // Cross product of two vectors (in 3D only)
+        Vector(int n) throw(std::invalid_argument);                                     // Constructor of the class Vector
+        Vector(const Vector& vector);                                                   // Copy-constructor of the class Vector
+        virtual ~Vector();                                                              // Destructor of the class Vector
+        double getValue(int n) const throw(std::invalid_argument);                      // Get a component of the vector
+        void setValue(int n, double value) throw(std::invalid_argument);                // Set the value of a component of the vector
+        int getNbComponent() const;                                                     // Get the number of components in the vector
+        double length() const;                                                          // Get the length of the vector
+        Vector getUnit() const throw(MathematicsException);                             // Return the corresponding unit vector
+        double scalarProduct(const Vector& vector) const throw(MathematicsException);   // Scalar product of two vectors
+        Vector crossProduct(const Vector& vector) const throw(MathematicsException);    // Cross product of two vectors (in 3D only)
 
-        void display() const;                                                       // TO DELETE
+        void display() const;                                                           // TO DELETE
 
         // --- Overloaded operators --- //
-        Vector operator + (const Vector& vector) const throw(VectorException);      // Overloaded operator for addition
-        Vector operator - (const Vector& vector) const throw(VectorException);      // Overloaded operator for substraction
-        Vector operator * (double number) const;                                    // Overloaded operator for multiplication with a number
-        Vector& operator = (const Vector& vector) throw(VectorException);           // Overloaded operator for the assignement to a Vector
-        bool operator == (const Vector& vector) const throw(VectorException);       // Overloaded operator for the equality condition
+        Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
+        Vector operator-(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for substraction
+        Vector operator*(double number) const;                                      // Overloaded operator for multiplication with a number
+        Vector& operator=(const Vector& vector) throw(MathematicsException);        // Overloaded operator for the assignement to a Vector
+        bool operator==(const Vector& vector) const throw(MathematicsException);    // Overloaded operator for the equality condition
 };
 
 
@@ -107,10 +108,11 @@ inline double Vector::length() const {
 }
 
 // Overloaded operator for multiplication between a number and a Vector (inline)
-inline Vector operator * (double number, const Vector& vector) {
+inline Vector operator*(double number, const Vector& vector) {
     // Compute and return the result
     return vector * number;
 }
 
+} // End of the ReactPhysics3D namespace
 
 #endif

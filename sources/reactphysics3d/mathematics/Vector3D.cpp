@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,9 +19,10 @@
 
 // Libraries
 #include "Vector3D.h"
-
 #include <iostream>
 
+// Namespaces
+using namespace reactphysics3d;
 
 // Constructor of the class Vector3D
 Vector3D::Vector3D()
@@ -47,7 +48,7 @@ Vector3D::~Vector3D() {
 }
 
 // Return the corresponding unit vector
-Vector3D Vector3D::getUnit() const throw(VectorException) {
+Vector3D Vector3D::getUnit() const throw(MathematicsException) {
     double lengthVector = length();
 
     // Check if the length is equal to zero
@@ -58,7 +59,7 @@ Vector3D Vector3D::getUnit() const throw(VectorException) {
     }
     else {
         // Throw an exception because the length of the vector is zero
-        throw VectorException("Exception : Impossible to compute the unit vector because the length of the vector is zero");
+        throw MathematicsException("MathematicsException : Impossible to compute the unit vector because the length of the vector is zero");
     }
 }
 
@@ -68,25 +69,25 @@ void Vector3D::display() const {
 }
 
 // Overloaded operator for addition
-Vector3D Vector3D::operator + (const Vector3D& vector) const {
+Vector3D Vector3D::operator+(const Vector3D& vector) const {
     // Compute and return the sum of the two vectors
     return Vector3D(x + vector.x, y + vector.y, z + vector.z);
 }
 
 // Overloaded operator for substraction
-Vector3D Vector3D::operator - (const Vector3D& vector) const {
+Vector3D Vector3D::operator-(const Vector3D& vector) const {
     // Compute and return the substraction of the two vectors
     return Vector3D(x - vector.x, y - vector.y, z - vector.z);
 }
 
 // Overloaded operator for multiplication with a number
-Vector3D Vector3D::operator * (double number) const {
+Vector3D Vector3D::operator*(double number) const {
     // Compute and return the result
     return Vector3D(x * number, y * number, z * number);
 }
 
 // Overloaded operator for the assignement to a Vector
-Vector3D& Vector3D::operator = (const Vector3D& vector) {
+Vector3D& Vector3D::operator=(const Vector3D& vector) {
     // Check for self-assignment
     if (this != &vector) {
         // Copy the vector

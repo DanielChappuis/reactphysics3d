@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -20,26 +20,29 @@
 // Libraries
 #include "exceptions.h"
 
+// Namespaces
+using namespace reactphysics3d;
 
-// Constructor of the MathException class
-MathException::MathException(const std::string& msg)
+
+// Constructor of the MathematicsException class
+MathematicsException::MathematicsException(const std::string& msg)
               :std::runtime_error(msg) {
 
 }
 
 // Destructor of the MathException class
-MathException::~MathException() throw() {
+MathematicsException::~MathematicsException() throw() {
 
 }
 
 // Overriden exception base class method
-const char* MathException::what() const throw() {
+const char* MathematicsException::what() const throw() {
     return std::runtime_error::what();
 }
 
 // Constructor of the DivisionByZeroException class
 DivisionByZeroException::DivisionByZeroException(const std::string& msg)
-                        :MathException(msg) {
+                        :MathematicsException(msg) {
 
 }
 
@@ -50,38 +53,6 @@ DivisionByZeroException::~DivisionByZeroException() throw() {
 
 // Overriden exception base class method
 const char* DivisionByZeroException::what() const throw() {
-    return MathException::what();
-}
-
-// Construtor of the MatrixException class
-MatrixException::MatrixException(const std::string& msg)
-                :MathException(msg) {
-
-}
-
-// Destructor of the MatrixException class
-MatrixException::~MatrixException() throw() {
-
-}
-
-// Overriden exception base class method
-const char* MatrixException::what() const throw() {
-    return MathException::what();
-}
-
-// Constructor of the VectorException class
-VectorException::VectorException(const std::string& msg)
-                :std::runtime_error(msg) {
-
-}
-
-// Destructor of the VectorException class
-VectorException::~VectorException() throw() {
-
-}
-
-// Overidden exception base class method
-const char* VectorException::what() const throw() {
-    return std::runtime_error::what();
+    return MathematicsException::what();
 }
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -17,14 +17,15 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
 // Libraries
 #include <cmath>
-
 #include "exceptions.h"
+
+// ReactPhysics3D namespace
+namespace reactphysics3d {
 
 
 /*  -------------------------------------------------------------------
@@ -51,18 +52,18 @@ class Vector3D {
         void setZ(double z);                                    // Set the z component of the vector
         void setAllValues(double x, double y, double z);        // Set all the values of the vector
         double length() const;                                  // Return the lenght of the vector
-        Vector3D getUnit() const throw(VectorException);        // Return the corresponding unit vector
+        Vector3D getUnit() const throw(MathematicsException);   // Return the corresponding unit vector
         double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
         Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
 
         void display() const;                                   // TO DELETE
 
         // --- Overloaded operators --- //
-        Vector3D operator + (const Vector3D& vector) const;     // Overloaded operator for addition
-        Vector3D operator - (const Vector3D& vector) const ;    // Overloaded operator for substraction
-        Vector3D operator * (double number) const;              // Overloaded operator for multiplication with a number
-        Vector3D& operator = (const Vector3D& vector);          // Overloaded operator for the assignement to a Vector
-        bool operator == (const Vector3D& vector) const;        // Overloaded operator for the equality condition
+        Vector3D operator+(const Vector3D& vector) const;     // Overloaded operator for addition
+        Vector3D operator-(const Vector3D& vector) const ;    // Overloaded operator for substraction
+        Vector3D operator*(double number) const;              // Overloaded operator for multiplication with a number
+        Vector3D& operator=(const Vector3D& vector);          // Overloaded operator for the assignement to a Vector
+        bool operator==(const Vector3D& vector) const;        // Overloaded operator for the equality condition
 };
 
 
@@ -131,5 +132,7 @@ inline Vector3D operator * (double number, const Vector3D& vector) {
 inline bool Vector3D::operator == (const Vector3D& vector) const {
     return (x == vector.x && y == vector.y && z == vector.z);
 }
+
+} // End of the ReactPhysics3D namespace
 
 #endif

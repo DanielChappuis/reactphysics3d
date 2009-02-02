@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2008      Daniel Chappuis                                  *
+ * Copyright (C) 2009      Daniel Chappuis                                  *
  ****************************************************************************
  * This file is part of ReactPhysics3D.                                     *
  *                                                                          *
@@ -19,11 +19,10 @@
 
 // Libraries
 #include <iostream>
-
 #include "Matrix3x3.h"
 
-
-
+// Namespaces
+using namespace reactphysics3d;
 
 // Constructor of the class Matrix3x3
 Matrix3x3::Matrix3x3() {
@@ -70,7 +69,7 @@ Matrix3x3::~Matrix3x3() {
 }
 
 // Return the inverse matrix
-Matrix3x3 Matrix3x3::getInverse() const throw(MatrixException) {
+Matrix3x3 Matrix3x3::getInverse() const throw(MathematicsException) {
     // Compute the determinant of the matrix
     double determinant = getDeterminant();
 
@@ -89,12 +88,13 @@ Matrix3x3 Matrix3x3::getInverse() const throw(MatrixException) {
     }
     else {
         // Throw an exception because the inverse of the matrix doesn't exist if the determinant is equal to zero
-        throw MatrixException("Exception : Impossible to compute the inverse of the matrix because the determinant is equal to zero");
+        throw MathematicsException("MathematicsException : Impossible to compute the inverse of the matrix because the determinant is equal to zero");
     }
 }
 
 // Return the quaternion corresponding to the matrix (it returns a unit quaternion)
 Quaternion Matrix3x3::getQuaternion() const {
+
     // Get the trace of the matrix
     double trace = getTrace();
 
@@ -102,30 +102,33 @@ Quaternion Matrix3x3::getQuaternion() const {
     double s;
 
     if (trace < 0.0) {
-        // TODO Matrix3x3::getQuaternion() : End the implementation of this ...
         if (array[1][1] > array[0][0]) {
             if(array[2][2] > array[1][1]) {
                 r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
                 s = 0.5 / r;
-                return Quaternion((array[0][1] + array[1][0])*s, , (array[1][2] + array[2][1])*s, 0.5 * r);
+                return Quaternion((array[2][0] + array[0][2])*s, (array[1][2] + array[2][1])*s, 0.5*r, (array[1][0] - array[0][1])*s);
             }
             else {
                 r = sqrt(array[1][1] - array[2][2] - array[0][0] + 1.0);
                 s = 0.5 / r;
-                return Quaternion((array[2][0] + array[0][2])*s, (array[1][2] + array[2][1])*s, 0.5 * r, (array[1][0] + array[0][1])*s);
+                return Quaternion((array[0][1] + array[1][0])*s, 0.5 * r, (array[1][2] + array[2][1])*s, (array[0][2] - array[2][0])*s);
             }
         }
         else if (array[2][2] > array[0][0]) {
-
+            r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
+            s = 0.5 / r;
+            return Quaternion((array[2][0] + array[0][2])*s, (array[1][2] + array[2][1])*s, 0.5 * r, (array[1][0] - array[0][1])*s);
         }
         else {
-
+            r = sqrt(array[0][0] - array[1][1] - array[2][2] + 1.0);
+            s = 0.5 / r;
+            return Quaternion(0.5 * r, (array[0][1] + array[1][0])*s, (array[2][0] - array[0][2])*s, (array[2][1] - array[1][2])*s);
         }
     }
     else {
         r = sqrt(trace + 1.0);
         s = 0.5/r;
-        return Quaternion((array[2][1]-array[1][2])*s, (array[0][2]-array[2][0])*s, (array[1][0]-array[0][1])*s, 0.5 * r);
+        return Quaternion(0.5 * r, (array[0][1]-array[1][0])*s, (array[2][0]-array[0][2])*s, (array[2][1]-array[1][2])*s);
     }
 }
 
@@ -147,7 +150,7 @@ void Matrix3x3::display() const {
 }
 
 // Overloaded operator for addition
-Matrix3x3 Matrix3x3::operator + (const Matrix3x3& matrix2) const {
+Matrix3x3 Matrix3x3::operator+(const Matrix3x3& matrix2) const {
     // Return the sum matrix
     return Matrix3x3(array[0][0] + matrix2.array[0][0], array[0][1] + matrix2.array[0][1], array[0][2] + matrix2.array[0][2],
                      array[1][0] + matrix2.array[1][0], array[1][1] + matrix2.array[1][1], array[1][2] + matrix2.array[1][2],
@@ -155,7 +158,7 @@ Matrix3x3 Matrix3x3::operator + (const Matrix3x3& matrix2) const {
 }
 
 // Overloaded operator for substraction
-Matrix3x3 Matrix3x3::operator - (const Matrix3x3& matrix2) const {
+Matrix3x3 Matrix3x3::operator-(const Matrix3x3& matrix2) const {
     // Return the substraction matrix
     return Matrix3x3(array[0][0] - matrix2.array[0][0], array[0][1] - matrix2.array[0][1], array[0][2] - matrix2.array[0][2],
                      array[1][0] - matrix2.array[1][0], array[1][1] - matrix2.array[1][1], array[1][2] - matrix2.array[1][2],
@@ -163,7 +166,7 @@ Matrix3x3 Matrix3x3::operator - (const Matrix3x3& matrix2) const {
 }
 
 // Overloaded operator for multiplication with a number
-Matrix3x3 Matrix3x3::operator * (double nb) const {
+Matrix3x3 Matrix3x3::operator*(double nb) const {
     // Return multiplied matrix
     return Matrix3x3(array[0][0] * nb, array[0][1] * nb, array[0][2] * nb,
                      array[1][0] * nb, array[1][1] * nb, array[1][2] * nb,
@@ -171,7 +174,7 @@ Matrix3x3 Matrix3x3::operator * (double nb) const {
 }
 
 // Overloaded operator for multiplication with a matrix
-Matrix3x3 Matrix3x3::operator * (const Matrix3x3& matrix2) const {
+Matrix3x3 Matrix3x3::operator*(const Matrix3x3& matrix2) const {
     // Compute and return the multiplication of the matrices
     return Matrix3x3(array[0][0]*matrix2.array[0][0] + array[0][1]*matrix2.array[1][0] + array[0][2]*matrix2.array[2][0],
                      array[0][0]*matrix2.array[0][1] + array[0][1]*matrix2.array[1][1] + array[0][2]*matrix2.array[2][1],
@@ -185,7 +188,7 @@ Matrix3x3 Matrix3x3::operator * (const Matrix3x3& matrix2) const {
 }
 
 // Overloaded operator for assignment
-Matrix3x3& Matrix3x3::operator = (const Matrix3x3& matrix2) {
+Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix2) {
     // Check for self-assignment
     if (this != &matrix2) {
         setAllValues(matrix2.array[0][0], matrix2.array[0][1], matrix2.array[0][2],
