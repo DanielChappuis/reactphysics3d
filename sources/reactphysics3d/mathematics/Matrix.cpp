@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 // Libraries
+#include <cassert>
 #include "Matrix.h"
 
 // Namespaces
@@ -31,6 +32,9 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
 
         // Create the two dimensional dynamic array
         array = new double*[nbRow];
+
+        assert(array != 0);     // Array pointer musn't be null
+
         for(int i=0; i<nbRow; ++i) {
             array[i] = new double[nbColumn];
         }
@@ -52,8 +56,11 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
 Matrix::Matrix(const Matrix& matrix)
        :nbRow(matrix.nbRow), nbColumn(matrix.nbColumn) {
 
-    // Create the two dimensioCompiling: ../sources/reactphysics3d/mathematics/Matrix3x3.cpp
+    // Create the two dimensional dynamic array
     array = new double*[nbRow];
+
+    assert(array != 0);     // Array pointer musn't be null
+
     for(int i=0; i<nbRow; ++i) {
         array[i] = new double[nbColumn];
     }
@@ -210,24 +217,31 @@ double Matrix::getDeterminant() const throw(MathematicsException) {
 }
 
 // Return the trace of the matrix
-double Matrix::getTrace() const {
-    double sum = 0.0;
+double Matrix::getTrace() const throw(MathematicsException) {
 
-    // Compute the trace of the matrix
-    for(int i=0; i<nbRow; ++i) {
-        for(int j=0; j<nbColumn; ++j) {
-            sum = sum + array[i][j];
+    // Check if the matrix is a square-matrix
+    if (nbRow == nbColumn) {
+        double sum = 0.0;
+
+        // Compute the trace of the matrix
+        for(int i=0; i<nbRow; ++i) {
+            sum = sum + array[i][i];
         }
+
+        // Return the trace
+        return sum;
+    }
+    else {
+        // We throw an exception because the matrix is non-square
+        throw MathematicsException("MathematicsException : Impossible to compute the trace for a non-square matrix");
     }
 
-    // Return the trace
-    return sum;
 }
 
 // Static function that return a identity matrix of size nxn
-Matrix Matrix::identityMatrix(int dimension) throw(std::invalid_argument) {
+Matrix Matrix::identity(int dimension) throw(std::invalid_argument) {
     // Argument verification
-    if (dimension>0) {
+    if (dimension > 0) {
         // Create a new matrix
         Matrix identityMatrix(dimension,dimension);
 
@@ -248,7 +262,7 @@ Matrix Matrix::identityMatrix(int dimension) throw(std::invalid_argument) {
     }
     else {
         // Throw an exception
-        throw std::invalid_argument("Exception : The argument of identityMatrix() has to be positive !");
+        throw std::invalid_argument("Exception : The argument of identity() has to be positive !");
     }
 }
 
