@@ -63,11 +63,6 @@ Vector3D Vector3D::getUnit() const throw(MathematicsException) {
     }
 }
 
-// TO DELETE THIS IS JUST FOR TESTS
-void Vector3D::display() const {
-    std::cout << x << std::endl << y << std::endl << z << std::endl;
-}
-
 // Overloaded operator for addition
 Vector3D Vector3D::operator+(const Vector3D& vector) const {
     // Compute and return the sum of the two vectors

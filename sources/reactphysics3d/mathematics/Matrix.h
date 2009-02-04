@@ -22,7 +22,6 @@
 
 // Libraries
 #include "exceptions.h"
-
 #include <stdexcept>
 #include <iostream>
 
@@ -41,7 +40,7 @@ class Matrix {
         double** array;                                                                 // Dynamic array that contains the values of the matrix
 
     public :
-        Matrix(int nbRow, int nbColum) throw(std::invalid_argument);                              // Constructor of the class Matrix
+        Matrix(int nbRow, int nbColum) throw(std::invalid_argument);                    // Constructor of the class Matrix
         Matrix(const Matrix& matrix);                                                   // Copy constructor of the class Matrix
         virtual ~Matrix();                                                              // Destructor of the class Matrix
         double getValue(int i, int j) const throw(std::invalid_argument);               // Return a value in the matrix
@@ -52,8 +51,8 @@ class Matrix {
         Matrix getTranspose() const;                                                    // Return the transposed matrixs
         Matrix getInverse() const throw(MathematicsException);                          // Return the inverse of the matrix if there exists
         double getDeterminant() const throw(MathematicsException);                      // Return the determinant of the matrix
-        double getTrace() const;                                                        // Return the trace of the matrix
-        static Matrix identityMatrix(int dimension) throw(std::invalid_argument);       // Return the identity matrix I of the given dimension
+        double getTrace() const throw(MathematicsException);                            // Return the trace of a square matrix
+        static Matrix identity(int dimension) throw(std::invalid_argument);             // Return the identity matrix I of the given dimension
 
         void display() const;                                                           // TO DELETE
 

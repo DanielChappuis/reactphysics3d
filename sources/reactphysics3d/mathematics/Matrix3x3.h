@@ -53,8 +53,8 @@ class Matrix3x3 {
         double getDeterminant() const;                                                          // Return the determinant of the matrix
         double getTrace() const;                                                                // Return the trace of the matrix
         Matrix3x3 getInverse() const throw(MathematicsException);                               // Return the inverse matrix
-        Quaternion getQuaternion() const;                                                       // Return the quaternion corresponding to the matrix (it returns a unit quaternion)
-        static Matrix3x3 identityMatrix();                                                      // Return the 3x3 identity matrix
+        Quaternion getQuaternion() const;                                                       // Return the unit quaternion corresponding to the matrix
+        static Matrix3x3 identity();                                                            // Return the 3x3 identity matrix
 
         void display() const;                                                                   // TO DELETE
 

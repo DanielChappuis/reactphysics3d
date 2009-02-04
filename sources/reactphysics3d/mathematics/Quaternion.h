@@ -30,7 +30,8 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Quaternion :
-        This class represents a quaternion.
+        This class represents a quaternion. We use the notation :
+        q = (x*i, y*j, z*k, w) to represent a quaternion.
     -------------------------------------------------------------------
 */
 class Quaternion
@@ -64,6 +65,7 @@ class Quaternion
         // --- Overloaded operators --- //
         Quaternion operator+(const Quaternion& quaternion) const;             // Overloaded operator for the addition
         Quaternion operator-(const Quaternion& quaternion) const;             // Overloaded operator for the substraction
+        Quaternion operator*(double nb) const;                                // Overloaded operator for the multiplication with a constant
         Quaternion operator*(const Quaternion& quaternion) const;             // Overloaded operator for the multiplication
         Quaternion& operator=(const Quaternion& quaternion);                  // Overloaded operator for assignment
         bool operator==(const Quaternion& quaternion) const;                  // Overloaded operator for equality condition
@@ -127,6 +129,7 @@ inline Quaternion Quaternion::getUnit() const throw(MathematicsException) {
 
     // Check if the length is not equal to zero
     if (lengthQuaternion != 0.0) {
+
         // Compute and return the unit quaternion
         return Quaternion(x/lengthQuaternion, y/lengthQuaternion, z/lengthQuaternion, w/lengthQuaternion);
     }
@@ -138,7 +141,7 @@ inline Quaternion Quaternion::getUnit() const throw(MathematicsException) {
 
 // Return the conjugate of the quaternion (inline)
 inline Quaternion Quaternion::getConjugate() const {
-    return Quaternion(x, -y, -z, -w);
+    return Quaternion(-x, -y, -z, w);
 }
 
 // Return the inverse of the quaternion (inline)
@@ -148,8 +151,9 @@ inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
 
     // Check if the length is not equal to zero
     if (lengthQuaternion != 0.0) {
+
         // Compute and return the inverse quaternion
-        return Quaternion(x/lengthQuaternion, y/lengthQuaternion, z/lengthQuaternion, w/lengthQuaternion);
+        return Quaternion(-x/lengthQuaternion, -y/lengthQuaternion, -z/lengthQuaternion, w/lengthQuaternion);
     }
     else {
         // Throw an exception because the inverse cannot be computed
@@ -167,6 +171,12 @@ inline Quaternion Quaternion::operator+(const Quaternion& quaternion) const {
 inline Quaternion Quaternion::operator-(const Quaternion& quaternion) const {
     // Return the result of the substraction
     return Quaternion(x-quaternion.x, y - quaternion.y, z - quaternion.z, w - quaternion.w);
+}
+
+// Overloaded operator for the multiplication with a constant
+inline Quaternion Quaternion::operator*(double nb) const {
+    // Return the result
+    return Quaternion(nb*x, nb*y, nb*z, nb*w);
 }
 
 // Overloaded operator for the multiplication of two quaternions

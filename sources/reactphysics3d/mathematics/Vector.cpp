@@ -124,13 +124,6 @@ Vector Vector::crossProduct(const Vector& vector) const throw(MathematicsExcepti
     }
 }
 
-// TO DELETE
-void Vector::display() const {
-    for (int i=0; i<nbComponent; ++i) {
-        std::cout << tab[i] << std::endl;
-    }
-}
-
 // Overloaded operator for addition
 Vector Vector::operator+(const Vector& vector) const throw(MathematicsException) {
     // Check the size of the two vectors

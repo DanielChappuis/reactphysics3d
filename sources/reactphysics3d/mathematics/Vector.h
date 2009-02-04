@@ -50,8 +50,6 @@ class Vector {
         double scalarProduct(const Vector& vector) const throw(MathematicsException);   // Scalar product of two vectors
         Vector crossProduct(const Vector& vector) const throw(MathematicsException);    // Cross product of two vectors (in 3D only)
 
-        void display() const;                                                           // TO DELETE
-
         // --- Overloaded operators --- //
         Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
         Vector operator-(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for substraction

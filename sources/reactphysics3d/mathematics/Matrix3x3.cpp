@@ -44,7 +44,7 @@ Matrix3x3::Matrix3x3(const Matrix3x3& matrix2) {
                  matrix2.array[2][0], matrix2.array[2][1], matrix2.array[2][2]);
 }
 
-// Create a Matrix3x3 from a quaternion
+// Create a Matrix3x3 from a quaternion (the quaternion can be non-unit)
 Matrix3x3::Matrix3x3(const Quaternion& quaternion) {
     double x = quaternion.getX();
     double y = quaternion.getY();
@@ -58,9 +58,24 @@ Matrix3x3::Matrix3x3(const Quaternion& quaternion) {
         s = 2.0/nQ;
     }
 
+    // Computations used for optimization (less multiplications)
+    double xs = x*s;
+    double ys = y*s;
+    double zs = z*s;
+    double wxs = w*xs;
+    double wys = w*ys;
+    double wzs = w*zs;
+    double xxs = x*xs;
+    double xys = x*ys;
+    double xzs = x*zs;
+    double yys = y*ys;
+    double yzs = y*zs;
+    double zzs = z*zs;
+
     // Create the matrix corresponding to the quaternion
-    Matrix3x3(1.0-y*y*s-z*z*s, x*y*s-w*z*s, z*x*s + w*y*s, x*y*s + w*z*s, 1.0-x*x*s-z*z*s, y*z*s-w*x*s,
-                     z*x*s-w*y*s, y*z*s + w*x*s, 1.0-x*x*s-y*y*s);
+    setAllValues(1.0-yys-zzs, xys-wzs, xzs + wys,
+                 xys + wzs, 1.0-xxs-zzs, yzs-wxs,
+                 xzs-wys, yzs + wxs, 1.0-xxs-yys);
 }
 
 // Destructor
@@ -128,13 +143,13 @@ Quaternion Matrix3x3::getQuaternion() const {
     else {
         r = sqrt(trace + 1.0);
         s = 0.5/r;
-        return Quaternion(0.5 * r, (array[0][1]-array[1][0])*s, (array[2][0]-array[0][2])*s, (array[2][1]-array[1][2])*s);
+        return Quaternion((array[2][1]-array[1][2])*s, (array[0][2]-array[2][0])*s, (array[1][0]-array[0][1])*s, 0.5 * r);
     }
 }
 
 // Return the 3x3 identity matrix
-Matrix3x3 Matrix3x3::identityMatrix() {
-    // Return the identity matrix
+Matrix3x3 Matrix3x3::identity() {
+    // Return the isdentity matrix
     return Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
 }
 

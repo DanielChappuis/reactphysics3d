@@ -56,8 +56,6 @@ class Vector3D {
         double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
         Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
 
-        void display() const;                                   // TO DELETE
-
         // --- Overloaded operators --- //
         Vector3D operator+(const Vector3D& vector) const;     // Overloaded operator for addition
         Vector3D operator-(const Vector3D& vector) const ;    // Overloaded operator for substraction
