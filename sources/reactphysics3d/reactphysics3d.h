@@ -20,12 +20,7 @@
 #ifndef REACTPHYSICS3D_H
 #define REACTPHYSICS3D_H
 
-// ReactPhysics3D namespace
-//namespace reactphysics3d {
-
 // Libraries
-#include "mathematics/mathematics.h"
-
-//} // End of the reactphysics3d namespace
+#include "body/RigidBody.h"
 
 #endif
