@@ -17,7 +17,6 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-// TODO : Mathematics library : We have to use assert to debug
 // TODO : Mathematics library : Check everywhere that in member methods we use attributes access instead of getter and setter.
 
 #ifndef DCMATHS_H
