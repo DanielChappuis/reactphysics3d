@@ -60,6 +60,7 @@ class Matrix3x3Test : public TestSuite::Test {
             testOperatorSubstraction();
             testOperatorMultiplicationWithConstant();
             testOperatorMultiplicationWithMatrix();
+            testOperatorMultiplicationWithVector();
             testOperatorAssignment();
             testOperatorEquality();
         }
@@ -377,6 +378,14 @@ class Matrix3x3Test : public TestSuite::Test {
             test_(result.getValue(2,0) == -116);
             test_(result.getValue(2,1) == -23);
             test_(result.getValue(2,2) == 256);
+        }
+
+        testOperatorMultiplicationWithVector() {
+            Vector3D vector(4,7,3);
+            Vector3D result = matrix1 * vector;
+            test_(result.getX() == 46);
+            test_(result.getY() == 51);
+            test_(result.getZ() == 86);
         }
 
         // Test operator=()
