@@ -22,7 +22,9 @@
 
  // Libraries
  #include "Body.h"
+ #include "BodyState.h"
  #include "../mathematics/mathematics.h"
+ #include "../physics/physics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -43,15 +45,39 @@ class RigidBody : public Body {
         bool isCollisionEnabled;                    // True if the body can collide with others bodies
 
     public :
-        RigidBody(double mass);                     // Constructor
-        RigidBody(const RigidBody& rigidBody);      // Copy-constructor
-        virtual ~RigidBody();                       // Destructor
+        RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor);  // Constructor
+        RigidBody(const RigidBody& rigidBody);                                                      // Copy-constructor
+        virtual ~RigidBody();                                                                       // Destructor
 
         Matrix3x3 getInertiaTensor() const;                             // Return the inertia tensor of the body
         void setInertiaTensor(const Matrix3x3& inertiaTensor);          // Set the inertia tensor of the body
-        BodyState getCurrentState() const;                              // Return the current state of the body
-        BodyState getPreviousState() const;                             // Return the previous state of the body
+        BodyState getCurrentBodyState() const;                          // Return the current state of the body
+        BodyState getPreviousBodyState() const;                         // Return the previous state of the body
+        Vector3D computeForce(Time time) const;                         // Return the force on the body at time t
+        Vector3D computeTorque(Time time) const;                        // Return the torque on the body at time t
 };
+
+// --- Inline functions --- //
+
+// Return the inertia tensor of the body
+Matrix3x3 RigidBody::getInertiaTensor() const {
+    return inertiaTensor;
+}
+
+// Set the inertia tensor of the body
+void RigidBody::setInertiaTensor(const Matrix3x3& inertiaTensor) {
+    this->inertiaTensor = inertiaTensor;
+}
+
+// Return the current state of the body
+BodyState RigidBody::getCurrentBodyState() const {
+    return currentBodyState;
+}
+
+// Return the previous state of the body
+BodyState RigidBody::getPreviousBodyState() const {
+    return previousBodyState;
+}
 
 
 }

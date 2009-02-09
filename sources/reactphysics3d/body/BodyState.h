@@ -22,6 +22,7 @@
 
 // Libraries
 #include "../mathematics/mathematics.h"
+#include "../physics/physics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -46,12 +47,12 @@ class BodyState {
 
         // Constants
         Matrix3x3 inertiaTensorInverse;         // Inverse of the inertia tensor of the body
-        double massInverse;                     // Inverse of the mass of the body
+        Kilogram massInverse;                     // Inverse of the mass of the body
 
     public :
-        BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, double massInverse);     // Constructor
-        BodyState(const BodyState& bodyState);                                                              // Copy-constructor
-        virtual ~BodyState();                                                                               // Destructor
+        BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse);    // Constructor
+        BodyState(const BodyState& bodyState);                                                                      // Copy-constructor
+        virtual ~BodyState();                                                                                       // Destructor
 
         Vector3D getPosition() const;                                           // Return the position of the body
         void setPosition(const Vector3D& position);                             // Set the position of the body
@@ -63,7 +64,7 @@ class BodyState {
         void setAngularMomentum(const Vector3D& angularMomentum);               // Set the angular momentum
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
         Quaternion getSpin() const;                                             // Return the spin of the body
-        void setMassInverse(double massInverse);                                // Set the inverse of the mass
+        void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
 
         void recalculate();             // Recalculate the secondary values of the BodyState
@@ -122,7 +123,7 @@ inline Quaternion BodyState::getSpin() const {
 }
 
 // Set the inverse of the mass
-inline void BodyState::setMassInverse(double massInverse) {
+inline void BodyState::setMassInverse(Kilogram massInverse) {
     this->massInverse = massInverse;
 }
 

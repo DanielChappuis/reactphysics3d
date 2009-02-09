@@ -24,23 +24,17 @@
  using namespace reactphysics3d;
 
  // Constructor
- BodyState::BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, double massInverse) {
-    this->position = position;
-    this->inertiaTensorInverse = inertiaTensorInverse;
-    this->massInverse = massInverse;
+ BodyState::BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse)
+           : position(position), inertiaTensorInverse(inertiaTensorInverse), massInverse(massInverse) {
+
  }
 
 // Copy-constructor
-BodyState::BodyState(const BodyState& bodyState) {
-    this->position = bodyState.position;
-    this->linearMomentum = bodyState.linearMomentum;
-    this->orientation = bodyState.orientation;
-    this->angularMomentum = bodyState.angularMomentum;
-    this->linearVelocity = bodyState.linearVelocity;
-    this->angularVelocity = bodyState.angularVelocity;
-    this->spin = bodyState.spin;
-    this->inertiaTensorInverse = bodyState.inertiaTensorInverse;
-    this->massInverse = bodyState.massInverse;
+BodyState::BodyState(const BodyState& bodyState)
+          : position(bodyState.position), linearMomentum(bodyState.linearMomentum), linearVelocity(bodyState.linearVelocity),
+            angularVelocity(bodyState.angularVelocity), spin(bodyState.spin), inertiaTensorInverse(bodyState.inertiaTensorInverse),
+            massInverse(bodyState.massInverse) {
+
 }
 
 // Destructor

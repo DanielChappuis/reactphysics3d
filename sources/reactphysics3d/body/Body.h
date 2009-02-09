@@ -20,6 +20,9 @@
  #ifndef BODY_H
  #define BODY_H
 
+ // Libraries
+  #include "../physics/physics.h"
+
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
@@ -31,23 +34,26 @@ namespace reactphysics3d {
 */
 class Body {
     private :
-        double mass;                    // Mass of the body
+        Kilogram mass;                      // Mass of the body
 
     public :
-        Body(double mass);              // Constructor
-        double getMass();               // Return the mass of the body
-        void setMass(double mass);      // Set the mass of the body
+        Body(Kilogram mass);                // Constructor
+        Body(const Body& body);             // Copy-constructor
+        virtual ~Body();                    // Destructor
+
+        Kilogram getMass();                 // Return the mass of the body
+        void setMass(Kilogram mass);        // Set the mass of the body
 };
 
 // --- Inlines function --- //
 
 // Method that return the mass of the body
-inline double Body::getMass() {
+inline Kilogram Body::getMass() {
     return mass;
 };
 
 // Method that set the mass of the body
-inline void Body::setMass(double mass) {
+inline void Body::setMass(Kilogram mass) {
     this->mass = mass;
 }
 
