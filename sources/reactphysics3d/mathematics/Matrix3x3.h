@@ -24,6 +24,7 @@
 // Libraries
 #include "exceptions.h"
 #include "Quaternion.h"
+#include "Vector3D.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -45,6 +46,7 @@ class Matrix3x3 {
         Matrix3x3(const Matrix3x3& matrix);                                                     // Copy-constructor
         Matrix3x3(const Quaternion& quaternion);                                                // Create a Matrix3x3 from a Quaternion
         virtual ~Matrix3x3();                                                                   // Destructor
+
         double getValue(int i, int j) const throw(std::invalid_argument);                       // Get a value in the matrix
         void setValue(int i, int j, double value) throw(std::invalid_argument);                 // Set a value in the matrix
         void setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
@@ -56,15 +58,14 @@ class Matrix3x3 {
         Quaternion getQuaternion() const;                                                       // Return the unit quaternion corresponding to the matrix
         static Matrix3x3 identity();                                                            // Return the 3x3 identity matrix
 
-        void display() const;                                                                   // TO DELETE
-
         // --- Overloaded operators --- //
-        Matrix3x3 operator+(const Matrix3x3& matrix2) const;                                  // Overloaded operator for addition
-        Matrix3x3 operator-(const Matrix3x3& matrix2) const ;                                 // Overloaded operator for substraction
-        Matrix3x3 operator*(double nb) const;                                                 // Overloaded operator for multiplication with a number
-        Matrix3x3 operator*(const Matrix3x3& matrix2) const;                                  // Overloaded operator for multiplication with a matrix
-        Matrix3x3& operator=(const Matrix3x3& matrix2);                                       // Overloaded operator for assignment
-        bool operator==(const Matrix3x3& matrix2) const;                                      // Overloaded operator for equality condition
+        Matrix3x3 operator+(const Matrix3x3& matrix2) const;        // Overloaded operator for addition
+        Matrix3x3 operator-(const Matrix3x3& matrix2) const ;       // Overloaded operator for substraction
+        Matrix3x3 operator*(double nb) const;                       // Overloaded operator for multiplication with a number
+        Matrix3x3 operator*(const Matrix3x3& matrix2) const;        // Overloaded operator for multiplication with a matrix
+        Vector3D operator*(const Vector3D& vector3d) const;         // Overloaded operator for multiplication with a vector
+        Matrix3x3& operator=(const Matrix3x3& matrix2);             // Overloaded operator for assignment
+        bool operator==(const Matrix3x3& matrix2) const;            // Overloaded operator for equality condition
 };
 
 
@@ -92,7 +93,7 @@ inline void Matrix3x3::setValue(int i, int j, double value) throw(std::invalid_a
         // Throw an exception because of the wrong argument
         throw std::invalid_argument("Exception : The argument isn't in the bounds of the 3x3 matrix");
     }
-}       // End of the dcmaths namespace
+}
 
 // Method to set all the values in the matrix
 inline void Matrix3x3::setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
@@ -136,6 +137,14 @@ inline double Matrix3x3::getTrace() const {
 inline Matrix3x3 operator*(double number, const Matrix3x3& matrix) {
     // Return the multiplied matrix
     return matrix * number;
+}
+
+// Overloaded operator for multiplication with a vector
+inline Vector3D Matrix3x3::operator*(const Vector3D& vector3d) const {
+    // Compute and return the result
+    return Vector3D(array[0][0]*vector3d.getX() + array[0][1]*vector3d.getY() + array[0][2]*vector3d.getZ(),
+                    array[1][0]*vector3d.getX() + array[1][1]*vector3d.getY() + array[1][2]*vector3d.getZ(),
+                    array[2][0]*vector3d.getX() + array[2][1]*vector3d.getY() + array[2][2]*vector3d.getZ());
 }
 
 // Overloaded operator for equality condition
