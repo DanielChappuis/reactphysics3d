@@ -25,16 +25,23 @@
 
  // Constructor
  BodyState::BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse)
-           : position(position), inertiaTensorInverse(inertiaTensorInverse), massInverse(massInverse) {
-
+           : position(position), linearMomentum(Vector3D()), orientation(Quaternion(1,0,0, 0)), angularMomentum(Vector3D()),
+             linearVelocity(Vector3D()), angularVelocity(Vector3D()), spin(Quaternion()), inertiaTensorInverse(inertiaTensorInverse),
+             massInverse(massInverse) {
+    // TODO : orientation will be initialized in another way
+    // TODO : linearMomentum will be initialized in another way
+    // TODO : angularMomentum will be initialize in another way
+    // TODO : linearVelocity will be initialize in another way
+    // TODO : angularVelocity will be initialize in another way
+    // TODO : spin will be initialize in another way
  }
 
 // Copy-constructor
 BodyState::BodyState(const BodyState& bodyState)
-          : position(bodyState.position), linearMomentum(bodyState.linearMomentum), linearVelocity(bodyState.linearVelocity),
+          : position(bodyState.position), linearMomentum(bodyState.linearMomentum), orientation(bodyState.orientation),
+            angularMomentum(bodyState.angularMomentum), linearVelocity(bodyState.linearVelocity),
             angularVelocity(bodyState.angularVelocity), spin(bodyState.spin), inertiaTensorInverse(bodyState.inertiaTensorInverse),
             massInverse(bodyState.massInverse) {
-
 }
 
 // Destructor
@@ -44,6 +51,15 @@ BodyState::~BodyState() {
 
 // Recalculate the secondary values of the BodyState when the primary values have changed
 void BodyState::recalculate() {
-    // TODO : Implement this method
-}
+    // Compute the linear velocity
+    linearVelocity = linearMomentum * massInverse.getValue();
 
+    // Compute the angular velocity
+    angularVelocity = inertiaTensorInverse * angularMomentum;
+
+    // Normalize the orientation quaternion
+    orientation = orientation.getUnit();
+
+    // Compute the spin quaternion
+    spin = Quaternion(0, angularVelocity.getX(), angularVelocity.getY(), angularVelocity.getZ()) * orientation * 0.5;
+}

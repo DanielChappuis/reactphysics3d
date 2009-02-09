@@ -24,13 +24,13 @@
  using namespace reactphysics3d;
 
  // Constructor
- Body::Body(Kilogram mass) {
-    this->mass = mass;
+ Body::Body(Kilogram mass) : mass(mass) {
+
  }
 
  // Copy-constructor
- Body::Body(const Body& body) {
-    this->mass = body.mass;
+ Body::Body(const Body& body) : mass(body.mass) {
+
  }
 
  // Destructor
