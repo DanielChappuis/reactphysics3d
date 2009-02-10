@@ -60,22 +60,22 @@ class RigidBody : public Body {
 // --- Inline functions --- //
 
 // Return the inertia tensor of the body
-Matrix3x3 RigidBody::getInertiaTensor() const {
+inline Matrix3x3 RigidBody::getInertiaTensor() const {
     return inertiaTensor;
 }
 
 // Set the inertia tensor of the body
-void RigidBody::setInertiaTensor(const Matrix3x3& inertiaTensor) {
+inline void RigidBody::setInertiaTensor(const Matrix3x3& inertiaTensor) {
     this->inertiaTensor = inertiaTensor;
 }
 
 // Return the current state of the body
-BodyState RigidBody::getCurrentBodyState() const {
+inline BodyState RigidBody::getCurrentBodyState() const {
     return currentBodyState;
 }
 
 // Return the previous state of the body
-BodyState RigidBody::getPreviousBodyState() const {
+inline BodyState RigidBody::getPreviousBodyState() const {
     return previousBodyState;
 }
 

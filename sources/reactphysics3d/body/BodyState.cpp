@@ -63,3 +63,8 @@ void BodyState::recalculate() {
     // Compute the spin quaternion
     spin = Quaternion(0, angularVelocity.getX(), angularVelocity.getY(), angularVelocity.getZ()) * orientation * 0.5;
 }
+
+// Overloaded operator for the multiplication with a number
+BodyState BodyState::operator*(double number) const {
+    // TODO : Implement this method
+}

@@ -68,6 +68,9 @@ class BodyState {
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
 
         void recalculate();             // Recalculate the secondary values of the BodyState
+
+        // Overloaded operators
+        BodyState operator*(double number) const;       // Overloaded operator for the multiplication with a number
 };
 
 // --- Inlines functions --- //
