@@ -20,20 +20,24 @@
  // Libraries
  #include "Body.h"
 
-  // We want to use the ReactPhysics3D namespace
- using namespace reactphysics3d;
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
- // Constructor
- Body::Body(Kilogram mass) : mass(mass) {
+// Constructor
+Body::Body(Kilogram mass) throw(std::invalid_argument) : mass(mass)  {
+    // Check if the mass is different from zero
+    if (mass.getValue() == 0) {
+        // We throw an exception
+        throw std::invalid_argument("Exception in Body constructor : the mass has to be different from zero");
+    }
+}
 
- }
+// Copy-constructor
+Body::Body(const Body& body) : mass(body.mass) {
 
- // Copy-constructor
- Body::Body(const Body& body) : mass(body.mass) {
+}
 
- }
+// Destructor
+Body::~Body() {
 
- // Destructor
- Body::~Body() {
-
- }
+}

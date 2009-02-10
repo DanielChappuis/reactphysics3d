@@ -17,11 +17,12 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
- #ifndef BODY_H
- #define BODY_H
+#ifndef BODY_H
+#define BODY_H
 
  // Libraries
-  #include "../physics/physics.h"
+#include <stdexcept>
+#include "../physics/physics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -37,9 +38,9 @@ class Body {
         Kilogram mass;                      // Mass of the body
 
     public :
-        Body(Kilogram mass);                // Constructor
-        Body(const Body& body);             // Copy-constructor
-        virtual ~Body();                    // Destructor
+        Body(Kilogram mass) throw(std::invalid_argument);   // Constructor
+        Body(const Body& body);                             // Copy-constructor
+        virtual ~Body();                                    // Destructor
 
         Kilogram getMass();                 // Return the mass of the body
         void setMass(Kilogram mass);        // Set the mass of the body
