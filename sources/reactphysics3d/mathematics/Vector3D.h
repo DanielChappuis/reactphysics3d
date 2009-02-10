@@ -27,7 +27,6 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-
 /*  -------------------------------------------------------------------
     Class Vector3D :
         This classrepresents 3 dimensionnal vector in space.
