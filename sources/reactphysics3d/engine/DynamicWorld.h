@@ -17,39 +17,26 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef DYNAMICWORLD_H
+#define DYNAMICWORLD_H
 
 // Libraries
-#include <vector>
-#include <stdexcept>
-#include "../mathematics/mathematics.h"
-#include "../body/Body.h"
+#include "PhysicsWorld.h"
 
-// Namespace reactphysics3d
+// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class PhysicsWorld :
-        This is an (abstract) class that represents the world of the
-        physics engine. A physics world contains all the bodies of the physics
-        engine.
+    Class DynamicWorld :
+        This class represents the world of the physics engine where
+        bodies can moves. This class inherits from the class
+        PhysicsWorld.
     -------------------------------------------------------------------
 */
-class PhysicsWorld {
-    protected :
-        std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
-        Vector3D gravity;                           // Gravity vector of the world
+class DynamicWorld : public PhysicsWorld {
 
-    public :
-        PhysicsWorld(const Vector3D& gravity);      // Constructor
-        PhysicsWorld(const PhysicsWorld&);          // Copy-constructor
-        virtual ~PhysicsWorld();                    // Destructor
-
-        void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
-        void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
 };
 
-}   // End of the ReactPhysics3D namespace
+}
 
- #endif
+#endif

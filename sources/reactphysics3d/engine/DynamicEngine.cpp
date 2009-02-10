@@ -17,39 +17,41 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
-
 // Libraries
-#include <vector>
-#include <stdexcept>
-#include "../mathematics/mathematics.h"
-#include "../body/Body.h"
+#include "DynamicEngine.h"
 
-// Namespace reactphysics3d
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-/*  -------------------------------------------------------------------
-    Class PhysicsWorld :
-        This is an (abstract) class that represents the world of the
-        physics engine. A physics world contains all the bodies of the physics
-        engine.
-    -------------------------------------------------------------------
-*/
-class PhysicsWorld {
-    protected :
-        std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
-        Vector3D gravity;                           // Gravity vector of the world
+// Constructor
+DynamicEngine::DynamicEngine(DynamicsWorld& world, const Time& timeStep)
+              :PhysicsEngine(world, timeStep) {
 
-    public :
-        PhysicsWorld(const Vector3D& gravity);      // Constructor
-        PhysicsWorld(const PhysicsWorld&);          // Copy-constructor
-        virtual ~PhysicsWorld();                    // Destructor
+}
 
-        void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
-        void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
-};
+// Copy-constructor
+DynamicEngine::DynamicEngine(const DynamicEngine& engine)
+              :PhysicsEngine(engine) {
+    numericalIntegrator = engine.numericalIntegrator;
+}
 
-}   // End of the ReactPhysics3D namespace
+// Destructor
+DynamicEngine::~DynamicEngine() {
 
- #endif
+}
+
+// Compute the interpolation state between the previous body state and the current body state
+// This is used to avoid visual stuttering when the display and physics framerates are out of synchronization
+BodyState DynamicEngine::interpolateState(const BodyState& previousBodyState, const BodyState& currentBodyState) const {
+    // TODO : Implement this method
+}
+
+// Update the state of a rigid body
+void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
+    // TODO : Implement this method
+}
+
+// Update the physics simulation
+void DynamicEngine::update() {
+    // TODO : Implement this method
+}

@@ -18,7 +18,7 @@
 ***************************************************************************/
 
 // Libraries
-#include "World.h"
+#include "PhysicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -26,6 +26,12 @@ using namespace reactphysics3d;
 // Constructor
 PhysicsWorld::PhysicsWorld(const Vector3D& gravity) : gravity(gravity) {
 
+}
+
+// Copy-constructor
+PhysicsWorld::PhysicsWorld(const PhysicsWorld& world) {
+    bodyList = world.bodyList;
+    gravity = world.gravity;
 }
 
 // Destructor

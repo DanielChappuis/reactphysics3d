@@ -17,39 +17,41 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef DYNAMICENGINE_H
+#define DYNAMICENGINE_H
 
 // Libraries
-#include <vector>
-#include <stdexcept>
-#include "../mathematics/mathematics.h"
+#include "PhysicsEngine.h"
+#include "NumericalIntegrator.h"
 #include "../body/Body.h"
+#include "../body/RigidBody.h"
+#include "../body/BodyState.h"
 
-// Namespace reactphysics3d
+// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class PhysicsWorld :
-        This is an (abstract) class that represents the world of the
-        physics engine. A physics world contains all the bodies of the physics
-        engine.
+    Class DynamicEngine :
+        This class that represents a physics engine where we use
+        the dynamics to simulate the movement of bodies. The class
+        DynamicEngine inherits from the class PhysicsEngine.
     -------------------------------------------------------------------
 */
-class PhysicsWorld {
+class DynamicEngine : public PhysicsEngine {
     protected :
-        std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
-        Vector3D gravity;                           // Gravity vector of the world
+        NumericalIntegrator numericalIntegrator;        // Numerical integrator used to solve differential equations of movement
+
+        BodyState interpolateState(const BodyState& previousBodyState, const BodyState& currentBodyState) const;    // Compute the interpolation state
+        void updateBodyState(RigidBody* const rigidBody);                                                           // Update the state of a rigid body
 
     public :
-        PhysicsWorld(const Vector3D& gravity);      // Constructor
-        PhysicsWorld(const PhysicsWorld&);          // Copy-constructor
-        virtual ~PhysicsWorld();                    // Destructor
+        DynamicEngine(DynamicsWorld& world, const Time& timeStep);      // Constructor
+        DynamicEngine(const DynamicEngine& engine);                     // Copy-constructor
+        virtual ~DynamicEngine();                                       // Destructor
 
-        void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
-        void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
+        void update();                                  // Update the physics simulation
 };
 
-}   // End of the ReactPhysics3D namespace
+}
 
- #endif
+#endif

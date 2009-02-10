@@ -42,8 +42,8 @@ class PhysicsEngine {
         Timer timer;                            // Timer of the physics engine
 
     public :
-        PhysicsEngine();                        // Constructor
-        virtual ~PhysicsEngine();               // Destructor
+        PhysicsEngine(PhysicsWorld& world, const Time& timeStep);     // Constructor
+        virtual ~PhysicsEngine();                                     // Destructor
 
         virtual void update()=0;                // Update the physics simulation
 };
