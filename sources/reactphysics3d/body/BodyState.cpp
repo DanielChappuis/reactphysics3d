@@ -64,6 +64,29 @@ void BodyState::recalculate() {
     spin = Quaternion(0, angularVelocity.getX(), angularVelocity.getY(), angularVelocity.getZ()) * orientation * 0.5;
 }
 
+// Compute the body state at time t + dt
+void computeAtTime(const Time& time, const Time& timeStep, const DerivativeBodyState& lastDerivativeBodyState) {
+
+    double t = time.getValue();             // Current time
+    double dt = timeStep.getValue();        // Timestep
+
+    // Compute the position at time t + dt
+    position = position + lastDerivativeBodyState.getLinearVelocity() * dt;
+
+    // Compute the linear momentum at time t + dt
+    linearMomentum = linearMomentum + lastDerivativeBodyState.force * dt;
+
+    // Compute the orientation at time t + dt
+    orientation = orientation + lastDerivativeBodyState.getSpin() * dt;
+
+    // Compute the angular momentum at time t + dt
+    angularMomentum = angularMomentum + lastDerivativeBodyState.torque * dt;
+
+    // Recalculate the secondary values of the body state
+    recalculate();
+}
+
+
 // Overloaded operator for the multiplication with a number
 BodyState BodyState::operator*(double number) const {
     // TODO : Implement this method

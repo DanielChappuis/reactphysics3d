@@ -67,7 +67,10 @@ class BodyState {
         void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
 
-        void recalculate();             // Recalculate the secondary values of the BodyState
+        void recalculate();                                                                 // Recalculate the secondary values
+                                                                                            // of the BodyState from the primary ones
+        void computeAtTime(const Time& time, const Time& timeStep,
+                                              const DerivativeBodyState& lastDerivativeBodyState);      // Compute the body state at time t + dt
 
         // Overloaded operators
         BodyState operator*(double number) const;       // Overloaded operator for the multiplication with a number
