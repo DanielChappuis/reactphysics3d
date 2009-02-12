@@ -22,5 +22,10 @@
 
 // Libraries
 #include "body/RigidBody.h"
+#include "engine/DynamicWorld.h"
+#include "engine/DynamicEngine.h"
+
+// Alias to the ReactPhysics3D namespace
+namespace rp3d = reactphysics3d;
 
 #endif
