@@ -17,30 +17,25 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef DYNAMICWORLD_H
-#define DYNAMICWORLD_H
-
 // Libraries
-#include "PhysicsWorld.h"
+#include "DynamicWorld.h"
 
-// Namespace ReactPhysics3D
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-/*  -------------------------------------------------------------------
-    Class DynamicWorld :
-        This class represents the world of the physics engine where
-        bodies can moves. This class inherits from the class
-        PhysicsWorld.
-    -------------------------------------------------------------------
-*/
-class DynamicWorld : public PhysicsWorld {
-
-    public :
-        DynamicWorld(const Vector3D& gravity);          // Constructor
-        DynamicWorld(const DynamicWorld& world);        // Copy-constructor
-        virtual ~DynamicWorld();                        // Destructor
-};
+// Constructor
+DynamicWorld::DynamicWorld(const Vector3D& gravity)
+             :PhysicsWorld(gravity) {
 
 }
 
-#endif
+// Copy-constructor
+DynamicWorld::DynamicWorld(const DynamicWorld& world)
+             :PhysicsWorld(world) {
+
+}
+
+// Destructor
+DynamicWorld::~DynamicWorld() {
+
+}

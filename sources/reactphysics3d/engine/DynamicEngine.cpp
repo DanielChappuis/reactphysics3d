@@ -56,9 +56,9 @@ void DynamicEngine::update() {
     while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
         // For each body in the dynamic world
         for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
-            // If the body is a RigidBody
+            // If the body is a RigidBody and if the rigid body motion is enabled
             RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-            if (rigidBody) {
+            if (rigidBody && rigidBody->getIsMotionEnabled()) {
                 // Update the state of the rigid body
                 updateBodyState(rigidBody);
             }
@@ -70,9 +70,9 @@ void DynamicEngine::update() {
 
     // For each body in the dynamic world
     for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
-        // If the body is a RigidBody
+        // If the body is a RigidBody and if the rigid body motion is enabled
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-        if (rigidBody) {
+        if (rigidBody && rigidBody->getIsMotionEnabled()) {
             // Update the interpolation factor of the rigid body
             // This one will be used to compute the interpolated state
             rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
