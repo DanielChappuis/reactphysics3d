@@ -29,6 +29,12 @@ PhysicsEngine::PhysicsEngine(PhysicsWorld& world, const Time& timeStep)
 
 }
 
+// Copy-constructor
+PhysicsEngine::PhysicsEngine(const PhysicsEngine& engine)
+              :world(engine.world), timer(engine.timer) {
+
+}
+
 // Destructor
 PhysicsEngine::~PhysicsEngine() {
 

@@ -24,7 +24,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-DynamicEngine::DynamicEngine(DynamicsWorld& world, const Time& timeStep)
+DynamicEngine::DynamicEngine(DynamicWorld& world, const Time& timeStep)
               :PhysicsEngine(world, timeStep) {
 
 }
@@ -40,23 +40,42 @@ DynamicEngine::~DynamicEngine() {
 
 }
 
-// Compute the interpolation state between the previous body state and the current body state
-// This is used to avoid visual stuttering when the display and physics framerates are out of synchronization
-BodyState DynamicEngine::interpolateState(const BodyState& previousBodyState, const BodyState& currentBodyState) const {
-
-    // Compute the interpolation factor
-    double alpha = timer.getInterpolationFactor();
-
-    // TODO : Implement this method
-
-}
-
 // Update the state of a rigid body
 void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
-    // TODO : Implement this method
+    // The current body state of the body becomes the previous body state
+    rigidBody->updatePreviousBodyState();
+
+    // Integrate the current body state at time t to get the next state at time t + dt
+    numericalIntegrator.integrate(rigidBody->getCurrentBodyState(), timer.getTime(), timer.getTimeStep());
 }
 
 // Update the physics simulation
 void DynamicEngine::update() {
-    // TODO : Implement this method
+
+    // While the time accumulator is not empty
+    while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
+        // For each body in the dynamic world
+        for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
+            // If the body is a RigidBody
+            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+            if (rigidBody) {
+                // Update the state of the rigid body
+                updateBodyState(rigidBody);
+            }
+        }
+
+        // Update the timer
+        timer.update();
+    }
+
+    // For each body in the dynamic world
+    for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
+        // If the body is a RigidBody
+        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+        if (rigidBody) {
+            // Update the interpolation factor of the rigid body
+            // This one will be used to compute the interpolated state
+            rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
+        }
+    }
 }

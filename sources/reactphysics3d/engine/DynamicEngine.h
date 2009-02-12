@@ -26,6 +26,8 @@
 #include "../body/Body.h"
 #include "../body/RigidBody.h"
 #include "../body/BodyState.h"
+#include "DynamicWorld.h"
+#include "../physics/physics.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -41,11 +43,10 @@ class DynamicEngine : public PhysicsEngine {
     protected :
         NumericalIntegrator numericalIntegrator;        // Numerical integrator used to solve differential equations of movement
 
-        BodyState interpolateState(const BodyState& previousBodyState, const BodyState& currentBodyState) const;    // Compute the interpolation state
         void updateBodyState(RigidBody* const rigidBody);                                                           // Update the state of a rigid body
 
     public :
-        DynamicEngine(DynamicsWorld& world, const Time& timeStep);      // Constructor
+        DynamicEngine(DynamicWorld& world, const Time& timeStep);       // Constructor
         DynamicEngine(const DynamicEngine& engine);                     // Copy-constructor
         virtual ~DynamicEngine();                                       // Destructor
 

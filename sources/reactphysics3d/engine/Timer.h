@@ -37,7 +37,7 @@ class Timer {
         Time timeStep;                  // Timestep dt of the physics engine (timestep > 0.0)
         Time time;                      // Current time of the physics engine
         Time currentDisplayTime;        // Current display time
-        Time deltatDisplayTime;         // Current time difference between two display frames
+        Time deltaDisplayTime;          // Current time difference between two display frames
         double accumulator;             // Used to fix the time step and avoid strange time effects
         bool isRunning;                 // True if the timer is running
 
@@ -103,6 +103,33 @@ inline double Timer::getAccumulator() const {
     return accumulator;
 }
 
- } // End of the ReactPhysics3D namespace
+// Update the timer
+inline void Timer::update() {
+    // Update the current time of the physics engine
+    time.setValue(time.getValue() + timeStep.getValue());
+
+    // Update the accumulator value
+    accumulator -= timeStep.getValue();
+}
+
+// Compute and return the interpolation factor between two body states
+inline double Timer::getInterpolationFactor() const {
+    // Compute and return the interpolation factor
+    return (accumulator / timeStep.getValue());
+}
+
+// Set the new currentDisplayTime value
+inline void Timer::updateDisplayTime(const Time& newDisplayTime) {
+    // Compute the delta display time between two display frames
+    deltaDisplayTime.setValue(newDisplayTime.getValue() - currentDisplayTime.getValue());
+
+    // Update the current display time
+    currentDisplayTime.setValue(newDisplayTime.getValue());
+
+    // Update the accumulator value
+    accumulator += deltaDisplayTime.getValue();
+}
+
+} // End of the ReactPhysics3D namespace
 
  #endif

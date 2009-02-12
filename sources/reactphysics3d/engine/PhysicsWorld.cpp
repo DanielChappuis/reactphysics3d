@@ -44,7 +44,7 @@ void PhysicsWorld::addBody(Body* body) throw(std::invalid_argument) {
     // Check if the body pointer is not null
     if (body != 0) {
         // Check if the body pointer isn't already in the bodyList
-        for(std::vector<Body*>::iterator it = bodyList.begin(); it != bodyList.end(); ) {
+        for(std::vector<Body*>::iterator it = bodyList.begin(); it != bodyList.end(); ++it) {
             if (*it == body) {
                 // The body is already in the bodyList, therefore we throw an exception
                 throw std::invalid_argument("Exception in PhysicsWorld::addBody() : The argument body is already in the PhysicsWorld");

@@ -48,7 +48,29 @@ class PhysicsWorld {
 
         void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
         void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
+        Vector3D getGravity() const;                                            // Return the gravity vector of the world
+        std::vector<Body*>::const_iterator getBodyListStartIterator() const;    // Return a start iterator on the body list
+        std::vector<Body*>::const_iterator getBodyListEndIterator() const;      // Return a end iterator on the body list
 };
+
+// --- Inline functions --- //
+
+// Return the gravity vector of the world
+inline Vector3D PhysicsWorld::getGravity() const {
+    return gravity;
+}
+
+// Return a start iterator on the body list
+inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListStartIterator() const {
+    // Return an iterator on the start of the body list
+    return bodyList.begin();
+}
+
+// Return a end iterator on the body list
+inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListEndIterator() const {
+    // Return an iterator on the end of the body list
+    return bodyList.end();
+}
 
 }   // End of the ReactPhysics3D namespace
 

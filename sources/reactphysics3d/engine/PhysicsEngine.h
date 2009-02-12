@@ -34,16 +34,14 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class PhysicsEngine {
-    private :
-        PhysicsEngine(const PhysicsEngine&);    // Copy-constructor is private because we don't want it to be used
-
     protected :
         PhysicsWorld world;                     // Physics world of the physics engine
         Timer timer;                            // Timer of the physics engine
 
     public :
-        PhysicsEngine(PhysicsWorld& world, const Time& timeStep);     // Constructor
-        virtual ~PhysicsEngine();                                     // Destructor
+        PhysicsEngine(PhysicsWorld& world, const Time& timeStep);       // Constructor
+        PhysicsEngine(const PhysicsEngine& engine);                     // Copy-constructor
+        virtual ~PhysicsEngine();                                       // Destructor
 
         virtual void update()=0;                // Update the physics simulation
 };
