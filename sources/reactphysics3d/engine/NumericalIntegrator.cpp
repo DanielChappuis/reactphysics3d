@@ -38,18 +38,52 @@ NumericalIntegrator::~NumericalIntegrator() {
 
 }
 
-// Compute a derivative body state at time t+dt
-DerivativeBodyState NumericalIntegrator::evaluate(BodyState& bodyState, const Time& time, const Time& timeStep) {
-    // TODO : Implement this method
+// Compute a derivative body state at time t
+DerivativeBodyState NumericalIntegrator::evaluate(const BodyState& bodyState, const Time& time) {
+
+    // Compute the derivaties values at time t
+    Vector3D linearVelocity = bodyState.getLinearVelocity();
+    Vector3D force = bodyState.computeForce(time);
+    Vector3D torque = bodyState.computeTorque(time);
+    Quaternion spin = bodyState.getSpin();
+
+    // Return the derivative body state at time t
+    return DerivativeBodyState(linearVelocity, force, torque, spin);
 }
 
 // Compute a derivative body state at time t + dt according to the last derivative body state
 DerivativeBodyState NumericalIntegrator::evaluate(BodyState& bodyState, const Time& time, const Time& timeStep,
-                                                  const BodyState& lastDerivativeBodyState) {
-    // TODO : Implement this method
+                                                  const DerivativeBodyState& lastDerivativeBodyState) {
+    // Compute the bodyState at time t + dt
+    bodyState.computeAtTime(timeStep, lastDerivativeBodyState);
+
+    // Compute the derivaties values at time t
+    Vector3D linearVelocity = bodyState.getLinearVelocity();
+    Vector3D force = bodyState.computeForce(time);
+    Vector3D torque = bodyState.computeTorque(time + timeStep);
+    Quaternion spin = bodyState.getSpin();
+
+    // Return the derivative body state at time t
+    return DerivativeBodyState(linearVelocity, force, torque, spin);
 }
 
-// Integrate a body state over time
-void NumericalIntegrator::integrate(BodyState& bodyState, const Time& t, const Time& dt) {
-    // TODO : Implement this method
+// Integrate a body state over time. This method use the RK4 integration algorithm
+void NumericalIntegrator::integrate(BodyState& bodyState, const Time& time, const Time& timeStep) {
+    // Compute the 4 derivatives body states at different time values.
+    DerivativeBodyState a = evaluate(bodyState, time);
+    DerivativeBodyState b = evaluate(bodyState, time, timeStep*0.5, a);
+    DerivativeBodyState c = evaluate(bodyState, time, timeStep*0.5, b);
+    DerivativeBodyState d = evaluate(bodyState, time, timeStep, c);
+
+    double dt = timeStep.getValue();    // Timestep
+
+    // Compute the integrated body state
+    bodyState.setPosition(bodyState.getPosition() + (a.getLinearVelocity() + (b.getLinearVelocity() + c.getLinearVelocity()) * 2.0 +
+                          d.getLinearVelocity()) * (1.0/6.0) * dt);
+    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + (a.getForce() + (b.getForce() + c.getForce())*2.0 + d.getForce()) * (1.0/6.0) * dt);
+    bodyState.setOrientation(bodyState.getOrientation() + (a.getSpin() + (b.getSpin() + c.getSpin())*2.0 + d.getSpin()) * (1.0/6.0) * dt);
+    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + (a.getTorque() + (b.getTorque() + c.getTorque())*2.0 + d.getTorque()) * (1.0/6.0) * dt );
+
+    // Recalculate the secondary values of the body state
+    bodyState.recalculate();
 }

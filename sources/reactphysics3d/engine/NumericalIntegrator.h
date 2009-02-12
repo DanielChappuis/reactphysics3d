@@ -36,9 +36,9 @@ namespace reactphysics3d {
 */
 class NumericalIntegrator {
     private :
-        DerivativeBodyState evaluate(BodyState& bodyState, const Time& time, const Time& timeStep);     // Compute a derivative body state
+        DerivativeBodyState evaluate(const BodyState& bodyState, const Time& time);                                 // Compute a derivative body state
         DerivativeBodyState evaluate(BodyState& bodyState, const Time& time,
-                                     const Time& timeStep, const BodyState& lastDerivativeBodyState);   // Compute a derivative body state
+                                     const Time& timeStep, const DerivativeBodyState& lastDerivativeBodyState);     // Compute a derivative body state
 
     public :
         NumericalIntegrator();                                          // Constructor
@@ -46,7 +46,7 @@ class NumericalIntegrator {
         virtual ~NumericalIntegrator();                                 // Destructor
 
         void integrate(BodyState& bodyState, const Time& t, const Time& dt);    // Integrate a body state over time
-}
+};
 
 }
 

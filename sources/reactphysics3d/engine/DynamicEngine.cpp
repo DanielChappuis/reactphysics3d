@@ -43,7 +43,12 @@ DynamicEngine::~DynamicEngine() {
 // Compute the interpolation state between the previous body state and the current body state
 // This is used to avoid visual stuttering when the display and physics framerates are out of synchronization
 BodyState DynamicEngine::interpolateState(const BodyState& previousBodyState, const BodyState& currentBodyState) const {
+
+    // Compute the interpolation factor
+    double alpha = timer.getInterpolationFactor();
+
     // TODO : Implement this method
+
 }
 
 // Update the state of a rigid body
