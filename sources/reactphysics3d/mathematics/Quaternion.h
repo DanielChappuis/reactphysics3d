@@ -61,7 +61,10 @@ class Quaternion
         Quaternion getUnit() const throw (MathematicsException);              // Return the unit quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
         Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
-        double scalarProduct(const Quaternion& quaternion);                   // Scalar product between two quaternions
+        double scalarProduct(const Quaternion& quaternion) const;             // Scalar product between two quaternions
+
+        static Quaternion slerp(const Quaternion& quaternion1,
+                                const Quaternion& quaternion2, double t);     // Compute the spherical linear interpolation between two quaternions
 
         // --- Overloaded operators --- //
         Quaternion operator+(const Quaternion& quaternion) const;             // Overloaded operator for the addition
@@ -165,7 +168,7 @@ inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
 
 // Scalar product between two quaternions
 // TODO : Test for this method
-inline double Quaternion::scalarProduct(const Quaternion& quaternion) {
+inline double Quaternion::scalarProduct(const Quaternion& quaternion) const {
     return (x*quaternion.x + y*quaternion.y + z*quaternion.z + w*quaternion.w);
 }
 
@@ -211,11 +214,6 @@ inline Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
 inline bool Quaternion::operator==(const Quaternion& quaternion) const {
     return (x == quaternion.x && y == quaternion.y && z == quaternion.z && w == quaternion.w);
 }
-
-// --- Others functions --- //
-
-// Compute the spherical linear interpolation between two quaternions
-Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, double t);
 
 } // End of the ReactPhysics3D namespace
 
