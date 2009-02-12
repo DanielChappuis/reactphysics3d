@@ -19,6 +19,7 @@
 
 // Libraries
 #include "Quaternion.h"
+#include <cassert>
 
 // Namespaces
 using namespace reactphysics3d;
@@ -50,6 +51,15 @@ Quaternion::Quaternion(const Quaternion& quaternion)
 // Destructor
 Quaternion::~Quaternion() {
 
+}
+
+// --- Others functions --- //
+
+// Compute the spherical linear interpolation between two quaternions.
+// The t argument has to be such that 0 <= t <= 1
+Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, double t) {
+    //TODO : Implement this method
+    assert(t >= 0 && t <= 1);
 }
 
 
