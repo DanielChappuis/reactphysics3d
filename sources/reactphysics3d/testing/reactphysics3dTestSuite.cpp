@@ -19,11 +19,11 @@
 // Libraries
 #include <iostream>
 #include "TestSuite/Suite.h"
-#include "mathematics/VectorTest.h"
-#include "mathematics/Vector3DTest.h"
-#include "mathematics/MatrixTest.h"
-#include "mathematics/Matrix3x3Test.h"
-#include "mathematics/QuaternionTest.h"
+#include "testing_mathematics/VectorTest.h"
+#include "testing_mathematics/Vector3DTest.h"
+#include "testing_mathematics/MatrixTest.h"
+#include "testing_mathematics/Matrix3x3Test.h"
+#include "testing_mathematics/QuaternionTest.h"
 
 // Namespaces
 using namespace std;
