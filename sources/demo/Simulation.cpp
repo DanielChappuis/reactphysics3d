@@ -87,31 +87,31 @@ void Simulation::start() {
         std::cout << "FPS : " << fps << std::endl;
 
         BodyState state = context.getObject(0).getRigidBody()->getInterpolatedState();
-        Vector3D velocity = context.getObject(0).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        Vector3D velocity = context.getObject(0).getRigidBody()->getInterpolatedState().getAngularVelocity();
         //std::cout << "Velocity 0 : " << velocity.getX() << ", " << velocity.getY() << ", " << velocity.getZ() << ")" << std::endl;
         double x = state.getPosition().getX();
         double y = state.getPosition().getY();
         double z = state.getPosition().getZ();
         std::cout << "Position Cube 0 : (" << x << ", " << y << ", " << z << ")" << std::endl;
-        std::cout << "linear velocity 0 : " << velocity.length() << std::endl;;
+        std::cout << "angular velocity 0 : " << velocity.length() << std::endl;;
 
         BodyState state1 = context.getObject(1).getRigidBody()->getInterpolatedState();
-        Vector3D velocity1 = context.getObject(1).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        Vector3D velocity1 = context.getObject(1).getRigidBody()->getInterpolatedState().getAngularVelocity();
         //std::cout << "Velocity 1 : " << velocity1.getX() << ", " << velocity1.getY() << ", " << velocity1.getZ() << ")" << std::endl;
         double x1 = state1.getPosition().getX();
         double y1 = state1.getPosition().getY();
         double z1 = state1.getPosition().getZ();
         std::cout << "Position Cube 1 : (" << x1 << ", " << y1 << ", " << z1 << ")" << std::endl;
-        std::cout << "linear velocity 1 : " << velocity1.length() << std::endl;
+        std::cout << "angular velocity 1 : " << velocity1.length() << std::endl;
 
         BodyState state2 = context.getObject(2).getRigidBody()->getInterpolatedState();
-        Vector3D velocity2 = context.getObject(2).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        Quaternion velocity2 = context.getObject(2).getRigidBody()->getInterpolatedState().getOrientation();
         //std::cout << "Velocity 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ")" << std::endl;
         double x2 = state2.getPosition().getX();
         double y2 = state2.getPosition().getY();
         double z2 = state2.getPosition().getZ();
         std::cout << "Position Cube 2: (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
-        std::cout << "linear velocity 2 : " << velocity2.length() << std::endl;;
+        std::cout << "quaternion orientation 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ", " << velocity2.getW() << ")" << std::endl;;
     }
 }
 
