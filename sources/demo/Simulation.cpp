@@ -22,16 +22,23 @@
 #include "ReactDemo.h"
 #include <iostream>
 
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
+
 // Constructor of the class Simulation
-Simulation::Simulation() {
+Simulation::Simulation()
+           :world(new DynamicWorld(Vector3D(0.0, -9.81, 0.0))), engine(world, Time(0.01)){
     simRunning = false;
     mouseButtonPressed = false;
+    nbFrame = 0;
+    lastFrameTime = 0.0;
     fps = 0.0;
 }
 
 // Destructor of the class Simulation
 Simulation::~Simulation() {
-
+    // Delete the physics world object
+    delete world;
 }
 
 // Method to start the simulation
@@ -42,24 +49,69 @@ void Simulation::start() {
     // Reshape the windows for the first time
     scene.reshape(WINWIDTH, WINHEIGHT);
 
+    // Add every rigid body to the dynamic world
+    for (int i=0; i<context.getNbObjects(); ++i) {
+        world->addBody(context.getObject(i).getRigidBody());
+    }
+
     // Activation of the simulation
     simRunning = true;
 
     // Get the current time
-    currentFrameTime = SDL_GetTicks();
+    lastFrameTime = SDL_GetTicks();
+
+    // Initialize the display time
+    engine.initializeDisplayTime(Time(SDL_GetTicks()/1000.0));
+
+    // Start the physics simulation
+    engine.start();
 
     // Main loop of the simulation
     while(simRunning) {
         // Check if an SDL event occured and make the apropriate actions
         checkEvents();
 
+        double time = SDL_GetTicks()/1000.0;
+        std::cout << "Time : " << time << std::endl;
+        // Update the display time
+        engine.updateDisplayTime(Time(time));
+
+        // Update the physics
+        engine.update();
+
         // Display the actual scene
         scene.display(context);
 
         // Compute the fps (framerate)
         computeFps();
+        std::cout << "FPS : " << fps << std::endl;
 
-        //std::cout << fps << std::endl;
+        BodyState state = context.getObject(0).getRigidBody()->getInterpolatedState();
+        Vector3D velocity = context.getObject(0).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        //std::cout << "Velocity 0 : " << velocity.getX() << ", " << velocity.getY() << ", " << velocity.getZ() << ")" << std::endl;
+        double x = state.getPosition().getX();
+        double y = state.getPosition().getY();
+        double z = state.getPosition().getZ();
+        std::cout << "Position Cube 0 : (" << x << ", " << y << ", " << z << ")" << std::endl;
+        std::cout << "linear velocity 0 : " << velocity.length() << std::endl;;
+
+        BodyState state1 = context.getObject(1).getRigidBody()->getInterpolatedState();
+        Vector3D velocity1 = context.getObject(1).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        //std::cout << "Velocity 1 : " << velocity1.getX() << ", " << velocity1.getY() << ", " << velocity1.getZ() << ")" << std::endl;
+        double x1 = state1.getPosition().getX();
+        double y1 = state1.getPosition().getY();
+        double z1 = state1.getPosition().getZ();
+        std::cout << "Position Cube 1 : (" << x1 << ", " << y1 << ", " << z1 << ")" << std::endl;
+        std::cout << "linear velocity 1 : " << velocity1.length() << std::endl;
+
+        BodyState state2 = context.getObject(2).getRigidBody()->getInterpolatedState();
+        Vector3D velocity2 = context.getObject(2).getRigidBody()->getInterpolatedState().getLinearVelocity();
+        //std::cout << "Velocity 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ")" << std::endl;
+        double x2 = state2.getPosition().getX();
+        double y2 = state2.getPosition().getY();
+        double z2 = state2.getPosition().getZ();
+        std::cout << "Position Cube 2: (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
+        std::cout << "linear velocity 2 : " << velocity2.length() << std::endl;;
     }
 }
 
@@ -96,10 +148,8 @@ void Simulation::checkEvents() {
 			// If the mouse moved
 			case SDL_MOUSEMOTION:    if (SDL_GetMouseState(NULL, NULL)&SDL_BUTTON(1)) {
                                         // Rotation of the outSideCamera
-                                        // TODO : Problem here when we try to implement fps indepence (if we try to
-                                        //        replace 60 by the variable fps
-                                        scene.getOutSideCamera().modifyHorizontalAngleRotation(event.motion.xrel, 30);
-                                        scene.getOutSideCamera().modifyVerticalAngleRotation(event.motion.yrel, 30);
+                                        scene.getOutSideCamera().modifyHorizontalAngleRotation(event.motion.xrel, fps);
+                                        scene.getOutSideCamera().modifyVerticalAngleRotation(event.motion.yrel, fps);
                                     }
         }
     }
@@ -107,11 +157,17 @@ void Simulation::checkEvents() {
 
 // Compute the framerate (fps) of the application
 void Simulation::computeFps() {
-    double lastFrameTime = currentFrameTime;
 
-    // Get the current time
-    currentFrameTime = SDL_GetTicks();
+    // Increment the number of frame in the last second
+    nbFrame++;
 
-    // Compute the new framerate
-    fps = 1000 / double(currentFrameTime - lastFrameTime);
+    // Get the current  time
+	double currentTime = SDL_GetTicks();
+
+    // Compute the framerate
+	if (currentTime - lastFrameTime > 1000.0) {
+		fps = nbFrame * 1000.0/(currentTime-lastFrameTime);
+	 	lastFrameTime = currentTime;
+		nbFrame = 0;
+	}
 }

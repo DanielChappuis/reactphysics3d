@@ -33,47 +33,44 @@ using namespace reactphysics3d;
 // ----- Class Object (abstract) ----- //
 // Represent an object of the simulation
 class Object {
-    public :
-        // Structure Object::Position
-        struct Position {
-            double x;                                        // x coordinate
-            double y;                                        // y coordinate
-            double z;                                        // z coordinate
+    protected :
+        RigidBody* rigidBody;                                 // Rigid Body that represents the object
 
-            // Methods
-            Position();                                     // Constructor without arguments of the structure Position
-            Position(double x, double y, double z);         // Constructor of the structure Position
-        } position;                                         // Position of the object
-        Object(const Position& position);                   // Constructor of the class Object
-        virtual ~Object();                                  // Destructor of the class Object
-        virtual void draw() const =0;                       // pure virtual method to draw the object
+    public :
+        Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor);     // Constructor of the class Object
+        virtual ~Object();                                                                          // Destructor of the class Object
+
+        virtual void draw() const =0;                                                               // pure virtual method to draw the object
+        RigidBody* getRigidBody();                                                                  // Return the pointer to the rigid body
 };
 
 // ----- Class Cube ----- //
 // Represente a Cube in the simulation
 class Cube : public Object {
     private :
-        float size;                                 // Size of a side in the cube
-
+        float size;                                      // Size of a side in the cube
+        static const Matrix3x3 inertiaTensor;            // Inertia tensor of a cube
     public :
-        Cube(const Position& position, float size);      // Constructor of the class cube
-        virtual ~Cube();                                 // Destructor of the class cube
-        virtual void draw() const;                       // Method to draw the cube
+        Cube(const Vector3D& position, float size, const Kilogram& mass);       // Constructor of the class cube
+        virtual ~Cube();                                                        // Destructor of the class cube
+        virtual void draw() const;                                              // Method to draw the cube
 };
 
 
 // ----- Class Plane ---- //
 // Represent a plane in the simulation
 class Plane : public Object {
+    private :
+        float width;                                                                                            // Width of the plane
+        float height;                                                                                           // Height of the plane
+        Vector3D d1;                                                                                            // Unit vector in the plane
+        Vector3D d2;                                                                                            // Unit vector in the plane
+        Vector3D normalVector;                                                                                  // Unit normal vector of the plane
+
     public :
-        float width;                                                                                        // Width of the plane
-        float height;                                                                                       // Height of the plane
-        Vector3D d1;                                                                                          // Unit vector in the plane
-        Vector3D d2;                                                                                          // Unit vector in the plane
-        Vector3D normalVector;                                                                                // Unit normal vector of the plane
-        Plane(const Position& position, float width, float height, const Vector3D& d1, const Vector3D& d2);     // Constructor of the class Plane
-        virtual ~Plane();                                                                                   // Destructor of the class Plane
-        virtual void draw() const;                                                                          // Method to draw the plane
+        Plane(const Vector3D& position, float width, float height, const Vector3D& d1, const Vector3D& d2, const Kilogram& mass);   // Constructor of the class Plane
+        virtual ~Plane();                                                                                                           // Destructor of the class Plane
+        virtual void draw() const;                                                                                                  // Method to draw the plane
 };
 
 #endif

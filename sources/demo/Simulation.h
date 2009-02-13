@@ -23,15 +23,19 @@
 // Librairies
 #include "Context.h"
 #include "Scene.h"
+#include "../reactphysics3d/reactphysics3d.h"
 
 // Class Simulation
 class Simulation {
     private :
         Scene scene;                    // Scene object for displaying the simulation
         Context context;                // Context of the simulation
+        rp3d::DynamicWorld* world;      // Pointer to the dynamic world that contains bodies of the simulation
+        rp3d::DynamicEngine engine;     // Dynamic engine for the physics of the simulation
         bool simRunning;                // True if the simulation is running and false otherwise
         bool mouseButtonPressed;        // True if the left mouse button is pressed
-        double currentFrameTime;         // Current frame time
+        double lastFrameTime;           // Last frame time
+        int nbFrame;                    // Number of frame (used to compute the framerate)
         double fps;                     // Framerate of the application
 
         void computeFps();              // Compute the framerate of the application

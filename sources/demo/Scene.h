@@ -23,7 +23,6 @@
 // Libraries
 #include "Context.h"
 #include "OutSideCamera.h"
-
 #include <SDL/SDL.h>
 #include <GL/freeglut.h>        // Used only to draw cubes
 #include <GL/gl.h>

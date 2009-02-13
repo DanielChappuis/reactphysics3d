@@ -22,7 +22,6 @@
 
 // Libraries
 #include "Objects.h"
-
 #include <vector>
 
 // Class Context

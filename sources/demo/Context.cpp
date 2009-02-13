@@ -19,19 +19,21 @@
 
 // Libraries
 #include "Context.h"
-
+#include "../reactphysics3d/reactphysics3d.h"
 #include <iostream>
 #include <vector>
 
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
 // Constructor of the class Context
 Context::Context() {
 
     // We add some objects in the context at the beginning ---> THESE THINGS WILL BE STORE IN A TEXT FILE
-    Cube* cube1 = new Cube(Object::Position(-2.0, 1.0, -6.0), 2.0);
-    Cube* cube2 = new Cube(Object::Position(0.0, 1.5, 6.0), 3.0);
-    Cube* cube3 = new Cube(Object::Position(4.0, 4.0, -2.0), 2.0);
-    Plane* plane1 = new Plane(Object::Position(0.0, 0.0, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0));
+    Cube* cube1 = new Cube(Vector3D(-2.0, 3, -6.0), 2.0, 10.0);
+    Cube* cube2 = new Cube(Vector3D(0.0, 3, 6.0), 3.0, 5.0);
+    Cube* cube3 = new Cube(Vector3D(4.0, 3.0, -2.0), 2.0, 0.01);
+    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), 10.0);
 
     addObject(cube1);
     addObject(cube2);
@@ -43,7 +45,7 @@ Context::Context() {
 // Destructor of the class Context
 Context::~Context() {
     // Delete all the objects in vectObjects
-    for(int i=0; i<vectObjects.size(); ++i) {
+    for(unsigned int i=0; i<vectObjects.size(); ++i) {
         delete vectObjects[0];
     }
 }

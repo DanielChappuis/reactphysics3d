@@ -31,7 +31,7 @@ OutSideCamera::OutSideCamera() {
     heightFromFloor = 20.0;
     horizontalAngleRotation = 0;
     verticalAngleRotation = 45;
-    distanceFromOrigin = 10.0;
+    distanceFromOrigin = 40.0;
     lookAtPoint.setAllValues(0.0, 0.0, 0.0);
 
     // Update the position of the camera
@@ -61,7 +61,7 @@ void OutSideCamera::updatePosition() {
 void OutSideCamera::modifyHorizontalAngleRotation(int screenDistance, float fps) {
 
     // Update the horizontal rotation angle of the camera
-    horizontalAngleRotation = (horizontalAngleRotation + int(screenDistance * 60.0 / fps)) % 360;
+    horizontalAngleRotation = (horizontalAngleRotation + int(screenDistance * 700.0 / fps)) % 360;
 
     // Update the position and the view vector of the camera
     updatePosition();
@@ -72,7 +72,7 @@ void OutSideCamera::modifyHorizontalAngleRotation(int screenDistance, float fps)
 void OutSideCamera::modifyVerticalAngleRotation(int screenDistance, float fps) {
 
     // Update the vertical rotation angle of the camera
-    verticalAngleRotation = verticalAngleRotation + (screenDistance * 60.0 / fps);
+    verticalAngleRotation = verticalAngleRotation + (screenDistance * 700.0 / fps);
 
     // Vertical angle limits
     if (verticalAngleRotation > 89) {

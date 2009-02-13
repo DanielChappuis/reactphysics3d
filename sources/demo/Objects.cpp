@@ -22,41 +22,40 @@
 
 //#include <windows.h>            // To avoid an error due to the #include <GL/glut.h>
 #include <GL/freeglut.h>
-#include <math.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <cmath>
+#include <iostream>
 
 // ----- Class Object ----- //
 
 // Constructor of the class Object
-Object::Object(const Position& position) {
-    this->position = position;
+Object::Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor)
+        :rigidBody(new RigidBody(position, mass, inertiaTensor)) {
+
 }
 
 // Destructor of the class Object
 Object::~Object() {
-
+    // Delete the rigid body object
+    delete rigidBody;
 }
 
-// ----- Structure Position ----- //
-
-// Constructor without arguments of the structure Position
-Object::Position::Position() {
-    x = 0.0;
-    y = 0.0;
-    z = 0.0;
+// Return the pointer to the rigid body
+RigidBody* Object::getRigidBody() {
+    return rigidBody;
 }
-
-// Constructor of the structure Position
-Object::Position::Position(double x, double y, double z) {
-  this->x = x;
-  this->y = y;
-  this->z = z;
-};
 
 // ----- Class Cube ----- //
 
+// Static attributes
+const Matrix3x3 Cube::inertiaTensor;
+
 // Constructor of the class Cube
-Cube::Cube(const Position& position, float size)
-     :Object(position) {
+Cube::Cube(const Vector3D& position, float size, const Kilogram& mass)
+     :Object(position, mass, Matrix3x3(1.0/12.0*mass.getValue()*2*size*size, 0.0, 0.0,
+                                        0.0, 1.0/12.0*mass.getValue()*2*size*size, 0.0,
+                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size)) {
     this->size = size;
 }
 
@@ -67,23 +66,45 @@ Cube::~Cube() {
 
 // Method to draw the cube
 void Cube::draw() const {
-       // Translation of the cube to its position
-       glTranslatef(position.x, position.y, position.z);
 
-       // Draw the cube
-       glutSolidCube(size);
+    // Get the interpolated state of the rigid body
+    BodyState state = rigidBody->getInterpolatedState();
+
+    // Position of the cube
+    double x = state.getPosition().getX();
+    double y = state.getPosition().getY();
+    double z = state.getPosition().getZ();
+
+    // Orientation of the cube
+    Vector3D orientationAxis;
+    double orientationAngle;
+    state.getOrientation().getRotationAngleAxis(orientationAngle, orientationAxis);
+
+    // Translation of the cube to its position
+    glTranslatef(x, y, z);
+
+    // Rotation of the cube according to its orientation
+    glRotatef(orientationAngle/pi*180.0, orientationAxis.getX(), orientationAxis.getY(), orientationAxis.getZ());
+
+    // Draw the cube
+    glutSolidCube(size);
 }
 
 
 // ----- Class Plane ----- //
 
 // Constructor of the class Plane
-Plane::Plane(const Position& position, float width, float height, const Vector3D& d1, const Vector3D& d2)
-      :Object(position) {
+Plane::Plane(const Vector3D& position, float width, float height, const Vector3D& d1, const Vector3D& d2, const Kilogram& mass)
+      :Object(position, mass, Matrix3x3(1.0/12.0*mass.getValue()*height*height, 0.0, 0.0,
+                                        0.0, 1.0/12.0*mass.getValue()*(width*width+height*height), 0.0,
+                                        0.0, 0.0, 1.0/12.0*mass.getValue()*width*width)) {
     this->width = width;
     this->height = height;
     this->d1 = d1;
     this->d2 = d2;
+
+    // By default Planes in the demo cannot move
+    rigidBody->setIsMotionEnabled(false);
 
     // Compute the unit normal vector of the plane by a cross product
     normalVector = d1.crossProduct(d2).getUnit();
@@ -96,8 +117,17 @@ Plane::~Plane() {
 
 // Method used to draw the plane
 void Plane::draw() const {
+
+       // Get the interpolated state of the rigid body
+       BodyState state = rigidBody->getInterpolatedState();
+
+       // Get the position of the rigid body
+       double x = state.getPosition().getX();
+       double y = state.getPosition().getY();
+       double z = state.getPosition().getZ();
+
        // Translation of the cube to its position
-       glTranslatef(position.x, position.y, position.z);
+       glTranslatef(x, y, z);
 
        float halfWidth = width / 2.0;
        float halfHeight = height / 2.0;
@@ -105,17 +135,17 @@ void Plane::draw() const {
        // Draw the plane
        glBegin(GL_POLYGON);
             glColor3f(1.0, 1.0, 1.0);
-            glVertex3f(position.x + d1.getX() * halfWidth + d2.getX() * halfHeight , position.y + d1.getY() * halfWidth +  d2.getY() * halfHeight
-                        , position.z + d1.getZ() * halfWidth + d2.getZ() * halfHeight);
+            glVertex3f(x + d1.getX() * halfWidth + d2.getX() * halfHeight , y + d1.getY() * halfWidth +  d2.getY() * halfHeight
+                        , z + d1.getZ() * halfWidth + d2.getZ() * halfHeight);
             glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
-            glVertex3f(position.x + d1.getX() * halfWidth - d2.getX() * halfHeight , position.y + d1.getY() * halfWidth -  d2.getY() * halfHeight
-                        , position.z + d1.getZ() * halfWidth - d2.getZ() * halfHeight);
+            glVertex3f(x + d1.getX() * halfWidth - d2.getX() * halfHeight , y + d1.getY() * halfWidth -  d2.getY() * halfHeight
+                        , z + d1.getZ() * halfWidth - d2.getZ() * halfHeight);
             glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
-            glVertex3f(position.x - d1.getX() * halfWidth - d2.getX() * halfHeight , position.y - d1.getY() * halfWidth -  d2.getY() * halfHeight
-                        , position.z - d1.getZ() * halfWidth - d2.getZ() * halfHeight);
+            glVertex3f(x - d1.getX() * halfWidth - d2.getX() * halfHeight , y - d1.getY() * halfWidth -  d2.getY() * halfHeight
+                        , z - d1.getZ() * halfWidth - d2.getZ() * halfHeight);
             glNormal3f(normalVector.getX(), normalVector.getY(), normalVector.getZ());
-            glVertex3f(position.x - d1.getX() * halfWidth + d2.getX() * halfHeight , position.y - d1.getY() * halfWidth +  d2.getY() * halfHeight
-                        , position.z - d1.getZ() * halfWidth + d2.getZ() * halfHeight);
+            glVertex3f(x - d1.getX() * halfWidth + d2.getX() * halfHeight , y - d1.getY() * halfWidth +  d2.getY() * halfHeight
+                        , z - d1.getZ() * halfWidth + d2.getZ() * halfHeight);
        glEnd();
 }
 
