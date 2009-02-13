@@ -59,7 +59,7 @@ DerivativeBodyState NumericalIntegrator::evaluate(BodyState& bodyState, const Ti
 
     // Compute the derivaties values at time t
     Vector3D linearVelocity = bodyState.getLinearVelocity();
-    Vector3D force = bodyState.computeForce(time);
+    Vector3D force = bodyState.computeForce(time + timeStep);
     Vector3D torque = bodyState.computeTorque(time + timeStep);
     Quaternion spin = bodyState.getSpin();
 
@@ -82,7 +82,7 @@ void NumericalIntegrator::integrate(BodyState& bodyState, const Time& time, cons
                           d.getLinearVelocity()) * (1.0/6.0) * dt);
     bodyState.setLinearMomentum(bodyState.getLinearMomentum() + (a.getForce() + (b.getForce() + c.getForce())*2.0 + d.getForce()) * (1.0/6.0) * dt);
     bodyState.setOrientation(bodyState.getOrientation() + (a.getSpin() + (b.getSpin() + c.getSpin())*2.0 + d.getSpin()) * (1.0/6.0) * dt);
-    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + (a.getTorque() + (b.getTorque() + c.getTorque())*2.0 + d.getTorque()) * (1.0/6.0) * dt );
+    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + (a.getTorque() + (b.getTorque() + c.getTorque())*2.0 + d.getTorque()) * (1.0/6.0) * dt);
 
     // Recalculate the secondary values of the body state
     bodyState.recalculate();
