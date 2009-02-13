@@ -30,7 +30,6 @@ Timer::Timer(const Time& initialTime, const Time& timeStep) throw(std::invalid_a
     if (timeStep.getValue() != 0.0) {
         accumulator = 0.0;
         isRunning = false;
-
     }
     else {
         // We throw an exception

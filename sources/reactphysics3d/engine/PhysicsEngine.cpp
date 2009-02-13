@@ -24,9 +24,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld& world, const Time& timeStep)
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument)
               : world(world), timer(Time(0.0), timeStep) {
-
+    // Check if the pointer to the world is not NULL
+    if (world == 0) {
+        // Throw an exception
+        throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
+    }
 }
 
 // Copy-constructor

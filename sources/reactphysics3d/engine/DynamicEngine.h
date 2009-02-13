@@ -46,7 +46,7 @@ class DynamicEngine : public PhysicsEngine {
         void updateBodyState(RigidBody* const rigidBody);                                                           // Update the state of a rigid body
 
     public :
-        DynamicEngine(DynamicWorld& world, const Time& timeStep);       // Constructor
+        DynamicEngine(DynamicWorld* world, const Time& timeStep);       // Constructor
         DynamicEngine(const DynamicEngine& engine);                     // Copy-constructor
         virtual ~DynamicEngine();                                       // Destructor
 

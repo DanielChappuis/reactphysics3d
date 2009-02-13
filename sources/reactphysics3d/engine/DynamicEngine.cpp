@@ -24,9 +24,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-DynamicEngine::DynamicEngine(DynamicWorld& world, const Time& timeStep)
+DynamicEngine::DynamicEngine(DynamicWorld* world, const Time& timeStep)
               :PhysicsEngine(world, timeStep) {
-
+    // Check if the pointer to the world is not NULL
+    if (world == 0) {
+        // Throw an exception
+        throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
+    }
 }
 
 // Copy-constructor
@@ -52,30 +56,33 @@ void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
 // Update the physics simulation
 void DynamicEngine::update() {
 
-    // While the time accumulator is not empty
-    while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
+    // Check if the physics simulation is running
+    if (timer.getIsRunning()) {
+        // While the time accumulator is not empty
+        while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
+            // For each body in the dynamic world
+            for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
+                // If the body is a RigidBody and if the rigid body motion is enabled
+                RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+                if (rigidBody && rigidBody->getIsMotionEnabled()) {
+                    // Update the state of the rigid body
+                    updateBodyState(rigidBody);
+                }
+            }
+
+            // Update the timer
+            timer.update();
+        }
+
         // For each body in the dynamic world
-        for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
+        for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
             // If the body is a RigidBody and if the rigid body motion is enabled
             RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
             if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                // Update the state of the rigid body
-                updateBodyState(rigidBody);
+                // Update the interpolation factor of the rigid body
+                // This one will be used to compute the interpolated state
+                rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
             }
-        }
-
-        // Update the timer
-        timer.update();
-    }
-
-    // For each body in the dynamic world
-    for(std::vector<Body*>::const_iterator it = world.getBodyListStartIterator(); it != world.getBodyListEndIterator(); ++it) {
-        // If the body is a RigidBody and if the rigid body motion is enabled
-        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-        if (rigidBody && rigidBody->getIsMotionEnabled()) {
-            // Update the interpolation factor of the rigid body
-            // This one will be used to compute the interpolated state
-            rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
         }
     }
 }

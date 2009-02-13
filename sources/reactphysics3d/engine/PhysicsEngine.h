@@ -35,16 +35,41 @@ namespace reactphysics3d {
 */
 class PhysicsEngine {
     protected :
-        PhysicsWorld world;                     // Physics world of the physics engine
+        PhysicsWorld* world;                    // Pointer to the physics world of the physics engine
         Timer timer;                            // Timer of the physics engine
 
     public :
-        PhysicsEngine(PhysicsWorld& world, const Time& timeStep);       // Constructor
-        PhysicsEngine(const PhysicsEngine& engine);                     // Copy-constructor
-        virtual ~PhysicsEngine();                                       // Destructor
+        PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument);     // Constructor
+        PhysicsEngine(const PhysicsEngine& engine);                                                 // Copy-constructor
+        virtual ~PhysicsEngine();                                                                   // Destructor
 
-        virtual void update()=0;                // Update the physics simulation
+        virtual void start();                                   // Start the physics simulation
+        virtual void stop();                                    // Stop the physics simulation
+        virtual void update()=0;                                // Update the physics simulation
+        void initializeDisplayTime(const Time& displayTime);    // Initialize the display time
+        void updateDisplayTime(const Time& newDisplayTime);     // Update the display time
 };
+
+// --- Inline functions --- //
+
+// Start the physics simulation
+inline void PhysicsEngine::start() {
+    timer.setIsRunning(true);
+}
+
+inline void PhysicsEngine::stop() {
+    // TODO : Implement this method
+}
+
+// Initialize the display time
+inline void PhysicsEngine::initializeDisplayTime(const Time& displayTime) {
+    timer.setCurrentDisplayTime(displayTime);
+}
+
+// Update the display time
+inline void PhysicsEngine::updateDisplayTime(const Time& newDisplayTime) {
+    timer.updateDisplayTime(newDisplayTime);
+}
 
 }
 

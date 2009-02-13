@@ -23,6 +23,7 @@
  // Libraries
  #include "../physics/physics.h"
  #include <stdexcept>
+ #include <iostream>
 
  // Namespace ReactPhysics3D
  namespace reactphysics3d {
@@ -52,7 +53,8 @@ class Timer {
         void setTime(const Time& time);                                         // Set the current time
         bool getIsRunning() const;                                              // Return if the timer is running
         void setIsRunning(bool isRunning);                                      // Set if the timer is running
-        double getAccumulator() const;                                           // Return the accumulator value
+        double getAccumulator() const;                                          // Return the accumulator value
+        void setCurrentDisplayTime(const Time& displayTime);                    // Set the current display time
 
         void update();                                          // Update the timer
         double getInterpolationFactor() const;                  // Compute and return the interpolation factor between two body states
@@ -101,6 +103,11 @@ inline void Timer::setIsRunning(bool isRunning) {
 // Return the accumulator value
 inline double Timer::getAccumulator() const {
     return accumulator;
+}
+
+// Set the current display time
+inline void Timer::setCurrentDisplayTime(const Time& currentDisplayTime) {
+    this->currentDisplayTime = currentDisplayTime;
 }
 
 // Update the timer
