@@ -54,6 +54,35 @@ Quaternion::~Quaternion() {
 
 }
 
+// Compute the rotation angle (in radians) and the 3D rotation axis
+// This method is used to get the rotation angle and axis of an
+// orientation quaternion.
+// TODO : Test this method
+void Quaternion::getRotationAngleAxis(double& angle, Vector3D& axis) const {
+    Quaternion quaternion;
+
+    // If the quaternion is unit
+    if (length() == 1.0) {
+        quaternion = *this;
+    }
+    else {
+        // We compute the unit quaternion
+        quaternion = getUnit();
+    }
+
+    // Compute the roation angle
+    angle = acos(quaternion.w) * 2.0;
+
+    // Compute the 3D rotation axis
+    Vector3D rotationAxis(quaternion.x, quaternion.y, quaternion.z);
+
+    // Normalize the rotation axis
+    rotationAxis = rotationAxis.getUnit();
+
+    // Set the rotation axis values
+    axis.setAllValues(rotationAxis.getX(), rotationAxis.getY(), rotationAxis.getZ());
+}
+
 // Compute the spherical linear interpolation between two quaternions.
 // The t argument has to be such that 0 <= t <= 1.
 // TODO : Test this method

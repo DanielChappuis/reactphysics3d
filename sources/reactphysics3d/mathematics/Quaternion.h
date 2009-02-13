@@ -62,7 +62,7 @@ class Quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
         Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
         double scalarProduct(const Quaternion& quaternion) const;             // Scalar product between two quaternions
-
+        void getRotationAngleAxis(double& angle, Vector3D& axis) const;       // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
                                 const Quaternion& quaternion2, double t);     // Compute the spherical linear interpolation between two quaternions
 
