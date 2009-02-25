@@ -26,8 +26,7 @@
 using namespace reactphysics3d;
 
 // Constructor of the class Simulation
-Simulation::Simulation()
-           :world(new DynamicWorld(Vector3D(0.0, -9.81, 0.0))), engine(world, Time(0.01)){
+Simulation::Simulation() :world(new DynamicWorld(Vector3D(0.0, -9.81, 0.0))), engine(world, Time(0.01)) {
     simRunning = false;
     mouseButtonPressed = false;
     nbFrame = 0;
@@ -73,6 +72,7 @@ void Simulation::start() {
 
         double time = SDL_GetTicks()/1000.0;
         std::cout << "Time : " << time << std::endl;
+
         // Update the display time
         engine.updateDisplayTime(Time(time));
 
@@ -86,6 +86,7 @@ void Simulation::start() {
         computeFps();
         std::cout << "FPS : " << fps << std::endl;
 
+        /*
         BodyState state = context.getObject(0).getRigidBody()->getInterpolatedState();
         Vector3D velocity = context.getObject(0).getRigidBody()->getInterpolatedState().getAngularVelocity();
         //std::cout << "Velocity 0 : " << velocity.getX() << ", " << velocity.getY() << ", " << velocity.getZ() << ")" << std::endl;
@@ -112,6 +113,7 @@ void Simulation::start() {
         double z2 = state2.getPosition().getZ();
         std::cout << "Position Cube 2: (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
         std::cout << "quaternion orientation 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ", " << velocity2.getW() << ")" << std::endl;;
+        */
     }
 }
 
