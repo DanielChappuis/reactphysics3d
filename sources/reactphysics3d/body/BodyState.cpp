@@ -27,15 +27,11 @@
 
  // Constructor
  BodyState::BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse)
-           : position(position), linearMomentum(Vector3D()), orientation(Quaternion(0,1,0, 0.0)), angularMomentum(Vector3D()),
-             linearVelocity(Vector3D()), angularVelocity(Vector3D()), spin(Quaternion()), inertiaTensorInverse(inertiaTensorInverse),
-             massInverse(massInverse) {
+           : position(position), orientation(Quaternion(0,1,0, 0.0)), inertiaTensorInverse(inertiaTensorInverse), massInverse(massInverse) {
     // TODO : orientation will be initialized in another way
-    // TODO : linearMomentum will be initialized in another way
-    // TODO : angularMomentum will be initialize in another way
-    // TODO : linearVelocity will be initialize in another way
-    // TODO : angularVelocity will be initialize in another way
-    // TODO : spin will be initialize in another way
+
+    // Recalculate the secondary values from the primary values
+    recalculate();
  }
 
 // Copy-constructor
@@ -90,11 +86,11 @@ void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& l
 // Return the force on the body at time t
 Vector3D BodyState::computeForce(Time time) const {
     // TODO : Implement this method
-    return Vector3D(0.0, 0.0, 1.0);
+    return Vector3D(0.0, 0.0, 0.0);
 }
 
 // Return the torque on the body at time
 Vector3D BodyState::computeTorque(Time time) const {
     // TODO : Implement this method
-    return Vector3D(0.0, -1.0 ,0);
+    return Vector3D(0.0, 0.0 ,0.0);
 }
