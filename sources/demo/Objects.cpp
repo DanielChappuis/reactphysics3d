@@ -31,7 +31,7 @@
 
 // Constructor of the class Object
 Object::Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor)
-        :rigidBody(new RigidBody(position, mass, inertiaTensor)) {
+       :rigidBody(new RigidBody(position, mass, inertiaTensor)) {
 
 }
 
