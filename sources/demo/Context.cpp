@@ -46,24 +46,24 @@ Context::Context() {
 Context::~Context() {
     // Delete all the objects in vectObjects
     for(unsigned int i=0; i<vectObjects.size(); ++i) {
-        delete vectObjects[0];
+        delete vectObjects[i];
     }
 }
 
 // Method to get an object from the context
 Object& Context::getObject(int objectIndex) const {
-    // WE HAVE TO ADD HERE AN EXCEPTION IMPLEMENTATION
+    // TODO : WE HAVE TO ADD HERE AN EXCEPTION IMPLEMENTATION
 
     // Return the object from the context
-    return (*vectObjects.at(objectIndex));     // THROWN AN EXCEPTION IF INDEX IS OUT OF THE BOUNDS
+    return (*vectObjects.at(objectIndex));     // TODO : THROWN AN EXCEPTION IF INDEX IS OUT OF THE BOUNDS
 }
 
 // Method for adding an object into the context
 void Context::addObject(Object* object) {
-       if (object != NULL) {
-            // Add the object into the context
-            vectObjects.push_back(object);
-       }
+    if (object != NULL) {
+        // Add the object into the context
+        vectObjects.push_back(object);
+    }
 }
 
 // Method to remove an object from the context
