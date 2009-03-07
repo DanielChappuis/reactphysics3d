@@ -46,6 +46,13 @@ DynamicEngine::~DynamicEngine() {
 
 // Update the state of a rigid body
 void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
+
+    // If the gravity force is on
+    if(world->getIsGravityOn()) {
+        // Apply the current gravity force to the body
+        rigidBody->getCurrentBodyState().setForce(world->getGravity());
+    }
+
     // The current body state of the body becomes the previous body state
     rigidBody->updatePreviousBodyState();
 
