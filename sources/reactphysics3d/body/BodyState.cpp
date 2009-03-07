@@ -39,7 +39,7 @@ BodyState::BodyState(const BodyState& bodyState)
           : position(bodyState.position), linearMomentum(bodyState.linearMomentum), orientation(bodyState.orientation),
             angularMomentum(bodyState.angularMomentum), linearVelocity(bodyState.linearVelocity),
             angularVelocity(bodyState.angularVelocity), spin(bodyState.spin), inertiaTensorInverse(bodyState.inertiaTensorInverse),
-            massInverse(bodyState.massInverse) {
+            massInverse(bodyState.massInverse), force(bodyState.force) {
 }
 
 // Destructor
@@ -86,11 +86,11 @@ void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& l
 // Return the force on the body at time t
 Vector3D BodyState::computeForce(Time time) const {
     // TODO : Implement this method
-    return Vector3D(0.0, 0.0, 0.0);
+    return force + Vector3D(0.0, 0.0, 0.0);
 }
 
 // Return the torque on the body at time
 Vector3D BodyState::computeTorque(Time time) const {
     // TODO : Implement this method
-    return Vector3D(0.0, 0.0 ,0.0);
+    return force + Vector3D(0.0, 0.0 ,0.0);
 }

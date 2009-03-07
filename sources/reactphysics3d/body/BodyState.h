@@ -40,6 +40,7 @@ class BodyState {
         Vector3D linearMomentum;                // Linear momentum of the body
         Quaternion orientation;                 // Orientation quaternion of the body
         Vector3D angularMomentum;               // Angular momentum of the body
+        Vector3D force;                         // force on the body
 
         // Secondary values
         Vector3D linearVelocity;                // Linear velocity of the body
@@ -68,6 +69,8 @@ class BodyState {
         Quaternion getSpin() const;                                             // Return the spin of the body
         void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
+        Vector3D getForce() const;                                              // Return the force over the body
+        void setForce(const Vector3D force);                                    // Set the force over the body
 
         void recalculate();                                                                 // Recalculate the secondary values
                                                                                             // of the BodyState from the primary ones
@@ -144,6 +147,17 @@ inline void BodyState::setInertiaTensorInverse(const Matrix3x3& inertiaTensorInv
     this->inertiaTensorInverse = inertiaTensorInverse;
 }
 
+// Return the force over the body
+inline Vector3D BodyState::getForce() const {
+    return force;
 }
+
+// Set the force over the body
+inline void BodyState::setForce(const Vector3D force) {
+    this->force = force;
+
+}
+
+}   // End of the ReactPhysics3D namespace
 
 #endif
