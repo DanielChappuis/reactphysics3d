@@ -40,6 +40,7 @@ class PhysicsWorld {
     protected :
         std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
         Vector3D gravity;                           // Gravity vector of the world
+        bool isGravityOn;                           // True if the gravity force is on
 
     public :
         PhysicsWorld(const Vector3D& gravity);      // Constructor
@@ -49,6 +50,8 @@ class PhysicsWorld {
         void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
         void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
         Vector3D getGravity() const;                                            // Return the gravity vector of the world
+        bool getIsGravityOn() const;                                            // Return if the gravity is on
+        void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
         std::vector<Body*>::const_iterator getBodyListStartIterator() const;    // Return a start iterator on the body list
         std::vector<Body*>::const_iterator getBodyListEndIterator() const;      // Return a end iterator on the body list
 };
@@ -70,6 +73,16 @@ inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListStartIterator
 inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListEndIterator() const {
     // Return an iterator on the end of the body list
     return bodyList.end();
+}
+
+// Return if the gravity is on
+inline bool PhysicsWorld::getIsGravityOn() const {
+    return isGravityOn;
+}
+
+// Set the isGravityOn attribute
+inline void PhysicsWorld::setIsGratityOn(bool isGravityOn) {
+    this->isGravityOn = isGravityOn;
 }
 
 }   // End of the ReactPhysics3D namespace
