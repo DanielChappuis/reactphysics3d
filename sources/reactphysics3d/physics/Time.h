@@ -38,7 +38,8 @@ class Time {
         double value;                   // Time in seconds
 
     public :
-        Time(double value) throw(std::invalid_argument);                // Constructor
+        Time();                                                         // Constructor
+        Time(double value) throw(std::invalid_argument);                // Constructor with arguments
         Time(const Time& time);                                         // Copy-constructor
         virtual ~Time();                                                // Destructor
 
@@ -46,9 +47,9 @@ class Time {
         void setValue(double value) throw(std::invalid_argument) ;      // Set the time value
 
         // Overloaded operators
-        Time operator+(const Time& time2) const;                            // Overloaded operator for addition with Time
-        Time operator-(const Time& time2) const;                            // Overloaded operator for substraction with Time
-        Time operator*(double number) const throw(std::invalid_argument);   // Overloaded operator for multiplication with a number
+        Time operator+(const Time& time2) const;                                // Overloaded operator for addition with Time
+        Time operator-(const Time& time2) const throw(std::invalid_argument);   // Overloaded operator for substraction with Time
+        Time operator*(double number) const throw(std::invalid_argument);       // Overloaded operator for multiplication with a number
 };
 
 // --- Inlines functions --- //
@@ -79,8 +80,18 @@ inline Time Time::operator+(const Time& time2) const {
 }
 
 // Overloaded operator for substraction with Time
-inline Time Time::operator-(const Time& time2) const {
-    return Time(value - time2.value);
+inline Time Time::operator-(const Time& time2) const throw(std::invalid_argument) {
+    // Compute the result of the substraction
+    double result = value - time2.value;
+
+    // If the result is negative
+    if (result <= 0.0) {
+        // We throw an exception
+        throw std::invalid_argument("Exception in Time::operator- : The result should be positive");
+    }
+
+    // Return the result
+    return Time(result);
 }
 
 // Overloaded operator for multiplication with a number

@@ -20,11 +20,16 @@
  // Libraries
  #include "Time.h"
 
- // We want to use the ReactPhysics3D namespace
- using namespace reactphysics3d;
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
- // Constructor
- Time::Time(double value) throw(std::invalid_argument) {
+// Constructor
+Time::Time() {
+    value = 0.0;
+}
+
+// Constructor with arguments
+Time::Time(double value) throw(std::invalid_argument) {
     // Check if the value is positive
     if (value >= 0.0) {
         this->value = value;

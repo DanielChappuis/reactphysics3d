@@ -17,14 +17,19 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
- // Libraries
- #include "Kilogram.h"
+// Libraries
+#include "Kilogram.h"
 
- // We want to use the ReactPhysics3D namespace
- using namespace reactphysics3d;
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
- // Constructor
- Kilogram::Kilogram(double value) throw(std::invalid_argument) {
+// Constructor
+Kilogram::Kilogram() {
+    value = 0.0;
+}
+
+// Constructor with arguments
+Kilogram::Kilogram(double value) throw(std::invalid_argument) {
     // Check if the value is positive
     if (value >= 0) {
         this->value = value;

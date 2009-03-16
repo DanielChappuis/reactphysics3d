@@ -37,7 +37,8 @@ class Kilogram {
         double value;                           // Mass value in kilogram
 
     public :
-        Kilogram(double value) throw(std::invalid_argument);        // Constructor
+        Kilogram();                                                 // Constructor
+        Kilogram(double value) throw(std::invalid_argument);        // Constructor with arguments
         Kilogram(const Kilogram& mass);                             // Copy-constructor
         virtual ~Kilogram();                                        // Destructor
 
