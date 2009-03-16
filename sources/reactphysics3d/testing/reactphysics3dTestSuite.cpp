@@ -24,6 +24,8 @@
 #include "testing_mathematics/MatrixTest.h"
 #include "testing_mathematics/Matrix3x3Test.h"
 #include "testing_mathematics/QuaternionTest.h"
+#include "testing_physics/TimeTest.h"
+#include "testing_physics/KilogramTest.h"
 
 // Namespaces
 using namespace std;
@@ -35,12 +37,16 @@ int main() {
     // ReactPhysics3D TestSuite
     Suite reactphysics3DTestSuite("ReactPhysics3D TestSuite");
 
-    // Mathematics Tests
+    // Mathematics tests
     reactphysics3DTestSuite.addTest(new VectorTest);
     reactphysics3DTestSuite.addTest(new Vector3DTest);
     reactphysics3DTestSuite.addTest(new MatrixTest);
     reactphysics3DTestSuite.addTest(new Matrix3x3Test);
     reactphysics3DTestSuite.addTest(new QuaternionTest);
+
+    // Physics tests
+    reactphysics3DTestSuite.addTest(new TimeTest);
+    reactphysics3DTestSuite.addTest(new KilogramTest);
 
     // Run the ReactPhysics3D TestSuite and display the report
     reactphysics3DTestSuite.run();
