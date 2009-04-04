@@ -50,6 +50,7 @@ class QuaternionTest : public TestSuite::Test {
             testGetUnit();
             testGetConjugate();
             testGetInverse();
+            testScalarProduct();
             testOperatorAddition();
             testOperatorSubstraction();
             testOperatorMultiplicationWithConstant();
@@ -261,6 +262,12 @@ class QuaternionTest : public TestSuite::Test {
             catch(MathematicsException& ex) {
                 succeed_();                                             // Succeed if an exception has been thrown
             }
+        }
+
+        // Test the scalarProduct() method
+        void testScalarProduct() {
+            double result = quaternion1.scalarProduct(quaternion2);
+            test_(result == 110.0);
         }
 
         // Test operator+()
