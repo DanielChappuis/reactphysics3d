@@ -167,7 +167,6 @@ inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
 }
 
 // Scalar product between two quaternions
-// TODO : Test for this method
 inline double Quaternion::scalarProduct(const Quaternion& quaternion) const {
     return (x*quaternion.x + y*quaternion.y + z*quaternion.z + w*quaternion.w);
 }
