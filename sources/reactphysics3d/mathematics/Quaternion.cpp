@@ -18,8 +18,7 @@
  ***************************************************************************/
 
 // Libraries
-#include "Quaternion.h"
-#include "constants.h"
+#include "mathematics.h"
 #include <cassert>
 
 // Namespaces
@@ -55,9 +54,8 @@ Quaternion::~Quaternion() {
 }
 
 // Compute the rotation angle (in radians) and the 3D rotation axis
-// This method is used to get the rotation angle and axis of an
-// orientation quaternion.
-// TODO : Test this method
+// This method is used to get the rotation angle (in radian) and the unit
+// rotation axis of an orientation quaternion.
 void Quaternion::getRotationAngleAxis(double& angle, Vector3D& axis) const {
     Quaternion quaternion;
 
@@ -84,26 +82,25 @@ void Quaternion::getRotationAngleAxis(double& angle, Vector3D& axis) const {
 }
 
 // Compute the spherical linear interpolation between two quaternions.
-// The t argument has to be such that 0 <= t <= 1.
-// TODO : Test this method
+// The t argument has to be such that 0 <= t <= 1. This method is static.
 Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, double t) {
-    assert(t >= 0 && t <= 1);
+    assert(t >= 0.0 && t <= 1.0);
 
-    double invert = 1;
+    double invert = 1.0;
 
     // Compute cos(theta) using the quaternion scalar product
     double cosineTheta = quaternion1.scalarProduct(quaternion2);
 
     // Take care of the sign of cosineTheta
-    if (cosineTheta < 0) {
+    if (cosineTheta < 0.0) {
 			cosineTheta = -cosineTheta;
-			invert = -1;
+			invert = -1.0;
     }
 
     // Because of precision, if cos(theta) is nearly 1, therefore theta is nearly 0 and we can write
     // sin((1-t)*theta) as (1-t) and sin(t*theta) as t
-    if ((1.0-cosineTheta) < epsilon) {
-        return quaternion1 * (1-t) + quaternion2 * (t * invert);
+    if(1-cosineTheta < EPSILON) {
+        return quaternion1 * (1.0-t) + quaternion2 * (t * invert);
     }
 
     // Compute the theta angle
@@ -113,7 +110,7 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& qu
     double sineTheta = sin(theta);
 
     // Compute the two coefficients that are in the spherical linear interpolation formula
-    double coeff1 = sin((1-t)*theta) / sineTheta;
+    double coeff1 = sin((1.0-t)*theta) / sineTheta;
     double coeff2 = sin(t*theta) / sineTheta * invert;
 
     // Compute and return the interpolated quaternion

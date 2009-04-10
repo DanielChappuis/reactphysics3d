@@ -19,8 +19,8 @@
 
 // TODO : Mathematics library : Check everywhere that in member methods we use attributes access instead of getter and setter.
 
-#ifndef DCMATHS_H
-#define DCMATHS_H
+#ifndef MATHEMATICS_H
+#define MATHEMATICS_H
 
 // Libraries
 #include "Matrix.h"
@@ -30,5 +30,15 @@
 #include "Vector3D.h"
 #include "constants.h"
 #include "exceptions.h"
+#include <cstdio>
+
+// ---------- Mathematics functions ---------- //
+
+// Method to test if two numbers are (almost) equal
+// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
+inline bool equal(double a, double b) {
+    double difference = a - b;
+    return (difference < EPSILON && difference > -EPSILON);
+}
 
 #endif
