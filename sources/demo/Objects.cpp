@@ -84,7 +84,7 @@ void Cube::draw() const {
     glTranslatef(x, y, z);
 
     // Rotation of the cube according to its orientation
-    glRotatef(orientationAngle/pi*180.0, orientationAxis.getX(), orientationAxis.getY(), orientationAxis.getZ());
+    glRotatef(orientationAngle/PI*180.0, orientationAxis.getX(), orientationAxis.getY(), orientationAxis.getZ());
 
     // Draw the cube
     glutSolidCube(size);

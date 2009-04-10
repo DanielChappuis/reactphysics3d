@@ -21,9 +21,6 @@
 #include "OutSideCamera.h"
 #include <cmath>
 
-// Constants
-const double PI = 3.141592;
-
 // Constructor
 OutSideCamera::OutSideCamera() {
 
