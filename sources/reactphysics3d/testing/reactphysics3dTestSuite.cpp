@@ -19,6 +19,7 @@
 // Libraries
 #include <iostream>
 #include "TestSuite/Suite.h"
+#include "testing_mathematics/MathematicsTest.h"
 #include "testing_mathematics/VectorTest.h"
 #include "testing_mathematics/Vector3DTest.h"
 #include "testing_mathematics/MatrixTest.h"
@@ -38,6 +39,7 @@ int main() {
     Suite reactphysics3DTestSuite("ReactPhysics3D TestSuite");
 
     // Mathematics tests
+    reactphysics3DTestSuite.addTest(new MathematicsTest);
     reactphysics3DTestSuite.addTest(new VectorTest);
     reactphysics3DTestSuite.addTest(new Vector3DTest);
     reactphysics3DTestSuite.addTest(new MatrixTest);
