@@ -67,7 +67,6 @@ inline void Time::setValue(double value) throw(std::invalid_argument) {
         this->value = value;
     }
     else {
-        std::cout << "ERROR TIME : " << value << std::endl;
 
         // We throw an exception
         throw std::invalid_argument("Exception in test Time: Wrong argument, a time value has to be positive");
