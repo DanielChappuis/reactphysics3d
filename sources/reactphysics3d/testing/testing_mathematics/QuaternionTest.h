@@ -24,6 +24,7 @@
 // Libraries
 #include "../TestSuite/Test.h"
 #include "../../mathematics/Quaternion.h"
+#include "../../mathematics/constants.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -51,6 +52,8 @@ class QuaternionTest : public TestSuite::Test {
             testGetConjugate();
             testGetInverse();
             testScalarProduct();
+            testgetRotationAngleAxis();
+            testSlerp();
             testOperatorAddition();
             testOperatorSubstraction();
             testOperatorMultiplicationWithConstant();
@@ -268,6 +271,25 @@ class QuaternionTest : public TestSuite::Test {
         void testScalarProduct() {
             double result = quaternion1.scalarProduct(quaternion2);
             test_(result == 110.0);
+        }
+
+        // Test the getRotationAngleAxis() method
+        void testgetRotationAngleAxis() {
+            Quaternion quaternion(1.0, 2.0, 3.0, 0.0);
+            double invAxisLength = 1.0/sqrt(1.0 + 2.0*2.0 + 3.0*3.0);
+            double angle;
+            Vector3D axis;
+
+            quaternion.getRotationAngleAxis(angle, axis);
+            test_(equal(angle, PI));
+            test_(equal(axis.getX(), 1.0*invAxisLength));
+            test_(equal(axis.getY(), 2.0*invAxisLength));
+            test_(equal(axis.getZ(), 3.0*invAxisLength));
+        }
+
+        // Test the slerp() method
+        void testSlerp() {
+            // TODO : Test the Quaternion::slerp() method
         }
 
         // Test operator+()
