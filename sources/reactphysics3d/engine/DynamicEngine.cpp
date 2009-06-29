@@ -19,6 +19,8 @@
 
 // Libraries
 #include "DynamicEngine.h"
+#include "RK4.h"
+#include "Euler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -31,17 +33,21 @@ DynamicEngine::DynamicEngine(DynamicWorld* world, const Time& timeStep)
         // Throw an exception
         throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
     }
+
+    // Creation of the RK4 integration algorithm
+    integrationAlgorithm = new RK4();
 }
 
 // Copy-constructor
 DynamicEngine::DynamicEngine(const DynamicEngine& engine)
               :PhysicsEngine(engine) {
-    numericalIntegrator = engine.numericalIntegrator;
+    integrationAlgorithm = engine.integrationAlgorithm;
 }
 
 // Destructor
 DynamicEngine::~DynamicEngine() {
-
+    // Destroy the integration algorithm
+    delete integrationAlgorithm;
 }
 
 // Update the state of a rigid body
@@ -57,7 +63,7 @@ void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
     rigidBody->updatePreviousBodyState();
 
     // Integrate the current body state at time t to get the next state at time t + dt
-    numericalIntegrator.integrate(rigidBody->getCurrentBodyState(), timer.getTime(), timer.getTimeStep());
+    integrationAlgorithm->integrate(rigidBody->getCurrentBodyState(), timer.getTime(), timer.getTimeStep());
 }
 
 // Update the physics simulation

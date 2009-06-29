@@ -22,7 +22,7 @@
 
 // Libraries
 #include "PhysicsEngine.h"
-#include "NumericalIntegrator.h"
+#include "IntegrationAlgorithm.h"
 #include "../body/Body.h"
 #include "../body/RigidBody.h"
 #include "../body/BodyState.h"
@@ -41,7 +41,7 @@ namespace reactphysics3d {
 */
 class DynamicEngine : public PhysicsEngine {
     protected :
-        NumericalIntegrator numericalIntegrator;        // Numerical integrator used to solve differential equations of movement
+        IntegrationAlgorithm* integrationAlgorithm;        // Integration algorithm used to solve differential equations of movement
 
         void updateBodyState(RigidBody* const rigidBody);                                                           // Update the state of a rigid body
 
