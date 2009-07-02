@@ -21,7 +21,7 @@
 #include "mathematics.h"
 #include <cassert>
 
-// Namespaces
+// Namespace
 using namespace reactphysics3d;
 
 // Constructor of the class

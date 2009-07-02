@@ -34,8 +34,7 @@ namespace reactphysics3d {
         q = (x*i, y*j, z*k, w) to represent a quaternion.
     -------------------------------------------------------------------
 */
-class Quaternion
-{
+class Quaternion {
     private :
         double x;                       // Component x of the quaternion
         double y;                       // Component y of the quaternion
