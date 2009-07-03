@@ -24,8 +24,30 @@
 using namespace reactphysics3d;
 
 // Constructor
-OBB::OBB() {
+OBB::OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
+            const Vector3D& axis3, double extent1, double extent2, double extent3) {
+    this->center = center;
 
+    this->axis[0] = axis1;
+    this->axis[1] = axis2;
+    this->axis[2] = axis3;
+
+    this->extent[0] = extent1;
+    this->extent[1] = extent2;
+    this->extent[2] = extent3;
+}
+
+// Copy-Constructor
+OBB::OBB(const OBB& obb) {
+    this->center = obb.center;
+
+    this->axis[0] = obb.axis[0];
+    this->axis[1] = obb.axis[1];
+    this->axis[2] = obb.axis[2];
+
+    this->extent[0] = obb.extent[0];
+    this->extent[1] = obb.extent[1];
+    this->extent[2] = obb.extent[2];
 }
 
 // Destructor
