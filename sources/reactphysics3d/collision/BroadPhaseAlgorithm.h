@@ -20,6 +20,9 @@
 #ifndef BROADPHASEALGORITHM_H
 #define BROADPHASEALGORITHM_H
 
+// Libraries
+#include "../body/BoundingVolume.h"
+
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 

@@ -20,6 +20,9 @@
 #ifndef NARROWPHASEALGORITHM_H
 #define NARROWPHASEALGORITHM_H
 
+// Libraries
+#include "../body/BoundingVolume.h"
+
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
