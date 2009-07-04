@@ -45,12 +45,12 @@ class OBB : public BoundingVolume {
         OBB(const OBB& obb);                                                            // Copy-Constructor
         virtual ~OBB();                                                                 // Destructor
 
-        Vector3D getCenter() const;                                                     // Return the center point of the OBB
-        void setCenter(const Vector3D& center);                                         // Set the center point
-        Vector3D getAxis(int index) const throw(std::invalid_argument);                 // Return an axis of the OBB
-        void setAxis(int index, const Vector3D& axis) throw(std::invalid_argument);     // Set an axis
-        double getExtent(int index) const throw(std::invalid_argument);                 // Return an extent value
-        void setExtent(int index, double extent) throw(std::invalid_argument);          // Set an extent value
+        Vector3D getCenter() const;                                                             // Return the center point of the OBB
+        void setCenter(const Vector3D& center);                                                 // Set the center point
+        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                // Return an axis of the OBB
+        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);    // Set an axis
+        double getExtent(unsigned int index) const throw(std::invalid_argument);                // Return an extent value
+        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);         // Set an extent value
 };
 
 // TODO : Don't forget that we need to code a way that a change in the orientation of a rigid body imply
@@ -67,7 +67,7 @@ inline void OBB::setCenter(const Vector3D& center) {
 }
 
 // Return an axis of the OBB
-inline Vector3D OBB::getAxis(int index) const throw(std::invalid_argument) {
+inline Vector3D OBB::getAxis(unsigned int index) const throw(std::invalid_argument) {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         return axis[index];
@@ -79,7 +79,7 @@ inline Vector3D OBB::getAxis(int index) const throw(std::invalid_argument) {
 }
 
 // Set an axis
-inline void OBB::setAxis(int index, const Vector3D& axis) throw(std::invalid_argument) {
+inline void OBB::setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument) {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         this->axis[index] = axis;
@@ -91,7 +91,7 @@ inline void OBB::setAxis(int index, const Vector3D& axis) throw(std::invalid_arg
 }
 
 // Return an extent value
-inline double OBB::getExtent(int index) const throw(std::invalid_argument) {
+inline double OBB::getExtent(unsigned int index) const throw(std::invalid_argument) {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         return extent[index];
@@ -103,7 +103,7 @@ inline double OBB::getExtent(int index) const throw(std::invalid_argument) {
 }
 
 // Set an extent value
-inline void OBB::setExtent(int index, double extent) throw(std::invalid_argument) {
+inline void OBB::setExtent(unsigned int index, double extent) throw(std::invalid_argument) {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         this->extent[index] = extent;
