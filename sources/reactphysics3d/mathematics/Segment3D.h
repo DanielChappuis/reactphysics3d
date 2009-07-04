@@ -49,6 +49,8 @@ class Segment3D {
         void setPointB(const Vector3D& pointB);             // Set the point B
 };
 
+// TODO : Test the Segment3D class
+
 inline Vector3D Segment3D::getPointA() const {
     return pointA;
 }
