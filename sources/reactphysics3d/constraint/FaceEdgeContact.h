@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
 * Copyright (C) 2009      Daniel Chappuis                                  *
 ****************************************************************************
 * This file is part of ReactPhysics3D.                                     *
@@ -33,7 +33,7 @@ namespace reactphysics3d {
         bodies in the physics engine.
     -------------------------------------------------------------------
 */
-class FaceEdgeContact : public contact {
+class FaceEdgeContact : public Contact {
     private :
         Segment3D contactSegment;
 
