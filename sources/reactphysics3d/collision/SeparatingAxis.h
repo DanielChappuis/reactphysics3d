@@ -22,7 +22,7 @@
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
-#include "../Constraint/Contact.h"
+#include "../constraint/Contact.h"
 #include "../body/OBB.h"
 
 // ReactPhysics3D namespace

@@ -26,13 +26,18 @@
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
+/*  --------------------------------------------------------------------
     Class BroadPhaseAlgorithm :
         This class is an abstract class that represents an algorithm
-        used to perform the broad phase of a collision detection. The
-        goal of the broad phase algorithm is to compute the bodies that
-        can collide.
-    -------------------------------------------------------------------
+        used to perform the broad-phase of a collision detection. The
+        goal of the broad-phase algorithm is to compute the bodies that
+        can collide. But it's important to understand that the
+        broad-phase doesn't compute only body pairs that can collide but
+        also pairs of body that doesn't collide but are very close. The
+        goal of the broad-phase is to remove pairs of body that cannot
+        collide in order to avoid to much bodies to be tested in the
+        narrow-phase.
+    --------------------------------------------------------------------
 */
 class BroadPhaseAlgorithm {
     private :
@@ -40,6 +45,7 @@ class BroadPhaseAlgorithm {
     public :
         BroadPhaseAlgorithm();              // Constructor
         virtual ~BroadPhaseAlgorithm();     // Destructor
+
         virtual bool testCollisionPair(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2)=0;  // Return true is the two bounding volume can collide
 };
 
