@@ -18,23 +18,24 @@
 ***************************************************************************/
 
 // Libraries
-#include "SeparatingAxis.h"
+#include "SeparatingAxisOBB.h"
+#include "../body/OBB.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-SeparatingAxis::SeparatingAxis() {
+SeparatingAxisOBB::SeparatingAxisOBB() {
 
 }
 
 // Destructor
-SeparatingAxis::~SeparatingAxis() {
+SeparatingAxisOBB::~SeparatingAxisOBB() {
 
 }
 
 // Return true and compute a collision contact if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool SeparatingAxis::testCollision(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2, Contact* const contact) {
+bool SeparatingAxisOBB::testCollision(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2, Contact* const contact) {
     // TODO : Implement this method
 }

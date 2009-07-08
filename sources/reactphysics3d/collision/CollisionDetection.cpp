@@ -19,6 +19,8 @@
 
 // Libraries
 #include "CollisionDetection.h"
+#include "SeparatingAxisAABB.h"
+#include "SeparatingAxisOBB.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -26,15 +28,15 @@ using namespace reactphysics3d;
 // Constructor
 CollisionDetection::CollisionDetection() {
 
-    // Construct the broad-phase algorithm that will be used
-    broadPhaseAlgorithm =
+    // Construct the broad-phase algorithm that will be used (Separating axis with AABB)
+    broadPhaseAlgorithm = new SeparatingAxisAABB();
 
-    // Construct the narrow-phase algorithm that will be used
-    narrowPhaseAlgorithm = new SeparatingAxis();
+    // Construct the narrow-phase algorithm that will be used (Separating axis with OBB)
+    narrowPhaseAlgorithm = new SeparatingAxisOBB();
 }
 
 // Destructor
-~CollisionDetection() {
+CollisionDetection::~CollisionDetection() {
 
 }
 

@@ -26,7 +26,6 @@
 #include "../body/Body.h"
 #include "../engine/CollisionWorld.h"
 #include <vector>
-#include <utility>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -41,12 +40,14 @@ namespace reactphysics3d {
 */
 class CollisionDetection {
     private :
-        std::vector<(std::pair<Body*, Body*>)> possibleCollisionPairList;     // List that contains the possible collision pairs of bodies
+        std::vector< std::pair<Body*, Body*> > possibleCollisionPairList;     // List that contains the possible collision pairs of bodies
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                            // Broad-phase algorithm
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                          // Narrow-phase algorithm
 
-        void computePossibleCollisionPairs();   // Compute all the possible collisions pairs of bodies (broad-phase)
-        void computeCollisionContacts();        // Compute all collision contacts between bodies (narrow-phase)
+        void computePossibleCollisionPairs();                       // Compute all the possible collisions pairs of bodies (broad-phase)
+        void computeCollisionContacts();                            // Compute all collision contacts between bodies (narrow-phase)
+        void addPossibleCollisionPair(Body* body1, Body* body2);    // Add a possible collision pair of bodies in the possibleCollisionPairList
+        void initPossibleCollisionPairList();                       // Initialize the possibleCollisionPairList
 
     public :
         CollisionDetection();       // Constructor
@@ -54,6 +55,17 @@ class CollisionDetection {
 
         void computeCollisionDetection(CollisionWorld& collisionWorld);     // Compute the collision detection
 };
+
+// Add a possible collision pair of bodies in the possibleCollisionPairList
+inline void CollisionDetection::addPossibleCollisionPair(Body* body1, Body* body2) {
+    // TODO : Implement this method
+}
+
+// Initialize the possibleCollisionPairList
+inline void CollisionDetection::initPossibleCollisionPairList() {
+    // TODO : Implement this method
+}
+
 
 } // End of the ReactPhysics3D namespace
 

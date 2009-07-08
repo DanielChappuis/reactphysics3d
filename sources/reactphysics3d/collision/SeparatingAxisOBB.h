@@ -17,23 +17,22 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef SEPARATINGAXIS_H
-#define SEPARATINGAXIS_H
+#ifndef SEPARATINGAXISOBB_H
+#define SEPARATINGAXISOBB_H
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
 #include "../constraint/Contact.h"
-#include "../body/OBB.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-class SeparatingAxis : public NarrowPhaseAlgorithm {
+class SeparatingAxisOBB : public NarrowPhaseAlgorithm {
     private :
 
     public :
-        SeparatingAxis();           // Constructor
-        ~SeparatingAxis();          // Destructor
+        SeparatingAxisOBB();           // Constructor
+        ~SeparatingAxisOBB();          // Destructor
 
         virtual bool testCollision(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2, Contact* const contact);    // Return true and compute a collision contact if the two bounding volume collide
 
