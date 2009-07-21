@@ -38,7 +38,7 @@ class FaceVertexContact : public Contact {
         Vector3D contactVertex;             // Contact vertex
 
     public :
-        FaceVertexContact(Body& body1, Body& body2, const Vector3D& normalVector, const Vector3D& contactVertex);   // Constructor
+        FaceVertexContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Vector3D& contactVertex);   // Constructor
         virtual ~FaceVertexContact();                                                                               // Destructor
 
         Vector3D getContactVertex() const;              // Return the contact vertex

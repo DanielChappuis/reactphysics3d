@@ -38,7 +38,7 @@ class FaceFaceContact : public Contact {
         Polygon3D contactPolygon;
 
     public :
-        FaceFaceContact(Body& body1, Body& body2, const Vector3D& normalVector, const Polygon3D& contactPolygon);   // Constructor
+        FaceFaceContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Polygon3D& contactPolygon);   // Constructor
         virtual ~FaceFaceContact();                                                                                 // Destructor
 
         Polygon3D getContactPolygon() const;                // Return the contact polygon

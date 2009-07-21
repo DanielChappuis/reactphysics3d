@@ -35,24 +35,24 @@ namespace reactphysics3d {
 */
 class Constraint {
     private :
-        Body& body1;            // Reference to the first body of the constraint
-        Body& body2;            // Reference to the second body of the constraint
+        Body* const body1;            // Pointer to the first body of the constraint
+        Body* const body2;            // Pointer to the second body of the constraint
 
     public :
-        Constraint(Body& body1, Body& body2);   // Constructor
-        virtual ~Constraint();                  // Destructor
+        Constraint(Body* const body1, Body* const body2);   // Constructor
+        virtual ~Constraint();                              // Destructor
 
-        Body& getBody1() const;                 // Return the reference to the body 1
-        Body& getBody2() const;                 // Return the reference to the body 2
+        Body* const getBody1() const;                 // Return the reference to the body 1
+        Body* const getBody2() const;                 // Return the reference to the body 2
 };
 
 // Return the reference to the body 1
-inline Body& Constraint::getBody1() const {
+inline Body* const Constraint::getBody1() const {
     return body1;
 }
 
 // Return the reference to the body 2
-inline Body& Constraint::getBody2() const {
+inline Body* const Constraint::getBody2() const {
     return body2;
 }
 

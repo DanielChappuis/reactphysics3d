@@ -38,7 +38,7 @@ class VertexVertexContact : public Contact {
         Vector3D contactVertex;         // Contact vertex
 
     public :
-        VertexVertexContact(Body& body1, Body& body2, const Vector3D& normalVector, const Vector3D& contactVertex);     // Constructor
+        VertexVertexContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Vector3D& contactVertex);     // Constructor
         virtual ~VertexVertexContact();                                                                                 // Destructor
 
         Vector3D getContactVertex() const;      // Return the contact vertex

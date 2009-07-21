@@ -41,8 +41,8 @@ class Contact : public Constraint {
         Vector3D normalVector;          // Normal vector of the contact
 
     public :
-        Contact(Body& body1, Body& body2, const Vector3D& normalVector);    // Constructor
-        virtual ~Contact();                                                 // Destructor
+        Contact(Body* const body1, Body* const body2, const Vector3D& normalVector);    // Constructor
+        virtual ~Contact();                                                             // Destructor
 
         Vector3D getNormalVector() const;           // Return the normal vector of the contact
 
