@@ -71,7 +71,7 @@ class BodyState {
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
         Vector3D getForce() const;                                              // Return the force over the body
         void setForce(const Vector3D force);                                    // Set the force over the body
-
+        Kilogram getMassInverse() const;                                        // TODO : Delete this
         void recalculate();                                                                 // Recalculate the secondary values
                                                                                             // of the BodyState from the primary ones
         void computeAtTime(const Time& timeStep,
@@ -155,7 +155,11 @@ inline Vector3D BodyState::getForce() const {
 // Set the force over the body
 inline void BodyState::setForce(const Vector3D force) {
     this->force = force;
+}
 
+// TODO : Delete this
+inline Kilogram BodyState::getMassInverse() const {
+    return massInverse;
 }
 
 }   // End of the ReactPhysics3D namespace

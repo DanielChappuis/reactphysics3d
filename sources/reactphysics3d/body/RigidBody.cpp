@@ -24,18 +24,21 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor)
-           : Body(mass), inertiaTensor(inertiaTensor),
+ RigidBody::RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
+           : Body(mass), inertiaTensor(inertiaTensor), obb(obb),
              currentBodyState(position, inertiaTensor.getInverse(),Kilogram(1.0/mass.getValue())),
              previousBodyState(position, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())) {
         isMotionEnabled = true;
         isCollisionEnabled = true;
         interpolationFactor = 0.0;
+
+        // Set the body pointer to the OBB
+        this->obb.setBodyPointer(this);
  }
 
  // Copy-constructor
  RigidBody::RigidBody(const RigidBody& rigidBody) : Body(rigidBody), inertiaTensor(rigidBody.inertiaTensor),
-            currentBodyState(rigidBody.currentBodyState), previousBodyState(rigidBody.previousBodyState) {
+            currentBodyState(rigidBody.currentBodyState), previousBodyState(rigidBody.previousBodyState), obb(rigidBody.obb) {
     this->isMotionEnabled = rigidBody.isMotionEnabled;
     this->isCollisionEnabled = rigidBody.isCollisionEnabled;
     interpolationFactor = rigidBody.interpolationFactor;

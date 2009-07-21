@@ -42,14 +42,14 @@ class Body {
         Body(const Body& body);                             // Copy-constructor
         virtual ~Body();                                    // Destructor
 
-        Kilogram getMass();                 // Return the mass of the body
+        Kilogram getMass() const;           // Return the mass of the body
         void setMass(Kilogram mass);        // Set the mass of the body
 };
 
 // --- Inlines function --- //
 
 // Method that return the mass of the body
-inline Kilogram Body::getMass() {
+inline Kilogram Body::getMass() const {
     return mass;
 };
 

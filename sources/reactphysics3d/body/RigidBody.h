@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
 * Copyright (C) 2009      Daniel Chappuis                                  *
 ****************************************************************************
 * This file is part of ReactPhysics3D.                                     *
@@ -24,6 +24,7 @@
  #include <cassert>
  #include "Body.h"
  #include "BodyState.h"
+ #include "OBB.h"
  #include "../mathematics/mathematics.h"
  #include "../physics/physics.h"
 
@@ -45,20 +46,23 @@ class RigidBody : public Body {
         bool isMotionEnabled;                       // True if the body can move
         bool isCollisionEnabled;                    // True if the body can collide with others bodies
         double interpolationFactor;                 // Interpolation factor used for the state interpolation
+        OBB obb;                                    // Oriented bounding box that contains the rigid body
 
     public :
-        RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor);  // Constructor
-        RigidBody(const RigidBody& rigidBody);                                                      // Copy-constructor
-        virtual ~RigidBody();                                                                       // Destructor
+        RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb);  // Constructor
+        RigidBody(const RigidBody& rigidBody);                                                                      // Copy-constructor
+        virtual ~RigidBody();                                                                                       // Destructor
 
-        Matrix3x3 getInertiaTensor() const;                                     // Return the inertia tensor of the body
-        void setInertiaTensor(const Matrix3x3& inertiaTensor);                  // Set the inertia tensor of the body
-        BodyState& getCurrentBodyState();                                       // Return a reference to the current state of the body
-        void setInterpolationFactor(double factor);                             // Set the interpolation factor of the body
-        BodyState getInterpolatedState() const;                                 // Compute and return the interpolated state
-        bool getIsMotionEnabled() const;                                        // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                          // Set the value to true if the body can move
-        void updatePreviousBodyState();                 // Update the previous body state of the body
+        Matrix3x3 getInertiaTensor() const;                             // Return the inertia tensor of the body
+        void setInertiaTensor(const Matrix3x3& inertiaTensor);          // Set the inertia tensor of the body
+        BodyState& getCurrentBodyState();                               // Return a reference to the current state of the body
+        void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
+        BodyState getInterpolatedState() const;                         // Compute and return the interpolated state
+        bool getIsMotionEnabled() const;                                // Return if the rigid body can move
+        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
+        void updatePreviousBodyState();                                 // Update the previous body state of the body
+        OBB getOBB() const;                                             // Return the oriented bounding box of the rigid body
+        void update();                                                  // Update the rigid body in order to reflect a change in the body state
 };
 
 // --- Inline functions --- //
@@ -101,6 +105,17 @@ inline void RigidBody::setIsMotionEnabled(bool isMotionEnabled) {
 inline void RigidBody::updatePreviousBodyState() {
     // The current body state becomes the previous body state
     previousBodyState = currentBodyState;
+}
+
+// Return the oriented bounding box of the rigid body
+inline OBB RigidBody::getOBB() const {
+    return obb;
+}
+
+// Update the rigid body in order to reflect a change in the body state
+inline void RigidBody::update() {
+    // Update the orientation of the corresponding bounding volume of the rigid body
+    obb.updateOrientation(currentBodyState.getPosition(), currentBodyState.getOrientation());
 }
 
 } // End of the ReactPhyscis3D namespace

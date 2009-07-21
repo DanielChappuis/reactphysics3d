@@ -86,7 +86,7 @@ void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& l
 // Return the force on the body at time t
 Vector3D BodyState::computeForce(Time time) const {
     // TODO : Implement this method
-    return force + Vector3D(0.0, 0.0, 0.0);
+    return force * (1.0 / massInverse.getValue());
 }
 
 // Return the torque on the body at time
