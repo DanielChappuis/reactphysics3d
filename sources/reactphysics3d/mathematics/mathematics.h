@@ -36,11 +36,25 @@
 
 // ---------- Mathematics functions ---------- //
 
-// Method to test if two numbers are (almost) equal
+// function to test if two numbers are (almost) equal
 // We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool equal(double a, double b) {
     double difference = a - b;
     return (difference < EPSILON && difference > -EPSILON);
+}
+
+// TODO : Test this method
+// Rotate a vector according to a rotation quaternion.
+// The function returns the vector rotated according to the quaternion in argument
+inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d::Vector3D& vector, const reactphysics3d::Quaternion& quaternion) {
+    // Convert the vector into a quaternion
+    reactphysics3d::Quaternion vectorQuaternion(0, vector);
+
+    // Compute the quaternion rotation result
+    reactphysics3d::Quaternion quaternionResult = (quaternion * vectorQuaternion) * quaternion.getInverse();
+
+    // Convert the result quaternion into a vector
+    return quaternionResult.vectorV();
 }
 
 #endif
