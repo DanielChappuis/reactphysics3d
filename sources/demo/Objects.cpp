@@ -30,8 +30,8 @@
 // ----- Class Object ----- //
 
 // Constructor of the class Object
-Object::Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor)
-       :rigidBody(new RigidBody(position, mass, inertiaTensor)) {
+Object::Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
+       :rigidBody(new RigidBody(position, mass, inertiaTensor, obb)) {
 
 }
 
@@ -55,7 +55,8 @@ const Matrix3x3 Cube::inertiaTensor;
 Cube::Cube(const Vector3D& position, float size, const Kilogram& mass)
      :Object(position, mass, Matrix3x3(1.0/12.0*mass.getValue()*2*size*size, 0.0, 0.0,
                                         0.0, 1.0/12.0*mass.getValue()*2*size*size, 0.0,
-                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size)) {
+                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
+                                                                                             size/2, size/2, size/2)) {
     this->size = size;
 }
 
@@ -97,7 +98,8 @@ void Cube::draw() const {
 Plane::Plane(const Vector3D& position, float width, float height, const Vector3D& d1, const Vector3D& d2, const Kilogram& mass)
       :Object(position, mass, Matrix3x3(1.0/12.0*mass.getValue()*height*height, 0.0, 0.0,
                                         0.0, 1.0/12.0*mass.getValue()*(width*width+height*height), 0.0,
-                                        0.0, 0.0, 1.0/12.0*mass.getValue()*width*width)) {
+                                        0.0, 0.0, 1.0/12.0*mass.getValue()*width*width), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
+                                                                                             width/2, 0.5, height/2)) { // TODO : Change the height of the OBB
     this->width = width;
     this->height = height;
     this->d1 = d1;

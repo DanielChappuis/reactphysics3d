@@ -99,6 +99,12 @@ void Scene::display(const Context& context) const {
         // Draw the object
         context.getObject(i).draw();
 
+       glPopMatrix();
+       glPushMatrix();
+
+        // Draw the bounding volume
+        context.getObject(i).getRigidBody()->getOBB().draw();
+
        // Remove the matrix on the top of the matrix stack
        glPopMatrix();
     }

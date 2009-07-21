@@ -26,7 +26,8 @@
 using namespace reactphysics3d;
 
 // Constructor of the class Simulation
-Simulation::Simulation() :world(new DynamicWorld(Vector3D(0.0, -2.81, 0.0))), engine(world, Time(0.01)) {
+Simulation::Simulation()
+           :world(new CollisionWorld(Vector3D(0.0, -1.0, 0.0))), engine(world, Time(0.01)) {
     simRunning = false;
     mouseButtonPressed = false;
     nbFrame = 0;
@@ -59,11 +60,13 @@ void Simulation::start() {
     // Get the current time
     lastFrameTime = SDL_GetTicks();
 
+    DynamicEngine* pEngine = &engine;
+
     // Initialize the display time
-    engine.initializeDisplayTime(Time(SDL_GetTicks()/1000.0));
+    pEngine->initializeDisplayTime(Time(SDL_GetTicks()/1000.0));
 
     // Start the physics simulation
-    engine.start();
+    pEngine->start();
 
     // Main loop of the simulation
     while(simRunning) {
@@ -74,10 +77,10 @@ void Simulation::start() {
         std::cout << "Time : " << time << std::endl;
 
         // Update the display time
-        engine.updateDisplayTime(Time(time));
+        pEngine->updateDisplayTime(Time(time));
 
         // Update the physics
-        engine.update();
+        pEngine->update();
 
         // Display the actual scene
         scene.display(context);

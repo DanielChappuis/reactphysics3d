@@ -30,14 +30,14 @@ using namespace reactphysics3d;
 Context::Context() {
 
     // We add some objects in the context at the beginning ---> THESE THINGS WILL BE STORE IN A TEXT FILE
-    Cube* cube1 = new Cube(Vector3D(-2.0, 3, -6.0), 2.0, 10.0);
-    Cube* cube2 = new Cube(Vector3D(0.0, 3, 6.0), 3.0, 5.0);
-    Cube* cube3 = new Cube(Vector3D(4.0, 3.0, -2.0), 2.0, 0.01);
-    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), 10.0);
+    Cube* cube1 = new Cube(Vector3D(-2.0, 10, -6.0), 3.0, Kilogram(30.0));
+    //Cube* cube2 = new Cube(Vector3D(-3.0, 13, 1.0), 3.0, Kilogram(2.0));
+    //Cube* cube3 = new Cube(Vector3D(4.0, 10, -2.0), 2.0, Kilogram(11.0));
+    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(10.0));
 
     addObject(cube1);
-    addObject(cube2);
-    addObject(cube3);
+    //addObject(cube2);
+    //addObject(cube3);
     addObject(plane1);
 }
 

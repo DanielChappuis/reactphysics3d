@@ -37,11 +37,11 @@ class Object {
         RigidBody* rigidBody;                                 // Rigid Body that represents the object
 
     public :
-        Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor);     // Constructor of the class Object
-        virtual ~Object();                                                                          // Destructor of the class Object
+        Object(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb);     // Constructor of the class Object
+        virtual ~Object();                                                                                          // Destructor of the class Object
 
-        virtual void draw() const =0;                                                               // pure virtual method to draw the object
-        RigidBody* getRigidBody();                                                                  // Return the pointer to the rigid body
+        virtual void draw() const =0;            // pure virtual method to draw the object
+        RigidBody* getRigidBody();               // Return the pointer to the rigid body
 };
 
 // ----- Class Cube ----- //
@@ -61,11 +61,11 @@ class Cube : public Object {
 // Represent a plane in the simulation
 class Plane : public Object {
     private :
-        float width;                                                                                            // Width of the plane
-        float height;                                                                                           // Height of the plane
-        Vector3D d1;                                                                                            // Unit vector in the plane
-        Vector3D d2;                                                                                            // Unit vector in the plane
-        Vector3D normalVector;                                                                                  // Unit normal vector of the plane
+        float width;              // Width of the plane
+        float height;             // Height of the plane
+        Vector3D d1;              // Unit vector in the plane
+        Vector3D d2;              // Unit vector in the plane
+        Vector3D normalVector;    // Unit normal vector of the plane
 
     public :
         Plane(const Vector3D& position, float width, float height, const Vector3D& d1, const Vector3D& d2, const Kilogram& mass);   // Constructor of the class Plane
