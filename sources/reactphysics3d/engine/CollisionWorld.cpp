@@ -19,6 +19,7 @@
 
 // Libraries
 #include "CollisionWorld.h"
+#include "../constraint/Contact.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -31,7 +32,10 @@ CollisionWorld::CollisionWorld(const Vector3D& gravity)
 
 // Destructor
 CollisionWorld::~CollisionWorld() {
-
+    // Delete all the constraint
+    for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
+        delete (*it);
+    }
 }
 
 // Add a constraint
@@ -42,4 +46,24 @@ void CollisionWorld::addConstraint(Constraint* constraint) throw(std::invalid_ar
 // Remove a constraint
 void CollisionWorld::removeConstraint(Constraint* constraint) throw(std::invalid_argument) {
     // TODO : Implement this method
+}
+
+ // Remove all collision contacts constraints
+void CollisionWorld::removeAllContactConstraints() {
+    // For all constraints
+    for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
+
+        // Try a downcasting
+        Contact* contact = dynamic_cast<Contact*>(*it);
+
+        // If the constraint is a contact
+        if (contact != 0) {
+            // Delete the  contact
+            delete (*it);
+            it = constraintList.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
 }

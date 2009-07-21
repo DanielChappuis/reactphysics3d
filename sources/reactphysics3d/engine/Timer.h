@@ -112,11 +112,14 @@ inline void Timer::setCurrentDisplayTime(const Time& currentDisplayTime) {
 
 // Update the timer
 inline void Timer::update() {
-    // Update the current time of the physics engine
-    time.setValue(time.getValue() + timeStep.getValue());
+    // Check if the timer is running
+    if (isRunning) {
+        // Update the current time of the physics engine
+        time.setValue(time.getValue() + timeStep.getValue());
 
-    // Update the accumulator value
-    accumulator -= timeStep.getValue();
+        // Update the accumulator value
+        accumulator -= timeStep.getValue();
+    }
 }
 
 // Compute and return the interpolation factor between two body states

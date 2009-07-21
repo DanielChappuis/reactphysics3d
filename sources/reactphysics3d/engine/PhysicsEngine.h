@@ -58,7 +58,7 @@ inline void PhysicsEngine::start() {
 }
 
 inline void PhysicsEngine::stop() {
-    // TODO : Implement this method
+    timer.setIsRunning(false);
 }
 
 // Initialize the display time

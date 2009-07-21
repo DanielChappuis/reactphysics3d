@@ -47,6 +47,7 @@ class CollisionWorld : public DynamicWorld {
 
         void addConstraint(Constraint* constraint) throw(std::invalid_argument);            // Add a constraint
         void removeConstraint(Constraint* constraint) throw(std::invalid_argument);         // Remove a constraint
+        void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
         std::vector<Constraint*>::const_iterator getConstraintListStartIterator() const;    // Return a start iterator on the constraint list
         std::vector<Constraint*>::const_iterator getConstraintListEndIterator() const;      // Return a end iterator on the constraint list
 };

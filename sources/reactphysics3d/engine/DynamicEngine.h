@@ -43,14 +43,14 @@ class DynamicEngine : public PhysicsEngine {
     protected :
         IntegrationAlgorithm* integrationAlgorithm;        // Integration algorithm used to solve differential equations of movement
 
-        void updateBodyState(RigidBody* const rigidBody);                                                           // Update the state of a rigid body
+        void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);                                                           // Update the state of a rigid body
 
     public :
         DynamicEngine(DynamicWorld* world, const Time& timeStep);       // Constructor
         DynamicEngine(const DynamicEngine& engine);                     // Copy-constructor
         virtual ~DynamicEngine();                                       // Destructor
 
-        void update();                                  // Update the physics simulation
+        virtual void update();                                          // Update the physics simulation
 };
 
 }

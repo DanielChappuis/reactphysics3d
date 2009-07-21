@@ -51,7 +51,7 @@ DynamicEngine::~DynamicEngine() {
 }
 
 // Update the state of a rigid body
-void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
+void DynamicEngine::updateBodyState(RigidBody* const rigidBody, const Time& timeStep) {
 
     // If the gravity force is on
     if(world->getIsGravityOn()) {
@@ -63,12 +63,15 @@ void DynamicEngine::updateBodyState(RigidBody* const rigidBody) {
     rigidBody->updatePreviousBodyState();
 
     // Integrate the current body state at time t to get the next state at time t + dt
-    integrationAlgorithm->integrate(rigidBody->getCurrentBodyState(), timer.getTime(), timer.getTimeStep());
+    integrationAlgorithm->integrate(rigidBody->getCurrentBodyState(), timer.getTime(), timeStep);
+
+    // If the body state has changed, we have to update some informations in the rigid body
+    rigidBody->update();
+
 }
 
 // Update the physics simulation
 void DynamicEngine::update() {
-
     // Check if the physics simulation is running
     if (timer.getIsRunning()) {
         // While the time accumulator is not empty
@@ -79,7 +82,7 @@ void DynamicEngine::update() {
                 RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
                 if (rigidBody && rigidBody->getIsMotionEnabled()) {
                     // Update the state of the rigid body
-                    updateBodyState(rigidBody);
+                    updateBodyState(rigidBody, timer.getTimeStep());
                 }
             }
 
