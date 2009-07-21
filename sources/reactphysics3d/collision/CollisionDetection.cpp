@@ -21,6 +21,9 @@
 #include "CollisionDetection.h"
 #include "SeparatingAxisAABB.h"
 #include "SeparatingAxisOBB.h"
+#include "../body/OBB.h"
+#include "../body/RigidBody.h"
+#include <cassert>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -50,7 +53,43 @@ void CollisionDetection::computeCollisionContacts() {
     // TODO : Implement this method
 }
 
-// Compute the collision detection
-void CollisionDetection::computeCollisionDetection(CollisionWorld& collisionWorld) {
-    // TODO : Implement this method
+// Compute the collision detection for the time interval [0, timeMax]
+// The method returns true if a collision occurs in the time interval [0, timeMax]
+bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorld, const Time& timeMax, Time& timeFirst, Time& timeLast) {
+
+    bool existsCollision = false;   // True if a collision is found in the time interval [0, timeMax]
+
+    // For each pair of bodies in the collisionWorld
+    for(std::vector<Body*>::const_iterator it1 = collisionWorld->getBodyListStartIterator(); it1 != collisionWorld->getBodyListEndIterator(); ++it1) {
+        for(std::vector<Body*>::const_iterator it2 = it1; it2 != collisionWorld->getBodyListEndIterator(); ++it2) {
+            // If both bodies are RigidBody and are different
+            RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(*it1);
+            RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);
+            if(rigidBody1 && rigidBody2 && rigidBody1 != rigidBody2) {
+                // Get the oriented bounding boxes of the two bodies
+                OBB obb1 = rigidBody1->getOBB();
+                OBB obb2 = rigidBody2->getOBB();
+
+                // Use the broad-phase algorithm to decide if the two bodies can collide
+                if(broadPhaseAlgorithm->testCollisionPair(&obb1, &obb2)) {
+                    Contact* contact = 0;
+
+                    // Get the velocities of both bodies
+                    Vector3D velocity1 = rigidBody1->getInterpolatedState().getLinearVelocity();
+                    Vector3D velocity2 = rigidBody2->getInterpolatedState().getLinearVelocity();
+
+                    // Use the narrow-phase algorithm to check if the two bodies really collide
+                    if(narrowPhaseAlgorithm->testCollision(&obb1, &obb2, &contact, velocity1, velocity2, timeMax, timeFirst, timeLast)) {
+                        assert(contact != 0);
+                        existsCollision = true;
+
+                        // Add the new collision contact into the collision world
+                        collisionWorld->addConstraint(contact);
+                    }
+                }
+            }
+        }
+    }
+
+    return existsCollision;
 }

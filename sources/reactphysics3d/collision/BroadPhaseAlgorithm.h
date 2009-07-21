@@ -46,7 +46,7 @@ class BroadPhaseAlgorithm {
         BroadPhaseAlgorithm();              // Constructor
         virtual ~BroadPhaseAlgorithm();     // Destructor
 
-        virtual bool testCollisionPair(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2)=0;  // Return true if the two bounding volume can collide
+        virtual bool testCollisionPair(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2)=0;  // Return true if the two bounding volume can collide
 };
 
 } // End of reactphysics3d namespace

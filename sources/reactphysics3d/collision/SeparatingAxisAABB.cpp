@@ -34,7 +34,10 @@ SeparatingAxisAABB::~SeparatingAxisAABB() {
 }
 
 // Return true if the two AABB of the bodies intersect
-bool SeparatingAxisAABB::testCollisionPair(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2) {
+bool SeparatingAxisAABB::testCollisionPair(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2) {
     // TODO : Implement this method
+
+    // At this time this method returns true to indicate that all body pairs can collide
+    return true;
 }
 

@@ -27,6 +27,14 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
+/*  -------------------------------------------------------------------
+    Class SeparatingAxisAABB :
+        This class implements a broad-phase collision detection
+        algorithm. This algorithm is uses a separating axis technique
+        with axis aligned bounding box (AABB) to check if two bounding
+        volumes can colide or not.
+    -------------------------------------------------------------------
+*/
 class SeparatingAxisAABB : public BroadPhaseAlgorithm {
     private :
 
@@ -34,7 +42,7 @@ class SeparatingAxisAABB : public BroadPhaseAlgorithm {
         SeparatingAxisAABB();           // Constructor
         ~SeparatingAxisAABB();          // Destructor
 
-        virtual bool testCollisionPair(const BoundingVolume& boundingVolume1, const BoundingVolume& boundingVolume2);     // Return true if the two AABB of the bodies intersect
+        virtual bool testCollisionPair(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2);     // Return true if the two AABB of the bodies intersect
 };
 
 } // End of the ReactPhysics3D namespace

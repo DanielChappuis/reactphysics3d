@@ -53,7 +53,7 @@ class CollisionDetection {
         CollisionDetection();       // Constructor
         ~CollisionDetection();      // Destructor
 
-        void computeCollisionDetection(CollisionWorld& collisionWorld);     // Compute the collision detection
+        bool computeCollisionDetection(CollisionWorld* collisionWorld, const Time& timeMax, Time& timeFirst, Time& timeLast);     // Compute the collision detection
 };
 
 // Add a possible collision pair of bodies in the possibleCollisionPairList
