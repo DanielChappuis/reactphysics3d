@@ -117,11 +117,13 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
+    /*
     std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
+    */
     if(!computeIntervalsIntersectionTime(timeMax, speed, min1, max1, min2, max2, timeFirst, timeLast)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
@@ -138,21 +140,25 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     udc1[1] = obb1->getAxis(1).scalarProduct(boxDistance);
     udv1[1] = obb1->getAxis(1).scalarProduct(deltaVelocity);
     center = udc1[1];
+    speed = udv1[1];
+    /*
     std::cout << "Axis - X : " << obb1->getAxis(1).getX() << "Y : " << obb1->getAxis(1).getY() << "Z : " << obb1->getAxis(1).getZ() << std::endl;
     std::cout << "Distance - X : " << boxDistance.getX() << "Y : " << boxDistance.getY() << "Z : " << boxDistance.getZ() << std::endl;
     std::cout << "Center : " << center << std::endl;
-    speed = udv1[1];
+    */
     radius1 = obb1->getExtent(1);
     radius2 = obb2->getExtent(0)*absC[1][0] + obb2->getExtent(1)*absC[1][1] + obb2->getExtent(2) * absC[1][2];
     min1 = -radius1;
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
+    /*
     std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
+    */
     if(!computeIntervalsIntersectionTime(timeMax, speed, min1, max1, min2, max2, timeFirst, timeLast)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
@@ -171,16 +177,18 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     center = udc1[2];
     speed = udv1[2];
     radius1 = obb1->getExtent(2);
-    radius2 = obb2->getExtent(0)*absC[2][0] + obb2->getExtent(1)*absC[2][1] + obb2->getExtent(2) * absC[2][2];
+    radius2 = obb2->getExtent(0)*absC[2][0] + obb2->getExtent(1)*absC[2][1] + obb2->getExtent(2)*absC[2][2];
     min1 = -radius1;
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
+    /*
     std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
+    */
     if(!computeIntervalsIntersectionTime(timeMax, speed, min1, max1, min2, max2, timeFirst, timeLast)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
@@ -191,7 +199,7 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     udv2[0] = obb2->getAxis(0).scalarProduct(deltaVelocity);
     center = udc2[0];
     speed = udv2[0];
-    radius1 = obb1->getExtent(0)*absC[0][0] + obb1->getExtent(1)*absC[1][0] + obb1->getExtent(2) * absC[1][0];
+    radius1 = obb1->getExtent(0)*absC[0][0] + obb1->getExtent(1)*absC[1][0] + obb1->getExtent(2) * absC[2][0];
     radius2 = obb2->getExtent(0);
     min1 = center - radius1;
     max1 = center + radius1;
@@ -207,7 +215,7 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     udv2[1] = obb2->getAxis(1).scalarProduct(deltaVelocity);
     center = udc2[1];
     speed = udv2[1];
-    radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[1][1];
+    radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[2][1];
     radius2 = obb2->getExtent(1);
     min1 = center - radius1;
     max1 = center + radius1;
@@ -223,7 +231,7 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     udv2[2] = obb2->getAxis(2).scalarProduct(deltaVelocity);
     center = udc2[2];
     speed = udv2[2];
-    radius1 = obb1->getExtent(0)*absC[0][2] + obb1->getExtent(1)*absC[1][2] + obb1->getExtent(2) * absC[1][2];
+    radius1 = obb1->getExtent(0)*absC[0][2] + obb1->getExtent(1)*absC[1][2] + obb1->getExtent(2)*absC[2][2];
     radius2 = obb2->getExtent(2);
     min1 = center - radius1;
     max1 = center + radius1;
