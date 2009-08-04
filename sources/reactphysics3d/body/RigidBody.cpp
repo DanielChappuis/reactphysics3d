@@ -24,16 +24,20 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
+ RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
            : Body(mass), inertiaTensor(inertiaTensor), obb(obb),
-             currentBodyState(position, inertiaTensor.getInverse(),Kilogram(1.0/mass.getValue())),
-             previousBodyState(position, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())) {
+             currentBodyState(position, orientation, inertiaTensor.getInverse(),Kilogram(1.0/mass.getValue())),
+             previousBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())) {
+
         isMotionEnabled = true;
         isCollisionEnabled = true;
         interpolationFactor = 0.0;
 
         // Set the body pointer to the OBB
         this->obb.setBodyPointer(this);
+
+        // Update the orientation of the OBB according to the orientation of the rigid body
+        this->update();
  }
 
  // Copy-constructor

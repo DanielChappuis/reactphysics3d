@@ -124,7 +124,7 @@ void OBB::draw() const {
         glVertex3f(s6.getX(), s6.getY(), s6.getZ());
 
         glVertex3f(center.getX(), center.getY(), center.getZ());
-        glVertex3f(center.getX() + 8.0 * axis[1].getX(), center.getY() + 8.0 * axis[1].getY(), center.getZ() + 8.0 * axis[1].getZ());
+        glVertex3f(center.getX() + 8.0 * axis[2].getX(), center.getY() + 8.0 * axis[2].getY(), center.getZ() + 8.0 * axis[2].getZ());
 
     glEnd();
 }

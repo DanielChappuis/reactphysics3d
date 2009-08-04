@@ -49,9 +49,9 @@ class RigidBody : public Body {
         OBB obb;                                    // Oriented bounding box that contains the rigid body
 
     public :
-        RigidBody(const Vector3D& position, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb);  // Constructor
-        RigidBody(const RigidBody& rigidBody);                                                                      // Copy-constructor
-        virtual ~RigidBody();                                                                                       // Destructor
+        RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb);   // Constructor
+        RigidBody(const RigidBody& rigidBody);                                                                                                      // Copy-constructor
+        virtual ~RigidBody();                                                                                                                       // Destructor
 
         Matrix3x3 getInertiaTensor() const;                             // Return the inertia tensor of the body
         void setInertiaTensor(const Matrix3x3& inertiaTensor);          // Set the inertia tensor of the body

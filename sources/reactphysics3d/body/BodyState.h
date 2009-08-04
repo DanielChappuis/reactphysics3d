@@ -49,12 +49,12 @@ class BodyState {
 
         // Constants
         Matrix3x3 inertiaTensorInverse;         // Inverse of the inertia tensor of the body
-        Kilogram massInverse;                     // Inverse of the mass of the body
+        Kilogram massInverse;                   // Inverse of the mass of the body
 
     public :
-        BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse);    // Constructor
-        BodyState(const BodyState& bodyState);                                                                      // Copy-constructor
-        virtual ~BodyState();                                                                                       // Destructor
+        BodyState(const Vector3D& position, const Quaternion& orientation, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse);     // Constructor
+        BodyState(const BodyState& bodyState);                                                                                                      // Copy-constructor
+        virtual ~BodyState();                                                                                                                       // Destructor
 
         Vector3D getPosition() const;                                           // Return the position of the body
         void setPosition(const Vector3D& position);                             // Set the position of the body

@@ -26,9 +26,8 @@
  using namespace reactphysics3d;
 
  // Constructor
- BodyState::BodyState(const Vector3D& position, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse)
-           : position(position), orientation(Quaternion(0,1,0, 0.0)), inertiaTensorInverse(inertiaTensorInverse), massInverse(massInverse) {
-    // TODO : orientation will be initialized in another way
+ BodyState::BodyState(const Vector3D& position, const Quaternion& orientation, const Matrix3x3& inertiaTensorInverse, const Kilogram& massInverse)
+           : position(position), orientation(orientation), inertiaTensorInverse(inertiaTensorInverse), massInverse(massInverse) {
 
     // Recalculate the secondary values from the primary values
     recalculate();
@@ -92,5 +91,5 @@ Vector3D BodyState::computeForce(Time time) const {
 // Return the torque on the body at time
 Vector3D BodyState::computeTorque(Time time) const {
     // TODO : Implement this method
-    return force + Vector3D(0.0, 0.0 ,0.0);
+    return Vector3D(0.0, 0.0 ,0.0);
 }
