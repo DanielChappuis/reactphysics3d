@@ -41,7 +41,7 @@ SeparatingAxisOBB::~SeparatingAxisOBB() {
 // Return true and compute a collision contact if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
 bool SeparatingAxisOBB::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact,
-                                      const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax, Time& timeFirst, Time& timeLast) {
+                                      const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax) {
     assert(boundingVolume1 != boundingVolume2);
 
     // If the two bounding volumes are OBB
@@ -51,7 +51,7 @@ bool SeparatingAxisOBB::testCollision(const BoundingVolume* const boundingVolume
     // If the two bounding volumes are OBB
     if (obb1 && obb2) {
         // Compute the collision test between two OBB
-        return computeCollisionTest(obb1, obb2, contact, velocity1, velocity2, timeMax, timeFirst, timeLast);
+        return computeCollisionTest(obb1, obb2, contact, velocity1, velocity2, timeMax);
     }
     else {
         return false;
@@ -68,8 +68,7 @@ bool SeparatingAxisOBB::testCollision(const BoundingVolume* const boundingVolume
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
 bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact,
-                                            const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax,
-                                            Time& timeFirst, Time& timeLast) {
+                                            const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax) {
 
     double center;                      // Center
     double speed;                       // Relavtive speed of the projection intervals (dotProduct(SeparatingAxis, deltaVelocity))
@@ -96,8 +95,8 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
 
     Vector3D deltaVelocity = velocity2-velocity1;                   // Difference of box center velocities
     Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Distance between the centers of the OBBs
-    timeFirst.setValue(0.0);                                        // timeFirst = 0
-    timeLast.setValue(DBL_MAX);                                     // timeLast = infinity
+    Time timeFirst(0.0);                                            // timeFirst = 0
+    Time timeLast(DBL_MAX);                                         // timeLast = infinity (time when two colliding bodies separates)
 
     // Axis A0
     for (int i=0; i<3; ++i) {
@@ -247,8 +246,8 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
         // There exists a parallel pair of face normals and we have already checked all the face
         // normals for separation. Therefore the OBBs must intersect
 
-        // TODO : Delete this
-        (*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0));
+        // TODO : Construct a face-face contact here
+        (*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0), timeFirst);
         std::cout << "Contact : " << contact << std::endl;
 
         return true;
@@ -381,7 +380,7 @@ bool SeparatingAxisOBB::computeCollisionTest(const OBB* const obb1, const OBB* c
     }
 
     // TODO : Delete this
-    (*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0));
+    (*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0), timeFirst);
     std::cout << "Contact2 : " << contact << std::endl;
 
     // We have found no separation axis, therefore the two OBBs must collide
@@ -425,7 +424,6 @@ bool SeparatingAxisOBB::computeIntervalsIntersectionTime(const Time& timeMax, do
 
         // If we found a earlier separated collision time, we update the last collision time
         if (t < timeLast.getValue()) {
-
                 timeLast.setValue(t);
         }
 

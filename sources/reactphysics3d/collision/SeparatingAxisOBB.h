@@ -45,18 +45,16 @@ namespace reactphysics3d {
 class SeparatingAxisOBB : public NarrowPhaseAlgorithm {
     private :
         bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact,
-                                  const Vector3D& velocity1, const Vector3D& velocity2,
-                                  const Time& timeMax, Time& timeFirst, Time& timeLast);                     // Return true and compute a collision contact if the two OBB collide
+                                  const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax);   // Return true and compute a collision contact if the two OBB collide
         bool computeIntervalsIntersectionTime(const Time& timeMax, double speed, double min0, double max0,
-                                              double min1, double max1, Time& timeFirst, Time& timeLast);    // Compute the intersection time of two projection intervals
+                                              double min1, double max1, Time& timeFirst, Time& timeLast);       // Compute the intersection time of two projection intervals
 
     public :
         SeparatingAxisOBB();           // Constructor
         ~SeparatingAxisOBB();          // Destructor
 
         virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2,
-                                  Contact** contact, const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax,
-                                  Time& timeFirst, Time& timeLast);                                                              // Return true and compute a collision contact if the two bounding volume collide
+                                  Contact** contact, const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax);    // Return true and compute a collision contact if the two bounding volume collide
 
 };
 
