@@ -29,7 +29,6 @@ using namespace reactphysics3d;
 // Constructor of the class Context
 Context::Context() {
 
-    // We add some objects in the context at the beginning ---> THESE THINGS WILL BE STORE IN A TEXT FILE
     Cube* cube1 = new Cube(Vector3D(0.0, 13, 3.0), Quaternion(0.5, 1.0, 1.0, 0.0), 3.0, Kilogram(30.0));
     Cube* cube2 = new Cube(Vector3D(0.0, 17, 8.0), Quaternion(0.0, 1.0, 0.0, 0.0), 3.0, Kilogram(2.0));
     //Cube* cube3 = new Cube(Vector3D(4.0, 17, -2.0), Quaternion(0.0, 1.0, 0.0, 0.0), 2.0, Kilogram(11.0));
