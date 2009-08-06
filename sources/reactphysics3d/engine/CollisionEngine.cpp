@@ -50,7 +50,7 @@ void CollisionEngine::update() {
         Time timeLast(DBL_MAX);        // Last collision separation time
 
         // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection(collisionWorld, timer.getTimeStep(), timeFirst, timeLast)) {
+        if (collisionDetection.computeCollisionDetection(collisionWorld, timer.getTimeStep(), timeFirst)) {
             // For each body in the dynamic world
             for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
                 // If the body is a RigidBody and if the rigid body motion is enabled
