@@ -39,8 +39,8 @@ class EdgeVertexContact : public Contact {
         Vector3D contactVertex;         // Contact vertex
 
     public :
-        EdgeVertexContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Vector3D& contactVertex);       // Constructor
-        virtual ~EdgeVertexContact();                                                                                   // Destructor
+        EdgeVertexContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time,  const Vector3D& contactVertex);    // Constructor
+        virtual ~EdgeVertexContact();                                                                                                               // Destructor
 
         Vector3D getContactVertex() const;          // Return the contact vertex
 };

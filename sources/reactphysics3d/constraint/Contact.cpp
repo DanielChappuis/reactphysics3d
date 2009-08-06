@@ -24,8 +24,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normalVector)
-        :Constraint(body1, body2), normalVector(normalVector) {
+Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time)
+        :Constraint(body1, body2), normalVector(normalVector), time(time) {
 
 }
 
