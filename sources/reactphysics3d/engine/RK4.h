@@ -38,7 +38,7 @@ namespace reactphysics3d {
 class RK4 : public IntegrationAlgorithm {
     private :
         DerivativeBodyState evaluate(const BodyState& bodyState, const Time& time);                                 // Compute a derivative body state
-        DerivativeBodyState evaluate(BodyState& bodyState, const Time& time,
+        DerivativeBodyState evaluate(BodyState bodyState, const Time& time,
                                      const Time& timeStep, const DerivativeBodyState& lastDerivativeBodyState);     // Compute a derivative body state
 
     public :
