@@ -18,29 +18,29 @@
  ***************************************************************************/
 
 // Libraries
-#include "RK4.h"
+#include "RungeKutta4.h"
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-RK4::RK4() {
+RungeKutta4::RungeKutta4() {
 
 }
 
 // Copy-constructor
-RK4::RK4(const RK4& rk4) {
+RungeKutta4::RungeKutta4(const RungeKutta4& rk4) {
 
 }
 
 // Destructor
-RK4::~RK4() {
+RungeKutta4::~RungeKutta4() {
 
 }
 
 // Compute a derivative body state at time t
-DerivativeBodyState RK4::evaluate(const BodyState& bodyState, const Time& time) {
+DerivativeBodyState RungeKutta4::evaluate(const BodyState& bodyState, const Time& time) {
 
     // Compute the derivaties values at time t
     Vector3D linearVelocity = bodyState.getLinearVelocity();
@@ -53,7 +53,7 @@ DerivativeBodyState RK4::evaluate(const BodyState& bodyState, const Time& time) 
 }
 
 // Compute a derivative body state at time t + dt according to the last derivative body state
-DerivativeBodyState RK4::evaluate(BodyState bodyState, const Time& time, const Time& timeStep,
+DerivativeBodyState RungeKutta4::evaluate(BodyState bodyState, const Time& time, const Time& timeStep,
                                                   const DerivativeBodyState& lastDerivativeBodyState) {
     // Compute the bodyState at time t + dt
     bodyState.computeAtTime(timeStep, lastDerivativeBodyState);
@@ -69,7 +69,7 @@ DerivativeBodyState RK4::evaluate(BodyState bodyState, const Time& time, const T
 }
 
 // Integrate a body state over time. This method use the RK4 integration algorithm
-void RK4::integrate(BodyState& bodyState, const Time& time, const Time& timeStep) {
+void RungeKutta4::integrate(BodyState& bodyState, const Time& time, const Time& timeStep) {
 
     // Compute the 4 derivatives body states at different time values.
     DerivativeBodyState a = evaluate(bodyState, time);
