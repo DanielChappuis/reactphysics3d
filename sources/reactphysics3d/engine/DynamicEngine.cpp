@@ -19,8 +19,7 @@
 
 // Libraries
 #include "DynamicEngine.h"
-#include "RK4.h"
-#include "Euler.h"
+#include "integration/RungeKutta.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -35,7 +34,7 @@ DynamicEngine::DynamicEngine(DynamicWorld* world, const Time& timeStep)
     }
 
     // Creation of the RK4 integration algorithm
-    integrationAlgorithm = new RK4();
+    integrationAlgorithm = new RungeKutta4();
 }
 
 // Copy-constructor
@@ -67,7 +66,6 @@ void DynamicEngine::updateBodyState(RigidBody* const rigidBody, const Time& time
 
     // If the body state has changed, we have to update some informations in the rigid body
     rigidBody->update();
-
 }
 
 // Update the physics simulation

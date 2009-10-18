@@ -36,7 +36,7 @@ namespace reactphysics3d {
 class CollisionEngine : public DynamicEngine {
     private :
         CollisionDetection collisionDetection;          // Collision detection
-        // ConstraintSolver constraintSolver;              // Constraint solver
+        // ConstraintSolver constraintSolver;           // Constraint solver
 
     public :
         CollisionEngine(CollisionWorld* world, const Time& timeStep);       // Constructor

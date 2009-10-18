@@ -22,7 +22,7 @@
 
 // Libraries
 #include "PhysicsEngine.h"
-#include "IntegrationAlgorithm.h"
+#include "../integration/IntegrationAlgorithm.h"
 #include "../body/Body.h"
 #include "../body/RigidBody.h"
 #include "../body/BodyState.h"

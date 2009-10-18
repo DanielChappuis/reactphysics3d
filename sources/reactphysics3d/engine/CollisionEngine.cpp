@@ -27,7 +27,6 @@ using namespace reactphysics3d;
 // Constructor
 CollisionEngine::CollisionEngine(CollisionWorld* world, const Time& timeStep)
                    :DynamicEngine(world, timeStep) {
-
 }
 
  // Destructor
@@ -37,43 +36,27 @@ CollisionEngine::~CollisionEngine() {
 
 // Update the physics simulation
 void CollisionEngine::update() {
-
     CollisionWorld* collisionWorld = dynamic_cast<CollisionWorld*>(world);
     assert(collisionWorld != 0);
 
     // While the time accumulator is not empty
     while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
+
         // Remove all old collision contact constraints
         collisionWorld->removeAllContactConstraints();
 
-        Time timeFirst(0);             // First collision time
-        Time timeLast(DBL_MAX);        // Last collision separation time
-
         // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection(collisionWorld, timer.getTimeStep(), timeFirst)) {
-            // For each body in the dynamic world
-            for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
-                // If the body is a RigidBody and if the rigid body motion is enabled
-                RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-                if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                    // Update the state of the rigid body
-                    updateBodyState(rigidBody, timeFirst);
-                }
-
-                // Stop the body (TO DELETE)
-                rigidBody->setIsMotionEnabled(false); // TODO : DELETE THIS
-            }
+        if (collisionDetection.computeCollisionDetection(collisionWorld)) {
+            // TODO : Do collision response here
         }
-        else {
-            // For each body in the dynamic world
-            for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
-                // If the body is a RigidBody and if the rigid body motion is enabled
-                RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-                if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                    // Update the state of the rigid body with an entire time step
-                    updateBodyState(rigidBody, timer.getTimeStep());
-                    std::cout << "NO NO NO" << std::endl;   // TODO : DELETE THIS
-                }
+
+        // For each body in the dynamic world
+        for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
+            // If the body is a RigidBody and if the rigid body motion is enabled
+            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+            if (rigidBody && rigidBody->getIsMotionEnabled()) {
+                // Update the state of the rigid body with an entire time step
+                updateBodyState(rigidBody, timer.getTimeStep());
             }
         }
 
@@ -81,7 +64,7 @@ void CollisionEngine::update() {
         timer.update();
     }
 
-    // For each body in the dynamic world
+    // For each body in the the dynamic world
     for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
         // If the body is a RigidBody and if the rigid body motion is enabled
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
