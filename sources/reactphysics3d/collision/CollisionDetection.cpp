@@ -43,19 +43,9 @@ CollisionDetection::~CollisionDetection() {
 
 }
 
-// Compute all the possible collisions pairs of bodies (broad-phase)
-void CollisionDetection::computePossibleCollisionPairs() {
-    // TODO : Implement this method
-}
-
-// Compute all collision contacts between bodies (narrow-phase)
-void CollisionDetection::computeCollisionContacts() {
-    // TODO : Implement this method
-}
-
 // Compute the collision detection for the time interval [0, timeMax]
 // The method returns true if a collision occurs in the time interval [0, timeMax]
-bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorld, const Time& timeMax, Time& timeFirstCollision) {
+bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorld) {
 
     bool existsCollision = false;               // True if a collision is found in the time interval [0, timeMax]
 
@@ -74,34 +64,12 @@ bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorl
                 if(broadPhaseAlgorithm->testCollisionPair(&obb1, &obb2)) {
                     Contact* contact = 0;
 
-                    // Get the velocities of both bodies
-                    Vector3D velocity1 = rigidBody1->getInterpolatedState().getLinearVelocity();
-                    Vector3D velocity2 = rigidBody2->getInterpolatedState().getLinearVelocity();
-
                     // Use the narrow-phase algorithm to check if the two bodies really collide
                     if(narrowPhaseAlgorithm->testCollision(&obb1, &obb2, &contact, velocity1, velocity2, timeMax)) {
                         assert(contact != 0);
-                        existsCollision = true;
 
-                        // Check if the collision time is the first collision between all bodies
-                        if (contact->getTime() < timeFirstCollision) {
-                            // Update the first collision time between all bodies
-                            timeFirstCollision.setValue(contact->getTime().getValue());
-
-                            // Add the new collision contact into the collision world
-                            collisionWorld->addConstraint(contact);
-
-                            // TODO : Here we add some contacts to the collisionWorld when we
-                            // found a new timeFirst value. But each time we found a new timeFirst
-                            // value, the contacts that have been added before have to be deleted.
-                            // Therefore, we have to find a way to do that. For instance, we can
-                            // associate a contactTime value at each contact and delete all contacts
-                            // that are no the first contact between all bodies.
-                        }
-                        else {
-                            // Delete  the contact
-                            delete contact;
-                        }
+                        // Add the new collision contact into the collision world
+                        collisionWorld->addConstraint(contact);
                     }
                 }
             }
