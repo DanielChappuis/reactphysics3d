@@ -43,8 +43,7 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();     // Destructor
 
         virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2,
-                                   Contact** contact, const Vector3D& velocity1, const Vector3D& velocity2,
-                                   const Time& timeMax)=0;                                                     // Return true and compute a collision contact and collision time if the two bounding volume collide
+                                   Contact** contact, const Vector3D& velocity1, const Vector3D& velocity2)=0;     // Return true and compute a collision contact if the two bounding volume collide
 };
 
 } // End of reactphysics3d namespace

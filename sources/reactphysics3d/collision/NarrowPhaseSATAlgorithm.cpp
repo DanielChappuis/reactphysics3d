@@ -48,8 +48,7 @@ NarrowPhaseSATAlgorithm::~NarrowPhaseSATAlgorithm() {
 
 // Return true and compute a collision contact if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact,
-                                      const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax) {
+bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact) {
     assert(boundingVolume1 != boundingVolume2);
     assert(*contact == 0);
 
@@ -60,7 +59,7 @@ bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const bounding
     // If the two bounding volumes are OBB
     if (obb1 && obb2) {
         // Compute the collision test between two OBB
-        return computeCollisionTest(obb1, obb2, contact, velocity1, velocity2, timeMax);
+        return computeCollisionTest(obb1, obb2, contact);
     }
     else {
         return false;
@@ -77,8 +76,7 @@ bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const bounding
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact,
-                                            const Vector3D& velocity1, const Vector3D& velocity2, const Time& timeMax) {
+bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) {
 
     double center;                              // Center
     double speed;                               // Relavtive speed of the projection intervals (dotProduct(SeparatingAxis, deltaVelocity))
@@ -104,12 +102,8 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     double udc1[3];                             // DotProduct(obb1.Ai, obb2.center - obb1.center)
     double udv1[3];                             // DotProduct(obb1.Ai, velocity2 - velocity1)
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
-    double udv2[3];                             // DotProduct(obb2.Ai, velocity2 - velocity1)
 
-    Vector3D deltaVelocity = velocity2 - velocity1;                 // Difference of box center velocities
     Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Distance between the centers of the OBBs
-    Time timeFirst(0.0);                                            // timeFirst = 0
-    Time timeLast(DBL_MAX);                                         // timeLast = infinity (time when two colliding bodies separates)I
 
     // Axis A0
     for (int i=0; i<3; ++i) {
@@ -120,9 +114,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         }
     }
     udc1[0] = obb1->getAxis(0).scalarProduct(boxDistance);
-    udv1[0] = obb1->getAxis(0).scalarProduct(deltaVelocity);
     center = udc1[0];
-    speed = udv1[0];
     radius1 = obb1->getExtent(0);
     radius2 = obb2->getExtent(0)*absC[0][0] + obb2->getExtent(1)*absC[0][1] + obb2->getExtent(2) * absC[0][2];
     min1 = -radius1;
@@ -138,7 +130,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
     */
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A0 " << std::endl;
 
@@ -155,9 +147,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         }
     }
     udc1[1] = obb1->getAxis(1).scalarProduct(boxDistance);
-    udv1[1] = obb1->getAxis(1).scalarProduct(deltaVelocity);
     center = udc1[1];
-    speed = udv1[1];
     radius1 = obb1->getExtent(1);
     radius2 = obb2->getExtent(0)*absC[1][0] + obb2->getExtent(1)*absC[1][1] + obb2->getExtent(2) * absC[1][2];
     min1 = -radius1;
@@ -173,7 +163,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
     */
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A1 " << std::endl;
 
@@ -189,9 +179,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         }
     }
     udc1[2] = obb1->getAxis(2).scalarProduct(boxDistance);
-    udv1[2] = obb1->getAxis(2).scalarProduct(deltaVelocity);
     center = udc1[2];
-    speed = udv1[2];
     radius1 = obb1->getExtent(2);
     radius2 = obb2->getExtent(0)*absC[2][0] + obb2->getExtent(1)*absC[2][1] + obb2->getExtent(2)*absC[2][2];
     min1 = -radius1;
@@ -207,7 +195,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
     */
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A2 " << std::endl;
 
@@ -216,9 +204,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // Axis B0
     udc2[0] = obb2->getAxis(0).scalarProduct(boxDistance);
-    udv2[0] = obb2->getAxis(0).scalarProduct(deltaVelocity);
     center = udc2[0];
-    speed = udv2[0];
     radius1 = obb1->getExtent(0)*absC[0][0] + obb1->getExtent(1)*absC[1][0] + obb1->getExtent(2) * absC[2][0];
     radius2 = obb2->getExtent(0);
     min1 = -radius1;
@@ -227,7 +213,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max2 = center + radius2;
     interval1 = computeProjectionInterval(min1, max1, obb1, obb2->getAxis(0));
     interval2 = computeProjectionInterval(min2, max2, obb2, obb2->getAxis(0));
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
                 //std::cout << "SEPARATION AXIS : B0 " << std::endl;
 
@@ -237,9 +223,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     // Axis B1
     //std::cout << "----- AXIS B1 -----" << std::endl;
     udc2[1] = obb2->getAxis(1).scalarProduct(boxDistance);
-    udv2[1] = obb2->getAxis(1).scalarProduct(deltaVelocity);
     center = udc2[1];
-    speed = udv2[1];
     radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[2][1];
     radius2 = obb2->getExtent(1);
     min1 = - radius1;
@@ -253,7 +237,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
                 //std::cout << "SEPARATION AXIS : B1 " << std::endl;
 
@@ -264,9 +248,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // Axis B2
     udc2[2] = obb2->getAxis(2).scalarProduct(boxDistance);
-    udv2[2] = obb2->getAxis(2).scalarProduct(deltaVelocity);
     center = udc2[2];
-    speed = udv2[2];
     radius1 = obb1->getExtent(0)*absC[0][2] + obb1->getExtent(1)*absC[1][2] + obb1->getExtent(2)*absC[2][2];
     radius2 = obb2->getExtent(2);
     min1 = - radius1;
@@ -275,7 +257,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max2 = center + radius2;
     interval1 = computeProjectionInterval(min1, max1, obb1, obb2->getAxis(2));
     interval2 = computeProjectionInterval(min2, max2, obb2, obb2->getAxis(2));
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : B2 " << std::endl;
 
@@ -305,7 +287,6 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // Axis A0 x B0
     center = udc1[2] * c[1][0] - udc1[1] * c[2][0];
-    speed = udv1[2] * c[1][0] - udv1[1] * c[2][0];
     radius1 = obb1->getExtent(1) * absC[2][0] + obb1->getExtent(2) * absC[1][0];
     radius2 = obb2->getExtent(1) * absC[0][2] + obb2->getExtent(2) * absC[0][1];
     min1 = -radius1;
@@ -315,14 +296,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     Vector3D axis = obb1->getAxis(0).crossProduct(obb2->getAxis(0));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A0 x B1
     center = udc1[2] * c[1][1] - udc1[1] * c[2][1];
-    speed = udv1[2] * c[1][1] - udv1[1] * c[2][1];
     radius1 = obb1->getExtent(1) * absC[2][1] + obb1->getExtent(2) * absC[1][1];
     radius2 = obb2->getExtent(0) * absC[0][2] + obb2->getExtent(2) * absC[0][0];
     min1 = -radius1;
@@ -332,14 +312,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(0).crossProduct(obb2->getAxis(1));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A0 x B2
     center = udc1[2] * c[1][2] - udc1[1] * c[2][2];
-    speed = udv1[2] * c[1][2] - udv1[1] * c[2][2];
     radius1 = obb1->getExtent(1) * absC[2][2] + obb1->getExtent(2) * absC[1][2];
     radius2 = obb2->getExtent(0) * absC[0][1] + obb2->getExtent(1) * absC[0][0];
     min1 = -radius1;
@@ -349,14 +328,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(0).crossProduct(obb2->getAxis(2));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A1 x B0
     center = udc1[0] * c[2][0] - udc1[2] * c[0][0];
-    speed = udv1[0] * c[2][0] - udv1[2] * c[0][0];
     radius1 = obb1->getExtent(0) * absC[2][0] + obb1->getExtent(2) * absC[0][0];
     radius2 = obb2->getExtent(1) * absC[1][2] + obb2->getExtent(2) * absC[1][1];
     min1 = -radius1;
@@ -366,14 +344,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(1).crossProduct(obb2->getAxis(0));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A1 x B1
     center = udc1[0] * c[2][1] - udc1[2] * c[0][1];
-    speed = udv1[0] * c[2][1] - udv1[2] * c[0][1];
     radius1 = obb1->getExtent(0) * absC[2][1] + obb1->getExtent(2) * absC[0][1];
     radius2 = obb2->getExtent(0) * absC[1][2] + obb2->getExtent(2) * absC[1][0];
     min1 = -radius1;
@@ -383,14 +360,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(1).crossProduct(obb2->getAxis(1));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A1 x B2
     center = udc1[0] * c[2][2] - udc1[2] * c[0][2];
-    speed = udv1[0] * c[2][2] - udv1[2] * c[0][2];
     radius1 = obb1->getExtent(0) * absC[2][2] + obb1->getExtent(2) * absC[0][2];
     radius2 = obb2->getExtent(0) * absC[1][1] + obb2->getExtent(1) * absC[1][0];
     min1 = -radius1;
@@ -400,14 +376,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(1).crossProduct(obb2->getAxis(2));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A2 x B0
     center = udc1[1] * c[0][0] - udc1[0] * c[1][0];
-    speed = udv1[1] * c[0][0] - udv1[0] * c[1][0];
     radius1 = obb1->getExtent(0) * absC[1][0] + obb1->getExtent(1) * absC[0][0];
     radius2 = obb2->getExtent(1) * absC[2][2] + obb2->getExtent(2) * absC[2][1];
     min1 = -radius1;
@@ -417,14 +392,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(2).crossProduct(obb2->getAxis(0));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A2 x B1
     center = udc1[1] * c[0][1] - udc1[0] * c[1][1];
-    speed = udv1[1] * c[0][1] - udv1[0] * c[1][1];
     radius1 = obb1->getExtent(0) * absC[1][1] + obb1->getExtent(1) * absC[0][1];
     radius2 = obb2->getExtent(0) * absC[2][2] + obb2->getExtent(2) * absC[2][0];
     min1 = -radius1;
@@ -434,14 +408,13 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(2).crossProduct(obb2->getAxis(1));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
 
     // Axis A2 x B2
     center = udc1[1] * c[0][2] - udc1[0] * c[1][2];
-    speed = udv1[1] * c[0][2] - udv1[0] * c[1][2];
     radius1 = obb1->getExtent(0) * absC[1][2] + obb1->getExtent(1) * absC[0][2];
     radius2 = obb2->getExtent(0) * absC[2][1] + obb2->getExtent(1) * absC[2][0];
     min1 = -radius1;
@@ -451,7 +424,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     axis = obb1->getAxis(2).crossProduct(obb2->getAxis(2));
     interval1 = computeProjectionInterval(min1, max1, obb1, axis);
     interval2 = computeProjectionInterval(min2, max2, obb2, axis);
-    if(!computeIntervalsIntersectionTime(timeMax, speed, currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
+    if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -469,148 +442,24 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     return true;
 }
 
-// This method computes the intersection time of two projection intervals.
-// This method takes two projection intervals [min1, max1] and [min2, max2] and computes (if the
-// two intervals intersect) in the time interval [0, timeMax] the time timeFirst where the two bodies
-// enter in collision and the time timeLast where the two bodies separate themself from the collision.
-// We consider that the interval 2 move at the speed "speed" and the interval 1 don't move.
-// The method returns true if the two projection intervals intersect and false if they move appart.
-// This method will be called for each separation axis.
-bool NarrowPhaseSATAlgorithm::computeIntervalsIntersectionTime(const Time& timeMax, double speed, ProjectionInterval& currentInterval1,
-                                                         ProjectionInterval& currentInterval2, const ProjectionInterval& interval1,
-                                                         const ProjectionInterval& interval2, Time& timeFirst, Time& timeLast, bool& side) {
-    double speedInverse = 1.0/speed;   // TODO : Test if the speed could be zero at this place
-    double t;
-    double min1 = interval1.getMin();
-    double max1 = interval1.getMax();
-    double min2 = interval2.getMin();
-    double max2 = interval2.getMax();
+// This method computes penetration depth between two intervals. It will return a positive value
+// if the two intervals overlap and a negative value if the intervals are separated.
+double NarrowPhaseSATAlgorithm::computePenetrationDepth(ProjectionInterval& currentInterval1, ProjectionInterval& currentInterval2, const ProjectionInterval& interval1,
+                                                         const ProjectionInterval& interval2, bool& side) {
 
-    // If the interval [min1, max1] is on right of interval [min2, max2]
-    if (max2 < min1) {
-        // If the two intervals move apart they will not intersect
-        if (speed <= 0) {
-            return false;
-        }
-
-        // Compute the time t when the two intervals enter in contact
-        t = (min1-max2) * speedInverse;
-
-        // If we found a later collision time, we update the first collision time
-        if (t > timeFirst.getValue()) {
-            timeFirst.setValue(t);
-            side = false;
-            currentInterval1 = interval1;
-            currentInterval2 = interval2;
-
-            //std::cout << "Curent1 = Interval1 : min " << interval1.getMin() << std::endl;
-            //std::cout << "Curent2 = Interval2 : min " << interval2.getMin() << std::endl;
-        }
-
-        // If the first collision time is outside of the time interval [0, timeMax]
-        if(timeFirst.getValue() > timeMax.getValue()) {
-            return false;
-        }
-
-        // Compute the time t when the two intervals separate from a contact
-        t = (max1 - min2) * speedInverse;
-
-        //std::cout << "Separate time : " << t << std::endl;
-        //std::cout << "timeLast : " << timeLast.getValue() << std::endl;
-
-        // If we found a earlier separated collision time, we update the last collision time
-        if (t < timeLast.getValue()) {
-            timeLast.setValue(t);
-        }
-
-        // If the first collision time occurs after the last collision time
-        if (timeFirst.getValue() > timeLast.getValue()) {
-            return false;
-        }
+    if (interval1.getMin(); <= interval2.getMin()) {
+        return (interval1.getMax() - interval2.getMin());
     }
-    else if (max1 < min2) {      // If the interval [min1, max1] is on left of interval [min2, max2]
-        // If the two intervals move apart they will not intersect
-        if (speed >= 0) {
-            //std::cout << "Move appart" << std::endl;
-            return false;
-        }
-
-        // Compute the time t when the two intervals enter in contact
-        t = (max1 - min2) * speedInverse;
-
-        // If we found a later collision time
-        if (t > timeFirst.getValue()) {
-            timeFirst.setValue(t);
-            side = true;
-            currentInterval1 = interval1;
-            currentInterval2 = interval2;
-        }
-
-        // If the first collision time is outside of the time interval [0, timeMax]
-        if(timeFirst.getValue() > timeMax.getValue()) {
-            return false;
-        }
-
-        // Compute the time t when the two intervals separate from a contact
-        t = (min1 - max2) * speedInverse;
-
-        // If we found a earlier separated collision time
-        if (t < timeLast.getValue()) {
-            timeLast.setValue(t);
-        }
-
-        // If the first collision time occurs after the last collision time
-        if (timeFirst.getValue() > timeLast.getValue()) {
-            return false;
-        }
+    else {
+        return (interval2.getMax() - interval1.getMin(););
     }
-    else {  // If the two intervals overlap
-        if (speed > 0) {
-            // Compute the time t when the two intervals separate from a contact
-            t = (max1 - min2) * speedInverse;
-
-            // If we found a earlier separated collision time
-            if (t < timeLast.getValue()) {
-                timeLast.setValue(t);
-            }
-
-            // If the first collision time occurs after the last collision time
-            if (timeFirst.getValue() > timeLast.getValue()) {
-                return false;
-            }
-        }
-        else if (speed < 0) {
-            // Compute the time t when the two intervals separate from a contact
-            t = (min1 - max2) * speedInverse;
-
-            // If we found a earlier separated collision time
-            if (t < timeLast.getValue()) {
-                timeLast.setValue(t);
-            }
-
-            // If the first collision time occurs after the last collision time
-            if (timeFirst.getValue() > timeLast.getValue()) {
-                return false;
-            }
-        }
-
-        // TODO : Are we sure that we don't have to create a contact when both intervals
-        //        overlaps ?
-
-        // TODO : Because we are approximating collision detection using constant linear
-        //        velocity and no angular velocity. Some errors can occur. For instance,
-        //        it's possible that we obtain a penetration of two objects. We have to
-        //        find a way to consider thoses errors.
-    }
-
-    return true;
 }
 
 // Compute a new collision contact between two projection intervals.
 // Warning : If the side value is true the max of interval1 collides with the min of interval2. If the
 // side value is false the max value of interval2 collides with the min value of interval1.
 void NarrowPhaseSATAlgorithm::computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2,
-                            const Vector3D& velocity1, const Vector3D& velocity2, const Time& time, bool side, Contact** contact) {
+                                             bool side, Contact** contact) {
 
     std::cout << "COMPUTE CONTACT and timeFirst is " << time.getValue() << std::endl;
     assert(*contact == 0);

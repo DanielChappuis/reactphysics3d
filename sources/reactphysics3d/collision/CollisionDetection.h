@@ -44,8 +44,6 @@ class CollisionDetection {
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                            // Broad-phase algorithm
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                          // Narrow-phase algorithm
 
-        void computePossibleCollisionPairs();                       // Compute all the possible collisions pairs of bodies (broad-phase)
-        void computeCollisionContacts();                            // Compute all collision contacts between bodies (narrow-phase)
         void addPossibleCollisionPair(Body* body1, Body* body2);    // Add a possible collision pair of bodies in the possibleCollisionPairList
         void initPossibleCollisionPairList();                       // Initialize the possibleCollisionPairList
 
@@ -53,7 +51,7 @@ class CollisionDetection {
         CollisionDetection();       // Constructor
         ~CollisionDetection();      // Destructor
 
-        bool computeCollisionDetection(CollisionWorld* collisionWorld, const Time& timeMax, Time& timeFirstCollision);     // Compute the collision detection
+        bool computeCollisionDetection(CollisionWorld* collisionWorld);     // Compute the collision detection
 };
 
 // Add a possible collision pair of bodies in the possibleCollisionPairList
