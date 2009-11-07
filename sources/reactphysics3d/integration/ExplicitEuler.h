@@ -17,33 +17,35 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef EULER_H
-#define EULER_H
+#ifndef EXPLICITEULER_H
+#define EXPLICITEULER_H
 
 // Libraries
 #include "IntegrationAlgorithm.h"
 #include "../body/BodyState.h"
-#include "../body/DerivativeBodyState.h"
+
+// TODO : Test explicit-Euler integrator (change has been made : computeForce(time) and computeTorque(time)
+//        replaced by getForce() and getTorque().
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class Euler :
+    Class ExplicitEuler :
         This class will be used to solve the differential equation of
         movement by integrating a body state. This class implements
-        the Euler algorithm. It's important to undersand that Euler
+        the explicit Euler algorithm. It's important to undersand that this
         algorithm should be used only for testing purpose because the
-        Euler algorithm is not a good one.
+        explicit Euler algorithm can be unstable.
     -------------------------------------------------------------------
 */
-class Euler : public IntegrationAlgorithm {
+class ExplicitEuler : public IntegrationAlgorithm {
     private :
 
     public :
-        Euler();                                        // Constructor
-        Euler(const Euler& euler);                      // Copy-constructor
-        virtual ~Euler();                               // Destructor
+        ExplicitEuler();                                        // Constructor
+        ExplicitEuler(const ExplicitEuler& euler);              // Copy-constructor
+        virtual ~ExplicitEuler();                               // Destructor
 
         void integrate(BodyState& bodyState, const Time& t, const Time& dt);    // Integrate a body state over time
 };

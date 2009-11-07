@@ -18,35 +18,35 @@
  ***************************************************************************/
 
 // Libraries
-#include "Euler.h"
+#include "ExplicitEuler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Euler::Euler() {
+ExplicitEuler::ExplicitEuler() {
 
 }
 
 // Copy-constructor
-Euler::Euler(const Euler& euler) {
+ExplicitEuler::ExplicitEuler(const ExplicitEuler& euler) {
 
 }
 
 // Destructor
-Euler::~Euler() {
+ExplicitEuler::~ExplicitEuler() {
 
 }
 
-// Integrate a body state over time. This method use the Euler integration algorithm
-void Euler::integrate(BodyState& bodyState, const Time& time, const Time& timeStep) {
+// Integrate a body state over time. This method use the explicit Euler integration algorithm
+void ExplicitEuler::integrate(BodyState& bodyState, const Time& time, const Time& timeStep) {
     double dt = timeStep.getValue();    // Timestep
 
     // Compute the integrated body state
     bodyState.setPosition(bodyState.getPosition() + bodyState.getLinearVelocity() * dt);
-    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.computeForce(time) * dt);
+    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.getForce() * dt);
     bodyState.setOrientation(bodyState.getOrientation() + bodyState.getSpin() * dt);
-    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.computeTorque(time) * dt);
+    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.getTorque() * dt);
 
     // Recalculate the secondary values of the body state
     bodyState.recalculate();
