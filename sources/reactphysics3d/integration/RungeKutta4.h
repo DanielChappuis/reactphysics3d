@@ -32,7 +32,11 @@ namespace reactphysics3d {
     Class RungeKutta4 :
         This class will be used to solve the differential equation of
         movement by integrating a body state. This class implements
-        the Runge-Kutta 4 (RK4) integrator.
+        the Runge-Kutta 4 (RK4) integrator. Notice that that this
+        integrator use an evaluation of the body state at a future time.
+        Therefore this integrator cannot be used for collision engine
+        for now. Because if collisions can occur, it difficult to
+        predict the state of the body at a future time.
     -------------------------------------------------------------------
 */
 class RungeKutta4 : public IntegrationAlgorithm {
