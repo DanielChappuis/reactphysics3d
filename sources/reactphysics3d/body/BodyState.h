@@ -40,7 +40,8 @@ class BodyState {
         Vector3D linearMomentum;                // Linear momentum of the body
         Quaternion orientation;                 // Orientation quaternion of the body
         Vector3D angularMomentum;               // Angular momentum of the body
-        Vector3D force;                         // force on the body
+        Vector3D force;                         // Current force on the body
+        Vector3D torque;                        // Current torque on the body
 
         // Secondary values
         Vector3D linearVelocity;                // Linear velocity of the body
@@ -65,12 +66,15 @@ class BodyState {
         Vector3D getAngularMomentum() const;                                    // Return the angular momentum
         void setAngularMomentum(const Vector3D& angularMomentum);               // Set the angular momentum
         Vector3D getLinearVelocity() const;                                     // Return the linear velocity
+        void setLinearVelocity(const Vector3D& linearVelocity);                 // TODO : Delete this
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
         Quaternion getSpin() const;                                             // Return the spin of the body
         void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
-        Vector3D getForce() const;                                              // Return the force over the body
-        void setForce(const Vector3D force);                                    // Set the force over the body
+        Vector3D getForce() const;                                              // Return the current force of the body
+        void setForce(const Vector3D& force);                                   // Set the current force on the body
+        Vector3D getTorque() const;                                             // Return the current torque of the body
+        void setTorque(const Vector3D& torque);                                 // Set the current torque of the body
         Kilogram getMassInverse() const;                                        // TODO : Delete this
         void recalculate();                                                                 // Recalculate the secondary values
                                                                                             // of the BodyState from the primary ones
@@ -127,6 +131,10 @@ inline Vector3D BodyState::getLinearVelocity() const {
     return linearVelocity;
 }
 
+inline void BodyState::setLinearVelocity(const Vector3D& linearVelocity) {
+    this->linearVelocity = linearVelocity;
+}
+
 // Return the angular velocity of the body
 inline Vector3D BodyState::getAngularVelocity() const {
     return angularVelocity;
@@ -153,9 +161,20 @@ inline Vector3D BodyState::getForce() const {
 }
 
 // Set the force over the body
-inline void BodyState::setForce(const Vector3D force) {
-    this->force = force;
+inline void BodyState::setForce(const Vector3D& force) {
+    this->force;
 }
+
+// Return the current torque of the body
+inline Vector3D BodyState::getTorque() const {
+    return torque;
+}
+
+ // Set the current torque of the body
+inline void BodyState::setTorque(const Vector3D& torque) {
+    this->torque = torque;
+}
+
 
 // TODO : Delete this
 inline Kilogram BodyState::getMassInverse() const {

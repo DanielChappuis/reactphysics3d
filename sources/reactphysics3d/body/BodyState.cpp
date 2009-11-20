@@ -31,7 +31,7 @@
 
     // Recalculate the secondary values from the primary values
     recalculate();
- }
+}
 
 // Copy-constructor
 BodyState::BodyState(const BodyState& bodyState)
@@ -48,6 +48,7 @@ BodyState::~BodyState() {
 
 // Recalculate the secondary values of the BodyState when the primary values have changed
 void BodyState::recalculate() {
+
     // Compute the linear velocity
     linearVelocity = linearMomentum * massInverse.getValue();
 
@@ -62,6 +63,8 @@ void BodyState::recalculate() {
 }
 
 // Compute the body state at time t + dt
+// This method is used with integration methods that need to compute the state at a future
+// time (like Runge-Kutta 4 integrator)
 void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& lastDerivativeBodyState) {
 
     double dt = timeStep.getValue();        // Timestep
@@ -83,13 +86,17 @@ void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& l
 }
 
 // Return the force on the body at time t
+// This method is used with integration methods that need to compute the state at a future
+// time (like Runge-Kutta 4 integrator)
 Vector3D BodyState::computeForce(Time time) const {
-    // TODO : Implement this method
-    return force * (1.0 / massInverse.getValue());
+    // TODO : Implement this method (we want that the user of the library could define this method)
+    return force;
 }
 
 // Return the torque on the body at time
+// This method is used with integration methods that need to compute the state at a future
+// time (like Runge-Kutta 4 integrator)
 Vector3D BodyState::computeTorque(Time time) const {
-    // TODO : Implement this method
-    return Vector3D(0.0, 0.0 ,0.0);
+    // TODO : Implement this method (we want that the user of the library could define this method)
+    return torque;
 }
