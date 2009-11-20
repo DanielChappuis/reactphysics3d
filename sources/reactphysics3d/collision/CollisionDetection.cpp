@@ -19,8 +19,8 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "SeparatingAxisAABB.h"
-#include "SeparatingAxisOBB.h"
+#include "NoBroadPhaseAlgorithm.h"
+#include "NarrowPhaseSATAlgorithm.h"
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include <cassert>
@@ -32,10 +32,10 @@ using namespace reactphysics3d;
 CollisionDetection::CollisionDetection() {
 
     // Construct the broad-phase algorithm that will be used (Separating axis with AABB)
-    broadPhaseAlgorithm = new SeparatingAxisAABB();
+    broadPhaseAlgorithm = new NoBroadPhaseAlgorithm();
 
     // Construct the narrow-phase algorithm that will be used (Separating axis with OBB)
-    narrowPhaseAlgorithm = new SeparatingAxisOBB();
+    narrowPhaseAlgorithm = new NarrowPhaseSATAlgorithm();
 }
 
 // Destructor
@@ -65,7 +65,7 @@ bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorl
                     Contact* contact = 0;
 
                     // Use the narrow-phase algorithm to check if the two bodies really collide
-                    if(narrowPhaseAlgorithm->testCollision(&obb1, &obb2, &contact, velocity1, velocity2, timeMax)) {
+                    if(narrowPhaseAlgorithm->testCollision(&obb1, &obb2, &contact)) {
                         assert(contact != 0);
 
                         // Add the new collision contact into the collision world
