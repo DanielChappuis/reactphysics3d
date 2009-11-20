@@ -36,6 +36,9 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// TODO : Check and modify all comments on this file in order that
+//        everything have to do with the new SAT algorithm
+
 // Constructor
 NarrowPhaseSATAlgorithm::NarrowPhaseSATAlgorithm() {
 
@@ -49,6 +52,7 @@ NarrowPhaseSATAlgorithm::~NarrowPhaseSATAlgorithm() {
 // Return true and compute a collision contact if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
 bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact) {
+    /*
     assert(boundingVolume1 != boundingVolume2);
     assert(*contact == 0);
 
@@ -79,15 +83,15 @@ bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const bounding
 bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) {
 
     double center;                              // Center
-    double speed;                               // Relavtive speed of the projection intervals (dotProduct(SeparatingAxis, deltaVelocity))
     double radius1;                             // Radius of projection interval [min1, max1]
     double radius2;                             // Radius of projection interval [min2, max2]
     double min1;                                // Minimum of interval 1
     double max1;                                // Maximum of interval 1
     double min2;                                // Minimm of interval 2
     double max2;                                // Maximum of interval 2
-    ProjectionInterval currentInterval1;        // Current projection interval 1 (correspond to the first collision)
-    ProjectionInterval currentInterval2;        // Current projection interval 2 (correspond to the first collision)
+    ProjectionInterval currentInterval1;        // Current projection interval 1 (correspond to the minimum penetration depth)
+    ProjectionInterval currentInterval2;        // Current projection interval 2 (correspond to the minimum penetration depth)
+    double minPenetrationDepth = 0.0;           // Minimum penetration depth detected among all separated axis
     bool side;                                  // True if the collision is between max1 and min2 and false if it's between max2 and min1
     const double cutoff = 0.999999;             // Cutoff for cosine of angles between box axes
     bool existsParallelPair = false;            // True if there exists two face normals that are parallel.
@@ -100,7 +104,6 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     double c[3][3];                             // c[i][j] = DotProduct(obb1.Ai, obb2.Bj)
     double absC[3][3];                          // absC[i][j] = abs(DotProduct(obb1.Ai, obb2.Bj))
     double udc1[3];                             // DotProduct(obb1.Ai, obb2.center - obb1.center)
-    double udv1[3];                             // DotProduct(obb1.Ai, velocity2 - velocity1)
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
 
     Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Distance between the centers of the OBBs
@@ -121,15 +124,25 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    ProjectionInterval interval1 = computeProjectionInterval(min1, max1, obb1, obb1->getAxis(0));
-    ProjectionInterval interval2 = computeProjectionInterval(min2, max2, obb2, obb1->getAxis(0));
-    /*
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, side);
+    if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
+        return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Test if the penetration depth on this axis is smaller that the others
+        minPenetrationDepth = penetrationDepth;         // Update the minimum penetration depth
+
+        // Construct the two new colliding intervals
+        currentInterval1 = computeProjectionInterval(min1, max1, obb1, obb1->getAxis(0));
+        currentInterval2 = computeProjectionInterval(min2, max2, obb2, obb1->getAxis(0));
+    }
+
+    // TODO : Delete this
     std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    */
+
     if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A0 " << std::endl;
@@ -156,13 +169,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max2 = center + radius2;
     interval1 = computeProjectionInterval(min1, max1, obb1, obb1->getAxis(1));
     interval2 = computeProjectionInterval(min2, max2, obb2, obb1->getAxis(1));
-    /*
+
+    // TODO : Delete this
     std::cout << "speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    */
+
     if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, timeFirst, timeLast, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A1 " << std::endl;
@@ -188,13 +202,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max2 = center + radius2;
     interval1 = computeProjectionInterval(min1, max1, obb1, obb1->getAxis(2));
     interval2 = computeProjectionInterval(min2, max2, obb2, obb1->getAxis(2));
-    /*
+
+    // TODO : Delete this
     std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    */
+
     if(0 > computePenetrationDepth(currentInterval1, currentInterval2, interval1, interval2, side)) {
         // We have found a separation axis, therefore the two OBBs don't collide
         //std::cout << "SEPARATION AXIS : A2 " << std::endl;
@@ -439,20 +454,56 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // We have found no separation axis, therefore the two OBBs must collide
     assert(*contact != 0);
+    */
+
     return true;
 }
 
 // This method computes penetration depth between two intervals. It will return a positive value
 // if the two intervals overlap and a negative value if the intervals are separated.
-double NarrowPhaseSATAlgorithm::computePenetrationDepth(ProjectionInterval& currentInterval1, ProjectionInterval& currentInterval2, const ProjectionInterval& interval1,
-                                                         const ProjectionInterval& interval2, bool& side) {
+// The speed is the speed of interval2 relative to interval1.
+// This method returns true if the computed penetration depth is smaller than the current
+// minimum penetration depth but it's positive (a penetration occurs).
+bool NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2,
+                                                      double& minPenetrationDepth, bool& side) {
+    double penetrationDepth;
+    bool currentSide;
 
-    if (interval1.getMin(); <= interval2.getMin()) {
-        return (interval1.getMax() - interval2.getMin());
+    /*
+    // TODO : Use the speed to compute a more robust penetration depth and compute the side value
+    if (min1 <= min2 && max1 < max2) {
+        penetrationDepth = max1 - min2;
+        currentSide = true;
     }
-    else {
-        return (interval2.getMax() - interval1.getMin(););
+    else if (min1 <= min2 && max1 >= max2) { // interval2 is inside interval1
+        if (speed <=0) {
+            penetrationDepth = max1 - min2;
+
+        }
+        else {
+            penetrationDepth = max2 - min1;
+        }
+    else if (min2 <= min1 && max2 >=) { // interval1 is inside interval2
+        if (speed <=0) {
+            penetrationDepth = max1 - min2;
+        }
+        else {
+            penetrationDepth = max2 - min1;
+        }
     }
+    else if (min1 >= min2 && && max1 >= min1) {
+        penetrationDepth = max2 - min1;
+    }
+
+    // If a penestration occurs and we have found a smaller penetration depth on this axis
+    if (penetrationDepth >= 0 && penetrationDepth < minPenetrationDepth) {
+        minPenetrationDepth = penetrationDepth;
+        side = currentSide;
+        return true;
+    }
+    */
+
+    return false;
 }
 
 // Compute a new collision contact between two projection intervals.
@@ -461,18 +512,17 @@ double NarrowPhaseSATAlgorithm::computePenetrationDepth(ProjectionInterval& curr
 void NarrowPhaseSATAlgorithm::computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2,
                                              bool side, Contact** contact) {
 
-    std::cout << "COMPUTE CONTACT and timeFirst is " << time.getValue() << std::endl;
     assert(*contact == 0);
 
     ProjectionInterval intervalLeft = (side) ? interval1 : interval2;
     ProjectionInterval intervalRight = (!side) ? interval2 : interval1;
 
-    Vector3D velocityLeft = (side) ? velocity1 : velocity2;
-    Vector3D velocityRight = (!side) ? velocity2 : velocity1;
+    //Vector3D velocityLeft = (side) ? velocity1 : velocity2;
+    //Vector3D velocityRight = (!side) ? velocity2 : velocity1;
 
     // Compute the extreme points of the two intervals at the instant of contact
-    std::vector<Vector3D> leftExtremePointsAtContact = movePoints(intervalLeft.getMaxProjectedPoints(), velocityLeft * time.getValue());
-    std::vector<Vector3D> rightExtremePointsAtContact = movePoints(intervalRight.getMinProjectedPoints(), velocityRight * time.getValue());
+    //std::vector<Vector3D> leftExtremePointsAtContact = movePoints(intervalLeft.getMaxProjectedPoints(), velocityLeft * time.getValue());
+    //std::vector<Vector3D> rightExtremePointsAtContact = movePoints(intervalRight.getMinProjectedPoints(), velocityRight * time.getValue());
 
     // TODO : ADD THE BODY ADRESS INTO THE CONTACT HERE
     // Get the rigid bodies
@@ -487,6 +537,7 @@ void NarrowPhaseSATAlgorithm::computeContact(const ProjectionInterval& interval1
     // TODO : Compute the normal vector of the contact
     Vector3D normalVector(0.0, 1.0, 0.0);
 
+    /*
     switch(intervalLeft.getMaxType()) {
         case VERTEX :   if (intervalRight.getMinType() == VERTEX) {
                             // Construct a new Vertex-Vertex contact
@@ -562,6 +613,7 @@ void NarrowPhaseSATAlgorithm::computeContact(const ProjectionInterval& interval1
                         }
                         break;
     }
+    */
 }
 
 // Compute a new projection interval

@@ -46,18 +46,16 @@ namespace reactphysics3d {
 class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
     private :
         bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact);                                     // Return true and compute a collision contact if the two OBB collide
-        double computePenetrationDepth(ProjectionInterval& currentInterval1, ProjectionInterval& currentInterval2,
-                                     const ProjectionInterval& interval1, const ProjectionInterval& interval2, bool& side);             // Compute the penetration depth of two projection intervals
-        void computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2, bool side, Contact** contact);                                                                          // Compute a new collision contact between two projection intervals
+        bool computePenetrationDepth(double min1, double max1, double min2, double max2,
+                                                      double& minPenetrationDepth, bool& side);             // Compute the penetration depth of two projection intervals
+        void computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2, bool side, Contact** contact);    // Compute a new collision contact between two projection intervals
         ProjectionInterval computeProjectionInterval(double min, double max, const OBB* const obb, const Vector3D& axis) const;         // Compute a new projection interval
 
     public :
         NarrowPhaseSATAlgorithm();           // Constructor
         ~NarrowPhaseSATAlgorithm();          // Destructor
 
-        virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact,
-                                   const Vector3D& velocity1, const Vector3D& velocity2);                                  // Return true and compute a collision contact if the two bounding volume collide
-
+        virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact);      // Return true and compute a collision contact if the two bounding volume collide
 };
 
 } // End of the ReactPhysics3D namespace
