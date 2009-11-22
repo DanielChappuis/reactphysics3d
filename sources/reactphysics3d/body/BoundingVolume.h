@@ -23,6 +23,7 @@
 // Libraries
 #include "../mathematics/mathematics.h"
 #include "Body.h"
+#include <cassert>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -35,22 +36,24 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class BoundingVolume {
-    private :
-        Body* body;                       // Pointer to the body
+    protected :
+        Body* body;                      // Pointer to the body
 
     public :
-        BoundingVolume();                       // Constructor
-        virtual ~BoundingVolume();              // Destructor
+        BoundingVolume();                // Constructor
+        virtual ~BoundingVolume();       // Destructor
 
         Body* getBodyPointer() const;     // Return the body pointer
         void setBodyPointer(Body* body);  // Set the body pointer
 
-        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;   // Update the orientation of the bounding volume according to the new orientation of the body
-        virtual void draw() const =0;                                                                        // Display the bounding volume (only for testing purpose)
+        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;              // Update the orientation of the bounding volume according to the new orientation of the body
+        virtual int getExtremeVertices(const Vector3D projectionAxis, std::vector<Vector3D>& extremeVertices) const=0;  // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
+        virtual void draw() const=0;                                                                                   // Display the bounding volume (only for testing purpose)
 };
 
 // Return the body pointer
 inline Body* BoundingVolume::getBodyPointer() const {
+    assert(body != 0);
     return body;
 }
 
