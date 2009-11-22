@@ -22,9 +22,15 @@
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
-#include "ProjectionInterval.h"
 #include "../constraint/Contact.h"
 #include "../body/OBB.h"
+
+// Enumeration for the contact type
+enum ContactType {
+    EDGE_EDGE,              // Contact between an edge of OBB1 and an edge of OBB2
+    FACEOBB1_SOMETHING,     // Contact between a face of OBB1 and eiter a vertex, an edge or a face of OBB2
+    FACEOBB2_SOMETHING      // Contact between a face of OBB2 and either a vertex, an edge or a face of OBB1
+}
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -45,11 +51,10 @@ namespace reactphysics3d {
 */
 class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact);                                     // Return true and compute a collision contact if the two OBB collide
-        bool computePenetrationDepth(double min1, double max1, double min2, double max2,
-                                                      double& minPenetrationDepth, bool& side);             // Compute the penetration depth of two projection intervals
-        void computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2, bool side, Contact** contact);    // Compute a new collision contact between two projection intervals
-        ProjectionInterval computeProjectionInterval(double min, double max, const OBB* const obb, const Vector3D& axis) const;         // Compute a new projection interval
+        bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact);                         // Return true and compute a collision contact if the two OBB collide
+        double computePenetrationDepth(double min1, double max1, double min2, double max2, double& minPenetrationDepth);    // Compute the penetration depth of two projection intervals
+        void computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
+                            ContactType contactType,Contact** contact);                                                     // Compute a new collision contact between two projection intervals
 
     public :
         NarrowPhaseSATAlgorithm();           // Constructor
