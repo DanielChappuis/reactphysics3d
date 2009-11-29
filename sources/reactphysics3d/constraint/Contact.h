@@ -38,26 +38,21 @@ namespace reactphysics3d {
 */
 class Contact : public Constraint {
     private :
-        Vector3D normal;                // Normal vector of the contact
-        std::vector<const Vector3D* const> points;
+        Vector3D normal;                                // Normal vector of the contact
+        std::vector<const Vector3D* const> points;      // Contact points
 
     public :
-        Contact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time);  // Constructor
-        virtual ~Contact();                                                                             // Destructor
+        Contact(Body* const body1, Body* const body2, const Vector3D& normal,
+                const std::vector<const Vector3D* const>& points);                   // Constructor
+        virtual ~Contact();                                                         // Destructor
 
-        Vector3D getNormalVector() const;           // Return the normal vector of the contact
-        Time getTime() const;                       // Return the time of  contact
+        Vector3D getNormal() const;                     // Return the normal vector of the contact
 
 };
 
 // Return the normal vector of the contact
-inline Vector3D Contact::getNormalVector() const {
-    return normalVector;
-}
-
-// Return the time of  contact
-inline Time Contact::getTime() const {
-    return time;
+inline Vector3D Contact::getNormal() const {
+    return normal;
 }
 
 } // End of the ReactPhysics3D namespace
