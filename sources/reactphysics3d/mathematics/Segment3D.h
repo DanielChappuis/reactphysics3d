@@ -38,34 +38,51 @@ class Segment3D {
         Vector3D pointB;        // Point B of the line segment
 
     public :
-        Segment3D();                                        // Constructor
-        Segment3D(Vector3D& pointA, Vector3D& pointB);      // Constructor with arguments
-        Segment3D(const Segment3D& segment);                // Copy-constructor
-        ~Segment3D();                                       // Destructor
+        Segment3D();                                                    // Constructor
+        Segment3D(const Vector3D& pointA, const Vector3D& pointB);      // Constructor with arguments
+        ~Segment3D();                                                   // Destructor
 
-        Vector3D getPointA() const;                         // Return the point A
-        void setPointA(const Vector3D& pointA);             // Set the point A
-        Vector3D getPointB() const;                         // Return the point B
-        void setPointB(const Vector3D& pointB);             // Set the point B
+        Vector3D getPointA() const;                                     // Return the point A
+        void setPointA(const Vector3D& pointA);                         // Set the point A
+        Vector3D getPointB() const;                                     // Return the point B
+        void setPointB(const Vector3D& pointB);                         // Set the point B
+        Vector3D getSegmentVector() const;                              // Return the vector between points A and B
+        double getLength() const;                                       // Return the length of the segment
 };
 
 // TODO : Test the Segment3D class
 
+// Return the point A
 inline Vector3D Segment3D::getPointA() const {
     return pointA;
 }
 
+// Set the point A
 inline void Segment3D::setPointA(const Vector3D& pointA) {
     this->pointA = pointA;
 }
 
+// Get the point B
 inline Vector3D Segment3D::getPointB() const {
     return pointB;
 }
 
+// Set the point B
 inline void Segment3D::setPointB(const Vector3D& pointB) {
     this->pointB = pointB;
 }
+
+// Return the vector between points A and B
+inline Vector3D Segment3D::getSegmentVector() const {
+    return (pointB - pointA);
+}
+
+// Return the length of the segment
+inline double Segment3D::getLength() const {
+    return (pointB - pointA).length();
+}
+
+
 
 } // End of the ReactPhysics3D namespace
 

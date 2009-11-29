@@ -33,6 +33,8 @@
 #include "constants.h"
 #include "exceptions.h"
 #include <cstdio>
+#include <cassert>
+#include <cmath>
 
 // ---------- Mathematics functions ---------- //
 
@@ -56,5 +58,82 @@ inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d:
     // Convert the result quaternion into a vector
     return quaternionResult.vectorV();
 }
+
+// TODO : Test this method
+// Move a set of points by a given vector.
+// The method returns a set of points moved by the given vector.
+inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactphysics3d::Vector3D>& points, const reactphysics3d::Vector3D& vector) {
+    std::vector<reactphysics3d::Vector3D> result;
+
+    // For each point of the set
+    for (unsigned int i=0; i<points.size(); ++i) {
+        // Move the point
+        result.push_back(points.at(i) + vector);
+    }
+
+    // Return the result set of points
+    return result;
+}
+
+// TODO : Test this method
+// Return the intersection between two Segment3D that are on the same line. The result of the intersection
+// will be another Segment3D.
+inline reactphysics3d::Segment3D computeParallelSegmentsIntersection(const reactphysics3d::Segment3D& segment1, const reactphysics3d::Segment3D& segment2) {
+    // The two segments should be colinear
+    assert(equal(std::abs(segment1.getSegmentVector().scalarProduct(segment2.getSegmentVector())), segment1.getSegmentVector().length() * segment2.getSegmentVector().length()));
+
+    // Result segment
+    reactphysics3d::Segment3D resultSegment;
+
+    // Compute the vector of the line where both segments are
+    reactphysics3d::Vector3D lineVector = segment1.getSegmentVector();
+
+    // Compute the projection of the two points of the second segment on the line
+    double projSegment2PointA = lineVector.getUnit().scalarProduct(segment2.getPointA() - segment1.getPointA());
+    double projSegment2PointB = lineVector.getUnit().scalarProduct(segment2.getPointB() - segment1.getPointA());
+
+    std::cout << "Segment 2 - Proj A : " << projSegment2PointA << std::endl;
+    std::cout << "Segment 2 - Proj B : " << projSegment2PointB << std::endl;
+    std::cout << "Segment 1 - length : " << segment1.getLength() << std::endl;
+
+    // The projections intervals should intersect
+    assert(!(projSegment2PointA < 0.0 && projSegment2PointB < 0.0));
+    assert(!(projSegment2PointA > segment1.getLength() && projSegment2PointB > segment1.getLength()));
+
+    // Return the segment intersection according to the configuration of two projection intervals
+    if (projSegment2PointA >= 0 && projSegment2PointA <= segment1.getLength() && projSegment2PointB >= segment1.getLength()) {
+        resultSegment.setPointA(segment2.getPointA());
+        resultSegment.setPointB(segment1.getPointB());
+        return resultSegment;
+    }
+    else if (projSegment2PointA <= 0 && projSegment2PointB >= 0 && projSegment2PointB <= segment1.getLength()) {
+        resultSegment.setPointA(segment1.getPointA());
+        resultSegment.setPointB(segment2.getPointB());
+        return resultSegment;
+    }
+    else if (projSegment2PointA <= 0 && projSegment2PointB >= segment1.getLength()) {
+        return segment1;
+    }
+    else if (projSegment2PointA <= segment1.getLength() && projSegment2PointB <= segment1.getLength()) {
+        return segment2;
+    }
+
+    // We should never go here
+    assert(false);
+}
+
+// TODO : Delete this method if not needed
+// Return the intersection between a Segment3D and a Polygon3D that are on the same plane. The result of the intersection
+// will be another Segment3D.
+//inline reactphysics3d::Segment3D computeSegmentPolygonIntersection(const reactphysics3d::Segment3D& segment, const reactphysics3d::Polygon3D& polygon) {
+    // TODO : Implement this method
+//}
+
+// TODO : Delete this method if not needed
+// Return the intersection between two Polygon3D that are on the same plane. The result of the intersection
+// will be another Polygon3D.
+//inline reactphysics3d::Polygon3D computePolygonPolygonIntersection(const reactphysics3d::Polygon3D& polygon1, const reactphysics3d::Polygon3D& polygon2) {
+    // TODO : Implement this method
+//}
 
 #endif

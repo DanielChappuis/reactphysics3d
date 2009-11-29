@@ -43,6 +43,9 @@ class Polygon3D {
 
         int getNbVertex() const;                                                     // Return the number of vertex of the polygon
         Vector3D getVertex(unsigned int index) const throw(std::invalid_argument);   // Return a vertex of the polygon
+        bool isPointInside(const Vector3D& point) const;                             // Return true if a point is in the same plane and inside the polygon
+        // TODO : Delete the following function if not needed
+        //Vector3D getEdgeIntersectionWithSegment(const Segment3D& segment) const;     // Return the intersection point between a segment and an egde of the polygon
 };
 
 // TODO : Test the Polygon3D class
@@ -64,7 +67,7 @@ inline Vector3D Polygon3D::getVertex(unsigned int index) const throw(std::invali
     }
 }
 
-} // End of the ReactPhysics3D
+} // End of the ReactPhysics3D namespace
 
 #endif
 

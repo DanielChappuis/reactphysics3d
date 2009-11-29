@@ -52,6 +52,7 @@ class Vector3D {
         void setAllValues(double x, double y, double z);        // Set all the values of the vector
         double length() const;                                  // Return the lenght of the vector
         Vector3D getUnit() const throw(MathematicsException);   // Return the corresponding unit vector
+        Vector3D getOpposite() const;                           // Return the vector in the opposite direction
         double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
         Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
 
@@ -105,6 +106,12 @@ inline void Vector3D::setAllValues(double x, double y, double z) {
 inline double Vector3D::length() const {
     // Compute and return the length of the vector
     return sqrt(x*x + y*y + z*z);
+}
+
+// Return the vector in the opposite direction
+// TODO : Test this function
+inline Vector3D Vector3D::getOpposite() const {
+    return (Vector3D(0.0, 0.0, 0.0) - *this);
 }
 
 // Scalar product of two vectors (inline)

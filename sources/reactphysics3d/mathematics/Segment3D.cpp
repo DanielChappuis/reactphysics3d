@@ -29,15 +29,9 @@ Segment3D::Segment3D() {
 }
 
 // Constructor with arguments
-Segment3D::Segment3D(Vector3D& pointA, Vector3D& pointB) {
+Segment3D::Segment3D(const Vector3D& pointA, const Vector3D& pointB) {
     this->pointA = pointA;
     this->pointB = pointB;
-}
-
-// Copy-constructor
-Segment3D::Segment3D(const Segment3D& segment)
-          :pointA(segment.pointA), pointB(segment.pointB) {
-
 }
 
 // Destructor

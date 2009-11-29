@@ -33,3 +33,24 @@ Polygon3D::Polygon3D(const std::vector<Vector3D>& vertexList)
 Polygon3D::~Polygon3D() {
 
 }
+
+// TODO : Delete this function if not needed
+// Return true if a point is in the same plane and inside the polygon
+// Hypothesis : The point has to be on the same plane as the polygon.
+/*
+bool Polygon3D::isPointInside(const Vector3D& point) const {
+    // TODO : Implement this method
+}
+*/
+
+// TODO : Delete this function if not needed
+// Return the intersection point between a segment and an egde of the polygon.
+// Hypothesis : The segment must be in the same plane as the polygon and it
+//              must intersection with at least one edge of the polygon.
+/*
+Vector3D Polygon3D::getEdgeIntersectionWithSegment(const Segment3D& segment) const {
+    // TODO : Implement this method
+}
+*/
+
+
