@@ -25,19 +25,18 @@
 
  // Constructor
  RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
-           : Body(mass), inertiaTensor(inertiaTensor), obb(obb),
-             currentBodyState(position, orientation, inertiaTensor.getInverse(),Kilogram(1.0/mass.getValue())),
-             previousBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())) {
+           : Body(mass), inertiaTensor(inertiaTensor), currentBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())),
+             previousBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())), obb(obb) {
 
         isMotionEnabled = true;
         isCollisionEnabled = true;
         interpolationFactor = 0.0;
 
-        // Set the body pointer to the OBB
-        this->obb.setBodyPointer(this);
-
         // Update the orientation of the OBB according to the orientation of the rigid body
         this->update();
+
+        // Set the body pointer to the OBB
+        this->obb.setBodyPointer(this);
  }
 
  // Copy-constructor
@@ -48,12 +47,12 @@
     interpolationFactor = rigidBody.interpolationFactor;
  }
 
- // Destructor
- RigidBody::~RigidBody() {
+// Destructor
+RigidBody::~RigidBody() {
 
- };
+};
 
- // Compute the linear interpolation state between the previous body state and the current body state
+// Compute the linear interpolation state between the previous body state and the current body state
 // This is used to avoid visual stuttering when the display and physics framerates are out of synchronization
 BodyState RigidBody::getInterpolatedState() const {
 

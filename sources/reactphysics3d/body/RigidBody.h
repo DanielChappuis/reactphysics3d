@@ -56,10 +56,12 @@ class RigidBody : public Body {
         Matrix3x3 getInertiaTensor() const;                             // Return the inertia tensor of the body
         void setInertiaTensor(const Matrix3x3& inertiaTensor);          // Set the inertia tensor of the body
         BodyState& getCurrentBodyState();                               // Return a reference to the current state of the body
+        BodyState& getPreviousBodyState();                              // TODO : DELETE THIS
         void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
         BodyState getInterpolatedState() const;                         // Compute and return the interpolated state
         bool getIsMotionEnabled() const;                                // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
+        void setIsMotionEnabled(bool isMotionEnabled);                 // Set the value to true if the body can move
+        void setLinearVelocity(const Vector3D& linearVelocity);         // Set the linear velocity of the rigid body
         void updatePreviousBodyState();                                 // Update the previous body state of the body
         OBB getOBB() const;                                             // Return the oriented bounding box of the rigid body
         void update();                                                  // Update the rigid body in order to reflect a change in the body state
@@ -83,6 +85,12 @@ inline BodyState& RigidBody::getCurrentBodyState() {
     return currentBodyState;
 }
 
+// TODO : DELETE THIS
+inline BodyState& RigidBody::getPreviousBodyState() {
+    return previousBodyState;
+}
+
+
 // Set the interpolation factor of the body
 inline void RigidBody::setInterpolationFactor(double factor) {
     assert(factor >= 0 && factor <= 1);
@@ -99,6 +107,15 @@ inline bool RigidBody::getIsMotionEnabled() const {
 // Set the value to true if the body can move
 inline void RigidBody::setIsMotionEnabled(bool isMotionEnabled) {
     this->isMotionEnabled = isMotionEnabled;
+}
+
+// Set the linear velocity of the rigid body
+inline void RigidBody::setLinearVelocity(const Vector3D& linearVelocity) {
+    // Update the linear velocity of the current body state
+    currentBodyState.setLinearVelocity(linearVelocity);
+
+    // Update the linear momentum of the current body state
+    currentBodyState.setLinearMomentum(linearVelocity * (1.0/currentBodyState.getMassInverse().getValue()));
 }
 
 // Update the previous body state of the body

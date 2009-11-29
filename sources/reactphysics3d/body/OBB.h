@@ -50,18 +50,16 @@ class OBB : public BoundingVolume {
         OBB(const OBB& obb);                                                                            // Copy-Constructor
         virtual ~OBB();                                                                                 // Destructor
 
-        Vector3D getCenter() const;                                                                         // Return the center point of the OBB
-        void setCenter(const Vector3D& center);                                                             // Set the center point
-        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                            // Return an axis of the OBB
-        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                // Set an axis
-        double getExtent(unsigned int index) const throw(std::invalid_argument);                            // Return an extent value
-        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                     // Set an extent value
-        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);    // Update the orientation of the OBB according to the orientation of the rigid body                                                                      // Update the oriented bounding box orientation according to a new orientation of the rigid body
-        virtual void draw() const;                                                                          // Draw the OBB (only for testing purpose)
+        Vector3D getCenter() const;                                                                                     // Return the center point of the OBB
+        void setCenter(const Vector3D& center);                                                                         // Set the center point
+        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                                        // Return an axis of the OBB
+        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                            // Set an axis
+        double getExtent(unsigned int index) const throw(std::invalid_argument);                                        // Return an extent value
+        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                                 // Set an extent value
+        virtual int getExtremeVertices(const Vector3D projectionAxis, std::vector<Vector3D>& extremeVertices) const;    // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
+        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);                // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        virtual void draw() const;                                                                                      // Draw the OBB (only for testing purpose)
 };
-
-// TODO : Don't forget that we need to code a way that a change in the orientation of a rigid body imply
-//        a change in the orientation (center and axis) of the corresponding OBB.
 
 // Return the center point of the OBB
 inline Vector3D OBB::getCenter() const {
