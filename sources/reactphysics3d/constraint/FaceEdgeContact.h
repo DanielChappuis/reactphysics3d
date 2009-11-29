@@ -38,7 +38,7 @@ class FaceEdgeContact : public Contact {
         Segment3D contactSegment;
 
     public :
-        FaceEdgeContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time,  Segment3D& contactSegment);  // Constructor
+        FaceEdgeContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time,  const Segment3D& contactSegment);  // Constructor
         virtual ~FaceEdgeContact();                                                                                                         // Destructor
 
         Segment3D getContactSegment() const;            // Return the contact segment

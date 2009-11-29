@@ -38,8 +38,8 @@ namespace reactphysics3d {
 */
 class Contact : public Constraint {
     private :
-        Vector3D normalVector;          // Normal vector of the contact
-        Time time;                      // Time of contact
+        Vector3D normal;                // Normal vector of the contact
+        std::vector<const Vector3D* const> points;
 
     public :
         Contact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time);  // Constructor

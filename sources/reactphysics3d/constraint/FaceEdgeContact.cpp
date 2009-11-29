@@ -24,7 +24,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-FaceEdgeContact::FaceEdgeContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time,  Segment3D& contactSegment)
+FaceEdgeContact::FaceEdgeContact(Body* const body1, Body* const body2, const Vector3D& normalVector, const Time& time, const Segment3D& contactSegment)
                 :Contact(body1, body2, normalVector, time), contactSegment(contactSegment) {
 
 }
