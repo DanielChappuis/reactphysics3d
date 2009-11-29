@@ -51,6 +51,7 @@ class Time {
         Time operator-(const Time& time2) const throw(std::invalid_argument);   // Overloaded operator for substraction with Time
         Time operator*(double number) const throw(std::invalid_argument);       // Overloaded operator for multiplication with a number
         bool operator<(const Time& time2) const;                                // Overloaded operator for less than comparison
+        bool operator<=(const Time& time2) const;                               // Overloaded operator for less than or equal comparison
         bool operator>(const Time& time2) const;                                // Overloaded operator for greater than comparison
 };
 
@@ -110,6 +111,11 @@ inline Time Time::operator*(double number) const throw(std::invalid_argument) {
 // TODO : TEST THIS METHOD
 inline bool Time::operator<(const Time& time2) const {
     return (getValue() < time2.getValue());
+}
+
+// Overloaded operator for less than or equal comparison
+inline bool Time::operator<=(const Time& time2) const {
+    return (getValue() <= time2.getValue());
 }
 
 // Overloaded operator for greater than comparison
