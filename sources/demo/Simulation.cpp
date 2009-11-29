@@ -27,7 +27,7 @@ using namespace reactphysics3d;
 
 // Constructor of the class Simulation
 Simulation::Simulation()
-           :world(new CollisionWorld(Vector3D(0.0, -1.0, 0.0))), engine(world, Time(0.01)) {
+           :world(new DynamicWorld(Vector3D(0.0, -0.6, 0.0))), engine(world, Time(0.01)) {
     simRunning = false;
     mouseButtonPressed = false;
     nbFrame = 0;
@@ -68,13 +68,17 @@ void Simulation::start() {
     // Start the physics simulation
     pEngine->start();
 
+    //double time = 1.0;
+
     // Main loop of the simulation
     while(simRunning) {
         // Check if an SDL event occured and make the apropriate actions
         checkEvents();
 
         double time = SDL_GetTicks()/1000.0;
-        std::cout << "Time : " << time << std::endl;
+        //time += 0.01;
+
+        //std::cout << "************************************************* Time : " << time << std::endl;
 
         // Update the display time
         pEngine->updateDisplayTime(Time(time));
@@ -87,7 +91,7 @@ void Simulation::start() {
 
         // Compute the fps (framerate)
         computeFps();
-        std::cout << "FPS : " << fps << std::endl;
+        //std::cout << "FPS : " << fps << std::endl;
 
         /*
         BodyState state = context.getObject(0).getRigidBody()->getInterpolatedState();
@@ -117,6 +121,14 @@ void Simulation::start() {
         std::cout << "Position Cube 2: (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
         std::cout << "quaternion orientation 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ", " << velocity2.getW() << ")" << std::endl;;
         */
+
+        /*
+        double a;
+        if (time > 5.0) {
+            std::cin >> a;
+        }
+        */
+
     }
 }
 

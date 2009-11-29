@@ -87,7 +87,7 @@ int initSDL() {
     }
 
     // Define the window title and the window icon
-    SDL_WM_SetCaption("React Demo 0.02", NULL);
+    SDL_WM_SetCaption("ReactPhysics3D Demo 0.01", NULL);
 
      // Get the state of the Double Buffer parameter
     int nValue;
