@@ -56,9 +56,9 @@ class Timer {
         double getAccumulator() const;                                          // Return the accumulator value
         void setCurrentDisplayTime(const Time& displayTime);                    // Set the current display time
 
-        void update();                                          // Update the timer
-        double getInterpolationFactor() const;                  // Compute and return the interpolation factor between two body states
-        void updateDisplayTime(const Time& newDisplayTime);     // Set the new currentDisplayTime value
+        void update();                                                          // Update the timer by adding some time value (or timeStep by default) to the current time
+        double getInterpolationFactor() const;                                  // Compute and return the interpolation factor between two body states
+        void updateDisplayTime(const Time& newDisplayTime);                     // Set the new currentDisplayTime value
 };
 
 // --- Inline functions --- //
@@ -110,7 +110,7 @@ inline void Timer::setCurrentDisplayTime(const Time& currentDisplayTime) {
     this->currentDisplayTime = currentDisplayTime;
 }
 
-// Update the timer
+// Update the timer by adding the timeStep to the current time
 inline void Timer::update() {
     // Check if the timer is running
     if (isRunning) {
