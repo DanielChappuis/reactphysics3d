@@ -19,7 +19,9 @@
 
 // Libraries
 #include "DynamicEngine.h"
-#include "integration/RungeKutta.h"
+#include "../integration/RungeKutta4.h"
+#include "../integration/ExplicitEuler.h"
+#include "../integration/SemiImplicitEuler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -33,8 +35,8 @@ DynamicEngine::DynamicEngine(DynamicWorld* world, const Time& timeStep)
         throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
     }
 
-    // Creation of the RK4 integration algorithm
-    integrationAlgorithm = new RungeKutta4();
+    // Creation of the Semi-Implicit Euler integration algorithm
+    integrationAlgorithm = new SemiImplicitEuler();
 }
 
 // Copy-constructor
