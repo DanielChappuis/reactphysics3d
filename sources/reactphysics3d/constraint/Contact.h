@@ -38,7 +38,7 @@ namespace reactphysics3d {
 */
 class Contact : public Constraint {
     private :
-        Vector3D normal;                                // Normal vector of the contact
+        Vector3D normal;                                // Normal vector of the contact (From body1 toward body2)
         std::vector<const Vector3D* const> points;      // Contact points
 
     public :
@@ -47,7 +47,6 @@ class Contact : public Constraint {
         virtual ~Contact();                                                         // Destructor
 
         Vector3D getNormal() const;                     // Return the normal vector of the contact
-
 };
 
 // Return the normal vector of the contact
