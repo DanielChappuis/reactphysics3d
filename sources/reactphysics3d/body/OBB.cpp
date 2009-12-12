@@ -133,50 +133,33 @@ void OBB::draw() const {
 }
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
-// The function returns the number of extreme vertices and a set that contains thoses vertices.
-int OBB::getExtremeVertices(const Vector3D projectionAxis, std::vector<Vector3D>& extremeVertices) const {
-    assert(extremeVertices.size() == 0);
-    assert(projectionAxis.length() != 0);
+std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
+    assert(axis.length() != 0);
 
-    double maxProjectionLength = 0.0;     // Longest projection length of a vertex onto the projection axis
+    std::vector<Vector3D> extremeVertices;
+    double maxProjectionLength = 0.0;       // Longest projection length of a vertex onto the projection axis
 
-    // Compute the vertices of the OBB
-    double e0 = extent[0];
-    double e1 = extent[1];
-    double e2 = extent[2];
-    Vector3D vertices[8];
-    vertices[0] = center + (axis[0]*e0) + (axis[1]*e1) - (axis[2]*e2);
-    vertices[1] = center + (axis[0]*e0) + (axis[1]*e1) + (axis[2]*e2);
-    vertices[2] = center - (axis[0]*e0) + (axis[1]*e1) + (axis[2]*e2);
-    vertices[3] = center - (axis[0]*e0) + (axis[1]*e1) - (axis[2]*e2);
-    vertices[4] = center + (axis[0]*e0) - (axis[1]*e1) - (axis[2]*e2);
-    vertices[5] = center + (axis[0]*e0) - (axis[1]*e1) + (axis[2]*e2);
-    vertices[6] = center - (axis[0]*e0) - (axis[1]*e1) + (axis[2]*e2);
-    vertices[7] = center - (axis[0]*e0) - (axis[1]*e1) - (axis[2]*e2);
+    // For each vertex of the OBB
+    for (unsigned int i=0; i<8; ++i) {
+        Vector3D vertex = getVertex(i);
 
-    for (int i=0; i<8; ++i) {
         // Compute the projection length of the current vertex onto the projection axis
-        double projectionLength = projectionAxis.scalarProduct(vertices[i]-center) / projectionAxis.length();
-
-        //std::cout << "Projection length : " << projectionLength << std::endl;
-        //std::cout << "Max Projection length : " << maxProjectionLength << std::endl;
+        double projectionLength = axis.scalarProduct(vertex-center) / axis.length();
 
         // If we found a bigger projection length
         if (projectionLength > maxProjectionLength + EPSILON) {
             maxProjectionLength = projectionLength;
             extremeVertices.clear();
-            extremeVertices.push_back(vertices[i]);
-            //std::cout << "PRINT 1" << std::endl;
+            extremeVertices.push_back(vertex);
         }
         else if (equal(projectionLength, maxProjectionLength)) {
-            extremeVertices.push_back(vertices[i]);
-            //std::cout << "PRINT 2" << std::endl;
+            extremeVertices.push_back(vertex);
         }
     }
 
     // An extreme should be a unique vertex, an edge or a face
     assert(extremeVertices.size() == 1 || extremeVertices.size() == 2 || extremeVertices.size() == 4);
 
-    // Return the number of extreme vertices
-    return extremeVertices.size();
+    // Return the extreme vertices
+    return extremeVertices;
 }

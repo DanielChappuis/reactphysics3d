@@ -50,15 +50,16 @@ class OBB : public BoundingVolume {
         OBB(const OBB& obb);                                                                            // Copy-Constructor
         virtual ~OBB();                                                                                 // Destructor
 
-        Vector3D getCenter() const;                                                                                     // Return the center point of the OBB
-        void setCenter(const Vector3D& center);                                                                         // Set the center point
-        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                                        // Return an axis of the OBB
-        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                            // Set an axis
-        double getExtent(unsigned int index) const throw(std::invalid_argument);                                        // Return an extent value
-        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                                 // Set an extent value
-        virtual int getExtremeVertices(const Vector3D projectionAxis, std::vector<Vector3D>& extremeVertices) const;    // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
-        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);                // Update the oriented bounding box orientation according to a new orientation of the rigid body
-        virtual void draw() const;                                                                                      // Draw the OBB (only for testing purpose)
+        Vector3D getCenter() const;                                                                             // Return the center point of the OBB
+        void setCenter(const Vector3D& center);                                                                 // Set the center point
+        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument) const;                          // Return an axis of the OBB
+        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                    // Set an axis
+        Vector3D getVertex(unsigned int index) const throw (std::invalid_argument) const;                       // Return a vertex of the OBB
+        double getExtent(unsigned int index) const throw(std::invalid_argument) const;                          // Return an extent value
+        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                         // Set an extent value
+        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D axis) const;                            // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
+        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);        // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        virtual void draw() const;                                                                              // Draw the OBB (only for testing purpose)
 };
 
 // Return the center point of the OBB
@@ -72,7 +73,7 @@ inline void OBB::setCenter(const Vector3D& center) {
 }
 
 // Return an axis of the OBB
-inline Vector3D OBB::getAxis(unsigned int index) const throw(std::invalid_argument) {
+inline Vector3D OBB::getAxis(unsigned int index) const throw(std::invalid_argument) const {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         return axis[index];
@@ -95,8 +96,43 @@ inline void OBB::setAxis(unsigned int index, const Vector3D& axis) throw(std::in
     }
 }
 
+// Return a vertex of the OBB
+inline Vector3D OBB::getVertex(unsigned int index) const throw (std::invalid_argument) const {
+    // Check if the index value is valid
+    if (index >= 0 && index <8) {
+        Vector3D vertex;
+
+        switch(index) {
+            case 0 : vertex = center + (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]);
+                     break;
+            case 1 : vertex = center + (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]);
+                     break;
+            case 2 : vertex = center - (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]);
+                     break;
+            case 3 : vertex = center - (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]);
+                     break;
+            case 4 : vertex = center + (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]);
+                     break;
+            case 5 : vertex = center + (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]);
+                     break;
+            case 6 : vertex = center - (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]);
+                     break;
+            case 7 : vertex = center - (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]);
+                     break;
+        }
+
+        // Return the vertex
+        return vertex;
+    }
+    else {
+        // The index value is not valid, we throw an exception
+        throw std::invalid_argument("Exception : The index value has to be between 0 and 8");
+    }
+}
+
+
 // Return an extent value
-inline double OBB::getExtent(unsigned int index) const throw(std::invalid_argument) {
+inline double OBB::getExtent(unsigned int index) const throw(std::invalid_argument) const {
     // Check if the index value is valid
     if (index >= 0 && index <3) {
         return extent[index];
