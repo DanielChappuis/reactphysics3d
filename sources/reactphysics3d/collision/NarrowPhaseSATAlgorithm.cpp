@@ -78,7 +78,7 @@ bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const bounding
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) {
+bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const {
 
     double center;                              // Center of a projection interval
     double radius1;                             // Radius of projection interval [min1, max1]
@@ -88,8 +88,8 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     double min2;                                // Minimm of interval 2
     double max2;                                // Maximum of interval 2
     Vector3D normal;                            // Contact normal (correspond to the separation axis with the smallest positive penetration depth)
-                                                // 
-    ContactType contactType;                    // Current contact type of the contact found so far
+                                                // The contact normal point out of OBB1 toward OBB2
+    bool side;                                  // True if the interval 1 is at the left of interval 2 if a collision occurs and false otherwise
     double minPenetrationDepth = 0.0;           // Minimum penetration depth detected among all separated axis
     const double cutoff = 0.999999;             // Cutoff for cosine of angles between box axes
     bool existsParallelPair = false;            // True if there exists two face normals that are parallel.
@@ -122,9 +122,15 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    bool sideTemp;
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(0), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // TODO : Delete this
@@ -151,9 +157,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(1), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // TODO : Delete this
@@ -179,9 +190,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // TODO : Delete this
@@ -200,9 +216,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb2->getAxis(0), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // Axis B1
@@ -220,11 +241,15 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
-
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb2->getAxis(1), boxDistance);   // Compute the contact normal with the correct sign
+    }
 
     // Axis B2
     udc2[2] = obb2->getAxis(2).scalarProduct(boxDistance);
@@ -235,9 +260,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb2->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
 
@@ -267,10 +297,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //Vector3D axis = obb1->getAxis(0).crossProduct(obb2->getAxis(0));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A0 x B1
@@ -281,10 +315,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(0).crossProduct(obb2->getAxis(1));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A0 x B2
@@ -295,10 +333,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(0).crossProduct(obb2->getAxis(2));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B0
@@ -309,10 +351,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(1).crossProduct(obb2->getAxis(0));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B1
@@ -323,10 +369,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(1).crossProduct(obb2->getAxis(1));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B2
@@ -337,10 +387,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(1).crossProduct(obb2->getAxis(2));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B0
@@ -351,10 +405,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(2).crossProduct(obb2->getAxis(0));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B1
@@ -365,10 +423,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(2).crossProduct(obb2->getAxis(1));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B2
@@ -379,10 +441,14 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    //axis = obb1->getAxis(2).crossProduct(obb2->getAxis(2));
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
+    }
+    else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
+        side = sideTemp;
+        minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // TODO : Delete this
@@ -392,7 +458,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // Compute the collision contact
     // TODO : The normal has to be unit before passing it to the computeContact() method
-    computeContact(contact);
+    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, getExtremeVertices(???), getExtremeVertices(???), Contact** contact)
 
     // We have found no separation axis, therefore the two OBBs must collide
     assert(*contact != 0);
@@ -400,12 +466,11 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     return true;
 }
 
-// This method computes penetration depth between two intervals and update the minimum penetration
-// depth found so far if the computed penetration depth is positive (the penetration depth in case
-// of collision has to be positive) and smaller than the current minimum penetration
-// depth. This method returns the computed penetration depth (note that it could return a negative
-// penetration depth if the intervals are separated.
-double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2, double& minPenetrationDepth) {
+// This method computes and returns the penetration depth between two intervals. This method returns the computed
+// penetration depth (note that it could return a negative penetration depth if the intervals are separated. This
+// method also find which interval is at the left of the other in order to know which extreme of interval 1 collides with
+// which extreme of interval 2 if a collision occur.
+double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const {
 
     // Compute the length of both intervals
     double lengthInterval1 = max1 - min1;
@@ -419,122 +484,25 @@ double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1
     // Compute the current penetration depth
     double penetrationDepth = (lengthInterval1 + lengthInterval2) - lengthBothIntervals;
 
-    // If the current penetration depth is smaller than the minimum penetration depth
-    if (penetrationDepth < minPenetrationDepth && penetrationDepth >= 0) {
-        minPenetrationDepth = penetrationDepth;
-        side = currentSide;
+    // Find which interval is at the left of the other
+    if (abs(max1-min2) <= abs(max2-min1)) {
+        // Right of interval 1 collides with the left of interval 2
+        side = true;
+    }
+    else {
+        // Right of interval 2 collides with the left of interval 1
+        side = false;
     }
 
     // Return the computed penetration depth
     return penetrationDepth;
 }
 
-// Compute a new collision contact between two projection intervals.
-// Warning : If the side value is true the max of interval1 collides with the min of interval2. If the
-// side value is false the max value of interval2 collides with the min value of interval1.
-void NarrowPhaseSATAlgorithm::computeContact(const ProjectionInterval& interval1, const ProjectionInterval& interval2,
-                                             bool side, Contact** contact) {
+// Compute a new collision contact between two OBBs
+void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
+                            const std::vector<Vector3D>& obb1Extremepoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
 
     assert(*contact == 0);
 
-    ProjectionInterval intervalLeft = (side) ? interval1 : interval2;
-    ProjectionInterval intervalRight = (!side) ? interval2 : interval1;
-
-    //Vector3D velocityLeft = (side) ? velocity1 : velocity2;
-    //Vector3D velocityRight = (!side) ? velocity2 : velocity1;
-
-    // Compute the extreme points of the two intervals at the instant of contact
-    //std::vector<Vector3D> leftExtremePointsAtContact = movePoints(intervalLeft.getMaxProjectedPoints(), velocityLeft * time.getValue());
-    //std::vector<Vector3D> rightExtremePointsAtContact = movePoints(intervalRight.getMinProjectedPoints(), velocityRight * time.getValue());
-
-    // TODO : ADD THE BODY ADRESS INTO THE CONTACT HERE
-    // Get the rigid bodies
-    //RigidBody* body1 = dynamic_cast<RigidBody*>(intervalLeft.getBoundingVolumePointer()->getBodyPointer());
-    //RigidBody* body2 = dynamic_cast<RigidBody*>(intervalRight.getBoundingVolumePointer()->getBodyPointer());
-
-    //assert(body1 != 0 && body2 != 0);
-    RigidBody* body1 = 0;
-    RigidBody* body2 = 0; // TODO : DELETE THIS
-
-    // Compute the normal vector of the contact
-    // TODO : Compute the normal vector of the contact
-    Vector3D normalVector(0.0, 1.0, 0.0);
-
-    /*
-    switch(intervalLeft.getMaxType()) {
-        case VERTEX :   if (intervalRight.getMinType() == VERTEX) {
-                            // Construct a new Vertex-Vertex contact
-                            *contact = new VertexVertexContact(body1, body2, normalVector, time, intervalLeft.getMaxProjectedPoints()[0]);
-                        }
-                        else if (intervalRight.getMinType() == EDGE) {
-                           // Construct a new Edge-Vertex contact
-                           *contact = new EdgeVertexContact(body1, body2, normalVector, time, intervalLeft.getMaxProjectedPoints()[0]);
-                        }
-                        else if (intervalRight.getMinType() == FACE) {
-                            // Construct a new Face-Vertex contact
-                           *contact = new FaceVertexContact(body1, body2, normalVector, time, intervalLeft.getMaxProjectedPoints()[0]);
-                        }
-                        break;
-
-        case EDGE:      if (intervalRight.getMinType() == VERTEX) {
-                            // Construct a new Edge-Vertex contact
-                           *contact = new EdgeVertexContact(body1, body2, normalVector, time, intervalRight.getMinProjectedPoints()[0]);
-                        }
-                        else if (intervalRight.getMinType() == EDGE) {
-                           // Compute the intersection between the two edges
-                           Segment3D edge1(intervalLeft.getMaxProjectedPoints()[0], intervalLeft.getMaxProjectedPoints()[1]);
-                           Segment3D edge2(intervalRight.getMinProjectedPoints()[0], intervalRight.getMinProjectedPoints()[1]);
-                           Segment3D intersectionSegment = computeSegmentSegmentIntersection(edge1, edge2);
-
-                           // Construct a new Edge-Edge contact
-                           *contact = new EdgeEdgeContact(body1, body2, normalVector, time, intersectionSegment);
-                        }
-                        else if (intervalRight.getMinType() == FACE) {
-                            // Compute the intersection between the edge and the face
-                            Segment3D edge(intervalLeft.getMaxProjectedPoints()[0], intervalLeft.getMaxProjectedPoints()[1]);
-                            Polygon3D face(intervalRight.getMinProjectedPoints());
-                            Segment3D intersectionSegment = computeSegmentPolygonIntersection(edge, face);
-
-                            // TODO : Warning : At this moment the set of vertices of the contact is not sorted. We will have to
-                            // find a way to sort it because the constructor of the Polygon3D class needs a set where vertices are
-                            // sorted in order to have a correct polygon.
-
-                            // Construct a new Face-Edge contact
-                            *contact = new FaceEdgeContact(body1, body2, normalVector, time, intersectionSegment);
-                        }
-                        break;
-
-        case FACE:      if (intervalRight.getMinType() == VERTEX) {
-                            // Construct a new Face-Vertex contact
-                            *contact = new FaceVertexContact(body1, body2, normalVector, time, intervalRight.getMinProjectedPoints()[0]);
-                        }
-                        else if (intervalRight.getMinType() == EDGE) {
-                            // Compute the intersection between the edge and the face
-                            Polygon3D face(intervalLeft.getMaxProjectedPoints());
-                            Segment3D edge(intervalRight.getMinProjectedPoints()[0], intervalRight.getMinProjectedPoints()[1]);
-                            Segment3D intersectionSegment = computeSegmentPolygonIntersection(edge, face);
-
-                            // TODO : Warning : At this moment the set of vertices of the contact is not sorted. We will have to
-                            // find a way to sort it because the constructor of the Polygon3D class needs a set where vertices are
-                            // sorted in order to have a correct polygon.
-
-                            // TODO : Here we will have to compute the Segment intersection between the edge and the face
-                            *contact = new FaceEdgeContact(body1, body2, normalVector, time, intersectionSegment);
-                        }
-                        else if (intervalRight.getMinType() == FACE) {
-                            // Compute the intersection between the two faces
-                            Polygon3D face1(intervalLeft.getMaxProjectedPoints());
-                            Polygon3D face2(intervalRight.getMinProjectedPoints());
-                            Polygon3D intersectionPolygon = computePolygonPolygonIntersection(face1, face2);
-
-                            // TODO : Warning : At this moment the set of vertices of the contact is not sorted. We will have to
-                            // find a way to sort it because the constructor of the Polygon3D class needs a set where vertices are
-                            // sorted in order to have a correct polygon.
-
-                            // Construct a new Face-Face contact
-                            *contact = new FaceFaceContact(body1, body2, normalVector, time, intersectionPolygon);
-                        }
-                        break;
-    }
-    */
+    // To complete ...
 }

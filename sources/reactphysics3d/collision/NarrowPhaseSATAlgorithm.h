@@ -25,13 +25,6 @@
 #include "../constraint/Contact.h"
 #include "../body/OBB.h"
 
-// Enumeration for the contact type
-enum ContactType {
-    EDGE_EDGE,              // Contact between an edge of OBB1 and an edge of OBB2
-    FACEOBB1_SOMETHING,     // Contact between a face of OBB1 and eiter a vertex, an edge or a face of OBB2
-    FACEOBB2_SOMETHING      // Contact between a face of OBB2 and either a vertex, an edge or a face of OBB1
-}
-
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -51,17 +44,30 @@ namespace reactphysics3d {
 */
 class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact);                         // Return true and compute a collision contact if the two OBB collide
-        double computePenetrationDepth(double min1, double max1, double min2, double max2, double& minPenetrationDepth);    // Compute the penetration depth of two projection intervals
+        bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const;                                               // Return true and compute a collision contact if the two OBB collide
+        double computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side);                                                 // Compute the penetration depth of two projection intervals
         void computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
-                            ContactType contactType,Contact** contact);                                                     // Compute a new collision contact between two projection intervals
-
+                            const std::vector<Vector3D>& obb1Extremepoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const;   // Compute a new contact                                                   // Compute a new collision contact between two projection intervals
+        Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                                                      // Compute a contact normal
     public :
         NarrowPhaseSATAlgorithm();           // Constructor
         ~NarrowPhaseSATAlgorithm();          // Destructor
 
         virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact);      // Return true and compute a collision contact if the two bounding volume collide
 };
+
+// --- Inlines function --- //
+
+// Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
+// collision occur and "distanceOfOBBs" is the vector (obb2.center - obb1.center).
+inline Vector3D NarrowPhaseAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
+    if (distanceOfOBBs.scalarProduct(axis) >= 0) {
+        return axis;
+    }
+    else {
+        return axis.getOpposite();
+    }
+}
 
 } // End of the ReactPhysics3D namespace
 
