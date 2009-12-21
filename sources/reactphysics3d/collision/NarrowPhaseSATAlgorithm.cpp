@@ -122,7 +122,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    bool sideTemp;
+    bool sideTemp;              // TODO : Check if we really need the "side" variable (maybee, we can remove it)
     double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
@@ -458,7 +458,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 
     // Compute the collision contact
     // TODO : The normal has to be unit before passing it to the computeContact() method
-    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, getExtremeVertices(???), getExtremeVertices(???), Contact** contact)
+    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), Contact** contact)
 
     // We have found no separation axis, therefore the two OBBs must collide
     assert(*contact != 0);
@@ -500,9 +500,34 @@ double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1
 
 // Compute a new collision contact between two OBBs
 void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
-                            const std::vector<Vector3D>& obb1Extremepoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
+                            const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
+
+    unsigned int nbVerticesExtremeOBB1 = obb1ExtremePoints.size();
+    unsigned int nbVerticesExtremeOBB2 = obb2ExtremePoints.size();
+    assert(nbVerticesExtremeOBB1==1 || nbVerticesExtremeOBB1==2 || nbVerticesExtremeOBB1==4);
+    assert(nbVerticesExtremeOBB2==1 || nbVerticesExtremeOBB2==2 || nbVerticesExtremeOBB2==4);
+
+    // If it's a Vertex-Something contact
+    if (nbVerticesExtremeOBB1 == 1) {
+        // Create a new contact
+        contact = new Contact(obb1, obb2, normal, obb1ExtremePoints);
+    }
+    else if(nbVerticesExtremmeOBB2 == 1) {  // If its a Vertex-Something contact
+        // Create a new contact
+        contact = new Contact(obb1, obb2, normal, obb2ExtremePoints);
+    }
+    else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
+        // TODO : Complete this ...
+    }
+    else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
+        // TODO : Complete this ...
+    }
+    else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
+        // TODO : Complete this ...
+    }
+    else {      // If it's a face-face contact
+        // TODO : Complete this ...
+    }
 
     assert(*contact == 0);
-
-    // To complete ...
 }
