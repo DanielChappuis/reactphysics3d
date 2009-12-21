@@ -133,6 +133,7 @@ void OBB::draw() const {
 }
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
+// Be careful when this method returns vertices of a polygonal face because vertices are not necessarly ordered.
 std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
     assert(axis.length() != 0);
 
@@ -163,3 +164,13 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
     // Return the extreme vertices
     return extremeVertices;
 }
+
+// Return the 4 vertices the OBB's face in the direction of a given axis.
+// This method returns the set of vertices of the face (vertices are ordered).
+std::vector<Vector3D> OBB::getFace(Vector3D& axis) const {
+    std::vector<Vector3D> face;
+
+    assert(face.size() == 4);
+    return face;
+}
+
