@@ -22,6 +22,7 @@
 
 // Constant used for the precision
 const double EPSILON = 0.00001;
+const double ONE_MINUS_EPSILON = 0.99999;
 
 // Pi constant
 const double PI = 3.14159265;

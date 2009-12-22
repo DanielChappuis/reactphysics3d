@@ -55,6 +55,7 @@ class Vector3D {
         Vector3D getOpposite() const;                           // Return the vector in the opposite direction
         double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
         Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
+        bool isParallelWith(const Vector3D& vector) const;      // Return true if two vectors are parallel
 
         // --- Overloaded operators --- //
         Vector3D operator+(const Vector3D& vector) const;     // Overloaded operator for addition
@@ -124,6 +125,11 @@ inline double Vector3D::scalarProduct(const Vector3D& vector) const {
 inline Vector3D Vector3D::crossProduct(const Vector3D& vector) const {
     // Compute and return the cross product
     return Vector3D(y * vector.z - z * vector.y, z * vector.x - x * vector.z , x * vector.y - y * vector.x);
+}
+
+// Return true if two vectors are parallel
+inline bool Vector3D::isParallelWith(const Vector3D& vector) const {
+    return (approxEqual(this->scalarProduct(vector), length * vector.getLength()));
 }
 
 // Overloaded operator for multiplication between a number and a Vector3D (inline)

@@ -40,7 +40,7 @@
 
 // function to test if two numbers are (almost) equal
 // We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool equal(double a, double b) {
+inline bool approxEqual(double a, double b) {
     double difference = a - b;
     return (difference < EPSILON && difference > -EPSILON);
 }
@@ -80,7 +80,7 @@ inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactp
 // will be another Segment3D.
 inline reactphysics3d::Segment3D computeParallelSegmentsIntersection(const reactphysics3d::Segment3D& segment1, const reactphysics3d::Segment3D& segment2) {
     // The two segments should be colinear
-    assert(equal(std::abs(segment1.getSegmentVector().scalarProduct(segment2.getSegmentVector())), segment1.getSegmentVector().length() * segment2.getSegmentVector().length()));
+    assert(approxEqual(std::abs(segment1.getSegmentVector().scalarProduct(segment2.getSegmentVector())), segment1.getSegmentVector().length() * segment2.getSegmentVector().length()));
 
     // Result segment
     reactphysics3d::Segment3D resultSegment;
