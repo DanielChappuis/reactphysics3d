@@ -34,13 +34,13 @@ OBB::OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
             const Vector3D& axis3, double extent1, double extent2, double extent3) {
     this->center = center;
 
-    oldAxis[0] = axis1;
-    oldAxis[1] = axis2;
-    oldAxis[2] = axis3;
+    oldAxis[0] = axis1.getUnit();
+    oldAxis[1] = axis2.getUnit();
+    oldAxis[2] = axis3.getUnit();
 
-    this->axis[0] = axis1;
-    this->axis[1] = axis2;
-    this->axis[2] = axis3;
+    this->axis[0] = oldAxis[0];
+    this->axis[1] = oldAxis[1];
+    this->axis[2] = oldAxis[2];
 
     this->extent[0] = extent1;
     this->extent[1] = extent2;
@@ -138,23 +138,36 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
     assert(axis.length() != 0);
 
     std::vector<Vector3D> extremeVertices;
-    double maxProjectionLength = 0.0;       // Longest projection length of a vertex onto the projection axis
 
-    // For each vertex of the OBB
-    for (unsigned int i=0; i<8; ++i) {
-        Vector3D vertex = getVertex(i);
+    // Check if the given axis is parallel to an axis on the OBB
+    if (axis[0].isParallelWith(axis)) {
+        // TODO : Complete this
+    }
+    else if(axis[1].isParallelWith(axis) {
+        // TODO : Complete this
+    }
+    else if(axis[2].isParallelWith(axis) {
+        // TODO : Complete this
+    }
+    else {  // The extreme is made of an unique vertex or an edge
+        double maxProjectionLength = 0.0;       // Longest projection length of a vertex onto the projection axis
 
-        // Compute the projection length of the current vertex onto the projection axis
-        double projectionLength = axis.scalarProduct(vertex-center) / axis.length();
+        // For each vertex of the OBB
+        for (unsigned int i=0; i<8; ++i) {
+            Vector3D vertex = getVertex(i);
 
-        // If we found a bigger projection length
-        if (projectionLength > maxProjectionLength + EPSILON) {
-            maxProjectionLength = projectionLength;
-            extremeVertices.clear();
-            extremeVertices.push_back(vertex);
-        }
-        else if (equal(projectionLength, maxProjectionLength)) {
-            extremeVertices.push_back(vertex);
+            // Compute the projection length of the current vertex onto the projection axis
+            double projectionLength = axis.scalarProduct(vertex-center) / axis.length();
+
+            // If we found a bigger projection length
+            if (projectionLength > maxProjectionLength + EPSILON) {
+                maxProjectionLength = projectionLength;
+                extremeVertices.clear();
+                extremeVertices.push_back(vertex);
+            }
+            else if (approxEqual(projectionLength, maxProjectionLength)) {
+                extremeVertices.push_back(vertex);
+            }
         }
     }
 
@@ -165,12 +178,52 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
     return extremeVertices;
 }
 
-// Return the 4 vertices the OBB's face in the direction of a given axis.
-// This method returns the set of vertices of the face (vertices are ordered).
-std::vector<Vector3D> OBB::getFace(Vector3D& axis) const {
-    std::vector<Vector3D> face;
+// Return the 4 vertices of a face of the OBB. The 4 vertices will be ordered. The convention is that the index 0 corresponds to
+// the face in the direction of the axis[0], 1 corresponds to the face in the opposite direction of the axis[0], 2 corresponds to
+// the face in the direction of the axis[1], etc.
+std::vector<Vector3D> OBB::getFace(int index) const throw(std::invalid_argument) {
+    // Check the argument
+    if (index >=0 && index <6) {
+        std::vector<Vector3D> vertices;
+        switch(index) {
+            case 0: vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    break;
+            case 1: vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    break;
+            case 2: vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    break;
+            case 3: vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    break;
+            case 4: vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    break;
+            case 5: vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    break;
+        }
 
-    assert(face.size() == 4);
-    return face;
+        // Return the vertices
+        assert(vertices.size() == 4);
+        return vertices;
+    }
+    else {
+        // Throw an exception
+        throw std::invalid_argument("Exception: The argument must be between 0 and 5");
+    }
 }
-

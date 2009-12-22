@@ -52,11 +52,11 @@ class OBB : public BoundingVolume {
 
         Vector3D getCenter() const;                                                                             // Return the center point of the OBB
         void setCenter(const Vector3D& center);                                                                 // Set the center point
-        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument) const;                          // Return an axis of the OBB
+        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                                // Return an axis of the OBB
         void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                    // Set an axis
-        Vector3D getVertex(unsigned int index) const throw (std::invalid_argument) const;                       // Return a vertex of the OBB
-        std::vector<Vector3D> getFace(Vector3D& axis) const;                                                    // Return the 4 vertices the OBB's face in the direction of a given axis
-        double getExtent(unsigned int index) const throw(std::invalid_argument) const;                          // Return an extent value
+        Vector3D getVertex(unsigned int index) const throw (std::invalid_argument);                             // Return a vertex of the OBB
+        std::vector<Vector3D> getFace(int index) const throw(std::invalid_argument);                            // Return the 4 vertices the OBB's face in the direction of a given axis
+        double getExtent(unsigned int index) const throw(std::invalid_argument);                                // Return an extent value
         void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                         // Set an extent value
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D axis) const;                            // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);        // Update the oriented bounding box orientation according to a new orientation of the rigid body
