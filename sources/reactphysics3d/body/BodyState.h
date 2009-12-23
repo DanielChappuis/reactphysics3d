@@ -162,7 +162,7 @@ inline Vector3D BodyState::getForce() const {
 
 // Set the force over the body
 inline void BodyState::setForce(const Vector3D& force) {
-    this->force;
+    this->force = force;
 }
 
 // Return the current torque of the body

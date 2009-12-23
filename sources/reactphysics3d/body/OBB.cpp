@@ -134,30 +134,46 @@ void OBB::draw() const {
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
 // Be careful when this method returns vertices of a polygonal face because vertices are not necessarly ordered.
-std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D axis) const {
-    assert(axis.length() != 0);
+std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
+    assert(directionAxis.length() != 0);
 
     std::vector<Vector3D> extremeVertices;
 
     // Check if the given axis is parallel to an axis on the OBB
-    if (axis[0].isParallelWith(axis)) {
-        // TODO : Complete this
+    if (axis[0].isParallelWith(directionAxis)) {
+        if (axis[0].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction
+            extremeVertices = getFace(0);           // The extreme is the face 0
+        }
+        else {
+            extremeVertices = getFace(1);           // The extreme is the face 1
+        }
     }
-    else if(axis[1].isParallelWith(axis) {
-        // TODO : Complete this
+    else if(axis[1].isParallelWith(directionAxis)) {
+        if (axis[1].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction
+           extremeVertices = getFace(2);            // The extreme is the face 2
+        }
+        else {
+            extremeVertices = getFace(3);           // The extreme is the face 3
+        }
+
     }
-    else if(axis[2].isParallelWith(axis) {
-        // TODO : Complete this
+    else if(axis[2].isParallelWith(directionAxis)) {
+        if (axis[2].scalarProduct(directionAxis) >= 0) {     // If both axis are in the same direction
+          extremeVertices = getFace(4);             // The extreme is the face 4
+        }
+        else {
+            extremeVertices = getFace(5);           // The extreme is the face 5
+        }
     }
     else {  // The extreme is made of an unique vertex or an edge
-        double maxProjectionLength = 0.0;       // Longest projection length of a vertex onto the projection axis
+        double maxProjectionLength = 0.0;           // Longest projection length of a vertex onto the projection axis
 
         // For each vertex of the OBB
         for (unsigned int i=0; i<8; ++i) {
             Vector3D vertex = getVertex(i);
 
             // Compute the projection length of the current vertex onto the projection axis
-            double projectionLength = axis.scalarProduct(vertex-center) / axis.length();
+            double projectionLength = directionAxis.scalarProduct(vertex-center) / directionAxis.length();
 
             // If we found a bigger projection length
             if (projectionLength > maxProjectionLength + EPSILON) {
