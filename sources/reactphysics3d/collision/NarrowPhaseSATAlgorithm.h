@@ -49,6 +49,7 @@ class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
         void computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
                             const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const;   // Compute a new contact                                                   // Compute a new collision contact between two projection intervals
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                                                      // Compute a contact normal
+
     public :
         NarrowPhaseSATAlgorithm();           // Constructor
         ~NarrowPhaseSATAlgorithm();          // Destructor

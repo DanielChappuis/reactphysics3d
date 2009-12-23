@@ -36,6 +36,8 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// TODO : Remove all the std::cout
+
 // TODO : Check and modify all comments on this file in order that
 //        everything have to do with the new SAT algorithm
 
@@ -279,10 +281,10 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         //std::cout << "Current -- 1 -- MIN Points : " << currentInterval1.getMinProjectedPoints().size() << " MAX : " << currentInterval1.getMaxProjectedPoints().size() << std::endl;
         //std::cout << "Current -- 1 -- min : " << currentInterval1.getMin() << std::endl;
         //std::cout << "Timefirst : " << timeFirst.getValue() << std::endl;
-        std::cout << "CONTACT FOUND AND TIMEFIRST IS " << timeFirst.getValue() << std::endl;
+        std::cout << "CONTACT FOUND " << std::endl;
 
-        // TODO : The normal has to be unit before passing it to the computeContact() method
-        computeContact(currentInterval1, currentInterval2, velocity1, velocity2, timeFirst, side, contact);
+        // Compute the collision contact
+        computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact)
 
         //std::cout << "Contact 1 : " << contact << std::endl;
         assert(*contact != 0);
@@ -457,8 +459,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     std::cout << "CONTACT FOUND AND TIMEFIRST IS " << timeFirst.getValue() << std::endl;
 
     // Compute the collision contact
-    // TODO : The normal has to be unit before passing it to the computeContact() method
-    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), Contact** contact)
+    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact)
 
     // We have found no separation axis, therefore the two OBBs must collide
     assert(*contact != 0);
