@@ -32,18 +32,12 @@
 #include "Vector3D.h"
 #include "constants.h"
 #include "exceptions.h"
+#include "mathematics_functions.h"
 #include <cstdio>
 #include <cassert>
 #include <cmath>
 
 // ---------- Mathematics functions ---------- //
-
-// function to test if two numbers are (almost) equal
-// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(double a, double b) {
-    double difference = a - b;
-    return (difference < EPSILON && difference > -EPSILON);
-}
 
 // TODO : Test this method
 // Rotate a vector according to a rotation quaternion.
@@ -59,6 +53,7 @@ inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d:
     return quaternionResult.vectorV();
 }
 
+/*
 // TODO : Test this method
 // Move a set of points by a given vector.
 // The method returns a set of points moved by the given vector.
@@ -121,19 +116,6 @@ inline reactphysics3d::Segment3D computeParallelSegmentsIntersection(const react
     // We should never go here
     assert(false);
 }
-
-// TODO : Delete this method if not needed
-// Return the intersection between a Segment3D and a Polygon3D that are on the same plane. The result of the intersection
-// will be another Segment3D.
-//inline reactphysics3d::Segment3D computeSegmentPolygonIntersection(const reactphysics3d::Segment3D& segment, const reactphysics3d::Polygon3D& polygon) {
-    // TODO : Implement this method
-//}
-
-// TODO : Delete this method if not needed
-// Return the intersection between two Polygon3D that are on the same plane. The result of the intersection
-// will be another Polygon3D.
-//inline reactphysics3d::Polygon3D computePolygonPolygonIntersection(const reactphysics3d::Polygon3D& polygon1, const reactphysics3d::Polygon3D& polygon2) {
-    // TODO : Implement this method
-//}
+*/
 
 #endif
