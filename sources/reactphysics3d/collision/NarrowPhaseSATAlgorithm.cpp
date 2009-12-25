@@ -23,12 +23,7 @@
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include "../constraint/Contact.h"
-#include "../constraint/VertexVertexContact.h"
-#include "../constraint/EdgeEdgeContact.h"
-#include "../constraint/FaceFaceContact.h"
-#include "../constraint/EdgeVertexContact.h"
-#include "../constraint/FaceEdgeContact.h"
-#include "../constraint/FaceVertexContact.h"
+#include <algorithm>
 #include <cfloat>
 #include <iostream> // TODO : Delete this
 #include <cassert>
@@ -125,7 +120,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     min2 = center - radius2;
     max2 = center + radius2;
     bool sideTemp;              // TODO : Check if we really need the "side" variable (maybee, we can remove it)
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -136,7 +131,6 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     }
 
     // TODO : Delete this
-    std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
@@ -159,7 +153,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -170,7 +164,6 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     }
 
     // TODO : Delete this
-    std::cout << "speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
@@ -192,7 +185,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -203,7 +196,6 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     }
 
     // TODO : Delete this
-    std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
@@ -218,7 +210,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -238,12 +230,11 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    std::cout << "Speed : " << speed << std::endl;
     std::cout << "min1 : " << min1 << std::endl;
     std::cout << "max1 : " << max1 << std::endl;
     std::cout << "min2 : " << min2 << std::endl;
     std::cout << "max2 : " << max2 << std::endl;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -262,7 +253,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -284,10 +275,8 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         std::cout << "CONTACT FOUND " << std::endl;
 
         // Compute the collision contact
-        computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact)
+        computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
 
-        //std::cout << "Contact 1 : " << contact << std::endl;
-        assert(*contact != 0);
         return true;
     }
 
@@ -299,7 +288,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -317,7 +306,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -335,7 +324,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -353,7 +342,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -371,7 +360,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -389,7 +378,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -407,7 +396,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -425,7 +414,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -443,7 +432,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, minPenetrationDepth, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
@@ -456,13 +445,10 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     // TODO : Delete this
     //(*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0), timeFirst);
     std::cout << "Contact2 : " << contact << std::endl;
-    std::cout << "CONTACT FOUND AND TIMEFIRST IS " << timeFirst.getValue() << std::endl;
+    std::cout << "CONTACT FOUND" << std::endl;
 
     // Compute the collision contact
-    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact)
-
-    // We have found no separation axis, therefore the two OBBs must collide
-    assert(*contact != 0);
+    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
 
     return true;
 }
@@ -478,8 +464,8 @@ double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1
     double lengthInterval2 = max2 - min2;
 
     // Compute the total length of both intervals
-    double minExtreme = min(min1, min2);
-    double maxExtreme = max(max1, max2);
+    double minExtreme = std::min(min1, min2);
+    double maxExtreme = std::max(max1, max2);
     double lengthBothIntervals = maxExtreme - minExtreme;
 
     // Compute the current penetration depth
@@ -513,7 +499,7 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
         // Create a new contact
         contact = new Contact(obb1, obb2, normal, obb1ExtremePoints);
     }
-    else if(nbVerticesExtremmeOBB2 == 1) {  // If its a Vertex-Something contact
+    else if(nbVerticesExtremeOBB2 == 1) {  // If its a Vertex-Something contact
         // Create a new contact
         contact = new Contact(obb1, obb2, normal, obb2ExtremePoints);
     }
@@ -530,5 +516,5 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
         // TODO : Complete this ...
     }
 
-    assert(*contact == 0);
+    assert(*contact != 0);
 }

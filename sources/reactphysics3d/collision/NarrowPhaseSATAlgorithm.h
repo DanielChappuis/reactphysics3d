@@ -45,7 +45,7 @@ namespace reactphysics3d {
 class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
     private :
         bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const;                                               // Return true and compute a collision contact if the two OBB collide
-        double computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side);                                                 // Compute the penetration depth of two projection intervals
+        double computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const;                                                 // Compute the penetration depth of two projection intervals
         void computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
                             const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const;   // Compute a new contact                                                   // Compute a new collision contact between two projection intervals
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                                                      // Compute a contact normal
@@ -61,8 +61,8 @@ class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
 
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
 // collision occur and "distanceOfOBBs" is the vector (obb2.center - obb1.center).
-inline Vector3D NarrowPhaseAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
-    if (distanceOfOBBs.scalarProduct(axis) >= 0) {
+inline Vector3D NarrowPhaseSATAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
+    if (distanceOfOBBs.scalarProduct(axis) >= 0.0) {
         return axis;
     }
     else {
