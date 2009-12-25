@@ -58,7 +58,7 @@ class OBB : public BoundingVolume {
         std::vector<Vector3D> getFace(int index) const throw(std::invalid_argument);                            // Return the 4 vertices the OBB's face in the direction of a given axis
         double getExtent(unsigned int index) const throw(std::invalid_argument);                                // Return an extent value
         void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                         // Set an extent value
-        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                            // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
+        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                           // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);        // Update the oriented bounding box orientation according to a new orientation of the rigid body
         virtual void draw() const;                                                                              // Draw the OBB (only for testing purpose)
 };
