@@ -23,6 +23,9 @@
 // Libraries
 #include "constants.h"
 
+// ReactPhysics3D namespace
+namespace reactphysics3d {
+
 // ---------- Mathematics functions ---------- //
 
 // function to test if two numbers are (almost) equal
@@ -31,6 +34,8 @@ inline bool approxEqual(double a, double b) {
     double difference = a - b;
     return (difference < EPSILON && difference > -EPSILON);
 }
+
+} // End of ReactPhysics3D namespace
 
 
 
