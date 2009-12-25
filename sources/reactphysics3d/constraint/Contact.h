@@ -42,9 +42,8 @@ class Contact : public Constraint {
         std::vector<Vector3D> points;                  // Contact points
 
     public :
-        Contact(Body* const body1, Body* const body2, const Vector3D& normal,
-                const std::vector<Vector3D>& points);                               // Constructor
-        virtual ~Contact();                                                         // Destructor
+        Contact(Body* const body1, Body* const body2, const Vector3D& normal, const std::vector<Vector3D>& points);     // Constructor
+        virtual ~Contact();                                                                                             // Destructor
 
         Vector3D getNormal() const;                     // Return the normal vector of the contact
 };
