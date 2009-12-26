@@ -497,11 +497,11 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
     // If it's a Vertex-Something contact
     if (nbVerticesExtremeOBB1 == 1) {
         // Create a new contact
-        contact = new Contact(obb1, obb2, normal, obb1ExtremePoints);
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, obb1ExtremePoints);
     }
     else if(nbVerticesExtremeOBB2 == 1) {  // If its a Vertex-Something contact
         // Create a new contact
-        contact = new Contact(obb1, obb2, normal, obb2ExtremePoints);
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, obb2ExtremePoints);
     }
     else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
         // TODO : Complete this ...
