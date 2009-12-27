@@ -53,6 +53,30 @@ inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d:
     return quaternionResult.vectorV();
 }
 
+// TODO : Test this method
+// Given two lines (given by the points "point1", "point2" and the vectors "d1" and "d2" that are not parallel, this method returns the values
+// "alpha" and "beta" such that the two points P1 and P2 are the two closest point between the two lines and such that
+// P1 = point1 + alpha * d1
+// P2 = point2 + beta * d2
+inline void closestPointsBetweenTwoLines(const reactphysics3d::Vector3D& point1, const reactphysics3d::Vector3D& d1, const reactphysics3d::Vector3D& point2,
+                                         const reactphysics3d::Vector3D& d2, double* alpha, double* beta) {
+
+    reactphysics3d::Vector3D r = point1 - point2;
+    double a = d1.scalarProduct(d1);
+    double b = d1.scalarProduct(d2);
+    double c = d1.scalarProduct(r);
+    double e = d2.scalarProduct(d2);
+    double f = d2.scalarProduct(r);
+    double d = a*e-b*b;
+
+    // The two lines must not be parallel
+    assert(!reactphysics3d::approxEqual(d, 0.0));
+
+    // Compute the "alpha" and "beta" values
+    *alpha = (b*f -c*e)/d;
+    *beta = (a*f-b*c)/d;
+}
+
 /*
 // TODO : Test this method
 // Move a set of points by a given vector.
