@@ -504,7 +504,24 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
         *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, obb2ExtremePoints);
     }
     else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
-        // TODO : Complete this ...
+        // Compute the two vectors of the segment lines
+        Vector3D d1 = obb1ExtremePoints[1] - obb1ExtremePoints[0];
+        Vector3D d2 = obb2ExtremePoints[1] - obb2ExtremePoints[0];
+
+        double alpha, beta;
+
+        // Compute the closest two points between the two line segments
+        closestPointsBetweenTwoLines(obb1ExtremePoints[0], d1, obb2ExtremePoints[0], d2, &alpha, &beta);
+        Vector3D pointA = obb1ExtremePoints[0] + d1 * alpha;
+        Vector3D pointB = obb2ExtremePoints[0] + d2 * beta;
+
+        // Compute the contact point as halfway between the 2 closest points
+        Vector3D contactPoint = 0.5 * (pointA + pointB);
+        std::vector<Vector3D> contactSet;
+        contactSet.push_back(contactPoint);
+
+        // Create a new contact
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, contactSet);
     }
     else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
         // TODO : Complete this ...
