@@ -497,11 +497,11 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
     // If it's a Vertex-Something contact
     if (nbVerticesExtremeOBB1 == 1) {
         // Create a new contact
-        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, obb1ExtremePoints);
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb1ExtremePoints);
     }
     else if(nbVerticesExtremeOBB2 == 1) {  // If its a Vertex-Something contact
         // Create a new contact
-        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, obb2ExtremePoints);
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb2ExtremePoints);
     }
     else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
         // Compute the two vectors of the segment lines
@@ -510,18 +510,32 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
 
         double alpha, beta;
 
-        // Compute the closest two points between the two line segments
-        closestPointsBetweenTwoLines(obb1ExtremePoints[0], d1, obb2ExtremePoints[0], d2, &alpha, &beta);
-        Vector3D pointA = obb1ExtremePoints[0] + d1 * alpha;
-        Vector3D pointB = obb2ExtremePoints[0] + d2 * beta;
+        // If the two edges are parallel
+        if (d1.isParallelWith(d2)) {
+            Vector3D contactPointA;
+            Vector3D contactPointB;
 
-        // Compute the contact point as halfway between the 2 closest points
-        Vector3D contactPoint = 0.5 * (pointA + pointB);
-        std::vector<Vector3D> contactSet;
-        contactSet.push_back(contactPoint);
+            // Compute the intersection between the two edges
+            computeParallelSegmentsIntersection(obb1ExtremePoints[0], obb1ExtremePoints[1], obb2ExtremePoints[0], obb2ExtremePoints[1],
+                                                contactPointA, contactPointB);
+
+
+
+        }
+        else {  // If the two edges are not parallel
+            // Compute the closest two points between the two line segments
+            closestPointsBetweenTwoLines(obb1ExtremePoints[0], d1, obb2ExtremePoints[0], d2, &alpha, &beta);
+            Vector3D pointA = obb1ExtremePoints[0] + d1 * alpha;
+            Vector3D pointB = obb2ExtremePoints[0] + d2 * beta;
+
+            // Compute the contact point as halfway between the 2 closest points
+            Vector3D contactPoint = 0.5 * (pointA + pointB);
+            std::vector<Vector3D> contactSet;
+            contactSet.push_back(contactPoint);
+        }
 
         // Create a new contact
-        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, contactSet);
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, contactSet);
     }
     else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
         // TODO : Complete this ...
