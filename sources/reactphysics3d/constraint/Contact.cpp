@@ -24,8 +24,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normal, const std::vector<Vector3D>& points)
-                 :Constraint(body1, body2), normal(normal), points(points) {
+Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const std::vector<Vector3D>& points)
+                 :Constraint(body1, body2), normal(normal), penetrationDepth(penetrationDepth), points(points){
 
 }
 

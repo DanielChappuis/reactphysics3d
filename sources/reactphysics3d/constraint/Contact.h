@@ -39,11 +39,12 @@ namespace reactphysics3d {
 class Contact : public Constraint {
     private :
         Vector3D normal;                                // Normal vector of the contact (From body1 toward body2)
-        std::vector<Vector3D> points;                  // Contact points
+        double penetrationDepth;                        // Penetration depth
+        std::vector<Vector3D> points;                   // Contact points
 
     public :
-        Contact(Body* const body1, Body* const body2, const Vector3D& normal, const std::vector<Vector3D>& points);     // Constructor
-        virtual ~Contact();                                                                                             // Destructor
+        Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const std::vector<Vector3D>& points);    // Constructor
+        virtual ~Contact();                                                                                                                     // Destructor
 
         Vector3D getNormal() const;                     // Return the normal vector of the contact
 };
