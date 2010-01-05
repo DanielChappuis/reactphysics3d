@@ -96,11 +96,24 @@ inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactp
 */
 
 // TODO : Test this method
+// Compute the distance between a point "P" and a line (given by a point "A" and a vector "v")
+inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
+    assert(v.length() != 0);
+    return ((P-A).crossProduct(v).length() / (v.length()));
+}
+
+// TODO : Test this method
+// Compute the orthogonal projection of a point "P" on a line (given by a point "A" and a vector "v")
+inline reactphysics3d::Vector3D computeOrthogonalProjectionOfPointOntoALine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
+    return (A + ((P-A).scalarProduct(v) / (v.scalarProduct(v))) * v);
+}
+
+// TODO : Test this method
 // Compute the intersection between two parallel segments (the first segment is between the points "seg1PointA" and "seg1PointB" and the second
 // segment is between the points "seg2PointA" and "seg2PointB"). The result is the segment intersection (represented by the points "resultPointA"
 // and "resultPointB". Because the two given segments don't have to be on the same exact line, the result intersection segment will a segment
 // halway between the first and the second given segments.
-inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& seg1PointA, const reactphysics3d::Vector3D& seg1PointB
+inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& seg1PointA, const reactphysics3d::Vector3D& seg1PointB,
                                                                      const reactphysics3d::Vector3D& seg2PointA, const reactphysics3d::Vector3D& seg2PointB,
                                                                      reactphysics3d::Vector3D& resultPointA, reactphysics3d::Vector3D& resultPointB) {
     // Compute the segment vectors
@@ -111,46 +124,38 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& 
     assert(d1.isParallelWith(d2));
 
     // Compute the projection of the two points of the second segment onto the vector of segment 1
-    double projSeg2PointA = d1.getUnit().scalarProduct(seg2PointA() - seg1PointA());
-    double projSeg2PointB = d1.getUnit().scalarProduct(seg2PointB() - seg1PointA());
+    double projSeg2PointA = d1.getUnit().scalarProduct(seg2PointA - seg1PointA);
+    double projSeg2PointB = d1.getUnit().scalarProduct(seg2PointB - seg1PointA);
 
     // The projections intervals should intersect
-    assert(!(projSeg2PointA < 0.0 && projSegment2PointB < 0.0));
+    assert(!(projSeg2PointA < 0.0 && projSeg2PointB < 0.0));
     assert(!(projSeg2PointA > d1.length() && projSeg2PointB > d1.length()));
 
-    // Compute the distance between the two segments
-    double distance = computeDistanceBetweenPointAndLine(seg2PointA, seg1PointA, d1);
+    // Compute the vector "v" from a point on the line 1 to the orthogonal point of the line 2
+    reactphysics3d::Vector3D point = computeOrthogonalProjectionOfPointOntoALine(seg2PointA, seg1PointA, d1);
+    reactphysics3d::Vector3D v = seg2PointA - point;
 
     // Return the segment intersection according to the configuration of two projection intervals
     if (projSeg2PointA >= 0 && projSeg2PointA <= d1.length() && projSeg2PointB >= d1.length()) {
-        resultPointA = seg2PointA;
-        resultPointB = seg1PointB;
-
         // Move the contact points halfway between the two segments
-
+        resultPointA = seg2PointA - 0.5 * v;
+        resultPointB = seg1PointB + 0.5 * v;
     }
     else if (projSeg2PointA <= 0 && projSeg2PointB >= 0 && projSeg2PointB <= d1.length()) {
-        resultPointA = seg1PointA;
-        resultPointB = seg2PointB;
+        // Move the contact points halfway between the two segments
+        resultPointA = seg1PointA + 0.5 * v;
+        resultPointB = seg2PointB - 0.5 * v;
     }
     else if (projSeg2PointA <= 0 && projSeg2PointB >= d1.length()) {
-        resultPointA = seg1PointA;
-        resultPointB = seg1PointB;
+        // Move the contact points halfway between the two segments
+        resultPointA = seg1PointA + 0.5 * v;
+        resultPointB = seg1PointB + 0.5 * v;
     }
-    else if (projSegment2PointA <= segment1.getLength() && projSegment2PointB <= segment1.getLength()) {
-        resultPointA = seg2PointA;
-        resultPointB = seg2PointB;
+    else if (projSeg2PointA <= d1.length() && projSeg2PointB <= d1.length()) {
+        // Move the contact points halfway between the two segments
+        resultPointA = seg2PointA - 0.5 * v;
+        resultPointB = seg2PointB - 0.5 * v;
     }
-
-
-
-
-}
-
-// Compute the distance between a point "pointP" and a line (given by a point "pointA" and a vector "v")
-inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3D& pointP, const reactphysics3d::Vector3D& pointA, const reactphysics3d::Vector3D& v) {
-    assert(v.length() != 0);
-    return ((pointP-pointA).crossProduct(v).length() / (v.length()));
 }
 
 #endif
