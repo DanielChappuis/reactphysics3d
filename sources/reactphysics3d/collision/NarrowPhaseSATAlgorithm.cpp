@@ -509,6 +509,7 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
         Vector3D d2 = obb2ExtremePoints[1] - obb2ExtremePoints[0];
 
         double alpha, beta;
+        std::vector<Vector3D> contactSet;
 
         // If the two edges are parallel
         if (d1.isParallelWith(d2)) {
@@ -519,8 +520,9 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
             computeParallelSegmentsIntersection(obb1ExtremePoints[0], obb1ExtremePoints[1], obb2ExtremePoints[0], obb2ExtremePoints[1],
                                                 contactPointA, contactPointB);
 
-
-
+            // Add the two contact points in the contact set
+            contactSet.push_back(contactPointA);
+            contactSet.push_back(contactPointB);
         }
         else {  // If the two edges are not parallel
             // Compute the closest two points between the two line segments
@@ -530,7 +532,8 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
 
             // Compute the contact point as halfway between the 2 closest points
             Vector3D contactPoint = 0.5 * (pointA + pointB);
-            std::vector<Vector3D> contactSet;
+
+            // Add the contact point into the contact set
             contactSet.push_back(contactPoint);
         }
 
