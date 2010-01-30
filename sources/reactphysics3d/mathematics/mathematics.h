@@ -37,6 +37,9 @@
 #include <cassert>
 #include <cmath>
 
+// ReactPhysics3D namespace
+namespace reactphysics3d {
+
 // ---------- Mathematics functions ---------- //
 
 // TODO : Test this method
@@ -105,11 +108,28 @@ inline bool isPointOnSegment(const reactphysics3d::Vector3D& segPointA, const re
 }
 
 // TODO : Test this method
-// Given two segments in 3D that are not parallel and that intersect, this method computes the intersection point between the two segments
-// The result intersection point is the reference "resultPoint".
-inline void computeNonParallelSegmentsIntersection(const reactphysics3d::Vector3D& seg1PointA, const reactphysics3d::Vector3D& seg1PointB,
-                                                   const reactphysics3d::Vector3D& seg2PointA, const reactphysics3d::Vector3D& seg2PointB,
-                                                   reactphysics3d::Vector3D& resultPoint) {
+// Given two lines in 3D that intersect, this method returns the intersection point between the two lines.
+// The first line is given by the point "p1" and the vector "d1", the second line is given by the point "p2" and the vector "d2".
+inline reactphysics3d::Vector3D computeLinesIntersection(const reactphysics3d::Vector3D& p1, const reactphysics3d::Vector3D& d1,
+                                                         const reactphysics3d::Vector3D& p2, const reactphysics3d::Vector3D& d2) {
+    // Computes the two closest points on the lines
+    double alpha, beta;
+    closestPointsBetweenTwoLines(p1, d1, p2, d2, &alpha, &beta);
+    reactphysics3d::Vector3D point1 = p1 + alpha * d1;
+    reactphysics3d::Vector3D point2 = p2 + beta * d2;
+
+    // The two points must be very close
+    assert((point1-point2).length() <= EPSILON);
+
+    // Return the intersection point (halfway between "point1" and "point2")
+    return 0.5 * (point1 + point2);
+}
+
+// TODO : Test this method
+// Given two segments in 3D that are not parallel and that intersect, this method computes the intersection point between the two segments.
+// This method returns the intersection point.
+inline reactphysics3d::Vector3D computeNonParallelSegmentsIntersection(const reactphysics3d::Vector3D& seg1PointA, const reactphysics3d::Vector3D& seg1PointB,
+                                                                       const reactphysics3d::Vector3D& seg2PointA, const reactphysics3d::Vector3D& seg2PointB) {
     // Determine the lines of both segments
     reactphysics3d::Vector3D d1 = seg1PointB - seg1PointA;
     reactphysics3d::Vector3D d2 = seg2PointB - seg2PointA;
@@ -132,10 +152,10 @@ inline void computeNonParallelSegmentsIntersection(const reactphysics3d::Vector3
     assert(d.length() <= EPSILON);
 
     // They are very close so we return the intersection point (halfway between "point1" and "point2"
-    resultPoint = 0.5 * (point1 + point2);
+    return 0.5 * (point1 + point2);
 }
 
-/*
+
 // TODO : Test this method
 // Move a set of points by a given vector.
 // The method returns a set of points moved by the given vector.
@@ -145,13 +165,32 @@ inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactp
     // For each point of the set
     for (unsigned int i=0; i<points.size(); ++i) {
         // Move the point
-        result.push_back(points.at(i) + vector);
+        result.push_back(points[i] + vector);
     }
 
     // Return the result set of points
     return result;
 }
-*/
+
+// TODO : Test this method
+// Compute the projection of a set of 3D points onto a 3D plane. The set of points is given by "points" and the plane is given by
+// a point "A" and a normal vector "normal". This method returns the initial set of points projected onto the plane.
+inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::vector<reactphysics3d::Vector3D>& points, const reactphysics3d::Vector3D& A,
+                                                                    const reactphysics3d::Vector3D& normal) {
+    assert(normal.length() != 0.0);
+
+    std::vector<Vector3D> projectedPoints;
+    reactphysics3d::Vector3D n = normal.getUnit();
+
+    // For each point of the set
+    for (unsigned int i=0; i<points.size(); ++i) {
+        // Compute the projection of the point onto the plane
+        projectedPoints.push_back(points[i] - ((points[i] - A).scalarProduct(n)) * n);
+    }
+
+    // Return the projected set of points
+    return projectedPoints;
+}
 
 // TODO : Test this method
 // Compute the distance between a point "P" and a line (given by a point "A" and a vector "v")
@@ -216,6 +255,62 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& 
     }
 }
 
+// TODO : Test this method
+// This method clip a 3D segment with 3D rectangle polygon. The segment and the rectangle are asssumed to be on the same plane. We
+// also assume that the segment is not completely outside the clipping rectangle.
+// The segment is given by the two vertices in "segment" and the rectangle is given by the ordered vertices in "clipRectangle".
+// This method returns the clipped segment.
+inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(const std::vector<reactphysics3d::Vector3D>& segment, const std::vector<reactphysics3d::Vector3D> clipRectangle) {
+    assert(segment.size() == 2);
+    assert(clipRectangle.size() == 4);
+
+    std::vector<reactphysics3d::Vector3D> inputSegment = segment;
+    std::vector<reactphysics3d::Vector3D> outputSegment;
+
+    // For each edge of the clip rectangle
+    for (unsigned int i=0; i<4; ++i) {
+        outputSegment.clear();
+
+        // Current clipped segment
+        assert(inputSegment.size() == 2);
+        reactphysics3d::Vector3D S = inputSegment[0];
+        reactphysics3d::Vector3D P = inputSegment[1];
+
+        // Edge of the clip rectangle
+        reactphysics3d::Vector3D A = clipRectangle[i];
+        reactphysics3d::Vector3D B = clipRectangle[ (i+1) % 4];
+        reactphysics3d::Vector3D planeNormal = clipRectangle[(i+2) % 4] - clipRectangle[(i+1) % 4];
+
+        // If the point P is inside the clip plane
+        if (planeNormal.scalarProduct(P-A) >= 0.0) {
+            // If the point S is inside the clip plane
+            if (planeNormal.scalarProduct(S-A) >= 0.0) {
+                outputSegment.push_back(P);
+                outputSegment.push_back(S);
+            }
+            else {  // P is inside and S is outside the clip plane
+                // Compute the intersection point between the segment SP and the clip plane
+                reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
+
+                outputSegment.push_back(P);
+                outputSegment.push_back(intersectPoint);
+            }
+        }
+        else if (planeNormal.scalarProduct(S-A) > 0.0) {    // P is outside and S is inside the clip plane
+                // Compute the intersection point between the segment SP and the clip plane
+                reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
+
+                outputSegment.push_back(S);
+                outputSegment.push_back(intersectPoint);
+        }
+
+        inputSegment = outputSegment;
+    }
+
+    // Return the clipped segment
+    return outputSegment;
+}
+
 
 // TODO : Test this method
 // This method uses the Sutherland-Hodgman clipping algorithm to clip a subject polygon (given by the ordered 3D vertices in "subjectPolygon") using
@@ -229,27 +324,28 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
 
     // For each edge of the clip rectangle
     for (unsigned int i=0; i<4; ++i) {
+        outputPolygon.clear();
+
         // Each edge defines a clip plane. The clip plane is define by a point on this plane (a vertice of the current edge) and
         // a plane normal (because we are using a clip rectangle, the plane normal is the next edge of the clip rectangle).
         reactphysics3d::Vector3D planeNormal = clipRectangle[(i+2) % 4] - clipRectangle[(i+1) % 4];
         reactphysics3d::Vector3D A = clipRectangle[i];          // Segment AB is the current segment of the "clipRectangle"
         reactphysics3d::Vector3D B = clipRectangle[(i+1) % 4];
-        reactphysics3d::Vector3D S = inputPolygon[i];
+        reactphysics3d::Vector3D S = inputPolygon[0];
 
         // For each vertex of the subject polygon
-        for (unsigned int j=0; j<subjectPolygon.size(); ++j) {
-            reactphysics3d::Vector3D P = inputPolygon[(i+1) % inputPolygon.size()];
+        for (unsigned int j=0; j<inputPolygon.size(); ++j) {
+            reactphysics3d::Vector3D P = inputPolygon[(j+1) % inputPolygon.size()];
 
             // If the point P is inside the clip plane
-            if (planeNormal.scalarProduct(P-A) > 0.0) {
+            if (planeNormal.scalarProduct(P-A) >= 0.0) {
                 // If the point S is also inside the clip plane
-                if (planeNormal.scalarProduct(S-A) > 0.0) {
+                if (planeNormal.scalarProduct(S-A) >= 0.0) {
                     outputPolygon.push_back(P);
                 }
                 else {  // If the point S is outside the clip plane
                     // Compute the intersection point between the segment SP and the clip plane
-                    reactphysics3d::Vector3D intersectPoint;
-                    computeNonParallelSegmentsIntersection(S, P, A, B, intersectPoint);
+                    reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
                     outputPolygon.push_back(intersectPoint);
                     outputPolygon.push_back(P);
@@ -257,19 +353,19 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
             }
             else if (planeNormal.scalarProduct(S-A) > 0.0) {
                     // Compute the intersection point between the segment SP and the clip plane
-                    reactphysics3d::Vector3D intersectPoint;
-                    computeNonParallelSegmentsIntersection(S, P, A, B, intersectPoint);
+                    reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
                     outputPolygon.push_back(intersectPoint);
             }
             S = P;
         }
-
         inputPolygon = outputPolygon;
     }
 
     // Return the clipped polygon
     return outputPolygon;
 }
+
+} // End of the ReactPhysics3D namespace
 
 #endif
