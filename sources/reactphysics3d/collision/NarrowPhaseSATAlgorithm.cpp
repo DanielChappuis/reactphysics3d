@@ -87,7 +87,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
     Vector3D normal;                            // Contact normal (correspond to the separation axis with the smallest positive penetration depth)
                                                 // The contact normal point out of OBB1 toward OBB2
     bool side;                                  // True if the interval 1 is at the left of interval 2 if a collision occurs and false otherwise
-    double minPenetrationDepth = 0.0;           // Minimum penetration depth detected among all separated axis
+    double minPenetrationDepth = DBL_MAX;       // Minimum penetration depth detected among all separated axis
     const double cutoff = 0.999999;             // Cutoff for cosine of angles between box axes
     bool existsParallelPair = false;            // True if there exists two face normals that are parallel.
                                                 // This is used because if a parallel pair exists, it is sufficient
@@ -273,7 +273,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         //std::cout << "Current -- 1 -- min : " << currentInterval1.getMin() << std::endl;
         //std::cout << "Timefirst : " << timeFirst.getValue() << std::endl;
         std::cout << "CONTACT FOUND " << std::endl;
-
+        normal; // TODO : Delete this
         // Compute the collision contact
         computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
 
@@ -493,6 +493,7 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
     unsigned int nbVerticesExtremeOBB2 = obb2ExtremePoints.size();
     assert(nbVerticesExtremeOBB1==1 || nbVerticesExtremeOBB1==2 || nbVerticesExtremeOBB1==4);
     assert(nbVerticesExtremeOBB2==1 || nbVerticesExtremeOBB2==2 || nbVerticesExtremeOBB2==4);
+    assert(approxEqual(normal.length(), 1.0));
 
     // If it's a Vertex-Something contact
     if (nbVerticesExtremeOBB1 == 1) {
@@ -541,13 +542,43 @@ void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* c
         *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, contactSet);
     }
     else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
-        // TODO : Complete this ...
+        // Compute the projection of the edge of OBB1 onto the same plane of the face of OBB2
+        std::vector<Vector3D> edge = projectPointsOntoPlane(obb1ExtremePoints, obb2ExtremePoints[0], normal);
+
+        // Clip the edge of OBB1 using the face of OBB2
+        std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
+
+        // Move the clipped edge halway between the edge of OBB1 and the face of OBB2
+        clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal.getOpposite());
+
+        // Create a new contact
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge);
     }
     else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
-        // TODO : Complete this ...
+        // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
+        std::vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
+
+        // Clip the edge of OBB2 using the face of OBB1
+        std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
+
+        // Move the clipped edge halfway between the face of OBB1 and the edge of OBB2
+        clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal);
+
+        // Create a new contact
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge);
     }
     else {      // If it's a face-face contact
-        // TODO : Complete this ...
+        // Compute the projection of the face vertices of OBB2 onto the plane of the face of OBB1
+        std::vector<Vector3D> faceOBB2 = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
+
+        // Clip the face of OBB2 using the face of OBB1
+        std::vector<Vector3D> clippedFace = clipPolygonWithRectangleInPlane(faceOBB2, obb1ExtremePoints);
+
+        // Move the clipped face halfway between the face of OBB1 and the face of OBB2
+        clippedFace = movePoints(clippedFace, penetrationDepth/2.0 * normal);
+
+        // Create a new contact
+        *contact = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace);
     }
 
     assert(*contact != 0);
