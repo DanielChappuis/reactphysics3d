@@ -273,7 +273,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
         //std::cout << "Current -- 1 -- min : " << currentInterval1.getMin() << std::endl;
         //std::cout << "Timefirst : " << timeFirst.getValue() << std::endl;
         std::cout << "CONTACT FOUND " << std::endl;
-        normal; // TODO : Delete this
+
         // Compute the collision contact
         computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
 
