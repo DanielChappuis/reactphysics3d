@@ -67,6 +67,7 @@ bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorl
                     // Use the narrow-phase algorithm to check if the two bodies really collide
                     if(narrowPhaseAlgorithm->testCollision(&obb1, &obb2, &contact)) {
                         assert(contact != 0);
+                        existsCollision = true;
 
                         // Add the new collision contact into the collision world
                         collisionWorld->addConstraint(contact);
