@@ -47,23 +47,6 @@ OBB::OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
     this->extent[2] = extent3;
 }
 
-// Copy-Constructor
-OBB::OBB(const OBB& obb) {
-    this->center = obb.center;
-
-    oldAxis[0] = obb.oldAxis[0];
-    oldAxis[1] = obb.oldAxis[1];
-    oldAxis[2] = obb.oldAxis[2];
-
-    this->axis[0] = obb.axis[0];
-    this->axis[1] = obb.axis[1];
-    this->axis[2] = obb.axis[2];
-
-    this->extent[0] = obb.extent[0];
-    this->extent[1] = obb.extent[1];
-    this->extent[2] = obb.extent[2];
-}
-
 // Destructor
 OBB::~OBB() {
 

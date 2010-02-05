@@ -47,7 +47,6 @@ class OBB : public BoundingVolume {
     public :
         OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
             const Vector3D& axis3, double extent1, double extent2, double extent3);                     // Constructor
-        OBB(const OBB& obb);                                                                            // Copy-Constructor
         virtual ~OBB();                                                                                 // Destructor
 
         Vector3D getCenter() const;                                                                             // Return the center point of the OBB

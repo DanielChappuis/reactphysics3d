@@ -37,7 +37,7 @@
 
         // Set the body pointer to the OBB
         this->obb.setBodyPointer(this);
- }
+}
 
  // Copy-constructor
  RigidBody::RigidBody(const RigidBody& rigidBody) : Body(rigidBody), inertiaTensor(rigidBody.inertiaTensor),
