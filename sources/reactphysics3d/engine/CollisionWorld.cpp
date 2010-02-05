@@ -38,9 +38,10 @@ CollisionWorld::~CollisionWorld() {
     }
 }
 
-// Add a constraint
+// Add a constraint into the collision world
 void CollisionWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
-    // TODO : Implement this method
+    assert(constraint != 0);
+    constraintList.push_back(constraint);
 }
 
 // Remove a constraint
