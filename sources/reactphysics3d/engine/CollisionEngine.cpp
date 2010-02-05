@@ -47,7 +47,15 @@ void CollisionEngine::update() {
 
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection(collisionWorld)) {
-            // TODO : Do collision response here
+
+            // TODO : Delete this ----------------------------------------------------------
+            for (std::vector<Constraint*>::const_iterator it = collisionWorld->getConstraintListStartIterator(); it != collisionWorld->getConstraintListEndIterator(); ++it) {
+                RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
+                RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
+                rigidBody1->setIsMotionEnabled(false);
+                rigidBody2->setIsMotionEnabled(false);
+            }
+            // -----------------------------------------------------------------------------
         }
 
         // For each body in the dynamic world
