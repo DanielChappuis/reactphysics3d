@@ -47,12 +47,21 @@ class Contact : public Constraint {
         virtual ~Contact();                                                                                                                     // Destructor
 
         Vector3D getNormal() const;                     // Return the normal vector of the contact
+        std::vector<Vector3D> getPoints() const;        // Return the contact points
+
+        void draw() const;                              // TODO : Delete this (Used to debug collision detection)
 };
 
 // Return the normal vector of the contact
 inline Vector3D Contact::getNormal() const {
     return normal;
 }
+
+// Return the contact points
+inline std::vector<Vector3D> Contact::getPoints() const {
+    return points;
+}
+
 
 } // End of the ReactPhysics3D namespace
 

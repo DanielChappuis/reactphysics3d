@@ -19,6 +19,8 @@
 
 // Libraries
 #include "Contact.h"
+#include <GL/freeglut.h>        // TODO : Remove this in the final version
+#include <GL/gl.h>              // TODO : Remove this in the final version
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -32,4 +34,10 @@ Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normal, d
 // Destructor
 Contact::~Contact() {
 
+}
+
+// TODO : Delete this (Used to debug collision detection)
+void Contact::draw() const {
+    glColor3f(1.0, 0.0, 0.0);
+    glutSolidSphere(0.5, 20, 20);
 }
