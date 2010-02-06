@@ -19,7 +19,6 @@
 
 // Libraries
 #include "NarrowPhaseSATAlgorithm.h"
-#include "ProjectionInterval.h"
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include "../constraint/Contact.h"
