@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include "../mathematics/mathematics.h"
 #include "../body/Body.h"
+#include "../constraint/Constraint.h"
+#include "../constraint/Contact.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -88,6 +90,16 @@ inline bool PhysicsWorld::getIsGravityOn() const {
 // Set the isGravityOn attribute
 inline void PhysicsWorld::setIsGratityOn(bool isGravityOn) {
     this->isGravityOn = isGravityOn;
+}
+
+// Return a start iterator on the constraint list
+inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListStartIterator() const {
+    return constraintList.begin();
+}
+
+// Return a end iterator on the constraint list
+inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListEndIterator() const {
+    return constraintList.end();
 }
 
 }   // End of the ReactPhysics3D namespace
