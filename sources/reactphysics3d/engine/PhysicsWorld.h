@@ -31,20 +31,20 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class PhysicsWorld :
-        This is an (abstract) class that represents the world of the
-        physics engine. A physics world contains all the bodies of the physics
+        This class represents the world of the
+        physics engine. The physics world contains all the bodies of the physics
         engine.
     -------------------------------------------------------------------
 */
 class PhysicsWorld {
     protected :
         std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
+        std::vector<Constraint*> constraintList;    // List that contains all the current constraints
         Vector3D gravity;                           // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
 
     public :
         PhysicsWorld(const Vector3D& gravity);      // Constructor
-        PhysicsWorld(const PhysicsWorld&);          // Copy-constructor
         virtual ~PhysicsWorld();                    // Destructor
 
         void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
@@ -54,6 +54,11 @@ class PhysicsWorld {
         void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
         std::vector<Body*>::const_iterator getBodyListStartIterator() const;    // Return a start iterator on the body list
         std::vector<Body*>::const_iterator getBodyListEndIterator() const;      // Return a end iterator on the body list
+        void addConstraint(Constraint* constraint) throw(std::invalid_argument);            // Add a constraint
+        void removeConstraint(Constraint* constraint) throw(std::invalid_argument);         // Remove a constraint
+        void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
+        std::vector<Constraint*>::const_iterator getConstraintListStartIterator() const;    // Return a start iterator on the constraint list
+        std::vector<Constraint*>::const_iterator getConstraintListEndIterator() const;      // Return a end iterator on the constraint list
 };
 
 // --- Inline functions --- //

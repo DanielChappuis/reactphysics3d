@@ -29,13 +29,6 @@ PhysicsWorld::PhysicsWorld(const Vector3D& gravity)
 
 }
 
-// Copy-constructor
-PhysicsWorld::PhysicsWorld(const PhysicsWorld& world) {
-    bodyList = world.bodyList;
-    gravity = world.gravity;
-    isGravityOn = world.isGravityOn;
-}
-
 // Destructor
 PhysicsWorld::~PhysicsWorld() {
 
@@ -87,3 +80,35 @@ void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argumen
         throw std::invalid_argument("Exception in PhysicsWorld::removeBody() : The argument pointer cannot be NULL");
     }
 }
+
+// Add a constraint into the physics world
+void PhysicsWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
+    assert(constraint != 0);
+    constraintList.push_back(constraint);
+}
+
+// Remove a constraint
+void PhysicsWorld::removeConstraint(Constraint* constraint) throw(std::invalid_argument) {
+    // TODO : Implement this method
+}
+
+// Remove all collision contacts constraints
+void PhysicsWorld::removeAllContactConstraints() {
+    // For all constraints
+    for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
+
+        // Try a downcasting
+        Contact* contact = dynamic_cast<Contact*>(*it);
+
+        // If the constraint is a contact
+        if (contact != 0) {
+            // Delete the  contact
+            delete (*it);
+            it = constraintList.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
