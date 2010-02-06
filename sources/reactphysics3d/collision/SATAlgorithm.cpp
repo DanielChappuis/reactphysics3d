@@ -18,13 +18,12 @@
 ***************************************************************************/
 
 // Libraries
-#include "NarrowPhaseSATAlgorithm.h"
+#include "SATAlgorithm.h"
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include "../constraint/Contact.h"
 #include <algorithm>
 #include <cfloat>
-#include <iostream> // TODO : Delete this
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace
@@ -36,18 +35,18 @@ using namespace reactphysics3d;
 //        everything have to do with the new SAT algorithm
 
 // Constructor
-NarrowPhaseSATAlgorithm::NarrowPhaseSATAlgorithm() {
+SATAlgorithm::SATAlgorithm() {
 
 }
 
 // Destructor
-NarrowPhaseSATAlgorithm::~NarrowPhaseSATAlgorithm() {
+SATAlgorithm::~SATAlgorithm() {
 
 }
 
 // Return true and compute a collision contact if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact) {
+bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact) {
 
     assert(boundingVolume1 != boundingVolume2);
     assert(*contact == 0);
@@ -74,7 +73,7 @@ bool NarrowPhaseSATAlgorithm::testCollision(const BoundingVolume* const bounding
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const {
+bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const {
 
     double center;                              // Center of a projection interval
     double radius1;                             // Radius of projection interval [min1, max1]
@@ -456,7 +455,7 @@ bool NarrowPhaseSATAlgorithm::computeCollisionTest(const OBB* const obb1, const 
 // penetration depth (note that it could return a negative penetration depth if the intervals are separated. This
 // method also find which interval is at the left of the other in order to know which extreme of interval 1 collides with
 // which extreme of interval 2 if a collision occur.
-double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const {
+double SATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const {
 
     // Compute the length of both intervals
     double lengthInterval1 = max1 - min1;
@@ -485,8 +484,8 @@ double NarrowPhaseSATAlgorithm::computePenetrationDepth(double min1, double max1
 }
 
 // Compute a new collision contact between two OBBs
-void NarrowPhaseSATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
-                            const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
+void SATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
+                                  const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
 
     unsigned int nbVerticesExtremeOBB1 = obb1ExtremePoints.size();
     unsigned int nbVerticesExtremeOBB2 = obb2ExtremePoints.size();

@@ -17,8 +17,8 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef NARROWPHASESATALGORITHM_H
-#define NARROWPHASESATALGORITHM_H
+#ifndef SATALGORITHM_H
+#define SATALGORITHM_H
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
@@ -29,7 +29,7 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class NarrowPhaseSATAlgorithm :
+    Class SATAlgorithm :
         This class implements a narrow-phase algorithm. This algorithm
         uses a separating axis theorem (SAT) to check if two bounding
         volumes collide or not. If the
@@ -42,7 +42,7 @@ namespace reactphysics3d {
         intersect.
     -------------------------------------------------------------------
 */
-class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
+class SATAlgorithm : public NarrowPhaseAlgorithm {
     private :
         bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const;                                               // Return true and compute a collision contact if the two OBB collide
         double computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const;                                                 // Compute the penetration depth of two projection intervals
@@ -51,8 +51,8 @@ class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                                                      // Compute a contact normal
 
     public :
-        NarrowPhaseSATAlgorithm();           // Constructor
-        ~NarrowPhaseSATAlgorithm();          // Destructor
+        SATAlgorithm();           // Constructor
+        ~SATAlgorithm();          // Destructor
 
         virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact);      // Return true and compute a collision contact if the two bounding volume collide
 };
@@ -61,7 +61,7 @@ class NarrowPhaseSATAlgorithm : public NarrowPhaseAlgorithm {
 
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
 // collision occur and "distanceOfOBBs" is the vector (obb2.center - obb1.center).
-inline Vector3D NarrowPhaseSATAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
+inline Vector3D SATAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
     if (distanceOfOBBs.scalarProduct(axis) >= 0.0) {
         return axis;
     }

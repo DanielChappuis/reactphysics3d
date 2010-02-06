@@ -20,7 +20,7 @@
 // Libraries
 #include "CollisionDetection.h"
 #include "NoBroadPhaseAlgorithm.h"
-#include "NarrowPhaseSATAlgorithm.h"
+#include "SATAlgorithm.h"
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include <cassert>
@@ -35,7 +35,7 @@ CollisionDetection::CollisionDetection() {
     broadPhaseAlgorithm = new NoBroadPhaseAlgorithm();
 
     // Construct the narrow-phase algorithm that will be used (Separating axis with OBB)
-    narrowPhaseAlgorithm = new NarrowPhaseSATAlgorithm();
+    narrowPhaseAlgorithm = new SATAlgorithm();
 }
 
 // Destructor
