@@ -29,8 +29,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// TODO : Remove all the std::cout
-
 // TODO : Check and modify all comments on this file in order that
 //        everything have to do with the new SAT algorithm
 
@@ -128,14 +126,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         normal = computeContactNormal(obb1->getAxis(0), boxDistance);   // Compute the contact normal with the correct sign
     }
 
-    // TODO : Delete this
-    std::cout << "min1 : " << min1 << std::endl;
-    std::cout << "max1 : " << max1 << std::endl;
-    std::cout << "min2 : " << min2 << std::endl;
-    std::cout << "max2 : " << max2 << std::endl;
-
     // Axis A1
-    //std::cout << "----- AXIS A1 -----" << std::endl;
     for (int i=0; i<3; ++i) {
         c[1][i] = obb1->getAxis(1).scalarProduct(obb2->getAxis(i));
         absC[1][i] = fabs(c[1][i]);
@@ -160,12 +151,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(1), boxDistance);   // Compute the contact normal with the correct sign
     }
-
-    // TODO : Delete this
-    std::cout << "min1 : " << min1 << std::endl;
-    std::cout << "max1 : " << max1 << std::endl;
-    std::cout << "min2 : " << min2 << std::endl;
-    std::cout << "max2 : " << max2 << std::endl;
 
     // Axis A2
     for (int i=0; i<3; ++i) {
@@ -193,12 +178,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         normal = computeContactNormal(obb1->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
-    // TODO : Delete this
-    std::cout << "min1 : " << min1 << std::endl;
-    std::cout << "max1 : " << max1 << std::endl;
-    std::cout << "min2 : " << min2 << std::endl;
-    std::cout << "max2 : " << max2 << std::endl;
-
     // Axis B0
     udc2[0] = obb2->getAxis(0).scalarProduct(boxDistance);
     center = udc2[0];
@@ -219,7 +198,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B1
-    //std::cout << "----- AXIS B1 -----" << std::endl;
     udc2[1] = obb2->getAxis(1).scalarProduct(boxDistance);
     center = udc2[1];
     radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[2][1];
@@ -228,10 +206,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    std::cout << "min1 : " << min1 << std::endl;
-    std::cout << "max1 : " << max1 << std::endl;
-    std::cout << "min2 : " << min2 << std::endl;
-    std::cout << "max2 : " << max2 << std::endl;
     penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
@@ -261,16 +235,10 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         normal = computeContactNormal(obb2->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
-
     // If there exists a parallel pair of face normals
     if (existsParallelPair) {
         // There exists a parallel pair of face normals and we have already checked all the face
         // normals for separation. Therefore the OBBs must intersect
-        //std::cout << "PARALLEL PAIR" << std::endl;
-        //std::cout << "Current -- 1 -- MIN Points : " << currentInterval1.getMinProjectedPoints().size() << " MAX : " << currentInterval1.getMaxProjectedPoints().size() << std::endl;
-        //std::cout << "Current -- 1 -- min : " << currentInterval1.getMin() << std::endl;
-        //std::cout << "Timefirst : " << timeFirst.getValue() << std::endl;
-        std::cout << "CONTACT FOUND " << std::endl;
 
         // Compute the collision contact
         computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
@@ -439,11 +407,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
-
-    // TODO : Delete this
-    //(*contact) = new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), Vector3D(1,0,0), timeFirst);
-    std::cout << "Contact2 : " << contact << std::endl;
-    std::cout << "CONTACT FOUND" << std::endl;
 
     // Compute the collision contact
     computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);

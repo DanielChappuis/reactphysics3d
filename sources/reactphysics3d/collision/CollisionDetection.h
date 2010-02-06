@@ -24,7 +24,7 @@
 #include "BroadPhaseAlgorithm.h"
 #include "NarrowPhaseAlgorithm.h"
 #include "../body/Body.h"
-#include "../engine/CollisionWorld.h"
+#include "../engine/PhysicsWorld.h"
 #include <vector>
 
 // ReactPhysics3D namespace
@@ -44,14 +44,14 @@ class CollisionDetection {
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                            // Broad-phase algorithm
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                          // Narrow-phase algorithm
 
-        void addPossibleCollisionPair(Body* body1, Body* body2);    // Add a possible collision pair of bodies in the possibleCollisionPairList
-        void initPossibleCollisionPairList();                       // Initialize the possibleCollisionPairList
+        void addPossibleCollisionPair(Body* body1, Body* body2);            // Add a possible collision pair of bodies in the possibleCollisionPairList
+        void initPossibleCollisionPairList();                               // Initialize the possibleCollisionPairList
 
     public :
         CollisionDetection();       // Constructor
         ~CollisionDetection();      // Destructor
 
-        bool computeCollisionDetection(CollisionWorld* collisionWorld);     // Compute the collision detection
+        bool computeCollisionDetection(PhysicsWorld* world);     // Compute the collision detection
 };
 
 // Add a possible collision pair of bodies in the possibleCollisionPairList

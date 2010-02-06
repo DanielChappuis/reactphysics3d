@@ -34,7 +34,7 @@ CollisionDetection::CollisionDetection() {
     // Construct the broad-phase algorithm that will be used (Separating axis with AABB)
     broadPhaseAlgorithm = new NoBroadPhaseAlgorithm();
 
-    // Construct the narrow-phase algorithm that will be used (Separating axis with OBB)
+    // Construct the narrow-phase algorithm that will be used (Separating axis algorithm)
     narrowPhaseAlgorithm = new SATAlgorithm();
 }
 
@@ -43,15 +43,14 @@ CollisionDetection::~CollisionDetection() {
 
 }
 
-// Compute the collision detection for the time interval [0, timeMax]
-// The method returns true if a collision occurs in the time interval [0, timeMax]
-bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorld) {
+// Compute the collision detection
+bool CollisionDetection::computeCollisionDetection(PhysicsWorld* world) {
 
     bool existsCollision = false;               // True if a collision is found in the time interval [0, timeMax]
 
-    // For each pair of bodies in the collisionWorld
-    for(std::vector<Body*>::const_iterator it1 = collisionWorld->getBodyListStartIterator(); it1 != collisionWorld->getBodyListEndIterator(); ++it1) {
-        for(std::vector<Body*>::const_iterator it2 = it1; it2 != collisionWorld->getBodyListEndIterator(); ++it2) {
+    // For each pair of bodies in the physics world
+    for(std::vector<Body*>::const_iterator it1 = world->getBodyListStartIterator(); it1 != world->getBodyListEndIterator(); ++it1) {
+        for(std::vector<Body*>::const_iterator it2 = it1; it2 != world->getBodyListEndIterator(); ++it2) {
             // If both bodies are RigidBody and are different
             RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(*it1);
             RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);
@@ -72,7 +71,7 @@ bool CollisionDetection::computeCollisionDetection(CollisionWorld* collisionWorl
                         Vector3D test = contact->getNormal();   // TODO : Delete this
 
                         // Add the new collision contact into the collision world
-                        collisionWorld->addConstraint(contact);
+                        world->addConstraint(contact);
                     }
                 }
             }
