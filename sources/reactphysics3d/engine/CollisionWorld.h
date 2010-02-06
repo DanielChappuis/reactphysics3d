@@ -17,13 +17,12 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef COLLISIONWORLD_H
-#define COLLISIONWORLD_H
+#ifndef PHYSICSWORLD_H
+#define PHYSICSWORLD_H
 
 // Libraries
 #include <vector>
 #include <stdexcept>
-#include "DynamicWorld.h"
 #include "../constraint/Constraint.h"
 #include "../mathematics/mathematics.h"
 
@@ -31,19 +30,19 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class CollisionWorld :
-        This class represent a physics world where bodies can collide
-        against each other. This class inherits from the class
-        DynamicWorld.
+    Class PhysicsWorld :
+        This class represent a physics world. The physics world contains
+        some bodies.
     -------------------------------------------------------------------
 */
-class CollisionWorld : public DynamicWorld {
+class PhysicsWorld {
     private :
+        Vector3D gravity;                           // Gravity vector of the physics world
         std::vector<Constraint*> constraintList;    // List that contains all the current constraints
 
     public :
-        CollisionWorld(const Vector3D& gravity);        // Constructor
-        ~CollisionWorld();                              // Destructor
+        PhysicsWorld(const Vector3D& gravity);        // Constructor
+        virtual ~PhysicsWorld();                              // Destructor
 
         void addConstraint(Constraint* constraint) throw(std::invalid_argument);            // Add a constraint
         void removeConstraint(Constraint* constraint) throw(std::invalid_argument);         // Remove a constraint
@@ -53,12 +52,12 @@ class CollisionWorld : public DynamicWorld {
 };
 
 // Return a start iterator on the constraint list
-inline std::vector<Constraint*>::const_iterator CollisionWorld::getConstraintListStartIterator() const {
+inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListStartIterator() const {
     return constraintList.begin();
 }
 
 // Return a end iterator on the constraint list
-inline std::vector<Constraint*>::const_iterator CollisionWorld::getConstraintListEndIterator() const {
+inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListEndIterator() const {
     return constraintList.end();
 }
 

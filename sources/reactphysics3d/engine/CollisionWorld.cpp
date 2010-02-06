@@ -18,39 +18,38 @@
 ***************************************************************************/
 
 // Libraries
-#include "CollisionWorld.h"
+#include "PhysicsWorld.h"
 #include "../constraint/Contact.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionWorld::CollisionWorld(const Vector3D& gravity)
-               :DynamicWorld(gravity) {
+PhysicsWorld::PhysicsWorld(const Vector3D& gravity) : gravity(gravity) {
 
 }
 
 // Destructor
-CollisionWorld::~CollisionWorld() {
+PhysicsWorld::~PhysicsWorld() {
     // Delete all the constraint
     for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
         delete (*it);
     }
 }
 
-// Add a constraint into the collision world
-void CollisionWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
+// Add a constraint into the physics world
+void PhysicsWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
     assert(constraint != 0);
     constraintList.push_back(constraint);
 }
 
 // Remove a constraint
-void CollisionWorld::removeConstraint(Constraint* constraint) throw(std::invalid_argument) {
+void PhysicsWorld::removeConstraint(Constraint* constraint) throw(std::invalid_argument) {
     // TODO : Implement this method
 }
 
  // Remove all collision contacts constraints
-void CollisionWorld::removeAllContactConstraints() {
+void PhysicsWorld::removeAllContactConstraints() {
     // For all constraints
     for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
 

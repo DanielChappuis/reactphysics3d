@@ -20,6 +20,8 @@
 // Libraries
 #include "CollisionEngine.h"
 #include <cfloat>
+#include <GL/freeglut.h>        // TODO : Remove this in the final version
+#include <GL/gl.h>              // TODO : Remove this in the final version
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
