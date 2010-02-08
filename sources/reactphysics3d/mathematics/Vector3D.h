@@ -22,6 +22,7 @@
 
 // Libraries
 #include <cmath>
+#include <cstdlib>
 #include "exceptions.h"
 #include "mathematics_functions.h"
 
@@ -130,7 +131,7 @@ inline Vector3D Vector3D::crossProduct(const Vector3D& vector) const {
 
 // Return true if two vectors are parallel
 inline bool Vector3D::isParallelWith(const Vector3D& vector) const {
-    return (approxEqual(this->scalarProduct(vector), length() * vector.length()));
+    return (approxEqual(abs(this->scalarProduct(vector)), length() * vector.length()));
 }
 
 // Overloaded operator for multiplication between a number and a Vector3D (inline)

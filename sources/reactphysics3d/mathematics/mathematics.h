@@ -25,14 +25,13 @@
 // Libraries
 #include "Matrix.h"
 #include "Matrix3x3.h"
-#include "Polygon3D.h"
 #include "Quaternion.h"
-#include "Segment3D.h"
 #include "Vector.h"
 #include "Vector3D.h"
 #include "constants.h"
 #include "exceptions.h"
 #include "mathematics_functions.h"
+#include <vector>
 #include <cstdio>
 #include <cassert>
 #include <cmath>
@@ -171,6 +170,7 @@ inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactp
     // Return the result set of points
     return result;
 }
+
 
 // TODO : Test this method
 // Compute the projection of a set of 3D points onto a 3D plane. The set of points is given by "points" and the plane is given by
@@ -311,7 +311,6 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
     return outputSegment;
 }
 
-
 // TODO : Test this method
 // This method uses the Sutherland-Hodgman clipping algorithm to clip a subject polygon (given by the ordered 3D vertices in "subjectPolygon") using
 // a rectangle polygon (given by the ordered 3D vertices in "clipRectangle"). The subject polygon and the clip rectangle are in 3D but we assumed that
@@ -367,5 +366,6 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
 }
 
 } // End of the ReactPhysics3D namespace
+
 
 #endif

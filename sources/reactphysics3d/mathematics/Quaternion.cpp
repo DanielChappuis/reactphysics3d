@@ -18,7 +18,8 @@
  ***************************************************************************/
 
 // Libraries
-#include "mathematics.h"
+#include "Quaternion.h"
+#include "Vector3D.h"
 #include <cassert>
 
 // Namespace
