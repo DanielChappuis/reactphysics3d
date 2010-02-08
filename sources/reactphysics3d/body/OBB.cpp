@@ -24,7 +24,6 @@
 #include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
 #include <cstdlib>
-#include <iostream>             // TODO : Delete this
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -116,7 +115,7 @@ void OBB::draw() const {
 }
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
-// Be careful when this method returns vertices of a polygonal face because vertices are not necessarly ordered.
+// If the extreme vertices are part of a face of the OBB, the returned vertices will be ordered according to the face.
 std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
     assert(directionAxis.length() != 0);
 
@@ -180,7 +179,7 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) con
 // Return the 4 vertices of a face of the OBB. The 4 vertices will be ordered. The convention is that the index 0 corresponds to
 // the face in the direction of the axis[0], 1 corresponds to the face in the opposite direction of the axis[0], 2 corresponds to
 // the face in the direction of the axis[1], etc.
-std::vector<Vector3D> OBB::getFace(int index) const throw(std::invalid_argument) {
+std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_argument) {
     // Check the argument
     if (index >=0 && index <6) {
         std::vector<Vector3D> vertices;

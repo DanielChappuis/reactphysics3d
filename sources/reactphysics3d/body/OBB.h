@@ -54,7 +54,7 @@ class OBB : public BoundingVolume {
         Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                                // Return an axis of the OBB
         void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                    // Set an axis
         Vector3D getVertex(unsigned int index) const throw (std::invalid_argument);                             // Return a vertex of the OBB
-        std::vector<Vector3D> getFace(int index) const throw(std::invalid_argument);                            // Return the 4 vertices the OBB's face in the direction of a given axis
+        std::vector<Vector3D> getFace(unsigned int index) const throw(std::invalid_argument);                            // Return the 4 vertices the OBB's face in the direction of a given axis
         double getExtent(unsigned int index) const throw(std::invalid_argument);                                // Return an extent value
         void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                         // Set an extent value
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                           // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
