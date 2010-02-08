@@ -39,7 +39,7 @@ class CollisionEngine : public DynamicEngine {
         // ConstraintSolver constraintSolver;           // Constraint solver
 
     public :
-        CollisionEngine(CollisionWorld* world, const Time& timeStep);       // Constructor
+        CollisionEngine(PhysicsWorld* world, const Time& timeStep);       // Constructor
         virtual ~CollisionEngine();                                         // Destructor
 
         virtual void update();                           // Update the physics simulation

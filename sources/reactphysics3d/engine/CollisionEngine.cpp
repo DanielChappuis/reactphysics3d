@@ -27,7 +27,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionEngine::CollisionEngine(CollisionWorld* world, const Time& timeStep)
+CollisionEngine::CollisionEngine(PhysicsWorld* world, const Time& timeStep)
                    :DynamicEngine(world, timeStep) {
 }
 
@@ -38,20 +38,18 @@ CollisionEngine::~CollisionEngine() {
 
 // Update the physics simulation
 void CollisionEngine::update() {
-    CollisionWorld* collisionWorld = dynamic_cast<CollisionWorld*>(world);
-    assert(collisionWorld != 0);
 
     // While the time accumulator is not empty
     while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
 
         // Remove all old collision contact constraints
-        collisionWorld->removeAllContactConstraints();
+        world->removeAllContactConstraints();
 
         // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection(collisionWorld)) {
+        if (collisionDetection.computeCollisionDetection(world)) {
 
             // TODO : Delete this ----------------------------------------------------------
-            for (std::vector<Constraint*>::const_iterator it = collisionWorld->getConstraintListStartIterator(); it != collisionWorld->getConstraintListEndIterator(); ++it) {
+            for (std::vector<Constraint*>::const_iterator it = world->getConstraintListStartIterator(); it != world->getConstraintListEndIterator(); ++it) {
                 RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
                 RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
                 rigidBody1->setIsMotionEnabled(false);

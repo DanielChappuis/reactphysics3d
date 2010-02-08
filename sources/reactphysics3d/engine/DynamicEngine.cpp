@@ -27,7 +27,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-DynamicEngine::DynamicEngine(DynamicWorld* world, const Time& timeStep)
+DynamicEngine::DynamicEngine(PhysicsWorld* world, const Time& timeStep)
               :PhysicsEngine(world, timeStep) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {

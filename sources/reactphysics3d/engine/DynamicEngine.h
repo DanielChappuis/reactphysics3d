@@ -26,7 +26,7 @@
 #include "../body/Body.h"
 #include "../body/RigidBody.h"
 #include "../body/BodyState.h"
-#include "DynamicWorld.h"
+#include "PhysicsWorld.h"
 #include "../physics/physics.h"
 
 // Namespace ReactPhysics3D
@@ -46,7 +46,7 @@ class DynamicEngine : public PhysicsEngine {
         void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);                                                           // Update the state of a rigid body
 
     public :
-        DynamicEngine(DynamicWorld* world, const Time& timeStep);       // Constructor
+        DynamicEngine(PhysicsWorld* world, const Time& timeStep);       // Constructor
         DynamicEngine(const DynamicEngine& engine);                     // Copy-constructor
         virtual ~DynamicEngine();                                       // Destructor
 
