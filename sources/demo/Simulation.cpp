@@ -27,7 +27,7 @@ using namespace reactphysics3d;
 
 // Constructor of the class Simulation
 Simulation::Simulation()
-           :world(new DynamicWorld(Vector3D(0.0, -0.6, 0.0))), engine(world, Time(0.01)) {
+           :world(new PhysicsWorld(Vector3D(0.0, -0.6, 0.0))), engine(world, Time(0.01)), scene(this->world) {
     simRunning = false;
     mouseButtonPressed = false;
     nbFrame = 0;

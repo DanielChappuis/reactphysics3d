@@ -20,9 +20,14 @@
 // Librairies
 #include "Scene.h"
 #include "Objects.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 // Constructor of the class Scene
-Scene::Scene() {
+Scene::Scene(rp3d::PhysicsWorld* world) {
+
+    this->world = world;
+
     // Initialise the material specular color
     mat_specular[0] = 1.0;
     mat_specular[1] = 1.0;
@@ -107,6 +112,25 @@ void Scene::display(const Context& context) const {
 
        // Remove the matrix on the top of the matrix stack
        glPopMatrix();
+    }
+
+    // Draw all the contact points
+    for (std::vector<Constraint*>::const_iterator it = world->getConstraintListStartIterator(); it != world->getConstraintListEndIterator(); ++it) {
+        RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
+        RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
+        rigidBody1->setIsMotionEnabled(false);
+        rigidBody2->setIsMotionEnabled(false);
+
+        Contact* contact = dynamic_cast<Contact*>((*it));
+        assert(contact != 0);
+
+        // Draw the contact points
+        for (unsigned int i=0; i<contact->getPoints().size(); ++i) {
+            glPushMatrix();
+            glTranslatef(contact->getPoints()[i].getX(), contact->getPoints()[i].getY(), contact->getPoints()[i].getZ());
+            contact->draw();
+            glPopMatrix();
+        }
     }
 
 	// Change the buffers

@@ -25,7 +25,6 @@
 #include <iostream>
 #include <SDL/SDL.h>
 
-
 // Prototypes
 int initSDL();
 
@@ -56,8 +55,6 @@ int main(int argc, char** argv) {
     (argv);
 
     return (EXIT_SUCCESS);
-
-    return 0;
 }
 
 // Methode to initialise the SDL and the windows

@@ -38,9 +38,10 @@ class Scene {
         GLfloat ambient_color[4];                        // Ambient color of the light
         GLfloat white_light[4];                          // White light color
         OutSideCamera outsideCamera;                     // OutSide camera (Camera that can move around the scene)
+        rp3d::PhysicsWorld* world;                     //"Pointer to the physics world
 
     public  :
-        Scene();                                        // constructor of the class
+        Scene(rp3d::PhysicsWorld* world);                                        // constructor of the class
         ~Scene();                                       // Destructor of the class
         void init();                                    // Initialize the values of OpenGL
         void display(const Context& context) const;     // display the scene
