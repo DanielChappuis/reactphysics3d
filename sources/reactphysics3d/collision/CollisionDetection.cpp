@@ -68,8 +68,6 @@ bool CollisionDetection::computeCollisionDetection(PhysicsWorld* world) {
                         assert(contact != 0);
                         existsCollision = true;
 
-                        Vector3D test = contact->getNormal();   // TODO : Delete this
-
                         // Add the new collision contact into the collision world
                         world->addConstraint(contact);
                     }
