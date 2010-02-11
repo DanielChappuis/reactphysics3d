@@ -22,6 +22,9 @@
 
 // Libraries
 #include "PhysicsWorld.h"
+#include "../integration/IntegrationAlgorithm.h"
+#include "../collision/CollisionDetection.h"
+#include "../body/RigidBody.h"
 #include "Timer.h"
 
 // Namespace ReactPhysics3D
@@ -29,23 +32,29 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class PhysicsEngine :
-        This is an abstract class that represents the physics engine
+        This class represents the physics engine
         of the library.
     -------------------------------------------------------------------
 */
 class PhysicsEngine {
     protected :
-        PhysicsWorld* world;                    // Pointer to the physics world of the physics engine
-        Timer timer;                            // Timer of the physics engine
+        PhysicsWorld* world;                            // Pointer to the physics world of the physics engine
+        Timer timer;                                    // Timer of the physics engine
+        IntegrationAlgorithm* integrationAlgorithm;     // Integration algorithm used to solve differential equations of movement
+        CollisionDetection collisionDetection;          // Collision detection
+
+        void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);           // Update the state of a rigid body
 
     public :
         PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument);     // Constructor
         PhysicsEngine(const PhysicsEngine& engine);                                                 // Copy-constructor
-        virtual ~PhysicsEngine();                                                                   // Destructor
+        ~PhysicsEngine();                                                                           // Destructor
 
-        virtual void start();                                   // Start the physics simulation
-        virtual void stop();                                    // Stop the physics simulation
-        virtual void update()=0;                                // Update the physics simulation
+        void start();                                           // Start the physics simulation
+        void stop();                                            // Stop the physics simulation
+        void update();                                          // Update the physics simulation
+        void updateDynamic();                                   // TODO : Delete this method
+        void updateCollision();                                 // TODO : Delete this collision
         void initializeDisplayTime(const Time& displayTime);    // Initialize the display time
         void updateDisplayTime(const Time& newDisplayTime);     // Update the display time
 };
