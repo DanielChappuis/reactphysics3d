@@ -47,7 +47,6 @@ class PhysicsEngine {
 
     public :
         PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument);     // Constructor
-        PhysicsEngine(const PhysicsEngine& engine);                                                 // Copy-constructor
         ~PhysicsEngine();                                                                           // Destructor
 
         void start();                                           // Start the physics simulation
