@@ -39,6 +39,7 @@ class Vector {
         int nbComponent;        // number of components in the vector
 
     public :
+        Vector();                                                                       // Constructor without argument
         Vector(int n) throw(std::invalid_argument);                                     // Constructor of the class Vector
         Vector(const Vector& vector);                                                   // Copy-constructor of the class Vector
         virtual ~Vector();                                                              // Destructor of the class Vector

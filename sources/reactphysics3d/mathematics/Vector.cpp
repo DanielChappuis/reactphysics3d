@@ -23,6 +23,12 @@
 // Namespaces
 using namespace reactphysics3d;
 
+// Constructor without argument
+Vector::Vector()
+       :nbComponent(0) {
+
+}
+
 // Constructor of the class Vector
 Vector::Vector(int n) throw(std::invalid_argument) {
     // Check the argument

@@ -24,6 +24,12 @@
 // Namespaces
 using namespace reactphysics3d;
 
+// Constructor without argument
+Matrix::Matrix()
+       :nbRow(0), nbColumn(0) {
+
+}
+
 // Constructor of the class Matrix
 Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
        :nbRow(nbRow),nbColumn(nbColumn) {

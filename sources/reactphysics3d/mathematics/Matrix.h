@@ -40,6 +40,7 @@ class Matrix {
         double** array;                                                                 // Dynamic array that contains the values of the matrix
 
     public :
+        Matrix();                                                                       // Constructor without argument
         Matrix(int nbRow, int nbColum) throw(std::invalid_argument);                    // Constructor of the class Matrix
         Matrix(const Matrix& matrix);                                                   // Copy constructor of the class Matrix
         virtual ~Matrix();                                                              // Destructor of the class Matrix
