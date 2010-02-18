@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <iostream>
 
+// TODO : Replace the "int" by "unsigned int"
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -35,8 +37,8 @@ namespace reactphysics3d {
 */
 class Matrix {
     private :
-        int nbRow;                                                                      // Number of row in the matrix
-        int nbColumn;                                                                   // Number of colum in the matrix
+        unsigned int nbRow;                                                             // Number of row in the matrix
+        unsigned int nbColumn;                                                          // Number of colum in the matrix
         double** array;                                                                 // Dynamic array that contains the values of the matrix
 
     public :
@@ -54,6 +56,7 @@ class Matrix {
         double getDeterminant() const throw(MathematicsException);                      // Return the determinant of the matrix
         double getTrace() const throw(MathematicsException);                            // Return the trace of a square matrix
         static Matrix identity(int dimension) throw(std::invalid_argument);             // Return the identity matrix I of the given dimension
+        void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);  // Fill in a sub-matrix of the current matrix with another matrix
 
         void display() const;                                                           // TO DELETE
 

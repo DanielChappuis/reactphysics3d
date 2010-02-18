@@ -272,6 +272,21 @@ Matrix Matrix::identity(int dimension) throw(std::invalid_argument) {
     }
 }
 
+// TODO : Test this method
+// Fill in a sub-matrix of the current matrix with another matrix.
+// This method replaces the sub-matrix with the upper-left index (i,j) in the current matrix by another
+// "subMatrix" matrix.
+void Matrix::fillInSubMatrix(unsigned int rowIndex, unsigned int colIndex, const Matrix& subMatrix) {
+    assert(nbRow-rowIndex >= subMatrix.nbColumn);
+    assert(nbColumn-colIndex >= subMatrix.nbColumn);
+
+    // Fill in the sub-matrix
+    for (unsigned int i=0; i<subMatrix.nbRow; ++i) {
+        for (unsigned int j=0; j<subMatrix.nbColumn; ++j) {
+            array[rowIndex + i][colIndex + j] = subMatrix.array[i][j];
+        }
+    }
+}
 
 // Definition of the operator + for the sum of two matrices with references
 Matrix Matrix::operator+(const Matrix& matrix2) const throw(MathematicsException) {
@@ -406,7 +421,6 @@ bool Matrix::operator==(const Matrix& matrix2) const throw(MathematicsException)
         // Throw an exception because the matrices dimensions aren't the same
         throw MathematicsException("MathematicsException : Impossible to check if the matrices are equal because they don't have the same dimension");
     }
-
 }
 
 // TO DELETE, THIS IS JUST FOR TESTING MATRICES

@@ -23,6 +23,7 @@
 // Libraries
 #include "exceptions.h"
 #include <cmath>
+#include <cassert>
 #include <iostream>
 
 // ReactPhysics3D namespace
@@ -35,8 +36,8 @@ namespace reactphysics3d {
 */
 class Vector {
     private :
-        double* tab;            // Array of the vector's components
-        int nbComponent;        // number of components in the vector
+        double* tab;                    // Array of the vector's components
+        unsigned int nbComponent;       // number of components in the vector
 
     public :
         Vector();                                                                       // Constructor without argument
@@ -50,6 +51,7 @@ class Vector {
         Vector getUnit() const throw(MathematicsException);                             // Return the corresponding unit vector
         double scalarProduct(const Vector& vector) const throw(MathematicsException);   // Scalar product of two vectors
         Vector crossProduct(const Vector& vector) const throw(MathematicsException);    // Cross product of two vectors (in 3D only)
+        void fillInSubVector(unsigned int index, const Vector& subVector);              // Replace a part of the current vector with another sub-vector
 
         // --- Overloaded operators --- //
         Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
@@ -104,6 +106,17 @@ inline double Vector::length() const {
 
     // Return the length of the vector
     return sqrt(sum);
+}
+
+// Replace a part of the current vector with another sub-vector.
+// The argument "rowIndex" is the row index where the subVector starts.
+inline void Vector::fillInSubVector(unsigned int rowIndex, const Vector& subVector) {
+    assert(nbComponent-rowIndex >= subVector.nbComponent);
+
+    // For each value of the sub-vector
+    for (unsigned int i=0; i<subVector.nbComponent; ++i) {
+        tab[rowIndex + i] = subVector.getValue(i);
+    }
 }
 
 // Overloaded operator for multiplication between a number and a Vector (inline)
