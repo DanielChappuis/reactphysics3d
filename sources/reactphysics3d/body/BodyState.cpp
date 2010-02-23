@@ -38,7 +38,7 @@ BodyState::BodyState(const BodyState& bodyState)
           : position(bodyState.position), linearMomentum(bodyState.linearMomentum), orientation(bodyState.orientation),
             angularMomentum(bodyState.angularMomentum), linearVelocity(bodyState.linearVelocity),
             angularVelocity(bodyState.angularVelocity), spin(bodyState.spin), inertiaTensorInverse(bodyState.inertiaTensorInverse),
-            massInverse(bodyState.massInverse), force(bodyState.force) {
+            massInverse(bodyState.massInverse), externalForce(bodyState.externalForce) {
 }
 
 // Destructor
@@ -90,7 +90,7 @@ void BodyState::computeAtTime(const Time& timeStep, const DerivativeBodyState& l
 // time (like Runge-Kutta 4 integrator)
 Vector3D BodyState::computeForce(Time time) const {
     // TODO : Implement this method (we want that the user of the library could define this method)
-    return force;
+    return externalForce;
 }
 
 // Return the torque on the body at time
@@ -98,5 +98,5 @@ Vector3D BodyState::computeForce(Time time) const {
 // time (like Runge-Kutta 4 integrator)
 Vector3D BodyState::computeTorque(Time time) const {
     // TODO : Implement this method (we want that the user of the library could define this method)
-    return torque;
+    return externalTorque;
 }

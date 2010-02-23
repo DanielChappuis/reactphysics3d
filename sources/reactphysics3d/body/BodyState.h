@@ -40,8 +40,8 @@ class BodyState {
         Vector3D linearMomentum;                // Linear momentum of the body
         Quaternion orientation;                 // Orientation quaternion of the body
         Vector3D angularMomentum;               // Angular momentum of the body
-        Vector3D force;                         // Current force on the body
-        Vector3D torque;                        // Current torque on the body
+        Vector3D externalForce;                 // Current external force on the body
+        Vector3D externalTorque;                // Current external torque on the body
 
         // Secondary values
         Vector3D linearVelocity;                // Linear velocity of the body
@@ -70,11 +70,12 @@ class BodyState {
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
         Quaternion getSpin() const;                                             // Return the spin of the body
         void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
+        Matrix3x3 getInertiaTensorInverse() const;                              // Get the inverse of the inertia tensor
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
-        Vector3D getForce() const;                                              // Return the current force of the body
-        void setForce(const Vector3D& force);                                   // Set the current force on the body
-        Vector3D getTorque() const;                                             // Return the current torque of the body
-        void setTorque(const Vector3D& torque);                                 // Set the current torque of the body
+        Vector3D getExternalForce() const;                                      // Return the current external force of the body
+        void setExternalForce(const Vector3D& force);                           // Set the current external force on the body
+        Vector3D getExternalTorque() const;                                     // Return the current external torque of the body
+        void setExternalTorque(const Vector3D& torque);                         // Set the current external torque of the body
         Kilogram getMassInverse() const;                                        // TODO : Delete this
         void recalculate();                                                                 // Recalculate the secondary values
                                                                                             // of the BodyState from the primary ones
@@ -150,29 +151,34 @@ inline void BodyState::setMassInverse(Kilogram massInverse) {
     this->massInverse = massInverse;
 }
 
+// Get the inverse of the inertia tensor
+Matrix3x3 BodyState::getInertiaTensorInverse() const {
+    return inertiaTensorInverse;
+}
+
 // Set the inverse of the inertia tensor
 inline void BodyState::setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse) {
     this->inertiaTensorInverse = inertiaTensorInverse;
 }
 
-// Return the force over the body
-inline Vector3D BodyState::getForce() const {
-    return force;
+// Return the external force on the body
+inline Vector3D BodyState::getExternalForce() const {
+    return externalForce;
 }
 
-// Set the force over the body
-inline void BodyState::setForce(const Vector3D& force) {
-    this->force = force;
+// Set the external force on the body
+inline void BodyState::setExternalForce(const Vector3D& force) {
+    this->externalForce = force;
 }
 
-// Return the current torque of the body
-inline Vector3D BodyState::getTorque() const {
-    return torque;
+// Return the current external torque on the body
+inline Vector3D BodyState::getExternalTorque() const {
+    return externalTorque;
 }
 
- // Set the current torque of the body
-inline void BodyState::setTorque(const Vector3D& torque) {
-    this->torque = torque;
+ // Set the current external torque on the body
+inline void BodyState::setExternalTorque(const Vector3D& torque) {
+    this->externalTorque = torque;
 }
 
 

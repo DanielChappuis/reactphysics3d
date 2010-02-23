@@ -31,6 +31,9 @@
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
+// TODO : Check if it is possible to put all the attributes from BodyState class in the RigidBody class (to do this, the
+//        class RungeKutta have to be changed a lot
+
 /*  -------------------------------------------------------------------
     Class RigidBody :
         This class represents a rigid body of the physics
