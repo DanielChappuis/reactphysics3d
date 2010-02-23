@@ -98,6 +98,8 @@ void Contact::evaluate(double dt) {
         body2AngularJacobian.setValue(i, 2, r2CrossFrictionVector.getZ());
     }
 
+    // TODO : Compute the auxiliary rows and cols
+
     // Computation of the error vector
     double kFps = 1.0 / dt;
     double kCorrection = kErp * kFps;                       // Computation of the error coefficient
