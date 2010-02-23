@@ -23,6 +23,8 @@
  // Libraries
  #include <stdexcept>
 
+ // TODO : Remove the kilogram class
+
  // Namespace ReactPhysics3D
  namespace reactphysics3d {
 
