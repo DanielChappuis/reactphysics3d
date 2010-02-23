@@ -79,6 +79,27 @@ Matrix::Matrix(const Matrix& matrix)
     }
 }
 
+// Conversion from Matrix3x3
+Matrix::Matrix(const Matrix3x3& matrix)
+    :nbRow(3), nbColumn(3) {
+
+    // Create the two dimensional dynamic array
+    array = new double*[nbRow];
+
+    assert(array != 0);     // Array pointer musn't be null
+
+    for(int i=0; i<nbRow; ++i) {
+        array[i] = new double[nbColumn];
+    }
+
+    // Copy the matrix
+    for (int i=0; i<nbRow; ++i) {
+        for(int j=0; j<nbColumn; ++j) {
+            setValue(i,j, matrix.getValue(i,j));
+        }
+    }
+}
+
 // Destructor of the class Matrix
 Matrix::~Matrix() {
     // Destruction of the dynamic array
