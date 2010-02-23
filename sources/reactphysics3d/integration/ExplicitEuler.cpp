@@ -44,9 +44,9 @@ void ExplicitEuler::integrate(BodyState& bodyState, const Time& time, const Time
 
     // Compute the integrated body state
     bodyState.setPosition(bodyState.getPosition() + bodyState.getLinearVelocity() * dt);
-    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.getForce() * dt);
+    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.getExternalForce() * dt);
     bodyState.setOrientation(bodyState.getOrientation() + bodyState.getSpin() * dt);
-    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.getTorque() * dt);
+    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.getExternalTorque() * dt);
 
     // Recalculate the secondary values of the body state
     bodyState.recalculate();

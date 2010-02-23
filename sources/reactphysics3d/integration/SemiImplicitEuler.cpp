@@ -43,8 +43,8 @@ void SemiImplicitEuler::integrate(BodyState& bodyState, const Time& time, const 
     double dt = timeStep.getValue();    // Timestep
 
     // Compute the integrated body state
-    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.getForce() * dt);
-    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.getTorque() * dt);
+    bodyState.setLinearMomentum(bodyState.getLinearMomentum() + bodyState.getExternalForce() * dt);
+    bodyState.setAngularMomentum(bodyState.getAngularMomentum() + bodyState.getExternalTorque() * dt);
 
     // Recalculate the secondary values of the body state
     bodyState.recalculate();
