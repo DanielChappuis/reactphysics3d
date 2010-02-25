@@ -17,40 +17,29 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef LCPSOLVER_H
-#define LCPSOLVER_H
+#ifndef LCPPROJECTEDGAUSSSEIDEL_H
+#define LCPPROJECTEDGAUSSSEIDEL_H
 
 // Libraries
-#include "../Vector.h"
-#include "../Matrix.h"
+#include "LCPSolver.h"
 
-// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class LCPSolver :
-        This abstract class represents an algorithm to solve a Linear
-        Complementary Problem (LCP). Given a matrix "A", a vector "b",
-        a vector "lowLimit" of lower limits and a vector "highLimits" of
-        upper limits. The goal is to find a vector "x" such that:
-
-                w = Ax - b
-                lowLimits <= x <= highLimits
-
-        and one of the thre following conditions holds :
-
-                x_i = lowLimits_i, w_i >= 0
-                x_i = highLimits_i, w_i >= 0
-                lowLimits_i < x_i < highLimits_i, w_i = 0
+    Class LCPProjectedGaussSeidel :
+        This class implements the Projected-Gauss-Seidel (PGS)
+        algorithm in order to solve a LCP problem. This class inherits
+        from the LCPSolver class.
     -------------------------------------------------------------------
 */
-class LCPSolver {
+class LCPProjectedGaussSeidel : public LCPSolver {
     protected:
+        unsigned int maxIterations;        // Maximum number of iterations
 
     public:
-        LCPSolver();                                                                                                            // Constructor
-        virtual ~LCPSolver();                                                                                                   // Destructor
-        virtual void solve(const Matrix& A, const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& x)=0;   // Solve a LCP problem
+        LCPProjectedGaussSeidel(unsigned int maxIterations);                                                                    // Constructor
+        virtual ~LCPProjectedGaussSeidel();                                                                                     // Destructor
+        virtual void solve(const Matrix& A, const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& x);     // Solve a LCP problem using Projected-Gauss-Seidel algorithm
 
 };
 
