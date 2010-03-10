@@ -27,53 +27,52 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Constants
-const double kErp = 0.8;        // Value between 0 and 1 used to compute the kCorrection value (kCorrection = kErp * kFps)
-
 /*  -------------------------------------------------------------------
     Class Constraint :
         This abstract class represents a constraint in the physics engine.
         A constraint can be a collision contact or a joint for
-        instance.
+        instance. Each constraint have a jacobian matrix associated with
+        the first body of the constraint and a jacobian matrix associated
+        with the second body. Each constraint can also have some auxiliary
+        constraints. Those auxiliary constraint are all represented in the
+        auxiliary Jacobian matrix. Auxiliary constraints represents some
+        constraints associated with a main constraint. For instance, a
+        contact constraint between two bodies can have two associated
+        auxiliary constraints to represent the frictions force constraints
+        in two directions.
     -------------------------------------------------------------------
 */
 class Constraint {
     protected :
-        Body* const body1;                  // Pointer to the first body of the constraint
-        Body* const body2;                  // Pointer to the second body of the constraint
-        bool active;                        // True if the constraint is active
-        Matrix body1LinearJacobian;         // Linear jacobian matrix of the constraint for body1
-        Matrix body2LinearJacobian;         // Linear jacobian matrix of the constraint for body2
-        Matrix body1AngularJacobian;        // Angular jacobian matrix of the constraint for body1
-        Matrix body2AngularJacobian;        // Angular jacobian matrix of the constraint for body2
-        Vector errorVector;                 // Error term vector of the constraint
-        Vector rightHandSideVector;         // Right-hand-side vector
-        Matrix auxiliaryRows;
-        Matrix auxiliaryColumns;
-        unsigned int jacobianIndex;         // Jacobian index
-        unsigned int auxiliaryIndex;        // Auxiliary index
+        Body* const body1;                      // Pointer to the first body of the constraint
+        Body* const body2;                      // Pointer to the second body of the constraint
+        bool active;                            // True if the constraint is active
+        Matrix body1Jacobian;                   // Jacobian matrix of the constraint for body1 (dimension 1x6)
+        Matrix body2Jacobian;                   // Jacobian matrix of the constraint for body2 (dimension 1x6)
+        Matrix auxJacobian;                     // Jacobian matrix for all the auxiliary constraints jacobian associated with this constraint
+                                                // (dimension nx6 where n is the number of auxiliary constraints)
+        unsigned int nbAuxConstraints;          // Number of auxiliary constraints associated with this constraint
+        double lowerBound;                      // Lower bound of the constraint
+        double upperBound;                      // Upper bound of the constraint
+        Vector auxLowerBounds;                  // Vector that contains all the lower bounds of the auxiliary constraints
+        Vector auxUpperBounds;                  // Vector that contains all the upper bounds of the auxiliary constraints
 
     public :
-        Constraint(Body* const body1, Body* const body2);                   // Constructor
-        virtual ~Constraint();                                              // Destructor
-
-        Body* const getBody1() const;                                       // Return the reference to the body 1
-        Body* const getBody2() const;                                       // Return the reference to the body 2
-        virtual void evaluate(double dt)=0;                                 // Evaluate the constraint
-        bool isActive() const;                                              // Return true if the constraint is active
-        virtual unsigned int getNbJacobianRows() const=0;                   // Return the number of rows of the Jacobian matrix
-        void setJacobianIndex(unsigned int index);                          // Set the jacobian index value
-        unsigned int getJacobianIndex() const;                              // Return the jacobian index
-        Matrix getBody1LinearJacobian() const;                              // Return the linear jacobian matrix of body 1
-        Matrix getBody2LinearJacobian() const;                              // Return the linear jacobian matrix of body 2
-        Matrix getBody1AngularJacobian() const;                             // Return the angular jacobian matrix of body 1
-        Matrix getBody2AngularJacobian() const;                             // Return the angular jacobian matrix of body 2
-        Vector getErrorVector() const;                                      // Return the error vector of the constraint
-        virtual int getNbAuxiliaryVars() const=0;                           // Return the number of auxiliary variables
-        void setAuxiliaryIndex(unsigned int index);                         // Set the auxiliary index
-        unsigned int getAuxiliaryIndex() const;                             // Return the auxiliary index
-        void getAuxiliaryRowsAndCols(Matrix& rows, Matrix& columns) const;  // Return the auxiliary rows and columns
-        Vector getRightHandSideVector() const;                              // Return the right-hand-side vector
+        Constraint(Body* const body1, Body* const body2, unsigned int nbAuxConstraints, double lowerBound, double upperBound,
+                   bool active);                                                                                                    // Constructor
+        virtual ~Constraint();                                                                                                      // Destructor
+        Body* const getBody1() const;                                                                                               // Return the reference to the body 1
+        Body* const getBody2() const;                                                                                               // Return the reference to the body 2
+        virtual void evaluate()=0;                                                                                                  // Evaluate the constraint
+        bool isActive() const;                                                                                                      // Return true if the constraint is active
+        Matrix getBody1Jacobian() const;                                                                                            // Return the jacobian matrix of body 1
+        Matrix getBody2Jacobian() const;                                                                                            // Return the jacobian matrix of body 2
+        virtual unsigned int getNbAuxConstraints() const;                                                                           // Return the number of auxiliary constraints
+        void getAuxJacobian(Matrix& auxJacobian) const;                                                                             // Return the jacobian matrix of auxiliary constraints
+        double getLowerBound() const;                                                                                               // Return the lower bound value of the constraint
+        double getUpperBound() const;                                                                                               // Return the upper bound value of the constraint
+        void getAuxLowerBounds(Vector& auxLowerBounds) const;                                                                       // Return the vector of lower bounds values
+        void getAuxUpperBounds(Vector& auxUpperBounds) const;                                                                       // Return the vector of the upper bounds values
 };
 
 // Return the reference to the body 1
@@ -91,62 +90,45 @@ inline bool Constraint::isActive() const {
     return active;
 }
 
-// Set the jacobian index value
-inline void Constraint::setJacobianIndex(unsigned int index) {
-    this->jacobianIndex = index;
+// Return the jacobian matrix of body 1
+inline Matrix Constraint::getBody1Jacobian() const {
+    return body1Jacobian;
 }
 
-// Return the jacobian index
-inline unsigned int Constraint::getJacobianIndex() const {
-    return jacobianIndex;
+// Return the jacobian matrix of body 2
+inline Matrix Constraint::getBody2Jacobian() const {
+    return body2Jacobian;
 }
 
-// Return the linear jacobian matrix of body 1
-inline Matrix Constraint::getBody1LinearJacobian() const {
-    return body1LinearJacobian;
+// Return the number auxiliary constraints
+inline unsigned int Constraint::getNbAuxConstraints() const {
+    return nbAuxConstraints;
 }
 
-// Return the linear jacobian matrix of body 2
-inline Matrix Constraint::getBody2LinearJacobian() const {
-    return body2LinearJacobian;
+// Return the auxiliary jacobian matrix
+inline void Constraint::getAuxJacobian(Matrix& auxJacobian) const {
+    auxJacobian = this->auxJacobian;
 }
 
-// Return the angular jacobian matrix of body 1
-inline Matrix Constraint::getBody1AngularJacobian() const {
-    return body1AngularJacobian;
+// Return the lower bound value of the constraint
+inline double Constraint::getLowerBound() const {
+   return lowerBound;
 }
 
-// Return the angular jacobian matrix of body 2
-inline Matrix Constraint::getBody2AngularJacobian() const {
-    return body2AngularJacobian;
+ // Return the upper bound value of the constraint
+inline double Constraint::getUpperBound() const {
+    return upperBound;
 }
 
-// Return the error vector of the constraint
-inline Vector Constraint::getErrorVector() const {
-    return errorVector;
+// Return the vector of lower bounds values
+inline void Constraint::getAuxLowerBounds(Vector& auxLowerBounds) const {
+    auxLowerBounds = this->auxLowerBounds;
 }
 
-// Set the auxiliary index
-inline void Constraint::setAuxiliaryIndex(unsigned int index) {
-    auxiliaryIndex = index;
+// Return the vector of the upper bounds values
+inline void Constraint::getAuxUpperBounds(Vector& auxUpperBounds) const {
+    auxUpperBounds = this->auxUpperBounds;
 }
-
-// Return the auxiliary index
-inline unsigned int Constraint::getAuxiliaryIndex() const {
-    return auxiliaryIndex;
-}
-
-// Return the auxiliary rows and columns
-inline void Constraint::getAuxiliaryRowsAndCols(Matrix& rows, Matrix& columns) const {
-    rows = auxiliaryRows;
-    columns = auxiliaryColumns;
-}
-
-// Return the right-hand-side vector
-inline Vector Constraint::getRightHandSideVector() const {
-    return rightHandSideVector;
-}
-
 
 } // End of the ReactPhysics3D namespace
 

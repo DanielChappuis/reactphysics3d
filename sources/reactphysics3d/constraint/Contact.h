@@ -27,16 +27,15 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Constants
-const unsigned int NB_FRICTION_VECTORS = 4;         // Number of vectors used to describe the contact friction
-
 /*  -------------------------------------------------------------------
     Class Contact :
         This class represents a collision contact between two bodies in
         the physics engine. The contact class inherits from the
-        Constraint class. The collision detection systems compute
+        Constraint class. The collision detection system computes
         contact informations that will be used to perform the collision
-        response.
+        response. A contact constraint has two auxiliary constraints in
+        order two represent the two friction forces at the contact
+        surface.
     -------------------------------------------------------------------
 */
 class Contact : public Constraint {
@@ -44,11 +43,9 @@ class Contact : public Constraint {
         Vector3D normal;                                // Normal vector of the contact (From body1 toward body2)
         double penetrationDepth;                        // Penetration depth
         std::vector<Vector3D> points;                   // Contact points
-        unsigned int nbFrictionVectors;                 // Number of vectors used to describe the friction
-        // TODO : Implement the computation of the frictionVectors in the collision detection
-        std::vector<Vector3D> frictionVectors;          // Set of vectors that span the tangential friction plane
+        std::vector<Vector3D> frictionVectors;          // Two orthogonal vectors that span the tangential friction plane
 
-        void computeFrictionVectors(const Vector3D& vector1, const Vector3D& vector2);      // Compute all the friction vectors from two vectors that span the friction plane
+        void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
     public :
         Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const std::vector<Vector3D>& points);    // Constructor
@@ -56,26 +53,19 @@ class Contact : public Constraint {
 
         Vector3D getNormal() const;                         // Return the normal vector of the contact
         std::vector<Vector3D> getPoints() const;            // Return the contact points
-        virtual unsigned int getNbJacobianRows() const;     // Return the number of rows of the Jacobian matrix
-        virtual void evaluate(double dt);                   // Evaluate the constraint
-        virtual int getNbAuxiliaryVars() const;             // Return the number of auxiliary variables
+        virtual void evaluate();                            // Evaluate the constraint
+        virtual unsigned int getNbAuxConstraints() const;   // Return the number of auxiliary constraints
 
         void draw() const;                              // TODO : Delete this (Used to debug collision detection)
 };
 
-// Compute all the friction vectors from two vectors that span the friction cone
-// The vectors "vector1" and "vector2" are two vectors that span the friction cone
-inline void Contact::computeFrictionVectors(const Vector3D& vector1, const Vector3D& vector2) {
+// Compute the two orthogonal vectors "v1" and "v2" that span the tangential friction plane
+// The two vectors have to be such that : v1 x v2 = contactNormal
+inline void Contact::computeFrictionVectors() {
     // Delete the current friction vectors
     frictionVectors.clear();
 
-    Vector3D vector;
-
-    // Compute each friction vector
-    for (unsigned int i=1; i<=NB_FRICTION_VECTORS; ++i) {
-        vector = cos((2.0 * (i-1) * PI) / NB_FRICTION_VECTORS) * vector1 + sin((2.0 * (i-1) * PI) / NB_FRICTION_VECTORS) * vector2;
-        frictionVectors.push_back(vector);
-    }
+    // TODO : Implement this method ...
 }
 
 // Return the normal vector of the contact
@@ -86,16 +76,6 @@ inline Vector3D Contact::getNormal() const {
 // Return the contact points
 inline std::vector<Vector3D> Contact::getPoints() const {
     return points;
-}
-
-// Return the number of rows of the Jacobian matrix
-inline unsigned int Contact::getNbJacobianRows() const {
-    return (1+nbFrictionVectors);
-}
-
-// Return the number of auxiliary variables
-inline int Contact::getNbAuxiliaryVars() const {
-    return nbFrictionVectors;
 }
 
 
