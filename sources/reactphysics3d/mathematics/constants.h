@@ -20,11 +20,13 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-// Constant used for the precision
+// Libraries
+#include <limits>
+
+// Constants
 const double EPSILON = 0.00001;
 const double ONE_MINUS_EPSILON = 0.99999;
-
-// Pi constant
-const double PI = 3.14159265;
+const double INFINITY_CONST = std::numeric_limits<double>::infinity();
+const double PI = 3.14159265;               // Pi constant
 
 #endif
