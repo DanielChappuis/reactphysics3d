@@ -41,6 +41,9 @@ void ConstraintSolver::allocate(std::vector<Constraint*>& constraints, std::vect
     this->bodies = bodies;
     this->nbBodies = bodies.size();
 
+    // TODO : Now we keep every bodies of the physics world in the "bodies" std:vector of the constraint solver.
+    //        but maybe we could only keep track of the body that are part of some constraints.
+
     // For each constraint
     for (unsigned int i=0; i<constraints.size(); ++i) {
         // Evaluate the constraint
