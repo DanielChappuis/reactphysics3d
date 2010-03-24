@@ -60,7 +60,7 @@ void Simulation::start() {
     // Get the current time
     lastFrameTime = SDL_GetTicks();
 
-    DynamicEngine* pEngine = &engine;
+    PhysicsEngine* pEngine = &engine;
 
     // Initialize the display time
     pEngine->initializeDisplayTime(Time(SDL_GetTicks()/1000.0));

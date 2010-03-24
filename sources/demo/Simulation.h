@@ -28,10 +28,10 @@
 // Class Simulation
 class Simulation {
     private :
-        rp3d::PhysicsWorld* world;    // Pointer to the collision world that contains bodies of the simulation
+        rp3d::PhysicsWorld* world;      // Pointer to the collision world that contains bodies of the simulation
         Scene scene;                    // Scene object for displaying the simulation
         Context context;                // Context of the simulation
-        rp3d::CollisionEngine engine;   // Collision engine for the physics of the simulation
+        rp3d::PhysicsEngine engine;     // Collision engine for the physics of the simulation
         bool simRunning;                // True if the simulation is running and false otherwise
         bool mouseButtonPressed;        // True if the left mouse button is pressed
         double lastFrameTime;           // Last frame time
