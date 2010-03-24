@@ -22,14 +22,10 @@
 
 // Libraries
 #include "body/RigidBody.h"
-#include "engine/DynamicWorld.h"
-#include "engine/CollisionWorld.h"
-#include "engine/DynamicEngine.h"
-#include "engine/CollisionEngine.h"
+#include "engine/PhysicsWorld.h"
+#include "engine/PhysicsEngine.h"
 #include "body/BoundingVolume.h"
 #include "body/OBB.h"
-
-// TODO : We have to include the new files here
 
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
