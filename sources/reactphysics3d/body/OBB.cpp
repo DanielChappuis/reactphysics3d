@@ -15,7 +15,7 @@
 *                                                                          *
 * You should have received a copy of the GNU Lesser General Public License *
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
-***************************************************************************/
+****************************************************************************/
 
 // Libraries
 #include "OBB.h"
