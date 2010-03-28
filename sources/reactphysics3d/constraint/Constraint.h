@@ -50,16 +50,17 @@ class Constraint {
         Matrix body1Jacobian;                   // Jacobian matrix of the constraint for body1 (dimension 1x6)
         Matrix body2Jacobian;                   // Jacobian matrix of the constraint for body2 (dimension 1x6)
         Matrix auxJacobian;                     // Jacobian matrix for all the auxiliary constraints jacobian associated with this constraint
-                                                // (dimension nx6 where n is the number of auxiliary constraints)
+                                                // (dimension nx12 where n is the number of auxiliary constraints)
         unsigned int nbAuxConstraints;          // Number of auxiliary constraints associated with this constraint
         double lowerBound;                      // Lower bound of the constraint
         double upperBound;                      // Upper bound of the constraint
         Vector auxLowerBounds;                  // Vector that contains all the lower bounds of the auxiliary constraints
         Vector auxUpperBounds;                  // Vector that contains all the upper bounds of the auxiliary constraints
-
+        double errorValue;                      // Error value (bias) of the constraint
+        Vector auxErrorValues;                  // Error values for the auxiliary constraints
+        
     public :
-        Constraint(Body* const body1, Body* const body2, unsigned int nbAuxConstraints, double lowerBound, double upperBound,
-                   bool active);                                                                                                    // Constructor
+        Constraint(Body* const body1, Body* const body2, unsigned int nbAuxConstraints, bool active);                               // Constructor                                                                                                   // Constructor
         virtual ~Constraint();                                                                                                      // Destructor
         Body* const getBody1() const;                                                                                               // Return the reference to the body 1
         Body* const getBody2() const;                                                                                               // Return the reference to the body 2
@@ -67,12 +68,13 @@ class Constraint {
         bool isActive() const;                                                                                                      // Return true if the constraint is active
         Matrix getBody1Jacobian() const;                                                                                            // Return the jacobian matrix of body 1
         Matrix getBody2Jacobian() const;                                                                                            // Return the jacobian matrix of body 2
-        virtual unsigned int getNbAuxConstraints() const;                                                                           // Return the number of auxiliary constraints
+        unsigned int getNbAuxConstraints() const;                                                                                   // Return the number of auxiliary constraints
         void getAuxJacobian(Matrix& auxJacobian) const;                                                                             // Return the jacobian matrix of auxiliary constraints
         double getLowerBound() const;                                                                                               // Return the lower bound value of the constraint
         double getUpperBound() const;                                                                                               // Return the upper bound value of the constraint
         void getAuxLowerBounds(Vector& auxLowerBounds) const;                                                                       // Return the vector of lower bounds values
         void getAuxUpperBounds(Vector& auxUpperBounds) const;                                                                       // Return the vector of the upper bounds values
+        double getErrorValue() const;                                                                                               // Return the error value (bias) of the constraint
 };
 
 // Return the reference to the body 1
@@ -128,6 +130,11 @@ inline void Constraint::getAuxLowerBounds(Vector& auxLowerBounds) const {
 // Return the vector of the upper bounds values
 inline void Constraint::getAuxUpperBounds(Vector& auxUpperBounds) const {
     auxUpperBounds = this->auxUpperBounds;
+}
+
+// Return the error value (bias) of the constraint
+inline double Constraint::getErrorValue() const {
+    return errorValue;
 }
 
 } // End of the ReactPhysics3D namespace

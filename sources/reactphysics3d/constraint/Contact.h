@@ -27,45 +27,55 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Constants
+const double FRICTION_COEFFICIENT = 0.2;    // Friction coefficient
+const double PENETRATION_FACTOR = 0.1;      // Penetration factor (between 0 and 1) which specify the importance of the
+                                            // penetration depth in order to calculate the correct impulse for the contact
+
 /*  -------------------------------------------------------------------
     Class Contact :
         This class represents a collision contact between two bodies in
         the physics engine. The contact class inherits from the
         Constraint class. The collision detection system computes
         contact informations that will be used to perform the collision
-        response. A contact constraint has two auxiliary constraints in
-        order two represent the two friction forces at the contact
-        surface.
+        response. Each contact contains only one contact point. A contact
+        constraint has two auxiliary constraints in order two represent
+        the two friction forces at the contact surface.
     -------------------------------------------------------------------
 */
 class Contact : public Constraint {
     protected :
-        Vector3D normal;                                // Normal vector of the contact (From body1 toward body2)
-        double penetrationDepth;                        // Penetration depth
-        std::vector<Vector3D> points;                   // Contact points
+        const Vector3D normal;                          // Normal vector of the contact (From body1 toward body2)
+        const double penetrationDepth;                  // Penetration depth
+        const Vector3D point;                           // Contact point
         std::vector<Vector3D> frictionVectors;          // Two orthogonal vectors that span the tangential friction plane
 
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
     public :
-        Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const std::vector<Vector3D>& points);    // Constructor
-        virtual ~Contact();                                                                                                                     // Destructor
+        Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const Vector3D& point);    // Constructor
+        virtual ~Contact();                                                                                                       // Destructor
 
         Vector3D getNormal() const;                         // Return the normal vector of the contact
-        std::vector<Vector3D> getPoints() const;            // Return the contact points
+        Vector3D getPoint() const;                          // Return the contact point
         virtual void evaluate();                            // Evaluate the constraint
-        virtual unsigned int getNbAuxConstraints() const;   // Return the number of auxiliary constraints
+        unsigned int getNbAuxConstraints() const;           // Return the number of auxiliary constraints
 
-        void draw() const;                              // TODO : Delete this (Used to debug collision detection)
+        void draw() const;                                  // TODO : Delete this (Used to debug collision detection)
 };
 
-// Compute the two orthogonal vectors "v1" and "v2" that span the tangential friction plane
+// Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
 // The two vectors have to be such that : v1 x v2 = contactNormal
 inline void Contact::computeFrictionVectors() {
     // Delete the current friction vectors
     frictionVectors.clear();
 
-    // TODO : Implement this method ...
+    // Compute the first orthogonal vector
+    Vector3D vector1 = normal.getOneOrthogonalVector();
+    frictionVectors.push_back(vector1);
+
+    // Compute the second orthogonal vector using the cross product
+    frictionVectors.push_back(normal.crossProduct(vector1));
 }
 
 // Return the normal vector of the contact
@@ -74,8 +84,8 @@ inline Vector3D Contact::getNormal() const {
 }
 
 // Return the contact points
-inline std::vector<Vector3D> Contact::getPoints() const {
-    return points;
+inline Vector3D Contact::getPoint() const {
+    return point;
 }
 
 
