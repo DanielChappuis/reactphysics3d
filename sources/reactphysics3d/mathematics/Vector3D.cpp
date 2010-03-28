@@ -20,6 +20,8 @@
 // Libraries
 #include "Vector3D.h"
 #include <iostream>
+#include <cassert>
+#include <vector>
 
 // Namespaces
 using namespace reactphysics3d;
@@ -61,6 +63,34 @@ Vector3D Vector3D::getUnit() const throw(MathematicsException) {
         // Throw an exception because the length of the vector is zero
         throw MathematicsException("MathematicsException : Impossible to compute the unit vector because the length of the vector is zero");
     }
+}
+
+// Return two unit orthogonal vectors of the current vector
+// TODO : Test this method
+Vector3D Vector3D::getOneOrthogonalVector() const {
+    assert(!this->isZero());
+    Vector3D unitVector = this->getUnit();
+
+    // Compute a first orthogonal vector
+    Vector3D vector1;
+    if (!approxEqual(x, 0.0)) {   // If x != 0
+        vector1.setY(x);
+        vector1.setZ((-2*x*y*z + 2*x*z)/(2*(z*z + x*x)));
+        vector1.setX((-x*y-z*vector1.getZ())/x);
+    }
+    else if (!approxEqual(y, 0.0)) { // If y != 0
+        vector1.setZ(y);
+        vector1.setX((-2*x*y*z + 2*x*y)/(2*(y*y + x*x)));
+        vector1.setY((-z*y-x*vector1.getX())/y);
+    }
+    else if (!approxEqual(z, 0.0)) { // If z != 0
+        vector1.setX(z);
+        vector1.setY((-2*x*y*z + 2*y*z)/(2*(z*z + y*y)));
+        vector1.setZ((-x*z-y*vector1.getY())/z);
+    }
+
+    assert(vector1.isUnit());
+    return vector1;
 }
 
 // Overloaded operator for addition

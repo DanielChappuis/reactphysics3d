@@ -37,6 +37,8 @@ Matrix3x3::Matrix3x3(double a1, double a2, double a3, double b1, double b2, doub
 }
 
 // Copy-constructor
+// TODO : Test if this copy-constructor is correct (check if the the copy matrix use
+//        the same memory place for its array)
 Matrix3x3::Matrix3x3(const Matrix3x3& matrix2) {
     // Copy the values in the matrix
     setAllValues(matrix2.array[0][0], matrix2.array[0][1], matrix2.array[0][2],

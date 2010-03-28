@@ -28,7 +28,7 @@ namespace reactphysics3d {
 
 // ---------- Mathematics functions ---------- //
 
-// function to test if two numbers are (almost) equal
+// function to test if two real numbers are (almost) equal
 // We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool approxEqual(double a, double b) {
     double difference = a - b;

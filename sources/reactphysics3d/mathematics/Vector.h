@@ -52,6 +52,7 @@ class Vector {
         double scalarProduct(const Vector& vector) const throw(MathematicsException);   // Scalar product of two vectors
         Vector crossProduct(const Vector& vector) const throw(MathematicsException);    // Cross product of two vectors (in 3D only)
         void fillInSubVector(unsigned int index, const Vector& subVector);              // Replace a part of the current vector with another sub-vector
+        bool isUnit() const;                                                            // Return true if the vector is unit and false otherwise
 
         // --- Overloaded operators --- //
         Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
@@ -117,6 +118,11 @@ inline void Vector::fillInSubVector(unsigned int rowIndex, const Vector& subVect
     for (unsigned int i=0; i<subVector.nbComponent; ++i) {
         tab[rowIndex + i] = subVector.getValue(i);
     }
+}
+
+// Return true if the vector is unit and false otherwise
+inline bool Vector::isUnit() const {
+    return (1.0 - EPSILON <= this->length() && this->length() <= 1.0 + EPSILON );
 }
 
 // Overloaded operator for multiplication between a number and a Vector (inline)

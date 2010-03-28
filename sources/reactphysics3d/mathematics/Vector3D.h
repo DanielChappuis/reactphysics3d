@@ -54,7 +54,10 @@ class Vector3D {
         void setAllValues(double x, double y, double z);        // Set all the values of the vector
         double length() const;                                  // Return the lenght of the vector
         Vector3D getUnit() const throw(MathematicsException);   // Return the corresponding unit vector
+        bool isUnit() const;                                    // Return true if the vector is unit and false otherwise
+        bool isZero() const;                                    // Return true if the current vector is the zero vector
         Vector3D getOpposite() const;                           // Return the vector in the opposite direction
+        Vector3D getOneOrthogonalVector() const;               // Return one unit orthogonal vectors of the current vector
         double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
         Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
         bool isParallelWith(const Vector3D& vector) const;      // Return true if two vectors are parallel
@@ -66,7 +69,6 @@ class Vector3D {
         Vector3D& operator=(const Vector3D& vector);          // Overloaded operator for the assignement to a Vector
         bool operator==(const Vector3D& vector) const;        // Overloaded operator for the equality condition
 };
-
 
 // Get the x component of the vector (inline)
 inline double Vector3D::getX() const {
@@ -132,6 +134,16 @@ inline Vector3D Vector3D::crossProduct(const Vector3D& vector) const {
 // Return true if two vectors are parallel
 inline bool Vector3D::isParallelWith(const Vector3D& vector) const {
     return (approxEqual(abs(this->scalarProduct(vector)), length() * vector.length()));
+}
+
+// Return true if the vector is unit and false otherwise
+inline bool Vector3D::isUnit() const {
+    return approxEqual(x*x+y*y+z*z, 1.0);
+}
+
+// Return true if the vector is the zero vector
+inline bool Vector3D::isZero() const {
+    return approxEqual(x*x+y*y+z*z, 0.0);
 }
 
 // Overloaded operator for multiplication between a number and a Vector3D (inline)
