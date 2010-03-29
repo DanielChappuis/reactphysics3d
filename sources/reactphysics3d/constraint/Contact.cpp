@@ -54,8 +54,8 @@ void Contact::evaluate() {
     // Compute the friction vectors that span the tangential friction plane
     computeFrictionVectors();
 
-    Vector3D r1 = point - rigidBody1.getCurrentBodyState().getPosition();
-    Vector3D r2 = point - rigidBody2.getCurrentBodyState().getPosition();
+    Vector3D r1 = point - rigidBody1->getCurrentBodyState().getPosition();
+    Vector3D r2 = point - rigidBody2->getCurrentBodyState().getPosition();
     Vector3D r1CrossN = r1.crossProduct(normal);
     Vector3D r2CrossN = r2.crossProduct(normal);
 
@@ -115,15 +115,15 @@ void Contact::evaluate() {
     // Compute the auxiliary lower and upper bounds
     // TODO : Now mC is only the mass of the first body but it is probably wrong
     // TODO : Now g is 9.81 but we should use the true gravity value of the physics world.
-    double mu_mc_g = FRICTION_COEFFICIENT * rigidBody1.getMass().getValue() * 9.81;
-    auxLowerBounds.setValue(0, 0, -mu_mc_g);
-    auxLowerBounds.setValue(1, 0, -mu_mc_g);
-    auxUpperBounds.setValue(0, 0, mu_mc_g);
-    auxUpperBounds.setValue(1, 0, mu_mc_g);
+    double mu_mc_g = FRICTION_COEFFICIENT * rigidBody1->getMass().getValue() * 9.81;
+    auxLowerBounds.setValue(0, -mu_mc_g);
+    auxLowerBounds.setValue(1, -mu_mc_g);
+    auxUpperBounds.setValue(0, mu_mc_g);
+    auxUpperBounds.setValue(1, mu_mc_g);
 
     // Compute the error auxiliary values
-    auxErrorValues.setValue(0, 0, 0.0);
-    auxErrorValues.setValue(1, 0, 0.0);
+    auxErrorValues.setValue(0, 0.0);
+    auxErrorValues.setValue(1, 0.0);
 ;}
 
 // TODO : Delete this (Used to debug collision detection)
