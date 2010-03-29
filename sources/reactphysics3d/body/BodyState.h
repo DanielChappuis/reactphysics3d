@@ -28,6 +28,8 @@
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
+// TODO : Remove this class and put everything in the RigidBody class
+
 /*  -------------------------------------------------------------------
     Class BodyState :
         A BodyState contains all the dynamics values of a body.
