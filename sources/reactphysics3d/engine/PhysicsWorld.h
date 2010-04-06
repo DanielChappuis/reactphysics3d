@@ -40,8 +40,8 @@ namespace reactphysics3d {
 */
 class PhysicsWorld {
     protected :
-        std::vector<Body*> bodyList;                // list that contains all bodies of the physics world
-        std::vector<Constraint*> constraintList;    // List that contains all the current constraints
+        std::vector<Body*> bodies;                  // list that contains all bodies of the physics world
+        std::vector<Constraint*> constraints;       // List that contains all the current constraints
         Vector3D gravity;                           // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
 
@@ -61,6 +61,8 @@ class PhysicsWorld {
         void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
         std::vector<Constraint*>::const_iterator getConstraintListStartIterator() const;    // Return a start iterator on the constraint list
         std::vector<Constraint*>::const_iterator getConstraintListEndIterator() const;      // Return a end iterator on the constraint list
+        std::vector<Body*>& getBodies() const;                                              // Return a reference to the bodies of the physics world
+        std::vector<Constraint*>& getConstraints() const;                                   // Return a reference to the constraints of the physics world
 };
 
 // --- Inline functions --- //
@@ -73,13 +75,13 @@ inline Vector3D PhysicsWorld::getGravity() const {
 // Return a start iterator on the body list
 inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListStartIterator() const {
     // Return an iterator on the start of the body list
-    return bodyList.begin();
+    return bodies.begin();
 }
 
 // Return a end iterator on the body list
 inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListEndIterator() const {
     // Return an iterator on the end of the body list
-    return bodyList.end();
+    return bodies.end();
 }
 
 // Return if the gravity is on
@@ -94,12 +96,22 @@ inline void PhysicsWorld::setIsGratityOn(bool isGravityOn) {
 
 // Return a start iterator on the constraint list
 inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListStartIterator() const {
-    return constraintList.begin();
+    return constraints.begin();
 }
 
 // Return a end iterator on the constraint list
 inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListEndIterator() const {
-    return constraintList.end();
+    return constraints.end();
+}
+
+// Return a reference to the bodies of the physics world
+std::vector<Body*>& PhysicsWorld::getBodies() const {
+    return bodies;
+}
+
+// Return a reference to the constraints of the physics world
+std::vector<Constraint*>& PhysicsWorld::getConstraints() const {
+    return constraints;
 }
 
 }   // End of the ReactPhysics3D namespace

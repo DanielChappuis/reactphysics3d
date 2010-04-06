@@ -25,6 +25,7 @@
 #include "NarrowPhaseAlgorithm.h"
 #include "../body/Body.h"
 #include "../engine/PhysicsWorld.h"
+#include "ContactInfo.h"
 #include <vector>
 
 // ReactPhysics3D namespace
@@ -40,30 +41,25 @@ namespace reactphysics3d {
 */
 class CollisionDetection {
     private :
-        std::vector< std::pair<Body*, Body*> > possibleCollisionPairList;     // List that contains the possible collision pairs of bodies
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                            // Broad-phase algorithm
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                          // Narrow-phase algorithm
+        PhysicsWorld* world;                                                         // Pointer to the physics world
+        std::vector<std::pair<const OBB*, const OBB* > > possibleCollisionPairs;     // Possible collision pairs of bodies (computed by broadphase)
+        std::vector<ContactInfo*> contactInfos;                                      // Contact informations (computed by narrowphase)
 
-        void addPossibleCollisionPair(Body* body1, Body* body2);            // Add a possible collision pair of bodies in the possibleCollisionPairList
-        void initPossibleCollisionPairList();                               // Initialize the possibleCollisionPairList
+        // TODO : Check if we can avoid pointers for the two following classes (to avoid dynamic alocation)
+        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                   // Broad-phase algorithm
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                 // Narrow-phase algorithm
+
+        void computeBroadPhase();                                                                                                                                   // Compute the broad-phase collision detection
+        void computeNarrowPhase();                                                                                                                                  // Compute the narrow-phase collision detection
+        void computeAllContacts();                                                                                                                                  // Compute all the contacts from the collision info list
+        void computeContact(const ContactInfo* const contactInfo);                  // Compute a contact (and add it to the physics world) for two colliding bodies
 
     public :
-        CollisionDetection();       // Constructor
-        ~CollisionDetection();      // Destructor
+        CollisionDetection(PhysicsWorld* physicsWorld);                             // Constructor
+        ~CollisionDetection();                                                      // Destructor
 
-        bool computeCollisionDetection(PhysicsWorld* world);     // Compute the collision detection
+        bool computeCollisionDetection();                                           // Compute the collision detection
 };
-
-// Add a possible collision pair of bodies in the possibleCollisionPairList
-inline void CollisionDetection::addPossibleCollisionPair(Body* body1, Body* body2) {
-    // TODO : Implement this method
-}
-
-// Initialize the possibleCollisionPairList
-inline void CollisionDetection::initPossibleCollisionPairList() {
-    // TODO : Implement this method
-}
-
 
 } // End of the ReactPhysics3D namespace
 

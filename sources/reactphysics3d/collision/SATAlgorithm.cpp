@@ -42,12 +42,11 @@ SATAlgorithm::~SATAlgorithm() {
 
 }
 
-// Return true and compute a collision contact if the two bounding volume collide.
+// Return true and compute a contact info if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact) {
+bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, ContactInfo*& contactInfo) {
 
     assert(boundingVolume1 != boundingVolume2);
-    assert(*contact == 0);
 
     // If the two bounding volumes are OBB
     const OBB* const obb1 = dynamic_cast<const OBB* const>(boundingVolume1);
@@ -56,7 +55,7 @@ bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, co
     // If the two bounding volumes are OBB
     if (obb1 && obb2) {
         // Compute the collision test between two OBB
-        return computeCollisionTest(obb1, obb2, contact);
+        return computeCollisionTest(obb1, obb2, contactInfo);
     }
     else {
         return false;
@@ -64,14 +63,14 @@ bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, co
 }
 
 
-// This method returns true and computes a collision contact if the two OBB intersect.
+// This method returns true and computes a contact info if the two OBB intersect.
 // This method implements the separating algorithm between two OBB. The goal of this method is to test if the
-// two OBBs intersect or not. If they intersect we report a collision contact and the method returns true. If
+// two OBBs intersect or not. If they intersect we report a contact info and the method returns true. If
 // they don't intersect, the method returns false. The separation axis that have to be tested for two
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, Contact** contact) const {
+bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, ContactInfo*& contactInfo) const {
 
     double center;                              // Center of a projection interval
     double radius1;                             // Radius of projection interval [min1, max1]
@@ -240,9 +239,9 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         // There exists a parallel pair of face normals and we have already checked all the face
         // normals for separation. Therefore the OBBs must intersect
 
-        // Compute the collision contact
-        computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
-
+        // Compute the contact info
+        contactInfo = new ContactInfo(obb1, obb2, normal.getUnit(), minPenetrationDepth);
+        
         return true;
     }
 
@@ -408,9 +407,9 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
-    // Compute the collision contact
-    computeContact(obb1, obb2, normal.getUnit(), minPenetrationDepth, obb1->getExtremeVertices(normal), obb2->getExtremeVertices(normal.getOpposite()), contact);
-
+    // Compute the contact info
+    contactInfo = new ContactInfo(obb1, obb2, normal.getUnit(), minPenetrationDepth);
+    
     return true;
 }
 
@@ -446,6 +445,7 @@ double SATAlgorithm::computePenetrationDepth(double min1, double max1, double mi
     return penetrationDepth;
 }
 
+/*  TODO : Remove this following code
 // Compute a new collision contact between two OBBs
 void SATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, const Vector3D normal, double penetrationDepth,
                                   const std::vector<Vector3D>& obb1ExtremePoints, const std::vector<Vector3D>& obb2ExtremePoints, Contact** contact) const {
@@ -544,3 +544,4 @@ void SATAlgorithm::computeContact(const OBB* const obb1, const OBB* const obb2, 
 
     assert(*contact != 0);
 }
+*/

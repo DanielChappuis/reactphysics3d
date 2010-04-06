@@ -22,7 +22,7 @@
 
 // Libraries
 #include "../body/BoundingVolume.h"
-#include "../constraint/Contact.h"
+#include "ContactInfo.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -44,7 +44,7 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm();              // Constructor
         virtual ~NarrowPhaseAlgorithm();     // Destructor
 
-        virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, Contact** contact)=0;     // Return true and compute a collision contact if the two bounding volume collide
+        virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, ContactInfo*& contactInfo)=0;     // Return true and compute a contact info if the two bounding volume collide
 };
 
 } // End of reactphysics3d namespace

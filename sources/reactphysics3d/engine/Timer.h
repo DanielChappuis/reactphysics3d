@@ -28,6 +28,9 @@
  // Namespace ReactPhysics3D
  namespace reactphysics3d {
 
+// TODO : Now we are using the "Time" class in this class but we should a
+//        time class from the standard library
+
 /*  -------------------------------------------------------------------
     Class Timer :
         This class will take care of the time in the physics engine.

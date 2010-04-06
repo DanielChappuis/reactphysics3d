@@ -24,10 +24,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver()
-                 :bodies(0), nbBodies(0), bodyMapping(0) {
-    // Creation of the LCP Solver
-    lcpSolver = new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS);
+ConstraintSolver::ConstraintSolver(PhysicsWorld& physicsWorld)
+                 :physicsWorld(physicsWorld), bodyMapping(0) , lcpSolver(LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+
 }
 
 // Destructor
@@ -36,72 +35,89 @@ ConstraintSolver::~ConstraintSolver() {
 }
 
 // Allocate all the matrices needed to solve the LCP problem
-void ConstraintSolver::allocate(std::vector<Constraint*>& constraints, std::vector<Body*>& bodies) {
-    unsigned int sizeJacobian = 0;
-    this->bodies = bodies;
-    this->nbBodies = bodies.size();
+void ConstraintSolver::allocate() {
+    unsigned int nbConstraints = 0;
+    nbBodies = physicsWorld.getBodies().size();
 
     // TODO : Now we keep every bodies of the physics world in the "bodies" std:vector of the constraint solver.
     //        but maybe we could only keep track of the body that are part of some constraints.
 
     // For each constraint
-    for (unsigned int i=0; i<constraints.size(); ++i) {
+    for (unsigned int i=0; i<physicsWorld.getConstraints().size(); ++i) {
         // Evaluate the constraint
-        constraints.at(i)->evaluate(dt);
+        physicsWorld.getConstraints().at(i)->evaluate();
 
         // If the constraint is active
-        if (constraints.at(i)->isActive()) {
-            activeConstraints.push_back(constraints.at(i));
+        if (physicsWorld.getConstraints().at(i)->isActive()) {
+            activeConstraints.push_back(physicsWorld.getConstraints().at(i));
 
-            /Description/ Update the size of the jacobian matrix
-            sizeJacobian += (1 + constraints.at(i)->getNbAuxConstraints());
+            // Update the size of the jacobian matrix
+            nbConstraints += (1 + physicsWorld.getConstraints().at(i)->getNbAuxConstraints());
         }
     }
 
-    // Allocate all the vectors and matrices
-    J_sp = Matrix(sizeJacobian, 12);
-
-    bodyMapping = new unsigned int[nbBodies];
-    for (unsigned int i=0; i<nbBodies; i++) {
-        bodyMapping[i] = new unsigned int[2];
+    bodyMapping = new Body**[nbConstraints];
+    for (unsigned int i=0; i<nbConstraints; i++) {
+        bodyMapping[i] = new Body*[2];
     }
 
-    errorVector = Vector(sizeJacobian);
-    B_sp = Matrix(6*nbBodies, 2;
-    b = Vector(totalSize);
-    lambda = Vector(totalSize);
-    lowLimits = Vector(totalSize);
-    highLimits = Vector(totalSize);
-    Minv_sp = Matrix(3*nbBodies, 6*nbBodies);
+    J_sp = Matrix(nbConstraints, 12);
+    errorValues = Vector(nbConstraints);
+    B_sp = Matrix(12, nbConstraints);
+    b = Vector(nbConstraints);
+    lambda = Vector(nbConstraints);
+    lowerBounds = Vector(nbConstraints);
+    upperBounds = Vector(nbConstraints);
+    Minv_sp = Matrix(6*nbBodies, 6);
     V = Vector(6*nbBodies);
-    Fc = Vector(6*nbBodies);
+    Fext = Vector(6*nbBodies);
 }
 
 // Fill in all the matrices needed to solve the LCP problem
 // Notice that all the active constraints should have been evaluated first
 void ConstraintSolver::fillInMatrices() {
-    int i,j;
 
     // For each active constraint
-    for (unsigned int c=0; c<activeConstraints.size(); ++c) {
-        i = activeConstraints.at(c)->getJacobianIndex();
-        //j = i + activeConstraint.at(c)->getNbJacobianRows();
-        J.fillInSubMatrix(i, 0, activeConstraints.at(c)->getBody1LinearJacobian());
-        J.fillInSubMatrix(i, 3, activeConstraints.at(c)->getBody2LinearJacobian());
-        J.fillInSubMatrix(i, 6, activeConstraints.at(c)->getBody1AngularJacobian());
-        J.fillInSubMatrix(i, 9, activeConstraints.at(c)->getBody2AngularJacobian());
-        errorVector.fillInSubVector(i, activeConstraints.at(c)->getErrorVector());
+    for (unsigned int c=0; c<activeConstraints.size(); c++) {
+        Constraint* constraint = activeConstraints.at(c);
+
+        // Fill in the J_sp matrix
+        J_sp.fillInSubMatrix(c, 0, constraint->getBody1Jacobian());
+        J_sp.fillInSubMatrix(c, 6, constraint->getBody2Jacobian());
+
+        // Fill in the body mapping matrix
+        bodyMapping[c][0] = constraint->getBody1();
+        bodyMapping[c][1] = constraint->getBody2();
+
+        // Fill in the limit vectors for the constraint
+        lowerBounds.fillInSubVector(c, constraint->getLowerBound());
+        upperBounds.fillInSubVector(c, constraint->getUpperBound());
+
+        // Fill in the error vector
+        errorValues.fillInSubVector(c, constraint->getErrorValue());
+
+        unsigned int nbAuxConstraints = constraint->getNbAuxConstraints();
+
+        // If the current constraint has auxiliary constraints
+        if (nbAuxConstraints > 0) {
+            // Fill in the J_sp matrix
+            J_sp.fillInSubMatrix(c+1, 0, constraint->getAuxJacobian());
+
+            // For each auxiliary constraints
+            for (unsigned int i=1; i<nbAuxConstraints; i++) {
+                // Fill in the body mapping matrix
+                bodyMapping[c+i][0] = constraint->getBody1();
+                bodyMapping[c+i][1] = constraint->getBody2();
+            }
+
+            // Fill in the limit vectors for the auxilirary constraints
+            lowerBounds.fillInSubVector(c+1, constraint->getAuxLowerBounds());
+            upperBounds.fillInSubVector(c+1, constraint->getAuxUpperBounds());
+        }
     }
 
-    // For each active constraint
-    for (unsigned int c=0; c<activeConstraints.size(); ++c) {
-        i = activeConstraints.at(c)->getNbAuxiliaryVars();
-        // TODO : add activeConstraints.at(c)->getAuxiliaryRowsAndCols(..., ...)
-        b.fillInSubVector(i, activeConstraints.at(c)->getRightHandSideVector());
-    }
-
-    // For each current body of the simulation
-    for (unsigned int b=0; b<nbBodies; ++b) {
+    // For each current body of the physics world
+    for (unsigned int b=0; b<physicsWorld->getBodies().size(); b++) {
         i = 6*b;
         Minv.fillInSubMatrix(i, 0, bodies.at(b)->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
         Minv.fillInSubMatrix(i+3, 3, bodies.at(b)->getCurrentBodyState().getInertiaTensorInverse());

@@ -26,7 +26,7 @@ using namespace reactphysics3d;
 
 // Constructor
 PhysicsEngine::PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument)
-              : world(world), timer(Time(0.0), timeStep) {
+              : world(world), timer(Time(0.0), timeStep), collisionDetection(world) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {
         // Throw an exception
@@ -87,11 +87,8 @@ void PhysicsEngine::updateCollision() {
     // While the time accumulator is not empty
     while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
 
-        // Remove all old collision contact constraints
-        world->removeAllContactConstraints();
-
         // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection(world)) {
+        if (collisionDetection.computeCollisionDetection()) {
 
             // TODO : Delete this ----------------------------------------------------------
             for (std::vector<Constraint*>::const_iterator it = world->getConstraintListStartIterator(); it != world->getConstraintListEndIterator(); ++it) {
