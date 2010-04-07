@@ -63,9 +63,9 @@ class ConstraintSolver {
         void freeMemory();                                                  // Free the memory that was allocated in the allocate() method
 
     public:
-        ConstraintSolver();                                                                         // Constructor
-        virtual ~ConstraintSolver();                                                                // Destructor
-        void solve(std::vector<Constraint*>& constraints, std::vector<Body*>* bodies, double dt);   // Solve the current LCP problem
+        ConstraintSolver();                                                 // Constructor
+        virtual ~ConstraintSolver();                                        // Destructor
+        void solve(double dt);                                              // Solve the current LCP problem
 };
 
 } // End of ReactPhysics3D namespace

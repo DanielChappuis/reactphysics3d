@@ -37,24 +37,29 @@ ConstraintSolver::~ConstraintSolver() {
 // Allocate all the matrices needed to solve the LCP problem
 void ConstraintSolver::allocate() {
     unsigned int nbConstraints = 0;
-    nbBodies = physicsWorld.getBodies().size();
-
-    // TODO : Now we keep every bodies of the physics world in the "bodies" std:vector of the constraint solver.
-    //        but maybe we could only keep track of the body that are part of some constraints.
 
     // For each constraint
-    for (unsigned int i=0; i<physicsWorld.getConstraints().size(); ++i) {
+    for (unsigned int c=0; c<physicsWorld.getConstraints().size(); c++) {
+        Constraint* constraint = physicsWorld.getConstraints().at(c);
+
         // Evaluate the constraint
-        physicsWorld.getConstraints().at(i)->evaluate();
+        constraint->evaluate();
 
         // If the constraint is active
-        if (physicsWorld.getConstraints().at(i)->isActive()) {
-            activeConstraints.push_back(physicsWorld.getConstraints().at(i));
+        if (constraint->isActive()) {
+            activeConstraints.push_back(constraint);
+
+            // Fill in the body number maping
+            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
+            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
 
             // Update the size of the jacobian matrix
-            nbConstraints += (1 + physicsWorld.getConstraints().at(i)->getNbAuxConstraints());
+            nbConstraints += (1 + constraint->getNbAuxConstraints());
         }
     }
+
+    // Compute the number of bodies that are part of some active constraint
+    nbBodies = bodyNumberMapping.size();
 
     bodyMapping = new Body**[nbConstraints];
     for (unsigned int i=0; i<nbConstraints; i++) {
@@ -84,7 +89,7 @@ void ConstraintSolver::fillInMatrices() {
         // Fill in the J_sp matrix
         J_sp.fillInSubMatrix(c, 0, constraint->getBody1Jacobian());
         J_sp.fillInSubMatrix(c, 6, constraint->getBody2Jacobian());
-
+        
         // Fill in the body mapping matrix
         bodyMapping[c][0] = constraint->getBody1();
         bodyMapping[c][1] = constraint->getBody2();
@@ -117,8 +122,9 @@ void ConstraintSolver::fillInMatrices() {
     }
 
     // For each current body of the physics world
-    for (unsigned int b=0; b<physicsWorld->getBodies().size(); b++) {
-        i = 6*b;
+    for (unsigned int b=0; b<nbBodies; b++) {
+        // Compute the vector with velocities values
+        V.fillInSubVector(b*3, )
         Minv.fillInSubMatrix(i, 0, bodies.at(b)->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
         Minv.fillInSubMatrix(i+3, 3, bodies.at(b)->getCurrentBodyState().getInertiaTensorInverse());
         u.fillInSubVector(i, bodies.at(b)->getCurrentBodyState().getLinearVelocity());
@@ -133,6 +139,10 @@ void ConstraintSolver::fillInMatrices() {
 
 // Free the memory that was allocated in the allocate() method
 void ConstraintSolver::freeMemory() {
+
+    activeConstraints.clear();
+    bodyNumberMapping.clear();
+
     // Free the bodyMaping array
     for (unsigned int i=0; i<nbBodies; i++) {
         delete[] bodyMapping[i];
@@ -141,15 +151,9 @@ void ConstraintSolver::freeMemory() {
 }
 
 // Solve the current LCP problem
-void ConstraintSolver::solve(std::vector<Constraint*>& constraints, std::vector<Body*>* bodies, double dt) {
-    // Update the current set of bodies in the physics world
-    this->bodies = bodies;
-
-    // Delete all the current actice constraints
-    activeConstraints.clear();
-
+void ConstraintSolver::solve(double dt) {
     // Allocate memory for the matrices
-    allocate(constraints, dt);
+    allocate();
 
     // Fill-in all the matrices needed to solve the LCP problem
     fillInMatrices();
@@ -158,4 +162,6 @@ void ConstraintSolver::solve(std::vector<Constraint*>& constraints, std::vector<
     lcpSolver.solve(A, b, lowLimits, highLimits, lambda);
 
     // TODO : Implement this method ...
+
+    freeMemory();
 }
