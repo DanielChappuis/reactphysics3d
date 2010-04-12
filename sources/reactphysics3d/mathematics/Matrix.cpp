@@ -45,6 +45,7 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
             array[i] = new double[nbColumn];
         }
 
+        // TODO : This initialization loop must be removed carefully
         // Fill the matrix with zero's
         for (int i=0; i<nbRow; ++i) {
             for(int j=0; j<nbColumn; ++j) {
@@ -305,6 +306,15 @@ void Matrix::fillInSubMatrix(unsigned int rowIndex, unsigned int colIndex, const
     for (unsigned int i=0; i<subMatrix.nbRow; ++i) {
         for (unsigned int j=0; j<subMatrix.nbColumn; ++j) {
             array[rowIndex + i][colIndex + j] = subMatrix.array[i][j];
+        }
+    }
+}
+
+// Initialize all the matrix with the given value
+void Matrix::initWithValue(double value) {
+    for (unsigned int i=0; i<nbRow; ++i) {
+        for(unsigned int j=0; j<nbColumn; ++j) {
+            array[i][j] = value;
         }
     }
 }

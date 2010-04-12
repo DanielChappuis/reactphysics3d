@@ -59,7 +59,7 @@ class Matrix {
         double getTrace() const throw(MathematicsException);                            // Return the trace of a square matrix
         static Matrix identity(int dimension) throw(std::invalid_argument);             // Return the identity matrix I of the given dimension
         void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);  // Fill in a sub-matrix of the current matrix with another matrix
-
+        void initWithValue(double value);                                               // Initialize all the matrix with the given value
         void display() const;                                                           // TO DELETE
 
         // --- Overloaded operators --- //
