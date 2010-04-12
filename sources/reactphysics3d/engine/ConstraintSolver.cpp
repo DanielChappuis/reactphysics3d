@@ -162,6 +162,16 @@ void ConstraintSolver::freeMemory() {
     delete[] bodyMapping;
 }
 
+// Compute the vector b
+void ConstraintSolver::computeVectorB() {
+    // TODO : Implement this method ...
+}
+
+// Compute the matrix B_sp
+void ConstraintSolver::computeMatrixB_sp() {
+    // TODO : Implement this method ...
+}
+
 // Solve the current LCP problem
 void ConstraintSolver::solve(double dt) {
     // Allocate memory for the matrices
@@ -169,6 +179,12 @@ void ConstraintSolver::solve(double dt) {
 
     // Fill-in all the matrices needed to solve the LCP problem
     fillInMatrices();
+
+    // Compute the vector b
+    computeVectorB();
+
+    // Compute the matrix B
+    computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
     lcpSolver.solve(A, b, lowLimits, highLimits, lambda);

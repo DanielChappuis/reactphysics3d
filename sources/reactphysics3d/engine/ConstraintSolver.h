@@ -59,9 +59,12 @@ class ConstraintSolver {
         Matrix Minv_sp;                                                     // Sparse representation of the Matrix that contains information about mass and inertia of each body
         Vector V;                                                           // Vector that contains linear and angular velocities of each body
         Vector Fext;                                                        // Vector that contains external forces and torques of each body
+
         void allocate();                                                    // Allocate all the matrices needed to solve the LCP problem
         void fillInMatrices();                                              // Fill in all the matrices needed to solve the LCP problem
         void freeMemory();                                                  // Free the memory that was allocated in the allocate() method
+        void computeVectorB();                                              // Compute the vector b
+        void computeMatrixB_sp();                                           // Compute the matrix B_sp
 
     public:
         ConstraintSolver();                                                 // Constructor
