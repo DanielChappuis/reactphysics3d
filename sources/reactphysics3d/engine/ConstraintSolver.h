@@ -42,6 +42,7 @@ class ConstraintSolver {
         LCPSolver& lcpSolver;                                               // LCP Solver
         PhysicsWorld& physicsWorld;                                         // Reference to the physics world
         std::vector<Constraint*> activeConstraints;                         // Current active constraints in the physics world
+        std::vector<Body*> constraintBodies;                                // Bodies that are implied in some constraint
         unsigned int nbBodies;                                              // Current number of bodies in the physics world
         std::map<Body*, unsigned int> bodyNumberMapping;                    // Map a body pointer with its index number
         Body** bodyMapping;                                                 // 2-dimensional array that contains the mapping of body reference

@@ -49,6 +49,10 @@ void ConstraintSolver::allocate() {
         if (constraint->isActive()) {
             activeConstraints.push_back(constraint);
 
+            // Add the two bodies of the constraint in the constraintBodies list
+            constraintBodies.push_back(constraint->getBody1());
+            constraintBodies.push_back(constraint->getBody2());
+
             // Fill in the body number maping
             bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
             bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
@@ -74,6 +78,7 @@ void ConstraintSolver::allocate() {
     lowerBounds = Vector(nbConstraints);
     upperBounds = Vector(nbConstraints);
     Minv_sp = Matrix(6*nbBodies, 6);
+    Minv_sp.initWithValue(0.0);
     V = Vector(6*nbBodies);
     Fext = Vector(6*nbBodies);
 }
@@ -121,19 +126,26 @@ void ConstraintSolver::fillInMatrices() {
         }
     }
 
-    // For each current body of the physics world
+    // For each current body that is implied in some constraint
     for (unsigned int b=0; b<nbBodies; b++) {
+        Body* body = constraintBodies.at(b);
+        unsigned int bodyNumber = bodyNumberMapping.at(body);
+        
+        // TODO : Use polymorphism and remove this casting
+        RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
+        assert(rigidBody != 0);
+
         // Compute the vector with velocities values
-        V.fillInSubVector(b*3, )
-        Minv.fillInSubMatrix(i, 0, bodies.at(b)->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
-        Minv.fillInSubMatrix(i+3, 3, bodies.at(b)->getCurrentBodyState().getInertiaTensorInverse());
-        u.fillInSubVector(i, bodies.at(b)->getCurrentBodyState().getLinearVelocity());
-        u.fillInSubVector(i+3, bodies.at(b)->getCurrentBodyState().getAngularVelocity());
-        fExt.fillInSubVector(i, bodies.at(b)->getCurrentBodyState().getExternalForce());
-        Vector3D externalTorque = bodies.at(b)->getCurrentBodyState().getExternalTorque();
-        Matrix3x3 inertia = bodies.at(b)->getInertiaTensor();
-        Vector3D angularVelocity = bodies.at(b)->getCurrentBodyState().getAngularVelocity();
-        fExt.fillInSubVector(i+3, externalTorque - (angularVelocity.crossProduct(inertia*angularVelocity)));
+        V.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState()->getLinearVelocity());
+        V.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState()->getAngularVelocity());
+
+        // Compute the vector with forces and torques values
+        Fext.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState()->getExternalForce());
+        Fext.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState()->getExternalTorque());
+
+        // Compute the inverse sparse mass matrix
+        Minv_sp.fillInSubMatrix(b*6, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
+        Minv_sp.fillInSubMatrix(b*6+3, 3, rigidBody->getCurrentBodyState().getInertiaTensorInverse());
     }
 }
 
