@@ -39,36 +39,38 @@ namespace reactphysics3d {
 class Matrix {
     private :
         unsigned int nbRow;                                                             // Number of row in the matrix
-        unsigned int nbColumn;                                                          // Number of colum in the matrix
-        double** array;                                                                 // Dynamic array that contains the values of the matrix
+        unsigned int nbColumn;                                                                                          // Number of colum in the matrix
+        double** array;                                                                                                 // Dynamic array that contains the values of the matrix
 
     public :
-        Matrix();                                                                       // Constructor without argument
-        Matrix(int nbRow, int nbColum) throw(std::invalid_argument);                    // Constructor of the class Matrix
-        Matrix(const Matrix& matrix);                                                   // Copy constructor of the class Matrix
-        Matrix(const Matrix3x3& matrix);                                                // Conversion from Matrix3x3
-        virtual ~Matrix();                                                              // Destructor of the class Matrix
-        double getValue(int i, int j) const throw(std::invalid_argument);               // Return a value in the matrix
-        void setValue(int i, int j, double value) throw(std::invalid_argument);         // Set a value in the matrix
-        int getNbRow() const;                                                           // Return the number of row of the matrix
-        int getNbColumn() const;                                                        // Return the number of column of the matrix
-        Matrix getCofactor(int i, int j) const throw(std::invalid_argument);            // Return the cofactor matrix by removing row i and column j
-        Matrix getTranspose() const;                                                    // Return the transposed matrixs
-        Matrix getInverse() const throw(MathematicsException);                          // Return the inverse of the matrix if there exists
-        double getDeterminant() const throw(MathematicsException);                      // Return the determinant of the matrix
-        double getTrace() const throw(MathematicsException);                            // Return the trace of a square matrix
-        static Matrix identity(int dimension) throw(std::invalid_argument);             // Return the identity matrix I of the given dimension
-        void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);  // Fill in a sub-matrix of the current matrix with another matrix
-        void initWithValue(double value);                                               // Initialize all the matrix with the given value
-        void display() const;                                                           // TO DELETE
+        Matrix();                                                                                                       // Constructor without argument
+        Matrix(int nbRow, int nbColum) throw(std::invalid_argument);                                                    // Constructor of the class Matrix
+        Matrix(const Matrix& matrix);                                                                                   // Copy constructor of the class Matrix
+        Matrix(const Matrix3x3& matrix);                                                                                // Conversion from Matrix3x3
+        virtual ~Matrix();                                                                                              // Destructor of the class Matrix
+        double getValue(int i, int j) const throw(std::invalid_argument);                                               // Return a value in the matrix
+        void setValue(int i, int j, double value) throw(std::invalid_argument);                                         // Set a value in the matrix
+        int getNbRow() const;                                                                                           // Return the number of row of the matrix
+        int getNbColumn() const;                                                                                        // Return the number of column of the matrix
+        Matrix getCofactor(int i, int j) const throw(std::invalid_argument);                                            // Return the cofactor matrix by removing row i and column j
+        Matrix getTranspose() const;                                                                                    // Return the transposed matrixs
+        Matrix getInverse() const throw(MathematicsException);                                                          // Return the inverse of the matrix if there exists
+        double getDeterminant() const throw(MathematicsException);                                                      // Return the determinant of the matrix
+        double getTrace() const throw(MathematicsException);                                                            // Return the trace of a square matrix
+        Matrix getSubMatrix(unsigned int i, unsigned int j,
+                            unsigned int nbRows, unsigned int nbColumns) const throw(std::invalid_argument);            // Return a sub matrix of size of the current matrix
+        static Matrix identity(int dimension) throw(std::invalid_argument);                                             // Return the identity matrix I of the given dimension
+        void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);                                  // Fill in a sub-matrix of the current matrix with another matrix
+        void initWithValue(double value);                                                                               // Initialize all the matrix with the given value
+        void display() const;                                                                                           // TO DELETE
 
         // --- Overloaded operators --- //
-        Matrix operator+(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for addition
-        Matrix operator-(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for substraction
-        Matrix operator*(double nb) const;                                              // Overloaded operator for multiplication with a number
-        Matrix operator*(const Matrix& matrix2) const throw(MathematicsException);      // Overloaded operator for multiplication with a matrix
-        Matrix& operator=(const Matrix& matrix2) throw(MathematicsException);           // Overloaded operator for assignment
-        bool operator==(const Matrix& matrix2) const throw(MathematicsException);       // Overloaded operator for equality condition
+        Matrix operator+(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for addition
+        Matrix operator-(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for substraction
+        Matrix operator*(double nb) const;                                                                              // Overloaded operator for multiplication with a number
+        Matrix operator*(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for multiplication with a matrix
+        Matrix& operator=(const Matrix& matrix2) throw(MathematicsException);                                           // Overloaded operator for assignment
+        bool operator==(const Matrix& matrix2) const throw(MathematicsException);                                       // Overloaded operator for equality condition
 };
 
 // Function to get a value in the matrix (inline)

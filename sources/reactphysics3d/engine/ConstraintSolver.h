@@ -45,7 +45,7 @@ class ConstraintSolver {
         std::vector<Body*> constraintBodies;                                // Bodies that are implied in some constraint
         unsigned int nbBodies;                                              // Current number of bodies in the physics world
         std::map<Body*, unsigned int> bodyNumberMapping;                    // Map a body pointer with its index number
-        Body** bodyMapping;                                                 // 2-dimensional array that contains the mapping of body reference
+        Body*** bodyMapping;                                                // 2-dimensional array that contains the mapping of body reference
                                                                             // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
                                                                             // the integer index of the body that correspond to the 1x6 J_ij matrix in the
                                                                             // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector

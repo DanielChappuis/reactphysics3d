@@ -164,12 +164,23 @@ void ConstraintSolver::freeMemory() {
 
 // Compute the vector b
 void ConstraintSolver::computeVectorB() {
-    // TODO : Implement this method ...
+    
 }
 
 // Compute the matrix B_sp
 void ConstraintSolver::computeMatrixB_sp() {
-    // TODO : Implement this method ...
+    unsigned int indexBody1;
+    unsigned int indexBody2;
+
+    // For each constraint
+    for (unsigned int j = 0; j<activeConstraints.size(); j++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[j][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[j][1]];
+        Matrix b1 = Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6) * J_sp.getSubMatrix(j, 0, 1, 6).getTranspose();
+        Matrix b2 = Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6) * J_sp.getSubMatrix(j, 6, 1, 6).getTranspose();
+        B_sp.fillInSubMatrix(0, j, b1);
+        B_sp.fillInSubMatrix(6, j, b2);
+    }
 }
 
 // Solve the current LCP problem

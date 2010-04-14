@@ -266,6 +266,27 @@ double Matrix::getTrace() const throw(MathematicsException) {
 
 }
 
+// Return a sub matrix of size of the current matrix
+Matrix Matrix::getSubMatrix(unsigned int i, unsigned int j,
+                                   unsigned int sizeRows, unsigned int sizeColumns) const throw(std::invalid_argument) {
+    // Check the arguments
+    if (i<0 || j<0 || i+sizeRows >= nbRow || j+sizeColumns >= nbColumn) {
+        // Throw an exception
+        throw std::invalid_argument("Error : The arguments are out of matrix bounds");
+    }
+
+    // Compute the sub-matrix
+    Matrix resultMatrix(sizeRows, sizeColumns);
+    for (unsigned int k=0; k<sizeRows; k++) {
+        for (unsigned int l=0; l<sizeColumns; l++) {
+            resultMatrix.array[k][l] = array[i+k][j+l];
+        }
+    }
+
+    // Return the sub-matrix
+    return resultMatrix;
+}
+
 // Static function that return a identity matrix of size nxn
 Matrix Matrix::identity(int dimension) throw(std::invalid_argument) {
     // Argument verification

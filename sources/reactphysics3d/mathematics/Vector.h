@@ -26,6 +26,7 @@
 #include <cassert>
 #include <iostream>
 
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
