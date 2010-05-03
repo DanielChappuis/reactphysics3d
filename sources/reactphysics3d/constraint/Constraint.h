@@ -51,7 +51,7 @@ class Constraint {
         Matrix body2Jacobian;                   // Jacobian matrix of the constraint for body2 (dimension 1x6)
         Matrix auxJacobian;                     // Jacobian matrix for all the auxiliary constraints jacobian associated with this constraint
                                                 // (dimension nx12 where n is the number of auxiliary constraints)
-        unsigned int nbAuxConstraints;          // Number of auxiliary constraints associated with this constraint
+        uint nbAuxConstraints;                  // Number of auxiliary constraints associated with this constraint
         double lowerBound;                      // Lower bound of the constraint
         double upperBound;                      // Upper bound of the constraint
         Vector auxLowerBounds;                  // Vector that contains all the lower bounds of the auxiliary constraints
@@ -60,7 +60,7 @@ class Constraint {
         Vector auxErrorValues;                  // Error values for the auxiliary constraints
         
     public :
-        Constraint(Body* const body1, Body* const body2, unsigned int nbAuxConstraints, bool active);       // Constructor                                                                                                   // Constructor
+        Constraint(Body* const body1, Body* const body2, uint nbAuxConstraints, bool active);               // Constructor                                                                                                   // Constructor
         virtual ~Constraint();                                                                              // Destructor
         Body* const getBody1() const;                                                                       // Return the reference to the body 1
         Body* const getBody2() const;                                                                       // Return the reference to the body 2
@@ -104,13 +104,13 @@ inline const Matrix& Constraint::getBody2Jacobian() const {
 }
 
 // Return the number auxiliary constraints
-inline unsigned int Constraint::getNbAuxConstraints() const {
+inline uint Constraint::getNbAuxConstraints() const {
     return nbAuxConstraints;
 }
 
 // Return the auxiliary jacobian matrix
 inline const Matrix& Constraint::getAuxJacobian() const {
-    auxJacobian = this->auxJacobian;
+    return auxJacobian;
 }
 
 // Return the lower bound value of the constraint
@@ -125,12 +125,12 @@ inline double Constraint::getUpperBound() const {
 
 // Return the vector of lower bounds values
 inline const Vector& Constraint::getAuxLowerBounds() const {
-    auxLowerBounds = this->auxLowerBounds;
+    return auxLowerBounds;
 }
 
 // Return the vector of the upper bounds values
 inline const Vector& Constraint::getAuxUpperBounds() const {
-    auxUpperBounds = this->auxUpperBounds;
+    return auxUpperBounds;
 }
 
 // Return the error value (bias) of the constraint

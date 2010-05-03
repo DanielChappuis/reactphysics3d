@@ -21,6 +21,7 @@
 #define CONTACT_H
 
 // Libraries
+#include "../typeDefinitions.h"
 #include "Constraint.h"
 #include "../mathematics/mathematics.h"
 
@@ -59,7 +60,7 @@ class Contact : public Constraint {
         Vector3D getNormal() const;                         // Return the normal vector of the contact
         Vector3D getPoint() const;                          // Return the contact point
         virtual void evaluate();                            // Evaluate the constraint
-        unsigned int getNbAuxConstraints() const;           // Return the number of auxiliary constraints
+        uint getNbAuxConstraints() const;                   // Return the number of auxiliary constraints
 
         void draw() const;                                  // TODO : Delete this (Used to debug collision detection)
 };
