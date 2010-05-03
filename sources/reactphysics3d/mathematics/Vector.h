@@ -21,6 +21,8 @@
 #define VECTOR_H
 
 // Libraries
+#include "../typeDefinitions.h"
+#include "mathematics_functions.h"
 #include "exceptions.h"
 #include <cmath>
 #include <cassert>
@@ -38,22 +40,23 @@ namespace reactphysics3d {
 class Vector {
     private :
         double* tab;                    // Array of the vector's components
-        unsigned int nbComponent;       // number of components in the vector
+        uint nbComponent;               // number of components in the vector
 
     public :
-        Vector();                                                                       // Constructor without argument
-        Vector(int n) throw(std::invalid_argument);                                     // Constructor of the class Vector
-        Vector(const Vector& vector);                                                   // Copy-constructor of the class Vector
-        virtual ~Vector();                                                              // Destructor of the class Vector
-        double getValue(int n) const throw(std::invalid_argument);                      // Get a component of the vector
-        void setValue(int n, double value) throw(std::invalid_argument);                // Set the value of a component of the vector
-        int getNbComponent() const;                                                     // Get the number of components in the vector
-        double length() const;                                                          // Get the length of the vector
-        Vector getUnit() const throw(MathematicsException);                             // Return the corresponding unit vector
-        double scalarProduct(const Vector& vector) const throw(MathematicsException);   // Scalar product of two vectors
-        Vector crossProduct(const Vector& vector) const throw(MathematicsException);    // Cross product of two vectors (in 3D only)
-        void fillInSubVector(unsigned int index, const Vector& subVector);              // Replace a part of the current vector with another sub-vector
-        bool isUnit() const;                                                            // Return true if the vector is unit and false otherwise
+        Vector();                                                                                   // Constructor without argument
+        Vector(int n) throw(std::invalid_argument);                                                 // Constructor of the class Vector
+        Vector(const Vector& vector);                                                               // Copy-constructor of the class Vector
+        virtual ~Vector();                                                                          // Destructor of the class Vector
+        double getValue(int n) const throw(std::invalid_argument);                                  // Get a component of the vector
+        void setValue(int n, double value) throw(std::invalid_argument);                            // Set the value of a component of the vector
+        int getNbComponent() const;                                                                 // Get the number of components in the vector
+        double length() const;                                                                      // Get the length of the vector
+        Vector getUnit() const throw(MathematicsException);                                         // Return the corresponding unit vector
+        double scalarProduct(const Vector& vector) const throw(MathematicsException);               // Scalar product of two vectors
+        Vector crossProduct(const Vector& vector) const throw(MathematicsException);                // Cross product of two vectors (in 3D only)
+        void fillInSubVector(uint index, const Vector& subVector);                                  // Replace a part of the current vector with another sub-vector
+        Vector getSubVector(uint index, uint nbElements) const throw(std::invalid_argument);        // Return a sub-vector of the current vector
+        bool isUnit() const;                                                                        // Return true if the vector is unit and false otherwise
 
         // --- Overloaded operators --- //
         Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
@@ -112,18 +115,35 @@ inline double Vector::length() const {
 
 // Replace a part of the current vector with another sub-vector.
 // The argument "rowIndex" is the row index where the subVector starts.
-inline void Vector::fillInSubVector(unsigned int rowIndex, const Vector& subVector) {
+inline void Vector::fillInSubVector(uint rowIndex, const Vector& subVector) {
     assert(nbComponent-rowIndex >= subVector.nbComponent);
 
     // For each value of the sub-vector
-    for (unsigned int i=0; i<subVector.nbComponent; ++i) {
+    for (uint i=0; i<subVector.nbComponent; ++i) {
         tab[rowIndex + i] = subVector.getValue(i);
     }
 }
 
+// Return a sub-vector of the current vector
+inline Vector Vector::getSubVector(uint index, uint nbElements) const throw(std::invalid_argument) {
+    // Check if the arguments are valid
+    if (index < 0 || index+nbElements >= nbComponent) {
+        throw std::invalid_argument("Error : arguments are out of bounds");
+    }
+
+    // Compute the sub-vector
+    Vector subVector(nbElements);
+    for (uint i=0, j=index; i<nbElements; i++, j++) {
+        subVector.tab[i] = tab[j];
+    }
+
+    // Return the sub-vector
+    return subVector;
+}
+
 // Return true if the vector is unit and false otherwise
 inline bool Vector::isUnit() const {
-    return (1.0 - EPSILON <= this->length() && this->length() <= 1.0 + EPSILON );
+    return approxEqual(1.0, length());
 }
 
 // Overloaded operator for multiplication between a number and a Vector (inline)

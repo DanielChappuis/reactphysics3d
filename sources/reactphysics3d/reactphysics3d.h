@@ -30,4 +30,6 @@
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
 
+// TODO : Replace in all files of the project "unsigned int" by "uint" (see typeDefinitions.h"
+
 #endif
