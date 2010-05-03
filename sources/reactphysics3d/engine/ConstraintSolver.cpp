@@ -36,10 +36,10 @@ ConstraintSolver::~ConstraintSolver() {
 
 // Allocate all the matrices needed to solve the LCP problem
 void ConstraintSolver::allocate() {
-    unsigned int nbConstraints = 0;
+    uint nbConstraints = 0;
 
     // For each constraint
-    for (unsigned int c=0; c<physicsWorld.getConstraints().size(); c++) {
+    for (uint c=0; c<physicsWorld.getConstraints().size(); c++) {
         Constraint* constraint = physicsWorld.getConstraints().at(c);
 
         // Evaluate the constraint
@@ -66,7 +66,7 @@ void ConstraintSolver::allocate() {
     nbBodies = bodyNumberMapping.size();
 
     bodyMapping = new Body**[nbConstraints];
-    for (unsigned int i=0; i<nbConstraints; i++) {
+    for (uint i=0; i<nbConstraints; i++) {
         bodyMapping[i] = new Body*[2];
     }
 
@@ -88,7 +88,7 @@ void ConstraintSolver::allocate() {
 void ConstraintSolver::fillInMatrices() {
 
     // For each active constraint
-    for (unsigned int c=0; c<activeConstraints.size(); c++) {
+    for (uint c=0; c<activeConstraints.size(); c++) {
         Constraint* constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
@@ -106,7 +106,7 @@ void ConstraintSolver::fillInMatrices() {
         // Fill in the error vector
         errorValues.fillInSubVector(c, constraint->getErrorValue());
 
-        unsigned int nbAuxConstraints = constraint->getNbAuxConstraints();
+        uint nbAuxConstraints = constraint->getNbAuxConstraints();
 
         // If the current constraint has auxiliary constraints
         if (nbAuxConstraints > 0) {
@@ -114,7 +114,7 @@ void ConstraintSolver::fillInMatrices() {
             J_sp.fillInSubMatrix(c+1, 0, constraint->getAuxJacobian());
 
             // For each auxiliary constraints
-            for (unsigned int i=1; i<nbAuxConstraints; i++) {
+            for (uint i=1; i<nbAuxConstraints; i++) {
                 // Fill in the body mapping matrix
                 bodyMapping[c+i][0] = constraint->getBody1();
                 bodyMapping[c+i][1] = constraint->getBody2();
@@ -127,9 +127,9 @@ void ConstraintSolver::fillInMatrices() {
     }
 
     // For each current body that is implied in some constraint
-    for (unsigned int b=0; b<nbBodies; b++) {
+    for (uint b=0; b<nbBodies; b++) {
         Body* body = constraintBodies.at(b);
-        unsigned int bodyNumber = bodyNumberMapping.at(body);
+        uint bodyNumber = bodyNumberMapping.at(body);
         
         // TODO : Use polymorphism and remove this casting
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
@@ -156,30 +156,43 @@ void ConstraintSolver::freeMemory() {
     bodyNumberMapping.clear();
 
     // Free the bodyMaping array
-    for (unsigned int i=0; i<nbBodies; i++) {
+    for (uint i=0; i<nbBodies; i++) {
         delete[] bodyMapping[i];
     }
     delete[] bodyMapping;
 }
 
 // Compute the vector b
-void ConstraintSolver::computeVectorB() {
+void ConstraintSolver::computeVectorB(double dt) {
+    uint indexBody1, indexBody2;
+    double oneOverDT = 1.0/dt;
     
+    b = errorValues * oneOverDT;
+
+    // Substract 1.0/dt*J*V to the vector b
+    for (uint c = 0; c<activeConstraints.size(); c++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
+        b -= oneOverDT * (J_sp(c, 0) * V.getSubVector(indexBody1, 6));
+        b -= oneOverDT * (J_sp(c, 1) * V.getSubVector(indexBody2, 6));
+    }
+
+    // TODO : Continue to implement this method ... compute and remove J*Minv*Fext from b
 }
 
 // Compute the matrix B_sp
 void ConstraintSolver::computeMatrixB_sp() {
-    unsigned int indexBody1;
-    unsigned int indexBody2;
+    uint indexBody1;
+    uint indexBody2;
 
     // For each constraint
-    for (unsigned int j = 0; j<activeConstraints.size(); j++) {
-        indexBody1 = bodyNumberMapping[bodyMapping[j][0]];
-        indexBody2 = bodyNumberMapping[bodyMapping[j][1]];
-        Matrix b1 = Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6) * J_sp.getSubMatrix(j, 0, 1, 6).getTranspose();
-        Matrix b2 = Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6) * J_sp.getSubMatrix(j, 6, 1, 6).getTranspose();
-        B_sp.fillInSubMatrix(0, j, b1);
-        B_sp.fillInSubMatrix(6, j, b2);
+    for (uint c = 0; c<activeConstraints.size(); c++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
+        Matrix b1 = Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6) * J_sp.getSubMatrix(c, 0, 1, 6).getTranspose();
+        Matrix b2 = Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6) * J_sp.getSubMatrix(c, 6, 1, 6).getTranspose();
+        B_sp.fillInSubMatrix(0, c, b1);
+        B_sp.fillInSubMatrix(6, c, b2);
     }
 }
 
@@ -192,7 +205,7 @@ void ConstraintSolver::solve(double dt) {
     fillInMatrices();
 
     // Compute the vector b
-    computeVectorB();
+    computeVectorB(double dt);
 
     // Compute the matrix B
     computeMatrixB_sp();

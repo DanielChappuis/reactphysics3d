@@ -21,6 +21,7 @@
 #define CONSTRAINTSOLVER_H
 
 // Libraries
+#include "../typeDefinitions.h"
 #include "../constraint/Constraint.h"
 #include "PhysicsWorld.h"
 #include <map>
@@ -29,7 +30,7 @@
 namespace reactphysics3d {
 
 // Constants
-const unsigned int MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
+const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
 
  /*  -------------------------------------------------------------------
     Class ConstrainSolver :
@@ -43,11 +44,11 @@ class ConstraintSolver {
         PhysicsWorld& physicsWorld;                                         // Reference to the physics world
         std::vector<Constraint*> activeConstraints;                         // Current active constraints in the physics world
         std::vector<Body*> constraintBodies;                                // Bodies that are implied in some constraint
-        unsigned int nbBodies;                                              // Current number of bodies in the physics world
-        std::map<Body*, unsigned int> bodyNumberMapping;                    // Map a body pointer with its index number
+        uint nbBodies;                                              // Current number of bodies in the physics world
+        std::map<Body*, uint> bodyNumberMapping;                            // Map a body pointer with its index number
         Body*** bodyMapping;                                                // 2-dimensional array that contains the mapping of body reference
                                                                             // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
-                                                                            // the integer index of the body that correspond to the 1x6 J_ij matrix in the
+                                                                            // the pointer to the body that correspond to the 1x6 J_ij matrix in the
                                                                             // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector
         Matrix J_sp;                                                        // Sparse representation of the jacobian matrix of all constraints
         Matrix B_sp;                                                        // Useful matrix in sparse representation
@@ -63,7 +64,7 @@ class ConstraintSolver {
         void allocate();                                                    // Allocate all the matrices needed to solve the LCP problem
         void fillInMatrices();                                              // Fill in all the matrices needed to solve the LCP problem
         void freeMemory();                                                  // Free the memory that was allocated in the allocate() method
-        void computeVectorB();                                              // Compute the vector b
+        void computeVectorB(double dt);                                     // Compute the vector b
         void computeMatrixB_sp();                                           // Compute the matrix B_sp
 
     public:
