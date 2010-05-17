@@ -101,6 +101,19 @@ Matrix::Matrix(const Matrix3x3& matrix)
     }
 }
 
+
+// Conversion from Vector to Matrix
+Matrix::Matrix(const Vector& vector) {
+        // Create the two dimensional dynamic array
+        array = new double*[vector.getNbComponent()];
+        assert(array != 0);
+
+        for(int i=0; i<nbRow; ++i) {
+            array[i] = new double[1];
+            array[i][0] = vector.getValue(i);
+        }
+}
+
 // Destructor of the class Matrix
 Matrix::~Matrix() {
     // Destruction of the dynamic array

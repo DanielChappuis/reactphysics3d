@@ -45,7 +45,7 @@ class Vector {
     public :
         Vector();                                                                                   // Constructor without argument
         Vector(int n) throw(std::invalid_argument);                                                 // Constructor of the class Vector
-        Vector(const Vector& vector);                                                               // Copy-constructor of the class Vector
+        Vector(const Vector& vector);                                                               // Copy-constructor of the class Vector 
         virtual ~Vector();                                                                          // Destructor of the class Vector
         double getValue(int n) const throw(std::invalid_argument);                                  // Get a component of the vector
         void setValue(int n, double value) throw(std::invalid_argument);                            // Set the value of a component of the vector
