@@ -60,6 +60,16 @@ Vector::Vector(const Vector& vector) {
     }
 }
 
+// Conversion from Vector3D to Vector
+Vector::Vector(const Vector3D& vector3d) {
+    nbComponent = 3;
+    tab = new double[3];
+
+    tab[0] = vector3d.getX();
+    tab[1] = vector3d.getY();
+    tab[2] = vector3d.getZ();
+}
+
 // Destructor of the class Vector
 Vector::~Vector() {
     // Erase the array with the values of the vector
