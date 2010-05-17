@@ -61,8 +61,8 @@ class PhysicsWorld {
         void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
         std::vector<Constraint*>::const_iterator getConstraintListStartIterator() const;    // Return a start iterator on the constraint list
         std::vector<Constraint*>::const_iterator getConstraintListEndIterator() const;      // Return a end iterator on the constraint list
-        std::vector<Body*>& getBodies() const;                                              // Return a reference to the bodies of the physics world
-        std::vector<Constraint*>& getConstraints() const;                                   // Return a reference to the constraints of the physics world
+        std::vector<Body*>& getBodies();                                                    // Return a reference to the bodies of the physics world
+        std::vector<Constraint*>& getConstraints();                                         // Return a reference to the constraints of the physics world
 };
 
 // --- Inline functions --- //
@@ -105,12 +105,12 @@ inline std::vector<Constraint*>::const_iterator PhysicsWorld::getConstraintListE
 }
 
 // Return a reference to the bodies of the physics world
-std::vector<Body*>& PhysicsWorld::getBodies() const {
+std::vector<Body*>& PhysicsWorld::getBodies() {
     return bodies;
 }
 
 // Return a reference to the constraints of the physics world
-std::vector<Constraint*>& PhysicsWorld::getConstraints() const {
+std::vector<Constraint*>& PhysicsWorld::getConstraints() {
     return constraints;
 }
 

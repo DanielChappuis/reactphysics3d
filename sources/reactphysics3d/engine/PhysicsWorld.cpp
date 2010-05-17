@@ -39,7 +39,7 @@ void PhysicsWorld::addBody(Body* body) throw(std::invalid_argument) {
     // Check if the body pointer is not null
     if (body != 0) {
         // Check if the body pointer isn't already in the bodyList
-        for(std::vector<Body*>::iterator it = bodyList.begin(); it != bodyList.end(); ++it) {
+        for(std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
             if (*it == body) {
                 // The body is already in the bodyList, therefore we throw an exception
                 throw std::invalid_argument("Exception in PhysicsWorld::addBody() : The argument body is already in the PhysicsWorld");
@@ -47,7 +47,7 @@ void PhysicsWorld::addBody(Body* body) throw(std::invalid_argument) {
         }
 
         // The body isn't already in the bodyList, therefore we add it to the list
-        bodyList.push_back(body);
+        bodies.push_back(body);
     }
     else {
         // Throw an exception
@@ -60,8 +60,8 @@ void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argumen
     // Check if the body pointer is not null
     if (body != 0) {
         // Look for the body to remove in the bodyList
-        std::vector<Body*>::iterator it = bodyList.begin();
-        while(it != bodyList.end() && *it != body) {
+        std::vector<Body*>::iterator it = bodies.begin();
+        while(it != bodies.end() && *it != body) {
             // Increment the iterator
             ++it;
         }
@@ -69,7 +69,7 @@ void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argumen
         // If we have found the body to remove in the bodyList
         if (*it == body) {
             // Remove the body
-            bodyList.erase(it);
+            bodies.erase(it);
         } else {
             // The body is not in the bodyList, therfore we throw an exception
             throw std::invalid_argument("Exception in PhysicsWorld::removeBody() : The argument body to remove is not in the PhysicsWorld");
@@ -84,7 +84,7 @@ void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argumen
 // Add a constraint into the physics world
 void PhysicsWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
     assert(constraint != 0);
-    constraintList.push_back(constraint);
+    constraints.push_back(constraint);
 }
 
 // Remove a constraint
@@ -95,7 +95,7 @@ void PhysicsWorld::removeConstraint(Constraint* constraint) throw(std::invalid_a
 // Remove all collision contacts constraints
 void PhysicsWorld::removeAllContactConstraints() {
     // For all constraints
-    for (std::vector<Constraint*>::iterator it = constraintList.begin(); it != constraintList.end(); ) {
+    for (std::vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
 
         // Try a downcasting
         Contact* contact = dynamic_cast<Contact*>(*it);
@@ -104,7 +104,7 @@ void PhysicsWorld::removeAllContactConstraints() {
         if (contact != 0) {
             // Delete the  contact
             delete (*it);
-            it = constraintList.erase(it);
+            it = constraints.erase(it);
         }
         else {
             ++it;
