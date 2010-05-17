@@ -21,6 +21,8 @@
 #define LCPSOLVER_H
 
 // Libraries
+#include <vector>
+#include <map>
 #include "../Vector.h"
 #include "../Matrix.h"
 #include "../../body/Body.h"
