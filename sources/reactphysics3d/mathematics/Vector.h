@@ -52,6 +52,7 @@ class Vector {
         double getValue(int n) const throw(std::invalid_argument);                                  // Get a component of the vector
         void setValue(int n, double value) throw(std::invalid_argument);                            // Set the value of a component of the vector
         int getNbComponent() const;                                                                 // Get the number of components in the vector
+        void initWithValue(double value);                                                           // Init all the elements with a given value
         double length() const;                                                                      // Get the length of the vector
         Vector getUnit() const throw(MathematicsException);                                         // Return the corresponding unit vector
         double scalarProduct(const Vector& vector) const throw(MathematicsException);               // Scalar product of two vectors
@@ -113,6 +114,13 @@ inline double Vector::length() const {
 
     // Return the length of the vector
     return sqrt(sum);
+}
+
+// Init all the elements with a given value
+inline void Vector::initWithValue(double value) {
+    for (uint i=0; i<nbComponent; i++) {
+        tab[i] = value;
+    }
 }
 
 // Replace a part of the current vector with another sub-vector.

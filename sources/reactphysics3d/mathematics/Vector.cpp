@@ -37,7 +37,7 @@ Vector::Vector(int n) throw(std::invalid_argument) {
          nbComponent = n;
          tab = new double[nbComponent];
 
-
+         // TODO : Remove this initialization
         // Fill the array with zero's value
         for(int i=0; i<nbComponent; ++i) {
             tab[i] = 0.0;
