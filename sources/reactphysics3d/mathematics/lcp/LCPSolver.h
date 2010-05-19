@@ -58,13 +58,13 @@ class LCPSolver {
         Vector lambdaInit;              // Initial value for lambda at the beginning of the algorithm
 
     public:
-        LCPSolver(uint maxIterations);                                                                          // Constructor
-        virtual ~LCPSolver();                                                                                   // Destructor
-        virtual void solve(const Matrix& J_sp, const Matrix& B_sp, Body*** bodyMapping,
-                           std::map<Body*, uint> bodyNumberMapping const Vector& b, const Vector& lowLimits,
-                           const Vector& highLimits, Vector& lambda) const=0;                                   // Solve a LCP problem
-        void setLambdaInit(const Vector& lambdaInit);                                                           // Set the initial lambda vector
-        void setMaxIterations(uint maxIterations);                                                              // Set the maximum number of iterations
+        LCPSolver(uint maxIterations);                                                                              // Constructor
+        virtual ~LCPSolver();                                                                                       // Destructor
+        virtual void solve(const Matrix** const J_sp, const Matrix** const B_sp, const Body*** const bodyMapping,
+                           std::map<Body*, uint> bodyNumberMapping, const Vector& b, const Vector& lowLimits,
+                           const Vector& highLimits, Vector& lambda) const=0;                                       // Solve a LCP problem
+        void setLambdaInit(const Vector& lambdaInit);                                                               // Set the initial lambda vector
+        void setMaxIterations(uint maxIterations);                                                                  // Set the maximum number of iterations
 };
 
 // Set the initial lambda vector

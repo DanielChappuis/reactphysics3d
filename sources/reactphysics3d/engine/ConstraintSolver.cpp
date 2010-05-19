@@ -25,8 +25,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(PhysicsWorld& physicsWorld)
-                 :physicsWorld(physicsWorld), bodyMapping(0) , lcpSolver(LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+ConstraintSolver::ConstraintSolver(PhysicsWorld& world)
+                 :physicsWorld(world), bodyMapping(0) , lcpSolver(LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
 
 }
 
@@ -67,21 +67,22 @@ void ConstraintSolver::allocate() {
     nbBodies = bodyNumberMapping.size();
 
     bodyMapping = new Body**[nbConstraints];
+    J_sp = new Matrix*[nbConstraints];
+    B_sp = new Matrix*[2];
     for (uint i=0; i<nbConstraints; i++) {
         bodyMapping[i] = new Body*[2];
+        J_sp[i] = new Matrix[2];
+        B_sp[i] = new Matrix[nbConstraints];
     }
 
-    J_sp = Matrix(nbConstraints, 12);
     errorValues = Vector(nbConstraints);
-    B_sp = Matrix(12, nbConstraints);
     b = Vector(nbConstraints);
     lambda = Vector(nbConstraints);
     lowerBounds = Vector(nbConstraints);
     upperBounds = Vector(nbConstraints);
-    Minv_sp = Matrix(6*nbBodies, 6);
-    Minv_sp.initWithValue(0.0);
-    V = Vector(6*nbBodies);
-    Fext = Vector(6*nbBodies);
+    Minv_sp = new Matrix[nbBodies];
+    V = new Vector[nbBodies];
+    Fext = new Vector[nbBodies];
 }
 
 // Fill in all the matrices needed to solve the LCP problem
@@ -93,9 +94,10 @@ void ConstraintSolver::fillInMatrices() {
         Constraint* constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
-        J_sp.fillInSubMatrix(c, 0, constraint->getBody1Jacobian());
-        J_sp.fillInSubMatrix(c, 6, constraint->getBody2Jacobian());
-        
+        J_sp[c][0] = constraint->getBody1Jacobian();
+        J_sp[c][1] = constraint->getBody2Jacobian();
+
+
         // Fill in the body mapping matrix
         bodyMapping[c][0] = constraint->getBody1();
         bodyMapping[c][1] = constraint->getBody2();
@@ -111,11 +113,13 @@ void ConstraintSolver::fillInMatrices() {
 
         // If the current constraint has auxiliary constraints
         if (nbAuxConstraints > 0) {
-            // Fill in the J_sp matrix
-            J_sp.fillInSubMatrix(c+1, 0, constraint->getAuxJacobian());
-
+            
             // For each auxiliary constraints
-            for (uint i=1; i<nbAuxConstraints; i++) {
+            for (uint i=1; i<=nbAuxConstraints; i++) {
+                // Fill in the J_sp matrix
+                J_sp[c+i][0] = constraint->getAuxJacobian().getSubMatrix(i-1, 0, 1, 6);
+                J_sp[c+i][1] = constraint->getAuxJacobian().getSubMatrix(i-1, 6, 1, 6);
+
                 // Fill in the body mapping matrix
                 bodyMapping[c+i][0] = constraint->getBody1();
                 bodyMapping[c+i][1] = constraint->getBody2();
@@ -128,25 +132,34 @@ void ConstraintSolver::fillInMatrices() {
     }
 
     // For each current body that is implied in some constraint
+    RigidBody* rigidBody;
+    Body* body;
+    Vector v(6);
+    Vector f(6);
     for (uint b=0; b<nbBodies; b++) {
-        Body* body = constraintBodies.at(b);
+        body = constraintBodies.at(b);
         uint bodyNumber = bodyNumberMapping.at(body);
         
-        // TODO : Use polymorphism and remove this casting
-        RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
+        // TODO : Use polymorphism and remove this downcasting
+        rigidBody = dynamic_cast<RigidBody*>(body);
         assert(rigidBody != 0);
         
         // Compute the vector with velocities values
-        V.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState().getLinearVelocity());
-        V.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState().getAngularVelocity());
-
+        v.fillInSubVector(0, rigidBody->getCurrentBodyState().getLinearVelocity());
+        v.fillInSubVector(3, rigidBody->getCurrentBodyState().getAngularVelocity());
+        V[bodyNumber] = v;
+        
         // Compute the vector with forces and torques values
-        Fext.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState().getExternalForce());
-        Fext.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState().getExternalTorque());
+        f.fillInSubVector(0, rigidBody->getCurrentBodyState().getExternalForce());
+        f.fillInSubVector(3, rigidBody->getCurrentBodyState().getExternalTorque());
+        Fext[bodyNumber] = f;
 
         // Compute the inverse sparse mass matrix
-        Minv_sp.fillInSubMatrix(b*6, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
-        Minv_sp.fillInSubMatrix(b*6+3, 3, rigidBody->getCurrentBodyState().getInertiaTensorInverse());
+        Matrix mInv(6,6);
+        mInv.initWithValue(0.0);
+        mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
+        mInv.fillInSubMatrix(3, 3, rigidBody->getCurrentBodyState().getInertiaTensorInverse());
+        Minv_sp[bodyNumber] = mInv;
     }
 }
 
@@ -161,6 +174,11 @@ void ConstraintSolver::freeMemory() {
         delete[] bodyMapping[i];
     }
     delete[] bodyMapping;
+    delete[] J_sp;
+    delete[] B_sp;
+    delete[] Minv_sp;
+    delete[] V;
+    delete[] Fext;
 }
 
 // Compute the vector b
@@ -174,12 +192,12 @@ void ConstraintSolver::computeVectorB(double dt) {
         // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp.getSubMatrix(c, 0, 1, 6) * V.getSubVector(indexBody1*6, 6)).getValue(0,0));
-        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp.getSubMatrix(c, 6, 1, 6) * V.getSubVector(indexBody2*6, 6)).getValue(0,0));
+        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp[c][0] * V[indexBody1]).getValue(0,0));
+        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp[c][1] * V[indexBody2]).getValue(0,0));
 
         // Substract J*M^-1*F_ext to the vector b
-        b.setValue(c, b.getValue(c) - ((J_sp.getSubMatrix(c, 0, 1, 6) * Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6))*Fext.getSubVector(indexBody1*6, 6)
-                 + (J_sp.getSubMatrix(c, 6, 1, 6) * Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6))*Fext.getSubVector(indexBody2*6, 6))).getValue(0,0);
+        b.setValue(c, b.getValue(c) - ((J_sp[c][0] * Minv_sp[indexBody1]) * Fext[indexBody1]
+                 + (J_sp[c][1] * Minv_sp[indexBody2])*Fext[indexBody2]).getValue(0,0));
     }
 }
 
@@ -192,10 +210,8 @@ void ConstraintSolver::computeMatrixB_sp() {
     for (uint c = 0; c<activeConstraints.size(); c++) {
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        Matrix b1 = Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6) * J_sp.getSubMatrix(c, 0, 1, 6).getTranspose();
-        Matrix b2 = Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6) * J_sp.getSubMatrix(c, 6, 1, 6).getTranspose();
-        B_sp.fillInSubMatrix(0, c, b1);
-        B_sp.fillInSubMatrix(6, c, b2);
+        B_sp[0][c] = Minv_sp[indexBody1] * J_sp[c][0].getTranspose();
+        B_sp[1][c] = Minv_sp[indexBody2] * J_sp[c][1].getTranspose();
     }
 }
 
@@ -208,13 +224,13 @@ void ConstraintSolver::solve(double dt) {
     fillInMatrices();
 
     // Compute the vector b
-    computeVectorB(double dt);
+    computeVectorB(dt);
 
     // Compute the matrix B
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    lcpSolver.solve(A, b, lowLimits, highLimits, lambda);
+    //lcpSolver.solve(A, b, lowLimits, highLimits, lambda);
 
     // TODO : Implement this method ...
 

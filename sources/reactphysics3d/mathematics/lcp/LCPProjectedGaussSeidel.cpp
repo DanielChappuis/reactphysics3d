@@ -23,8 +23,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-LCPProjectedGaussSeidel::LCPProjectedGaussSeidel(unsigned int maxIterations)
-                        :maxIterations(maxIterations) {
+LCPProjectedGaussSeidel::LCPProjectedGaussSeidel(uint maxIterations)
+                        :LCPSolver(maxIterations) {
 
 }
 
@@ -34,28 +34,50 @@ LCPProjectedGaussSeidel::~LCPProjectedGaussSeidel() {
 }
 
 // Solve a LCP problem using the Projected-Gauss-Seidel algorithm
-void LCPProjectedGaussSeidel::solve(const Matrix& A, const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& x) {
-    assert(A.getNbRow() == A.getNbColumn());
-    assert(b.getNbComponent() == A.getNbColumn());
-    assert(lowLimits.getNbComponent() == A.getNbColumn());
-    assert(highLimits.getNbComponent() == A.getNbColumn());
+// This method outputs the result in the lambda vector
+void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** const B_sp, uint nbConstraints,
+                                    uint nbBodies, const Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
+                                    const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const {
+    lambda = lambdaInit;
+    double d[] = new double[nbConstraints];
+    Body* indexBody1, indexBody2;
+    double deltaLambda;
+    uint i, iter;
+    Vector a(6*nbBodies);
 
-    double delta;
+    // For each constraint
+    for (i=0; i<nbConstraints; i++) {
+        d[i] = (J_sp[i][0] * B_sp[0][i] + J_sp[i][1] * B_sp[1][i]).getValue(0,0);
+    }
 
-    for (unsigned int k=1; k<=maxIterations; k++) {
-        for (unsigned int i=0; i<A.getNbRow(); i++) {
-            delta = 0.0;
-            for (unsigned int j=0; j<i; j++) {
-                delta += A.getValue(i,j) * x.getValue(j);
-            }
-            for (unsigned int j=i+1; j<A.getNbRow(); j++) {
-                delta += A.getValue(i,j)*x.getValue(j);
-            }
-            x.setValue(i, (b.getValue(i) - delta)/A.getValue(i,i));
-
-            // Clamping according to the limits
-            if (x.getValue(i) > highLimits.getValue(i))  x.setValue(i, highLimits.getValue(i));
-            if (x.getValue(i) < lowLimits.getValue(i))   x.setValue(i, lowLimits.getValue(i));
+    for(iter=0; iter<maxIterations; iter++) {
+        for (i=0; i<nbConstraints; i++) {
+            indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
+            indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
+            //deltaLambda = ...
         }
     }
+
+    // TODO : Implement this method ...
+
+    // Clean
+    delete[] d;
+}
+
+// Compute the vector a used in the solve() method
+// Note that a = B * lambda
+void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, const Body*** const bodyMapping,
+                                             const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMappingVector& a) {
+    uint i;
+    Body* indexBody1, indexBody2;
+    
+    // Init the vector a with zero values
+    a.initWithValue(0.0);
+
+    for(i=0; i<nbConstraints; i++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
+        // TODO : Implement this ...
+    }
+
 }

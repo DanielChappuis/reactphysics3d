@@ -33,14 +33,14 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class LCPProjectedGaussSeidel : public LCPSolver {
-    protected:
-        unsigned int maxIterations;        // Maximum number of iterations
+    protected: 
 
     public:
-        LCPProjectedGaussSeidel(unsigned int maxIterations);                                                                    // Constructor
-        virtual ~LCPProjectedGaussSeidel();                                                                                     // Destructor
-        virtual void solve(const Matrix& A, const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& x);     // Solve a LCP problem using Projected-Gauss-Seidel algorithm
-
+        LCPProjectedGaussSeidel(uint maxIterations);                                                                    // Constructor
+        virtual ~LCPProjectedGaussSeidel();                                                                             // Destructor
+        virtual void solve(const Matrix** const J_sp, const Matrix** const B_sp, const Body*** const bodyMapping,
+                           std::map<Body*, uint> bodyNumberMapping, const Vector& b, const Vector& lowLimits,
+                           const Vector& highLimits, Vector& lambda) const;                                             // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
 };
 
 } // End of the ReactPhysics3D namespace
