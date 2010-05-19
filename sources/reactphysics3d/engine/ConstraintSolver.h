@@ -23,6 +23,7 @@
 // Libraries
 #include "../typeDefinitions.h"
 #include "../constraint/Constraint.h"
+#include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
 #include "PhysicsWorld.h"
 #include <map>
 
@@ -40,37 +41,37 @@ const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when sol
 */
 class ConstraintSolver {
     protected:
-        LCPSolver& lcpSolver;                                               // LCP Solver
-        PhysicsWorld& physicsWorld;                                         // Reference to the physics world
-        std::vector<Constraint*> activeConstraints;                         // Current active constraints in the physics world
-        std::vector<Body*> constraintBodies;                                // Bodies that are implied in some constraint
-        uint nbBodies;                                              // Current number of bodies in the physics world
-        std::map<Body*, uint> bodyNumberMapping;                            // Map a body pointer with its index number
-        Body*** bodyMapping;                                                // 2-dimensional array that contains the mapping of body reference
-                                                                            // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
-                                                                            // the pointer to the body that correspond to the 1x6 J_ij matrix in the
-                                                                            // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector
-        Matrix J_sp;                                                        // Sparse representation of the jacobian matrix of all constraints
-        Matrix B_sp;                                                        // Useful matrix in sparse representation
-        Vector b;                                                           // Vector "b" of the LCP problem
-        Vector lambda;                                                      // Lambda vector of  the LCP problem
-        Vector errorValues;                                                 // Error vector of all constraints
-        Vector lowerBounds;                                                 // Vector that contains the low limits for the variables of the LCP problem
-        Vector upperBounds;                                                 // Vector that contains the high limits for the variables of the LCP problem
-        Matrix Minv_sp;                                                     // Sparse representation of the Matrix that contains information about mass and inertia of each body
-        Vector V;                                                           // Vector that contains linear and angular velocities of each body
-        Vector Fext;                                                        // Vector that contains external forces and torques of each body
+        LCPSolver& lcpSolver;                                   // LCP Solver
+        PhysicsWorld& physicsWorld;                             // Reference to the physics world
+        std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
+        std::vector<Body*> constraintBodies;                    // Bodies that are implied in some constraint
+        uint nbBodies;                                          // Current number of bodies in the physics world
+        std::map<Body*, uint> bodyNumberMapping;                // Map a body pointer with its index number
+        Body*** bodyMapping;                                    // 2-dimensional array that contains the mapping of body reference
+                                                                // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
+                                                                // the pointer to the body that correspond to the 1x6 J_ij matrix in the
+                                                                // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector
+        Matrix J_sp;                                            // Sparse representation of the jacobian matrix of all constraints
+        Matrix B_sp;                                            // Useful matrix in sparse representation
+        Vector b;                                               // Vector "b" of the LCP problem
+        Vector lambda;                                          // Lambda vector of  the LCP problem
+        Vector errorValues;                                     // Error vector of all constraints
+        Vector lowerBounds;                                     // Vector that contains the low limits for the variables of the LCP problem
+        Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
+        Matrix Minv_sp;                                         // Sparse representation of the Matrix that contains information about mass and inertia of each body
+        Vector V;                                               // Vector that contains linear and angular velocities of each body
+        Vector Fext;                                            // Vector that contains external forces and torques of each body
 
-        void allocate();                                                    // Allocate all the matrices needed to solve the LCP problem
-        void fillInMatrices();                                              // Fill in all the matrices needed to solve the LCP problem
-        void freeMemory();                                                  // Free the memory that was allocated in the allocate() method
-        void computeVectorB(double dt);                                     // Compute the vector b
-        void computeMatrixB_sp();                                           // Compute the matrix B_sp
+        void allocate();                                        // Allocate all the matrices needed to solve the LCP problem
+        void fillInMatrices();                                  // Fill in all the matrices needed to solve the LCP problem
+        void freeMemory();                                      // Free the memory that was allocated in the allocate() method
+        void computeVectorB(double dt);                         // Compute the vector b
+        void computeMatrixB_sp();                               // Compute the matrix B_sp
 
     public:
-        ConstraintSolver();                                                 // Constructor
-        virtual ~ConstraintSolver();                                        // Destructor
-        void solve(double dt);                                              // Solve the current LCP problem
+        ConstraintSolver();                                     // Constructor
+        virtual ~ConstraintSolver();                            // Destructor
+        void solve(double dt);                                  // Solve the current LCP problem
 };
 
 } // End of ReactPhysics3D namespace

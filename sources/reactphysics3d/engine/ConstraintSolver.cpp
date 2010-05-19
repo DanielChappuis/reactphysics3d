@@ -19,7 +19,8 @@
 
 // Libraries
 #include "ConstraintSolver.h"
-#include "LCPProjectedGaussSeidel.h"
+#include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
+#include "../body/RigidBody.h"
 
 using namespace reactphysics3d;
 
@@ -134,14 +135,14 @@ void ConstraintSolver::fillInMatrices() {
         // TODO : Use polymorphism and remove this casting
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
         assert(rigidBody != 0);
-
+        
         // Compute the vector with velocities values
-        V.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState()->getLinearVelocity());
-        V.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState()->getAngularVelocity());
+        V.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState().getLinearVelocity());
+        V.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState().getAngularVelocity());
 
         // Compute the vector with forces and torques values
-        Fext.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState()->getExternalForce());
-        Fext.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState()->getExternalTorque());
+        Fext.fillInSubVector(bodyNumber*6, rigidBody->getCurrentBodyState().getExternalForce());
+        Fext.fillInSubVector(bodyNumber*6+3, rigidBody->getCurrentBodyState().getExternalTorque());
 
         // Compute the inverse sparse mass matrix
         Minv_sp.fillInSubMatrix(b*6, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
@@ -169,15 +170,17 @@ void ConstraintSolver::computeVectorB(double dt) {
     
     b = errorValues * oneOverDT;
 
-    // Substract 1.0/dt*J*V to the vector b
     for (uint c = 0; c<activeConstraints.size(); c++) {
+        // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        b -= oneOverDT * (J_sp(c, 0) * V.getSubVector(indexBody1, 6));
-        b -= oneOverDT * (J_sp(c, 1) * V.getSubVector(indexBody2, 6));
-    }
+        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp.getSubMatrix(c, 0, 1, 6) * V.getSubVector(indexBody1*6, 6)).getValue(0,0));
+        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp.getSubMatrix(c, 6, 1, 6) * V.getSubVector(indexBody2*6, 6)).getValue(0,0));
 
-    // TODO : Continue to implement this method ... compute and remove J*Minv*Fext from b
+        // Substract J*M^-1*F_ext to the vector b
+        b.setValue(c, b.getValue(c) - ((J_sp.getSubMatrix(c, 0, 1, 6) * Minv_sp.getSubMatrix(indexBody1*6, 0, 6, 6))*Fext.getSubVector(indexBody1*6, 6)
+                 + (J_sp.getSubMatrix(c, 6, 1, 6) * Minv_sp.getSubMatrix(indexBody2*6, 0, 6, 6))*Fext.getSubVector(indexBody2*6, 6))).getValue(0,0);
+    }
 }
 
 // Compute the matrix B_sp
