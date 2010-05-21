@@ -43,7 +43,7 @@ void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** co
     Body* indexBody1, indexBody2;
     double deltaLambda;
     uint i, iter;
-    Vector a(6*nbBodies);
+    Vector* a = new Vector(6)[nbBodies];           // Array that contains nbBodies vector of dimension 6x1
 
     // For each constraint
     for (i=0; i<nbConstraints; i++) {
@@ -62,12 +62,14 @@ void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** co
 
     // Clean
     delete[] d;
+    delete[] a;
 }
 
 // Compute the vector a used in the solve() method
 // Note that a = B * lambda
 void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, const Body*** const bodyMapping,
-                                             const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMappingVector& a) {
+                                             const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMapping,
+                                             Vector* const a) {
     uint i;
     Body* indexBody1, indexBody2;
     
@@ -77,7 +79,8 @@ void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstr
     for(i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-        // TODO : Implement this ...
+        a[indexBody1] = a[indexBody1] + B_sp[0][i] * lambda(i);
+        a[indexBody2] = a[indexBody2] + B_sp[1][i] * lambda(i);
     }
 
 }
