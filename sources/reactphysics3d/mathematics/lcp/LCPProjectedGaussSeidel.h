@@ -35,6 +35,10 @@ namespace reactphysics3d {
 class LCPProjectedGaussSeidel : public LCPSolver {
     protected: 
 
+        void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, const Body*** const bodyMapping,
+                                                     const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMapping,
+                                                     Vector* const a, uint nbBodies) const ;                                                       // Compute the vector a used in the solve() method
+
     public:
         LCPProjectedGaussSeidel(uint maxIterations);                                                                    // Constructor
         virtual ~LCPProjectedGaussSeidel();                                                                             // Destructor

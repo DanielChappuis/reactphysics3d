@@ -19,6 +19,7 @@
 
 // Libraries
 #include "LCPProjectedGaussSeidel.h"
+#include <cmath>
 
 using namespace reactphysics3d;
 
@@ -39,9 +40,10 @@ void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** co
                                     uint nbBodies, const Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
                                     const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const {
     lambda = lambdaInit;
-    double d[] = new double[nbConstraints];
+    double d[] = new double[nbConstraints];         // TODO : Avoid those kind of memory allocation here for optimization (allocate once in the object)
     Body* indexBody1, indexBody2;
     double deltaLambda;
+    double lambdaTemp;
     uint i, iter;
     Vector* a = new Vector(6)[nbBodies];           // Array that contains nbBodies vector of dimension 6x1
 
@@ -54,11 +56,14 @@ void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** co
         for (i=0; i<nbConstraints; i++) {
             indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
             indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-            //deltaLambda = ...
+            deltaLambda = (b(i) - J_sp[i][0]*a[indexBody1] - J_sp[i][1]*a[indexBody2]) / d[i];
+            lambdaTemp = lambda.getValue(i);
+            lambda.setValue(i, std::max(lowLimits.getValue(i), std::min(lambda.getValue(i) + deltaLambda, highLimits.getValue(i))));
+            deltaLambda = lambda.getValue(i) - lambdaTemp;
+            a[indexBody1] = a[indexBody1] + deltaLambda * B_sp[0][i];
+            a[indexBody2] = a[indexBody2] + deltaLambda * B_sp[1][i];
         }
     }
-
-    // TODO : Implement this method ...
 
     // Clean
     delete[] d;
@@ -69,12 +74,14 @@ void LCPProjectedGaussSeidel::solve(const Matrix** const J_sp, const Matrix** co
 // Note that a = B * lambda
 void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, const Body*** const bodyMapping,
                                              const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMapping,
-                                             Vector* const a) {
+                                             Vector* const a, uint nbBodies) const {
     uint i;
     Body* indexBody1, indexBody2;
     
     // Init the vector a with zero values
-    a.initWithValue(0.0);
+    for (i=0; i<nbBodies; i++) {
+       a[i].initWithValue(0.0);
+    }
 
     for(i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
