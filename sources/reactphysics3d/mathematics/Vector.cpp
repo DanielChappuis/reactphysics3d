@@ -100,6 +100,14 @@ Vector Vector::getUnit() const throw(MathematicsException) {
     }
 }
 
+void Vector::setVector(const Vector& vector) {
+    assert(nbComponent == vector.nbComponent);
+
+    for (int i=0; i<nbComponent; i++) {
+        tab[i] = vector.tab[i];
+    }
+}
+
 // Method to compute the scalar product of two vectors
 double Vector::scalarProduct(const Vector& vector) const throw(MathematicsException) {
     // Check the sizes of the two vectors

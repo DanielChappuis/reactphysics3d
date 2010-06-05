@@ -26,7 +26,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld& world)
-                 :physicsWorld(world), bodyMapping(0) , lcpSolver(LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+                 :physicsWorld(world), bodyMapping(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
 
 }
 
@@ -38,10 +38,12 @@ ConstraintSolver::~ConstraintSolver() {
 // Allocate all the matrices needed to solve the LCP problem
 void ConstraintSolver::allocate() {
     uint nbConstraints = 0;
+    Constraint* constraint;
 
     // For each constraint
-    for (uint c=0; c<physicsWorld.getConstraints().size(); c++) {
-        Constraint* constraint = physicsWorld.getConstraints().at(c);
+    std::vector<Constraint*>::iterator it;
+    for (it = physicsWorld.getConstraintsBeginIterator(); it <physicsWorld.getConstraintsEndIterator(); it++) {
+        constraint = *it;
 
         // Evaluate the constraint
         constraint->evaluate();
@@ -230,7 +232,7 @@ void ConstraintSolver::solve(double dt) {
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    //lcpSolver.solve(A, b, lowLimits, highLimits, lambda);
+    lcpSolver->solve(J_sp, B_sp, activeConstraints.size(), nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
 
     // TODO : Implement this method ...
 

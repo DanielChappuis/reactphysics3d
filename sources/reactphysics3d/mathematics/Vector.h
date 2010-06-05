@@ -59,14 +59,16 @@ class Vector {
         Vector crossProduct(const Vector& vector) const throw(MathematicsException);                // Cross product of two vectors (in 3D only)
         void fillInSubVector(uint index, const Vector& subVector);                                  // Replace a part of the current vector with another sub-vector
         Vector getSubVector(uint index, uint nbElements) const throw(std::invalid_argument);        // Return a sub-vector of the current vector
+        void setVector(const Vector& vector);
         bool isUnit() const;                                                                        // Return true if the vector is unit and false otherwise
+        void changeSize(uint newSize);
 
         // --- Overloaded operators --- //
-        Vector operator+(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for addition
-        Vector operator-(const Vector& vector) const throw(MathematicsException);   // Overloaded operator for substraction
-        Vector operator*(double number) const;                                      // Overloaded operator for multiplication with a number
-        Vector& operator=(const Vector& vector) throw(MathematicsException);        // Overloaded operator for the assignement to a Vector
-        bool operator==(const Vector& vector) const throw(MathematicsException);    // Overloaded operator for the equality condition
+        Vector operator+(const Vector& vector) const throw(MathematicsException);           // Overloaded operator for addition
+        Vector operator-(const Vector& vector) const throw(MathematicsException);           // Overloaded operator for substraction
+        Vector operator*(double number) const;                                              // Overloaded operator for multiplication with a number
+        Vector& operator=(const Vector& vector) throw(MathematicsException);                // Overloaded operator for the assignement to a Vector
+        bool operator==(const Vector& vector) const throw(MathematicsException);            // Overloaded operator for the equality condition
 };
 
 
@@ -160,6 +162,17 @@ inline bool Vector::isUnit() const {
 inline Vector operator*(double number, const Vector& vector) {
     // Compute and return the result
     return vector * number;
+}
+
+void Vector::changeSize(uint newSize) {
+    delete[] tab;
+    nbComponent = newSize;
+    tab = new double[nbComponent];
+
+    // Fill the array with the value of the vector
+    for (int i=0; i<nbComponent; ++i) {
+        tab[i] = 0.0;
+    }
 }
 
 } // End of the ReactPhysics3D namespace

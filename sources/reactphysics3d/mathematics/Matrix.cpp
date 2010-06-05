@@ -276,7 +276,6 @@ double Matrix::getTrace() const throw(MathematicsException) {
         // We throw an exception because the matrix is non-square
         throw MathematicsException("MathematicsException : Impossible to compute the trace for a non-square matrix");
     }
-
 }
 
 // Return a sub matrix of size of the current matrix
@@ -352,6 +351,16 @@ void Matrix::initWithValue(double value) {
         }
     }
 }
+
+
+ Vector Matrix::getVector() const {
+     assert(nbColumn == 1);
+     Vector vec(nbRow);
+     for (int i=0; i<nbRow; i++) {
+         vec.setValue(i, array[i][0]);
+     }
+     return vec;
+ }
 
 // Definition of the operator + for the sum of two matrices with references
 Matrix Matrix::operator+(const Matrix& matrix2) const throw(MathematicsException) {
@@ -437,6 +446,27 @@ Matrix Matrix::operator*(const Matrix& matrix2) const throw(MathematicsException
     else {
         // Throw an exception because the multiplication is impossible
         throw MathematicsException("MathematicsException : The sizes of the matrices aren't compatible for the multiplication");
+    }
+}
+
+// Overloaded operator for multiplication with a vector
+Matrix Matrix::operator*(const Vector& vector) const throw(MathematicsException) {
+    // Check the sizes of the matrices
+    if (nbColumn == vector.getNbComponent()) {
+        Matrix result(nbColumn, 1);
+        for (int i=0; i<nbColumn; i++) {
+            double sum = 0.0;
+            for (int j=0; j<vector.getNbComponent(); j++) {
+                sum += array[i][j] * vector.getValue(j);
+            }
+            result.array[i][0] = sum;
+        }
+
+        return result;
+    }
+    else {
+        // Throw an exception because the multiplication is impossible
+        throw MathematicsException("MathematicsException : The sizes of the matrix and the vector aren't compatible for the multiplication");
     }
 }
 

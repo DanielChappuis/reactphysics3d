@@ -23,7 +23,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-LCPSolver::LCPSolver() {
+LCPSolver::LCPSolver(uint maxIterations)
+          : maxIterations(maxIterations) {
 
 }
 

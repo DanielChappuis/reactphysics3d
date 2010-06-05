@@ -60,9 +60,9 @@ class LCPSolver {
     public:
         LCPSolver(uint maxIterations);                                                                              // Constructor
         virtual ~LCPSolver();                                                                                       // Destructor
-        virtual void solve(const Matrix** const J_sp, const Matrix** const B_sp, const Body*** const bodyMapping,
-                           std::map<Body*, uint> bodyNumberMapping, const Vector& b, const Vector& lowLimits,
-                           const Vector& highLimits, Vector& lambda) const=0;                                       // Solve a LCP problem
+        virtual void solve(Matrix** J_sp, Matrix** B_sp, uint nbConstraints,
+                           uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
+                           const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const=0;                                       // Solve a LCP problem
         void setLambdaInit(const Vector& lambdaInit);                                                               // Set the initial lambda vector
         void setMaxIterations(uint maxIterations);                                                                  // Set the maximum number of iterations
 };

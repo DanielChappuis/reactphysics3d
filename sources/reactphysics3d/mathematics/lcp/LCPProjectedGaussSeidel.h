@@ -36,16 +36,16 @@ namespace reactphysics3d {
 class LCPProjectedGaussSeidel : public LCPSolver {
     protected: 
 
-        void computeVectorA(const Vector& lambda, uint nbConstraints, const Body*** const bodyMapping,
+        void computeVectorA(const Vector& lambda, uint nbConstraints, Body*** const bodyMapping,
                                                      const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMapping,
                                                      Vector* const a, uint nbBodies) const ;                                                       // Compute the vector a used in the solve() method
 
     public:
         LCPProjectedGaussSeidel(uint maxIterations);                                                                    // Constructor
         virtual ~LCPProjectedGaussSeidel();                                                                             // Destructor
-        virtual void solve(const Matrix** const J_sp, const Matrix** const B_sp, const Body*** const bodyMapping,
-                           std::map<Body*, uint> bodyNumberMapping, const Vector& b, const Vector& lowLimits,
-                           const Vector& highLimits, Vector& lambda) const;                                             // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
+        virtual void solve(Matrix** J_sp, Matrix** B_sp, uint nbConstraints,
+                           uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
+                           const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const;   // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
 };
 
 } // End of the ReactPhysics3D namespace

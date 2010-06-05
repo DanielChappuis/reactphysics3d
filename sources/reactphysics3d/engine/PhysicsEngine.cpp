@@ -91,7 +91,7 @@ void PhysicsEngine::updateCollision() {
         if (collisionDetection.computeCollisionDetection()) {
 
             // TODO : Delete this ----------------------------------------------------------
-            for (std::vector<Constraint*>::const_iterator it = world->getConstraintListStartIterator(); it != world->getConstraintListEndIterator(); ++it) {
+            for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
                 RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
                 RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
                 rigidBody1->setIsMotionEnabled(false);

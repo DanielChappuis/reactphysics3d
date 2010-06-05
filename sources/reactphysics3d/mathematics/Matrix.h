@@ -61,6 +61,7 @@ class Matrix {
         double getTrace() const throw(MathematicsException);                                                            // Return the trace of a square matrix
         Matrix getSubMatrix(unsigned int i, unsigned int j,
                             unsigned int nbRows, unsigned int nbColumns) const throw(std::invalid_argument);            // Return a sub matrix of size of the current matrix
+        Vector getVector() const;
         static Matrix identity(int dimension) throw(std::invalid_argument);                                             // Return the identity matrix I of the given dimension
         void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);                                  // Fill in a sub-matrix of the current matrix with another matrix
         void initWithValue(double value);                                                                               // Initialize all the matrix with the given value
@@ -71,6 +72,7 @@ class Matrix {
         Matrix operator-(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for substraction
         Matrix operator*(double nb) const;                                                                              // Overloaded operator for multiplication with a number
         Matrix operator*(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for multiplication with a matrix
+        Matrix operator*(const Vector& vector) const throw(MathematicsException);                                       // Overloaded operator for multiplication with a vector
         Matrix& operator=(const Matrix& matrix2) throw(MathematicsException);                                           // Overloaded operator for assignment
         bool operator==(const Matrix& matrix2) const throw(MathematicsException);                                       // Overloaded operator for equality condition
 };
