@@ -205,8 +205,7 @@ void ConstraintSolver::computeVectorB(double dt) {
 
 // Compute the matrix B_sp
 void ConstraintSolver::computeMatrixB_sp() {
-    uint indexBody1;
-    uint indexBody2;
+    uint indexBody1, indexBody2;
 
     // For each constraint
     for (uint c = 0; c<activeConstraints.size(); c++) {
@@ -214,6 +213,29 @@ void ConstraintSolver::computeMatrixB_sp() {
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
         B_sp[0][c] = Minv_sp[indexBody1] * J_sp[c][0].getTranspose();
         B_sp[1][c] = Minv_sp[indexBody2] * J_sp[c][1].getTranspose();
+    }
+}
+
+// Compute the vector V2 according to the formula
+// V2 = dt * (M^-1 * J^T * lambda + M^-1 * F_ext) + V1
+// Note that we use the vector V to store both V1 and V2 and that at the beginning
+// of this method, the vector V already contains the vector V1.
+// Note that M^-1 * J^T = B.
+// This method is called after that the LCP solver have computed lambda
+void ConstraintSolver::computeVectorV(double dt) {
+    uint indexBody1, indexBody2;
+
+    // Compute dt * (M^-1 * J^T * lambda
+    for (uint i=0; i<activeConstraints.size(); i++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
+        V[indexBody1] = V[indexBody1] + (B_sp[indexBody1][i] * lambda.getValue(i)).getVector() * dt;
+        V[indexBody2] = V[indexBody2] + (B_sp[indexBody2][i] * lambda.getValue(i)).getVector() * dt;
+    }
+
+    // Compute dt * (M^-1 * F_ext)
+    for (uint i=0; i<nbBodies; i++) {
+        V[i] = V[i] + (Minv_sp[i] * Fext[i]).getVector() * dt;
     }
 }
 
@@ -234,7 +256,14 @@ void ConstraintSolver::solve(double dt) {
     // Solve the LCP problem (computation of lambda)
     lcpSolver->solve(J_sp, B_sp, activeConstraints.size(), nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
 
-    // TODO : Implement this method ...
+    // Compute the vector V2
+    computeVectorV(dt);
+
+    // Update the velocity of each body
+    // TODO : Put this code somewhere else
+    for (int i=0; i<nbBodies; i++) {
+        constraintBodies.at(i);
+    }
 
     freeMemory();
 }

@@ -73,6 +73,7 @@ class ConstraintSolver {
         void freeMemory();                                      // Free the memory that was allocated in the allocate() method
         void computeVectorB(double dt);                         // Compute the vector b
         void computeMatrixB_sp();                               // Compute the matrix B_sp
+        void computeVectorV(double dt);                         // Compute the vector V2
 
     public:
         ConstraintSolver(PhysicsWorld& world);                  // Constructor

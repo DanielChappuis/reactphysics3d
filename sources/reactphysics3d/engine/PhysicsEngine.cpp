@@ -132,7 +132,7 @@ void PhysicsEngine::updateBodyState(RigidBody* const rigidBody, const Time& time
     // If the gravity force is on
     if(world->getIsGravityOn()) {
         // Apply the current gravity force to the body
-        rigidBody->getCurrentBodyState().setForce(world->getGravity());
+        rigidBody->getCurrentBodyState().setExternalForce(world->getGravity());
     }
 
     // The current body state of the body becomes the previous body state
