@@ -66,6 +66,7 @@ class Matrix {
         void fillInSubMatrix(unsigned int i, unsigned int j, const Matrix& subMatrix);                                  // Fill in a sub-matrix of the current matrix with another matrix
         void initWithValue(double value);                                                                               // Initialize all the matrix with the given value
         void display() const;                                                                                           // TO DELETE
+        void changeSize(uint nbRows, uint nbColumns);
 
         // --- Overloaded operators --- //
         Matrix operator+(const Matrix& matrix2) const throw(MathematicsException);                                      // Overloaded operator for addition

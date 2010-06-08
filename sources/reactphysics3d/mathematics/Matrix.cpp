@@ -27,7 +27,7 @@ using namespace reactphysics3d;
 // Constructor without argument
 Matrix::Matrix()
        :nbRow(0), nbColumn(0) {
-
+    array = 0;
 }
 
 // Constructor of the class Matrix
@@ -121,6 +121,28 @@ Matrix::~Matrix() {
         delete array[i];
     }
     delete this->array;
+}
+
+void Matrix::changeSize(uint newNbRows, uint newNbColumns) {
+    if (array) {
+        // Destruction of the dynamic array
+        for(int i=0; i<nbRow; ++i) {
+            delete array[i];
+        }
+        delete this->array;
+    }
+
+    // Create the two dimensional dynamic array
+    array = new double*[newNbRows];
+
+    assert(array != 0);     // Array pointer musn't be null
+
+    for(int i=0; i<newNbRows; ++i) {
+        array[i] = new double[newNbColumns];
+    }
+
+    nbColumn = newNbColumns;
+    nbRow = newNbRows;
 }
 
 

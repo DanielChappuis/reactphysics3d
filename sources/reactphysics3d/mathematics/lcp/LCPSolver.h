@@ -73,7 +73,7 @@ inline void LCPSolver::setLambdaInit(const Vector& lambdaInit) {
 }
 
 // Set the maximum number of iterations
-void LCPSolver::setMaxIterations(uint maxIterations) {
+inline void LCPSolver::setMaxIterations(uint maxIterations) {
     assert(maxIterations > 0);
     this->maxIterations = maxIterations;
 }

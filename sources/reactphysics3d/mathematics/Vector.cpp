@@ -26,7 +26,7 @@ using namespace reactphysics3d;
 // Constructor without argument
 Vector::Vector()
        :nbComponent(0) {
-
+    tab = 0;
 }
 
 // Constructor of the class Vector
@@ -145,6 +145,20 @@ Vector Vector::crossProduct(const Vector& vector) const throw(MathematicsExcepti
     else {
         // Throw an exception because the vectors haven't three components
         throw MathematicsException("MathematicsException : Impossible to compute the cross product because the vectors haven't 3 components");
+    }
+}
+
+void Vector::changeSize(uint newSize) {
+    if (tab) {
+         delete[] tab;
+    }
+
+    nbComponent = newSize;
+    tab = new double[nbComponent];
+
+    // Fill the array with the value of the vector
+    for (int i=0; i<nbComponent; ++i) {
+        tab[i] = 0.0;
     }
 }
 

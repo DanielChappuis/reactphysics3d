@@ -164,17 +164,6 @@ inline Vector operator*(double number, const Vector& vector) {
     return vector * number;
 }
 
-void Vector::changeSize(uint newSize) {
-    delete[] tab;
-    nbComponent = newSize;
-    tab = new double[nbComponent];
-
-    // Fill the array with the value of the vector
-    for (int i=0; i<nbComponent; ++i) {
-        tab[i] = 0.0;
-    }
-}
-
 } // End of the ReactPhysics3D namespace
 
 #endif

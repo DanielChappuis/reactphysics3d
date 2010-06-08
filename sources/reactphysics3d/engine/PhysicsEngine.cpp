@@ -86,10 +86,8 @@ void PhysicsEngine::updateCollision() {
 
     // While the time accumulator is not empty
     while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
-
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection()) {
-
             // TODO : Delete this ----------------------------------------------------------
             for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
                 RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());

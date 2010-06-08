@@ -29,6 +29,13 @@ using namespace reactphysics3d;
 // Constructor
 Contact::Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const Vector3D& point)
                  :Constraint(body1, body2, 2, true), normal(normal), penetrationDepth(penetrationDepth), point(point) {
+    body1Jacobian.changeSize(1,6);
+    body2Jacobian.changeSize(1,6);
+    auxJacobian.changeSize(nbAuxConstraints, 12);
+    auxLowerBounds.changeSize(nbAuxConstraints);
+    auxUpperBounds.changeSize(nbAuxConstraints);
+    auxErrorValues.changeSize(nbAuxConstraints);
+
     body1Jacobian = Matrix(1, 6);
     body2Jacobian = Matrix(1, 6);
     auxJacobian = Matrix(nbAuxConstraints, 12);
