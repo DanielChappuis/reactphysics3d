@@ -108,14 +108,14 @@ void Scene::display(const Context& context) const {
        glPushMatrix();
 
         // Draw the bounding volume
-        context.getObject(i).getRigidBody()->getOBB().draw();
+        context.getObject(i).getRigidBody()->getOBB()->draw();
 
        // Remove the matrix on the top of the matrix stack
        glPopMatrix();
     }
 
     // Draw all the contact points
-    for (std::vector<Constraint*>::const_iterator it = world->getConstraintListStartIterator(); it != world->getConstraintListEndIterator(); ++it) {
+    for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
         RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
         RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
         rigidBody1->setIsMotionEnabled(false);
@@ -125,12 +125,10 @@ void Scene::display(const Context& context) const {
         assert(contact != 0);
 
         // Draw the contact points
-        for (unsigned int i=0; i<contact->getPoints().size(); ++i) {
-            glPushMatrix();
-            glTranslatef(contact->getPoints()[i].getX(), contact->getPoints()[i].getY(), contact->getPoints()[i].getZ());
-            contact->draw();
-            glPopMatrix();
-        }
+        glPushMatrix();
+        glTranslatef(contact->getPoint().getX(), contact->getPoint().getY(), contact->getPoint().getZ());
+        contact->draw();
+        glPopMatrix();
     }
 
 	// Change the buffers

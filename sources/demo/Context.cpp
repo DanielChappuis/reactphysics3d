@@ -29,7 +29,7 @@ using namespace reactphysics3d;
 // Constructor of the class Context
 Context::Context() {
 
-    Cube* cube1 = new Cube(Vector3D(11.0,14.0, 4.0), Quaternion(1.0, 1.0, 0.0, 0.0), 4.0, Kilogram(3.0));
+    Cube* cube1 = new Cube(Vector3D(5.0,14.0, 4.0), Quaternion(1.0, 1.0, 0.0, 0.0), 4.0, Kilogram(3.0));
     cube1->getRigidBody()->setLinearVelocity(Vector3D(0.0, -5.0, 0.0));
 
     //Cube* cube2 = new Cube(Vector3D(0.0, 17, 8.0), Quaternion(0.0, 1.0, 0.0, 0.0), 3.0, Kilogram(2.0));

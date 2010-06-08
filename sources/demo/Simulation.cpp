@@ -84,7 +84,7 @@ void Simulation::start() {
         pEngine->updateDisplayTime(Time(time));
 
         // Update the physics
-        pEngine->update();
+        pEngine->updateCollision();
 
         // Display the actual scene
         scene.display(context);
