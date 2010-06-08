@@ -20,6 +20,8 @@
 // Libraries
 #include "ContactInfo.h"
 
+using namespace reactphysics3d;
+
 // Constructor
 ContactInfo::ContactInfo(const OBB* const obb1, const OBB* const obb2, const Vector3D& normal, double penetrationDepth)
             : obb1(obb1), obb2(obb2), normal(normal), penetrationDepth(penetrationDepth) {

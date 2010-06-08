@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cassert>
+#include <iostream>     // TODO : Delete this
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -45,10 +46,12 @@ SATAlgorithm::~SATAlgorithm() {
 // Return true and compute a contact info if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
 bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, ContactInfo*& contactInfo) {
-
+    
     assert(boundingVolume1 != boundingVolume2);
 
     // If the two bounding volumes are OBB
+    //const OBB* const obb1 = dynamic_cast<const OBB* const>(boundingVolume1);
+    //const OBB* const obb2 = dynamic_cast<const OBB* const>(boundingVolume2);
     const OBB* const obb1 = dynamic_cast<const OBB* const>(boundingVolume1);
     const OBB* const obb2 = dynamic_cast<const OBB* const>(boundingVolume2);
 
@@ -71,6 +74,7 @@ bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, co
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
 bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, ContactInfo*& contactInfo) const {
+
 
     double center;                              // Center of a projection interval
     double radius1;                             // Radius of projection interval [min1, max1]

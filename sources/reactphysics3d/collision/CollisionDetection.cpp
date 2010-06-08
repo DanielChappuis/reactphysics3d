@@ -76,13 +76,13 @@ void CollisionDetection::computeBroadPhase() {
             RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);
             if(rigidBody1 && rigidBody2 && rigidBody1 != rigidBody2) {
                 // Get the oriented bounding boxes of the two bodies
-                OBB obb1 = rigidBody1->getOBB();
-                OBB obb2 = rigidBody2->getOBB();
+                const OBB* obb1 = rigidBody1->getOBB();
+                const OBB* obb2 = rigidBody2->getOBB();
 
                 // Use the broad-phase algorithm to decide if the two bodies can collide
-                if(broadPhaseAlgorithm->testCollisionPair(&obb1, &obb2)) {
+                if(broadPhaseAlgorithm->testCollisionPair(obb1, obb2)) {
                     // If the broad-phase thinks that the two bodies collide, we add the in the possible collision pair list
-                    possibleCollisionPairs.push_back(std::pair<const OBB*, const OBB*>(&obb1, &obb2));
+                    possibleCollisionPairs.push_back(std::pair<const OBB*, const OBB*>(obb1, obb2));
                 }
             }
         }

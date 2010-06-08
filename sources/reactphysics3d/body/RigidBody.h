@@ -63,10 +63,10 @@ class RigidBody : public Body {
         void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
         BodyState getInterpolatedState() const;                         // Compute and return the interpolated state
         bool getIsMotionEnabled() const;                                // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                 // Set the value to true if the body can move
+        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
         void setLinearVelocity(const Vector3D& linearVelocity);         // Set the linear velocity of the rigid body
         void updatePreviousBodyState();                                 // Update the previous body state of the body
-        OBB getOBB() const;                                             // Return the oriented bounding box of the rigid body
+        const OBB* const getOBB() const;                                // Return the oriented bounding box of the rigid body
         void update();                                                  // Update the rigid body in order to reflect a change in the body state
 };
 
@@ -128,8 +128,8 @@ inline void RigidBody::updatePreviousBodyState() {
 }
 
 // Return the oriented bounding box of the rigid body
-inline OBB RigidBody::getOBB() const {
-    return obb;
+inline const OBB* const RigidBody::getOBB() const {
+    return &obb;
 }
 
 // Update the rigid body in order to reflect a change in the body state

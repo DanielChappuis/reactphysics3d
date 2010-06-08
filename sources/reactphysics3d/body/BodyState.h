@@ -154,7 +154,7 @@ inline void BodyState::setMassInverse(Kilogram massInverse) {
 }
 
 // Get the inverse of the inertia tensor
-Matrix3x3 BodyState::getInertiaTensorInverse() const {
+inline Matrix3x3 BodyState::getInertiaTensorInverse() const {
     return inertiaTensorInverse;
 }
 
