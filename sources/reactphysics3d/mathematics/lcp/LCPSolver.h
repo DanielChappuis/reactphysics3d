@@ -69,6 +69,7 @@ class LCPSolver {
 
 // Set the initial lambda vector
 inline void LCPSolver::setLambdaInit(const Vector& lambdaInit) {
+    this->lambdaInit.changeSize(lambdaInit.getNbComponent());
     this->lambdaInit = lambdaInit;
 }
 

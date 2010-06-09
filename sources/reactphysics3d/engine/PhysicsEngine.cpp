@@ -26,7 +26,7 @@ using namespace reactphysics3d;
 
 // Constructor
 PhysicsEngine::PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument)
-              : world(world), timer(Time(0.0), timeStep), collisionDetection(world) {
+              : world(world), timer(Time(0.0), timeStep), collisionDetection(world), constraintSolver(world) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {
         // Throw an exception
@@ -89,13 +89,18 @@ void PhysicsEngine::updateCollision() {
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection()) {
             // TODO : Delete this ----------------------------------------------------------
+            /*
             for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
                 RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
                 RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
                 rigidBody1->setIsMotionEnabled(false);
                 rigidBody2->setIsMotionEnabled(false);
             }
+            */
             // -----------------------------------------------------------------------------
+
+            // Solve constraints
+            constraintSolver.solve(timer.getTimeStep().getValue());
         }
 
         // For each body in the dynamic world

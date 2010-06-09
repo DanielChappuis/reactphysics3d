@@ -24,6 +24,7 @@
 #include "PhysicsWorld.h"
 #include "../integration/IntegrationAlgorithm.h"
 #include "../collision/CollisionDetection.h"
+#include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
 
@@ -42,6 +43,7 @@ class PhysicsEngine {
         Timer timer;                                    // Timer of the physics engine
         IntegrationAlgorithm* integrationAlgorithm;     // Integration algorithm used to solve differential equations of movement
         CollisionDetection collisionDetection;          // Collision detection
+        ConstraintSolver constraintSolver;              // Constraint solver
 
         void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);           // Update the state of a rigid body
 

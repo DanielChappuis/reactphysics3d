@@ -39,6 +39,9 @@ LCPProjectedGaussSeidel::~LCPProjectedGaussSeidel() {
 void LCPProjectedGaussSeidel::solve(Matrix** J_sp, Matrix** B_sp, uint nbConstraints,
                                     uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
                                     const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const {
+
+    int size1 = lambda.getNbComponent();
+    int size2 = lambdaInit.getNbComponent();
     lambda = lambdaInit;
     double* d = new double[nbConstraints];         // TODO : Avoid those kind of memory allocation here for optimization (allocate once in the object)
     uint indexBody1, indexBody2;

@@ -41,9 +41,10 @@ const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when sol
 */
 class ConstraintSolver {
     protected:
-        PhysicsWorld& physicsWorld;                             // Reference to the physics world
+        PhysicsWorld* physicsWorld;                             // Reference to the physics world
         LCPSolver* lcpSolver;                                   // LCP Solver
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
+        uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
         std::vector<Body*> constraintBodies;                    // Bodies that are implied in some constraint
         uint nbBodies;                                          // Current number of bodies in the physics world
         std::map<Body*, uint> bodyNumberMapping;                // Map a body pointer with its index number
@@ -76,7 +77,7 @@ class ConstraintSolver {
         void computeVectorV(double dt);                         // Compute the vector V2
 
     public:
-        ConstraintSolver(PhysicsWorld& world);                  // Constructor
+        ConstraintSolver(PhysicsWorld* world);                  // Constructor
         virtual ~ConstraintSolver();                            // Destructor
         void solve(double dt);                                  // Solve the current LCP problem
 };

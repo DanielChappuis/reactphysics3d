@@ -25,8 +25,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(PhysicsWorld& world)
-                 :physicsWorld(world), bodyMapping(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
+                 :physicsWorld(world), bodyMapping(0), nbConstraints(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
 
 }
 
@@ -37,12 +37,12 @@ ConstraintSolver::~ConstraintSolver() {
 
 // Allocate all the matrices needed to solve the LCP problem
 void ConstraintSolver::allocate() {
-    uint nbConstraints = 0;
+    nbConstraints = 0;
     Constraint* constraint;
 
     // For each constraint
     std::vector<Constraint*>::iterator it;
-    for (it = physicsWorld.getConstraintsBeginIterator(); it <physicsWorld.getConstraintsEndIterator(); it++) {
+    for (it = physicsWorld->getConstraintsBeginIterator(); it <physicsWorld->getConstraintsEndIterator(); it++) {
         constraint = *it;
 
         // Evaluate the constraint
@@ -71,17 +71,18 @@ void ConstraintSolver::allocate() {
     bodyMapping = new Body**[nbConstraints];
     J_sp = new Matrix*[nbConstraints];
     B_sp = new Matrix*[2];
+    B_sp[0] = new Matrix[nbConstraints];
+    B_sp[1] = new Matrix[nbConstraints];
     for (uint i=0; i<nbConstraints; i++) {
         bodyMapping[i] = new Body*[2];
         J_sp[i] = new Matrix[2];
-        B_sp[i] = new Matrix[nbConstraints];
     }
 
-    errorValues = Vector(nbConstraints);
-    b = Vector(nbConstraints);
-    lambda = Vector(nbConstraints);
-    lowerBounds = Vector(nbConstraints);
-    upperBounds = Vector(nbConstraints);
+    errorValues.changeSize(nbConstraints);
+    b.changeSize(nbConstraints);
+    lambda.changeSize(nbConstraints);
+    lowerBounds.changeSize(nbConstraints);
+    upperBounds.changeSize(nbConstraints);
     Minv_sp = new Matrix[nbBodies];
     V = new Vector[nbBodies];
     Fext = new Vector[nbBodies];
@@ -92,26 +93,27 @@ void ConstraintSolver::allocate() {
 void ConstraintSolver::fillInMatrices() {
 
     // For each active constraint
-    for (uint c=0; c<activeConstraints.size(); c++) {
+    for (uint c=0, nbAuxConstraints=0; c<activeConstraints.size(); c += 1 + nbAuxConstraints) {
         Constraint* constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
+        J_sp[c][0].changeSize(1, 6);
+        J_sp[c][1].changeSize(1, 6);
         J_sp[c][0] = constraint->getBody1Jacobian();
         J_sp[c][1] = constraint->getBody2Jacobian();
-
 
         // Fill in the body mapping matrix
         bodyMapping[c][0] = constraint->getBody1();
         bodyMapping[c][1] = constraint->getBody2();
 
         // Fill in the limit vectors for the constraint
-        lowerBounds.fillInSubVector(c, constraint->getLowerBound());
-        upperBounds.fillInSubVector(c, constraint->getUpperBound());
+        lowerBounds.setValue(c, constraint->getLowerBound());
+        upperBounds.setValue(c, constraint->getUpperBound());
 
         // Fill in the error vector
-        errorValues.fillInSubVector(c, constraint->getErrorValue());
+        errorValues.setValue(c, constraint->getErrorValue());
 
-        uint nbAuxConstraints = constraint->getNbAuxConstraints();
+        nbAuxConstraints = constraint->getNbAuxConstraints();
 
         // If the current constraint has auxiliary constraints
         if (nbAuxConstraints > 0) {
@@ -119,6 +121,8 @@ void ConstraintSolver::fillInMatrices() {
             // For each auxiliary constraints
             for (uint i=1; i<=nbAuxConstraints; i++) {
                 // Fill in the J_sp matrix
+                J_sp[c+i][0].changeSize(1, 6);
+                J_sp[c+i][1].changeSize(1, 6);
                 J_sp[c+i][0] = constraint->getAuxJacobian().getSubMatrix(i-1, 0, 1, 6);
                 J_sp[c+i][1] = constraint->getAuxJacobian().getSubMatrix(i-1, 6, 1, 6);
 
@@ -149,11 +153,13 @@ void ConstraintSolver::fillInMatrices() {
         // Compute the vector with velocities values
         v.fillInSubVector(0, rigidBody->getCurrentBodyState().getLinearVelocity());
         v.fillInSubVector(3, rigidBody->getCurrentBodyState().getAngularVelocity());
+        V[bodyNumber].changeSize(6);
         V[bodyNumber] = v;
         
         // Compute the vector with forces and torques values
         f.fillInSubVector(0, rigidBody->getCurrentBodyState().getExternalForce());
         f.fillInSubVector(3, rigidBody->getCurrentBodyState().getExternalTorque());
+        Fext[bodyNumber].changeSize(6);
         Fext[bodyNumber] = f;
 
         // Compute the inverse sparse mass matrix
@@ -161,6 +167,7 @@ void ConstraintSolver::fillInMatrices() {
         mInv.initWithValue(0.0);
         mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
         mInv.fillInSubMatrix(3, 3, rigidBody->getCurrentBodyState().getInertiaTensorInverse());
+        Minv_sp[bodyNumber].changeSize(6, 6);
         Minv_sp[bodyNumber] = mInv;
     }
 }
@@ -170,13 +177,17 @@ void ConstraintSolver::freeMemory() {
 
     activeConstraints.clear();
     bodyNumberMapping.clear();
+    constraintBodies.clear();
 
     // Free the bodyMaping array
-    for (uint i=0; i<nbBodies; i++) {
+    for (uint i=0; i<nbConstraints; i++) {
         delete[] bodyMapping[i];
+        delete[] J_sp[i];
     }
     delete[] bodyMapping;
     delete[] J_sp;
+    delete[] B_sp[0];
+    delete[] B_sp[1];
     delete[] B_sp;
     delete[] Minv_sp;
     delete[] V;
@@ -190,7 +201,7 @@ void ConstraintSolver::computeVectorB(double dt) {
     
     b = errorValues * oneOverDT;
 
-    for (uint c = 0; c<activeConstraints.size(); c++) {
+    for (uint c = 0; c<nbConstraints; c++) {
         // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
@@ -208,9 +219,11 @@ void ConstraintSolver::computeMatrixB_sp() {
     uint indexBody1, indexBody2;
 
     // For each constraint
-    for (uint c = 0; c<activeConstraints.size(); c++) {
+    for (uint c = 0; c<nbConstraints; c++) {
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
+        B_sp[0][c].changeSize(6,1);
+        B_sp[1][c].changeSize(6,1);
         B_sp[0][c] = Minv_sp[indexBody1] * J_sp[c][0].getTranspose();
         B_sp[1][c] = Minv_sp[indexBody2] * J_sp[c][1].getTranspose();
     }
@@ -226,7 +239,7 @@ void ConstraintSolver::computeVectorV(double dt) {
     uint indexBody1, indexBody2;
 
     // Compute dt * (M^-1 * J^T * lambda
-    for (uint i=0; i<activeConstraints.size(); i++) {
+    for (uint i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
         V[indexBody1] = V[indexBody1] + (B_sp[indexBody1][i] * lambda.getValue(i)).getVector() * dt;
@@ -254,7 +267,9 @@ void ConstraintSolver::solve(double dt) {
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    lcpSolver->solve(J_sp, B_sp, activeConstraints.size(), nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
+    Vector lambdaInit(nbConstraints);
+    lcpSolver->setLambdaInit(lambdaInit);
+    lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
 
     // Compute the vector V2
     computeVectorV(dt);

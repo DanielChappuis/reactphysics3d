@@ -304,7 +304,7 @@ double Matrix::getTrace() const throw(MathematicsException) {
 Matrix Matrix::getSubMatrix(unsigned int i, unsigned int j,
                                    unsigned int sizeRows, unsigned int sizeColumns) const throw(std::invalid_argument) {
     // Check the arguments
-    if (i<0 || j<0 || i+sizeRows >= nbRow || j+sizeColumns >= nbColumn) {
+    if (i<0 || j<0 || i+sizeRows > nbRow || j+sizeColumns > nbColumn) {
         // Throw an exception
         throw std::invalid_argument("Error : The arguments are out of matrix bounds");
     }
@@ -475,10 +475,10 @@ Matrix Matrix::operator*(const Matrix& matrix2) const throw(MathematicsException
 Matrix Matrix::operator*(const Vector& vector) const throw(MathematicsException) {
     // Check the sizes of the matrices
     if (nbColumn == vector.getNbComponent()) {
-        Matrix result(nbColumn, 1);
-        for (int i=0; i<nbColumn; i++) {
+        Matrix result(nbRow, 1);
+        for (int i=0; i<nbRow; i++) {
             double sum = 0.0;
-            for (int j=0; j<vector.getNbComponent(); j++) {
+            for (int j=0; j<nbColumn; j++) {
                 sum += array[i][j] * vector.getValue(j);
             }
             result.array[i][0] = sum;
