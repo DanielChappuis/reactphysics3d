@@ -58,7 +58,7 @@ void ConstraintSolver::allocate() {
 
             // Fill in the body number maping
             bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
-            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
+            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody2(), bodyNumberMapping.size()));
 
             // Update the size of the jacobian matrix
             nbConstraints += (1 + constraint->getNbAuxConstraints());
@@ -93,25 +93,28 @@ void ConstraintSolver::allocate() {
 void ConstraintSolver::fillInMatrices() {
 
     // For each active constraint
-    for (uint c=0, nbAuxConstraints=0; c<activeConstraints.size(); c += 1 + nbAuxConstraints) {
+    uint noConstraint = 0;
+    uint nbAuxConstraints = 0;
+    for (uint c=0; c<activeConstraints.size(); c++) {
+        
         Constraint* constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
-        J_sp[c][0].changeSize(1, 6);
-        J_sp[c][1].changeSize(1, 6);
-        J_sp[c][0] = constraint->getBody1Jacobian();
-        J_sp[c][1] = constraint->getBody2Jacobian();
+        J_sp[noConstraint][0].changeSize(1, 6);
+        J_sp[noConstraint][1].changeSize(1, 6);
+        J_sp[noConstraint][0] = constraint->getBody1Jacobian();
+        J_sp[noConstraint][1] = constraint->getBody2Jacobian();
 
         // Fill in the body mapping matrix
-        bodyMapping[c][0] = constraint->getBody1();
-        bodyMapping[c][1] = constraint->getBody2();
+        bodyMapping[noConstraint][0] = constraint->getBody1();
+        bodyMapping[noConstraint][1] = constraint->getBody2();
 
         // Fill in the limit vectors for the constraint
-        lowerBounds.setValue(c, constraint->getLowerBound());
-        upperBounds.setValue(c, constraint->getUpperBound());
+        lowerBounds.setValue(noConstraint, constraint->getLowerBound());
+        upperBounds.setValue(noConstraint, constraint->getUpperBound());
 
         // Fill in the error vector
-        errorValues.setValue(c, constraint->getErrorValue());
+        errorValues.setValue(noConstraint, constraint->getErrorValue());
 
         nbAuxConstraints = constraint->getNbAuxConstraints();
 
@@ -121,20 +124,22 @@ void ConstraintSolver::fillInMatrices() {
             // For each auxiliary constraints
             for (uint i=1; i<=nbAuxConstraints; i++) {
                 // Fill in the J_sp matrix
-                J_sp[c+i][0].changeSize(1, 6);
-                J_sp[c+i][1].changeSize(1, 6);
-                J_sp[c+i][0] = constraint->getAuxJacobian().getSubMatrix(i-1, 0, 1, 6);
-                J_sp[c+i][1] = constraint->getAuxJacobian().getSubMatrix(i-1, 6, 1, 6);
+                J_sp[noConstraint+i][0].changeSize(1, 6);
+                J_sp[noConstraint+i][1].changeSize(1, 6);
+                J_sp[noConstraint+i][0] = constraint->getAuxJacobian().getSubMatrix(i-1, 0, 1, 6);
+                J_sp[noConstraint+i][1] = constraint->getAuxJacobian().getSubMatrix(i-1, 6, 1, 6);
 
                 // Fill in the body mapping matrix
-                bodyMapping[c+i][0] = constraint->getBody1();
-                bodyMapping[c+i][1] = constraint->getBody2();
+                bodyMapping[noConstraint+i][0] = constraint->getBody1();
+                bodyMapping[noConstraint+i][1] = constraint->getBody2();
             }
 
             // Fill in the limit vectors for the auxilirary constraints
-            lowerBounds.fillInSubVector(c+1, constraint->getAuxLowerBounds());
-            upperBounds.fillInSubVector(c+1, constraint->getAuxUpperBounds());
+            lowerBounds.fillInSubVector(noConstraint+1, constraint->getAuxLowerBounds());
+            upperBounds.fillInSubVector(noConstraint+1, constraint->getAuxUpperBounds());
         }
+
+        noConstraint += 1 + nbAuxConstraints;
     }
 
     // For each current body that is implied in some constraint
@@ -202,11 +207,12 @@ void ConstraintSolver::computeVectorB(double dt) {
     b = errorValues * oneOverDT;
 
     for (uint c = 0; c<nbConstraints; c++) {
+        int size1 = J_sp[c][0].getNbColumn(); // TODO : Delete this
         // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp[c][0] * V[indexBody1]).getValue(0,0));
-        b.setValue(c, b.getValue(c) - oneOverDT * (J_sp[c][1] * V[indexBody2]).getValue(0,0));
+        b.setValue(c, b.getValue(c) - (J_sp[c][0] * V[indexBody1]).getValue(0,0) * oneOverDT);
+        b.setValue(c, b.getValue(c) - (J_sp[c][1] * V[indexBody2]).getValue(0,0) * oneOverDT);
 
         // Substract J*M^-1*F_ext to the vector b
         b.setValue(c, b.getValue(c) - ((J_sp[c][0] * Minv_sp[indexBody1]) * Fext[indexBody1]
@@ -277,7 +283,9 @@ void ConstraintSolver::solve(double dt) {
     // Update the velocity of each body
     // TODO : Put this code somewhere else
     for (int i=0; i<nbBodies; i++) {
-        constraintBodies.at(i);
+        RigidBody* body = dynamic_cast<RigidBody*>(constraintBodies.at(i));
+        //std::cout << "Velocity Y before : " << body->getCurrentBodyState().getLinearVelocity().getY() << std::endl;
+        //std::cout << "Velocity Y after  : " << V[bodyNumberMapping[constraintBodies.at(i)]].getValue(1) << std::endl;
     }
 
     freeMemory();
