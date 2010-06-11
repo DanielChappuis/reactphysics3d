@@ -70,7 +70,9 @@ class BodyState {
         Vector3D getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3D& linearVelocity);                 // TODO : Delete this
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
+        void setAngularVelocity(const Vector3D& angularVelocity);
         Quaternion getSpin() const;                                             // Return the spin of the body
+        void setSpin(const Quaternion& spin);
         void setMassInverse(Kilogram massInverse);                              // Set the inverse of the mass
         Matrix3x3 getInertiaTensorInverse() const;                              // Get the inverse of the inertia tensor
         void setInertiaTensorInverse(const Matrix3x3& inertiaTensorInverse);    // Set the inverse of the inertia tensor
@@ -143,9 +145,17 @@ inline Vector3D BodyState::getAngularVelocity() const {
     return angularVelocity;
 }
 
+ inline void BodyState::setAngularVelocity(const Vector3D& angularVelocity) {
+     this->angularVelocity = angularVelocity;
+ }
+
 // Return the spin of the body
 inline Quaternion BodyState::getSpin() const {
     return spin;
+}
+
+inline void BodyState::setSpin(const Quaternion& spin) {
+    this->spin = spin;
 }
 
 // Set the inverse of the mass

@@ -62,6 +62,7 @@ class Contact : public Constraint {
         virtual void evaluate();                            // Evaluate the constraint
         uint getNbAuxConstraints() const;                   // Return the number of auxiliary constraints
 
+        double getPenetrationDepth() const;                 // TODO : Delete this
         void draw() const;                                  // TODO : Delete this (Used to debug collision detection)
 };
 
@@ -89,6 +90,9 @@ inline Vector3D Contact::getPoint() const {
     return point;
 }
 
+inline double Contact::getPenetrationDepth() const {
+    return penetrationDepth;
+}
 
 } // End of the ReactPhysics3D namespace
 

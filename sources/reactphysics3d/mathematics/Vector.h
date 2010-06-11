@@ -139,7 +139,7 @@ inline void Vector::fillInSubVector(uint rowIndex, const Vector& subVector) {
 // Return a sub-vector of the current vector
 inline Vector Vector::getSubVector(uint index, uint nbElements) const throw(std::invalid_argument) {
     // Check if the arguments are valid
-    if (index < 0 || index+nbElements >= nbComponent) {
+    if (index < 0 || index+nbElements > nbComponent) {
         throw std::invalid_argument("Error : arguments are out of bounds");
     }
 

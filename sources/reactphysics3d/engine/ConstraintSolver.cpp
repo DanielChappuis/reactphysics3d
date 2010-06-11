@@ -21,18 +21,19 @@
 #include "ConstraintSolver.h"
 #include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
 #include "../body/RigidBody.h"
+#include "../integration/SemiImplicitEuler.h"   // TODO : Delete this
 
 using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
                  :physicsWorld(world), bodyMapping(0), nbConstraints(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
-
+       integrationAlgorithm = new SemiImplicitEuler();
 }
 
 // Destructor
 ConstraintSolver::~ConstraintSolver() {
-
+    delete integrationAlgorithm;
 }
 
 // Allocate all the matrices needed to solve the LCP problem
@@ -42,7 +43,7 @@ void ConstraintSolver::allocate() {
 
     // For each constraint
     std::vector<Constraint*>::iterator it;
-    for (it = physicsWorld->getConstraintsBeginIterator(); it <physicsWorld->getConstraintsEndIterator(); it++) {
+    for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); it++) {
         constraint = *it;
 
         // Evaluate the constraint
@@ -286,6 +287,57 @@ void ConstraintSolver::solve(double dt) {
         RigidBody* body = dynamic_cast<RigidBody*>(constraintBodies.at(i));
         //std::cout << "Velocity Y before : " << body->getCurrentBodyState().getLinearVelocity().getY() << std::endl;
         //std::cout << "Velocity Y after  : " << V[bodyNumberMapping[constraintBodies.at(i)]].getValue(1) << std::endl;
+    }
+
+    for (std::vector<Body*>::iterator it = physicsWorld->getBodiesBeginIterator(); it != physicsWorld->getBodiesEndIterator(); it++) {
+        // If this is a not constrained body
+        if (bodyNumberMapping.find(*it) == bodyNumberMapping.end()) {
+            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+
+            // The current body state of the body becomes the previous body state
+            rigidBody->updatePreviousBodyState();
+
+            // Integrate the current body state at time t to get the next state at time t + dt
+            integrationAlgorithm->integrate(rigidBody->getCurrentBodyState(), dt, dt);
+
+            // If the body state has changed, we have to update some informations in the rigid body
+            rigidBody->update();
+        }
+        else {
+            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+
+            // If the gravity force is on
+            /*
+            if(physicsWorld->getIsGravityOn()) {
+                // Apply the current gravity force to the body
+                rigidBody->getCurrentBodyState().setExternalForce(physicsWorld->getGravity());
+            }
+            */
+
+            // The current body state of the body becomes the previous body state
+            rigidBody->updatePreviousBodyState();
+
+            const Vector newLinVelocity = V[bodyNumberMapping[*it]].getSubVector(0, 3);
+            const Vector newAngVelocity = V[bodyNumberMapping[*it]].getSubVector(3, 3);
+            const Vector3D linVel(newLinVelocity.getValue(0), newLinVelocity.getValue(1), newLinVelocity.getValue(2));
+            const Vector3D angVel(newAngVelocity.getValue(0), newAngVelocity.getValue(1), newAngVelocity.getValue(2));
+            BodyState& bodyState = rigidBody->getCurrentBodyState();
+            rigidBody->getCurrentBodyState().setLinearVelocity(linVel);
+            rigidBody->getCurrentBodyState().setAngularVelocity(angVel);
+
+             // Normalize the orientation quaternion
+             rigidBody->getCurrentBodyState().setOrientation(rigidBody->getCurrentBodyState().getOrientation().getUnit());
+
+            // Compute the spin quaternion
+            const Vector3D angularVelocity = rigidBody->getCurrentBodyState().getAngularVelocity();
+            rigidBody->getCurrentBodyState().setSpin(Quaternion(angularVelocity.getX(), angularVelocity.getY(), angularVelocity.getZ(), 0) * rigidBody->getCurrentBodyState().getOrientation() * 0.5);
+
+             bodyState.setPosition(bodyState.getPosition() + bodyState.getLinearVelocity() * dt);
+             bodyState.setOrientation(bodyState.getOrientation() + bodyState.getSpin() * dt);
+
+            // If the body state has changed, we have to update some informations in the rigid body
+            rigidBody->update();
+        }
     }
 
     freeMemory();

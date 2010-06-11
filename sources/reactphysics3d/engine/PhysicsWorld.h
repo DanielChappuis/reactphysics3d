@@ -54,8 +54,6 @@ class PhysicsWorld {
         Vector3D getGravity() const;                                            // Return the gravity vector of the world
         bool getIsGravityOn() const;                                            // Return if the gravity is on
         void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
-        std::vector<Body*>::const_iterator getBodyListStartIterator() const;    // Return a start iterator on the body list
-        std::vector<Body*>::const_iterator getBodyListEndIterator() const;      // Return a end iterator on the body list
         void addConstraint(Constraint* constraint) throw(std::invalid_argument);            // Add a constraint
         void removeConstraint(Constraint* constraint) throw(std::invalid_argument);         // Remove a constraint
         void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
@@ -70,18 +68,6 @@ class PhysicsWorld {
 // Return the gravity vector of the world
 inline Vector3D PhysicsWorld::getGravity() const {
     return gravity;
-}
-
-// Return a start iterator on the body list
-inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListStartIterator() const {
-    // Return an iterator on the start of the body list
-    return bodies.begin();
-}
-
-// Return a end iterator on the body list
-inline std::vector<Body*>::const_iterator PhysicsWorld::getBodyListEndIterator() const {
-    // Return an iterator on the end of the body list
-    return bodies.end();
 }
 
 // Return if the gravity is on

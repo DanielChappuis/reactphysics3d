@@ -24,6 +24,7 @@
 #include "../typeDefinitions.h"
 #include "../constraint/Constraint.h"
 #include "../mathematics/lcp/LCPSolver.h"
+#include "../integration/IntegrationAlgorithm.h"    // TODO : Delete this
 #include "PhysicsWorld.h"
 #include <map>
 
@@ -41,6 +42,7 @@ const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when sol
 */
 class ConstraintSolver {
     protected:
+        IntegrationAlgorithm* integrationAlgorithm;           // TODO : Delete this
         PhysicsWorld* physicsWorld;                             // Reference to the physics world
         LCPSolver* lcpSolver;                                   // LCP Solver
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world

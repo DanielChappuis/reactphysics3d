@@ -69,8 +69,8 @@ bool CollisionDetection::computeCollisionDetection() {
 void CollisionDetection::computeBroadPhase() {
 
     // For each pair of bodies in the physics world
-    for(std::vector<Body*>::const_iterator it1 = world->getBodyListStartIterator(); it1 != world->getBodyListEndIterator(); ++it1) {
-        for(std::vector<Body*>::const_iterator it2 = it1; it2 != world->getBodyListEndIterator(); ++it2) {
+    for(std::vector<Body*>::const_iterator it1 = world->getBodiesBeginIterator(); it1 != world->getBodiesEndIterator(); ++it1) {
+        for(std::vector<Body*>::const_iterator it2 = it1; it2 != world->getBodiesEndIterator(); ++it2) {
             // If both bodies are RigidBody and are different
             RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(*it1);
             RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);

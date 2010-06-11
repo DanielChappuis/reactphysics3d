@@ -54,7 +54,7 @@ void PhysicsEngine::updateDynamic() {
         // While the time accumulator is not empty
         while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
             // For each body in the dynamic world
-            for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
+            for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
                 // If the body is a RigidBody and if the rigid body motion is enabled
                 RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
                 if (rigidBody && rigidBody->getIsMotionEnabled()) {
@@ -68,7 +68,7 @@ void PhysicsEngine::updateDynamic() {
         }
 
         // For each body in the dynamic world
-        for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
+        for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
             // If the body is a RigidBody and if the rigid body motion is enabled
             RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
             if (rigidBody && rigidBody->getIsMotionEnabled()) {
@@ -89,6 +89,10 @@ void PhysicsEngine::updateCollision() {
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection()) {
             // TODO : Delete this ----------------------------------------------------------
+            for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); it++) {
+                Contact* contact = dynamic_cast<Contact*>(*it);
+                std::cout << "Const : " << contact << "pDepth before: " << contact->getPenetrationDepth() << std::endl;
+            }
             /*
             for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
                 RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
@@ -102,15 +106,26 @@ void PhysicsEngine::updateCollision() {
             // Solve constraints
             constraintSolver.solve(timer.getTimeStep().getValue());
         }
-
-        // For each body in the dynamic world
-        for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
-            // If the body is a RigidBody and if the rigid body motion is enabled
-            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-            if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                // Update the state of the rigid body with an entire time step
-                updateBodyState(rigidBody, timer.getTimeStep());
+        else {
+            for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
+                // If the body is a RigidBody and if the rigid body motion is enabled
+                RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+                if (rigidBody && rigidBody->getIsMotionEnabled()) {
+                    // Update the state of the rigid body with an entire time step
+                    updateBodyState(rigidBody, timer.getTimeStep());
+                }
             }
+        }
+
+        // TODO : Delete this
+        collisionDetection.computeCollisionDetection();    
+        for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); it++) {
+            Contact* contact = dynamic_cast<Contact*>(*it);
+            std::cout << "Const : " << contact << "pDepth after: " << contact->getPenetrationDepth() << std::endl;
+            RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(contact->getBody1());
+            RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(contact->getBody2());
+            rigidBody1->getCurrentBodyState().setPosition(rigidBody1->getCurrentBodyState().getPosition() - contact->getNormal().getUnit() * contact->getPenetrationDepth() * 1.4);
+            rigidBody2->getCurrentBodyState().setPosition(rigidBody2->getCurrentBodyState().getPosition() + contact->getNormal().getUnit() * contact->getPenetrationDepth() * 1.4);
         }
 
         // Update the timer
@@ -118,10 +133,10 @@ void PhysicsEngine::updateCollision() {
     }
 
     // For each body in the the dynamic world
-    for(std::vector<Body*>::const_iterator it = world->getBodyListStartIterator(); it != world->getBodyListEndIterator(); ++it) {
+    for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
         // If the body is a RigidBody and if the rigid body motion is enabled
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-        if (rigidBody && rigidBody->getIsMotionEnabled()) {
+        if (rigidBody) {
             // Update the interpolation factor of the rigid body
             // This one will be used to compute the interpolated state
             rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
