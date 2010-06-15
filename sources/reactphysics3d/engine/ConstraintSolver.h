@@ -27,6 +27,7 @@
 #include "../integration/IntegrationAlgorithm.h"    // TODO : Delete this
 #include "PhysicsWorld.h"
 #include <map>
+#include <set>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -47,7 +48,7 @@ class ConstraintSolver {
         LCPSolver* lcpSolver;                                   // LCP Solver
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
         uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
-        std::vector<Body*> constraintBodies;                    // Bodies that are implied in some constraint
+        std::set<Body*> constraintBodies;                       // Bodies that are implied in some constraint
         uint nbBodies;                                          // Current number of bodies in the physics world
         std::map<Body*, uint> bodyNumberMapping;                // Map a body pointer with its index number
         Body*** bodyMapping;                                    // 2-dimensional array that contains the mapping of body reference

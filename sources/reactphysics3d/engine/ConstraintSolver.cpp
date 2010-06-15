@@ -54,8 +54,8 @@ void ConstraintSolver::allocate() {
             activeConstraints.push_back(constraint);
 
             // Add the two bodies of the constraint in the constraintBodies list
-            constraintBodies.push_back(constraint->getBody1());
-            constraintBodies.push_back(constraint->getBody2());
+            constraintBodies.insert(constraint->getBody1());
+            constraintBodies.insert(constraint->getBody2());
 
             // Fill in the body number maping
             bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
@@ -148,8 +148,9 @@ void ConstraintSolver::fillInMatrices() {
     Body* body;
     Vector v(6);
     Vector f(6);
-    for (uint b=0; b<nbBodies; b++) {
-        body = constraintBodies.at(b);
+    uint b=0;
+    for (std::set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
+        body = *it;
         uint bodyNumber = bodyNumberMapping.at(body);
         
         // TODO : Use polymorphism and remove this downcasting
@@ -283,8 +284,8 @@ void ConstraintSolver::solve(double dt) {
 
     // Update the velocity of each body
     // TODO : Put this code somewhere else
-    for (int i=0; i<nbBodies; i++) {
-        RigidBody* body = dynamic_cast<RigidBody*>(constraintBodies.at(i));
+    for (std::set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++) {
+        RigidBody* body = dynamic_cast<RigidBody*>(*it);
         //std::cout << "Velocity Y before : " << body->getCurrentBodyState().getLinearVelocity().getY() << std::endl;
         //std::cout << "Velocity Y after  : " << V[bodyNumberMapping[constraintBodies.at(i)]].getValue(1) << std::endl;
     }
