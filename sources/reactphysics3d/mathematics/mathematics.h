@@ -261,12 +261,23 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& 
 // The segment is given by the two vertices in "segment" and the rectangle is given by the ordered vertices in "clipRectangle".
 // This method returns the clipped segment.
 inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(const std::vector<reactphysics3d::Vector3D>& segment, const std::vector<reactphysics3d::Vector3D> clipRectangle) {
+    for (int i=0; i<segment.size(); i++) {
+        std::cout << "Segment " << i << " X = " << segment.at(i).getX() << std::endl;
+        std::cout << "Segment " << i << " Y = " << segment.at(i).getY() << std::endl;
+        std::cout << "Segment " << i << " Z = " << segment.at(i).getZ() << std::endl;
+    }
+    for (int i=0; i<clipRectangle.size(); i++) {
+        std::cout << "Rectangle " << i << " X = " << clipRectangle.at(i).getX() << std::endl;
+        std::cout << "Rectangle " << i << " Y = " << clipRectangle.at(i).getY() << std::endl;
+        std::cout << "Rectangle " << i << " Z = " << clipRectangle.at(i).getZ() << std::endl;
+    }
+
     assert(segment.size() == 2);
     assert(clipRectangle.size() == 4);
 
     std::vector<reactphysics3d::Vector3D> inputSegment = segment;
     std::vector<reactphysics3d::Vector3D> outputSegment;
-
+    
     // For each edge of the clip rectangle
     for (unsigned int i=0; i<4; ++i) {
         outputSegment.clear();
