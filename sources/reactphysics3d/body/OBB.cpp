@@ -23,7 +23,6 @@
 #include <GL/freeglut.h>        // TODO : Remove this in the final version
 #include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
-#include <cstdlib>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -167,6 +166,8 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) con
                 extremeVertices.push_back(vertex);
             }
         }
+        
+        assert(extremeVertices.size() == 1 || extremeVertices.size() == 2);
     }
 
     // An extreme should be a unique vertex, an edge or a face
