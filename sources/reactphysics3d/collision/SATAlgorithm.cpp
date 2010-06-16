@@ -24,6 +24,7 @@
 #include "../constraint/Contact.h"
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
 #include <cassert>
 #include <iostream>     // TODO : Delete this
 
@@ -436,7 +437,7 @@ double SATAlgorithm::computePenetrationDepth(double min1, double max1, double mi
     double penetrationDepth = (lengthInterval1 + lengthInterval2) - lengthBothIntervals;
 
     // Find which interval is at the left of the other
-    if (abs(max1-min2) <= abs(max2-min1)) {
+    if (std::abs(max1-min2) <= std::abs(max2-min1)) {
         // Right of interval 1 collides with the left of interval 2
         side = true;
     }
