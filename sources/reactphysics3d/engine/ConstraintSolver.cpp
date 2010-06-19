@@ -173,7 +173,7 @@ void ConstraintSolver::fillInMatrices() {
         Matrix mInv(6,6);
         mInv.initWithValue(0.0);
         mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
-        mInv.fillInSubMatrix(3, 3, rigidBody->getCurrentBodyState().getInertiaTensorInverse());
+        mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
         Minv_sp[bodyNumber].changeSize(6, 6);
         Minv_sp[bodyNumber] = mInv;
     }
