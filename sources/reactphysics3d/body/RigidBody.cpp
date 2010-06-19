@@ -24,9 +24,9 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
-           : Body(mass), inertiaTensor(inertiaTensor), currentBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())),
-             previousBodyState(position, orientation, inertiaTensor.getInverse(), Kilogram(1.0/mass.getValue())), obb(obb) {
+ RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb)
+           : Body(mass), inertiaTensorLocal(inertiaTensorLocal), currentBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())),
+             previousBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())), obb(obb) {
 
         isMotionEnabled = true;
         isCollisionEnabled = true;
@@ -40,7 +40,7 @@
 }
 
  // Copy-constructor
- RigidBody::RigidBody(const RigidBody& rigidBody) : Body(rigidBody), inertiaTensor(rigidBody.inertiaTensor),
+ RigidBody::RigidBody(const RigidBody& rigidBody) : Body(rigidBody), inertiaTensorLocal(rigidBody.inertiaTensorLocal),
             currentBodyState(rigidBody.currentBodyState), previousBodyState(rigidBody.previousBodyState), obb(rigidBody.obb) {
     this->isMotionEnabled = rigidBody.isMotionEnabled;
     this->isCollisionEnabled = rigidBody.isCollisionEnabled;

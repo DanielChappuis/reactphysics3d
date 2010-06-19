@@ -43,7 +43,7 @@ namespace reactphysics3d {
 */
 class RigidBody : public Body {
     private :
-        Matrix3x3 inertiaTensor;                    // Inertia tensor of the body
+        Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         BodyState currentBodyState;                 // Current body state
         BodyState previousBodyState;                // Previous body state
         bool isMotionEnabled;                       // True if the body can move
@@ -52,34 +52,54 @@ class RigidBody : public Body {
         OBB obb;                                    // Oriented bounding box that contains the rigid body
 
     public :
-        RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb);   // Constructor
-        RigidBody(const RigidBody& rigidBody);                                                                                                      // Copy-constructor
-        virtual ~RigidBody();                                                                                                                       // Destructor
+        RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb);  // Constructor
+        RigidBody(const RigidBody& rigidBody);                                                                                                          // Copy-constructor
+        virtual ~RigidBody();                                                                                                                           // Destructor
 
-        Matrix3x3 getInertiaTensor() const;                             // Return the inertia tensor of the body
-        void setInertiaTensor(const Matrix3x3& inertiaTensor);          // Set the inertia tensor of the body
-        BodyState& getCurrentBodyState();                               // Return a reference to the current state of the body
-        BodyState& getPreviousBodyState();                              // TODO : DELETE THIS
-        void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
-        BodyState getInterpolatedState() const;                         // Compute and return the interpolated state
-        bool getIsMotionEnabled() const;                                // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
-        void setLinearVelocity(const Vector3D& linearVelocity);         // Set the linear velocity of the rigid body
-        void updatePreviousBodyState();                                 // Update the previous body state of the body
-        const OBB* const getOBB() const;                                // Return the oriented bounding box of the rigid body
-        void update();                                                  // Update the rigid body in order to reflect a change in the body state
+        Matrix3x3 getInertiaTensorLocal() const;                            // Return the local inertia tensor of the body (in body coordinates)
+        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);    // Set the local inertia tensor of the body (in body coordinates)
+        Matrix3x3 getInertiaTensorWorld() const;                            // Return the inertia tensor in world coordinates
+        Matrix3x3 getInertiaTensorInverseWorld() const;                     // Return the inverse of the inertia tensor in world coordinates
+        BodyState& getCurrentBodyState();                                   // Return a reference to the current state of the body
+        BodyState& getPreviousBodyState();                                  // TODO : DELETE THIS
+        void setInterpolationFactor(double factor);                         // Set the interpolation factor of the body
+        BodyState getInterpolatedState() const;                             // Compute and return the interpolated state
+        bool getIsMotionEnabled() const;                                    // Return if the rigid body can move
+        void setIsMotionEnabled(bool isMotionEnabled);                      // Set the value to true if the body can move
+        void setLinearVelocity(const Vector3D& linearVelocity);             // Set the linear velocity of the rigid body
+        void updatePreviousBodyState();                                     // Update the previous body state of the body
+        const OBB* const getOBB() const;                                    // Return the oriented bounding box of the rigid body
+        void update();                                                      // Update the rigid body in order to reflect a change in the body state
 };
 
 // --- Inline functions --- //
 
-// Return the inertia tensor of the body
-inline Matrix3x3 RigidBody::getInertiaTensor() const {
-    return inertiaTensor;
+// Return the local inertia tensor of the body (in body coordinates)
+inline Matrix3x3 RigidBody::getInertiaTensorLocal() const {
+    return inertiaTensorLocal;
 }
 
-// Set the inertia tensor of the body
-inline void RigidBody::setInertiaTensor(const Matrix3x3& inertiaTensor) {
-    this->inertiaTensor = inertiaTensor;
+// Set the local inertia tensor of the body (in body coordinates)
+inline void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
+    this->inertiaTensorLocal = inertiaTensorLocal;
+}
+
+// Return the inertia tensor in world coordinates
+// The inertia tensor I_w in world coordinates in computed with the local inertia tensor I_b in body coordinates
+// by I_w = R * I_b * R^T
+// where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
+inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
+    // Compute and return the inertia tensor in world coordinates
+    return currentBodyState.getOrientation().getMatrix() * inertiaTensorLocal * currentBodyState.getOrientation().getMatrix().getTranspose();
+}
+
+// Return the inverse of the inertia tensor in world coordinates
+// The inertia tensor I_w in world coordinates in computed with the local inverse inertia tensor I_b^-1 in body coordinates
+// by I_w = R * I_b^-1 * R^T
+// where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
+inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
+    // Compute and return the inertia tensor in world coordinates
+    return currentBodyState.getOrientation().getMatrix() * currentBodyState.getInertiaTensorInverse() * currentBodyState.getOrientation().getMatrix().getTranspose();
 }
 
 // Return a reference to the current state of the body
