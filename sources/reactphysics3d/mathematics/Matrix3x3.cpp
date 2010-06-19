@@ -46,40 +46,6 @@ Matrix3x3::Matrix3x3(const Matrix3x3& matrix2) {
                  matrix2.array[2][0], matrix2.array[2][1], matrix2.array[2][2]);
 }
 
-// Create a Matrix3x3 from a quaternion (the quaternion can be non-unit)
-Matrix3x3::Matrix3x3(const Quaternion& quaternion) {
-    double x = quaternion.getX();
-    double y = quaternion.getY();
-    double z = quaternion.getZ();
-    double w = quaternion.getW();
-
-    double nQ = x*x + y*y + z*z + w*w;
-    double s = 0.0;
-
-    if (nQ > 0.0) {
-        s = 2.0/nQ;
-    }
-
-    // Computations used for optimization (less multiplications)
-    double xs = x*s;
-    double ys = y*s;
-    double zs = z*s;
-    double wxs = w*xs;
-    double wys = w*ys;
-    double wzs = w*zs;
-    double xxs = x*xs;
-    double xys = x*ys;
-    double xzs = x*zs;
-    double yys = y*ys;
-    double yzs = y*zs;
-    double zzs = z*zs;
-
-    // Create the matrix corresponding to the quaternion
-    setAllValues(1.0-yys-zzs, xys-wzs, xzs + wys,
-                 xys + wzs, 1.0-xxs-zzs, yzs-wxs,
-                 xzs-wys, yzs + wxs, 1.0-xxs-yys);
-}
-
 // Destructor
 Matrix3x3::~Matrix3x3() {
 
@@ -106,46 +72,6 @@ Matrix3x3 Matrix3x3::getInverse() const throw(MathematicsException) {
     else {
         // Throw an exception because the inverse of the matrix doesn't exist if the determinant is equal to zero
         throw MathematicsException("MathematicsException : Impossible to compute the inverse of the matrix because the determinant is equal to zero");
-    }
-}
-
-// Return the quaternion corresponding to the matrix (it returns a unit quaternion)
-Quaternion Matrix3x3::getQuaternion() const {
-
-    // Get the trace of the matrix
-    double trace = getTrace();
-
-    double r;
-    double s;
-
-    if (trace < 0.0) {
-        if (array[1][1] > array[0][0]) {
-            if(array[2][2] > array[1][1]) {
-                r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
-                s = 0.5 / r;
-                return Quaternion((array[2][0] + array[0][2])*s, (array[1][2] + array[2][1])*s, 0.5*r, (array[1][0] - array[0][1])*s);
-            }
-            else {
-                r = sqrt(array[1][1] - array[2][2] - array[0][0] + 1.0);
-                s = 0.5 / r;
-                return Quaternion((array[0][1] + array[1][0])*s, 0.5 * r, (array[1][2] + array[2][1])*s, (array[0][2] - array[2][0])*s);
-            }
-        }
-        else if (array[2][2] > array[0][0]) {
-            r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
-            s = 0.5 / r;
-            return Quaternion((array[2][0] + array[0][2])*s, (array[1][2] + array[2][1])*s, 0.5 * r, (array[1][0] - array[0][1])*s);
-        }
-        else {
-            r = sqrt(array[0][0] - array[1][1] - array[2][2] + 1.0);
-            s = 0.5 / r;
-            return Quaternion(0.5 * r, (array[0][1] + array[1][0])*s, (array[2][0] - array[0][2])*s, (array[2][1] - array[1][2])*s);
-        }
-    }
-    else {
-        r = sqrt(trace + 1.0);
-        s = 0.5/r;
-        return Quaternion((array[2][1]-array[1][2])*s, (array[0][2]-array[2][0])*s, (array[1][0]-array[0][1])*s, 0.5 * r);
     }
 }
 

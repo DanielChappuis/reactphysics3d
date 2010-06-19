@@ -23,7 +23,6 @@
 
 // Libraries
 #include "exceptions.h"
-#include "Quaternion.h"
 #include "Vector3D.h"
 
 // ReactPhysics3D namespace
@@ -44,7 +43,6 @@ class Matrix3x3 {
         Matrix3x3(double a1, double a2, double a3, double b1, double b2, double b3,
                   double c1, double c2, double c3);                                             // Constructor with arguments
         Matrix3x3(const Matrix3x3& matrix);                                                     // Copy-constructor
-        Matrix3x3(const Quaternion& quaternion);                                                // Create a Matrix3x3 from a Quaternion
         virtual ~Matrix3x3();                                                                   // Destructor
 
         double getValue(int i, int j) const throw(std::invalid_argument);                       // Get a value in the matrix
@@ -55,7 +53,6 @@ class Matrix3x3 {
         double getDeterminant() const;                                                          // Return the determinant of the matrix
         double getTrace() const;                                                                // Return the trace of the matrix
         Matrix3x3 getInverse() const throw(MathematicsException);                               // Return the inverse matrix
-        Quaternion getQuaternion() const;                                                       // Return the unit quaternion corresponding to the matrix
         static Matrix3x3 identity();                                                            // Return the 3x3 identity matrix
 
         // --- Overloaded operators --- //

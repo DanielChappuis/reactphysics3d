@@ -23,6 +23,7 @@
 // Libraries
 #include <cmath>
 #include "Vector3D.h"
+#include "Matrix3x3.h"
 #include "exceptions.h"
 
 // ReactPhysics3D namespace
@@ -46,6 +47,7 @@ class Quaternion {
         Quaternion(double x, double y, double z, double w);                   // Constructor with arguments
         Quaternion(double w, const Vector3D& v);                              // Constructor with the component w and the vector v=(x y z)
         Quaternion(const Quaternion& quaternion);                             // Copy-constructor
+        Quaternion(const Matrix3x3& matrix);                                  // Create a unit quaternion from a rotation matrix
         ~Quaternion();                                                        // Destructor
         double getX() const;                                                  // Return the component x of the quaternion
         double getY() const;                                                  // Return the component y of the quaternion
@@ -60,6 +62,7 @@ class Quaternion {
         Quaternion getUnit() const throw (MathematicsException);              // Return the unit quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
         Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
+        Matrix3x3 getMatrix() const;                                          // Return the orientation matrix corresponding to this quaternion
         double scalarProduct(const Quaternion& quaternion) const;             // Scalar product between two quaternions
         void getRotationAngleAxis(double& angle, Vector3D& axis) const;       // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
