@@ -28,15 +28,16 @@
            : Body(mass), inertiaTensorLocal(inertiaTensorLocal), currentBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())),
              previousBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())), obb(obb) {
 
-        isMotionEnabled = true;
-        isCollisionEnabled = true;
-        interpolationFactor = 0.0;
+    restitution = 1.0;
+    isMotionEnabled = true;
+    isCollisionEnabled = true;
+    interpolationFactor = 0.0;
 
-        // Update the orientation of the OBB according to the orientation of the rigid body
-        this->update();
+    // Update the orientation of the OBB according to the orientation of the rigid body
+    this->update();
 
-        // Set the body pointer to the OBB
-        this->obb.setBodyPointer(this);
+    // Set the body pointer to the OBB
+    this->obb.setBodyPointer(this);
 }
 
  // Copy-constructor

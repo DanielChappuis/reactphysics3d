@@ -49,6 +49,7 @@ class RigidBody : public Body {
         bool isMotionEnabled;                       // True if the body can move
         bool isCollisionEnabled;                    // True if the body can collide with others bodies
         double interpolationFactor;                 // Interpolation factor used for the state interpolation
+        double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
         OBB obb;                                    // Oriented bounding box that contains the rigid body
 
     public :
@@ -67,6 +68,8 @@ class RigidBody : public Body {
         bool getIsMotionEnabled() const;                                    // Return if the rigid body can move
         void setIsMotionEnabled(bool isMotionEnabled);                      // Set the value to true if the body can move
         void setLinearVelocity(const Vector3D& linearVelocity);             // Set the linear velocity of the rigid body
+        double getRestitution() const;                                      // Get the restitution coefficient
+        void setRestitution(double restitution);                            // Set the restitution coefficient
         void updatePreviousBodyState();                                     // Update the previous body state of the body
         const OBB* const getOBB() const;                                    // Return the oriented bounding box of the rigid body
         void update();                                                      // Update the rigid body in order to reflect a change in the body state
@@ -139,6 +142,16 @@ inline void RigidBody::setLinearVelocity(const Vector3D& linearVelocity) {
 
     // Update the linear momentum of the current body state
     currentBodyState.setLinearMomentum(linearVelocity * (1.0/currentBodyState.getMassInverse().getValue()));
+}
+
+// Get the restitution coeffficient of the rigid body
+inline double RigidBody::getRestitution() const {
+    return restitution;
+}
+
+// Set the restitution coefficient
+inline void RigidBody::setRestitution(double restitution) {
+    this->restitution = restitution;
 }
 
 // Update the previous body state of the body
