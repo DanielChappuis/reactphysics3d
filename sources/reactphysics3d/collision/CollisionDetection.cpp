@@ -71,10 +71,13 @@ void CollisionDetection::computeBroadPhase() {
     // For each pair of bodies in the physics world
     for(std::vector<Body*>::const_iterator it1 = world->getBodiesBeginIterator(); it1 != world->getBodiesEndIterator(); ++it1) {
         for(std::vector<Body*>::const_iterator it2 = it1; it2 != world->getBodiesEndIterator(); ++it2) {
-            // If both bodies are RigidBody and are different
+            
             RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(*it1);
             RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);
-            if(rigidBody1 && rigidBody2 && rigidBody1 != rigidBody2) {
+
+            // If both bodies are RigidBody and are different and if both have collision activated
+            if(rigidBody1 && rigidBody2 && rigidBody1 != rigidBody2
+               && rigidBody1->getIsCollisionEnabled() && rigidBody2->getIsCollisionEnabled()) {
                 // Get the oriented bounding boxes of the two bodies
                 const OBB* obb1 = rigidBody1->getOBB();
                 const OBB* obb2 = rigidBody2->getOBB();
@@ -202,7 +205,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
         std::vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
-
+        
         // Clip the edge of OBB2 using the face of OBB1
         std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
 
