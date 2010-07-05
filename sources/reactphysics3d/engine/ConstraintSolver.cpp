@@ -21,19 +21,18 @@
 #include "ConstraintSolver.h"
 #include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
 #include "../body/RigidBody.h"
-#include "../integration/SemiImplicitEuler.h"   // TODO : Delete this
 
 using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
                  :physicsWorld(world), bodyMapping(0), nbConstraints(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
-       integrationAlgorithm = new SemiImplicitEuler();
+
 }
 
 // Destructor
 ConstraintSolver::~ConstraintSolver() {
-    delete integrationAlgorithm;
+
 }
 
 // Allocate all the matrices needed to solve the LCP problem
@@ -85,7 +84,8 @@ void ConstraintSolver::allocate() {
     lowerBounds.changeSize(nbConstraints);
     upperBounds.changeSize(nbConstraints);
     Minv_sp = new Matrix[nbBodies];
-    V = new Vector[nbBodies];
+    V1 = new Vector[nbBodies];
+    Vconstraint = new Vector[nbBodies];
     Fext = new Vector[nbBodies];
 }
 
@@ -157,11 +157,15 @@ void ConstraintSolver::fillInMatrices() {
         rigidBody = dynamic_cast<RigidBody*>(body);
         assert(rigidBody != 0);
         
-        // Compute the vector with velocities values
+        // Compute the vector V1 with initial velocities values
         v.fillInSubVector(0, rigidBody->getCurrentBodyState().getLinearVelocity());
         v.fillInSubVector(3, rigidBody->getCurrentBodyState().getAngularVelocity());
-        V[bodyNumber].changeSize(6);
-        V[bodyNumber] = v;
+        V1[bodyNumber].changeSize(6);
+        V1[bodyNumber] = v;
+
+        // Compute the vector Vconstraint with final constraint velocities
+        Vconstraint[bodyNumber].changeSize(6);
+        Vconstraint[bodyNumber].initWithValue(0.0);
         
         // Compute the vector with forces and torques values
         f.fillInSubVector(0, rigidBody->getCurrentBodyState().getExternalForce());
@@ -172,8 +176,10 @@ void ConstraintSolver::fillInMatrices() {
         // Compute the inverse sparse mass matrix
         Matrix mInv(6,6);
         mInv.initWithValue(0.0);
-        mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
-        mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
+        if (rigidBody->getIsMotionEnabled()) {
+            mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
+            mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
+        }
         Minv_sp[bodyNumber].changeSize(6, 6);
         Minv_sp[bodyNumber] = mInv;
     }
@@ -197,7 +203,8 @@ void ConstraintSolver::freeMemory() {
     delete[] B_sp[1];
     delete[] B_sp;
     delete[] Minv_sp;
-    delete[] V;
+    delete[] V1;
+    delete[] Vconstraint;
     delete[] Fext;
 }
 
@@ -209,12 +216,11 @@ void ConstraintSolver::computeVectorB(double dt) {
     b = errorValues * oneOverDT;
 
     for (uint c = 0; c<nbConstraints; c++) {
-        int size1 = J_sp[c][0].getNbColumn(); // TODO : Delete this
         // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        b.setValue(c, b.getValue(c) - (J_sp[c][0] * V[indexBody1]).getValue(0,0) * oneOverDT);
-        b.setValue(c, b.getValue(c) - (J_sp[c][1] * V[indexBody2]).getValue(0,0) * oneOverDT);
+        b.setValue(c, b.getValue(c) - (J_sp[c][0] * V1[indexBody1]).getValue(0,0) * oneOverDT);
+        b.setValue(c, b.getValue(c) - (J_sp[c][1] * V1[indexBody2]).getValue(0,0) * oneOverDT);
 
         // Substract J*M^-1*F_ext to the vector b
         b.setValue(c, b.getValue(c) - ((J_sp[c][0] * Minv_sp[indexBody1]) * Fext[indexBody1]
@@ -237,26 +243,21 @@ void ConstraintSolver::computeMatrixB_sp() {
     }
 }
 
-// Compute the vector V2 according to the formula
-// V2 = dt * (M^-1 * J^T * lambda + M^-1 * F_ext) + V1
-// Note that we use the vector V to store both V1 and V2 and that at the beginning
-// of this method, the vector V already contains the vector V1.
+// Compute the vector V_constraint (which corresponds to the constraint part of
+// the final V2 vector) according to the formula
+// V_constraint = dt * (M^-1 * J^T * lambda)
+// Note that we use the vector V to store both V1 and V_constraint.
 // Note that M^-1 * J^T = B.
 // This method is called after that the LCP solver have computed lambda
-void ConstraintSolver::computeVectorV(double dt) {
+void ConstraintSolver::computeVectorVconstraint(double dt) {
     uint indexBody1, indexBody2;
 
     // Compute dt * (M^-1 * J^T * lambda
     for (uint i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-        V[indexBody1] = V[indexBody1] + (B_sp[indexBody1][i] * lambda.getValue(i)).getVector() * dt;
-        V[indexBody2] = V[indexBody2] + (B_sp[indexBody2][i] * lambda.getValue(i)).getVector() * dt;
-    }
-
-    // Compute dt * (M^-1 * F_ext)
-    for (uint i=0; i<nbBodies; i++) {
-        V[i] = V[i] + (Minv_sp[i] * Fext[i]).getVector() * dt;
+        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (B_sp[indexBody1][i] * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody2] = Vconstraint[indexBody2] +(B_sp[indexBody2][i] * lambda.getValue(i)).getVector() * dt;
     }
 }
 
@@ -276,70 +277,10 @@ void ConstraintSolver::solve(double dt) {
 
     // Solve the LCP problem (computation of lambda)
     Vector lambdaInit(nbConstraints);
+    lambdaInit.initWithValue(0.0);
     lcpSolver->setLambdaInit(lambdaInit);
     lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
 
-    // Compute the vector V2
-    computeVectorV(dt);
-
-    // Update the velocity of each body
-    // TODO : Put this code somewhere else
-    for (std::set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++) {
-        RigidBody* body = dynamic_cast<RigidBody*>(*it);
-        //std::cout << "Velocity Y before : " << body->getCurrentBodyState().getLinearVelocity().getY() << std::endl;
-        //std::cout << "Velocity Y after  : " << V[bodyNumberMapping[constraintBodies.at(i)]].getValue(1) << std::endl;
-    }
-
-    for (std::vector<Body*>::iterator it = physicsWorld->getBodiesBeginIterator(); it != physicsWorld->getBodiesEndIterator(); it++) {
-        // If this is a not constrained body
-        if (bodyNumberMapping.find(*it) == bodyNumberMapping.end()) {
-            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-
-            // The current body state of the body becomes the previous body state
-            rigidBody->updatePreviousBodyState();
-
-            // Integrate the current body state at time t to get the next state at time t + dt
-            integrationAlgorithm->integrate(rigidBody->getCurrentBodyState(), dt, dt);
-
-            // If the body state has changed, we have to update some informations in the rigid body
-            rigidBody->update();
-        }
-        else {
-            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-
-            // If the gravity force is on
-            /*
-            if(physicsWorld->getIsGravityOn()) {
-                // Apply the current gravity force to the body
-                rigidBody->getCurrentBodyState().setExternalForce(physicsWorld->getGravity());
-            }
-            */
-
-            // The current body state of the body becomes the previous body state
-            rigidBody->updatePreviousBodyState();
-
-            const Vector newLinVelocity = V[bodyNumberMapping[*it]].getSubVector(0, 3);
-            const Vector newAngVelocity = V[bodyNumberMapping[*it]].getSubVector(3, 3);
-            const Vector3D linVel(newLinVelocity.getValue(0), newLinVelocity.getValue(1), newLinVelocity.getValue(2));
-            const Vector3D angVel(newAngVelocity.getValue(0), newAngVelocity.getValue(1), newAngVelocity.getValue(2));
-            BodyState& bodyState = rigidBody->getCurrentBodyState();
-            rigidBody->getCurrentBodyState().setLinearVelocity(linVel);
-            rigidBody->getCurrentBodyState().setAngularVelocity(angVel);
-
-             // Normalize the orientation quaternion
-             rigidBody->getCurrentBodyState().setOrientation(rigidBody->getCurrentBodyState().getOrientation().getUnit());
-
-            // Compute the spin quaternion
-            const Vector3D angularVelocity = rigidBody->getCurrentBodyState().getAngularVelocity();
-            rigidBody->getCurrentBodyState().setSpin(Quaternion(angularVelocity.getX(), angularVelocity.getY(), angularVelocity.getZ(), 0) * rigidBody->getCurrentBodyState().getOrientation() * 0.5);
-
-             bodyState.setPosition(bodyState.getPosition() + bodyState.getLinearVelocity() * dt);
-             bodyState.setOrientation(bodyState.getOrientation() + bodyState.getSpin() * dt);
-
-            // If the body state has changed, we have to update some informations in the rigid body
-            rigidBody->update();
-        }
-    }
-
-    freeMemory();
+    // Compute the vector Vconstraint
+    computeVectorVconstraint(dt);
 }

@@ -33,6 +33,7 @@
 namespace reactphysics3d {
 
 // Constants
+// TODO : Set this to 10 after debugging
 const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
 
  /*  -------------------------------------------------------------------
@@ -43,7 +44,6 @@ const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when sol
 */
 class ConstraintSolver {
     protected:
-        IntegrationAlgorithm* integrationAlgorithm;           // TODO : Delete this
         PhysicsWorld* physicsWorld;                             // Reference to the physics world
         LCPSolver* lcpSolver;                                   // LCP Solver
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
@@ -68,22 +68,50 @@ class ConstraintSolver {
         Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
         Matrix* Minv_sp;                                        // Sparse representation of the Matrix that contains information about mass and inertia of each body
                                                                 // This is an array of size nbBodies that contains in each cell a 6x6 matrix
-        Vector* V;                                              // Array that contains for each body the Vector that contains linear and angular velocities
+        Vector* V1;                                             // Array that contains for each body the Vector that contains linear and angular velocities
                                                                 // Each cell contains a 6x1 vector with linear and angular velocities
+        Vector* Vconstraint;                                    // Same kind of vector as V1 but contains the final constraint velocities
         Vector* Fext;                                           // Array that contains for each body the vector that contains external forces and torques
                                                                 // Each cell contains a 6x1 vector with external force and torque.
         void allocate();                                        // Allocate all the matrices needed to solve the LCP problem
         void fillInMatrices();                                  // Fill in all the matrices needed to solve the LCP problem
-        void freeMemory();                                      // Free the memory that was allocated in the allocate() method
         void computeVectorB(double dt);                         // Compute the vector b
         void computeMatrixB_sp();                               // Compute the matrix B_sp
-        void computeVectorV(double dt);                         // Compute the vector V2
+        void computeVectorVconstraint(double dt);               // Compute the vector V2
 
     public:
-        ConstraintSolver(PhysicsWorld* world);                  // Constructor
-        virtual ~ConstraintSolver();                            // Destructor
-        void solve(double dt);                                  // Solve the current LCP problem
+        ConstraintSolver(PhysicsWorld* world);                                  // Constructor
+        virtual ~ConstraintSolver();                                            // Destructor
+        void solve(double dt);                                                  // Solve the current LCP problem
+        bool isConstrainedBody(Body* body) const;                               // Return true if the body is in at least one constraint
+        Vector3D getConstrainedLinearVelocityOfBody(Body* body);                // Return the constrained linear velocity of a body after solving the LCP problem
+        Vector3D getConstrainedAngularVelocityOfBody(Body* body);               // Return the constrained angular velocity of a body after solving the LCP problem
+        void freeMemory();                                                      // Free the memory that was allocated in the allocate() method
 };
+
+// Return true if the body is in at least one constraint
+inline bool ConstraintSolver::isConstrainedBody(Body* body) const {
+    if(constraintBodies.find(body) != constraintBodies.end()) {
+        return true;
+    }
+    return false;
+}
+
+// Return the constrained linear velocity of a body after solving the LCP problem
+inline Vector3D ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
+    assert(isConstrainedBody(body));
+    Vector vec = Vconstraint[bodyNumberMapping[body]].getSubVector(0, 3);
+    return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
+
+}
+
+// Return the constrained angular velocity of a body after solving the LCP problem
+inline Vector3D ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
+    assert(isConstrainedBody(body));
+    Vector vec = Vconstraint[bodyNumberMapping[body]].getSubVector(3, 3);
+    return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
+}
+
 
 } // End of ReactPhysics3D namespace
 

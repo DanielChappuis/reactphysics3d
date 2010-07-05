@@ -45,8 +45,10 @@ class PhysicsEngine {
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
 
-        void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);           // Update the state of a rigid body
-
+        void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);                                                 // Update the state of a rigid body // TODO : Delete this
+        void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
+        void updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity);    // Update the position and orientation of a body
+        void applyGravity();                                                                                                    // Apply the gravity force to all bodies
     public :
         PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument);     // Constructor
         ~PhysicsEngine();                                                                           // Destructor
@@ -54,7 +56,7 @@ class PhysicsEngine {
         void start();                                           // Start the physics simulation
         void stop();                                            // Stop the physics simulation
         void update();                                          // Update the physics simulation
-        void updateDynamic();                                   // TODO : Delete this method
+        //void updateDynamic();                                   // TODO : Delete this method
         void updateCollision();                                 // TODO : Delete this collision
         void initializeDisplayTime(const Time& displayTime);    // Initialize the display time
         void updateDisplayTime(const Time& newDisplayTime);     // Update the display time
