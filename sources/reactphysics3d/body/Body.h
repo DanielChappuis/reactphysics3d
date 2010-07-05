@@ -34,16 +34,22 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class Body {
-    private :
+    protected :
         Kilogram mass;                      // Mass of the body
+        bool isMotionEnabled;               // True if the body is able to move
+        bool isCollisionEnabled;            // True if the body can collide with others bodies
 
     public :
-        Body(Kilogram mass) throw(std::invalid_argument);   // Constructor
-        Body(const Body& body);                             // Copy-constructor
-        virtual ~Body();                                    // Destructor
+        Body(Kilogram mass) throw(std::invalid_argument);       // Constructor
+        Body(const Body& body);                                 // Copy-constructor
+        virtual ~Body();                                        // Destructor
 
-        Kilogram getMass() const;           // Return the mass of the body
-        void setMass(Kilogram mass);        // Set the mass of the body
+        Kilogram getMass() const;                               // Return the mass of the body
+        void setMass(Kilogram mass);                            // Set the mass of the body
+        bool getIsMotionEnabled() const;                        // Return if the rigid body can move
+        void setIsMotionEnabled(bool isMotionEnabled);          // Set the value to true if the body can move
+        bool getIsCollisionEnabled() const;                     // Return true if the body can collide with others bodies
+        void setIsCollisionEnabled(bool isCollisionEnabled);    // Set the isCollisionEnabled value
 };
 
 // --- Inlines function --- //
@@ -53,9 +59,29 @@ inline Kilogram Body::getMass() const {
     return mass;
 };
 
+// Return if the rigid body can move
+inline bool Body::getIsMotionEnabled() const {
+    return isMotionEnabled;
+}
+
+// Set the value to true if the body can move
+inline void Body::setIsMotionEnabled(bool isMotionEnabled) {
+    this->isMotionEnabled = isMotionEnabled;
+}
+
 // Method that set the mass of the body
 inline void Body::setMass(Kilogram mass) {
     this->mass = mass;
+}
+
+ // Return true if the body can collide with others bodies
+inline bool Body::getIsCollisionEnabled() const {
+    return isCollisionEnabled;
+}
+
+// Set the isCollisionEnabled value
+inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
+    this->isCollisionEnabled = isCollisionEnabled;
 }
 
 }

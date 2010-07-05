@@ -42,12 +42,10 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class RigidBody : public Body {
-    private :
+    protected :
         Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         BodyState currentBodyState;                 // Current body state
         BodyState previousBodyState;                // Previous body state
-        bool isMotionEnabled;                       // True if the body can move
-        bool isCollisionEnabled;                    // True if the body can collide with others bodies
         double interpolationFactor;                 // Interpolation factor used for the state interpolation
         double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
         OBB obb;                                    // Oriented bounding box that contains the rigid body
@@ -65,8 +63,6 @@ class RigidBody : public Body {
         BodyState& getPreviousBodyState();                                  // TODO : DELETE THIS
         void setInterpolationFactor(double factor);                         // Set the interpolation factor of the body
         BodyState getInterpolatedState() const;                             // Compute and return the interpolated state
-        bool getIsMotionEnabled() const;                                    // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                      // Set the value to true if the body can move
         void setLinearVelocity(const Vector3D& linearVelocity);             // Set the linear velocity of the rigid body
         double getRestitution() const;                                      // Get the restitution coefficient
         void setRestitution(double restitution);                            // Set the restitution coefficient
@@ -123,16 +119,6 @@ inline void RigidBody::setInterpolationFactor(double factor) {
 
     // Set the factor
     interpolationFactor = factor;
-}
-
-// Return if the rigid body can move
-inline bool RigidBody::getIsMotionEnabled() const {
-    return isMotionEnabled;
-}
-
-// Set the value to true if the body can move
-inline void RigidBody::setIsMotionEnabled(bool isMotionEnabled) {
-    this->isMotionEnabled = isMotionEnabled;
 }
 
 // Set the linear velocity of the rigid body
