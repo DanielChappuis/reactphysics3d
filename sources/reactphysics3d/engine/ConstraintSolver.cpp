@@ -256,8 +256,8 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
     for (uint i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (B_sp[indexBody1][i] * lambda.getValue(i)).getVector() * dt;
-        Vconstraint[indexBody2] = Vconstraint[indexBody2] +(B_sp[indexBody2][i] * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (B_sp[0][i] * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody2] = Vconstraint[indexBody2] + (B_sp[1][i] * lambda.getValue(i)).getVector() * dt;
     }
 }
 
