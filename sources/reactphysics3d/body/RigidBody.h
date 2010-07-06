@@ -115,7 +115,7 @@ inline BodyState& RigidBody::getPreviousBodyState() {
 
 // Set the interpolation factor of the body
 inline void RigidBody::setInterpolationFactor(double factor) {
-    assert(factor >= 0 && factor <= 1);
+    //assert(factor >= 0.0 && factor <= 1.0); // TODO : Remove the comment here
 
     // Set the factor
     interpolationFactor = factor;
@@ -123,11 +123,14 @@ inline void RigidBody::setInterpolationFactor(double factor) {
 
 // Set the linear velocity of the rigid body
 inline void RigidBody::setLinearVelocity(const Vector3D& linearVelocity) {
-    // Update the linear velocity of the current body state
-    currentBodyState.setLinearVelocity(linearVelocity);
+    // If the body is able to move
+    if (isMotionEnabled) {
+        // Update the linear velocity of the current body state
+        currentBodyState.setLinearVelocity(linearVelocity);
 
-    // Update the linear momentum of the current body state
-    currentBodyState.setLinearMomentum(linearVelocity * (1.0/currentBodyState.getMassInverse().getValue()));
+        // Update the linear momentum of the current body state
+        currentBodyState.setLinearMomentum(linearVelocity * (1.0/currentBodyState.getMassInverse().getValue()));
+    }
 }
 
 // Get the restitution coeffficient of the rigid body
