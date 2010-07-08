@@ -195,6 +195,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
 
         // Move the clipped edge halway between the edge of OBB1 and the face of OBB2
         clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal.getOpposite());
+        assert(clippedEdge.size() == 2);
 
         // For each point of the contact set
         for (unsigned int i=0; i<clippedEdge.size(); i++) {
@@ -211,6 +212,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
 
         // Move the clipped edge halfway between the face of OBB1 and the edge of OBB2
         clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal);
+        assert(clippedEdge.size() == 2);
 
         // For each point of the contact set
         for (unsigned int i=0; i<clippedEdge.size(); i++) {
@@ -227,6 +229,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
 
         // Move the clipped face halfway between the face of OBB1 and the face of OBB2
         clippedFace = movePoints(clippedFace, penetrationDepth/2.0 * normal);
+        assert(clippedFace.size() >= 3);
 
         // For each point of the contact set
         for (unsigned int i=0; i<clippedFace.size(); i++) {
