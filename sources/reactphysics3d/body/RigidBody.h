@@ -55,20 +55,20 @@ class RigidBody : public Body {
         RigidBody(const RigidBody& rigidBody);                                                                                                          // Copy-constructor
         virtual ~RigidBody();                                                                                                                           // Destructor
 
-        Matrix3x3 getInertiaTensorLocal() const;                            // Return the local inertia tensor of the body (in body coordinates)
-        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);    // Set the local inertia tensor of the body (in body coordinates)
-        Matrix3x3 getInertiaTensorWorld() const;                            // Return the inertia tensor in world coordinates
-        Matrix3x3 getInertiaTensorInverseWorld() const;                     // Return the inverse of the inertia tensor in world coordinates
-        BodyState& getCurrentBodyState();                                   // Return a reference to the current state of the body
-        BodyState& getPreviousBodyState();                                  // TODO : DELETE THIS
-        void setInterpolationFactor(double factor);                         // Set the interpolation factor of the body
-        BodyState getInterpolatedState() const;                             // Compute and return the interpolated state
-        void setLinearVelocity(const Vector3D& linearVelocity);             // Set the linear velocity of the rigid body
-        double getRestitution() const;                                      // Get the restitution coefficient
-        void setRestitution(double restitution);                            // Set the restitution coefficient
-        void updatePreviousBodyState();                                     // Update the previous body state of the body
-        const OBB* const getOBB() const;                                    // Return the oriented bounding box of the rigid body
-        void update();                                                      // Update the rigid body in order to reflect a change in the body state
+        Matrix3x3 getInertiaTensorLocal() const;                                // Return the local inertia tensor of the body (in body coordinates)
+        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);        // Set the local inertia tensor of the body (in body coordinates)
+        Matrix3x3 getInertiaTensorWorld() const;                                // Return the inertia tensor in world coordinates
+        Matrix3x3 getInertiaTensorInverseWorld() const;                         // Return the inverse of the inertia tensor in world coordinates
+        BodyState& getCurrentBodyState();                                       // Return a reference to the current state of the body
+        BodyState& getPreviousBodyState();                                      // TODO : DELETE THIS
+        void setInterpolationFactor(double factor);                             // Set the interpolation factor of the body
+        BodyState getInterpolatedState() const;                                 // Compute and return the interpolated state
+        void setLinearVelocity(const Vector3D& linearVelocity);                 // Set the linear velocity of the rigid body
+        double getRestitution() const;                                          // Get the restitution coefficient
+        void setRestitution(double restitution) throw(std::invalid_argument);   // Set the restitution coefficient
+        void updatePreviousBodyState();                                         // Update the previous body state of the body
+        const OBB* const getOBB() const;                                        // Return the oriented bounding box of the rigid body
+        void update();                                                          // Update the rigid body in order to reflect a change in the body state
 };
 
 // --- Inline functions --- //
@@ -139,8 +139,14 @@ inline double RigidBody::getRestitution() const {
 }
 
 // Set the restitution coefficient
-inline void RigidBody::setRestitution(double restitution) {
-    this->restitution = restitution;
+inline void RigidBody::setRestitution(double restitution) throw(std::invalid_argument) {
+    // Check if the restitution coefficient is between 0 and 1
+    if (restitution >= 0.0 && restitution <= 1.0) {
+        this->restitution = restitution;
+    }
+    else {
+        throw std::invalid_argument("Error : the restitution coefficent must be between 0 and 1");
+    }
 }
 
 // Update the previous body state of the body
