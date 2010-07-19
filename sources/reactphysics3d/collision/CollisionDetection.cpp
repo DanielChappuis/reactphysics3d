@@ -122,7 +122,7 @@ void CollisionDetection::computeAllContacts() {
 
 // Compute a contact (and add it to the physics world) for two colliding bodies
 void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
-
+    
     // Extract informations from the contact info structure
     const OBB* const obb1 = contactInfo->obb1;
     const OBB* const obb2 = contactInfo->obb2;
@@ -193,8 +193,19 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
         // Clip the edge of OBB1 using the face of OBB2
         std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
 
+        // TODO : Correct this bug
+        // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
+        // of obb1ExtremePoints. Therefore, we compute the nearest two points that are on the rectangle.
+        if (clippedEdge.size() != 2) {
+            edge.clear();
+            edge.push_back(computeNearestPointOnRectangle(edge[0], obb2ExtremePoints));
+            edge.push_back(computeNearestPointOnRectangle(edge[1], obb2ExtremePoints));
+            clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
+        }
+        
         // Move the clipped edge halway between the edge of OBB1 and the face of OBB2
         clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal.getOpposite());
+
         assert(clippedEdge.size() == 2);
 
         // For each point of the contact set
@@ -206,12 +217,23 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
         std::vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
-        
+
         // Clip the edge of OBB2 using the face of OBB1
         std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
 
+        // TODO : Correct this bug
+        // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
+        // of obb1ExtremePoints. Therefore, we compute the nearest two points that are on the rectangle.
+        if (clippedEdge.size() != 2) {
+            edge.clear();
+            edge.push_back(computeNearestPointOnRectangle(edge[0], obb1ExtremePoints));
+            edge.push_back(computeNearestPointOnRectangle(edge[1], obb1ExtremePoints));
+            clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
+        }
+        
         // Move the clipped edge halfway between the face of OBB1 and the edge of OBB2
         clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal);
+
         assert(clippedEdge.size() == 2);
 
         // For each point of the contact set
