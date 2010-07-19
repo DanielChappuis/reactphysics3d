@@ -118,7 +118,7 @@ inline reactphysics3d::Vector3D computeLinesIntersection(const reactphysics3d::V
     reactphysics3d::Vector3D point2 = p2 + beta * d2;
 
     // The two points must be very close
-    assert((point1-point2).length() <= EPSILON);
+    //assert((point1-point2).length() <= 0.1);
 
     // Return the intersection point (halfway between "point1" and "point2")
     return 0.5 * (point1 + point2);
@@ -185,7 +185,8 @@ inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::v
     // For each point of the set
     for (unsigned int i=0; i<points.size(); ++i) {
         // Compute the projection of the point onto the plane
-        projectedPoints.push_back(points[i] - ((points[i] - A).scalarProduct(n)) * n);
+        projectedPoints.push_back(points[i] - (n * (points[i] - A).scalarProduct(n)));
+
     }
 
     // Return the projected set of points
@@ -199,13 +200,74 @@ inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3D&
     return ((P-A).crossProduct(v).length() / (v.length()));
 }
 
-// TODO : Test this method
+
 // Compute the orthogonal projection of a point "P" on a line (given by a point "A" and a vector "v")
 inline reactphysics3d::Vector3D computeOrthogonalProjectionOfPointOntoALine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
     return (A + ((P-A).scalarProduct(v) / (v.scalarProduct(v))) * v);
 }
 
-// TODO : Test this method
+// Given a point P and 4 points that form a rectangle (point P and the 4 points have to be on the same plane) this method computes
+// the point Q that is the nearest point to P that is inside (on a border of) the rectangle. The point P should be outside the rectangle.
+// The result point Q will be in a segment of the rectangle
+inline reactphysics3d::Vector3D computeNearestPointOnRectangle(const reactphysics3d::Vector3D& P, const std::vector<reactphysics3d::Vector3D> rectangle) {
+    assert(rectangle.size() == 4);
+    double distPSegment1 = computeDistanceBetweenPointAndLine(P, rectangle[0], rectangle[1] - rectangle[0]);
+    double distPSegment2 = computeDistanceBetweenPointAndLine(P, rectangle[1], rectangle[2] - rectangle[1]);
+    double distPSegment3 = computeDistanceBetweenPointAndLine(P, rectangle[2], rectangle[3] - rectangle[2]);
+    double distPSegment4 = computeDistanceBetweenPointAndLine(P, rectangle[3], rectangle[0] - rectangle[3]);
+    double distSegment1Segment3 = computeDistanceBetweenPointAndLine(rectangle[0], rectangle[3], rectangle[3] - rectangle[2]);
+    double distSegment2Segment4 = computeDistanceBetweenPointAndLine(rectangle[1], rectangle[3], rectangle[0] - rectangle[3]);
+    Vector3D resultPoint;
+    
+    // Check if P is between the lines of the first pair of parallel segments of the rectangle
+    if (distPSegment1 <= distSegment1Segment3 && distPSegment3 <= distSegment1Segment3) {
+        // Find among segments 2 and 4 which one is the nearest
+        if (distPSegment2 <= distPSegment4) { // Segment 2 is the nearest
+            // We compute the projection of the point P onto the segment 2
+            resultPoint = computeOrthogonalProjectionOfPointOntoALine(P, rectangle[1], rectangle[2] - rectangle[1]);
+        }
+        else {  // Segment 4 is the nearest
+            // We compute the projection of the point P onto the segment 4
+            resultPoint = computeOrthogonalProjectionOfPointOntoALine(P, rectangle[3], rectangle[0] - rectangle[3]);
+        }
+    }
+    // Check if P is between the lines of the second pair of parallel segments of the rectangle
+    else if (distPSegment2 <= distSegment2Segment4 && distPSegment4 <= distSegment2Segment4) {
+        // Find among segments 1 and 3 which one is the nearest
+        if (distPSegment1 <= distPSegment3) { // Segment 1 is the nearest
+            // We compute the projection of the point P onto the segment 1
+            resultPoint = computeOrthogonalProjectionOfPointOntoALine(P, rectangle[0], rectangle[1] - rectangle[0]);
+        }
+        else {  // Segment 3 is the nearest
+            // We compute the projection of the point P onto the segment 3
+            resultPoint = computeOrthogonalProjectionOfPointOntoALine(P, rectangle[2], rectangle[3] - rectangle[2]);
+        }
+    }
+    else if (distPSegment4 <= distPSegment2) {
+        if (distPSegment1 <= distPSegment3) { // The point P is in the corner of point rectangle[0]
+            // Return the corner of the rectangle
+            return rectangle[0];
+        }
+        else { // The point P is in the corner of point rectangle[3]
+            // Return the corner of the rectangle
+            return rectangle[3];
+        }
+    }
+    else {
+        if (distPSegment1 <= distPSegment3) { // The point P is in the corner of point rectangle[1]
+            // Return the corner of the rectangle
+            return rectangle[1];
+        }
+        else { // The point P is in the corner of point rectangle[2]
+            // Return the corner of the rectangle
+            return rectangle[2];
+        }
+    }
+
+    // Return the result point
+    return resultPoint;
+}
+
 // Compute the intersection between two parallel segments (the first segment is between the points "seg1PointA" and "seg1PointB" and the second
 // segment is between the points "seg2PointA" and "seg2PointB"). The result is the segment intersection (represented by the points "resultPointA"
 // and "resultPointB". Because the two given segments don't have to be on the same exact line, the result intersection segment will a segment
@@ -255,22 +317,12 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& 
     }
 }
 
-// TODO : Test this method
 // This method clip a 3D segment with 3D rectangle polygon. The segment and the rectangle are asssumed to be on the same plane. We
 // also assume that the segment is not completely outside the clipping rectangle.
 // The segment is given by the two vertices in "segment" and the rectangle is given by the ordered vertices in "clipRectangle".
 // This method returns the clipped segment.
 inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(const std::vector<reactphysics3d::Vector3D>& segment, const std::vector<reactphysics3d::Vector3D> clipRectangle) {
-    for (int i=0; i<segment.size(); i++) {
-        std::cout << "Segment " << i << " X = " << segment.at(i).getX() << std::endl;
-        std::cout << "Segment " << i << " Y = " << segment.at(i).getY() << std::endl;
-        std::cout << "Segment " << i << " Z = " << segment.at(i).getZ() << std::endl;
-    }
-    for (int i=0; i<clipRectangle.size(); i++) {
-        std::cout << "Rectangle " << i << " X = " << clipRectangle.at(i).getX() << std::endl;
-        std::cout << "Rectangle " << i << " Y = " << clipRectangle.at(i).getY() << std::endl;
-        std::cout << "Rectangle " << i << " Z = " << clipRectangle.at(i).getZ() << std::endl;
-    }
+    double const epsilon = 0.01;
 
     assert(segment.size() == 2);
     assert(clipRectangle.size() == 4);
@@ -283,7 +335,7 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
         outputSegment.clear();
 
         // Current clipped segment
-        assert(inputSegment.size() == 2);
+        //assert(inputSegment.size() == 2);
         reactphysics3d::Vector3D S = inputSegment[0];
         reactphysics3d::Vector3D P = inputSegment[1];
 
@@ -293,9 +345,9 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
         reactphysics3d::Vector3D planeNormal = clipRectangle[(i+2) % 4] - clipRectangle[(i+1) % 4];
 
         // If the point P is inside the clip plane
-        if (planeNormal.scalarProduct(P-A) >= 0.0) {
+        if (planeNormal.scalarProduct(P-A) >= 0.0 - epsilon) {
             // If the point S is inside the clip plane
-            if (planeNormal.scalarProduct(S-A) >= 0.0) {
+            if (planeNormal.scalarProduct(S-A) >= 0.0 - epsilon) {
                 outputSegment.push_back(P);
                 outputSegment.push_back(S);
             }
@@ -307,7 +359,7 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
                 outputSegment.push_back(intersectPoint);
             }
         }
-        else if (planeNormal.scalarProduct(S-A) > 0.0) {    // P is outside and S is inside the clip plane
+        else if (planeNormal.scalarProduct(S-A) > 0.0 - epsilon) {    // P is outside and S is inside the clip plane
                 // Compute the intersection point between the segment SP and the clip plane
                 reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
@@ -322,11 +374,11 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
     return outputSegment;
 }
 
-// TODO : Test this method
 // This method uses the Sutherland-Hodgman clipping algorithm to clip a subject polygon (given by the ordered 3D vertices in "subjectPolygon") using
 // a rectangle polygon (given by the ordered 3D vertices in "clipRectangle"). The subject polygon and the clip rectangle are in 3D but we assumed that
 // they are on a same plane in 3D. The method returns the ordered 3D vertices of the subject polygon clipped using the rectangle polygon.
 inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(const std::vector<reactphysics3d::Vector3D>& subjectPolygon, const std::vector<reactphysics3d::Vector3D>& clipRectangle) {
+    double const epsilon = 0.1;
     assert(clipRectangle.size() == 4);
 
     std::vector<reactphysics3d::Vector3D> outputPolygon;
@@ -348,9 +400,10 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
             reactphysics3d::Vector3D P = inputPolygon[(j+1) % inputPolygon.size()];
 
             // If the point P is inside the clip plane
-            if (planeNormal.scalarProduct(P-A) >= 0.0) {
+            double test = planeNormal.scalarProduct(P-A);
+            if (planeNormal.scalarProduct(P-A) >= 0.0 - epsilon) {
                 // If the point S is also inside the clip plane
-                if (planeNormal.scalarProduct(S-A) >= 0.0) {
+                if (planeNormal.scalarProduct(S-A) >= 0.0 - epsilon) {
                     outputPolygon.push_back(P);
                 }
                 else {  // If the point S is outside the clip plane
