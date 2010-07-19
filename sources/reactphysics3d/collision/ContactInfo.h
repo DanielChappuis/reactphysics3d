@@ -40,8 +40,8 @@ struct ContactInfo {
         // TODO : Use polymorphism here (change OBB into BoundingVolume to be more general)
         const OBB* const obb1;                   // Body pointer of the first bounding volume
         const OBB* const obb2;                   // Body pointer of the second bounding volume
-        const Vector3D normal;             // Normal vector the the collision contact
-        const double penetrationDepth;     // Penetration depth of the contact
+        const Vector3D normal;                   // Normal vector the the collision contact
+        const double penetrationDepth;           // Penetration depth of the contact
 
         ContactInfo(const OBB* const obb1, const OBB* const obb2, const Vector3D& normal, double penetrationDepth);   // Constructor
 };
