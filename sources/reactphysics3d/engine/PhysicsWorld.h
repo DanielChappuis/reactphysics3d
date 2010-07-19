@@ -17,8 +17,8 @@
  * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef PHYSICSWORLD_H
+#define PHYSICSWORLD_H
 
 // Libraries
 #include <vector>
