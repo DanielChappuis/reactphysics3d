@@ -26,7 +26,6 @@
 #include <cfloat>
 #include <cmath>
 #include <cassert>
-#include <iostream>     // TODO : Delete this
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -88,7 +87,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
                                                 // The contact normal point out of OBB1 toward OBB2
     bool side;                                  // True if the interval 1 is at the left of interval 2 if a collision occurs and false otherwise
     double minPenetrationDepth = DBL_MAX;       // Minimum penetration depth detected among all separated axis
-    const double cutoff = 0.9;             // Cutoff for cosine of angles between box axes
+    const double cutoff = 0.99;               // Cutoff for cosine of angles between box axes
     bool existsParallelPair = false;            // True if there exists two face normals that are parallel.
                                                 // This is used because if a parallel pair exists, it is sufficient
                                                 // to test only the face normals of the OBBs for separation. Two nearly
@@ -100,7 +99,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     double absC[3][3];                          // absC[i][j] = abs(DotProduct(obb1.Ai, obb2.Bj))
     double udc1[3];                             // DotProduct(obb1.Ai, obb2.center - obb1.center)
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
-
+     
     Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Vector between the centers of the OBBs
 
     // Axis A0
