@@ -53,10 +53,10 @@ const Matrix3x3 Cube::inertiaTensor;
 
 // Constructor of the class Cube
 Cube::Cube(const Vector3D& position, const Quaternion& orientation, float size, const Kilogram& mass)
-     :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass.getValue()*2*size*size, 0.0, 0.0,
-                                        0.0, 1.0/12.0*mass.getValue()*2*size*size, 0.0,
-                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
-                                                                                             size/2, size/2, size/2)) {
+     :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass.getValue()*2*size*size, 0.0, 0.0,  
+                                        0.0, 1.0/12.0*mass.getValue()*2*size*size, 0.0,                  
+                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0), 
+                                                                                             size/2.0, size/2.0, size/2)) {
     this->size = size;
 }
 

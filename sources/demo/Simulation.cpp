@@ -27,7 +27,7 @@ using namespace reactphysics3d;
 
 // Constructor of the class Simulation
 Simulation::Simulation()
-           :world(new PhysicsWorld(Vector3D(0.0, 0.0, 0.0))), engine(world, Time(0.01)), scene(this->world) {
+           :world(new PhysicsWorld(Vector3D(0.0, -9.8, 0.0))), engine(world, Time(0.01)), scene(this->world) {    // TODO : Change the timestep here after debugging
     simRunning = false;
     mouseButtonPressed = false;
     nbFrame = 0;
@@ -84,7 +84,7 @@ void Simulation::start() {
         pEngine->updateDisplayTime(Time(time));
 
         // Update the physics
-        pEngine->updateCollision();
+        pEngine->update();
 
         // Display the actual scene
         scene.display(context);

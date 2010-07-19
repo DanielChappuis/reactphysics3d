@@ -29,19 +29,49 @@ using namespace reactphysics3d;
 // Constructor of the class Context
 Context::Context() {
 
-    Cube* cube1 = new Cube(Vector3D(5.0, 13.0, 1), Quaternion(1.0, 1.0, 0.0, 0.0), 4.0, Kilogram(3.0));
-    Cube* cube2 = new Cube(Vector3D(5.0, 13.0, 9), Quaternion(0.5, 0.5, 0.5, 0.0), 4.0, Kilogram(3.0));
-    cube1->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.5));
-    cube2->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, -0.5));
+    /*
+    Cube* cube1 = new Cube(Vector3D(0.0, 10.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 3.0, Kilogram(1.0));
+    Cube* cube2 = new Cube(Vector3D(0.0, 0.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 3.0, Kilogram(1.0));
+    //cube1->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.0));
+    //cube2->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.0));
+    cube2->getRigidBody()->setIsMotionEnabled(false);
+    cube1->getRigidBody()->setRestitution(0.5);
+    cube2->getRigidBody()->setRestitution(0.5);
+    */
 
-    //Cube* cube2 = new Cube(Vector3D(0.0, 17, 8.0), Quaternion(0.0, 1.0, 0.0, 0.0), 3.0, Kilogram(2.0));
-    //Cube* cube3 = new Cube(Vector3D(4.0, 17, -2.0), Quaternion(0.0, 1.0, 0.0, 0.0), 2.0, Kilogram(11.0));
-    //Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.0, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(10.0));
+    
+    for (int i=20; i>1; i=i-3) {
+       Cube* cube = new Cube(Vector3D(3.0, i, i*0.2), Quaternion(1.0, 1.0, 0.0, 0.0), 2.0, Kilogram(1.0));
+       cube->getRigidBody()->setRestitution(0.7);
+       addObject(cube);
+    }
+
+    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.0 , 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(1.0));
+    plane1->getRigidBody()->setRestitution(0.7);
+    plane1->getRigidBody()->setIsMotionEnabled(false);
+    addObject(plane1);
+    
+
+    /*
+    Cube* cube1 = new Cube(Vector3D(4.0, 11.0, 5.0), Quaternion(1.0, 0.3, 0.8, 0.0), 2.0, Kilogram(3.0));
+    //Cube* cube2 = new Cube(Vector3D(3.0, 9, 3.0), Quaternion(1.0, 1.0, 0.0, 0.0), 2.0, Kilogram(2.0));
+    cube1->getRigidBody()->setRestitution(0.4);
+    //cube2->getRigidBody()->setRestitution(0.4);
+    
+    //Cube* cube3 = new Cube(Vector3D(5.0, 13, 0.0), Quaternion(1.0, 1.0, 0.3, 0.0), 2.0, Kilogram(1.0));
+    //cube3->getRigidBody()->setRestitution(0.8);
+
+    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.2, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(1.0));
+    plane1->getRigidBody()->setRestitution(0.4);
+    plane1->getRigidBody()->setIsMotionEnabled(false);
+    
 
     addObject(cube1);
-    addObject(cube2);
+    //addObject(cube2);
     //addObject(cube3);
-    //addObject(plane1);
+    addObject(plane1);
+    */
+    
 }
 
 

@@ -98,6 +98,7 @@ void Scene::display(const Context& context) const {
     // Draw all objects in the context
     for(int i=0; i<context.getNbObjects(); ++i)
     {
+
         // Copy the active matrix on the matrix stack
        glPushMatrix();
 
@@ -112,14 +113,16 @@ void Scene::display(const Context& context) const {
 
        // Remove the matrix on the top of the matrix stack
        glPopMatrix();
+
+       
     }
 
     // Draw all the contact points
     for (std::vector<Constraint*>::iterator it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
         RigidBody* rigidBody1 = dynamic_cast<RigidBody*>((*it)->getBody1());
         RigidBody* rigidBody2 = dynamic_cast<RigidBody*>((*it)->getBody2());
-        rigidBody1->setIsMotionEnabled(false);
-        rigidBody2->setIsMotionEnabled(false);
+        //rigidBody1->setIsMotionEnabled(false);
+        //rigidBody2->setIsMotionEnabled(false);
 
         Contact* contact = dynamic_cast<Contact*>((*it));
         assert(contact != 0);
@@ -131,8 +134,10 @@ void Scene::display(const Context& context) const {
         glPopMatrix();
     }
 
-	// Change the buffers
-	SDL_GL_SwapBuffers();
+    glFlush();
+
+    // Swap the buffers
+    SDL_GL_SwapBuffers();
 }
 
 // Reshape the window

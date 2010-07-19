@@ -45,15 +45,15 @@ class Object {
 };
 
 // ----- Class Cube ----- //
-// Represente a Cube in the simulation
+// Represente a Box in the simulation
 class Cube : public Object {
     private :
-        float size;                                      // Size of a side in the cube
-        static const Matrix3x3 inertiaTensor;            // Inertia tensor of a cube
+        float size;                                      // Size of a side in the box
+        static const Matrix3x3 inertiaTensor;            // Inertia tensor of a box
     public :
         Cube(const Vector3D& position, const Quaternion& orientation, float size, const Kilogram& mass);    // Constructor of the class cube
-        virtual ~Cube();                                                                                    // Destructor of the class cube
-        virtual void draw() const;                                                                          // Method to draw the cube
+        virtual ~Cube();                                                                                                                // Destructor of the class cube
+        virtual void draw() const;                                                                                                      // Method to draw the cube
 };
 
 

@@ -25,10 +25,10 @@
 OutSideCamera::OutSideCamera() {
 
     // Initialize the attributes
-    heightFromFloor = 20.0;
-    horizontalAngleRotation = 0;
+    heightFromFloor = 10.0;
+    horizontalAngleRotation = 45;
     verticalAngleRotation = 45;
-    distanceFromOrigin = 40.0;
+    distanceFromOrigin = 30.0;
     lookAtPoint.setAllValues(0.0, 0.0, 0.0);
 
     // Update the position of the camera
