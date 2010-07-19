@@ -41,7 +41,6 @@ class PhysicsEngine {
     protected :
         PhysicsWorld* world;                            // Pointer to the physics world of the physics engine
         Timer timer;                                    // Timer of the physics engine
-        IntegrationAlgorithm* integrationAlgorithm;     // Integration algorithm used to solve differential equations of movement
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
 

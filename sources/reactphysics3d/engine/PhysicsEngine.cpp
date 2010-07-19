@@ -32,97 +32,43 @@ PhysicsEngine::PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (s
         // Throw an exception
         throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
     }
-
-    // Creation of the Semi-Implicit Euler integration algorithm
-    integrationAlgorithm = new SemiImplicitEuler();
 }
 
 // Destructor
 PhysicsEngine::~PhysicsEngine() {
-    delete integrationAlgorithm;
+
 }
 
 void PhysicsEngine::update() {
-    updateCollision();
-}
+    bool existCollision = false;
 
-/*
-// TODO : Delete this method
-// Update the physics simulation
-void PhysicsEngine::updateDynamic() {
-    // Check if the physics simulation is running
     if (timer.getIsRunning()) {
+        // Apply the gravity force to all bodies
+        applyGravity();
+
         // While the time accumulator is not empty
         while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
-            // For each body in the dynamic world
-            for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
-                // If the body is a RigidBody and if the rigid body motion is enabled
-                RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-                if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                    // Update the state of the rigid body
-                    //updateBodyState(rigidBody, timer.getTimeStep());
-                }
+            existCollision = false;
+            // Compute the collision detection
+            if (collisionDetection.computeCollisionDetection()) {
+                existCollision = true;
+
+                // Solve constraints
+                constraintSolver.solve(timer.getTimeStep().getValue());
             }
 
             // Update the timer
             timer.update();
-        }
 
-        // For each body in the dynamic world
-        for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
-            // If the body is a RigidBody and if the rigid body motion is enabled
-            RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-            if (rigidBody && rigidBody->getIsMotionEnabled()) {
-                // Update the interpolation factor of the rigid body
-                // This one will be used to compute the interpolated state
-                rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
+            // Update the position and orientation of each body
+            updateAllBodiesMotion();
+
+            // Free the allocated memory of the constraint solver
+            if (existCollision) {
+                constraintSolver.freeMemory();
             }
         }
     }
-}
-*/
-
-// TODO : Delethe this method
-// Update the physics simulation
-void PhysicsEngine::updateCollision() {
-    bool existCollision = false;
-
-    // Apply the gravity force to all bodies
-    applyGravity();
-
-    // While the time accumulator is not empty
-    while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
-        existCollision = false;
-        // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection()) {
-            existCollision = true;
-
-            // Solve constraints
-            constraintSolver.solve(timer.getTimeStep().getValue());
-        }
-
-        // Update the timer
-        timer.update();
-
-        // Update the position and orientation of each body
-        updateAllBodiesMotion();
-
-        // Free the allocated memory of the constraint solver
-        if (existCollision) {
-            constraintSolver.freeMemory();
-        }
-    }
-
-    /*
-    // For each body in the the dynamic world
-    for(std::vector<Body*>::const_iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
-        // If the body is a RigidBody and if the rigid body motion is enabled
-        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-        if (rigidBody) {
-            
-        }
-    }
-     */
 }
 
 // Compute the motion of all bodies and update their positions and orientations
