@@ -43,6 +43,7 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
 
         for(int i=0; i<nbRow; ++i) {
             array[i] = new double[nbColumn];
+            assert(array[i] != 0);
         }
 
         // TODO : This initialization loop must be removed carefully
@@ -431,7 +432,7 @@ Matrix Matrix::operator-(const Matrix& matrix2) const throw(MathematicsException
 // Overloaded operator * for the multiplication of the matrix with a number
 Matrix Matrix::operator*(double nb) const {
     // Creation of the result matrix
-    Matrix result(nbRow,nbColumn);
+    Matrix result(nbRow, nbColumn);
 
     // Multiplication of the matrix with the number
     for(int i=0; i<nbRow; ++i) {
