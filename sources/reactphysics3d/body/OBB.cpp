@@ -120,6 +120,18 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) con
 
     std::vector<Vector3D> extremeVertices;
 
+    // TODO : Delete this
+    std::cout << "------------------------------------" << std::endl;
+    for (int i=0; i<8; i++)
+    {
+        Vector3D vertex = getVertex(i);
+
+        // Compute the projection length of the current vertex onto the projection axis
+        double projectionLength = directionAxis.scalarProduct(vertex-center) / directionAxis.length();
+        std::cout << "Point : x=" << vertex.getX() << " y=" << vertex.getY() << "z=" << vertex.getZ() << std::endl;
+        std::cout << "projection length = " << projectionLength << std::endl;
+    }
+
     // Check if the given axis is parallel to an axis on the OBB
     if (axis[0].isParallelWith(directionAxis)) {
         if (axis[0].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction
@@ -225,4 +237,31 @@ std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_
         // Throw an exception
         throw std::invalid_argument("Exception: The argument must be between 0 and 5");
     }
+}
+
+// Return the axis that correspond the better to the vector
+Vector3D OBB::getBestAxis(const Vector3D& vector) const {
+    double vectorLength = vector.length();
+    double minDifference = DBL_MAX;
+    int bestAxis = -1;
+    bool opposite = false;
+    
+    for (int i=0; i<3; i++) {
+        double scalarProd = axis[i].scalarProduct(vector);
+        double lengthValue = axis[i].length() * vectorLength;
+        
+        if (std::abs(std::abs(scalarProd) - lengthValue) < minDifference) {
+            bestAxis = i;
+            minDifference = std::abs(std::abs(scalarProd) - lengthValue);
+            
+            if (scalarProd >= 0) {
+                opposite = false;
+            }
+            else {
+                opposite = true;
+            }
+        }
+    }
+
+    return opposite ? axis[bestAxis].getOpposite() : axis[bestAxis];
 }

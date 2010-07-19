@@ -21,6 +21,7 @@
 #define OBB_H
 
 // Libraries
+#include <cfloat>
 #include "BoundingVolume.h"
 #include "../mathematics/mathematics.h"
 
@@ -60,6 +61,7 @@ class OBB : public BoundingVolume {
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                           // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);        // Update the oriented bounding box orientation according to a new orientation of the rigid body
         virtual void draw() const;                                                                              // Draw the OBB (only for testing purpose)
+        Vector3D getBestAxis(const Vector3D& vector) const;                                                     // Return the axis that correspond the better to the vector
 };
 
 // Return the center point of the OBB
@@ -166,7 +168,6 @@ inline void OBB::updateOrientation(const Vector3D& newCenter, const Quaternion& 
     axis[1] = rotateVectorWithQuaternion(oldAxis[1], rotationQuaternion).getUnit();
     axis[2] = rotateVectorWithQuaternion(oldAxis[2], rotationQuaternion).getUnit();
 }
-
 
 }; // End of the ReactPhysics3D namespace
 
