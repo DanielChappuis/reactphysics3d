@@ -65,6 +65,8 @@ void ConstraintSolver::allocate() {
         }
     }
 
+    assert(nbConstraints > 0);
+
     // Compute the number of bodies that are part of some active constraint
     nbBodies = bodyNumberMapping.size();
 
