@@ -40,9 +40,8 @@ void LCPProjectedGaussSeidel::solve(Matrix** J_sp, Matrix** B_sp, uint nbConstra
                                     uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
                                     const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const {
 
-    int size1 = lambda.getNbComponent();
-    int size2 = lambdaInit.getNbComponent();
     lambda = lambdaInit;
+
     double* d = new double[nbConstraints];         // TODO : Avoid those kind of memory allocation here for optimization (allocate once in the object)
     uint indexBody1, indexBody2;
     double deltaLambda;
@@ -52,6 +51,9 @@ void LCPProjectedGaussSeidel::solve(Matrix** J_sp, Matrix** B_sp, uint nbConstra
     for (i=0; i<nbBodies; i++) {
         a[i].changeSize(6);
     }
+
+    // Compute the vector a
+    computeVectorA(lambda, nbConstraints, bodyMapping, B_sp, bodyNumberMapping, a, nbBodies);
 
     // For each constraint
     for (i=0; i<nbConstraints; i++) {
@@ -79,7 +81,7 @@ void LCPProjectedGaussSeidel::solve(Matrix** J_sp, Matrix** B_sp, uint nbConstra
 // Compute the vector a used in the solve() method
 // Note that a = B * lambda
 void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, Body*** const bodyMapping,
-                                             const Matrix** const B_sp, std::map<Body*, uint> bodyNumberMapping,
+                                             Matrix** B_sp, std::map<Body*, uint> bodyNumberMapping,
                                              Vector* const a, uint nbBodies) const {
     uint i;
     uint indexBody1, indexBody2;
