@@ -87,7 +87,10 @@ void Contact::evaluate() {
     upperBound = INFINITY_CONST;
 
     // Compute the error value of the constraint
-    errorValue = -PENETRATION_FACTOR * penetrationDepth;
+    Vector3D velocity1 = rigidBody1->getCurrentBodyState().getLinearVelocity();
+    Vector3D velocity2 = rigidBody2->getCurrentBodyState().getLinearVelocity();
+    double restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
+    errorValue = restitutionCoeff * (normal.scalarProduct(velocity1) - normal.scalarProduct(velocity2)) + PENETRATION_FACTOR * penetrationDepth; // TODO : Add penetration
 
     // Compute the auxiliary jacobian matrix (this corresponds to the friction constraint)
     Vector3D r1CrossU1 = r1.crossProduct(frictionVectors[0]);
