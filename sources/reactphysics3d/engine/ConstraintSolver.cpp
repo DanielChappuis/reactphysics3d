@@ -83,6 +83,7 @@ void ConstraintSolver::allocate() {
     errorValues.changeSize(nbConstraints);
     b.changeSize(nbConstraints);
     lambda.changeSize(nbConstraints);
+    lambdaInit.changeSize(nbConstraints);
     lowerBounds.changeSize(nbConstraints);
     upperBounds.changeSize(nbConstraints);
     Minv_sp = new Matrix[nbBodies];
@@ -119,6 +120,25 @@ void ConstraintSolver::fillInMatrices() {
         // Fill in the error vector
         errorValues.setValue(noConstraint, constraint->getErrorValue());
 
+        // If it's a contact constraint
+        Contact* contact = dynamic_cast<Contact*>(constraint);
+        if (contact) {
+            // Get the lambda init value from the cache if exists
+            ContactCachingInfo* contactInfo = contactCache.getContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint());
+            if (contactInfo) {
+                // The last lambda init value was in the cache
+                lambdaInit.setValue(noConstraint, contactInfo->lambda);
+            }
+            else {
+                // The las lambda init value was not in the cache
+                lambdaInit.setValue(noConstraint, 0.0);
+            }
+        }
+        else {
+            // Set the lambda init value
+            lambdaInit.setValue(noConstraint, 0.0);
+        }
+
         nbAuxConstraints = constraint->getNbAuxConstraints();
 
         // If the current constraint has auxiliary constraints
@@ -135,6 +155,9 @@ void ConstraintSolver::fillInMatrices() {
                 // Fill in the body mapping matrix
                 bodyMapping[noConstraint+i][0] = constraint->getBody1();
                 bodyMapping[noConstraint+i][1] = constraint->getBody2();
+
+                // Fill in the init lambda value for the constraint
+                lambdaInit.setValue(noConstraint+i, 0.0);
             }
 
             // Fill in the limit vectors for the auxilirary constraints
@@ -263,6 +286,29 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
     }
 }
 
+// Clear and Fill in the contact cache with the new lambda values
+void ConstraintSolver::updateContactCache() {
+    // Clear the contact cache
+    contactCache.clear();
+    
+    // For each active constraint
+    uint noConstraint = 0;
+    for (uint c=0; c<activeConstraints.size(); c++) {
+
+        // If it's a contact constraint
+        Contact* contact = dynamic_cast<Contact*>(activeConstraints.at(c));
+        if (contact) {
+            // Create a new ContactCachingInfo
+            ContactCachingInfo contactInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
+
+            // Add it to the contact cache
+            contactCache.addContactCachingInfo(contactInfo);
+        }
+
+        noConstraint += 1 + activeConstraints.at(c)->getNbAuxConstraints();
+    }
+}
+
 // Solve the current LCP problem
 void ConstraintSolver::solve(double dt) {
     // Allocate memory for the matrices
@@ -278,10 +324,11 @@ void ConstraintSolver::solve(double dt) {
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    Vector lambdaInit(nbConstraints);
-    lambdaInit.initWithValue(0.0);
     lcpSolver->setLambdaInit(lambdaInit);
     lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
+
+    // Update the contact chaching informations
+    updateContactCache();
 
     // Compute the vector Vconstraint
     computeVectorVconstraint(dt);

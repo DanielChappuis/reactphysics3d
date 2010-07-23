@@ -22,7 +22,6 @@
 
 // Libraries
 #include "PhysicsWorld.h"
-#include "../integration/IntegrationAlgorithm.h"
 #include "../collision/CollisionDetection.h"
 #include "ConstraintSolver.h"
 #include "../body/RigidBody.h"

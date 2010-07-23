@@ -19,7 +19,6 @@
 
 // Libraries
 #include "PhysicsEngine.h"
-#include "../integration/SemiImplicitEuler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

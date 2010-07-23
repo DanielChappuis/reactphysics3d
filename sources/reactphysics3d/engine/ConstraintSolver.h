@@ -24,7 +24,7 @@
 #include "../typeDefinitions.h"
 #include "../constraint/Constraint.h"
 #include "../mathematics/lcp/LCPSolver.h"
-#include "../integration/IntegrationAlgorithm.h"    // TODO : Delete this
+#include "ContactCache.h"
 #include "PhysicsWorld.h"
 #include <map>
 #include <set>
@@ -46,6 +46,7 @@ class ConstraintSolver {
     protected:
         PhysicsWorld* physicsWorld;                             // Reference to the physics world
         LCPSolver* lcpSolver;                                   // LCP Solver
+        ContactCache contactCache;                              // Contact cache
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
         uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
         std::set<Body*> constraintBodies;                       // Bodies that are implied in some constraint
@@ -62,7 +63,8 @@ class ConstraintSolver {
                                                                 // The dimension of this array is 2 times nbConstraints. Each cell will contain
                                                                 // a 6x1 matrix
         Vector b;                                               // Vector "b" of the LCP problem
-        Vector lambda;                                          // Lambda vector of  the LCP problem
+        Vector lambda;                                          // Lambda vector of the LCP problem
+        Vector lambdaInit;                                      // Lambda init vector for the LCP solver
         Vector errorValues;                                     // Error vector of all constraints
         Vector lowerBounds;                                     // Vector that contains the low limits for the variables of the LCP problem
         Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
@@ -78,6 +80,7 @@ class ConstraintSolver {
         void computeVectorB(double dt);                         // Compute the vector b
         void computeMatrixB_sp();                               // Compute the matrix B_sp
         void computeVectorVconstraint(double dt);               // Compute the vector V2
+        void updateContactCache();                              // Clear and Fill in the contact cache with the new lambda values
 
     public:
         ConstraintSolver(PhysicsWorld* world);                                  // Constructor
