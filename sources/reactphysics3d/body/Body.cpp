@@ -24,11 +24,11 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(Kilogram mass) throw(std::invalid_argument) : mass(mass)  {
-    // Check if the mass is different from zero
-    if (mass.getValue() == 0) {
+Body::Body(double mass) throw(std::invalid_argument) : mass(mass)  {
+    // Check if the mass is not larger than zero
+    if (mass <= 0.0) {
         // We throw an exception
-        throw std::invalid_argument("Exception in Body constructor : the mass has to be different from zero");
+        throw std::invalid_argument("Exception in Body constructor : the mass has to be different larger than zero");
     }
 }
 

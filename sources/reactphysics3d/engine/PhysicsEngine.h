@@ -42,8 +42,7 @@ class PhysicsEngine {
         Timer timer;                                    // Timer of the physics engine
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
-
-        void updateBodyState(RigidBody* const rigidBody, const Time& timeStep);                                                 // Update the state of a rigid body // TODO : Delete this
+                                                // Update the state of a rigid body // TODO : Delete this
         void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
         void updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity);    // Update the position and orientation of a body
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies

@@ -104,12 +104,12 @@ void PhysicsEngine::updateAllBodiesMotion() {
 
             // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
             // external forces and torques.
-            newLinearVelocity = newLinearVelocity + dt * rigidBody->getCurrentBodyState().getMassInverse().getValue() * rigidBody->getCurrentBodyState().getExternalForce();
-            newAngularVelocity = newAngularVelocity + dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getCurrentBodyState().getExternalTorque();
+            newLinearVelocity = newLinearVelocity + dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
+            newAngularVelocity = newAngularVelocity + dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
 
             // Add the velocity V1 to the new velocity
-            newLinearVelocity = newLinearVelocity + rigidBody->getCurrentBodyState().getLinearVelocity();
-            newAngularVelocity = newAngularVelocity + rigidBody->getCurrentBodyState().getAngularVelocity();
+            newLinearVelocity = newLinearVelocity + rigidBody->getLinearVelocity();
+            newAngularVelocity = newAngularVelocity + rigidBody->getAngularVelocity();
 
             // Update the position and the orientation of the body according to the new velocity
             updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
@@ -133,21 +133,19 @@ void PhysicsEngine::updateAllBodiesMotion() {
     RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
     assert(rigidBody);
 
-    // The current body state of the body becomes the previous body state
-    rigidBody->updatePreviousBodyState();
-
-    BodyState& bodyState = rigidBody->getCurrentBodyState();
+    // Update the old position and orientation of the body
+    rigidBody->updateOldPositionAndOrientation();
 
     // Normalize the orientation quaternion
-    bodyState.setOrientation(bodyState.getOrientation().getUnit());
+    rigidBody->setOrientation(rigidBody->getOrientation().getUnit());
 
     // Update the linear and angular velocity of the body
-    bodyState.setLinearVelocity(newLinVelocity);
-    bodyState.setAngularVelocity(newAngVelocity);
+    rigidBody->setLinearVelocity(newLinVelocity);
+    rigidBody->setAngularVelocity(newAngVelocity);
 
     // Update the position and the orientation of the body
-    bodyState.setPosition(bodyState.getPosition() + newLinVelocity * dt);
-    bodyState.setOrientation(bodyState.getOrientation() + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * rigidBody->getCurrentBodyState().getOrientation() * 0.5 * dt);
+    rigidBody->setPosition(rigidBody->getPosition() + newLinVelocity * dt);
+    rigidBody->setOrientation(rigidBody->getOrientation() + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * rigidBody->getOrientation() * 0.5 * dt);
 }
 
 // Apply the gravity force to all bodies of the physics world
@@ -162,7 +160,7 @@ void PhysicsEngine::applyGravity() {
         // If the gravity force is on
         if(world->getIsGravityOn()) {
             // Apply the current gravity force to the body
-            rigidBody->getCurrentBodyState().setExternalForce(world->getGravity());
+            rigidBody->setExternalForce(rigidBody->getMass() * world->getGravity());
         }
     }
 }

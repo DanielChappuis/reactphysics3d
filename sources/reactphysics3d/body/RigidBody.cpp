@@ -24,9 +24,9 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb)
-           : Body(mass), inertiaTensorLocal(inertiaTensorLocal), currentBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())),
-             previousBodyState(position, orientation, inertiaTensorLocal.getInverse(), Kilogram(1.0/mass.getValue())), obb(obb) {
+ RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb)
+           : Body(mass), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal), inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
+             massInverse(1.0/mass), oldPosition(position), oldOrientation(orientation), obb(obb) {
 
     restitution = 1.0;
     isMotionEnabled = true;
@@ -40,36 +40,7 @@
     this->obb.setBodyPointer(this);
 }
 
- // Copy-constructor
- RigidBody::RigidBody(const RigidBody& rigidBody) : Body(rigidBody), inertiaTensorLocal(rigidBody.inertiaTensorLocal),
-            currentBodyState(rigidBody.currentBodyState), previousBodyState(rigidBody.previousBodyState), obb(rigidBody.obb) {
-    this->isMotionEnabled = rigidBody.isMotionEnabled;
-    this->isCollisionEnabled = rigidBody.isCollisionEnabled;
-    interpolationFactor = rigidBody.interpolationFactor;
- }
-
 // Destructor
 RigidBody::~RigidBody() {
 
 };
-
-// Compute the linear interpolation state between the previous body state and the current body state
-// This is used to avoid visual stuttering when the display and physics framerates are out of synchronization
-BodyState RigidBody::getInterpolatedState() const {
-
-    // Get the interpolation factor
-    double alpha = interpolationFactor;
-
-    // Compute the linear interpolation state
-    BodyState interpolatedState = currentBodyState;     // Used to take massInverse, inertiaTensorInverse
-    interpolatedState.setPosition(previousBodyState.getPosition() * (1-alpha) + currentBodyState.getPosition() * alpha);
-    interpolatedState.setLinearMomentum(previousBodyState.getLinearMomentum() * (1-alpha) + currentBodyState.getLinearMomentum() * alpha);
-    interpolatedState.setOrientation(Quaternion::slerp(previousBodyState.getOrientation(), currentBodyState.getOrientation(), alpha));
-    interpolatedState.setAngularMomentum(previousBodyState.getAngularMomentum() * (1-alpha) + currentBodyState.getAngularMomentum() * alpha);
-
-    // Recalculate the secondary state values
-    interpolatedState.recalculate();
-
-    // Return the interpolated state
-    return interpolatedState;
-}

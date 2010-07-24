@@ -22,7 +22,6 @@
 
  // Libraries
 #include <stdexcept>
-#include "../physics/physics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -35,17 +34,17 @@ namespace reactphysics3d {
 */
 class Body {
     protected :
-        Kilogram mass;                      // Mass of the body
-        bool isMotionEnabled;               // True if the body is able to move
-        bool isCollisionEnabled;            // True if the body can collide with others bodies
+        double mass;                      // Mass of the body
+        bool isMotionEnabled;             // True if the body is able to move
+        bool isCollisionEnabled;          // True if the body can collide with others bodies
 
     public :
-        Body(Kilogram mass) throw(std::invalid_argument);       // Constructor
+        Body(double mass) throw(std::invalid_argument);         // Constructor
         Body(const Body& body);                                 // Copy-constructor
         virtual ~Body();                                        // Destructor
 
-        Kilogram getMass() const;                               // Return the mass of the body
-        void setMass(Kilogram mass);                            // Set the mass of the body
+        double getMass() const;                                 // Return the mass of the body
+        void setMass(double mass);                              // Set the mass of the body
         bool getIsMotionEnabled() const;                        // Return if the rigid body can move
         void setIsMotionEnabled(bool isMotionEnabled);          // Set the value to true if the body can move
         bool getIsCollisionEnabled() const;                     // Return true if the body can collide with others bodies
@@ -55,7 +54,7 @@ class Body {
 // --- Inlines function --- //
 
 // Method that return the mass of the body
-inline Kilogram Body::getMass() const {
+inline double Body::getMass() const {
     return mass;
 };
 
@@ -70,7 +69,7 @@ inline void Body::setIsMotionEnabled(bool isMotionEnabled) {
 }
 
 // Method that set the mass of the body
-inline void Body::setMass(Kilogram mass) {
+inline void Body::setMass(double mass) {
     this->mass = mass;
 }
 

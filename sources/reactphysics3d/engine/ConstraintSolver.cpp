@@ -183,8 +183,8 @@ void ConstraintSolver::fillInMatrices() {
         assert(rigidBody != 0);
         
         // Compute the vector V1 with initial velocities values
-        v.fillInSubVector(0, rigidBody->getCurrentBodyState().getLinearVelocity());
-        v.fillInSubVector(3, rigidBody->getCurrentBodyState().getAngularVelocity());
+        v.fillInSubVector(0, rigidBody->getLinearVelocity());
+        v.fillInSubVector(3, rigidBody->getAngularVelocity());
         V1[bodyNumber].changeSize(6);
         V1[bodyNumber] = v;
 
@@ -193,8 +193,8 @@ void ConstraintSolver::fillInMatrices() {
         Vconstraint[bodyNumber].initWithValue(0.0);
         
         // Compute the vector with forces and torques values
-        f.fillInSubVector(0, rigidBody->getCurrentBodyState().getExternalForce());
-        f.fillInSubVector(3, rigidBody->getCurrentBodyState().getExternalTorque());
+        f.fillInSubVector(0, rigidBody->getExternalForce());
+        f.fillInSubVector(3, rigidBody->getExternalTorque());
         Fext[bodyNumber].changeSize(6);
         Fext[bodyNumber] = f;
 
@@ -202,7 +202,7 @@ void ConstraintSolver::fillInMatrices() {
         Matrix mInv(6,6);
         mInv.initWithValue(0.0);
         if (rigidBody->getIsMotionEnabled()) {
-            mInv.fillInSubMatrix(0, 0, rigidBody->getCurrentBodyState().getMassInverse().getValue() * Matrix::identity(3));
+            mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * Matrix::identity(3));
             mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
         }
         Minv_sp[bodyNumber].changeSize(6, 6);
