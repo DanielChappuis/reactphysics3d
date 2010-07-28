@@ -35,7 +35,7 @@
 */
 class Time {
     private :
-        double value;                   // Time in seconds
+        long double value;                   // Time in seconds
 
     public :
         Time();                                                         // Constructor
@@ -108,7 +108,6 @@ inline Time Time::operator*(double number) const throw(std::invalid_argument) {
 }
 
 // Overloaded operator for less than comparison
-// TODO : TEST THIS METHOD
 inline bool Time::operator<(const Time& time2) const {
     return (getValue() < time2.getValue());
 }
@@ -119,7 +118,6 @@ inline bool Time::operator<=(const Time& time2) const {
 }
 
 // Overloaded operator for greater than comparison
-// TODO : TEST THIS METHOD
 inline bool Time::operator>(const Time& time2) const {
     return (getValue() > time2.getValue());
 }

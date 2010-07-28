@@ -22,6 +22,5 @@
 
 // Libraries
 #include "Time.h"
-#include "Kilogram.h"
 
 #endif
