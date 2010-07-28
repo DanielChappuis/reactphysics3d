@@ -39,7 +39,7 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class OBB : public BoundingVolume {
-    private :
+    protected :
         Vector3D center;            // Center point of the OBB
         Vector3D oldAxis[3];        // Array that contains the three unit length axis at the beginning
         Vector3D axis[3];           // Array that contains the three unit length axis of the OBB
