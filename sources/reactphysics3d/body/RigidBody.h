@@ -25,7 +25,6 @@
  #include "Body.h"
  #include "OBB.h"
  #include "../mathematics/mathematics.h"
- #include "../physics/physics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
