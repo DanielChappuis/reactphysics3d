@@ -27,8 +27,6 @@
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// TODO : Remove the contact determination from this class. This class should only return pairs of bodies that intersect
-
 /*  -------------------------------------------------------------------
     Class NarrowPhaseAlgorithm :
         This class is an abstract class that represents an algorithm

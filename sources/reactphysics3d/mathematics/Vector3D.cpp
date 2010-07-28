@@ -66,7 +66,6 @@ Vector3D Vector3D::getUnit() const throw(MathematicsException) {
 }
 
 // Return two unit orthogonal vectors of the current vector
-// TODO : Test this method
 Vector3D Vector3D::getOneOrthogonalVector() const {
     assert(!this->isZero());
     Vector3D unitVector = this->getUnit();

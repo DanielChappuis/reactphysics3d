@@ -157,7 +157,6 @@ inline void OBB::setExtent(unsigned int index, double extent) throw(std::invalid
     }
 }
 
-// TODO : Test this method
 // Update the orientation of the OBB according to the orientation of the rigid body
 inline void OBB::updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
     // Update the center of the OBB

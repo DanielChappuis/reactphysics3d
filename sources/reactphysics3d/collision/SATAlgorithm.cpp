@@ -30,9 +30,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// TODO : Check and modify all comments on this file in order that
-//        everything have to do with the new SAT algorithm
-
 // Constructor
 SATAlgorithm::SATAlgorithm() {
 
@@ -67,7 +64,7 @@ bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, co
 
 
 // This method returns true and computes a contact info if the two OBB intersect.
-// This method implements the separating algorithm between two OBB. The goal of this method is to test if the
+// This method implements the separating algorithm between two OBBs. The goal of this method is to test if the
 // two OBBs intersect or not. If they intersect we report a contact info and the method returns true. If
 // they don't intersect, the method returns false. The separation axis that have to be tested for two
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
@@ -85,9 +82,8 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     double max2;                                // Maximum of interval 2
     Vector3D normal;                            // Contact normal (correspond to the separation axis with the smallest positive penetration depth)
                                                 // The contact normal point out of OBB1 toward OBB2
-    bool side;                                  // True if the interval 1 is at the left of interval 2 if a collision occurs and false otherwise
     double minPenetrationDepth = DBL_MAX;       // Minimum penetration depth detected among all separated axis
-    const double cutoff = 0.99;               // Cutoff for cosine of angles between box axes
+    const double cutoff = 0.99;                 // Cutoff for cosine of angles between box axes
     bool existsParallelPair = false;            // True if there exists two face normals that are parallel.
                                                 // This is used because if a parallel pair exists, it is sufficient
                                                 // to test only the face normals of the OBBs for separation. Two nearly
@@ -118,13 +114,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    bool sideTemp;              // TODO : Check if we really need the "side" variable (maybee, we can remove it)
-    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    double penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(0), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -145,12 +139,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(1), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -171,12 +164,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -190,12 +182,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb2->getAxis(0), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -209,12 +200,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb2->getAxis(1), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -228,12 +218,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
         normal = computeContactNormal(obb2->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
@@ -257,12 +246,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -275,12 +263,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -293,12 +280,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -311,12 +297,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -329,12 +314,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -347,12 +331,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -365,12 +348,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -383,12 +365,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -401,12 +382,11 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     max1 = radius1;
     min2 = center - radius2;
     max2 = center + radius2;
-    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2, sideTemp);
+    penetrationDepth = computePenetrationDepth(min1, max1, min2, max2);
     if (penetrationDepth < 0) { // We have found a separation axis, therefore the two OBBs don't collide
         return false;
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
-        side = sideTemp;
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
         normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
@@ -418,10 +398,8 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 }
 
 // This method computes and returns the penetration depth between two intervals. This method returns the computed
-// penetration depth (note that it could return a negative penetration depth if the intervals are separated. This
-// method also find which interval is at the left of the other in order to know which extreme of interval 1 collides with
-// which extreme of interval 2 if a collision occur.
-double SATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2, bool& side) const {
+// penetration depth (note that it could return a negative penetration depth if the intervals are separated.
+double SATAlgorithm::computePenetrationDepth(double min1, double max1, double min2, double max2) const {
 
     // Compute the length of both intervals
     double lengthInterval1 = max1 - min1;
@@ -433,18 +411,5 @@ double SATAlgorithm::computePenetrationDepth(double min1, double max1, double mi
     double lengthBothIntervals = maxExtreme - minExtreme;
 
     // Compute the current penetration depth
-    double penetrationDepth = (lengthInterval1 + lengthInterval2) - lengthBothIntervals;
-
-    // Find which interval is at the left of the other
-    if (std::abs(max1-min2) <= std::abs(max2-min1)) {
-        // Right of interval 1 collides with the left of interval 2
-        side = true;
-    }
-    else {
-        // Right of interval 2 collides with the left of interval 1
-        side = false;
-    }
-
-    // Return the computed penetration depth
-    return penetrationDepth;
+    return (lengthInterval1 + lengthInterval2) - lengthBothIntervals;
 }

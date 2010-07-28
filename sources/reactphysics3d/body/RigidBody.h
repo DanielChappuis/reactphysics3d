@@ -64,7 +64,7 @@ class RigidBody : public Body {
         Quaternion getOrientation() const;                                      // Return the orientation quaternion
         void setOrientation(const Quaternion& orientation);                     // Set the orientation quaternion
         Vector3D getLinearVelocity() const;                                     // Return the linear velocity
-        void setLinearVelocity(const Vector3D& linearVelocity);                 // TODO : Delete this
+        void setLinearVelocity(const Vector3D& linearVelocity);                 // Set the linear velocity of the body
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
         void setAngularVelocity(const Vector3D& angularVelocity);               // Set the angular velocity
         void setMassInverse(double massInverse);                                // Set the inverse of the mass
@@ -192,7 +192,7 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
 // Set the interpolation factor of the body
 inline void RigidBody::setInterpolationFactor(double factor) {
-    //assert(factor >= 0.0 && factor <= 1.0); // TODO : Remove the comment here
+    //assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor
     interpolationFactor = factor;

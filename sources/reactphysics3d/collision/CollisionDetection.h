@@ -44,10 +44,8 @@ class CollisionDetection {
         PhysicsWorld* world;                                                         // Pointer to the physics world
         std::vector<std::pair<const OBB*, const OBB* > > possibleCollisionPairs;     // Possible collision pairs of bodies (computed by broadphase)
         std::vector<ContactInfo*> contactInfos;                                      // Contact informations (computed by narrowphase)
-
-        // TODO : Check if we can avoid pointers for the two following classes (to avoid dynamic alocation)
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                   // Broad-phase algorithm
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                 // Narrow-phase algorithm
+        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                    // Broad-phase algorithm
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                  // Narrow-phase algorithm
 
         void computeBroadPhase();                                                                                                                                   // Compute the broad-phase collision detection
         void computeNarrowPhase();                                                                                                                                  // Compute the narrow-phase collision detection

@@ -24,8 +24,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument)
-              : world(world), timer(Time(0.0), timeStep), collisionDetection(world), constraintSolver(world) {
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument)
+              : world(world), timer(0.0, timeStep), collisionDetection(world), constraintSolver(world) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {
         // Throw an exception
@@ -46,14 +46,14 @@ void PhysicsEngine::update() {
         applyGravity();
 
         // While the time accumulator is not empty
-        while(timer.getAccumulator() >= timer.getTimeStep().getValue()) {
+        while(timer.getAccumulator() >= timer.getTimeStep()) {
             existCollision = false;
             // Compute the collision detection
             if (collisionDetection.computeCollisionDetection()) {
                 existCollision = true;
 
                 // Solve constraints
-                constraintSolver.solve(timer.getTimeStep().getValue());
+                constraintSolver.solve(timer.getTimeStep());
             }
 
             // Update the timer
@@ -80,7 +80,7 @@ void PhysicsEngine::update() {
 // This method uses the semi-implicit Euler method to update the position and
 // orientation of the body
 void PhysicsEngine::updateAllBodiesMotion() {
-    double dt = timer.getTimeStep().getValue();
+    double dt = timer.getTimeStep();
     Vector3D newLinearVelocity;
     Vector3D newAngularVelocity;
 
@@ -128,7 +128,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
  void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity) {
-    double dt = timer.getTimeStep().getValue();
+    double dt = timer.getTimeStep();
 
     RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
     assert(rigidBody);

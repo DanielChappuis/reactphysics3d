@@ -21,15 +21,11 @@
  #define TIMER_H
 
  // Libraries
- #include "../physics/physics.h"
  #include <stdexcept>
  #include <iostream>
 
  // Namespace ReactPhysics3D
  namespace reactphysics3d {
-
-// TODO : Now we are using the "Time" class in this class but we should a
-//        time class from the standard library
 
 /*  -------------------------------------------------------------------
     Class Timer :
@@ -38,43 +34,43 @@
 */
 class Timer {
     private :
-        Time timeStep;                  // Timestep dt of the physics engine (timestep > 0.0)
-        Time time;                      // Current time of the physics engine
-        Time currentDisplayTime;        // Current display time
-        Time deltaDisplayTime;          // Current time difference between two display frames
-        double accumulator;             // Used to fix the time step and avoid strange time effects
-        bool isRunning;                 // True if the timer is running
+        double timeStep;                  // Timestep dt of the physics engine (timestep > 0.0)
+        long double time;                 // Current time of the physics engine
+        long double currentDisplayTime;   // Current display time
+        long double deltaDisplayTime;     // Current time difference between two display frames
+        double accumulator;               // Used to fix the time step and avoid strange time effects
+        bool isRunning;                   // True if the timer is running
 
     public :
-        Timer(const Time& initialTime, const Time& timeStep) throw(std::invalid_argument);  // Constructor
-        Timer(const Timer& timer);                                                          // Copy-constructor
-        virtual ~Timer();                                                                   // Destructor
+        Timer(long double initialTime, double timeStep) throw(std::invalid_argument);  // Constructor
+        Timer(const Timer& timer);                                                     // Copy-constructor
+        virtual ~Timer();                                                              // Destructor
 
-        Time getTimeStep() const;                                               // Return the timestep of the physics engine
-        void setTimeStep(const Time& timeStep) throw(std::invalid_argument);    // Set the timestep of the physics engine
-        Time getTime() const;                                                   // Return the current time
-        void setTime(const Time& time);                                         // Set the current time
+        double getTimeStep() const;                                               // Return the timestep of the physics engine
+        void setTimeStep(double timeStep) throw(std::invalid_argument);    // Set the timestep of the physics engine
+        long double getTime() const;                                                   // Return the current time
+        void setTime(long double time);                                         // Set the current time
         bool getIsRunning() const;                                              // Return if the timer is running
         void setIsRunning(bool isRunning);                                      // Set if the timer is running
         double getAccumulator() const;                                          // Return the accumulator value
-        void setCurrentDisplayTime(const Time& displayTime);                    // Set the current display time
+        void setCurrentDisplayTime(long double displayTime);                    // Set the current display time
 
         void update();                                                          // Update the timer by adding some time value (or timeStep by default) to the current time
         double getInterpolationFactor() const;                                  // Compute and return the interpolation factor between two body states
-        void updateDisplayTime(const Time& newDisplayTime);                     // Set the new currentDisplayTime value
+        void updateDisplayTime(long double newDisplayTime);                     // Set the new currentDisplayTime value
 };
 
 // --- Inline functions --- //
 
 // Return the timestep of the physics engine
-inline Time Timer::getTimeStep() const {
+inline double Timer::getTimeStep() const {
     return timeStep;
 }
 
 // Set the timestep of the physics engine
-inline void Timer::setTimeStep(const Time& timeStep) throw(std::invalid_argument) {
+inline void Timer::setTimeStep(double timeStep) throw(std::invalid_argument) {
     // Check if the timestep is different from zero
-    if (timeStep.getValue() != 0.0) {
+    if (timeStep != 0.0) {
         this->timeStep = timeStep;
     }
     else {
@@ -84,12 +80,12 @@ inline void Timer::setTimeStep(const Time& timeStep) throw(std::invalid_argument
 }
 
 // Return the current time
-inline Time Timer::getTime() const {
+inline long double Timer::getTime() const {
     return time;
 }
 
 // Set the current time
-inline void Timer::setTime(const Time& time) {
+inline void Timer::setTime(long double time) {
     this->time = time;
 }
 
@@ -109,7 +105,7 @@ inline double Timer::getAccumulator() const {
 }
 
 // Set the current display time
-inline void Timer::setCurrentDisplayTime(const Time& currentDisplayTime) {
+inline void Timer::setCurrentDisplayTime(long double currentDisplayTime) {
     this->currentDisplayTime = currentDisplayTime;
 }
 
@@ -118,29 +114,29 @@ inline void Timer::update() {
     // Check if the timer is running
     if (isRunning) {
         // Update the current time of the physics engine
-        time.setValue(time.getValue() + timeStep.getValue());
+        time += timeStep;
 
         // Update the accumulator value
-        accumulator -= timeStep.getValue();
+        accumulator -= timeStep;
     }
 }
 
 // Compute and return the interpolation factor between two body states
 inline double Timer::getInterpolationFactor() const {
     // Compute and return the interpolation factor
-    return (accumulator / timeStep.getValue());
+    return (accumulator / timeStep);
 }
 
 // Set the new currentDisplayTime value
-inline void Timer::updateDisplayTime(const Time& newDisplayTime) {
+inline void Timer::updateDisplayTime(long double newDisplayTime) {
     // Compute the delta display time between two display frames
-    deltaDisplayTime.setValue(newDisplayTime.getValue() - currentDisplayTime.getValue());
+    deltaDisplayTime = newDisplayTime - currentDisplayTime;
 
     // Update the current display time
-    currentDisplayTime.setValue(newDisplayTime.getValue());
+    currentDisplayTime = newDisplayTime;
 
     // Update the accumulator value
-    accumulator += deltaDisplayTime.getValue();
+    accumulator += deltaDisplayTime;
 }
 
 } // End of the ReactPhysics3D namespace

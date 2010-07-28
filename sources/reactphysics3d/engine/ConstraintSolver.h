@@ -33,7 +33,6 @@
 namespace reactphysics3d {
 
 // Constants
-// TODO : Set this to 10 after debugging
 const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
 
  /*  -------------------------------------------------------------------

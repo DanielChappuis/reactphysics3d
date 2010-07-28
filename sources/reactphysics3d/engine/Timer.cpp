@@ -24,10 +24,10 @@
 using namespace reactphysics3d;
 
 // Constructor
-Timer::Timer(const Time& initialTime, const Time& timeStep) throw(std::invalid_argument)
-      : timeStep(timeStep), time(initialTime), currentDisplayTime(Time(0.0)), deltaDisplayTime(Time(0.0)) {
+Timer::Timer(long double initialTime, double timeStep) throw(std::invalid_argument)
+      : timeStep(timeStep), time(initialTime), currentDisplayTime(0.0), deltaDisplayTime(0.0) {
     // Check if the timestep is different from zero
-    if (timeStep.getValue() != 0.0) {
+    if (timeStep != 0.0) {
         accumulator = 0.0;
         isRunning = false;
     }

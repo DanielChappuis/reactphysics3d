@@ -120,18 +120,6 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) con
 
     std::vector<Vector3D> extremeVertices;
 
-    // TODO : Delete this
-    std::cout << "------------------------------------" << std::endl;
-    for (int i=0; i<8; i++)
-    {
-        Vector3D vertex = getVertex(i);
-
-        // Compute the projection length of the current vertex onto the projection axis
-        double projectionLength = directionAxis.scalarProduct(vertex-center) / directionAxis.length();
-        std::cout << "Point : x=" << vertex.getX() << " y=" << vertex.getY() << "z=" << vertex.getZ() << std::endl;
-        std::cout << "projection length = " << projectionLength << std::endl;
-    }
-
     // Check if the given axis is parallel to an axis on the OBB
     if (axis[0].isParallelWith(directionAxis)) {
         if (axis[0].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction

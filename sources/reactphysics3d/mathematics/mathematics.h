@@ -17,8 +17,6 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-// TODO : Mathematics library : Check everywhere that in member methods we use attributes access instead of getter and setter.
-
 #ifndef MATHEMATICS_H
 #define MATHEMATICS_H
 
@@ -41,7 +39,6 @@ namespace reactphysics3d {
 
 // ---------- Mathematics functions ---------- //
 
-// TODO : Test this method
 // Rotate a vector according to a rotation quaternion.
 // The function returns the vector rotated according to the quaternion in argument
 inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d::Vector3D& vector, const reactphysics3d::Quaternion& quaternion) {
@@ -55,7 +52,6 @@ inline reactphysics3d::Vector3D rotateVectorWithQuaternion(const reactphysics3d:
     return quaternionResult.vectorV();
 }
 
-// TODO : Test this method
 // Given two lines (given by the points "point1", "point2" and the vectors "d1" and "d2" that are not parallel, this method returns the values
 // "alpha" and "beta" such that the two points P1 and P2 are the two closest point between the two lines and such that
 // P1 = point1 + alpha * d1
@@ -79,7 +75,6 @@ inline void closestPointsBetweenTwoLines(const reactphysics3d::Vector3D& point1,
     *beta = (a*f-b*c)/d;
 }
 
-// TODO : Test this method
 // This method returns true if the point "P" is on the segment between "segPointA" and "segPointB" and return false otherwise
 inline bool isPointOnSegment(const reactphysics3d::Vector3D& segPointA, const reactphysics3d::Vector3D& segPointB, const reactphysics3d::Vector3D& P) {
 
@@ -106,7 +101,7 @@ inline bool isPointOnSegment(const reactphysics3d::Vector3D& segPointA, const re
     return true;
 }
 
-// TODO : Test this method
+
 // Given two lines in 3D that intersect, this method returns the intersection point between the two lines.
 // The first line is given by the point "p1" and the vector "d1", the second line is given by the point "p2" and the vector "d2".
 inline reactphysics3d::Vector3D computeLinesIntersection(const reactphysics3d::Vector3D& p1, const reactphysics3d::Vector3D& d1,
@@ -124,7 +119,7 @@ inline reactphysics3d::Vector3D computeLinesIntersection(const reactphysics3d::V
     return 0.5 * (point1 + point2);
 }
 
-// TODO : Test this method
+
 // Given two segments in 3D that are not parallel and that intersect, this method computes the intersection point between the two segments.
 // This method returns the intersection point.
 inline reactphysics3d::Vector3D computeNonParallelSegmentsIntersection(const reactphysics3d::Vector3D& seg1PointA, const reactphysics3d::Vector3D& seg1PointB,
@@ -155,7 +150,6 @@ inline reactphysics3d::Vector3D computeNonParallelSegmentsIntersection(const rea
 }
 
 
-// TODO : Test this method
 // Move a set of points by a given vector.
 // The method returns a set of points moved by the given vector.
 inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactphysics3d::Vector3D>& points, const reactphysics3d::Vector3D& vector) {
@@ -172,7 +166,6 @@ inline std::vector<reactphysics3d::Vector3D> movePoints(const std::vector<reactp
 }
 
 
-// TODO : Test this method
 // Compute the projection of a set of 3D points onto a 3D plane. The set of points is given by "points" and the plane is given by
 // a point "A" and a normal vector "normal". This method returns the initial set of points projected onto the plane.
 inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::vector<reactphysics3d::Vector3D>& points, const reactphysics3d::Vector3D& A,
@@ -193,7 +186,7 @@ inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::v
     return projectedPoints;
 }
 
-// TODO : Test this method
+
 // Compute the distance between a point "P" and a line (given by a point "A" and a vector "v")
 inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
     assert(v.length() != 0);

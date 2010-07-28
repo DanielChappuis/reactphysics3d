@@ -42,21 +42,19 @@ class PhysicsEngine {
         Timer timer;                                    // Timer of the physics engine
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
-                                                // Update the state of a rigid body // TODO : Delete this
+
         void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
         void updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity);    // Update the position and orientation of a body
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies
     public :
-        PhysicsEngine(PhysicsWorld* world, const Time& timeStep) throw (std::invalid_argument);     // Constructor
+        PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);     // Constructor
         ~PhysicsEngine();                                                                           // Destructor
 
         void start();                                           // Start the physics simulation
         void stop();                                            // Stop the physics simulation
         void update();                                          // Update the physics simulation
-        //void updateDynamic();                                   // TODO : Delete this method
-        void updateCollision();                                 // TODO : Delete this collision
-        void initializeDisplayTime(const Time& displayTime);    // Initialize the display time
-        void updateDisplayTime(const Time& newDisplayTime);     // Update the display time
+        void initializeDisplayTime(long double displayTime);    // Initialize the display time
+        void updateDisplayTime(long double newDisplayTime);     // Update the display time
 };
 
 // --- Inline functions --- //
@@ -71,12 +69,12 @@ inline void PhysicsEngine::stop() {
 }
 
 // Initialize the display time
-inline void PhysicsEngine::initializeDisplayTime(const Time& displayTime) {
+inline void PhysicsEngine::initializeDisplayTime(long double displayTime) {
     timer.setCurrentDisplayTime(displayTime);
 }
 
 // Update the display time
-inline void PhysicsEngine::updateDisplayTime(const Time& newDisplayTime) {
+inline void PhysicsEngine::updateDisplayTime(long double newDisplayTime) {
     timer.updateDisplayTime(newDisplayTime);
 }
 

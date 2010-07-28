@@ -62,7 +62,7 @@ class Contact : public Constraint {
         virtual void evaluate();                            // Evaluate the constraint
         uint getNbAuxConstraints() const;                   // Return the number of auxiliary constraints
 
-        double getPenetrationDepth() const;                 // TODO : Delete this
+        double getPenetrationDepth() const;                 // Return the penetration depth
         void draw() const;                                  // TODO : Delete this (Used to debug collision detection)
 };
 

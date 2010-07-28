@@ -61,8 +61,8 @@ void Contact::evaluate() {
     // Compute the friction vectors that span the tangential friction plane
     computeFrictionVectors();
 
-    Vector3D r1 = point - rigidBody1->getCurrentBodyState().getPosition();
-    Vector3D r2 = point - rigidBody2->getCurrentBodyState().getPosition();
+    Vector3D r1 = point - rigidBody1->getPosition();
+    Vector3D r2 = point - rigidBody2->getPosition();
     Vector3D r1CrossN = r1.crossProduct(normal);
     Vector3D r2CrossN = r2.crossProduct(normal);
 
@@ -87,10 +87,10 @@ void Contact::evaluate() {
     upperBound = INFINITY_CONST;
 
     // Compute the error value of the constraint
-    Vector3D velocity1 = rigidBody1->getCurrentBodyState().getLinearVelocity();
-    Vector3D velocity2 = rigidBody2->getCurrentBodyState().getLinearVelocity();
+    Vector3D velocity1 = rigidBody1->getLinearVelocity();
+    Vector3D velocity2 = rigidBody2->getLinearVelocity();
     double restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
-    errorValue = restitutionCoeff * (normal.scalarProduct(velocity1) - normal.scalarProduct(velocity2)) + PENETRATION_FACTOR * penetrationDepth; // TODO : Add penetration
+    errorValue = restitutionCoeff * (normal.scalarProduct(velocity1) - normal.scalarProduct(velocity2)) + PENETRATION_FACTOR * penetrationDepth;
 
     // Compute the auxiliary jacobian matrix (this corresponds to the friction constraint)
     Vector3D r1CrossU1 = r1.crossProduct(frictionVectors[0]);
@@ -125,7 +125,7 @@ void Contact::evaluate() {
     // Compute the auxiliary lower and upper bounds
     // TODO : Now mC is only the mass of the first body but it is probably wrong
     // TODO : Now g is 9.81 but we should use the true gravity value of the physics world.
-    double mu_mc_g = FRICTION_COEFFICIENT * rigidBody1->getMass().getValue() * 9.81;
+    double mu_mc_g = FRICTION_COEFFICIENT * rigidBody1->getMass() * 9.81;
     auxLowerBounds.setValue(0, -mu_mc_g);
     auxLowerBounds.setValue(1, -mu_mc_g);
     auxUpperBounds.setValue(0, mu_mc_g);

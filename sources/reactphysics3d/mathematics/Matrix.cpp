@@ -350,7 +350,6 @@ Matrix Matrix::identity(int dimension) throw(std::invalid_argument) {
     }
 }
 
-// TODO : Test this method
 // Fill in a sub-matrix of the current matrix with another matrix.
 // This method replaces the sub-matrix with the upper-left index (i,j) in the current matrix by another
 // "subMatrix" matrix.

@@ -114,7 +114,6 @@ inline double Vector3D::length() const {
 }
 
 // Return the vector in the opposite direction
-// TODO : Test this function
 inline Vector3D Vector3D::getOpposite() const {
     return (Vector3D(0.0, 0.0, 0.0) - *this);
 }
