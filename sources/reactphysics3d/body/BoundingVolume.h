@@ -21,9 +21,10 @@
 #define BOUNDING_VOLUME_H
 
 // Libraries
-#include "../mathematics/mathematics.h"
 #include "Body.h"
+#include "../mathematics/mathematics.h"
 #include <cassert>
+
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -46,9 +47,8 @@ class BoundingVolume {
         Body* getBodyPointer() const;       // Return the body pointer
         void setBodyPointer(Body* body);    // Set the body pointer
 
-        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;      // Update the orientation of the bounding volume according to the new orientation of the body
-        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const=0;                         // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
-        virtual void draw() const=0;                                                                            // Display the bounding volume (only for testing purpose)
+        virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;      // Update the orientation of the bounding volume according to the new orientation of the body
+        virtual void draw() const=0;                                                                 // Display the bounding volume (only for testing purpose)
 };
 
 // Return the body pointer

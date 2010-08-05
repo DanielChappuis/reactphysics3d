@@ -66,6 +66,9 @@ void PhysicsEngine::update() {
             if (existCollision) {
                 constraintSolver.freeMemory();
             }
+
+            // Clear the added and removed bodies from last update() method call
+            world->clearAddedAndRemovedBodies();
         }
     }
 }

@@ -19,7 +19,7 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "NoBroadPhaseAlgorithm.h"
+#include "SAPAlgorithm.h"
 #include "SATAlgorithm.h"
 #include "../body/Body.h"
 #include "../body/OBB.h"
@@ -33,10 +33,10 @@ using namespace reactphysics3d;
 CollisionDetection::CollisionDetection(PhysicsWorld* world) {
     this->world = world;
     
-    // Construct the broad-phase algorithm that will be used (Separating axis with AABB)
-    broadPhaseAlgorithm = new NoBroadPhaseAlgorithm();
+    // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
+    broadPhaseAlgorithm = new SAPAlgorithm();
 
-    // Construct the narrow-phase algorithm that will be used (Separating axis algorithm)
+    // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
     narrowPhaseAlgorithm = new SATAlgorithm();
 }
 
@@ -68,38 +68,22 @@ bool CollisionDetection::computeCollisionDetection() {
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
-    // For each pair of bodies in the physics world
-    for(std::vector<Body*>::const_iterator it1 = world->getBodiesBeginIterator(); it1 != world->getBodiesEndIterator(); ++it1) {
-        for(std::vector<Body*>::const_iterator it2 = it1; it2 != world->getBodiesEndIterator(); ++it2) {
-            
-            RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(*it1);
-            RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(*it2);
+    // Clear the set of possible colliding pairs of bodies
+    possibleCollisionPairs.clear();
 
-            // If both bodies are RigidBody and are different and if both have collision activated
-            if(rigidBody1 && rigidBody2 && rigidBody1 != rigidBody2
-               && rigidBody1->getIsCollisionEnabled() && rigidBody2->getIsCollisionEnabled()) {
-                // Get the oriented bounding boxes of the two bodies
-                const OBB* obb1 = rigidBody1->getOBB();
-                const OBB* obb2 = rigidBody2->getOBB();
-
-                // Use the broad-phase algorithm to decide if the two bodies can collide
-                if(broadPhaseAlgorithm->testCollisionPair(obb1, obb2)) {
-                    // If the broad-phase thinks that the two bodies collide, we add the in the possible collision pair list
-                    possibleCollisionPairs.push_back(std::pair<const OBB*, const OBB*>(obb1, obb2));
-                }
-            }
-        }
-    }
+    // Compute the set of possible collision pairs of bodies
+    broadPhaseAlgorithm->computePossibleCollisionPairs(world->getAddedBodies(), world->getRemovedBodies(), possibleCollisionPairs);
 }
 
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
+    
     // For each possible collision pair of bodies
     for (unsigned int i=0; i<possibleCollisionPairs.size(); i++) {
         ContactInfo* contactInfo = 0;
 
         // Use the narrow-phase collision detection algorithm to check if the really are a contact
-        if (narrowPhaseAlgorithm->testCollision(possibleCollisionPairs.at(i).first, possibleCollisionPairs.at(i).second, contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(possibleCollisionPairs.at(i).first->getNarrowBoundingVolume(), possibleCollisionPairs.at(i).second->getNarrowBoundingVolume(), contactInfo)) {
             assert(contactInfo != 0);
 
             // Add the contact info the current list of collision informations

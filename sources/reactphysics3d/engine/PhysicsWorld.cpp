@@ -19,9 +19,11 @@
 
 // Libraries
 #include "PhysicsWorld.h"
+#include <algorithm>
 
-// We want to use the ReactPhysics3D namespace
+// Namespaces
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
 PhysicsWorld::PhysicsWorld(const Vector3D& gravity)
@@ -35,32 +37,37 @@ PhysicsWorld::~PhysicsWorld() {
 }
 
 // Add a body to the physics world
-void PhysicsWorld::addBody(Body* body) throw(std::invalid_argument) {
+void PhysicsWorld::addBody(Body* body) throw(invalid_argument) {
     // Check if the body pointer is not null
     if (body != 0) {
         // Check if the body pointer isn't already in the bodyList
-        for(std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+        for(vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
             if (*it == body) {
                 // The body is already in the bodyList, therefore we throw an exception
-                throw std::invalid_argument("Exception in PhysicsWorld::addBody() : The argument body is already in the PhysicsWorld");
+                throw invalid_argument("Exception in PhysicsWorld::addBody() : The argument body is already in the PhysicsWorld");
             }
         }
 
         // The body isn't already in the bodyList, therefore we add it to the list
         bodies.push_back(body);
+        addedBodies.push_back(body);
+        vector<Body*>::iterator it = find(removedBodies.begin(), removedBodies.end(), body);
+        if (it != removedBodies.end()) {
+            removedBodies.erase(it);
+        }
     }
     else {
         // Throw an exception
-        throw std::invalid_argument("Exception in PhysicsWorld::addBody() : The argument pointer cannot be NULL");
+        throw invalid_argument("Exception in PhysicsWorld::addBody() : The argument pointer cannot be NULL");
     }
 }
 
 // Remove a body from the physics world
-void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argument) {
+void PhysicsWorld::removeBody(Body const* const body) throw(invalid_argument) {
     // Check if the body pointer is not null
     if (body != 0) {
         // Look for the body to remove in the bodyList
-        std::vector<Body*>::iterator it = bodies.begin();
+        vector<Body*>::iterator it = bodies.begin();
         while(it != bodies.end() && *it != body) {
             // Increment the iterator
             ++it;
@@ -70,32 +77,34 @@ void PhysicsWorld::removeBody(Body const* const body) throw(std::invalid_argumen
         if (*it == body) {
             // Remove the body
             bodies.erase(it);
+            addedBodies.erase(it);
+            removedBodies.push_back(*it);
         } else {
             // The body is not in the bodyList, therfore we throw an exception
-            throw std::invalid_argument("Exception in PhysicsWorld::removeBody() : The argument body to remove is not in the PhysicsWorld");
+            throw invalid_argument("Exception in PhysicsWorld::removeBody() : The argument body to remove is not in the PhysicsWorld");
         }
     }
     else {
         // Throw an exception
-        throw std::invalid_argument("Exception in PhysicsWorld::removeBody() : The argument pointer cannot be NULL");
+        throw invalid_argument("Exception in PhysicsWorld::removeBody() : The argument pointer cannot be NULL");
     }
 }
 
 // Add a constraint into the physics world
-void PhysicsWorld::addConstraint(Constraint* constraint) throw(std::invalid_argument) {
+void PhysicsWorld::addConstraint(Constraint* constraint) throw(invalid_argument) {
     assert(constraint != 0);
     constraints.push_back(constraint);
 }
 
 // Remove a constraint
-void PhysicsWorld::removeConstraint(Constraint* constraint) throw(std::invalid_argument) {
+void PhysicsWorld::removeConstraint(Constraint* constraint) throw(invalid_argument) {
     // TODO : Implement this method
 }
 
 // Remove all collision contacts constraints
 void PhysicsWorld::removeAllContactConstraints() {
     // For all constraints
-    for (std::vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
+    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
 
         // Try a downcasting
         Contact* contact = dynamic_cast<Contact*>(*it);

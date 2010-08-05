@@ -41,6 +41,8 @@ namespace reactphysics3d {
 class PhysicsWorld {
     protected :
         std::vector<Body*> bodies;                  // list that contains all bodies of the physics world
+        std::vector<Body*> addedBodies;             // Added bodies since last update
+        std::vector<Body*> removedBodies;           // Removed bodies since last update
         std::vector<Constraint*> constraints;       // List that contains all the current constraints
         Vector3D gravity;                           // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
@@ -51,6 +53,7 @@ class PhysicsWorld {
 
         void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
         void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
+        void clearAddedAndRemovedBodies();                                      // Clear the addedBodies and removedBodies sets
         Vector3D getGravity() const;                                            // Return the gravity vector of the world
         bool getIsGravityOn() const;                                            // Return if the gravity is on
         void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
@@ -61,9 +64,17 @@ class PhysicsWorld {
         std::vector<Constraint*>::iterator getConstraintsEndIterator();                     // Return a end iterator on the constraint list
         std::vector<Body*>::iterator getBodiesBeginIterator();                              // Return an iterator to the beginning of the bodies of the physics world
         std::vector<Body*>::iterator getBodiesEndIterator();                                // Return an iterator to the end of the bodies of the physics world
+        std::vector<Body*>& getAddedBodies();                                               // Return the added bodies since last update of the physics engine
+        std::vector<Body*>& getRemovedBodies();                                             // Retrun the removed bodies since last update of the physics engine
 };
 
 // --- Inline functions --- //
+
+// Clear the addedBodies and removedBodies sets
+inline void PhysicsWorld::clearAddedAndRemovedBodies() {
+    addedBodies.clear();
+    removedBodies.clear();
+}
 
 // Return the gravity vector of the world
 inline Vector3D PhysicsWorld::getGravity() const {
@@ -98,6 +109,16 @@ inline std::vector<Body*>::iterator PhysicsWorld::getBodiesBeginIterator() {
 // Return an iterator to the end of the bodies of the physics world
 inline std::vector<Body*>::iterator PhysicsWorld::getBodiesEndIterator() {
     return bodies.end();
+}
+
+// Return the added bodies since last update of the physics engine
+inline std::vector<Body*>& PhysicsWorld::getAddedBodies() {
+    return addedBodies;
+}
+
+// Retrun the removed bodies since last update of the physics engine
+inline std::vector<Body*>& PhysicsWorld::getRemovedBodies() {
+    return removedBodies;
 }
 
 }   // End of the ReactPhysics3D namespace

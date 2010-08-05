@@ -47,21 +47,21 @@ class OBB : public BoundingVolume {
 
     public :
         OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
-            const Vector3D& axis3, double extent1, double extent2, double extent3);                     // Constructor
-        virtual ~OBB();                                                                                 // Destructor
+            const Vector3D& axis3, double extent1, double extent2, double extent3);                         // Constructor
+        virtual ~OBB();                                                                                     // Destructor
 
-        Vector3D getCenter() const;                                                                             // Return the center point of the OBB
-        void setCenter(const Vector3D& center);                                                                 // Set the center point
-        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                                // Return an axis of the OBB
-        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                    // Set an axis
-        Vector3D getVertex(unsigned int index) const throw (std::invalid_argument);                             // Return a vertex of the OBB
-        std::vector<Vector3D> getFace(unsigned int index) const throw(std::invalid_argument);                            // Return the 4 vertices the OBB's face in the direction of a given axis
-        double getExtent(unsigned int index) const throw(std::invalid_argument);                                // Return an extent value
-        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                         // Set an extent value
-        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                           // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
-        virtual void updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion);        // Update the oriented bounding box orientation according to a new orientation of the rigid body
-        virtual void draw() const;                                                                              // Draw the OBB (only for testing purpose)
-        Vector3D getBestAxis(const Vector3D& vector) const;                                                     // Return the axis that correspond the better to the vector
+        Vector3D getCenter() const;                                                                         // Return the center point of the OBB
+        void setCenter(const Vector3D& center);                                                             // Set the center point
+        Vector3D getAxis(unsigned int index) const throw(std::invalid_argument);                            // Return an axis of the OBB
+        void setAxis(unsigned int index, const Vector3D& axis) throw(std::invalid_argument);                // Set an axis
+        Vector3D getVertex(unsigned int index) const throw (std::invalid_argument);                         // Return a vertex of the OBB
+        std::vector<Vector3D> getFace(unsigned int index) const throw(std::invalid_argument);               // Return the 4 vertices the OBB's face in the direction of a given axis
+        double getExtent(unsigned int index) const throw(std::invalid_argument);                            // Return an extent value
+        void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                     // Set an extent value
+        virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                       // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
+        virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        virtual void draw() const;                                                                          // Draw the OBB (only for testing purpose)
+        static OBB* computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center);     // Compute an OBB from a set of vertices
 };
 
 // Return the center point of the OBB
@@ -158,7 +158,7 @@ inline void OBB::setExtent(unsigned int index, double extent) throw(std::invalid
 }
 
 // Update the orientation of the OBB according to the orientation of the rigid body
-inline void OBB::updateOrientation(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
+inline void OBB::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
     // Update the center of the OBB
     center = newCenter;
 

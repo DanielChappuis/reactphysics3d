@@ -23,8 +23,11 @@
  // Libraries
 #include <stdexcept>
 
+
 // Namespace reactphysics3d
 namespace reactphysics3d {
+
+class BoundingVolume;
 
 /*  -------------------------------------------------------------------
     Class Body :
@@ -34,21 +37,25 @@ namespace reactphysics3d {
 */
 class Body {
     protected :
-        double mass;                      // Mass of the body
-        bool isMotionEnabled;             // True if the body is able to move
-        bool isCollisionEnabled;          // True if the body can collide with others bodies
+        double mass;                                // Mass of the body
+        BoundingVolume* broadBoundingVolume;        // Bounding volume used for the broad-phase collision detection
+        BoundingVolume* narrowBoundingVolume;       // Bounding volume used for the narrow-phase collision detection
+        bool isMotionEnabled;                       // True if the body is able to move
+        bool isCollisionEnabled;                    // True if the body can collide with others bodies
 
     public :
-        Body(double mass) throw(std::invalid_argument);         // Constructor
-        Body(const Body& body);                                 // Copy-constructor
-        virtual ~Body();                                        // Destructor
+        Body(double mass, BoundingVolume* broadBoundingVolume,
+             BoundingVolume* narrowBoundingVolume) throw(std::invalid_argument);    // Constructor
+        virtual ~Body();                                                            // Destructor
 
-        double getMass() const;                                 // Return the mass of the body
-        void setMass(double mass);                              // Set the mass of the body
-        bool getIsMotionEnabled() const;                        // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);          // Set the value to true if the body can move
-        bool getIsCollisionEnabled() const;                     // Return true if the body can collide with others bodies
-        void setIsCollisionEnabled(bool isCollisionEnabled);    // Set the isCollisionEnabled value
+        double getMass() const;                                         // Return the mass of the body
+        void setMass(double mass);                                      // Set the mass of the body
+        bool getIsMotionEnabled() const;                                // Return if the rigid body can move
+        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
+        bool getIsCollisionEnabled() const;                             // Return true if the body can collide with others bodies
+        void setIsCollisionEnabled(bool isCollisionEnabled);            // Set the isCollisionEnabled value
+        const BoundingVolume* getBroadBoundingVolume() const;           // Return the broad-phase bounding volume
+        const BoundingVolume* getNarrowBoundingVolume() const;          // Return the narrow-phase bounding volume of the body
 };
 
 // --- Inlines function --- //
@@ -81,6 +88,16 @@ inline bool Body::getIsCollisionEnabled() const {
 // Set the isCollisionEnabled value
 inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
     this->isCollisionEnabled = isCollisionEnabled;
+}
+
+// Return the broad-phase bounding volume
+inline const BoundingVolume* Body::getBroadBoundingVolume() const {
+    return broadBoundingVolume;
+}
+
+// Return the oriented bounding box of the rigid body
+inline const BoundingVolume* Body::getNarrowBoundingVolume() const {
+    return narrowBoundingVolume;
 }
 
 }

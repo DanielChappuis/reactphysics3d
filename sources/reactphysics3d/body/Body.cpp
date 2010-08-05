@@ -18,13 +18,15 @@
  ***************************************************************************/
 
  // Libraries
- #include "Body.h"
+#include "Body.h"
+#include "BoundingVolume.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(double mass) throw(std::invalid_argument) : mass(mass)  {
+Body::Body(double mass, BoundingVolume* broadBoundingVolume, BoundingVolume* narrowBoundingVolume) throw(std::invalid_argument)
+     : mass(mass), broadBoundingVolume(broadBoundingVolume), narrowBoundingVolume(narrowBoundingVolume)  {
     // Check if the mass is not larger than zero
     if (mass <= 0.0) {
         // We throw an exception
@@ -32,12 +34,8 @@ Body::Body(double mass) throw(std::invalid_argument) : mass(mass)  {
     }
 }
 
-// Copy-constructor
-Body::Body(const Body& body) : mass(body.mass) {
-
-}
-
 // Destructor
 Body::~Body() {
-
+    delete broadBoundingVolume;
+    delete narrowBoundingVolume;
 }

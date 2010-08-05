@@ -15,16 +15,16 @@
 *                                                                          *
 * You should have received a copy of the GNU Lesser General Public License *
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
-***************************************************************************/
+ ***************************************************************************/
 
- #ifndef RIGIDBODY_H
- #define RIGIDBODY_H
+#ifndef RIGIDBODY_H
+#define RIGIDBODY_H
 
- // Libraries
- #include <cassert>
- #include "Body.h"
- #include "OBB.h"
- #include "../mathematics/mathematics.h"
+// Libraries
+#include <cassert>
+#include "Body.h"
+#include "BoundingVolume.h"
+#include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -48,15 +48,15 @@ class RigidBody : public Body {
         Vector3D externalTorque;                    // Current external torque on the body
         Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;        // Inverse of the inertia tensor of the body (in body coordinates)
-        double massInverse;                       // Inverse of the mass of the body
+        double massInverse;                         // Inverse of the mass of the body
         
         double interpolationFactor;                 // Interpolation factor used for the state interpolation
         double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
-        OBB obb;                                    // Oriented bounding box that contains the rigid body
 
     public :
-        RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb);  // Constructor                                                                                                         // Copy-constructor
-        virtual ~RigidBody();                                                                                                                  // Destructor
+        RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal,
+                  BoundingVolume* broadBoundingVolume, BoundingVolume* narrowBoundingVolume);                                       // Constructor                                                                                                         // Copy-constructor
+        virtual ~RigidBody();                                                                                                       // Destructor
 
         Vector3D getPosition() const;                                           // Return the position of the body
         void setPosition(const Vector3D& position);                             // Set the position of the body
@@ -83,7 +83,6 @@ class RigidBody : public Body {
         double getRestitution() const;                                          // Get the restitution coefficient
         void setRestitution(double restitution) throw(std::invalid_argument);   // Set the restitution coefficient
         void updateOldPositionAndOrientation();                                 // Update the previous position and orientation of the body
-        const OBB* const getOBB() const;                                        // Return the oriented bounding box of the rigid body
         void update();                                                          // Update the rigid body in order to reflect a change in the body state
 };
 
@@ -241,15 +240,11 @@ inline void RigidBody::updateOldPositionAndOrientation() {
     oldOrientation = orientation;
 }
 
-// Return the oriented bounding box of the rigid body
-inline const OBB* const RigidBody::getOBB() const {
-    return &obb;
-}
-
 // Update the rigid body in order to reflect a change in the body state
 inline void RigidBody::update() {
-    // Update the orientation of the corresponding bounding volume of the rigid body
-    obb.updateOrientation(position, orientation);
+    // Update the orientation of the corresponding bounding volumes of the rigid body
+    broadBoundingVolume->update(position, orientation);
+    narrowBoundingVolume->update(position, orientation);
 }
 
 } // End of the ReactPhyscis3D namespace

@@ -26,6 +26,9 @@
 #include "engine/PhysicsEngine.h"
 #include "body/BoundingVolume.h"
 #include "body/OBB.h"
+#include "body/AABB.h"
+
+// TODO : Use using namespace std in every possible cpp files to increase readability
 
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

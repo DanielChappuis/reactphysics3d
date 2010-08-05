@@ -24,9 +24,10 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal, const OBB& obb)
-           : Body(mass), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal), inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             massInverse(1.0/mass), oldPosition(position), oldOrientation(orientation), obb(obb) {
+ RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal, BoundingVolume* broadBoundingVolume,
+                      BoundingVolume* narrowBoundingVolume)
+           : Body(mass, broadBoundingVolume, narrowBoundingVolume), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal),
+             inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass), oldPosition(position), oldOrientation(orientation) {
 
     restitution = 1.0;
     isMotionEnabled = true;
@@ -34,10 +35,15 @@
     interpolationFactor = 0.0;
 
     // Update the orientation of the OBB according to the orientation of the rigid body
-    this->update();
+    update();
 
-    // Set the body pointer to the OBB
-    this->obb.setBodyPointer(this);
+    assert(broadBoundingVolume);
+    assert(narrowBoundingVolume);
+    
+    // Set the body pointer to the bounding volumes
+    // TODO : Move this in the Body constructor
+    broadBoundingVolume->setBodyPointer(this);
+    narrowBoundingVolume->setBodyPointer(this);
 }
 
 // Destructor

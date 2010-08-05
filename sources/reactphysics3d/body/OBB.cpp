@@ -50,7 +50,6 @@ OBB::~OBB() {
 
 }
 
-// TODO : Remove this method in the final version
 // Draw the OBB (only for testing purpose)
 void OBB::draw() const {
     double e0 = extent[0];
@@ -227,29 +226,9 @@ std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_
     }
 }
 
-// Return the axis that correspond the better to the vector
-Vector3D OBB::getBestAxis(const Vector3D& vector) const {
-    double vectorLength = vector.length();
-    double minDifference = DBL_MAX;
-    int bestAxis = -1;
-    bool opposite = false;
-    
-    for (int i=0; i<3; i++) {
-        double scalarProd = axis[i].scalarProduct(vector);
-        double lengthValue = axis[i].length() * vectorLength;
-        
-        if (std::abs(std::abs(scalarProd) - lengthValue) < minDifference) {
-            bestAxis = i;
-            minDifference = std::abs(std::abs(scalarProd) - lengthValue);
-            
-            if (scalarProd >= 0) {
-                opposite = false;
-            }
-            else {
-                opposite = true;
-            }
-        }
-    }
-
-    return opposite ? axis[bestAxis].getOpposite() : axis[bestAxis];
+// Static method that computes an OBB from a set of vertices. The "center" argument corresponds to the center of the OBB
+// This method allocates a new OBB object and return a pointer to the new allocated OBB object
+OBB* OBB::computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center) {
+    // TODO : Implement this method;
+    return 0;
 }

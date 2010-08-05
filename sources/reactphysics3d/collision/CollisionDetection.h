@@ -41,15 +41,15 @@ namespace reactphysics3d {
 */
 class CollisionDetection {
     private :
-        PhysicsWorld* world;                                                         // Pointer to the physics world
-        std::vector<std::pair<const OBB*, const OBB* > > possibleCollisionPairs;     // Possible collision pairs of bodies (computed by broadphase)
-        std::vector<ContactInfo*> contactInfos;                                      // Contact informations (computed by narrowphase)
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                    // Broad-phase algorithm
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                  // Narrow-phase algorithm
+        PhysicsWorld* world;                                                        // Pointer to the physics world
+        std::vector<std::pair<const Body*, const Body* > > possibleCollisionPairs;  // Possible collision pairs of bodies (computed by broadphase)
+        std::vector<ContactInfo*> contactInfos;                                     // Contact informations (computed by narrowphase)
+        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                   // Broad-phase algorithm
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                 // Narrow-phase algorithm
 
-        void computeBroadPhase();                                                                                                                                   // Compute the broad-phase collision detection
-        void computeNarrowPhase();                                                                                                                                  // Compute the narrow-phase collision detection
-        void computeAllContacts();                                                                                                                                  // Compute all the contacts from the collision info list
+        void computeBroadPhase();                                                   // Compute the broad-phase collision detection
+        void computeNarrowPhase();                                                  // Compute the narrow-phase collision detection
+        void computeAllContacts();                                                  // Compute all the contacts from the collision info list
         void computeContact(const ContactInfo* const contactInfo);                  // Compute a contact (and add it to the physics world) for two colliding bodies
 
     public :
