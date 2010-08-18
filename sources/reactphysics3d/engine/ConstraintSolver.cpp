@@ -23,6 +23,7 @@
 #include "../body/RigidBody.h"
 
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
@@ -41,7 +42,7 @@ void ConstraintSolver::allocate() {
     Constraint* constraint;
 
     // For each constraint
-    std::vector<Constraint*>::iterator it;
+    vector<Constraint*>::iterator it;
     for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); it++) {
         constraint = *it;
 
@@ -57,8 +58,8 @@ void ConstraintSolver::allocate() {
             constraintBodies.insert(constraint->getBody2());
 
             // Fill in the body number maping
-            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
-            bodyNumberMapping.insert(std::pair<Body*, unsigned int>(constraint->getBody2(), bodyNumberMapping.size()));
+            bodyNumberMapping.insert(pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
+            bodyNumberMapping.insert(pair<Body*, unsigned int>(constraint->getBody2(), bodyNumberMapping.size()));
 
             // Update the size of the jacobian matrix
             nbConstraints += (1 + constraint->getNbAuxConstraints());
@@ -174,7 +175,7 @@ void ConstraintSolver::fillInMatrices() {
     Vector v(6);
     Vector f(6);
     uint b=0;
-    for (std::set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
+    for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
         body = *it;
         uint bodyNumber = bodyNumberMapping.at(body);
         
@@ -222,6 +223,7 @@ void ConstraintSolver::freeMemory() {
         delete[] bodyMapping[i];
         delete[] J_sp[i];
     }
+    
     delete[] bodyMapping;
     delete[] J_sp;
     delete[] B_sp[0];
@@ -299,7 +301,7 @@ void ConstraintSolver::updateContactCache() {
         Contact* contact = dynamic_cast<Contact*>(activeConstraints.at(c));
         if (contact) {
             // Create a new ContactCachingInfo
-            ContactCachingInfo contactInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
+            ContactCachingInfo* contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
 
             // Add it to the contact cache
             contactCache.addContactCachingInfo(contactInfo);
