@@ -42,8 +42,8 @@ struct ContactInfo {
         const OBB* const obb2;                   // Body pointer of the second bounding volume
         const Vector3D normal;                   // Normal vector the the collision contact
         const double penetrationDepth;           // Penetration depth of the contact
-
-        ContactInfo(const OBB* const obb1, const OBB* const obb2, const Vector3D& normal, double penetrationDepth);   // Constructor
+        
+        ContactInfo(const OBB* const obb1, const OBB* const obb2, const Vector3D& normal, double penetrationDepth);                                                                // Constructor
 };
 
 } // End of the ReactPhysics3D namespace

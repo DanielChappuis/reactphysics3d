@@ -25,9 +25,11 @@
 #include "../body/OBB.h"
 #include "../body/RigidBody.h"
 #include <cassert>
+#include <complex>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(PhysicsWorld* world) {

@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cassert>
 
+
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
@@ -95,7 +96,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     double absC[3][3];                          // absC[i][j] = abs(DotProduct(obb1.Ai, obb2.Bj))
     double udc1[3];                             // DotProduct(obb1.Ai, obb2.center - obb1.center)
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
-     
+    
     Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Vector between the centers of the OBBs
 
     // Axis A0
@@ -170,7 +171,6 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // Axis B0

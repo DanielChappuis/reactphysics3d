@@ -51,6 +51,7 @@ class CollisionDetection {
         void computeNarrowPhase();                                                  // Compute the narrow-phase collision detection
         void computeAllContacts();                                                  // Compute all the contacts from the collision info list
         void computeContact(const ContactInfo* const contactInfo);                  // Compute a contact (and add it to the physics world) for two colliding bodies
+        void computeContact2(const ContactInfo* const contactInfo);                  // Compute a contact (and add it to the physics world) for two colliding bodies
 
     public :
         CollisionDetection(PhysicsWorld* physicsWorld);                             // Constructor
