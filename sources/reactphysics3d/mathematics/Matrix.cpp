@@ -45,14 +45,6 @@ Matrix::Matrix(int nbRow, int nbColumn) throw(std::invalid_argument)
             array[i] = new double[nbColumn];
             assert(array[i] != 0);
         }
-
-        // TODO : This initialization loop must be removed carefully
-        // Fill the matrix with zero's
-        for (int i=0; i<nbRow; ++i) {
-            for(int j=0; j<nbColumn; ++j) {
-                setValue(i,j, 0.0);
-            }
-        }
     }
     else {
         // Throw an exception

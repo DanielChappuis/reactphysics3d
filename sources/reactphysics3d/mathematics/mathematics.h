@@ -408,10 +408,10 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
                 }
             }
             else if (planeNormal.scalarProduct(S-A) > 0.0) {
-                    // Compute the intersection point between the segment SP and the clip plane
-                    reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
+                // Compute the intersection point between the segment SP and the clip plane
+                reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
-                    outputPolygon.push_back(intersectPoint);
+                outputPolygon.push_back(intersectPoint);
             }
             S = P;
         }
@@ -421,6 +421,23 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
     // Return the clipped polygon
     return outputPolygon;
 }
+
+// Compute the intersection point between a line and a plane in 3D space. There must be an intersection, therefore the
+// the lineVector must not be orthogonal to the planeNormal.
+inline reactphysics3d::Vector3D intersectLineWithPlane(const reactphysics3d::Vector3D& linePoint, const reactphysics3d::Vector3D& lineVector,
+                                                       const reactphysics3d::Vector3D& planePoint, const reactphysics3d::Vector3D& planeNormal) {
+    assert(!approxEqual(lineVector.scalarProduct(planeNormal), 0.0));
+
+    // The plane is represented by the equation planeNormal dot X = d where X is a point of the plane
+    double d  = planeNormal.scalarProduct(planePoint);
+
+    // Compute the parameter t
+    double t = (d - planeNormal.scalarProduct(linePoint)) / planeNormal.scalarProduct(lineVector);
+
+    // Compute the intersection point
+    return linePoint + lineVector * t;
+}
+
 
 } // End of the ReactPhysics3D namespace
 

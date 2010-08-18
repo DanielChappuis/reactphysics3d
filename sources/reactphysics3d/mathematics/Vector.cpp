@@ -155,11 +155,6 @@ void Vector::changeSize(uint newSize) {
 
     nbComponent = newSize;
     tab = new double[nbComponent];
-
-    // Fill the array with the value of the vector
-    for (int i=0; i<nbComponent; ++i) {
-        tab[i] = 0.0;
-    }
 }
 
 // Overloaded operator for addition

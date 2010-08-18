@@ -25,6 +25,9 @@
 #include "exceptions.h"
 #include "mathematics_functions.h"
 
+// TODO : Remove the methods getX(), getY(), getZ(), setX(), setY(), setZ() and replace the attributes
+//        x, y and z by an array values[3]
+
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -45,6 +48,8 @@ class Vector3D {
         Vector3D(double x, double y, double z);                 // Constructor with arguments
         Vector3D(const Vector3D& vector);                       // Copy-constructor
         virtual ~Vector3D();                                    // Destructor
+        double getValue(int index) const throw(std::invalid_argument);      // Get a component of the vector
+        void setValue(int index, double value) throw(std::invalid_argument); // Set a component of the vector
         double getX() const;                                    // Get the x component of the vector
         double getY() const;                                    // Get the y component of the vector
         double getZ() const;                                    // Get the z component of the vector
@@ -98,6 +103,28 @@ inline void Vector3D::setY(double y) {
 // Set the z component of the vector (inline)
 inline void Vector3D::setZ(double z) {
     this->z = z;
+}
+
+// Get a component of the vector
+inline double Vector3D::getValue(int index) const throw(std::invalid_argument) {
+    switch(index) {
+        case 0:     return x;
+        case 1:     return y;
+        case 2:     return z;
+        default:    // Throw an exception because of the wrong argument
+                    throw std::invalid_argument("The argument is outside the bounds of the Vector3D");
+    }
+}
+
+// Set a component of the vector
+inline void Vector3D::setValue(int index, double value) throw(std::invalid_argument) {
+    switch(index) {
+        case 0:     x = value;
+        case 1:     y = value;
+        case 2:     z = value;
+        default:    // Throw an exception because of the wrong argument
+                    throw std::invalid_argument("The argument is outside the bounds of the Vector3D");
+    }
 }
 
 // Set all the values of the vector (inline)
