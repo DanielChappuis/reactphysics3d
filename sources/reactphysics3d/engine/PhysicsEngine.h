@@ -47,35 +47,23 @@ class PhysicsEngine {
         void updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity);    // Update the position and orientation of a body
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies
     public :
-        PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);     // Constructor
-        ~PhysicsEngine();                                                                           // Destructor
+        PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);  // Constructor
+        ~PhysicsEngine();                                                                   // Destructor
 
-        void start();                                           // Start the physics simulation
-        void stop();                                            // Stop the physics simulation
-        void update();                                          // Update the physics simulation
-        void initializeDisplayTime(long double displayTime);    // Initialize the display time
-        void updateDisplayTime(long double newDisplayTime);     // Update the display time
+        void start();                                                                       // Start the physics simulation
+        void stop();                                                                        // Stop the physics simulation
+        void update() throw (std::logic_error);                                             // Update the physics simulation
 };
 
 // --- Inline functions --- //
 
 // Start the physics simulation
 inline void PhysicsEngine::start() {
-    timer.setIsRunning(true);
+    timer.start();
 }
 
 inline void PhysicsEngine::stop() {
-    timer.setIsRunning(false);
-}
-
-// Initialize the display time
-inline void PhysicsEngine::initializeDisplayTime(long double displayTime) {
-    timer.setCurrentDisplayTime(displayTime);
-}
-
-// Update the display time
-inline void PhysicsEngine::updateDisplayTime(long double newDisplayTime) {
-    timer.updateDisplayTime(newDisplayTime);
+    timer.stop();
 }
 
 }

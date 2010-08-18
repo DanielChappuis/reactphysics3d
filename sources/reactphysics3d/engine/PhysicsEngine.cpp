@@ -22,14 +22,21 @@
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument)
-              : world(world), timer(0.0, timeStep), collisionDetection(world), constraintSolver(world) {
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep) throw (invalid_argument)
+              : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {
         // Throw an exception
-        throw std::invalid_argument("Exception in PhysicsEngine constructor : World pointer cannot be NULL");
+        throw invalid_argument("Error : The argument world to the PhysicsEngine constructor cannot be NULL");
+    }
+
+    // Check if the timeStep is positive
+    if (timeStep <= 0.0) {
+        // Throw an exception
+        throw invalid_argument("Error : The timeStep argument to the PhysicsEngine constructor have to be greater than zero");
     }
 }
 
@@ -38,15 +45,21 @@ PhysicsEngine::~PhysicsEngine() {
 
 }
 
-void PhysicsEngine::update() {
+// Update the physics simulation
+void PhysicsEngine::update() throw (logic_error) {
     bool existCollision = false;
 
+    // Check that the timer is running
     if (timer.getIsRunning()) {
+
+        // Compute the time since the last update() call and update the timer
+        timer.update();
+
         // Apply the gravity force to all bodies
         applyGravity();
 
         // While the time accumulator is not empty
-        while(timer.getAccumulator() >= timer.getTimeStep()) {
+        while(timer.isPossibleToTakeStep()) {
             existCollision = false;
             // Compute the collision detection
             if (collisionDetection.computeCollisionDetection()) {
@@ -57,7 +70,7 @@ void PhysicsEngine::update() {
             }
 
             // Update the timer
-            timer.update();
+            timer.nextStep();
 
             // Update the position and orientation of each body
             updateAllBodiesMotion();
@@ -70,6 +83,10 @@ void PhysicsEngine::update() {
             // Clear the added and removed bodies from last update() method call
             world->clearAddedAndRemovedBodies();
         }
+    }
+    else {  // Call to update() but the timer is not running
+        // Throw an exception
+        throw logic_error("Error : The PhysicsEngine::start() method have to be called before calling PhysicsEngine::update()");
     }
 }
 
@@ -88,7 +105,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
     Vector3D newAngularVelocity;
 
     // For each body of thephysics world
-    for (std::vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
@@ -155,7 +172,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
 void PhysicsEngine::applyGravity() {
 
     // For each body of the physics world
-    for (std::vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
