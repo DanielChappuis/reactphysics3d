@@ -49,12 +49,12 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
         static unsigned short int sortAxis;     // Current sorting axis (0 for x, 1 for y, 2 for z axis)
 
         static bool compareAABBs(const AABB* a, const AABB* b);     // Static method that compare two AABBs (in order to sort them)
-        void removeBodiesAABB(std::vector<Body*> bodies);     // Remove the AABB representation of a given set of bodies from the sortedAABBs set
-        void addBodiesAABB(std::vector<Body*> bodies);        // Add the AABB representation of a given set of bodies in the sortedAABBs set
+        void removeBodiesAABB(std::vector<Body*> bodies);           // Remove the AABB representation of a given set of bodies from the sortedAABBs set
+        void addBodiesAABB(std::vector<Body*> bodies);              // Add the AABB representation of a given set of bodies in the sortedAABBs set
 
     public :
-        SAPAlgorithm();                             // Constructor
-        virtual ~SAPAlgorithm();                    // Destructor
+        SAPAlgorithm();                                             // Constructor
+        virtual ~SAPAlgorithm();                                    // Destructor
 
         virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
                                                    std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
@@ -68,18 +68,6 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
 // axis.
 inline bool SAPAlgorithm::compareAABBs(const AABB* a, const AABB* b) {
     return (a->getMinValueOnAxis(sortAxis) < b->getMinValueOnAxis(sortAxis));
-}
-
-// Add the AABB representation of a given body in the sortedAABBs set
-inline void SAPAlgorithm::addBodiesAABB(std::vector<Body*> bodies) {
-    const AABB* aabb;
-    for (std::vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
-        aabb = 0;
-        aabb = dynamic_cast<const AABB*>((*it)->getBroadBoundingVolume());
-        assert(aabb);
-        // TODO : Add an assert here to check that the AABB pointer isn't already in the sortedAABBs set
-        sortedAABBs.push_back(aabb);
-    }
 }
 
 } // End of reactphysics3d namespace

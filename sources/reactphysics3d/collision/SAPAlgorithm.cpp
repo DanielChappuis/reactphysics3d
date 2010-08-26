@@ -26,8 +26,6 @@
 using namespace reactphysics3d;
 using namespace std;
 
-// TODO : Take care of the isCollisionEnabled variable of the bodies while performing broad-phase collision detection
-
 // Initialize the static attributes
 unsigned short int SAPAlgorithm::sortAxis = 0;
 
@@ -56,6 +54,18 @@ void SAPAlgorithm::removeBodiesAABB(vector<Body*> bodies) {
     }
 }
 
+// Add the AABB representation of a given body in the sortedAABBs set
+void SAPAlgorithm::addBodiesAABB(std::vector<Body*> bodies) {
+    const AABB* aabb;
+    
+    for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
+        aabb = 0;
+        aabb = dynamic_cast<const AABB*>((*it)->getBroadBoundingVolume());
+        assert(aabb);
+        sortedAABBs.push_back(aabb);
+    }
+}
+
 // Compute the possible collision pairs of bodies
 // The arguments "addedBodies" and "removedBodies" are respectively the set
 // of bodies that have been added and removed since the last broad-phase
@@ -73,6 +83,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
     Vector3D center3D;                              // Center of the current AABB
     double center[3];                               // Coordinates of the center of the current AABB
     int i;
+    const Body* body;                               // Body pointer on the body corresponding to an AABB
     uint nbAABBs = sortedAABBs.size();              // Number of AABBs
 
     // Removed the bodies to remove
@@ -86,8 +97,15 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
 
     // Sweep the sorted set of AABBs
     for (vector<const AABB*>::iterator it = sortedAABBs.begin(); it != sortedAABBs.end(); it++) {
+
+        // If the collision of the AABB's corresponding body is disabled
+        if (!(*it)->getBodyPointer()->getIsCollisionEnabled()) {
+            // Go to the next AABB to test
+            continue;
+        }
+
         // Center of the current AABB
-        Vector3D center3D = (*it)->getCenter();
+        center3D = (*it)->getCenter();
         center[0] = center3D.getX();
         center[1] = center3D.getY();
         center[2] = center3D.getZ();
@@ -105,8 +123,10 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
                 break;
             }
 
+            body = (*it2)->getBodyPointer();
+
             // Test if both AABBs overlap
-            if ((*it)->testCollision(*(*it2))) {
+            if (body->getIsCollisionEnabled() && (*it)->testCollision(*(*it2))) {
                 // Add the current pair of AABBs into the possibleCollisionPairs set
                 possibleCollisionPairs.push_back(make_pair((*it)->getBodyPointer(), (*it2)->getBodyPointer()));
             }
