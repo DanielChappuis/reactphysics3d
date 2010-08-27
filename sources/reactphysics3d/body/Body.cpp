@@ -32,6 +32,10 @@ Body::Body(double mass, BoundingVolume* broadBoundingVolume, BoundingVolume* nar
         // We throw an exception
         throw std::invalid_argument("Exception in Body constructor : the mass has to be different larger than zero");
     }
+
+    // Set the body pointer to the bounding volumes
+    broadBoundingVolume->setBodyPointer(this);
+    narrowBoundingVolume->setBodyPointer(this);
 }
 
 // Destructor

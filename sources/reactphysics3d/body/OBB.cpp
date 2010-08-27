@@ -24,12 +24,12 @@
 #include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
 OBB::OBB(const Vector3D& center, const Vector3D& axis1, const Vector3D& axis2,
-            const Vector3D& axis3, double extent1, double extent2, double extent3) {
+         const Vector3D& axis3, double extent1, double extent2, double extent3) {
     this->center = center;
 
     oldAxis[0] = axis1.getUnit();
@@ -114,10 +114,10 @@ void OBB::draw() const {
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
 // If the extreme vertices are part of a face of the OBB, the returned vertices will be ordered according to the face.
-std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
+vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
     assert(directionAxis.length() != 0);
 
-    std::vector<Vector3D> extremeVertices;
+    vector<Vector3D> extremeVertices;
 
     // Check if the given axis is parallel to an axis on the OBB
     if (axis[0].isParallelWith(directionAxis)) {
@@ -179,10 +179,10 @@ std::vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) con
 // Return the 4 vertices of a face of the OBB. The 4 vertices will be ordered. The convention is that the index 0 corresponds to
 // the face in the direction of the axis[0], 1 corresponds to the face in the opposite direction of the axis[0], 2 corresponds to
 // the face in the direction of the axis[1], etc.
-std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_argument) {
+vector<Vector3D> OBB::getFace(unsigned int index) const throw(invalid_argument) {
     // Check the argument
     if (index >=0 && index <6) {
-        std::vector<Vector3D> vertices;
+        vector<Vector3D> vertices;
         switch(index) {
             case 0: vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
                     vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
@@ -222,13 +222,13 @@ std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_
     }
     else {
         // Throw an exception
-        throw std::invalid_argument("Exception: The argument must be between 0 and 5");
+        throw invalid_argument("Exception: The argument must be between 0 and 5");
     }
 }
 
 // Static method that computes an OBB from a set of vertices. The "center" argument corresponds to the center of the OBB
 // This method allocates a new OBB object and return a pointer to the new allocated OBB object
-OBB* OBB::computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center) {
+OBB* OBB::computeFromVertices(const vector<Vector3D>& vertices, const Vector3D& center) {
     // TODO : Implement this method;
     return 0;
 }

@@ -23,8 +23,8 @@
 #include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
 AABB::AABB(const Vector3D& center,double extentX, double extentY, double extentZ) {
@@ -102,7 +102,7 @@ void AABB::draw() const {
 
 // Static method that computes an AABB from a set of vertices. The "center" argument corresponds to the center of the AABB
 // This method allocates a new AABB object and return a pointer to the new allocated AABB object
-AABB* AABB::computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center) {
+AABB* AABB::computeFromVertices(const vector<Vector3D>& vertices, const Vector3D& center) {
     // TODO : Implement this method;
     return 0;
 }

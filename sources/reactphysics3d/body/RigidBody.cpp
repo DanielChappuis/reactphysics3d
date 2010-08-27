@@ -39,11 +39,6 @@
 
     assert(broadBoundingVolume);
     assert(narrowBoundingVolume);
-    
-    // Set the body pointer to the bounding volumes
-    // TODO : Move this in the Body constructor
-    broadBoundingVolume->setBodyPointer(this);
-    narrowBoundingVolume->setBodyPointer(this);
 }
 
 // Destructor

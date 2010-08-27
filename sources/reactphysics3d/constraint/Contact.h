@@ -29,8 +29,8 @@
 namespace reactphysics3d {
 
 // Constants
-const double FRICTION_COEFFICIENT = 0.5;    // Friction coefficient
-const double PENETRATION_FACTOR = 1.0;      // Penetration factor (between 0 and 1) which specify the importance of the
+const double FRICTION_COEFFICIENT = 0.3;    // Friction coefficient
+const double PENETRATION_FACTOR = 0.0;      // Penetration factor (between 0 and 1) which specify the importance of the
                                             // penetration depth in order to calculate the correct impulse for the contact
 
 /*  -------------------------------------------------------------------

@@ -115,8 +115,8 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     Vector3D normal = contactInfo->normal;
     double penetrationDepth = contactInfo->penetrationDepth;
 
-    const std::vector<Vector3D> obb1ExtremePoints = obb1->getExtremeVertices(normal);
-    const std::vector<Vector3D> obb2ExtremePoints = obb2->getExtremeVertices(normal.getOpposite());
+    const vector<Vector3D> obb1ExtremePoints = obb1->getExtremeVertices(normal);
+    const vector<Vector3D> obb2ExtremePoints = obb2->getExtremeVertices(normal.getOpposite());
     unsigned int nbVerticesExtremeOBB1 = obb1ExtremePoints.size();
     unsigned int nbVerticesExtremeOBB2 = obb2ExtremePoints.size();
     assert(nbVerticesExtremeOBB1==1 || nbVerticesExtremeOBB1==2 || nbVerticesExtremeOBB1==4);
@@ -138,7 +138,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
         Vector3D d2 = obb2ExtremePoints[1] - obb2ExtremePoints[0];
 
         double alpha, beta;
-        std::vector<Vector3D> contactSet;
+        vector<Vector3D> contactSet;
 
         // If the two edges are parallel
         if (d1.isParallelWith(d2)) {
@@ -174,10 +174,10 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     }
     else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB1 onto the same plane of the face of OBB2
-        std::vector<Vector3D> edge = projectPointsOntoPlane(obb1ExtremePoints, obb2ExtremePoints[0], normal);
+        vector<Vector3D> edge = projectPointsOntoPlane(obb1ExtremePoints, obb2ExtremePoints[0], normal);
 
         // Clip the edge of OBB1 using the face of OBB2
-        std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
+        vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
 
         // TODO : Correct this bug
         // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
@@ -202,10 +202,10 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     }
     else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
-        std::vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
+        vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
 
         // Clip the edge of OBB2 using the face of OBB1
-        std::vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
+        vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
 
         // TODO : Correct this bug
         // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
@@ -230,10 +230,10 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     }
     else {      // If it's a face-face contact
         // Compute the projection of the face vertices of OBB2 onto the plane of the face of OBB1
-        std::vector<Vector3D> faceOBB2 = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
+        vector<Vector3D> faceOBB2 = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
 
         // Clip the face of OBB2 using the face of OBB1
-        std::vector<Vector3D> clippedFace = clipPolygonWithRectangleInPlane(faceOBB2, obb1ExtremePoints);
+        vector<Vector3D> clippedFace = clipPolygonWithRectangleInPlane(faceOBB2, obb1ExtremePoints);
 
         // Move the clipped face halfway between the face of OBB1 and the face of OBB2
         clippedFace = movePoints(clippedFace, penetrationDepth/2.0 * normal);

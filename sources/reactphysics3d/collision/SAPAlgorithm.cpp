@@ -55,7 +55,7 @@ void SAPAlgorithm::removeBodiesAABB(vector<Body*> bodies) {
 }
 
 // Add the AABB representation of a given body in the sortedAABBs set
-void SAPAlgorithm::addBodiesAABB(std::vector<Body*> bodies) {
+void SAPAlgorithm::addBodiesAABB(vector<Body*> bodies) {
     const AABB* aabb;
     
     for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); it++) {
