@@ -34,6 +34,11 @@ namespace reactphysics3d {
 
 // Constants
 const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
+const double AV_COUNTER_LIMIT = 500;    // Maximum number value of the avBodiesCounter or avConstraintsCounter
+const double AV_PERCENT_TO_FREE = 0.5;  // We will free the memory if the current nb of bodies (or constraints) is
+                                        // less than AV_PERCENT_TO_FREE * bodiesCapacity (or constraintsCapacity). This
+                                        // is used to avoid to keep to much memory for a long time if the system doesn't
+                                        // need that memory. This value is between 0.0 and 1.0
 
  /*  -------------------------------------------------------------------
     Class ConstrainSolver :
@@ -48,8 +53,16 @@ class ConstraintSolver {
         ContactCache contactCache;                              // Contact cache
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
         uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
-        std::set<Body*> constraintBodies;                       // Bodies that are implied in some constraint
         uint nbBodies;                                          // Current number of bodies in the physics world
+        uint constraintsCapacity;                               // Number of constraints that are currently allocated in memory in the solver
+        uint bodiesCapacity;                                    // Number of bodies that are currently allocated in memory in the solver
+        uint avConstraintsCapacity;                             // Average constraint capacity
+        uint avBodiesCapacity;                                  // Average bodies capacity
+        uint avBodiesNumber;                                    // Total bodies number for average computation
+        uint avConstraintsNumber;                               // Total constraints number for average computation
+        uint avBodiesCounter;                                   // Counter used to compute the average
+        uint avConstraintsCounter;
+        std::set<Body*> constraintBodies;                       // Bodies that are implied in some constraint
         std::map<Body*, uint> bodyNumberMapping;                // Map a body pointer with its index number
         Body*** bodyMapping;                                    // 2-dimensional array that contains the mapping of body reference
                                                                 // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
@@ -74,13 +87,15 @@ class ConstraintSolver {
         Vector* Vconstraint;                                    // Same kind of vector as V1 but contains the final constraint velocities
         Vector* Fext;                                           // Array that contains for each body the vector that contains external forces and torques
                                                                 // Each cell contains a 6x1 vector with external force and torque.
-        void allocate();                                        // Allocate all the matrices needed to solve the LCP problem
+        void initialize();                                      // Initialize the constraint solver before each solving
+        void allocate();                                        // Allocate all the memory needed to solve the LCP problem
         void fillInMatrices();                                  // Fill in all the matrices needed to solve the LCP problem
         void computeVectorB(double dt);                         // Compute the vector b
         void computeMatrixB_sp();                               // Compute the matrix B_sp
         void computeVectorVconstraint(double dt);               // Compute the vector V2
         void updateContactCache();                              // Clear and Fill in the contact cache with the new lambda values
-
+        void freeMemory(bool freeBodiesMemory);                 // Free some memory previously allocated for the constraint solver
+        
     public:
         ConstraintSolver(PhysicsWorld* world);                                  // Constructor
         virtual ~ConstraintSolver();                                            // Destructor
@@ -88,7 +103,7 @@ class ConstraintSolver {
         bool isConstrainedBody(Body* body) const;                               // Return true if the body is in at least one constraint
         Vector3D getConstrainedLinearVelocityOfBody(Body* body);                // Return the constrained linear velocity of a body after solving the LCP problem
         Vector3D getConstrainedAngularVelocityOfBody(Body* body);               // Return the constrained angular velocity of a body after solving the LCP problem
-        void freeMemory();                                                      // Free the memory that was allocated in the allocate() method
+        void cleanup();
 };
 
 // Return true if the body is in at least one constraint
@@ -114,6 +129,37 @@ inline Vector3D ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body
     return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
 }
 
+// Solve the current LCP problem
+inline void ConstraintSolver::solve(double dt) {
+    // Allocate memory for the matrices
+    initialize();
+
+    // Fill-in all the matrices needed to solve the LCP problem
+    fillInMatrices();
+
+    // Compute the vector b
+    computeVectorB(dt);
+
+    // Compute the matrix B
+    computeMatrixB_sp();
+
+    // Solve the LCP problem (computation of lambda)
+    lcpSolver->setLambdaInit(lambdaInit);
+    lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
+
+    // Update the contact chaching informations
+    updateContactCache();
+
+    // Compute the vector Vconstraint
+    computeVectorVconstraint(dt);
+}
+
+// Cleanup of the constraint solver
+inline void ConstraintSolver::cleanup() {
+    bodyNumberMapping.clear();
+    constraintBodies.clear();
+    activeConstraints.clear();
+}
 
 } // End of ReactPhysics3D namespace
 

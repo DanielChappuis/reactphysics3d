@@ -27,7 +27,10 @@ using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
-                 :physicsWorld(world), bodyMapping(0), nbConstraints(0), lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+                 :physicsWorld(world), bodyMapping(0), nbConstraints(0), constraintsCapacity(0),
+                  bodiesCapacity(0), avConstraintsCapacity(0), avBodiesCapacity(0), avBodiesNumber(0),
+                  avConstraintsNumber(0), avBodiesCounter(0), avConstraintsCounter(0),
+                  lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
 
 }
 
@@ -36,10 +39,11 @@ ConstraintSolver::~ConstraintSolver() {
 
 }
 
-// Allocate all the matrices needed to solve the LCP problem
-void ConstraintSolver::allocate() {
-    nbConstraints = 0;
+ // Initialize the constraint solver before each solving
+void ConstraintSolver::initialize() {
     Constraint* constraint;
+
+    nbConstraints = 0;
 
     // For each constraint
     vector<Constraint*>::iterator it;
@@ -66,31 +70,109 @@ void ConstraintSolver::allocate() {
         }
     }
 
-    assert(nbConstraints > 0);
-
     // Compute the number of bodies that are part of some active constraint
     nbBodies = bodyNumberMapping.size();
 
-    bodyMapping = new Body**[nbConstraints];
-    J_sp = new Matrix*[nbConstraints];
-    B_sp = new Matrix*[2];
-    B_sp[0] = new Matrix[nbConstraints];
-    B_sp[1] = new Matrix[nbConstraints];
-    for (uint i=0; i<nbConstraints; i++) {
-        bodyMapping[i] = new Body*[2];
-        J_sp[i] = new Matrix[2];
+    assert(nbConstraints > 0);
+    assert(nbBodies > 0);
+    
+    // Update the average bodies and constraints capacities
+    if (avBodiesCounter > AV_COUNTER_LIMIT) {
+        avBodiesCounter = 0;
+        avBodiesNumber = 0;
+    }
+    if (avConstraintsCounter > AV_COUNTER_LIMIT) {
+        avConstraintsCounter = 0;
+        avConstraintsNumber = 0;
+    }
+    avBodiesCounter++;
+    avConstraintsCounter++;
+    avBodiesNumber += nbBodies;
+    avConstraintsNumber += nbConstraints;
+    avBodiesCapacity += (avBodiesNumber / avBodiesCounter);
+    avConstraintsCapacity += (avConstraintsNumber / avConstraintsCounter);
+
+    // Allocate the memory needed for the constraint solver
+    allocate();
+}
+
+// Allocate all the memory needed to solve the LCP problem
+// The goal of this method is to avoid to free and allocate the memory
+// each time the constraint solver is called but only if the we effectively
+// need more memory. Therefore if for instance the number of constraints to
+// be solved is smaller than the constraints capacity, we don't free and reallocate
+// memory because we don't need to. The problem now is that the constraints capacity
+// can grow indefinitely. Therefore we use a way to free and reallocate the memory
+// if the average number of constraints currently solved is far less than the current
+// constraints capacity
+void ConstraintSolver::allocate() {
+    // If we need to allocate more memory for the bodies
+    if (nbBodies > bodiesCapacity || avBodiesCapacity < AV_PERCENT_TO_FREE * bodiesCapacity) {
+        freeMemory(true);
+        bodiesCapacity = nbBodies;
+        
+        Minv_sp = new Matrix[nbBodies];
+        V1 = new Vector[nbBodies];
+        Vconstraint = new Vector[nbBodies];
+        Fext = new Vector[nbBodies];
+
+        avBodiesNumber = 0;
+        avBodiesCounter = 0;
     }
 
-    errorValues.changeSize(nbConstraints);
-    b.changeSize(nbConstraints);
-    lambda.changeSize(nbConstraints);
-    lambdaInit.changeSize(nbConstraints);
-    lowerBounds.changeSize(nbConstraints);
-    upperBounds.changeSize(nbConstraints);
-    Minv_sp = new Matrix[nbBodies];
-    V1 = new Vector[nbBodies];
-    Vconstraint = new Vector[nbBodies];
-    Fext = new Vector[nbBodies];
+    // If we need to allocate more memory for the constraints
+    if (nbConstraints > constraintsCapacity || constraintsCapacity < AV_PERCENT_TO_FREE * constraintsCapacity) {
+        freeMemory(false);
+        constraintsCapacity = nbConstraints;
+
+        bodyMapping = new Body**[nbConstraints];
+        J_sp = new Matrix*[nbConstraints];
+        B_sp = new Matrix*[2];
+        B_sp[0] = new Matrix[nbConstraints];
+        B_sp[1] = new Matrix[nbConstraints];
+        for (uint i=0; i<nbConstraints; i++) {
+            bodyMapping[i] = new Body*[2];
+            J_sp[i] = new Matrix[2];
+        }
+
+        errorValues.changeSize(nbConstraints);
+        b.changeSize(nbConstraints);
+        lambda.changeSize(nbConstraints);
+        lambdaInit.changeSize(nbConstraints);
+        lowerBounds.changeSize(nbConstraints);
+        upperBounds.changeSize(nbConstraints);
+
+        avConstraintsNumber = 0;
+        avConstraintsCounter = 0;
+    }
+}
+
+// Free the memory that was allocated in the allocate() method
+// If the argument is true the method will free the memory
+// associated to the bodies. In the other case, it will free
+// the memory associated with the constraints
+void ConstraintSolver::freeMemory(bool freeBodiesMemory) {
+
+    // If we need to free the bodies memory
+    if (freeBodiesMemory && bodiesCapacity > 0) {
+        delete[] Minv_sp;
+        delete[] V1;
+        delete[] Vconstraint;
+        delete[] Fext;
+    }
+    else if (constraintsCapacity > 0) { // If we need to free the constraints memory
+        // Free the bodyMaping array
+        for (uint i=0; i<constraintsCapacity; i++) {
+            delete[] bodyMapping[i];
+            delete[] J_sp[i];
+        }
+
+        delete[] bodyMapping;
+        delete[] J_sp;
+        delete[] B_sp[0];
+        delete[] B_sp[1];
+        delete[] B_sp;
+    }
 }
 
 // Fill in all the matrices needed to solve the LCP problem
@@ -211,30 +293,6 @@ void ConstraintSolver::fillInMatrices() {
     }
 }
 
-// Free the memory that was allocated in the allocate() method
-void ConstraintSolver::freeMemory() {
-
-    activeConstraints.clear();
-    bodyNumberMapping.clear();
-    constraintBodies.clear();
-
-    // Free the bodyMaping array
-    for (uint i=0; i<nbConstraints; i++) {
-        delete[] bodyMapping[i];
-        delete[] J_sp[i];
-    }
-    
-    delete[] bodyMapping;
-    delete[] J_sp;
-    delete[] B_sp[0];
-    delete[] B_sp[1];
-    delete[] B_sp;
-    delete[] Minv_sp;
-    delete[] V1;
-    delete[] Vconstraint;
-    delete[] Fext;
-}
-
 // Compute the vector b
 void ConstraintSolver::computeVectorB(double dt) {
     uint indexBody1, indexBody2;
@@ -309,29 +367,4 @@ void ConstraintSolver::updateContactCache() {
 
         noConstraint += 1 + activeConstraints.at(c)->getNbAuxConstraints();
     }
-}
-
-// Solve the current LCP problem
-void ConstraintSolver::solve(double dt) {
-    // Allocate memory for the matrices
-    allocate();
-
-    // Fill-in all the matrices needed to solve the LCP problem
-    fillInMatrices();
-
-    // Compute the vector b
-    computeVectorB(dt);
-
-    // Compute the matrix B
-    computeMatrixB_sp();
-
-    // Solve the LCP problem (computation of lambda)
-    lcpSolver->setLambdaInit(lambdaInit);
-    lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
-
-    // Update the contact chaching informations
-    updateContactCache();
-
-    // Compute the vector Vconstraint
-    computeVectorVconstraint(dt);
 }

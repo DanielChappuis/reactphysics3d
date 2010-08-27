@@ -47,7 +47,7 @@ PhysicsEngine::~PhysicsEngine() {
 
 // Update the physics simulation
 void PhysicsEngine::update() throw (logic_error) {
-    bool existCollision = false;
+    bool existCollision = false;    // TODO : Delete this if we don't need it
 
     // Check that the timer is running
     if (timer.getIsRunning()) {
@@ -61,6 +61,7 @@ void PhysicsEngine::update() throw (logic_error) {
         // While the time accumulator is not empty
         while(timer.isPossibleToTakeStep()) {
             existCollision = false;
+            
             // Compute the collision detection
             if (collisionDetection.computeCollisionDetection()) {
                 existCollision = true;
@@ -75,9 +76,9 @@ void PhysicsEngine::update() throw (logic_error) {
             // Update the position and orientation of each body
             updateAllBodiesMotion();
 
-            // Free the allocated memory of the constraint solver
+            // Cleanup of the constraint solver
             if (existCollision) {
-                constraintSolver.freeMemory();
+               constraintSolver.cleanup();
             }
 
             // Clear the added and removed bodies from last update() method call
