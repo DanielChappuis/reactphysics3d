@@ -15,7 +15,7 @@
 *                                                                          *
 * You should have received a copy of the GNU Lesser General Public License *
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
- ***************************************************************************/
+***************************************************************************/
 
 #ifndef RIGIDBODY_H
 #define RIGIDBODY_H
@@ -23,7 +23,6 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
-#include "BoundingVolume.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
@@ -54,9 +53,9 @@ class RigidBody : public Body {
         double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
 
     public :
-        RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal,
-                  BoundingVolume* broadBoundingVolume, BoundingVolume* narrowBoundingVolume);                                       // Constructor                                                                                                         // Copy-constructor
-        virtual ~RigidBody();                                                                                                       // Destructor
+        RigidBody(const Vector3D& position, const Quaternion& orientation, double mass,
+                  const Matrix3x3& inertiaTensorLocal, NarrowBoundingVolume* narrowBoundingVolume);     // Constructor                                                                                                         // Copy-constructor
+        virtual ~RigidBody();                                                                           // Destructor
 
         Vector3D getPosition() const;                                           // Return the position of the body
         void setPosition(const Vector3D& position);                             // Set the position of the body
@@ -190,7 +189,7 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
 // Set the interpolation factor of the body
 inline void RigidBody::setInterpolationFactor(double factor) {
-    //assert(factor >= 0.0 && factor <= 1.0);
+    assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor
     interpolationFactor = factor;
@@ -238,13 +237,6 @@ inline void RigidBody::setRestitution(double restitution) throw(std::invalid_arg
 inline void RigidBody::updateOldPositionAndOrientation() {
     oldPosition = position;
     oldOrientation = orientation;
-}
-
-// Update the rigid body in order to reflect a change in the body state
-inline void RigidBody::update() {
-    // Update the orientation of the corresponding bounding volumes of the rigid body
-    broadBoundingVolume->update(position, orientation);
-    narrowBoundingVolume->update(position, orientation);
 }
 
 } // End of the ReactPhyscis3D namespace

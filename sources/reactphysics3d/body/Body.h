@@ -1,33 +1,35 @@
 /****************************************************************************
- * Copyright (C) 2009      Daniel Chappuis                                  *
- ****************************************************************************
- * This file is part of ReactPhysics3D.                                     *
- *                                                                          *
- * ReactPhysics3D is free software: you can redistribute it and/or modify   *
- * it under the terms of the GNU Lesser General Public License as published *
- * by the Free Software Foundation, either version 3 of the License, or     *
- * (at your option) any later version.                                      *
- *                                                                          *
- * ReactPhysics3D is distributed in the hope that it will be useful,        *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of           *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
- * GNU Lesser General Public License for more details.                      *
- *                                                                          *
- * You should have received a copy of the GNU Lesser General Public License *
- * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
- ***************************************************************************/
+* Copyright (C) 2009      Daniel Chappuis                                  *
+****************************************************************************
+* This file is part of ReactPhysics3D.                                     *
+*                                                                          *
+* ReactPhysics3D is free software: you can redistribute it and/or modify   *
+* it under the terms of the GNU Lesser General Public License as published *
+* by the Free Software Foundation, either version 3 of the License, or     *
+* (at your option) any later version.                                      *
+*                                                                          *
+* ReactPhysics3D is distributed in the hope that it will be useful,        *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+* GNU Lesser General Public License for more details.                      *
+*                                                                          *
+* You should have received a copy of the GNU Lesser General Public License *
+* along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
+***************************************************************************/
 
 #ifndef BODY_H
 #define BODY_H
 
- // Libraries
+// Libraries
 #include <stdexcept>
+#include <cassert>
 
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
-class BoundingVolume;
+class BroadBoundingVolume;
+class NarrowBoundingVolume;
 
 /*  -------------------------------------------------------------------
     Class Body :
@@ -37,16 +39,18 @@ class BoundingVolume;
 */
 class Body {
     protected :
-        double mass;                                // Mass of the body
-        BoundingVolume* broadBoundingVolume;        // Bounding volume used for the broad-phase collision detection
-        BoundingVolume* narrowBoundingVolume;       // Bounding volume used for the narrow-phase collision detection
-        bool isMotionEnabled;                       // True if the body is able to move
-        bool isCollisionEnabled;                    // True if the body can collide with others bodies
+        double mass;                                    // Mass of the body
+        BroadBoundingVolume* broadBoundingVolume;       // Bounding volume used for the broad-phase collision detection
+        NarrowBoundingVolume* narrowBoundingVolume;     // Bounding volume used for the narrow-phase collision detection
+        bool isMotionEnabled;                           // True if the body is able to move
+        bool isCollisionEnabled;                        // True if the body can collide with others bodies
+
+        void setBroadBoundingVolume(BroadBoundingVolume* broadBoundingVolume);      // Set the broad-phase bounding volume
+        void setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume);   // Set the narrow-phase bounding volume
 
     public :
-        Body(double mass, BoundingVolume* broadBoundingVolume,
-             BoundingVolume* narrowBoundingVolume) throw(std::invalid_argument);    // Constructor
-        virtual ~Body();                                                            // Destructor
+        Body(double mass) throw(std::invalid_argument);    // Constructor
+        virtual ~Body();                                   // Destructor
 
         double getMass() const;                                         // Return the mass of the body
         void setMass(double mass);                                      // Set the mass of the body
@@ -54,11 +58,9 @@ class Body {
         void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
         bool getIsCollisionEnabled() const;                             // Return true if the body can collide with others bodies
         void setIsCollisionEnabled(bool isCollisionEnabled);            // Set the isCollisionEnabled value
-        const BoundingVolume* getBroadBoundingVolume() const;           // Return the broad-phase bounding volume
-        const BoundingVolume* getNarrowBoundingVolume() const;          // Return the narrow-phase bounding volume of the body
+        const BroadBoundingVolume* getBroadBoundingVolume() const;      // Return the broad-phase bounding volume
+        const NarrowBoundingVolume* getNarrowBoundingVolume() const;    // Return the narrow-phase bounding volume of the body
 };
-
-// --- Inlines function --- //
 
 // Method that return the mass of the body
 inline double Body::getMass() const {
@@ -91,12 +93,12 @@ inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
 }
 
 // Return the broad-phase bounding volume
-inline const BoundingVolume* Body::getBroadBoundingVolume() const {
+inline const BroadBoundingVolume* Body::getBroadBoundingVolume() const {
     return broadBoundingVolume;
 }
 
 // Return the oriented bounding box of the rigid body
-inline const BoundingVolume* Body::getNarrowBoundingVolume() const {
+inline const NarrowBoundingVolume* Body::getNarrowBoundingVolume() const {
     return narrowBoundingVolume;
 }
 

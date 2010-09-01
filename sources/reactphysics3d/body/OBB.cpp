@@ -176,59 +176,30 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
     return extremeVertices;
 }
 
-// Return the 4 vertices of a face of the OBB. The 4 vertices will be ordered. The convention is that the index 0 corresponds to
-// the face in the direction of the axis[0], 1 corresponds to the face in the opposite direction of the axis[0], 2 corresponds to
-// the face in the direction of the axis[1], etc.
-vector<Vector3D> OBB::getFace(unsigned int index) const throw(invalid_argument) {
-    // Check the argument
-    if (index >=0 && index <6) {
-        vector<Vector3D> vertices;
-        switch(index) {
-            case 0: vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
-                    break;
-            case 1: vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
-                    break;
-            case 2: vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
-                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
-                    break;
-            case 3: vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
-                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
-                    break;
-            case 4: vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
-                    vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
-                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
-                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
-                    break;
-            case 5: vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
-                    vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
-                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
-                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
-                    break;
-        }
-
-        // Return the vertices
-        assert(vertices.size() == 4);
-        return vertices;
-    }
-    else {
-        // Throw an exception
-        throw invalid_argument("Exception: The argument must be between 0 and 5");
-    }
-}
-
 // Static method that computes an OBB from a set of vertices. The "center" argument corresponds to the center of the OBB
 // This method allocates a new OBB object and return a pointer to the new allocated OBB object
 OBB* OBB::computeFromVertices(const vector<Vector3D>& vertices, const Vector3D& center) {
     // TODO : Implement this method;
     return 0;
+}
+
+// Return the corresponding AABB
+AABB* OBB::computeAABB() const {
+    double maxLength[] = {0.0, 0.0, 0.0};   // Maximum length for each of the three x,y and z axis
+    Vector3D vertex;
+    double length;
+    
+    // For each vertex of the OBB
+    for (int i = 0; i<8; i++) {
+        vertex = getVertex(i) - center;
+        for (int j=0; j<3; j++) {
+            length = std::abs(vertex.getValue(j));
+            if (length > maxLength[j]) {
+                maxLength[j] = length;
+            }
+        }
+    }
+
+    // Create and return the AABB
+    return new AABB(center, maxLength[0], maxLength[1], maxLength[2]);
 }

@@ -17,52 +17,34 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
-#ifndef BOUNDING_VOLUME_H
-#define BOUNDING_VOLUME_H
+#ifndef NARROW_BOUNDING_VOLUME_H
+#define NARROW_BOUNDING_VOLUME_H
 
 // Libraries
-#include "Body.h"
-#include "../mathematics/mathematics.h"
-#include <cassert>
+#include "BoundingVolume.h"
+#include "AABB.h"
 
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class BoundingVolume :
-        This class represents the volume that contains a rigid body.
-        This volume will be used to compute the collisions with others
-        bodies.
+    Class NarrowBoundingVolume :
+        This class represents the volume that contains a rigid body
+        This volume will be used to compute the narrow-phase collision
+        detection.
     -------------------------------------------------------------------
 */
-class BoundingVolume {
+class NarrowBoundingVolume : public BoundingVolume {
     protected :
-        Body* body;                         // Pointer to the body
 
     public :
-        BoundingVolume();                   // Constructor
-        virtual ~BoundingVolume();          // Destructor
+        NarrowBoundingVolume();                   // Constructor
+        virtual ~NarrowBoundingVolume();          // Destructor
 
-        Body* getBodyPointer() const;       // Return the body pointer
-        void setBodyPointer(Body* body);    // Set the body pointer
-
-        virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;      // Update the orientation of the bounding volume according to the new orientation of the body
-        virtual void draw() const=0;                                                                 // Display the bounding volume (only for testing purpose)
+        virtual AABB* computeAABB() const=0;      // Return the corresponding AABB
 };
 
-// Return the body pointer
-inline Body* BoundingVolume::getBodyPointer() const {
-    assert(body != 0);
-    return body;
 }
-
-// Set the body pointer
-inline void BoundingVolume::setBodyPointer(Body* bodyPointer) {
-    this->body = bodyPointer;
-}
-
-
-} // End of the ReactPhysics3D namespace
 
 #endif

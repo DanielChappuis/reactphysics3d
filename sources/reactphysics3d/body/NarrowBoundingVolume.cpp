@@ -17,44 +17,18 @@
 * along with ReactPhysics3D. If not, see <http://www.gnu.org/licenses/>.   *
 ***************************************************************************/
 
- // Libraries
-#include "Body.h"
-#include "BroadBoundingVolume.h"
+// Libraries
 #include "NarrowBoundingVolume.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(double mass) throw(std::invalid_argument)
-     : mass(mass), broadBoundingVolume(0), narrowBoundingVolume(0)  {
-    // Check if the mass is not larger than zero
-    if (mass <= 0.0) {
-        // We throw an exception
-        throw std::invalid_argument("Exception in Body constructor : the mass has to be different larger than zero");
-    }
+NarrowBoundingVolume::NarrowBoundingVolume() : BoundingVolume() {
+    
 }
 
 // Destructor
-Body::~Body() {
-    if (broadBoundingVolume) {
-        delete broadBoundingVolume;
-    }
-    if (narrowBoundingVolume) {
-        delete narrowBoundingVolume;
-    }
-}
+NarrowBoundingVolume::~NarrowBoundingVolume() {
 
-// Set the broad-phase bounding volume
-void Body::setBroadBoundingVolume(BroadBoundingVolume* broadBoundingVolume) {
-    assert(broadBoundingVolume);
-    this->broadBoundingVolume = broadBoundingVolume;
-    broadBoundingVolume->setBodyPointer(this);
-}
-
-// Set the narrow-phase bounding volume
-void Body::setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume) {
-    assert(narrowBoundingVolume);
-    this->narrowBoundingVolume = narrowBoundingVolume;
-    narrowBoundingVolume->setBodyPointer(this);
 }

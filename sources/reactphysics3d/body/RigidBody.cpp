@@ -19,20 +19,28 @@
 
 // Libraries
 #include "RigidBody.h"
+#include "BroadBoundingVolume.h"
+#include "NarrowBoundingVolume.h"
 
  // We want to use the ReactPhysics3D namespace
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal, BoundingVolume* broadBoundingVolume,
-                      BoundingVolume* narrowBoundingVolume)
-           : Body(mass, broadBoundingVolume, narrowBoundingVolume), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal),
+ RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal,
+                      NarrowBoundingVolume* narrowBoundingVolume)
+           : Body(mass), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal),
              inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass), oldPosition(position), oldOrientation(orientation) {
 
     restitution = 1.0;
     isMotionEnabled = true;
     isCollisionEnabled = true;
     interpolationFactor = 0.0;
+
+    // Set the bounding volume for the narrow-phase collision detection
+    setNarrowBoundingVolume(narrowBoundingVolume);
+
+    // Compute the broad-phase bounding volume (an AABB)
+    setBroadBoundingVolume(narrowBoundingVolume->computeAABB());
 
     // Update the orientation of the OBB according to the orientation of the rigid body
     update();
@@ -45,3 +53,10 @@
 RigidBody::~RigidBody() {
 
 };
+
+// Update the rigid body in order to reflect a change in the body state
+void RigidBody::update() {
+    // Update the orientation of the corresponding bounding volumes of the rigid body
+    broadBoundingVolume->update(position, orientation);
+    narrowBoundingVolume->update(position, orientation);
+}

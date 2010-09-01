@@ -22,7 +22,7 @@
 
 // Libraries
 #include <cfloat>
-#include "BoundingVolume.h"
+#include "NarrowBoundingVolume.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -38,7 +38,7 @@ namespace reactphysics3d {
         of the box along the three axis of the OBB.
     -------------------------------------------------------------------
 */
-class OBB : public BoundingVolume {
+class OBB : public NarrowBoundingVolume {
     protected :
         Vector3D center;            // Center point of the OBB
         Vector3D oldAxis[3];        // Array that contains the three unit length axis at the beginning
@@ -60,6 +60,7 @@ class OBB : public BoundingVolume {
         void setExtent(unsigned int index, double extent) throw(std::invalid_argument);                     // Set an extent value
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                       // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        virtual AABB* computeAABB() const;                                                                  // Return the corresponding AABB
         virtual void draw() const;                                                                          // Draw the OBB (only for testing purpose)
         static OBB* computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center);     // Compute an OBB from a set of vertices
 };
@@ -132,6 +133,55 @@ inline Vector3D OBB::getVertex(unsigned int index) const throw (std::invalid_arg
     }
 }
 
+// Return the 4 vertices of a face of the OBB. The 4 vertices will be ordered. The convention is that the index 0 corresponds to
+// the face in the direction of the axis[0], 1 corresponds to the face in the opposite direction of the axis[0], 2 corresponds to
+// the face in the direction of the axis[1], etc.
+inline std::vector<Vector3D> OBB::getFace(unsigned int index) const throw(std::invalid_argument) {
+    // Check the argument
+    if (index >=0 && index <6) {
+        std::vector<Vector3D> vertices;
+        switch(index) {
+            case 0: vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    break;
+            case 1: vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) + (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[0]*extent[0]) - (axis[1]*extent[1]) - (axis[2]*extent[2]));
+                    break;
+            case 2: vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center + (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    break;
+            case 3: vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) + (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) + (axis[2]*extent[2]));
+                    vertices.push_back(center - (axis[1]*extent[1]) - (axis[0]*extent[0]) - (axis[2]*extent[2]));
+                    break;
+            case 4: vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center + (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    break;
+            case 5: vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) + (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) + (axis[1]*extent[1]));
+                    vertices.push_back(center - (axis[2]*extent[2]) - (axis[0]*extent[0]) - (axis[1]*extent[1]));
+                    break;
+        }
+
+        // Return the vertices
+        assert(vertices.size() == 4);
+        return vertices;
+    }
+    else {
+        // Throw an exception
+        throw std::invalid_argument("Exception: The argument must be between 0 and 5");
+    }
+}
 
 // Return an extent value
 inline double OBB::getExtent(unsigned int index) const throw(std::invalid_argument) {

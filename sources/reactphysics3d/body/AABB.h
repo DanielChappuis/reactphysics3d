@@ -21,7 +21,7 @@
 #define AABB_H
 
 // Libraries
-#include "BoundingVolume.h"
+#include "BroadBoundingVolume.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -35,7 +35,7 @@ namespace reactphysics3d {
         point and three extent size in the x,y and z directions.
     -------------------------------------------------------------------
 */
-class AABB : public BoundingVolume {
+class AABB : public BroadBoundingVolume {
     protected :
         Vector3D center;                // Center point of the AABB
         double extent[3];               // Three extents size in the x, y and z directions
