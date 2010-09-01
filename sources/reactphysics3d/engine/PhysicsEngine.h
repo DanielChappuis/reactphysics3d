@@ -45,8 +45,10 @@ class PhysicsEngine {
 
         void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
         void updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity);    // Update the position and orientation of a body
+        void setInterpolationFactorToAllBodies();                                                                                // Compute and set the interpolation factor to all bodies
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies
-    public :
+
+public :
         PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);  // Constructor
         ~PhysicsEngine();                                                                   // Destructor
 

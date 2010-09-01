@@ -189,8 +189,6 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
 // Set the interpolation factor of the body
 inline void RigidBody::setInterpolationFactor(double factor) {
-    assert(factor >= 0.0 && factor <= 1.0);
-
     // Set the factor
     interpolationFactor = factor;
 }

@@ -56,7 +56,7 @@ class Timer {
         bool isPossibleToTakeStep() const;                                      // True if it's possible to take a new step
         void update();                                                          // Compute the time since the last update() call and add it to the accumulator
         void nextStep();                                                        // Take a new step => update the timer by adding the timeStep value to the current time
-        double getInterpolationFactor() const;                                  // Compute and return the interpolation factor between two body states
+        double computeInterpolationFactor();                                    // Compute the interpolation factor
 };
 
 // --- Inline functions --- //
@@ -107,7 +107,7 @@ inline void Timer::stop() {
 
 // True if it's possible to take a new step
 inline bool Timer::isPossibleToTakeStep() const {
-    return accumulator >= timeStep;
+    return (accumulator >= timeStep);
 }
 
 // Take a new step => update the timer by adding the timeStep value to the current time
@@ -121,9 +121,8 @@ inline void Timer::nextStep() {
     accumulator -= timeStep;
 }
 
-// Compute and return the interpolation factor between two body states
-inline double Timer::getInterpolationFactor() const {
-    // Compute and return the interpolation factor
+// Compute the interpolation factor
+inline double Timer::computeInterpolationFactor() {
     return (accumulator / timeStep);
 }
 

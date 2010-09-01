@@ -47,7 +47,7 @@ PhysicsEngine::~PhysicsEngine() {
 
 // Update the physics simulation
 void PhysicsEngine::update() throw (logic_error) {
-    bool existCollision = false;    // TODO : Delete this if we don't need it
+    bool existCollision = false;
 
     // Check that the timer is running
     if (timer.getIsRunning()) {
@@ -84,6 +84,9 @@ void PhysicsEngine::update() throw (logic_error) {
             // Clear the added and removed bodies from last update() method call
             world->clearAddedAndRemovedBodies();
         }
+
+        // Compute and set the interpolation factor to all the bodies
+        setInterpolationFactorToAllBodies();
     }
     else {  // Call to update() but the timer is not running
         // Throw an exception
@@ -138,17 +141,13 @@ void PhysicsEngine::updateAllBodiesMotion() {
             // If the body state has changed, we have to update some informations in the rigid body
             rigidBody->update();
         }
-
-        // Update the interpolation factor of the rigid body
-        // This one will be used to compute the interpolated state
-        rigidBody->setInterpolationFactor(timer.getInterpolationFactor());
     }
 }
 
 // Update the position and orientation of a body
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
- void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity) {
+void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity) {
     double dt = timer.getTimeStep();
 
     RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
@@ -167,6 +166,22 @@ void PhysicsEngine::updateAllBodiesMotion() {
     // Update the position and the orientation of the body
     rigidBody->setPosition(rigidBody->getPosition() + newLinVelocity * dt);
     rigidBody->setOrientation(rigidBody->getOrientation() + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * rigidBody->getOrientation() * 0.5 * dt);
+}
+
+// Compute and set the interpolation factor to all bodies
+void PhysicsEngine::setInterpolationFactorToAllBodies() {
+    // Compute the interpolation factor
+    double factor = timer.computeInterpolationFactor();
+    assert(factor >= 0.0 && factor <= 1.0);
+
+    // Set the factor to all bodies
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+
+        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+        assert(rigidBody);
+
+        rigidBody->setInterpolationFactor(factor);
+    }
 }
 
 // Apply the gravity force to all bodies of the physics world
