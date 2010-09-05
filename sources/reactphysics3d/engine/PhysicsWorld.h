@@ -22,7 +22,7 @@
 
 // Libraries
 #include <vector>
-#include <stdexcept>
+#include <algorithm>
 #include "../mathematics/mathematics.h"
 #include "../body/Body.h"
 #include "../constraint/Constraint.h"
@@ -51,24 +51,71 @@ class PhysicsWorld {
         PhysicsWorld(const Vector3D& gravity);      // Constructor
         virtual ~PhysicsWorld();                    // Destructor
 
-        void addBody(Body* body) throw(std::invalid_argument);                  // Add a body to the physics world
-        void removeBody(Body const* const body) throw(std::invalid_argument);   // Remove a body from the physics world
+        void addBody(Body* body);                                               // Add a body to the physics world
+        void removeBody(Body const* const body);                                // Remove a body from the physics world
         void clearAddedAndRemovedBodies();                                      // Clear the addedBodies and removedBodies sets
         Vector3D getGravity() const;                                            // Return the gravity vector of the world
         bool getIsGravityOn() const;                                            // Return if the gravity is on
         void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
-        void addConstraint(Constraint* constraint) throw(std::invalid_argument);            // Add a constraint
-        void removeConstraint(Constraint* constraint) throw(std::invalid_argument);         // Remove a constraint
-        void removeAllContactConstraints();                                                 // Remove all collision contacts constraints
-        std::vector<Constraint*>::iterator getConstraintsBeginIterator();                   // Return a start iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsEndIterator();                     // Return a end iterator on the constraint list
-        std::vector<Body*>::iterator getBodiesBeginIterator();                              // Return an iterator to the beginning of the bodies of the physics world
-        std::vector<Body*>::iterator getBodiesEndIterator();                                // Return an iterator to the end of the bodies of the physics world
-        std::vector<Body*>& getAddedBodies();                                               // Return the added bodies since last update of the physics engine
-        std::vector<Body*>& getRemovedBodies();                                             // Retrun the removed bodies since last update of the physics engine
+        void addConstraint(Constraint* constraint);                             // Add a constraint
+        void removeConstraint(Constraint* constraint);                          // Remove a constraint
+        void removeAllContactConstraints();                                     // Remove all collision contacts constraints
+        void removeAllConstraints();                                            // Remove all constraints and delete them (free their memory)
+        std::vector<Constraint*>::iterator getConstraintsBeginIterator();       // Return a start iterator on the constraint list
+        std::vector<Constraint*>::iterator getConstraintsEndIterator();         // Return a end iterator on the constraint list
+        std::vector<Body*>::iterator getBodiesBeginIterator();                  // Return an iterator to the beginning of the bodies of the physics world
+        std::vector<Body*>::iterator getBodiesEndIterator();                    // Return an iterator to the end of the bodies of the physics world
+        std::vector<Body*>& getAddedBodies();                                   // Return the added bodies since last update of the physics engine
+        std::vector<Body*>& getRemovedBodies();                                 // Retrun the removed bodies since last update of the physics engine
 };
 
-// --- Inline functions --- //
+// Add a body to the physics world
+inline void PhysicsWorld::addBody(Body* body) {
+    std::vector<Body*>::iterator it;
+
+    assert(body);
+    it = std::find(bodies.begin(), bodies.end(), body);
+    assert(it == bodies.end());
+
+    // The body isn't already in the bodyList, therefore we add it to the list
+    bodies.push_back(body);
+    addedBodies.push_back(body);
+    it = std::find(removedBodies.begin(), removedBodies.end(), body);
+    if (it != removedBodies.end()) {
+        removedBodies.erase(it);
+    }
+}
+
+// Remove a body from the physics world
+inline void PhysicsWorld::removeBody(Body const* const body) {
+    std::vector<Body*>::iterator it;
+
+    assert(body);
+    it = std::find(bodies.begin(), bodies.end(), body);
+    assert(*it == body);
+
+    // Remove the body
+    bodies.erase(it);
+    addedBodies.erase(it);
+    removedBodies.push_back(*it);
+}
+
+// Add a constraint into the physics world
+inline void PhysicsWorld::addConstraint(Constraint* constraint) {
+    assert(constraint != 0);
+    constraints.push_back(constraint);
+}
+
+// Remove a constraint and free its memory
+inline void PhysicsWorld::removeConstraint(Constraint* constraint) {
+    std::vector<Constraint*>::iterator it;
+
+    assert(constraint);
+    it = std::find(constraints.begin(), constraints.end(), constraint);
+    assert(*it == constraint);
+    delete *it;
+    constraints.erase(it);
+}
 
 // Clear the addedBodies and removedBodies sets
 inline void PhysicsWorld::clearAddedAndRemovedBodies() {

@@ -48,7 +48,6 @@ class RigidBody : public Body {
         Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;        // Inverse of the inertia tensor of the body (in body coordinates)
         double massInverse;                         // Inverse of the mass of the body
-        
         double interpolationFactor;                 // Interpolation factor used for the state interpolation
         double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
 
