@@ -25,8 +25,7 @@ using namespace reactphysics3d;
 
 // Constructor
 Constraint::Constraint(Body* const body1, Body* const body2, uint nbAuxConstraints, bool active)
-           :body1(body1), body2(body2), active(active), nbAuxConstraints(nbAuxConstraints),
-            lowerBound(lowerBound), upperBound(upperBound) {
+           :body1(body1), body2(body2), active(active), nbAuxConstraints(nbAuxConstraints) {
 
 }
 

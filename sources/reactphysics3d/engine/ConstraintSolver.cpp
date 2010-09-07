@@ -50,9 +50,6 @@ void ConstraintSolver::initialize() {
     for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); it++) {
         constraint = *it;
 
-        // Evaluate the constraint
-        constraint->evaluate();
-
         // If the constraint is active
         if (constraint->isActive()) {
             activeConstraints.push_back(constraint);
@@ -178,36 +175,39 @@ void ConstraintSolver::freeMemory(bool freeBodiesMemory) {
 // Fill in all the matrices needed to solve the LCP problem
 // Notice that all the active constraints should have been evaluated first
 void ConstraintSolver::fillInMatrices() {
+    Constraint* constraint;
+    Contact* contact;
+    ContactCachingInfo* contactInfo;
 
     // For each active constraint
     uint noConstraint = 0;
     uint nbAuxConstraints = 0;
     for (uint c=0; c<activeConstraints.size(); c++) {
         
-        Constraint* constraint = activeConstraints.at(c);
+        constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
         J_sp[noConstraint][0].changeSize(1, 6);
         J_sp[noConstraint][1].changeSize(1, 6);
-        J_sp[noConstraint][0] = constraint->getBody1Jacobian();
-        J_sp[noConstraint][1] = constraint->getBody2Jacobian();
+        constraint->computeJacobian(1, J_sp[noConstraint][0]);
+        constraint->computeJacobian(2, J_sp[noConstraint][1]);
 
         // Fill in the body mapping matrix
         bodyMapping[noConstraint][0] = constraint->getBody1();
         bodyMapping[noConstraint][1] = constraint->getBody2();
 
         // Fill in the limit vectors for the constraint
-        lowerBounds.setValue(noConstraint, constraint->getLowerBound());
-        upperBounds.setValue(noConstraint, constraint->getUpperBound());
+        lowerBounds.setValue(noConstraint, constraint->computeLowerBound());
+        upperBounds.setValue(noConstraint, constraint->computeUpperBound());
 
         // Fill in the error vector
-        errorValues.setValue(noConstraint, constraint->getErrorValue());
+        errorValues.setValue(noConstraint, constraint->computeErrorValue());
 
         // If it's a contact constraint
-        Contact* contact = dynamic_cast<Contact*>(constraint);
+        contact = dynamic_cast<Contact*>(constraint);
         if (contact) {
             // Get the lambda init value from the cache if exists
-            ContactCachingInfo* contactInfo = contactCache.getContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint());
+            contactInfo = contactCache.getContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint());
             if (contactInfo) {
                 // The last lambda init value was in the cache
                 lambdaInit.setValue(noConstraint, contactInfo->lambda);
@@ -232,8 +232,8 @@ void ConstraintSolver::fillInMatrices() {
                 // Fill in the J_sp matrix
                 J_sp[noConstraint+i][0].changeSize(1, 6);
                 J_sp[noConstraint+i][1].changeSize(1, 6);
-                J_sp[noConstraint+i][0] = constraint->getAuxJacobian().getSubMatrix(i-1, 0, 1, 6);
-                J_sp[noConstraint+i][1] = constraint->getAuxJacobian().getSubMatrix(i-1, 6, 1, 6);
+                constraint->computeAuxJacobian(1, i, J_sp[noConstraint+i][0]);
+                constraint->computeAuxJacobian(2, i, J_sp[noConstraint+i][1]);
 
                 // Fill in the body mapping matrix
                 bodyMapping[noConstraint+i][0] = constraint->getBody1();
@@ -244,8 +244,11 @@ void ConstraintSolver::fillInMatrices() {
             }
 
             // Fill in the limit vectors for the auxilirary constraints
-            lowerBounds.fillInSubVector(noConstraint+1, constraint->getAuxLowerBounds());
-            upperBounds.fillInSubVector(noConstraint+1, constraint->getAuxUpperBounds());
+            constraint->computeAuxLowerBounds(noConstraint+1, lowerBounds);
+            constraint->computeAuxUpperBounds(noConstraint+1, upperBounds);
+
+            // Fill in the errorValues vector for the auxiliary constraints
+            constraint->computeAuxErrorValues(noConstraint+1, errorValues);
         }
 
         noConstraint += 1 + nbAuxConstraints;
@@ -256,6 +259,8 @@ void ConstraintSolver::fillInMatrices() {
     Body* body;
     Vector v(6);
     Vector f(6);
+    Matrix identity = Matrix::identity(3);
+    Matrix mInv(6,6);
     uint b=0;
     for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
         body = *it;
@@ -282,10 +287,9 @@ void ConstraintSolver::fillInMatrices() {
         Fext[bodyNumber] = f;
 
         // Compute the inverse sparse mass matrix
-        Matrix mInv(6,6);
         mInv.initWithValue(0.0);
         if (rigidBody->getIsMotionEnabled()) {
-            mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * Matrix::identity(3));
+            mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * identity);
             mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
         }
         Minv_sp[bodyNumber].changeSize(6, 6);
@@ -348,6 +352,9 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
 
 // Clear and Fill in the contact cache with the new lambda values
 void ConstraintSolver::updateContactCache() {
+    Contact* contact;
+    ContactCachingInfo* contactInfo;
+
     // Clear the contact cache
     contactCache.clear();
     
@@ -356,10 +363,10 @@ void ConstraintSolver::updateContactCache() {
     for (uint c=0; c<activeConstraints.size(); c++) {
 
         // If it's a contact constraint
-        Contact* contact = dynamic_cast<Contact*>(activeConstraints.at(c));
+        contact = dynamic_cast<Contact*>(activeConstraints.at(c));
         if (contact) {
             // Create a new ContactCachingInfo
-            ContactCachingInfo* contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
+            contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
 
             // Add it to the contact cache
             contactCache.addContactCachingInfo(contactInfo);
