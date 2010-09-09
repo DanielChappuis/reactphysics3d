@@ -30,7 +30,7 @@
 // ----- Class Object ----- //
 
 // Constructor of the class Object
-Object::Object(const Vector3D& position, const Quaternion& orientation, const Kilogram& mass, const Matrix3x3& inertiaTensor, const OBB& obb)
+Object::Object(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensor, OBB* obb)
        :rigidBody(new RigidBody(position, orientation, mass, inertiaTensor, obb)) {
 
 }
@@ -52,11 +52,11 @@ RigidBody* Object::getRigidBody() {
 const Matrix3x3 Cube::inertiaTensor;
 
 // Constructor of the class Cube
-Cube::Cube(const Vector3D& position, const Quaternion& orientation, float size, const Kilogram& mass)
-     :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass.getValue()*2*size*size, 0.0, 0.0,  
-                                        0.0, 1.0/12.0*mass.getValue()*2*size*size, 0.0,                  
-                                        0.0, 0.0, 1.0/12.0*mass.getValue()*2*size*size), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0), 
-                                                                                             size/2.0, size/2.0, size/2)) {
+Cube::Cube(const Vector3D& position, const Quaternion& orientation, float size, double mass)
+     :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass*2*size*size, 0.0, 0.0,  
+                                        0.0, 1.0/12.0*mass*2*size*size, 0.0,                  
+                                        0.0, 0.0, 1.0/12.0*mass*2*size*size), new OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
+                                                                                             size/2.0, size/2.0, size/2)) { // TODO : Construct automatically the OBB and AABB using the computeFromVertices() method
     this->size = size;
 }
 
@@ -69,17 +69,18 @@ Cube::~Cube() {
 void Cube::draw() const {
 
     // Get the interpolated state of the rigid body
-    BodyState state = rigidBody->getInterpolatedState();
+    Vector3D position = rigidBody->getInterpolatedPosition();
+    Quaternion orientation = rigidBody->getInterpolatedOrientation();
 
     // Position of the cube
-    double x = state.getPosition().getX();
-    double y = state.getPosition().getY();
-    double z = state.getPosition().getZ();
+    double x = position.getX();
+    double y = position.getY();
+    double z = position.getZ();
 
     // Orientation of the cube
     Vector3D orientationAxis;
     double orientationAngle;
-    state.getOrientation().getRotationAngleAxis(orientationAngle, orientationAxis);
+    orientation.getRotationAngleAxis(orientationAngle, orientationAxis);
 
     // Translation of the cube to its position
     glTranslatef(x, y, z);
@@ -95,18 +96,18 @@ void Cube::draw() const {
 // ----- Class Plane ----- //
 
 // Constructor of the class Plane
-Plane::Plane(const Vector3D& position, const Quaternion& orientation, float width, float height, const Vector3D& d1, const Vector3D& d2, const Kilogram& mass)
-      :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass.getValue()*height*height, 0.0, 0.0,
-                                        0.0, 1.0/12.0*mass.getValue()*(width*width+height*height), 0.0,
-                                        0.0, 0.0, 1.0/12.0*mass.getValue()*width*width), OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
-                                                                                             width/2, 0.5, height/2)) { // TODO : Change the height of the OBB
+Plane::Plane(const Vector3D& position, const Quaternion& orientation, float width, float height, const Vector3D& d1, const Vector3D& d2, double mass)
+      :Object(position, orientation, mass, Matrix3x3(1.0/12.0*mass*height*height, 0.0, 0.0,
+                                        0.0, 1.0/12.0*mass*(width*width+height*height), 0.0,
+                                        0.0, 0.0, 1.0/12.0*mass*width*width), new OBB(position, Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
+                                                                                             width/2.0, 0.5, height/2.0)) { // TODO : Construct automatically the OBB and AABB using the computeFromVertices() method
     this->width = width;
     this->height = height;
     this->d1 = d1;
     this->d2 = d2;
 
     // By default Planes in the demo cannot move
-    rigidBody->setIsMotionEnabled(false);
+    //rigidBody->setIsMotionEnabled(false);
 
     // Compute the unit normal vector of the plane by a cross product
     normalVector = d1.crossProduct(d2).getUnit();
@@ -121,12 +122,13 @@ Plane::~Plane() {
 void Plane::draw() const {
 
        // Get the interpolated state of the rigid body
-       BodyState state = rigidBody->getInterpolatedState();
+    Vector3D position = rigidBody->getInterpolatedPosition();
+    Quaternion orientation = rigidBody->getInterpolatedOrientation();
 
-       // Get the position of the rigid body
-       double x = state.getPosition().getX();
-       double y = state.getPosition().getY();
-       double z = state.getPosition().getZ();
+    // Position of the cube
+    double x = position.getX();
+    double y = position.getY();
+    double z = position.getZ();
 
        // Translation of the cube to its position
        glTranslatef(x, y, z);

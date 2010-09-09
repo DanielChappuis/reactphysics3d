@@ -100,7 +100,7 @@ void Scene::display(const Context& context) const {
     {
 
         // Copy the active matrix on the matrix stack
-       glPushMatrix();
+        glPushMatrix();
 
         // Draw the object
         context.getObject(i).draw();
@@ -108,8 +108,8 @@ void Scene::display(const Context& context) const {
        glPopMatrix();
        glPushMatrix();
 
-        // Draw the bounding volume
-        context.getObject(i).getRigidBody()->getOBB()->draw();
+       // Draw the bounding volume
+       context.getObject(i).getRigidBody()->getNarrowBoundingVolume()->draw();
 
        // Remove the matrix on the top of the matrix stack
        glPopMatrix();

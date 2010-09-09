@@ -22,6 +22,8 @@
 #include "../reactphysics3d/reactphysics3d.h"
 #include <iostream>
 #include <vector>
+#include "../../libraries/boost_1_43_0/boost/numeric/ublas/matrix.hpp"
+#include "../../libraries/boost_1_43_0/boost/numeric/ublas/io.hpp"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -30,48 +32,38 @@ using namespace reactphysics3d;
 Context::Context() {
 
     /*
-    Cube* cube1 = new Cube(Vector3D(0.0, 10.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 3.0, Kilogram(1.0));
-    Cube* cube2 = new Cube(Vector3D(0.0, 0.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 3.0, Kilogram(1.0));
-    //cube1->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.0));
-    //cube2->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.0));
-    cube2->getRigidBody()->setIsMotionEnabled(false);
-    cube1->getRigidBody()->setRestitution(0.5);
-    cube2->getRigidBody()->setRestitution(0.5);
+    using namespace boost::numeric::ublas;
+    matrix<double> m (3, 3);
+    for (unsigned i = 0; i < m.size1 (); ++ i)
+        for (unsigned j = 0; j < m.size2 (); ++ j)
+            m (i, j) = 3 * i + j;
+    std::cout << m << std::endl;
     */
-
     
-    for (int i=20; i>1; i=i-3) {
-       Cube* cube = new Cube(Vector3D(3.0, i, i*0.2), Quaternion(1.0, 1.0, 0.0, 0.0), 2.0, Kilogram(1.0));
-       cube->getRigidBody()->setRestitution(0.7);
+    /*
+    //Cube* cube1 = new Cube(Vector3D(0, 10.0, 0), Quaternion(1.0, 1.0, 1.0, 0.0), 2.0, 1.0);
+    //Cube* cube2 = new Cube(Vector3D(0.0, 0.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 4.0, 1.0);
+    Cube* cube1 = new Cube(Vector3D(2.2, 17.0, 2.2), Quaternion(1.0, 1.0, 0.3, 0.0), 2.0, 1.0);
+    //Cube* cube2 = new Cube(Vector3D(0.0, 0.0, 0.0), Quaternion(1.0, 1.0, 0.0, 0.0), 4.0, 1.0);
+    //cube1->getRigidBody()->setLinearVelocity(Vector3D(0.9, -0.9, 0.9));
+    //cube2->getRigidBody()->setLinearVelocity(Vector3D(0.0, 0.0, 0.0));
+    //cube2->getRigidBody()->setIsMotionEnabled(false);
+    cube1->getRigidBody()->setRestitution(0.6);
+    //cube2->getRigidBody()->setRestitution(0.6);
+    addObject(cube1);
+    //addObject(cube2);
+    */
+  
+    for (int i=3; i<30; i=i+3) {
+       Cube* cube = new Cube(Vector3D(1, i, 1+i*0.002), Quaternion(1.0, 1.0, 0.0, 0.0), 2.0, 4.0);
+       cube->getRigidBody()->setRestitution(0.5);
        addObject(cube);
     }
 
-    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.0 , 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(1.0));
-    plane1->getRigidBody()->setRestitution(0.7);
+    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.1 , 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), 1.0);
+    plane1->getRigidBody()->setRestitution(0.5);
     plane1->getRigidBody()->setIsMotionEnabled(false);
     addObject(plane1);
-    
-
-    /*
-    Cube* cube1 = new Cube(Vector3D(4.0, 11.0, 5.0), Quaternion(1.0, 0.3, 0.8, 0.0), 2.0, Kilogram(3.0));
-    //Cube* cube2 = new Cube(Vector3D(3.0, 9, 3.0), Quaternion(1.0, 1.0, 0.0, 0.0), 2.0, Kilogram(2.0));
-    cube1->getRigidBody()->setRestitution(0.4);
-    //cube2->getRigidBody()->setRestitution(0.4);
-    
-    //Cube* cube3 = new Cube(Vector3D(5.0, 13, 0.0), Quaternion(1.0, 1.0, 0.3, 0.0), 2.0, Kilogram(1.0));
-    //cube3->getRigidBody()->setRestitution(0.8);
-
-    Plane* plane1 = new Plane(Vector3D(0.0, 0.0, 0.0), Quaternion(0.0, 1.0, 0.2, 0.0), 20.0, 30.0, Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, 0.0, 1.0), Kilogram(1.0));
-    plane1->getRigidBody()->setRestitution(0.4);
-    plane1->getRigidBody()->setIsMotionEnabled(false);
-    
-
-    addObject(cube1);
-    //addObject(cube2);
-    //addObject(cube3);
-    addObject(plane1);
-    */
-    
 }
 
 
@@ -85,10 +77,9 @@ Context::~Context() {
 
 // Method to get an object from the context
 Object& Context::getObject(int objectIndex) const {
-    // TODO : WE HAVE TO ADD HERE AN EXCEPTION IMPLEMENTATION
 
     // Return the object from the context
-    return (*vectObjects.at(objectIndex));     // TODO : THROWN AN EXCEPTION IF INDEX IS OUT OF THE BOUNDS
+    return (*vectObjects.at(objectIndex));
 }
 
 // Method for adding an object into the context

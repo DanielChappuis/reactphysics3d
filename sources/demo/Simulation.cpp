@@ -27,8 +27,9 @@ using namespace reactphysics3d;
 
 // Constructor of the class Simulation
 Simulation::Simulation()
-           :world(new PhysicsWorld(Vector3D(0.0, -9.8, 0.0))), engine(world, Time(0.01)), scene(this->world) {    // TODO : Change the timestep here after debugging
+           :world(new PhysicsWorld(Vector3D(0.0, -9.8, 0.0))), engine(new PhysicsEngine(world, 0.005)), scene(this->world) {    // TODO : Change the timestep here after debugging
     simRunning = false;
+    isStarted = false;
     mouseButtonPressed = false;
     nbFrame = 0;
     lastFrameTime = 0.0;
@@ -39,6 +40,7 @@ Simulation::Simulation()
 Simulation::~Simulation() {
     // Delete the physics world object
     delete world;
+    delete engine;
 }
 
 // Method to start the simulation
@@ -56,79 +58,41 @@ void Simulation::start() {
 
     // Activation of the simulation
     simRunning = true;
+    isStarted = true;
 
     // Get the current time
-    lastFrameTime = SDL_GetTicks();
-
-    PhysicsEngine* pEngine = &engine;
+    //lastFrameTime = SDL_GetTicks();
 
     // Initialize the display time
-    pEngine->initializeDisplayTime(Time(SDL_GetTicks()/1000.0));
+    //engine->initializeDisplayTime(SDL_GetTicks()/1000.0);
 
     // Start the physics simulation
-    pEngine->start();
+    engine->start();
 
     //double time = 1.0;
 
     // Main loop of the simulation
     while(simRunning) {
-        // Check if an SDL event occured and make the apropriate actions
-        checkEvents();
-
         double time = SDL_GetTicks()/1000.0;
         //time += 0.01;
 
         //std::cout << "************************************************* Time : " << time << std::endl;
 
         // Update the display time
-        pEngine->updateDisplayTime(Time(time));
+        //engine->updateDisplayTime(time);
 
         // Update the physics
-        pEngine->update();
+        if (isStarted)
+            engine->update();
+
+        // Check if an SDL event occured and make the apropriate actions
+        checkEvents();
 
         // Display the actual scene
         scene.display(context);
 
         // Compute the fps (framerate)
         computeFps();
-        //std::cout << "FPS : " << fps << std::endl;
-
-        /*
-        BodyState state = context.getObject(0).getRigidBody()->getInterpolatedState();
-        Vector3D velocity = context.getObject(0).getRigidBody()->getInterpolatedState().getAngularVelocity();
-        //std::cout << "Velocity 0 : " << velocity.getX() << ", " << velocity.getY() << ", " << velocity.getZ() << ")" << std::endl;
-        double x = state.getPosition().getX();
-        double y = state.getPosition().getY();
-        double z = state.getPosition().getZ();
-        std::cout << "Position Cube 0 : (" << x << ", " << y << ", " << z << ")" << std::endl;
-        std::cout << "angular velocity 0 : " << velocity.length() << std::endl;;
-
-        BodyState state1 = context.getObject(1).getRigidBody()->getInterpolatedState();
-        Vector3D velocity1 = context.getObject(1).getRigidBody()->getInterpolatedState().getAngularVelocity();
-        //std::cout << "Velocity 1 : " << velocity1.getX() << ", " << velocity1.getY() << ", " << velocity1.getZ() << ")" << std::endl;
-        double x1 = state1.getPosition().getX();
-        double y1 = state1.getPosition().getY();
-        double z1 = state1.getPosition().getZ();
-        std::cout << "Position Cube 1 : (" << x1 << ", " << y1 << ", " << z1 << ")" << std::endl;
-        std::cout << "angular velocity 1 : " << velocity1.length() << std::endl;
-
-        BodyState state2 = context.getObject(2).getRigidBody()->getInterpolatedState();
-        Quaternion velocity2 = context.getObject(2).getRigidBody()->getInterpolatedState().getOrientation();
-        //std::cout << "Velocity 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ")" << std::endl;
-        double x2 = state2.getPosition().getX();
-        double y2 = state2.getPosition().getY();
-        double z2 = state2.getPosition().getZ();
-        std::cout << "Position Cube 2: (" << x2 << ", " << y2 << ", " << z2 << ")" << std::endl;
-        std::cout << "quaternion orientation 2 : " << velocity2.getX() << ", " << velocity2.getY() << ", " << velocity2.getZ() << ", " << velocity2.getW() << ")" << std::endl;;
-        */
-
-        /*
-        double a;
-        if (time > 5.0) {
-            std::cin >> a;
-        }
-        */
-
     }
 }
 
@@ -155,7 +119,15 @@ void Simulation::checkEvents() {
             // A keyboard key has been pushed
             case SDL_KEYDOWN:       // The Esc key has been pushed then we end the simulation
                                     if (event.key.keysym.sym == SDLK_ESCAPE)
-                                    simRunning = false;
+                                    //simRunning = false;
+                                    if (isStarted) {
+                                        engine->stop();
+                                        isStarted = false;
+                                    }
+                                    else {
+                                        engine->start();
+                                        isStarted = true;
+                                    }
                                     break;
 
             // The size of the windows changed then we reshape the windows
