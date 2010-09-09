@@ -1,0 +1,382 @@
+/********************************************************************************
+* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
+* Copyright (c) 2010 Daniel Chappuis                                            *
+*********************************************************************************
+*                                                                               *
+* Permission is hereby granted, free of charge, to any person obtaining a copy  *
+* of this software and associated documentation files (the "Software"), to deal *
+* in the Software without restriction, including without limitation the rights  *
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell     *
+* copies of the Software, and to permit persons to whom the Software is         *
+* furnished to do so, subject to the following conditions:                      *
+*                                                                               *
+* The above copyright notice and this permission notice shall be included in    *
+* all copies or substantial portions of the Software.                           *
+*                                                                               *
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    *
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      *
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE   *
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER        *
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, *
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN     *
+* THE SOFTWARE.                                                                 *
+********************************************************************************/
+
+// Libraries
+#include "ConstraintSolver.h"
+#include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
+#include "../body/RigidBody.h"
+
+using namespace reactphysics3d;
+using namespace std;
+
+// Constructor
+ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
+                 :physicsWorld(world), bodyMapping(0), nbConstraints(0), constraintsCapacity(0),
+                  bodiesCapacity(0), avConstraintsCapacity(0), avBodiesCapacity(0), avBodiesNumber(0),
+                  avConstraintsNumber(0), avBodiesCounter(0), avConstraintsCounter(0),
+                  lcpSolver(new LCPProjectedGaussSeidel(MAX_LCP_ITERATIONS)) {
+
+}
+
+// Destructor
+ConstraintSolver::~ConstraintSolver() {
+
+}
+
+ // Initialize the constraint solver before each solving
+void ConstraintSolver::initialize() {
+    Constraint* constraint;
+
+    nbConstraints = 0;
+
+    // For each constraint
+    vector<Constraint*>::iterator it;
+    for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); it++) {
+        constraint = *it;
+
+        // If the constraint is active
+        if (constraint->isActive()) {
+            activeConstraints.push_back(constraint);
+
+            // Add the two bodies of the constraint in the constraintBodies list
+            constraintBodies.insert(constraint->getBody1());
+            constraintBodies.insert(constraint->getBody2());
+
+            // Fill in the body number maping
+            bodyNumberMapping.insert(pair<Body*, unsigned int>(constraint->getBody1(), bodyNumberMapping.size()));
+            bodyNumberMapping.insert(pair<Body*, unsigned int>(constraint->getBody2(), bodyNumberMapping.size()));
+
+            // Update the size of the jacobian matrix
+            nbConstraints += (1 + constraint->getNbAuxConstraints());
+        }
+    }
+
+    // Compute the number of bodies that are part of some active constraint
+    nbBodies = bodyNumberMapping.size();
+
+    assert(nbConstraints > 0);
+    assert(nbBodies > 0);
+    
+    // Update the average bodies and constraints capacities
+    if (avBodiesCounter > AV_COUNTER_LIMIT) {
+        avBodiesCounter = 0;
+        avBodiesNumber = 0;
+    }
+    if (avConstraintsCounter > AV_COUNTER_LIMIT) {
+        avConstraintsCounter = 0;
+        avConstraintsNumber = 0;
+    }
+    avBodiesCounter++;
+    avConstraintsCounter++;
+    avBodiesNumber += nbBodies;
+    avConstraintsNumber += nbConstraints;
+    avBodiesCapacity += (avBodiesNumber / avBodiesCounter);
+    avConstraintsCapacity += (avConstraintsNumber / avConstraintsCounter);
+
+    // Allocate the memory needed for the constraint solver
+    allocate();
+}
+
+// Allocate all the memory needed to solve the LCP problem
+// The goal of this method is to avoid to free and allocate the memory
+// each time the constraint solver is called but only if the we effectively
+// need more memory. Therefore if for instance the number of constraints to
+// be solved is smaller than the constraints capacity, we don't free and reallocate
+// memory because we don't need to. The problem now is that the constraints capacity
+// can grow indefinitely. Therefore we use a way to free and reallocate the memory
+// if the average number of constraints currently solved is far less than the current
+// constraints capacity
+void ConstraintSolver::allocate() {
+    // If we need to allocate more memory for the bodies
+    if (nbBodies > bodiesCapacity || avBodiesCapacity < AV_PERCENT_TO_FREE * bodiesCapacity) {
+        freeMemory(true);
+        bodiesCapacity = nbBodies;
+        
+        Minv_sp = new Matrix[nbBodies];
+        V1 = new Vector[nbBodies];
+        Vconstraint = new Vector[nbBodies];
+        Fext = new Vector[nbBodies];
+
+        avBodiesNumber = 0;
+        avBodiesCounter = 0;
+    }
+
+    // If we need to allocate more memory for the constraints
+    if (nbConstraints > constraintsCapacity || constraintsCapacity < AV_PERCENT_TO_FREE * constraintsCapacity) {
+        freeMemory(false);
+        constraintsCapacity = nbConstraints;
+
+        bodyMapping = new Body**[nbConstraints];
+        J_sp = new Matrix*[nbConstraints];
+        B_sp = new Matrix*[2];
+        B_sp[0] = new Matrix[nbConstraints];
+        B_sp[1] = new Matrix[nbConstraints];
+        for (uint i=0; i<nbConstraints; i++) {
+            bodyMapping[i] = new Body*[2];
+            J_sp[i] = new Matrix[2];
+        }
+
+        errorValues.changeSize(nbConstraints);
+        b.changeSize(nbConstraints);
+        lambda.changeSize(nbConstraints);
+        lambdaInit.changeSize(nbConstraints);
+        lowerBounds.changeSize(nbConstraints);
+        upperBounds.changeSize(nbConstraints);
+
+        avConstraintsNumber = 0;
+        avConstraintsCounter = 0;
+    }
+}
+
+// Free the memory that was allocated in the allocate() method
+// If the argument is true the method will free the memory
+// associated to the bodies. In the other case, it will free
+// the memory associated with the constraints
+void ConstraintSolver::freeMemory(bool freeBodiesMemory) {
+
+    // If we need to free the bodies memory
+    if (freeBodiesMemory && bodiesCapacity > 0) {
+        delete[] Minv_sp;
+        delete[] V1;
+        delete[] Vconstraint;
+        delete[] Fext;
+    }
+    else if (constraintsCapacity > 0) { // If we need to free the constraints memory
+        // Free the bodyMaping array
+        for (uint i=0; i<constraintsCapacity; i++) {
+            delete[] bodyMapping[i];
+            delete[] J_sp[i];
+        }
+
+        delete[] bodyMapping;
+        delete[] J_sp;
+        delete[] B_sp[0];
+        delete[] B_sp[1];
+        delete[] B_sp;
+    }
+}
+
+// Fill in all the matrices needed to solve the LCP problem
+// Notice that all the active constraints should have been evaluated first
+void ConstraintSolver::fillInMatrices() {
+    Constraint* constraint;
+    Contact* contact;
+    ContactCachingInfo* contactInfo;
+
+    // For each active constraint
+    uint noConstraint = 0;
+    uint nbAuxConstraints = 0;
+    for (uint c=0; c<activeConstraints.size(); c++) {
+        
+        constraint = activeConstraints.at(c);
+
+        // Fill in the J_sp matrix
+        J_sp[noConstraint][0].changeSize(1, 6);
+        J_sp[noConstraint][1].changeSize(1, 6);
+        constraint->computeJacobian(1, J_sp[noConstraint][0]);
+        constraint->computeJacobian(2, J_sp[noConstraint][1]);
+
+        // Fill in the body mapping matrix
+        bodyMapping[noConstraint][0] = constraint->getBody1();
+        bodyMapping[noConstraint][1] = constraint->getBody2();
+
+        // Fill in the limit vectors for the constraint
+        lowerBounds.setValue(noConstraint, constraint->computeLowerBound());
+        upperBounds.setValue(noConstraint, constraint->computeUpperBound());
+
+        // Fill in the error vector
+        errorValues.setValue(noConstraint, constraint->computeErrorValue());
+
+        // If it's a contact constraint
+        contact = dynamic_cast<Contact*>(constraint);
+        if (contact) {
+            // Get the lambda init value from the cache if exists
+            contactInfo = contactCache.getContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint());
+            if (contactInfo) {
+                // The last lambda init value was in the cache
+                lambdaInit.setValue(noConstraint, contactInfo->lambda);
+            }
+            else {
+                // The las lambda init value was not in the cache
+                lambdaInit.setValue(noConstraint, 0.0);
+            }
+        }
+        else {
+            // Set the lambda init value
+            lambdaInit.setValue(noConstraint, 0.0);
+        }
+
+        nbAuxConstraints = constraint->getNbAuxConstraints();
+
+        // If the current constraint has auxiliary constraints
+        if (nbAuxConstraints > 0) {
+            
+            // For each auxiliary constraints
+            for (uint i=1; i<=nbAuxConstraints; i++) {
+                // Fill in the J_sp matrix
+                J_sp[noConstraint+i][0].changeSize(1, 6);
+                J_sp[noConstraint+i][1].changeSize(1, 6);
+                constraint->computeAuxJacobian(1, i, J_sp[noConstraint+i][0]);
+                constraint->computeAuxJacobian(2, i, J_sp[noConstraint+i][1]);
+
+                // Fill in the body mapping matrix
+                bodyMapping[noConstraint+i][0] = constraint->getBody1();
+                bodyMapping[noConstraint+i][1] = constraint->getBody2();
+
+                // Fill in the init lambda value for the constraint
+                lambdaInit.setValue(noConstraint+i, 0.0);
+            }
+
+            // Fill in the limit vectors for the auxilirary constraints
+            constraint->computeAuxLowerBounds(noConstraint+1, lowerBounds);
+            constraint->computeAuxUpperBounds(noConstraint+1, upperBounds);
+
+            // Fill in the errorValues vector for the auxiliary constraints
+            constraint->computeAuxErrorValues(noConstraint+1, errorValues);
+        }
+
+        noConstraint += 1 + nbAuxConstraints;
+    }
+
+    // For each current body that is implied in some constraint
+    RigidBody* rigidBody;
+    Body* body;
+    Vector v(6);
+    Vector f(6);
+    Matrix identity = Matrix::identity(3);
+    Matrix mInv(6,6);
+    uint b=0;
+    for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
+        body = *it;
+        uint bodyNumber = bodyNumberMapping.at(body);
+        
+        // TODO : Use polymorphism and remove this downcasting
+        rigidBody = dynamic_cast<RigidBody*>(body);
+        assert(rigidBody != 0);
+        
+        // Compute the vector V1 with initial velocities values
+        v.fillInSubVector(0, rigidBody->getLinearVelocity());
+        v.fillInSubVector(3, rigidBody->getAngularVelocity());
+        V1[bodyNumber].changeSize(6);
+        V1[bodyNumber] = v;
+
+        // Compute the vector Vconstraint with final constraint velocities
+        Vconstraint[bodyNumber].changeSize(6);
+        Vconstraint[bodyNumber].initWithValue(0.0);
+        
+        // Compute the vector with forces and torques values
+        f.fillInSubVector(0, rigidBody->getExternalForce());
+        f.fillInSubVector(3, rigidBody->getExternalTorque());
+        Fext[bodyNumber].changeSize(6);
+        Fext[bodyNumber] = f;
+
+        // Compute the inverse sparse mass matrix
+        mInv.initWithValue(0.0);
+        if (rigidBody->getIsMotionEnabled()) {
+            mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * identity);
+            mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
+        }
+        Minv_sp[bodyNumber].changeSize(6, 6);
+        Minv_sp[bodyNumber] = mInv;
+    }
+}
+
+// Compute the vector b
+void ConstraintSolver::computeVectorB(double dt) {
+    uint indexBody1, indexBody2;
+    double oneOverDT = 1.0/dt;
+    
+    b = errorValues * oneOverDT;
+
+    for (uint c = 0; c<nbConstraints; c++) {
+        // Substract 1.0/dt*J*V to the vector b
+        indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
+        b.setValue(c, b.getValue(c) - (J_sp[c][0] * V1[indexBody1]).getValue(0,0) * oneOverDT);
+        b.setValue(c, b.getValue(c) - (J_sp[c][1] * V1[indexBody2]).getValue(0,0) * oneOverDT);
+
+        // Substract J*M^-1*F_ext to the vector b
+        b.setValue(c, b.getValue(c) - ((J_sp[c][0] * Minv_sp[indexBody1]) * Fext[indexBody1]
+                 + (J_sp[c][1] * Minv_sp[indexBody2])*Fext[indexBody2]).getValue(0,0));
+    }
+}
+
+// Compute the matrix B_sp
+void ConstraintSolver::computeMatrixB_sp() {
+    uint indexBody1, indexBody2;
+
+    // For each constraint
+    for (uint c = 0; c<nbConstraints; c++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
+        B_sp[0][c].changeSize(6,1);
+        B_sp[1][c].changeSize(6,1);
+        B_sp[0][c] = Minv_sp[indexBody1] * J_sp[c][0].getTranspose();
+        B_sp[1][c] = Minv_sp[indexBody2] * J_sp[c][1].getTranspose();
+    }
+}
+
+// Compute the vector V_constraint (which corresponds to the constraint part of
+// the final V2 vector) according to the formula
+// V_constraint = dt * (M^-1 * J^T * lambda)
+// Note that we use the vector V to store both V1 and V_constraint.
+// Note that M^-1 * J^T = B.
+// This method is called after that the LCP solver have computed lambda
+void ConstraintSolver::computeVectorVconstraint(double dt) {
+    uint indexBody1, indexBody2;
+
+    // Compute dt * (M^-1 * J^T * lambda
+    for (uint i=0; i<nbConstraints; i++) {
+        indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
+        indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
+        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (B_sp[0][i] * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody2] = Vconstraint[indexBody2] + (B_sp[1][i] * lambda.getValue(i)).getVector() * dt;
+    }
+}
+
+// Clear and Fill in the contact cache with the new lambda values
+void ConstraintSolver::updateContactCache() {
+    Contact* contact;
+    ContactCachingInfo* contactInfo;
+
+    // Clear the contact cache
+    contactCache.clear();
+    
+    // For each active constraint
+    uint noConstraint = 0;
+    for (uint c=0; c<activeConstraints.size(); c++) {
+
+        // If it's a contact constraint
+        contact = dynamic_cast<Contact*>(activeConstraints.at(c));
+        if (contact) {
+            // Create a new ContactCachingInfo
+            contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
+
+            // Add it to the contact cache
+            contactCache.addContactCachingInfo(contactInfo);
+        }
+
+        noConstraint += 1 + activeConstraints.at(c)->getNbAuxConstraints();
+    }
+}
