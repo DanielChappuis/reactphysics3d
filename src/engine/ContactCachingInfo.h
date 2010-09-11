@@ -41,13 +41,12 @@ namespace reactphysics3d {
 */
 struct ContactCachingInfo {
     public:
-        // TODO : Use polymorphism here (change OBB into BoundingVolume to be more general)
         Body* body1;                            // Body pointer of the first bounding volume
         Body* body2;                            // Body pointer of the second bounding volume
-        Vector3D position;                       // Contact point
-        double lambda;                           // Last lambda value for the constraint
+        std::vector<Vector3D> positions;        // Positions of the contact points
+        std::vector<double> lambdas;            // Last lambdas value for the constraint
 
-        ContactCachingInfo(Body* body1, Body* body2, const Vector3D& position, double lambda);   // Constructor
+        ContactCachingInfo(Body* body1, Body* body2, const std::vector<Vector3D>& positions, const std::vector<double>& lambdas);   // Constructor
 };
 
 } // End of the ReactPhysics3D namespace

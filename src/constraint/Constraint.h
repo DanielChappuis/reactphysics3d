@@ -36,15 +36,8 @@ namespace reactphysics3d {
     Class Constraint :
         This abstract class represents a constraint in the physics engine.
         A constraint can be a collision contact or a joint for
-        instance. Each constraint have a jacobian matrix associated with
-        the first body of the constraint and a jacobian matrix associated
-        with the second body. Each constraint can also have some auxiliary
-        constraints. Those auxiliary constraint are all represented in the
-        auxiliary Jacobian matrix. Auxiliary constraints represents some
-        constraints associated with a main constraint. For instance, a
-        contact constraint between two bodies can have two associated
-        auxiliary constraints to represent the frictions force constraints
-        in two directions.
+        instance. Each constraint can be made of several "mathematical
+        constraints" needed to represent the main constraint.
     -------------------------------------------------------------------
 */
 class Constraint {
@@ -52,23 +45,19 @@ class Constraint {
         Body* const body1;          // Pointer to the first body of the constraint
         Body* const body2;          // Pointer to the second body of the constraint
         bool active;                // True if the constraint is active
-        uint nbAuxConstraints;      // Number of auxiliary constraints associated with this constraint
-        
+        uint nbConstraints;      // Number mathematical constraints associated with this Constraint
+
     public :
-        Constraint(Body* const body1, Body* const body2, uint nbAuxConstraints, bool active);               // Constructor                                                                                                   // Constructor
-        virtual ~Constraint();                                                                              // Destructor
-        Body* const getBody1() const;                                                                       // Return the reference to the body 1
-        Body* const getBody2() const;                                                                       // Return the reference to the body 2                                                                        // Evaluate the constraint
-        bool isActive() const;                                                                              // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
-        virtual void computeJacobian(int noBody, Matrix& jacobian) const=0;                                 // Compute a part of the jacobian for a given body
-        virtual void computeAuxJacobian(int noBody, int noAuxConstraint, Matrix& auxJacobian) const=0;      // Compute a part of the jacobian for an auxiliary constraint
-        virtual double computeLowerBound() const=0;                                                         // Compute the lowerbound of the constraint
-        virtual double computeUpperBound() const=0;                                                         // Compute the upperbound of the constraint
-        virtual void computeAuxLowerBounds(int beginIndex, Vector& auxLowerBounds) const=0;                 // Compute lowerbounds for the auxiliary constraints
-        virtual void computeAuxUpperBounds(int beginIndex, Vector& auxUpperBounds) const=0;                 // Compute upperbounds for the auxiliary constraints
-        virtual double computeErrorValue() const=0;                                                         // Compute the error value for the constraint
-        virtual void computeAuxErrorValues(int beginIndex, Vector& errorValues) const=0;                    // Compute the errors values of the auxiliary constraints
-        unsigned int getNbAuxConstraints() const;                                                           // Return the number of auxiliary constraints                                                                                                         // Return the number of auxiliary constraints
+        Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active);  // Constructor                                                                                                   // Constructor
+        virtual ~Constraint();                                                              // Destructor
+        Body* const getBody1() const;                                                       // Return the reference to the body 1
+        Body* const getBody2() const;                                                       // Return the reference to the body 2                                                                        // Evaluate the constraint
+        bool isActive() const;                                                              // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
+        virtual void computeJacobian(int noConstraint, Matrix**& J_sp) const=0;             // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const=0;      // Compute the lowerbounds values for all the mathematical constraints
+        virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const=0;      // Compute the upperbounds values for all the mathematical constraints
+        virtual void computeErrorValue(int noConstraint, Vector& errorValues) const=0;      // Compute the error values for all the mathematical constraints
+        unsigned int getNbConstraints() const;                                              // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
 };
 
 // Return the reference to the body 1
@@ -87,8 +76,8 @@ inline bool Constraint::isActive() const {
 }
 
 // Return the number auxiliary constraints
-inline uint Constraint::getNbAuxConstraints() const {
-    return nbAuxConstraints;
+inline uint Constraint::getNbConstraints() const {
+    return nbConstraints;
 }
 
 } // End of the ReactPhysics3D namespace

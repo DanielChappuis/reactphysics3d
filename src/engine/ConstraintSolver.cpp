@@ -68,7 +68,7 @@ void ConstraintSolver::initialize() {
             bodyNumberMapping.insert(pair<Body*, unsigned int>(constraint->getBody2(), bodyNumberMapping.size()));
 
             // Update the size of the jacobian matrix
-            nbConstraints += (1 + constraint->getNbAuxConstraints());
+            nbConstraints += constraint->getNbConstraints();
         }
     }
 
@@ -132,7 +132,7 @@ void ConstraintSolver::allocate() {
         B_sp = new Matrix*[2];
         B_sp[0] = new Matrix[nbConstraints];
         B_sp[1] = new Matrix[nbConstraints];
-        for (uint i=0; i<nbConstraints; i++) {
+        for (int i=0; i<nbConstraints; i++) {
             bodyMapping[i] = new Body*[2];
             J_sp[i] = new Matrix[2];
         }
@@ -185,78 +185,47 @@ void ConstraintSolver::fillInMatrices() {
     ContactCachingInfo* contactInfo;
 
     // For each active constraint
-    uint noConstraint = 0;
-    uint nbAuxConstraints = 0;
-    for (uint c=0; c<activeConstraints.size(); c++) {
+    int noConstraint = 0;
+    //uint nbAuxConstraints = 0;
+    
+    for (int c=0; c<activeConstraints.size(); c++) {
         
         constraint = activeConstraints.at(c);
 
         // Fill in the J_sp matrix
-        J_sp[noConstraint][0].changeSize(1, 6);
-        J_sp[noConstraint][1].changeSize(1, 6);
-        constraint->computeJacobian(1, J_sp[noConstraint][0]);
-        constraint->computeJacobian(2, J_sp[noConstraint][1]);
+        constraint->computeJacobian(noConstraint, J_sp);
+        //constraint->computeJacobian(noConstraint, J_sp);
 
         // Fill in the body mapping matrix
-        bodyMapping[noConstraint][0] = constraint->getBody1();
-        bodyMapping[noConstraint][1] = constraint->getBody2();
+        for(int i=0; i<constraint->getNbConstraints(); i++) {
+            bodyMapping[noConstraint+i][0] = constraint->getBody1();
+            bodyMapping[noConstraint+i][1] = constraint->getBody2();
+        }
 
         // Fill in the limit vectors for the constraint
-        lowerBounds.setValue(noConstraint, constraint->computeLowerBound());
-        upperBounds.setValue(noConstraint, constraint->computeUpperBound());
+        constraint->computeLowerBound(noConstraint, lowerBounds);
+        constraint->computeUpperBound(noConstraint, upperBounds);
 
         // Fill in the error vector
-        errorValues.setValue(noConstraint, constraint->computeErrorValue());
+        constraint->computeErrorValue(noConstraint, errorValues);
 
-        // If it's a contact constraint
+        // Set the init lambda values
         contact = dynamic_cast<Contact*>(constraint);
+        contactInfo = 0;
         if (contact) {
             // Get the lambda init value from the cache if exists
-            contactInfo = contactCache.getContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint());
-            if (contactInfo) {
-                // The last lambda init value was in the cache
-                lambdaInit.setValue(noConstraint, contactInfo->lambda);
+            contactInfo = contactCache.getContactCachingInfo(contact);
+        }
+        for (int i=0; i<constraint->getNbConstraints(); i++) {
+            if (contactInfo) { // If the last lambda init value is in the cache
+                lambdaInit.setValue(noConstraint + i, contactInfo->lambdas[i]);
             }
-            else {
-                // The las lambda init value was not in the cache
-                lambdaInit.setValue(noConstraint, 0.0);
+            else {  // The las lambda init value was not in the cache
+                lambdaInit.setValue(noConstraint + i, 0.0);
             }
         }
-        else {
-            // Set the lambda init value
-            lambdaInit.setValue(noConstraint, 0.0);
-        }
 
-        nbAuxConstraints = constraint->getNbAuxConstraints();
-
-        // If the current constraint has auxiliary constraints
-        if (nbAuxConstraints > 0) {
-            
-            // For each auxiliary constraints
-            for (uint i=1; i<=nbAuxConstraints; i++) {
-                // Fill in the J_sp matrix
-                J_sp[noConstraint+i][0].changeSize(1, 6);
-                J_sp[noConstraint+i][1].changeSize(1, 6);
-                constraint->computeAuxJacobian(1, i, J_sp[noConstraint+i][0]);
-                constraint->computeAuxJacobian(2, i, J_sp[noConstraint+i][1]);
-
-                // Fill in the body mapping matrix
-                bodyMapping[noConstraint+i][0] = constraint->getBody1();
-                bodyMapping[noConstraint+i][1] = constraint->getBody2();
-
-                // Fill in the init lambda value for the constraint
-                lambdaInit.setValue(noConstraint+i, 0.0);
-            }
-
-            // Fill in the limit vectors for the auxilirary constraints
-            constraint->computeAuxLowerBounds(noConstraint+1, lowerBounds);
-            constraint->computeAuxUpperBounds(noConstraint+1, upperBounds);
-
-            // Fill in the errorValues vector for the auxiliary constraints
-            constraint->computeAuxErrorValues(noConstraint+1, errorValues);
-        }
-
-        noConstraint += 1 + nbAuxConstraints;
+        noConstraint += constraint->getNbConstraints();
     }
 
     // For each current body that is implied in some constraint
@@ -359,24 +328,40 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
 void ConstraintSolver::updateContactCache() {
     Contact* contact;
     ContactCachingInfo* contactInfo;
+    int index;
 
     // Clear the contact cache
     contactCache.clear();
     
     // For each active constraint
-    uint noConstraint = 0;
-    for (uint c=0; c<activeConstraints.size(); c++) {
+    int noConstraint = 0;
+    for (int c=0; c<activeConstraints.size(); c++) {
+        index = noConstraint;
 
         // If it's a contact constraint
         contact = dynamic_cast<Contact*>(activeConstraints.at(c));
         if (contact) {
+            
+            // Get all the contact points of the contact
+            vector<Vector3D> points;
+            vector<double> lambdas;
+            for (int i=0; i<contact->getNbPoints(); i++) {
+                points.push_back(contact->getPoint(i));
+            }
+
+            // For each constraint of the contact
+            for (int i=0; i<contact->getNbConstraints(); i++) {
+                // Get the lambda value that have just been computed
+                lambdas.push_back(lambda.getValue(noConstraint + i));
+            }
+            
             // Create a new ContactCachingInfo
-            contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), contact->getPoint(), lambda.getValue(noConstraint));
+            contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), points, lambdas);
 
             // Add it to the contact cache
             contactCache.addContactCachingInfo(contactInfo);
         }
 
-        noConstraint += 1 + activeConstraints.at(c)->getNbAuxConstraints();
+        noConstraint += activeConstraints.at(c)->getNbConstraints();
     }
 }

@@ -134,6 +134,13 @@ inline Vector3D ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body
     return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
 }
 
+// Cleanup of the constraint solver
+inline void ConstraintSolver::cleanup() {
+    bodyNumberMapping.clear();
+    constraintBodies.clear();
+    activeConstraints.clear();
+}
+
 // Solve the current LCP problem
 inline void ConstraintSolver::solve(double dt) {
     // Allocate memory for the matrices
@@ -157,13 +164,6 @@ inline void ConstraintSolver::solve(double dt) {
 
     // Compute the vector Vconstraint
     computeVectorVconstraint(dt);
-}
-
-// Cleanup of the constraint solver
-inline void ConstraintSolver::cleanup() {
-    bodyNumberMapping.clear();
-    constraintBodies.clear();
-    activeConstraints.clear();
 }
 
 } // End of ReactPhysics3D namespace

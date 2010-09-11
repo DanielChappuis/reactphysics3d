@@ -131,11 +131,11 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
     // If it's a Vertex-Something contact
     if (nbVerticesExtremeOBB1 == 1) {
         // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb1ExtremePoints.at(0)));
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb1ExtremePoints));
     }
     else if(nbVerticesExtremeOBB2 == 1) {  // If its a Vertex-Something contact
         // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb2ExtremePoints.at(0)));
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb2ExtremePoints));
     }
     else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
         // Compute the two vectors of the segment lines
@@ -171,11 +171,8 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
             contactSet.push_back(contactPoint);
         }
 
-        // For each point of the set of contact points
-        for (unsigned int i=0; i<contactSet.size(); i++) {
-            // Create a new contact and add it to the physics world
-            world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, contactSet.at(i)));
-        }
+        // Create a new contact and add it to the physics world
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, contactSet));
     }
     else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB1 onto the same plane of the face of OBB2
@@ -199,11 +196,8 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
 
         assert(clippedEdge.size() == 2);
 
-        // For each point of the contact set
-        for (unsigned int i=0; i<clippedEdge.size(); i++) {
-            // Create a new contact and add it to the physics world
-            world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge.at(i)));
-        }
+        // Create a new contact and add it to the physics world
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge));
     }
     else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
         // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
@@ -227,11 +221,8 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
 
         assert(clippedEdge.size() == 2);
 
-        // For each point of the contact set
-        for (unsigned int i=0; i<clippedEdge.size(); i++) {
-            // Create a new contact and add it to the physics world
-            world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge.at(i)));
-        }
+        // Create a new contact and add it to the physics world
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge));
     }
     else {      // If it's a face-face contact
         // Compute the projection of the face vertices of OBB2 onto the plane of the face of OBB1
@@ -244,10 +235,7 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
         clippedFace = movePoints(clippedFace, penetrationDepth/2.0 * normal);
         assert(clippedFace.size() >= 3);
 
-        // For each point of the contact set
-        for (unsigned int i=0; i<clippedFace.size(); i++) {
-            // Create a new contact and add it to the physics world
-            world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace.at(i)));
-        }
+        // Create a new contact and add it to the physics world
+        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace));
     }
 }

@@ -30,12 +30,13 @@
 #include <vector>
 #include <utility>
 #include "ContactCachingInfo.h"
+#include "../constraint/Contact.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Constant
-const double POSITION_TOLERANCE = 0.01 ;      // Tolerance used to consider two similar positions to be considered as the same
+const double POSITION_TOLERANCE = 0.01;      // Tolerance used to consider two similar positions to be considered as the same
 
 /*  -------------------------------------------------------------------
     Class ContactCache :
@@ -47,14 +48,15 @@ const double POSITION_TOLERANCE = 0.01 ;      // Tolerance used to consider two 
 */
 class ContactCache {
     private:
-        std::map<std::pair<Body*, Body*>, std::vector<ContactCachingInfo*> > cache;
+        std::map<std::pair<Body*, Body*>, ContactCachingInfo* > cache;
 
     public:
-        ContactCache();                                                                                     // Constructor
-        ~ContactCache();                                                                                    // Destructor
-        void clear();                                                                                       // Remove all the contact caching info of the cache
-        void addContactCachingInfo(ContactCachingInfo* contactCachingInfo);                                 // Add a new contact caching info in the cache
-        ContactCachingInfo* getContactCachingInfo(Body* body1, Body* body2, const Vector3D& position);      // Return the ContactCachingInfo (if exists) corresponding to the arguments
+        ContactCache();                                                         // Constructor
+        ~ContactCache();                                                        // Destructor
+        void clear();                                                           // Remove all the contact caching info of the cache
+        ContactCachingInfo* getContactCachingInfo(Contact* contact) const;
+        void addContactCachingInfo(ContactCachingInfo* contactCachingInfo);     // Add a new contact caching info in the cache
+       
 };
 
 } // End of the ReactPhysics3D namespace

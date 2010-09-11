@@ -470,6 +470,7 @@ Matrix Matrix::operator*(const Matrix& matrix2) const throw(MathematicsException
 
 // Overloaded operator for multiplication with a vector
 Matrix Matrix::operator*(const Vector& vector) const throw(MathematicsException) {
+   
     // Check the sizes of the matrices
     if (nbColumn == vector.getNbComponent()) {
         Matrix result(nbRow, 1);
