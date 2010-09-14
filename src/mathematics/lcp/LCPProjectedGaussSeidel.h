@@ -37,13 +37,13 @@ class LCPProjectedGaussSeidel : public LCPSolver {
     protected: 
 
         void computeVectorA(const Vector& lambda, uint nbConstraints, Body*** const bodyMapping,
-                            Matrix** B_sp, std::map<Body*, uint> bodyNumberMapping,
-                            Vector* const a, uint nbBodies) const ;                                                       // Compute the vector a used in the solve() method
+                            Vector6D** B_sp, std::map<Body*, uint> bodyNumberMapping,
+                            Vector6D* const a, uint nbBodies) const ;                                                       // Compute the vector a used in the solve() method
 
     public:
         LCPProjectedGaussSeidel(uint maxIterations);                                                                    // Constructor
         virtual ~LCPProjectedGaussSeidel();                                                                             // Destructor
-        virtual void solve(Matrix** J_sp, Matrix** B_sp, uint nbConstraints,
+        virtual void solve(Matrix1x6** J_sp, Vector6D** B_sp, uint nbConstraints,
                            uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
                            const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const;   // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
 };

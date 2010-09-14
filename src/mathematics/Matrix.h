@@ -27,8 +27,11 @@
 
 // Libraries
 #include "exceptions.h"
+#include "Matrix1x6.h"
+#include "Matrix6x6.h"
 #include "Matrix3x3.h"
 #include "Vector.h"
+#include "Vector6D.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -54,6 +57,9 @@ class Matrix {
         Matrix(const Matrix& matrix);                                                                                   // Copy constructor of the class Matrix
         Matrix(const Matrix3x3& matrix);                                                                                // Conversion from Matrix3x3
         Matrix(const Vector& vector);                                                                                   // Conversion from Vector to Matrix
+        Matrix(const Matrix6x6& matrix);
+        Matrix(const Matrix1x6& matrix);
+        Matrix(const Vector6D& vector);
         virtual ~Matrix();                                                                                              // Destructor of the class Matrix
         double getValue(int i, int j) const throw(std::invalid_argument);                                               // Return a value in the matrix
         void setValue(int i, int j, double value) throw(std::invalid_argument);                                         // Set a value in the matrix

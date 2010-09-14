@@ -51,7 +51,7 @@ Contact::~Contact() {
 // fill in this matrix with all the jacobian matrix of the mathematical constraint
 // of the contact. The argument "noConstraint", is the row were the method have
 // to start to fill in the J_sp matrix.
-void Contact::computeJacobian(int noConstraint, Matrix**& J_sp) const {
+void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
     RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
     Vector3D r1;
@@ -78,22 +78,22 @@ void Contact::computeJacobian(int noConstraint, Matrix**& J_sp) const {
         r2CrossN = r2.crossProduct(normal);
 
         // Compute the jacobian matrix for the body 1 for the contact constraint
-        J_sp[currentIndex][0].changeSize(1, 6);
-        J_sp[currentIndex][0].setValue(0, 0, -normal.getX());
-        J_sp[currentIndex][0].setValue(0, 1, -normal.getY());
-        J_sp[currentIndex][0].setValue(0, 2, -normal.getZ());
-        J_sp[currentIndex][0].setValue(0, 3, -r1CrossN.getX());
-        J_sp[currentIndex][0].setValue(0, 4, -r1CrossN.getY());
-        J_sp[currentIndex][0].setValue(0, 5, -r1CrossN.getZ());
+        //J_sp[currentIndex][0].changeSize(1, 6);
+        J_sp[currentIndex][0].setValue(0, -normal.getX());
+        J_sp[currentIndex][0].setValue(1, -normal.getY());
+        J_sp[currentIndex][0].setValue(2, -normal.getZ());
+        J_sp[currentIndex][0].setValue(3, -r1CrossN.getX());
+        J_sp[currentIndex][0].setValue(4, -r1CrossN.getY());
+        J_sp[currentIndex][0].setValue(5, -r1CrossN.getZ());
 
         // Compute the jacobian matrix for the body 2 for the contact constraint
-        J_sp[currentIndex][1].changeSize(1, 6);
-        J_sp[currentIndex][1].setValue(0, 0, normal.getX());
-        J_sp[currentIndex][1].setValue(0, 1, normal.getY());
-        J_sp[currentIndex][1].setValue(0, 2, normal.getZ());
-        J_sp[currentIndex][1].setValue(0, 3, r2CrossN.getX());
-        J_sp[currentIndex][1].setValue(0, 4, r2CrossN.getY());
-        J_sp[currentIndex][1].setValue(0, 5, r2CrossN.getZ());
+        //J_sp[currentIndex][1].changeSize(1, 6);
+        J_sp[currentIndex][1].setValue(0, normal.getX());
+        J_sp[currentIndex][1].setValue(1, normal.getY());
+        J_sp[currentIndex][1].setValue(2, normal.getZ());
+        J_sp[currentIndex][1].setValue(3, r2CrossN.getX());
+        J_sp[currentIndex][1].setValue(4, r2CrossN.getY());
+        J_sp[currentIndex][1].setValue(5, r2CrossN.getZ());
 
         currentIndex++;
 
@@ -102,42 +102,42 @@ void Contact::computeJacobian(int noConstraint, Matrix**& J_sp) const {
         r2CrossU1 = r2.crossProduct(frictionVectors[0]);
         r1CrossU2 = r1.crossProduct(frictionVectors[1]);
         r2CrossU2 = r2.crossProduct(frictionVectors[1]);
-        J_sp[currentIndex][0].changeSize(1, 6);
-        J_sp[currentIndex][0].setValue(0, 0, -frictionVectors[0].getX());
-        J_sp[currentIndex][0].setValue(0, 1, -frictionVectors[0].getY());
-        J_sp[currentIndex][0].setValue(0, 2, -frictionVectors[0].getZ());
-        J_sp[currentIndex][0].setValue(0, 3, -r1CrossU1.getX());
-        J_sp[currentIndex][0].setValue(0, 4, -r1CrossU1.getY());
-        J_sp[currentIndex][0].setValue(0, 5, -r1CrossU1.getZ());
+        //J_sp[currentIndex][0].changeSize(1, 6);
+        J_sp[currentIndex][0].setValue(0, -frictionVectors[0].getX());
+        J_sp[currentIndex][0].setValue(1, -frictionVectors[0].getY());
+        J_sp[currentIndex][0].setValue(2, -frictionVectors[0].getZ());
+        J_sp[currentIndex][0].setValue(3, -r1CrossU1.getX());
+        J_sp[currentIndex][0].setValue(4, -r1CrossU1.getY());
+        J_sp[currentIndex][0].setValue(5, -r1CrossU1.getZ());
 
         // Compute the jacobian matrix for the body 2 for the first friction constraint
-        J_sp[currentIndex][1].changeSize(1, 6);
-        J_sp[currentIndex][1].setValue(0, 0, frictionVectors[0].getX());
-        J_sp[currentIndex][1].setValue(0, 1, frictionVectors[0].getY());
-        J_sp[currentIndex][1].setValue(0, 2, frictionVectors[0].getZ());
-        J_sp[currentIndex][1].setValue(0, 3, r2CrossU1.getX());
-        J_sp[currentIndex][1].setValue(0, 4, r2CrossU1.getY());
-        J_sp[currentIndex][1].setValue(0, 5, r2CrossU1.getZ());
+        //J_sp[currentIndex][1].changeSize(1, 6);
+        J_sp[currentIndex][1].setValue(0, frictionVectors[0].getX());
+        J_sp[currentIndex][1].setValue(1, frictionVectors[0].getY());
+        J_sp[currentIndex][1].setValue(2, frictionVectors[0].getZ());
+        J_sp[currentIndex][1].setValue(3, r2CrossU1.getX());
+        J_sp[currentIndex][1].setValue(4, r2CrossU1.getY());
+        J_sp[currentIndex][1].setValue(5, r2CrossU1.getZ());
 
         currentIndex++;
 
         // Compute the jacobian matrix for the body 1 for the second friction constraint
-        J_sp[currentIndex][0].changeSize(1, 6);
-        J_sp[currentIndex][0].setValue(0, 0, -frictionVectors[1].getX());
-        J_sp[currentIndex][0].setValue(0, 1, -frictionVectors[1].getY());
-        J_sp[currentIndex][0].setValue(0, 2, -frictionVectors[1].getZ());
-        J_sp[currentIndex][0].setValue(0, 3, -r1CrossU2.getX());
-        J_sp[currentIndex][0].setValue(0, 4, -r1CrossU2.getY());
-        J_sp[currentIndex][0].setValue(0, 5, -r1CrossU2.getZ());
-        J_sp[currentIndex][1].changeSize(1, 6);
+        //J_sp[currentIndex][0].changeSize(1, 6);
+        J_sp[currentIndex][0].setValue(0, -frictionVectors[1].getX());
+        J_sp[currentIndex][0].setValue(1, -frictionVectors[1].getY());
+        J_sp[currentIndex][0].setValue(2, -frictionVectors[1].getZ());
+        J_sp[currentIndex][0].setValue(3, -r1CrossU2.getX());
+        J_sp[currentIndex][0].setValue(4, -r1CrossU2.getY());
+        J_sp[currentIndex][0].setValue(5, -r1CrossU2.getZ());
+        //J_sp[currentIndex][1].changeSize(1, 6);
 
         // Compute the jacobian matrix for the body 2 for the second friction constraint
-        J_sp[currentIndex][1].setValue(0, 0, frictionVectors[1].getX());
-        J_sp[currentIndex][1].setValue(0, 1, frictionVectors[1].getY());
-        J_sp[currentIndex][1].setValue(0, 2, frictionVectors[1].getZ());
-        J_sp[currentIndex][1].setValue(0, 3, r2CrossU2.getX());
-        J_sp[currentIndex][1].setValue(0, 4, r2CrossU2.getY());
-        J_sp[currentIndex][1].setValue(0, 5, r2CrossU2.getZ());
+        J_sp[currentIndex][1].setValue(0, frictionVectors[1].getX());
+        J_sp[currentIndex][1].setValue(1, frictionVectors[1].getY());
+        J_sp[currentIndex][1].setValue(2, frictionVectors[1].getZ());
+        J_sp[currentIndex][1].setValue(3, r2CrossU2.getX());
+        J_sp[currentIndex][1].setValue(4, r2CrossU2.getY());
+        J_sp[currentIndex][1].setValue(5, r2CrossU2.getZ());
 
         currentIndex++;
     }

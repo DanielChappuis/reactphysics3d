@@ -113,7 +113,7 @@ void ConstraintSolver::allocate() {
         freeMemory(true);
         bodiesCapacity = nbBodies;
         
-        Minv_sp = new Matrix[nbBodies];
+        Minv_sp = new Matrix6x6[nbBodies];
         V1 = new Vector[nbBodies];
         Vconstraint = new Vector[nbBodies];
         Fext = new Vector[nbBodies];
@@ -128,13 +128,13 @@ void ConstraintSolver::allocate() {
         constraintsCapacity = nbConstraints;
 
         bodyMapping = new Body**[nbConstraints];
-        J_sp = new Matrix*[nbConstraints];
-        B_sp = new Matrix*[2];
-        B_sp[0] = new Matrix[nbConstraints];
-        B_sp[1] = new Matrix[nbConstraints];
+        J_sp = new Matrix1x6*[nbConstraints];
+        B_sp = new Vector6D*[2];
+        B_sp[0] = new Vector6D[nbConstraints];
+        B_sp[1] = new Vector6D[nbConstraints];
         for (int i=0; i<nbConstraints; i++) {
             bodyMapping[i] = new Body*[2];
-            J_sp[i] = new Matrix[2];
+            J_sp[i] = new Matrix1x6[2];
         }
 
         errorValues.changeSize(nbConstraints);
@@ -233,8 +233,8 @@ void ConstraintSolver::fillInMatrices() {
     Body* body;
     Vector v(6);
     Vector f(6);
-    Matrix identity = Matrix::identity(3);
-    Matrix mInv(6,6);
+    //Matrix identity = Matrix::identity(3);
+    //Matrix mInv(6,6);
     uint b=0;
     for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
         body = *it;
@@ -261,13 +261,26 @@ void ConstraintSolver::fillInMatrices() {
         Fext[bodyNumber] = f;
 
         // Compute the inverse sparse mass matrix
-        mInv.initWithValue(0.0);
+        Minv_sp[bodyNumber].initWithValue(0.0);
+        const Matrix3x3& tensorInv = rigidBody->getInertiaTensorInverseWorld();
         if (rigidBody->getIsMotionEnabled()) {
-            mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * identity);
-            mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
+            Minv_sp[bodyNumber].setValue(0, 0, rigidBody->getMassInverse());
+            Minv_sp[bodyNumber].setValue(1, 1, rigidBody->getMassInverse());
+            Minv_sp[bodyNumber].setValue(2, 2, rigidBody->getMassInverse());
+            Minv_sp[bodyNumber].setValue(3, 3, tensorInv.getValue(0, 0));
+            Minv_sp[bodyNumber].setValue(3, 4, tensorInv.getValue(0, 1));
+            Minv_sp[bodyNumber].setValue(3, 5, tensorInv.getValue(0, 2));
+            Minv_sp[bodyNumber].setValue(4, 3, tensorInv.getValue(1, 0));
+            Minv_sp[bodyNumber].setValue(4, 4, tensorInv.getValue(1, 1));
+            Minv_sp[bodyNumber].setValue(4, 5, tensorInv.getValue(1, 2));
+            Minv_sp[bodyNumber].setValue(5, 3, tensorInv.getValue(2, 0));
+            Minv_sp[bodyNumber].setValue(5, 4, tensorInv.getValue(2, 1));
+            Minv_sp[bodyNumber].setValue(5, 5, tensorInv.getValue(2, 2));
+            //mInv.fillInSubMatrix(0, 0, rigidBody->getMassInverse() * identity);
+            //mInv.fillInSubMatrix(3, 3, rigidBody->getInertiaTensorInverseWorld());
         }
-        Minv_sp[bodyNumber].changeSize(6, 6);
-        Minv_sp[bodyNumber] = mInv;
+        //Minv_sp[bodyNumber].changeSize(6, 6);
+        //Minv_sp[bodyNumber] = mInv;
     }
 }
 
@@ -282,12 +295,12 @@ void ConstraintSolver::computeVectorB(double dt) {
         // Substract 1.0/dt*J*V to the vector b
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        b.setValue(c, b.getValue(c) - (J_sp[c][0] * V1[indexBody1]).getValue(0,0) * oneOverDT);
-        b.setValue(c, b.getValue(c) - (J_sp[c][1] * V1[indexBody2]).getValue(0,0) * oneOverDT);
+        b.setValue(c, b.getValue(c) - (Matrix(J_sp[c][0]) * V1[indexBody1]).getValue(0,0) * oneOverDT); // TODO : Remove conversion here
+        b.setValue(c, b.getValue(c) - (Matrix(J_sp[c][1]) * V1[indexBody2]).getValue(0,0) * oneOverDT);
 
         // Substract J*M^-1*F_ext to the vector b
-        b.setValue(c, b.getValue(c) - ((J_sp[c][0] * Minv_sp[indexBody1]) * Fext[indexBody1]
-                 + (J_sp[c][1] * Minv_sp[indexBody2])*Fext[indexBody2]).getValue(0,0));
+        b.setValue(c, b.getValue(c) - ((Matrix(J_sp[c][0]) * Matrix(Minv_sp[indexBody1])) * Fext[indexBody1]
+                 + (Matrix(J_sp[c][1]) * Matrix(Minv_sp[indexBody2]))*Fext[indexBody2]).getValue(0,0));         // TODO : Delete conversion here
     }
 }
 
@@ -299,8 +312,8 @@ void ConstraintSolver::computeMatrixB_sp() {
     for (uint c = 0; c<nbConstraints; c++) {
         indexBody1 = bodyNumberMapping[bodyMapping[c][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[c][1]];
-        B_sp[0][c].changeSize(6,1);
-        B_sp[1][c].changeSize(6,1);
+        //B_sp[0][c].changeSize(6,1);
+        //B_sp[1][c].changeSize(6,1);
         B_sp[0][c] = Minv_sp[indexBody1] * J_sp[c][0].getTranspose();
         B_sp[1][c] = Minv_sp[indexBody2] * J_sp[c][1].getTranspose();
     }
@@ -319,8 +332,8 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
     for (uint i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (B_sp[0][i] * lambda.getValue(i)).getVector() * dt;
-        Vconstraint[indexBody2] = Vconstraint[indexBody2] + (B_sp[1][i] * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody1] = Vconstraint[indexBody1] + (Matrix(B_sp[0][i]) * lambda.getValue(i)).getVector() * dt;
+        Vconstraint[indexBody2] = Vconstraint[indexBody2] + (Matrix(B_sp[1][i]) * lambda.getValue(i)).getVector() * dt; // TODO : Remove conversion here
     }
 }
 

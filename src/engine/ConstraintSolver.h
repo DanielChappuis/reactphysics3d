@@ -73,10 +73,10 @@ class ConstraintSolver {
                                                                 // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
                                                                 // the pointer to the body that correspond to the 1x6 J_ij matrix in the
                                                                 // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector
-        Matrix** J_sp;                                          // 2-dimensional array thar correspond to the sparse representation of the jacobian matrix of all constraints
+        Matrix1x6** J_sp;                                          // 2-dimensional array thar correspond to the sparse representation of the jacobian matrix of all constraints
                                                                 // The dimension of this array is nbConstraints times 2. Each cell will contain
                                                                 // a 1x6 matrix
-        Matrix** B_sp;                                          // 2-dimensional array that correspond to a useful matrix in sparse representation
+        Vector6D** B_sp;                                          // 2-dimensional array that correspond to a useful matrix in sparse representation
                                                                 // The dimension of this array is 2 times nbConstraints. Each cell will contain
                                                                 // a 6x1 matrix
         Vector b;                                               // Vector "b" of the LCP problem
@@ -85,7 +85,7 @@ class ConstraintSolver {
         Vector errorValues;                                     // Error vector of all constraints
         Vector lowerBounds;                                     // Vector that contains the low limits for the variables of the LCP problem
         Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
-        Matrix* Minv_sp;                                        // Sparse representation of the Matrix that contains information about mass and inertia of each body
+        Matrix6x6* Minv_sp;                                        // Sparse representation of the Matrix that contains information about mass and inertia of each body
                                                                 // This is an array of size nbBodies that contains in each cell a 6x6 matrix
         Vector* V1;                                             // Array that contains for each body the Vector that contains linear and angular velocities
                                                                 // Each cell contains a 6x1 vector with linear and angular velocities
