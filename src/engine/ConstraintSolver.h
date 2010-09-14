@@ -87,10 +87,10 @@ class ConstraintSolver {
         Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
         Matrix6x6* Minv_sp;                                        // Sparse representation of the Matrix that contains information about mass and inertia of each body
                                                                 // This is an array of size nbBodies that contains in each cell a 6x6 matrix
-        Vector* V1;                                             // Array that contains for each body the Vector that contains linear and angular velocities
+        Vector6D* V1;                                             // Array that contains for each body the Vector that contains linear and angular velocities
                                                                 // Each cell contains a 6x1 vector with linear and angular velocities
-        Vector* Vconstraint;                                    // Same kind of vector as V1 but contains the final constraint velocities
-        Vector* Fext;                                           // Array that contains for each body the vector that contains external forces and torques
+        Vector6D* Vconstraint;                                    // Same kind of vector as V1 but contains the final constraint velocities
+        Vector6D* Fext;                                           // Array that contains for each body the vector that contains external forces and torques
                                                                 // Each cell contains a 6x1 vector with external force and torque.
         void initialize();                                      // Initialize the constraint solver before each solving
         void allocate();                                        // Allocate all the memory needed to solve the LCP problem
@@ -122,7 +122,7 @@ inline bool ConstraintSolver::isConstrainedBody(Body* body) const {
 // Return the constrained linear velocity of a body after solving the LCP problem
 inline Vector3D ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
-    Vector vec = Vconstraint[bodyNumberMapping[body]].getSubVector(0, 3);
+    const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
     return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
 
 }
@@ -130,8 +130,8 @@ inline Vector3D ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body)
 // Return the constrained angular velocity of a body after solving the LCP problem
 inline Vector3D ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
-    Vector vec = Vconstraint[bodyNumberMapping[body]].getSubVector(3, 3);
-    return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
+    const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
+    return Vector3D(vec.getValue(3), vec.getValue(4), vec.getValue(5));
 }
 
 // Cleanup of the constraint solver
