@@ -31,7 +31,7 @@
 #include "Quaternion.h"
 #include "Vector.h"
 #include "Vector3D.h"
-#include "constants.h"
+#include "../constants.h"
 #include "exceptions.h"
 #include "mathematics_functions.h"
 #include <vector>

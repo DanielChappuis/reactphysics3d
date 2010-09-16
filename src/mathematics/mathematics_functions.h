@@ -26,7 +26,7 @@
 #define MATHEMATICS_FUNCTIONS_H
 
 // Libraries
-#include "constants.h"
+#include "../constants.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

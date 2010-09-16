@@ -99,7 +99,6 @@ Matrix::Matrix(const Matrix3x3& matrix)
     }
 }
 
-
 // Conversion from Vector to Matrix
 Matrix::Matrix(const Vector& vector) {
         // Create the two dimensional dynamic array
@@ -109,59 +108,6 @@ Matrix::Matrix(const Vector& vector) {
         for(int i=0; i<nbRow; ++i) {
             array[i] = new double[1];
             array[i][0] = vector.getValue(i);
-        }
-}
-
-// TODO : Delete this
-Matrix::Matrix(const Matrix6x6& matrix) : nbRow(6), nbColumn(6) {
-    // Create the two dimensional dynamic array
-    array = new double*[nbRow];
-
-    assert(array != 0);     // Array pointer musn't be null
-
-    for(int i=0; i<nbRow; ++i) {
-        array[i] = new double[nbColumn];
-    }
-
-    // Copy the matrix
-    for (int i=0; i<nbRow; ++i) {
-        for(int j=0; j<nbColumn; ++j) {
-            setValue(i,j, matrix.getValue(i,j));
-        }
-    }
-}
-
-// TODO : Delete this
-Matrix::Matrix(const Matrix1x6& matrix) : nbRow(1), nbColumn(6) {
-    // Create the two dimensional dynamic array
-    array = new double*[nbRow];
-
-    assert(array != 0);     // Array pointer musn't be null
-
-    for(int i=0; i<nbRow; ++i) {
-        array[i] = new double[nbColumn];
-    }
-
-    // Copy the matrix
-        for(int j=0; j<nbColumn; ++j) {
-            setValue(0,j, matrix.getValue(j));
-        }
-}
-
-// TODO : Delete this
-Matrix::Matrix(const Vector6D& vector) :nbRow(6), nbColumn(1) {
-    // Create the two dimensional dynamic array
-    array = new double*[nbRow];
-
-    assert(array != 0);     // Array pointer musn't be null
-
-    for(int i=0; i<nbRow; ++i) {
-        array[i] = new double[nbColumn];
-    }
-
-    // Copy the matrix
-        for(int j=0; j<nbRow; ++j) {
-            setValue(j,0, vector.getValue(j));
         }
 }
 

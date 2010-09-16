@@ -26,7 +26,7 @@
 #define CONSTRAINTSOLVER_H
 
 // Libraries
-#include "../typeDefinitions.h"
+#include "../constants.h"
 #include "../constraint/Constraint.h"
 #include "../mathematics/lcp/LCPSolver.h"
 #include "ContactCache.h"
@@ -36,14 +36,6 @@
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Constants
-const uint MAX_LCP_ITERATIONS = 10;     // Maximum number of iterations when solving a LCP problem
-const double AV_COUNTER_LIMIT = 500;    // Maximum number value of the avBodiesCounter or avConstraintsCounter
-const double AV_PERCENT_TO_FREE = 0.5;  // We will free the memory if the current nb of bodies (or constraints) is
-                                        // less than AV_PERCENT_TO_FREE * bodiesCapacity (or constraintsCapacity). This
-                                        // is used to avoid to keep to much memory for a long time if the system doesn't
-                                        // need that memory. This value is between 0.0 and 1.0
 
  /*  -------------------------------------------------------------------
     Class ConstrainSolver :

@@ -26,7 +26,7 @@
 #include "../Vector.h"
 #include "../Matrix.h"
 #include "../../body/Body.h"
-#include "../../typeDefinitions.h"
+#include "../../constants.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

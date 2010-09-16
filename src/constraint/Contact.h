@@ -26,20 +26,15 @@
 #define CONTACT_H
 
 // Libraries
-#include "../typeDefinitions.h"
 #include "Constraint.h"
 #include "../body/RigidBody.h"
+#include "../constants.h"
 #include "../mathematics/mathematics.h"
 #include <GL/freeglut.h>        // TODO : Remove this in the final version
 #include <GL/gl.h>              // TODO : Remove this in the final version
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Constants
-const double FRICTION_COEFFICIENT = 0.3;    // Friction coefficient
-const double PENETRATION_FACTOR = 0.0;      // Penetration factor (between 0 and 1) which specify the importance of the
-                                            // penetration depth in order to calculate the correct impulse for the contact
 
 /*  -------------------------------------------------------------------
     Class Contact :

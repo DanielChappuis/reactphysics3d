@@ -27,7 +27,7 @@
 
 // Libraries
 #include "Vector3D.h"
-#include "../typeDefinitions.h"
+#include "../constants.h"
 #include "mathematics_functions.h"
 #include "exceptions.h"
 #include <cmath>
