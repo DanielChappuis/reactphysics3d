@@ -30,8 +30,10 @@
 #include "../body/RigidBody.h"
 #include "../constants.h"
 #include "../mathematics/mathematics.h"
-#include <GL/freeglut.h>        // TODO : Remove this in the final version
-#include <GL/gl.h>              // TODO : Remove this in the final version
+#ifdef VISUAL_DEBUG
+    #include <GL/freeglut.h>
+    #include <GL/gl.h>
+#endif
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -64,12 +66,14 @@ class Contact : public Constraint {
         Vector3D getNormal() const;                                                     // Return the normal vector of the contact
         Vector3D getPoint(int index) const;                                             // Return a contact point
         int getNbPoints() const;                                                        // Return the number of contact points
-        virtual void computeJacobian(int noConstraint, Matrix1x6**& J_SP) const;           // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeJacobian(int noConstraint, Matrix1x6**& J_SP) const;        // Compute the jacobian matrix for all mathematical constraints
         virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const;    // Compute the lowerbounds values for all the mathematical constraints
         virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const;    // Compute the upperbounds values for all the mathematical constraints
         virtual void computeErrorValue(int noConstraint, Vector& errorValues) const;    // Compute the error values for all the mathematical constraints
         double getPenetrationDepth() const;                                             // Return the penetration depth
-        void draw() const;                                                              // TODO : Delete this (Used to debug collision detection)
+        #ifdef VISUAL_DEBUG
+           void draw() const;                                                           // Draw the contact (for debugging)
+        #endif
 };
 
 // Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
@@ -107,11 +111,13 @@ inline double Contact::getPenetrationDepth() const {
     return penetrationDepth;
 }
 
+#ifdef VISUAL_DEBUG
 // TODO : Delete this (Used to debug collision detection)
 inline void Contact::draw() const {
     glColor3f(1.0, 0.0, 0.0);
     glutSolidSphere(0.3, 20, 20);
 }
+#endif
 
 } // End of the ReactPhysics3D namespace
 

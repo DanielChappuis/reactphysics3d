@@ -59,7 +59,9 @@ class AABB : public BroadBoundingVolume {
         double getMaxValueOnAxis(uint axis) const throw(std::invalid_argument);                             // Return the maximum position value on the given axis
         bool testCollision(const AABB& aabb) const;                                                         // Return true if the current AABB is overlapping is the AABB in argument
         virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
-        virtual void draw() const;                                                                          // Draw the AABB (only for testing purpose)
+        #ifdef VISUAL_DEBUG
+           virtual void draw() const;                                                                       // Draw the AABB (only for testing purpose)
+        #endif
         static AABB* computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center);    // Compute an AABB from a set of vertices
 };
 

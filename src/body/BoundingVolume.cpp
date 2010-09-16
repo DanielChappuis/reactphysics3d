@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 BoundingVolume::BoundingVolume() {
-    this->body = 0;
+    this->body = NULL;
 }
 
 // Destructor

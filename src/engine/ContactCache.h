@@ -54,7 +54,7 @@ class ContactCache {
         ContactCache();                                                         // Constructor
         ~ContactCache();                                                        // Destructor
         void clear();                                                           // Remove all the contact caching info of the cache
-        ContactCachingInfo* getContactCachingInfo(Contact* contact) const;
+        ContactCachingInfo* getContactCachingInfo(Contact* contact) const;      // Return the ContactCachingInfo corresponding to a contact if it exists
         void addContactCachingInfo(ContactCachingInfo* contactCachingInfo);     // Add a new contact caching info in the cache
        
 };

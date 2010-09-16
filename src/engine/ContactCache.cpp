@@ -68,7 +68,7 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         // If the new contact and the contact caching info doesn't have the same number of contact points
         if (contact->getNbPoints() != contactInfo->positions.size()) {
             // We return NULL because, the contact doesn't match
-            return 0;
+            return NULL;
         }
 
         for (int i=0; i<contactInfo->positions.size(); i++) {
@@ -87,7 +87,7 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
                 posZ > contactPos.getZ() + POSITION_TOLERANCE || posZ < contactPos.getZ() - POSITION_TOLERANCE) {
 
                 // Return NULL
-                return 0;
+                return NULL;
             }
         }
 
@@ -95,7 +95,7 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         return contactInfo;
     }
     else {
-        return 0;
+        return NULL;
     }
 }
 

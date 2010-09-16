@@ -66,7 +66,9 @@ class OBB : public NarrowBoundingVolume {
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                       // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
         virtual AABB* computeAABB() const;                                                                  // Return the corresponding AABB
-        virtual void draw() const;                                                                          // Draw the OBB (only for testing purpose)
+        #ifdef VISUAL_DEBUG
+            virtual void draw() const;                                                                      // Draw the OBB (only for testing purpose)
+        #endif
         static OBB* computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center);     // Compute an OBB from a set of vertices
 };
 

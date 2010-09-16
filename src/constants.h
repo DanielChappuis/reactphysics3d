@@ -37,6 +37,9 @@ const double ONE_MINUS_EPSILON = 0.99999;                                   // 1
 const double INFINITY_CONST = std::numeric_limits<double>::infinity();      // Infinity constant
 const double PI = 3.14159265;                                               // Pi constant
 
+// Physics Engine constants
+const double DEFAULT_TIMESTEP = 0.002;
+
 // Contact constants
 const double FRICTION_COEFFICIENT = 0.4;    // Friction coefficient
 const double PENETRATION_FACTOR = 0.2;      // Penetration factor (between 0 and 1) which specify the importance of the

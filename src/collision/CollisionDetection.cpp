@@ -87,11 +87,11 @@ void CollisionDetection::computeNarrowPhase() {
     
     // For each possible collision pair of bodies
     for (unsigned int i=0; i<possibleCollisionPairs.size(); i++) {
-        ContactInfo* contactInfo = 0;
+        ContactInfo* contactInfo = NULL;
 
         // Use the narrow-phase collision detection algorithm to check if the really are a contact
         if (narrowPhaseAlgorithm->testCollision(possibleCollisionPairs.at(i).first->getNarrowBoundingVolume(), possibleCollisionPairs.at(i).second->getNarrowBoundingVolume(), contactInfo)) {
-            assert(contactInfo != 0);
+            assert(contactInfo);
 
             // Add the contact info the current list of collision informations
             contactInfos.push_back(contactInfo);
@@ -104,7 +104,7 @@ void CollisionDetection::computeAllContacts() {
     // For each possible contact info (computed during narrow-phase collision detection)
     for (unsigned int i=0; i<contactInfos.size(); i++) {
         ContactInfo* contactInfo = contactInfos.at(i);
-        assert(contactInfo != 0);
+        assert(contactInfo);
         
         // Compute one or several new contacts and add them into the physics world
         computeContact(contactInfo);

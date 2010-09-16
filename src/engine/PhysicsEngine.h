@@ -31,6 +31,7 @@
 #include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
+#include "../constants.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -54,12 +55,12 @@ class PhysicsEngine {
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies
 
 public :
-        PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);  // Constructor
-        ~PhysicsEngine();                                                                   // Destructor
+        PhysicsEngine(PhysicsWorld* world, double timeStep) throw (std::invalid_argument);   // Constructor
+        ~PhysicsEngine();                                                                    // Destructor
 
-        void start();                                                                       // Start the physics simulation
-        void stop();                                                                        // Stop the physics simulation
-        void update() throw (std::logic_error);                                             // Update the physics simulation
+        void start();                               // Start the physics simulation
+        void stop();                                // Stop the physics simulation
+        void update() throw (std::logic_error);     // Update the physics simulation
 };
 
 // --- Inline functions --- //

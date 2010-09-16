@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep) throw (invalid_argument)
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep = DEFAULT_TIMESTEP) throw (invalid_argument)
               : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world) {
     // Check if the pointer to the world is not NULL
     if (world == 0) {
@@ -114,7 +114,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
     Vector3D newAngularVelocity;
 
     // For each body of thephysics world
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
@@ -180,7 +180,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
     assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor to all bodies
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
@@ -193,7 +193,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
 void PhysicsEngine::applyGravity() {
 
     // For each body of the physics world
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);

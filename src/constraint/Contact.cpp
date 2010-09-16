@@ -66,8 +66,8 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     Vector3D body2Position = rigidBody2->getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
 
-    assert(rigidBody1 != 0);
-    assert(rigidBody2 != 0);
+    assert(rigidBody1);
+    assert(rigidBody2);
 
     // For each point in the contact
     for (int i=0; i<nbPoints; i++) {

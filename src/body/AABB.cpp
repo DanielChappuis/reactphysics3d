@@ -24,9 +24,11 @@
 
 // Libraries
 #include "AABB.h"
-#include <GL/freeglut.h>        // TODO : Remove this in the final version
-#include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
+#ifdef VISUAL_DEBUG
+   #include <GL/freeglut.h>        // TODO : Remove this in the final version
+   #include <GL/gl.h>              // TODO : Remove this in the final version
+#endif
 
 using namespace reactphysics3d;
 using namespace std;
@@ -49,6 +51,7 @@ AABB::~AABB() {
 
 }
 
+#ifdef VISUAL_DEBUG
 // Draw the OBB (only for testing purpose)
 void AABB::draw() const {
 
@@ -104,11 +107,12 @@ void AABB::draw() const {
 
     glEnd();
 }
+#endif
 
 // Static method that computes an AABB from a set of vertices. The "center" argument corresponds to the center of the AABB
 // This method allocates a new AABB object and return a pointer to the new allocated AABB object
 AABB* AABB::computeFromVertices(const vector<Vector3D>& vertices, const Vector3D& center) {
     // TODO : Implement this method;
-    return 0;
+    return NULL;
 }
 

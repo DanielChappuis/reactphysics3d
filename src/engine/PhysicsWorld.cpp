@@ -51,7 +51,7 @@ void PhysicsWorld::removeAllContactConstraints() {
         Contact* contact = dynamic_cast<Contact*>(*it);
 
         // If the constraint is a contact
-        if (contact != 0) {
+        if (contact) {
             // Delete the  contact
             delete (*it);
             it = constraints.erase(it);
@@ -64,7 +64,7 @@ void PhysicsWorld::removeAllContactConstraints() {
 
 // Remove all constraints in the physics world and also delete them (free their memory)
 void PhysicsWorld::removeAllConstraints() {
-    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); it++) {
+    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ++it) {
         delete *it;
     }
     constraints.clear();

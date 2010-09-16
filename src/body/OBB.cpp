@@ -25,9 +25,12 @@
 // Libraries
 #include "OBB.h"
 #include <vector>
-#include <GL/freeglut.h>        // TODO : Remove this in the final version
-#include <GL/gl.h>              // TODO : Remove this in the final version
 #include <cassert>
+
+#ifdef VISUAL_DEBUG
+   #include <GL/freeglut.h>        // TODO : Remove this in the final version
+   #include <GL/gl.h>              // TODO : Remove this in the final version
+#endif
 
 using namespace reactphysics3d;
 using namespace std;
@@ -55,6 +58,7 @@ OBB::~OBB() {
 
 }
 
+#ifdef VISUAL_DEBUG
 // Draw the OBB (only for testing purpose)
 void OBB::draw() const {
     double e0 = extent[0];
@@ -116,6 +120,7 @@ void OBB::draw() const {
 
     glEnd();
 }
+#endif
 
 // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis.
 // If the extreme vertices are part of a face of the OBB, the returned vertices will be ordered according to the face.
@@ -185,7 +190,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
 // This method allocates a new OBB object and return a pointer to the new allocated OBB object
 OBB* OBB::computeFromVertices(const vector<Vector3D>& vertices, const Vector3D& center) {
     // TODO : Implement this method;
-    return 0;
+    return NULL;
 }
 
 // Return the corresponding AABB

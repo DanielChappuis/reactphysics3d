@@ -30,6 +30,8 @@
 using namespace reactphysics3d;
 using namespace std;
 
+// TODO : Maybe we could use std::vector instead of Vector to store vector in the constraint solver
+
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
                  :physicsWorld(world), bodyMapping(0), nbConstraints(0), constraintsCapacity(0),
@@ -52,7 +54,7 @@ void ConstraintSolver::initialize() {
 
     // For each constraint
     vector<Constraint*>::iterator it;
-    for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); it++) {
+    for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); ++it) {
         constraint = *it;
 
         // If the constraint is active
@@ -211,7 +213,7 @@ void ConstraintSolver::fillInMatrices() {
 
         // Set the init lambda values
         contact = dynamic_cast<Contact*>(constraint);
-        contactInfo = 0;
+        contactInfo = NULL;
         if (contact) {
             // Get the lambda init value from the cache if exists
             contactInfo = contactCache.getContactCachingInfo(contact);
@@ -232,13 +234,13 @@ void ConstraintSolver::fillInMatrices() {
     RigidBody* rigidBody;
     Body* body;
     uint b=0;
-    for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); it++, b++) {
+    for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); ++it, b++) {
         body = *it;
         uint bodyNumber = bodyNumberMapping.at(body);
         
         // TODO : Use polymorphism and remove this downcasting
         rigidBody = dynamic_cast<RigidBody*>(body);
-        assert(rigidBody != 0);
+        assert(rigidBody);
         
         // Compute the vector V1 with initial velocities values
         V1[bodyNumber].setValue(0, rigidBody->getLinearVelocity().getValue(0));

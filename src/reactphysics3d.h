@@ -43,11 +43,7 @@
 
 // TODO : Use using namespace std in every possible cpp files to increase readability
 
-// TODO : Check for memory management (RigidBody must free for BoundingVolume it has, ...)
-
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
-
-// TODO : Replace in all files of the project "unsigned int" by "uint" (see typeDefinitions.h"
 
 #endif
