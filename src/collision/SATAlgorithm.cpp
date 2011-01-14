@@ -176,6 +176,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                         // Update the minimum penetration depth
+        normal = computeContactNormal(obb1->getAxis(2), boxDistance);   // Compute the contact normal with the correct sign
     }
 
     // Axis B0
