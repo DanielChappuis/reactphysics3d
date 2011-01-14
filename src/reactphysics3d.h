@@ -34,6 +34,7 @@
 #define REACTPHYSICS3D_H
 
 // Libraries
+#include "mathematics/mathematics.h"
 #include "body/RigidBody.h"
 #include "engine/PhysicsWorld.h"
 #include "engine/PhysicsEngine.h"
@@ -41,9 +42,11 @@
 #include "body/OBB.h"
 #include "body/AABB.h"
 
-// TODO : Use using namespace std in every possible cpp files to increase readability
-
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
+
+// TODO : Use using namespace std in every possible cpp files to increase readability
+
+
 
 #endif
