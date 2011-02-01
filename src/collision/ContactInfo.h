@@ -42,13 +42,17 @@ namespace reactphysics3d {
 */
 struct ContactInfo {
     public:
-        // TODO : Use polymorphism here (change OBB into BoundingVolume to be more general)
-        const OBB* const obb1;                   // Body pointer of the first bounding volume
-        const OBB* const obb2;                   // Body pointer of the second bounding volume
-        const Vector3D normal;                   // Normal vector the the collision contact
-        const double penetrationDepth;           // Penetration depth of the contact
+        Body* const body1;                // Pointer to the first body of the contact
+        Body* const body2;                // Pointer to the second body of the contact
+        const Vector3D point1;                  // Contact point of body 1
+        const Vector3D point2;                  // Contact point of body 2
+        const Vector3D normal;                  // Normal vector the the collision contact
+        const double penetrationDepth;          // Penetration depth of the contact
         
-        ContactInfo(const OBB* const obb1, const OBB* const obb2, const Vector3D& normal, double penetrationDepth);                                                                // Constructor
+        ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal,
+                    double penetrationDepth);                                                    // Constructor for SAT
+        ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal,
+                    double penetrationDepth, const Vector3D& point1, const Vector3D& point2);    // Constructor for GJK
 };
 
 } // End of the ReactPhysics3D namespace

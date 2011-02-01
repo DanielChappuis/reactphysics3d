@@ -48,7 +48,9 @@ SATAlgorithm::~SATAlgorithm() {
 
 // Return true and compute a contact info if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool SATAlgorithm::testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, ContactInfo*& contactInfo) {
+bool SATAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1,
+                                 const NarrowBoundingVolume* const boundingVolume2,
+                                 ContactInfo*& contactInfo) {
     
     assert(boundingVolume1 != boundingVolume2);
 
@@ -239,7 +241,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
         // normals for separation. Therefore the OBBs must intersect
 
         // Compute the contact info
-        contactInfo = new ContactInfo(obb1, obb2, normal.getUnit(), minPenetrationDepth);
+        contactInfo = new ContactInfo(obb1->getBodyPointer(), obb2->getBodyPointer(), normal.getUnit(), minPenetrationDepth);
         
         return true;
     }
@@ -398,7 +400,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Compute the contact info
-    contactInfo = new ContactInfo(obb1, obb2, normal.getUnit(), minPenetrationDepth);
+    contactInfo = new ContactInfo(obb1->getBodyPointer(), obb2->getBodyPointer(), normal.getUnit(), minPenetrationDepth);
     
     return true;
 }

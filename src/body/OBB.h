@@ -66,9 +66,11 @@ class OBB : public NarrowBoundingVolume {
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                       // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
         virtual AABB* computeAABB() const;                                                                  // Return the corresponding AABB
-        #ifdef VISUAL_DEBUG
+        virtual Vector3D getSupportPoint(const Vector3D& direction) const;                                  // Return a support point in a given direction
+
+#ifdef VISUAL_DEBUG
             virtual void draw() const;                                                                      // Draw the OBB (only for testing purpose)
-        #endif
+#endif
         static OBB* computeFromVertices(const std::vector<Vector3D>& vertices, const Vector3D& center);     // Compute an OBB from a set of vertices
 };
 
@@ -223,6 +225,13 @@ inline void OBB::update(const Vector3D& newCenter, const Quaternion& rotationQua
     axis[0] = rotateVectorWithQuaternion(oldAxis[0], rotationQuaternion).getUnit();
     axis[1] = rotateVectorWithQuaternion(oldAxis[1], rotationQuaternion).getUnit();
     axis[2] = rotateVectorWithQuaternion(oldAxis[2], rotationQuaternion).getUnit();
+}
+
+// Return a support point in a given direction
+inline Vector3D OBB::getSupportPoint(const Vector3D& direction) const {
+    // TODO : Implement this method
+    assert(false);
+    return Vector3D();
 }
 
 }; // End of the ReactPhysics3D namespace

@@ -67,7 +67,6 @@ class Simplex {
         bool isProperSubset(Bits subset) const;                     // Return true if the subset is a proper subset
         void updateCache();                                         // Update the cached values used during the GJK algorithm
         void computeDeterminants();                                 // Compute the cached determinant values
-        void backupClosestPointInSimplex(Vector3D& point);          // Backup the closest point
         Vector3D computeClosestPointForSubset(Bits subset) const;   // Return the closest point "v" in the convex hull of a subset of points
 
     public:
@@ -76,9 +75,11 @@ class Simplex {
 
         bool isFull() const;                                                                            // Return true if the simplex contains 4 points
         bool isEmpty() const;                                                                           // Return true if the simple is empty
+        double getMaxLengthSquareOfAPoint() const;                                                      // Return the maximum squared length of a point
         void addPoint(const Vector3D& point, const Vector3D& suppPointA, const Vector3D& suppPointB);   // Addd a point to the simplex
         bool isPointInSimplex(const Vector3D& point) const;                                             // Return true if the point is in the simplex
         bool isAffinelyDependent() const;                                                               // Return true if the set is affinely dependent
+        void backupClosestPointInSimplex(Vector3D& point);                                              // Backup the closest point
         void computeClosestPointsOfAandB(Vector3D& pA, Vector3D& pB) const;                             // Compute the closest points of object A and B
         bool computeClosestPoint(Vector3D& v);                                                          // Compute the closest point to the origin of the current simplex
 };
@@ -101,6 +102,11 @@ inline bool Simplex::isFull() const {
 // Return true if the simple is empty
 inline bool Simplex::isEmpty() const {
     return (bitsCurrentSimplex == 0x0);
+}
+
+// Return the maximum squared length of a point
+inline double Simplex::getMaxLengthSquareOfAPoint() const {
+    return maxLengthSquare;
 }
 
 } // End of the ReactPhysics3D namespace

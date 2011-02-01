@@ -107,16 +107,33 @@ void CollisionDetection::computeAllContacts() {
         assert(contactInfo);
         
         // Compute one or several new contacts and add them into the physics world
-        computeContact(contactInfo);
+        computeContactSAT(contactInfo);
     }
 }
 
-// Compute a contact (and add it to the physics world) for two colliding bodies
-void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
+// Compute a contact for GJK (and add it to the physics world)
+void CollisionDetection::computeContactGJK(const ContactInfo* const contactInfo) {
+    // TODO : Compute PersisentContact here instead
+
+    // Compute the set of contact points
+    vector<Vector3D> contactPoints;
+    contactPoints.push_back(contactInfo->point1);
+    contactPoints.push_back(contactInfo->point2);
+
+    // Create a new contact
+    Contact* contact = new Contact(contactInfo->body1, contactInfo->body2, contactInfo->normal, contactInfo->penetrationDepth, contactPoints);
+
+    // Add the contact to the physics world
+     world->addConstraint(contact);
+}
+
+// Compute a contact for the SAT algorithm (and add it to the physics world) for two colliding bodies
+// This method only works for collision between two OBB bounding volumes
+void CollisionDetection::computeContactSAT(const ContactInfo* const contactInfo) {
     
     // Extract informations from the contact info structure
-    const OBB* const obb1 = contactInfo->obb1;
-    const OBB* const obb2 = contactInfo->obb2;
+    const OBB* const obb1 = dynamic_cast<const OBB* const>(contactInfo->body1->getNarrowBoundingVolume());
+    const OBB* const obb2 = dynamic_cast<const OBB* const>(contactInfo->body2->getNarrowBoundingVolume());
     Vector3D normal = contactInfo->normal;
     double penetrationDepth = contactInfo->penetrationDepth;
 
@@ -239,3 +256,4 @@ void CollisionDetection::computeContact(const ContactInfo* const contactInfo) {
         world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace));
     }
 }
+

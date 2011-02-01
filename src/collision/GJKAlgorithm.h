@@ -22,49 +22,48 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef COLLISIONDETECTION_H
-#define COLLISIONDETECTION_H
+#ifndef GJKALGORITHM_H
+#define GJKALGORITHM_H
 
 // Libraries
-#include "BroadPhaseAlgorithm.h"
 #include "NarrowPhaseAlgorithm.h"
-#include "../body/Body.h"
-#include "../engine/PhysicsWorld.h"
 #include "ContactInfo.h"
-#include <vector>
+#include "../body/NarrowBoundingVolume.h"
+
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Constants
+const double REL_ERROR = 1.0e-3;
+const double REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
+
+ // TODO : Improve the description here
 /*  -------------------------------------------------------------------
-    Class CollisionDetection :
-        This class computes the collision detection algorithms. We first
-        perfom a broad-phase algorithm to know wich pairs of bodies can
-        collide and then we run a narrow-phase algorithm to compute the
-        collision contacts between bodies.
+    Class GJKAlgorithm :
+        This class implements a narrow-phase collision detection algorithm. This
+        algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
+        implementation is based on the implementation discussed in the book
+        "Collision Detection in 3D Environments".
     -------------------------------------------------------------------
 */
-class CollisionDetection {
+class GJKAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        PhysicsWorld* world;                                                        // Pointer to the physics world
-        std::vector<std::pair<const Body*, const Body* > > possibleCollisionPairs;  // Possible collision pairs of bodies (computed by broadphase)
-        std::vector<ContactInfo*> contactInfos;                                     // Contact informations (computed by narrowphase)
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                   // Broad-phase algorithm
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                 // Narrow-phase algorithm
-
-        void computeBroadPhase();                                                   // Compute the broad-phase collision detection
-        void computeNarrowPhase();                                                  // Compute the narrow-phase collision detection
-        void computeAllContacts();                                                  // Compute all the contacts from the collision info list
-        void computeContactSAT(const ContactInfo* const contactInfo);               // Compute a contact for SAT (and add it to the physics world) for two colliding bodies
-        void computeContactGJK(const ContactInfo* const contactInfo);               // Compute a contact for GJK (and add it to the physics world)
+        // TODO : Implement frame coherence. For each pair of body, store
+        //        the last separating axis and use it to initialize the v vector
+        Vector3D lastSeparatingAxis;
 
     public :
-        CollisionDetection(PhysicsWorld* physicsWorld);                             // Constructor
-        ~CollisionDetection();                                                      // Destructor
+        GJKAlgorithm();           // Constructor
+        ~GJKAlgorithm();          // Destructor
 
-        bool computeCollisionDetection();                                           // Compute the collision detection
+        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
+                                   const NarrowBoundingVolume* const boundingVolume2,
+                                   ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
 };
 
 } // End of the ReactPhysics3D namespace
+
+// TODO : Check what would be a correct value for the OBJECT_MARGIN constant
 
 #endif

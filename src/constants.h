@@ -27,6 +27,7 @@
 
 // Libraries
 #include <limits>
+#include <cfloat>
 
 // Type definitions
 typedef unsigned int uint;
@@ -36,9 +37,13 @@ const double EPSILON = 0.00001;                                             // E
 const double ONE_MINUS_EPSILON = 0.99999;                                   // 1 - espilon
 const double INFINITY_CONST = std::numeric_limits<double>::infinity();      // Infinity constant
 const double PI = 3.14159265;                                               // Pi constant
+const double MACHINE_EPSILON = DBL_EPSILON;
 
 // Physics Engine constants
 const double DEFAULT_TIMESTEP = 0.002;
+
+// GJK Algorithm parameters
+const double OBJECT_MARGIN = 0.1;           // Object margin for the hybrid GJK algorithm
 
 // Contact constants
 const double FRICTION_COEFFICIENT = 0.4;    // Friction coefficient

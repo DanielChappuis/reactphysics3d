@@ -57,7 +57,9 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
         SATAlgorithm();           // Constructor
         ~SATAlgorithm();          // Destructor
 
-        virtual bool testCollision(const BoundingVolume* const boundingVolume1, const BoundingVolume* const boundingVolume2, ContactInfo*& contactInfo);      // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
+                                   const NarrowBoundingVolume* const boundingVolume2,
+                                   ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
 };
 
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
