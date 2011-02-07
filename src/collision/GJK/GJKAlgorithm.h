@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010 Daniel Chappuis                                            *
+* Copyright (c) 2011 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -29,6 +29,7 @@
 #include "NarrowPhaseAlgorithm.h"
 #include "ContactInfo.h"
 #include "../body/NarrowBoundingVolume.h"
+#include "EPAAlgorithm.h"
 
 
 // ReactPhysics3D namespace
@@ -45,13 +46,24 @@ const double REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
         algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
         implementation is based on the implementation discussed in the book
         "Collision Detection in 3D Environments".
+        This method implements the Hybrid Technique for calculating the
+        penetration depth. The two objects are enlarged with a small margin. If
+        the object intersection, the penetration depth is quickly computed using
+        GJK algorithm on the original objects (without margin). If the
+        original objects (without margin) intersect, we run again the GJK
+        algorithm on the enlarged objects (with margin) to compute simplex
+        polytope that contains the origin and give it to the EPA (Expanding
+        Polytope Algorithm) to compute the correct penetration depth between the
+        enlarged objects. 
     -------------------------------------------------------------------
 */
 class GJKAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        // TODO : Implement frame coherence. For each pair of body, store
-        //        the last separating axis and use it to initialize the v vector
-        Vector3D lastSeparatingAxis;
+        EPAAlgorithm algoEPA;             // EPA Algorithm
+
+        bool computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1,
+                                                       const NarrowBoundingVolume* const boundingVolume2,
+                                                       ContactInfo*& contactInfo, Vector3D& v);             // Compute the penetration depth for enlarged objects
 
     public :
         GJKAlgorithm();           // Constructor

@@ -1,7 +1,7 @@
 
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010 Daniel Chappuis                                            *
+* Copyright (c) 2011 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -38,9 +38,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm() : lastSeparatingAxis(1.0, 1.0, 1.0) {
-    // TODO : Check if we can initialize the last separating axis as above
-
+GJKAlgorithm::GJKAlgorithm() {
     
 }
 
@@ -50,7 +48,15 @@ GJKAlgorithm::~GJKAlgorithm() {
 }
 
 // Return true and compute a contact info if the two bounding volume collide.
-// The method returns false if there is no collision between the two bounding volumes.
+// This method implements the Hybrid Technique for computing the penetration depth by
+// running the GJK algorithm on original objects (without margin).
+// If the objects don't intersect, this method returns false. If they intersect
+// only in the margins, the method compute the penetration depth and contact points
+// (of enlarged objects). If the original objects (without margin) intersect, we
+// call the computePenetrationDepthForEnlargedObjects() method that run the GJK
+// algorithm on the enlarged object to obtain a simplex polytope that contains the
+// origin, they we give that simplex polytope to the EPA algorithm which will compute
+// the correct penetration depth and contact points between the enlarged objects.
 bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1,
                                  const NarrowBoundingVolume* const boundingVolume2,
                                  ContactInfo*& contactInfo) {
@@ -73,20 +79,22 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     Simplex simplex;
 
     // Get the last point V (last separating axis)
-    Vector3D v = lastSeparatingAxis;
+    // TODO : Implement frame coherence. For each pair of body, store
+    //        the last separating axis and use it to initialize the v vector
+    Vector3D v(1.0, 1.0, 1.0);
 
     // Initialize the upper bound for the square distance
     double distSquare = DBL_MAX;
     
     do {
-        // Compute the support points for object A and B
+        // Compute the support points for original objects (without margins) A and B
         suppA = boundingVolume1->getSupportPoint(v.getOpposite());
         suppB = boundingVolume2->getSupportPoint(v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
         
-        vDotw = v.scalarProduct(w);
+        vDotw = v.dot(w);
         
         // If the enlarge objects (with margins) do not intersect
         if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
@@ -117,7 +125,7 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             return true;
         }
 
-        // Add the current point to the simplex
+        // Add the new support point to the simplex
         simplex.addPoint(w, suppA, suppB);
 
         // If the simplex is affinely dependent
@@ -169,14 +177,14 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
 
         // Store and update the squared distance of the closest point
         prevDistSquare = distSquare;
-        distSquare = v.scalarProduct(v);
+        distSquare = v.dot(v);
 
         // If the distance to the closest point doesn't improve a lot
         if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
             simplex.backupClosestPointInSimplex(v);
             
             // Get the new squared distance
-            distSquare = v.scalarProduct(v);
+            distSquare = v.dot(v);
 
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
@@ -201,7 +209,67 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
         
     } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
 
-    // The objects (without margins) intersect
+    // The objects (without margins) intersect. Therefore, we run the GJK algorithm again but on the
+    // enlarged objects to compute a simplex polytope that contains the origin. Then, we give that simplex
+    // polytope to the EPA algorithm to compute the correct penetration depth and contact points between
+    // the enlarged objects.
+    return computePenetrationDepthForEnlargedObjects(boundingVolume1, boundingVolume2, contactInfo, v);
 }
 
+// This method runs the GJK algorithm on the two enlarged objects (with margin)
+// to compute a simplex polytope that contains the origin. The two objects are
+// assumed to intersect in the original objects (without margin). Therefore such
+// a polytope must exist. Then, we give that polytope to the EPA algorithm to
+// compute the correct penetration depth and contact points of the enlarged objects.
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1,
+                                                             const NarrowBoundingVolume* const boundingVolume2,
+                                                             ContactInfo*& contactInfo, Vector3D& v) {
+    Simplex simplex;
+    Vector3D suppA;
+    Vector3D suppB;
+    Vector3D w;
+    double vDotw;
+    double distSquare = DBL_MAX;
+    double prevDistSquare;
+    
+    do {
+        // Compute the support points for the enlarged object A and B
+        suppA = boundingVolume1->getSupportPoint(v.getOpposite(), OBJECT_MARGIN);
+        suppB = boundingVolume2->getSupportPoint(v, OBJECT_MARGIN);
 
+        // Compute the support point for the Minkowski difference A-B
+        w = suppA - suppB;
+
+        vDotw = v.dot(w);
+
+        // If the enlarge objects do not intersect
+        if (vDotw > 0.0) {
+            // No intersection, we return false
+            return false;
+        }
+
+        // Add the new support point to the simplex
+        simplex.addPoint(w, suppA, suppB);
+
+        if (simplex.isAffinelyDependent()) {
+            return false;
+        }
+
+        if (!simplex.computeClosestPoint(v)) {
+            return false;
+        }
+
+        // Store and update the square distance
+        prevDistSquare = distSquare;
+        distSquare = v.dot(v);
+
+        if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
+            return false;
+        }
+
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
+
+    // Give the simplex computed with GJK algorithm to the EPA algorithm which will compute the correct
+    // penetration depth and contact points between the two enlarged objects
+    return algoEPA.computePenetrationDepthAndContactPoints(simplex, boundingVolume1, boundingVolume2, v, contactInfo);
+}

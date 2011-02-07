@@ -60,7 +60,7 @@ void Simplex::addPoint(const Vector3D& point, const Vector3D& suppPointA, const 
 
     // Add the point into the simplex
     points[lastFound] = point;
-    pointsLengthSquare[lastFound] = point.scalarProduct(point);
+    pointsLengthSquare[lastFound] = point.dot(point);
     allBits = bitsCurrentSimplex | lastFoundBit;
 
     // Update the cached values
@@ -103,9 +103,32 @@ void Simplex::updateCache() {
             diffLength[lastFound][i] = diffLength[i][lastFound].getOpposite();
 
             // Compute the squared length of the vector distances from points in the possible simplex set
-            normSquare[i][lastFound] = normSquare[lastFound][i] = diffLength[i][lastFound].scalarProduct(diffLength[i][lastFound]);
+            normSquare[i][lastFound] = normSquare[lastFound][i] = diffLength[i][lastFound].dot(diffLength[i][lastFound]);
         }
     }
+}
+
+// Return the points of the simplex
+unsigned int Simplex::getSimplex(Vector3D* suppPointsA, Vector3D* suppPointsB, Vector3D* points) const {
+    unsigned int nbVertices = 0;
+    int i;
+    Bits bit;
+
+    // For each four point in the possible simplex
+    for (i=0, bit=0x1; i<4; i++, bit <<=1) {
+        // If the current point is in the simplex
+        if (overlap(bitsCurrentSimplex, bit)) {
+            // Store the points
+            suppPointsA[nbVertices] = this->suppPointsA[nbVertices];
+            suppPointsB[nbVertices] = this->suppPointsB[nbVertices];
+            points[nbVertices] = this->points[nbVertices];
+
+            nbVertices++;
+        }
+    }
+
+    // Return the number of points in the simplex
+    return nbVertices;
 }
 
 // Compute the cached determinant values
@@ -124,8 +147,8 @@ void Simplex::computeDeterminants() {
             if (overlap(bitsCurrentSimplex, bitI)) {
                 Bits bit2 = bitI | lastFoundBit;
 
-                det[bit2][i] = diffLength[lastFound][i].scalarProduct(points[lastFound]);
-                det[bit2][lastFound] = diffLength[i][lastFound].scalarProduct(points[i]);
+                det[bit2][i] = diffLength[lastFound][i].dot(points[lastFound]);
+                det[bit2][lastFound] = diffLength[i][lastFound].dot(points[i]);
       
 
                 int j;
@@ -137,16 +160,16 @@ void Simplex::computeDeterminants() {
                         Bits bit3 = bitJ | bit2;
 
                         k = normSquare[i][j] < normSquare[lastFound][j] ? i : lastFound;
-                        det[bit3][j] = det[bit2][i] * diffLength[k][j].scalarProduct(points[i]) +
-                                       det[bit2][lastFound] * diffLength[k][j].scalarProduct(points[lastFound]);
+                        det[bit3][j] = det[bit2][i] * diffLength[k][j].dot(points[i]) +
+                                       det[bit2][lastFound] * diffLength[k][j].dot(points[lastFound]);
 
                         k = normSquare[j][i] < normSquare[lastFound][i] ? j : lastFound;
-                        det[bit3][i] = det[bitJ | lastFoundBit][j] * diffLength[k][i].scalarProduct(points[j]) +
-                                       det[bitJ | lastFoundBit][lastFound] * diffLength[k][i].scalarProduct(points[lastFound]);
+                        det[bit3][i] = det[bitJ | lastFoundBit][j] * diffLength[k][i].dot(points[j]) +
+                                       det[bitJ | lastFoundBit][lastFound] * diffLength[k][i].dot(points[lastFound]);
 
                         k = normSquare[i][lastFound] < normSquare[j][lastFound] ? i : j;
-                        det[bit3][lastFound] = det[bitJ | bitI][j] * diffLength[k][lastFound].scalarProduct(points[j]) +
-                                               det[bitJ | bitI][i] * diffLength[k][lastFound].scalarProduct(points[i]);
+                        det[bit3][lastFound] = det[bitJ | bitI][j] * diffLength[k][lastFound].dot(points[j]) +
+                                               det[bitJ | bitI][i] * diffLength[k][lastFound].dot(points[i]);
                     }
                 }
             }
@@ -156,24 +179,24 @@ void Simplex::computeDeterminants() {
             int k;
 
             k = normSquare[1][0] < normSquare[2][0] ? (normSquare[1][0] < normSquare[3][0] ? 1 : 3) : (normSquare[2][0] < normSquare[3][0] ? 2 : 3);
-            det[0xf][0] = det[0xe][1] * diffLength[k][0].scalarProduct(points[1]) +
-                        det[0xe][2] * diffLength[k][0].scalarProduct(points[2]) +
-                        det[0xe][3] * diffLength[k][0].scalarProduct(points[3]);
+            det[0xf][0] = det[0xe][1] * diffLength[k][0].dot(points[1]) +
+                        det[0xe][2] * diffLength[k][0].dot(points[2]) +
+                        det[0xe][3] * diffLength[k][0].dot(points[3]);
 
             k = normSquare[0][1] < normSquare[2][1] ? (normSquare[0][1] < normSquare[3][1] ? 0 : 3) : (normSquare[2][1] < normSquare[3][1] ? 2 : 3);
-            det[0xf][1] = det[0xd][0] * diffLength[k][1].scalarProduct(points[0]) +
-                        det[0xd][2] * diffLength[k][1].scalarProduct(points[2]) +
-                        det[0xd][3] * diffLength[k][1].scalarProduct(points[3]);
+            det[0xf][1] = det[0xd][0] * diffLength[k][1].dot(points[0]) +
+                        det[0xd][2] * diffLength[k][1].dot(points[2]) +
+                        det[0xd][3] * diffLength[k][1].dot(points[3]);
 
             k = normSquare[0][2] < normSquare[1][2] ? (normSquare[0][2] < normSquare[3][2] ? 0 : 3) : (normSquare[1][2] < normSquare[3][2] ? 1 : 3);
-            det[0xf][2] = det[0xb][0] * diffLength[k][2].scalarProduct(points[0]) +
-                        det[0xb][1] * diffLength[k][2].scalarProduct(points[1]) +
-                        det[0xb][3] * diffLength[k][2].scalarProduct(points[3]);
+            det[0xf][2] = det[0xb][0] * diffLength[k][2].dot(points[0]) +
+                        det[0xb][1] * diffLength[k][2].dot(points[1]) +
+                        det[0xb][3] * diffLength[k][2].dot(points[3]);
 
             k = normSquare[0][3] < normSquare[1][3] ? (normSquare[0][3] < normSquare[2][3] ? 0 : 2) : (normSquare[1][3] < normSquare[2][3] ? 1 : 2);
-            det[0xf][3] = det[0x7][0] * diffLength[k][3].scalarProduct(points[0]) +
-                        det[0x7][1] * diffLength[k][3].scalarProduct(points[1]) +
-                        det[0x7][2] * diffLength[k][3].scalarProduct(points[2]);
+            det[0xf][3] = det[0x7][0] * diffLength[k][3].dot(points[0]) +
+                        det[0x7][1] * diffLength[k][3].dot(points[1]) +
+                        det[0x7][2] * diffLength[k][3].dot(points[2]);
         }
     }
 }
@@ -309,7 +332,7 @@ void Simplex::backupClosestPointInSimplex(Vector3D& v) {
     for (bit = allBits; bit != 0x0; bit--) {
         if (isSubset(bit, allBits) && isProperSubset(bit)) {
             Vector3D u = computeClosestPointForSubset(bit);
-            double distSquare = u.scalarProduct(u);
+            double distSquare = u.dot(u);
             if (distSquare < minDistSquare) {
                 minDistSquare = distSquare;
                 bitsCurrentSimplex = bit;

@@ -65,7 +65,7 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
 // collision occur and "distanceOfOBBs" is the vector (obb2.center - obb1.center).
 inline Vector3D SATAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
-    if (distanceOfOBBs.scalarProduct(axis) >= 0.0) {
+    if (distanceOfOBBs.dot(axis) >= 0.0) {
         return axis;
     }
     else {

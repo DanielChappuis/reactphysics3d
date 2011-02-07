@@ -75,6 +75,7 @@ class Simplex {
 
         bool isFull() const;                                                                            // Return true if the simplex contains 4 points
         bool isEmpty() const;                                                                           // Return true if the simple is empty
+        unsigned int getSimplex(Vector3D* suppPointsA, Vector3D* suppPointsB, Vector3D* points) const;  // Return the points of the simplex
         double getMaxLengthSquareOfAPoint() const;                                                      // Return the maximum squared length of a point
         void addPoint(const Vector3D& point, const Vector3D& suppPointA, const Vector3D& suppPointB);   // Addd a point to the simplex
         bool isPointInSimplex(const Vector3D& point) const;                                             // Return true if the point is in the simplex

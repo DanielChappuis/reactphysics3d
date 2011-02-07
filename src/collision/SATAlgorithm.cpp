@@ -108,13 +108,13 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 
     // Axis A0
     for (int i=0; i<3; ++i) {
-        c[0][i] = obb1->getAxis(0).scalarProduct(obb2->getAxis(i));
+        c[0][i] = obb1->getAxis(0).dot(obb2->getAxis(i));
         absC[0][i] = fabs(c[0][i]);
         if (absC[0][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[0] = obb1->getAxis(0).scalarProduct(boxDistance);
+    udc1[0] = obb1->getAxis(0).dot(boxDistance);
     center = udc1[0];
     radius1 = obb1->getExtent(0);
     radius2 = obb2->getExtent(0)*absC[0][0] + obb2->getExtent(1)*absC[0][1] + obb2->getExtent(2) * absC[0][2];
@@ -133,13 +133,13 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 
     // Axis A1
     for (int i=0; i<3; ++i) {
-        c[1][i] = obb1->getAxis(1).scalarProduct(obb2->getAxis(i));
+        c[1][i] = obb1->getAxis(1).dot(obb2->getAxis(i));
         absC[1][i] = fabs(c[1][i]);
         if (absC[1][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[1] = obb1->getAxis(1).scalarProduct(boxDistance);
+    udc1[1] = obb1->getAxis(1).dot(boxDistance);
     center = udc1[1];
     radius1 = obb1->getExtent(1);
     radius2 = obb2->getExtent(0)*absC[1][0] + obb2->getExtent(1)*absC[1][1] + obb2->getExtent(2) * absC[1][2];
@@ -158,13 +158,13 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 
     // Axis A2
     for (int i=0; i<3; ++i) {
-        c[2][i] = obb1->getAxis(2).scalarProduct(obb2->getAxis(i));
+        c[2][i] = obb1->getAxis(2).dot(obb2->getAxis(i));
         absC[2][i] = fabs(c[2][i]);
         if (absC[2][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[2] = obb1->getAxis(2).scalarProduct(boxDistance);
+    udc1[2] = obb1->getAxis(2).dot(boxDistance);
     center = udc1[2];
     radius1 = obb1->getExtent(2);
     radius2 = obb2->getExtent(0)*absC[2][0] + obb2->getExtent(1)*absC[2][1] + obb2->getExtent(2)*absC[2][2];
@@ -182,7 +182,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B0
-    udc2[0] = obb2->getAxis(0).scalarProduct(boxDistance);
+    udc2[0] = obb2->getAxis(0).dot(boxDistance);
     center = udc2[0];
     radius1 = obb1->getExtent(0)*absC[0][0] + obb1->getExtent(1)*absC[1][0] + obb1->getExtent(2) * absC[2][0];
     radius2 = obb2->getExtent(0);
@@ -200,7 +200,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B1
-    udc2[1] = obb2->getAxis(1).scalarProduct(boxDistance);
+    udc2[1] = obb2->getAxis(1).dot(boxDistance);
     center = udc2[1];
     radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[2][1];
     radius2 = obb2->getExtent(1);
@@ -218,7 +218,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B2
-    udc2[2] = obb2->getAxis(2).scalarProduct(boxDistance);
+    udc2[2] = obb2->getAxis(2).dot(boxDistance);
     center = udc2[2];
     radius1 = obb1->getExtent(0)*absC[0][2] + obb1->getExtent(1)*absC[1][2] + obb1->getExtent(2)*absC[2][2];
     radius2 = obb2->getExtent(2);
@@ -260,7 +260,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(0).cross(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A0 x B1
@@ -277,7 +277,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(0).cross(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A0 x B2
@@ -294,7 +294,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(0).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(0).cross(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B0
@@ -311,7 +311,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(1).cross(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B1
@@ -328,7 +328,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(1).cross(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A1 x B2
@@ -345,7 +345,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(1).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(1).cross(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B0
@@ -362,7 +362,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(2).cross(obb2->getAxis(0)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B1
@@ -379,7 +379,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(2).cross(obb2->getAxis(1)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Axis A2 x B2
@@ -396,7 +396,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
     else if (penetrationDepth < minPenetrationDepth) {  // Interval 1 and 2 overlap with a smaller penetration depth on this axis
         minPenetrationDepth = penetrationDepth;                                                         // Update the minimum penetration depth
-        normal = computeContactNormal(obb1->getAxis(2).crossProduct(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
+        normal = computeContactNormal(obb1->getAxis(2).cross(obb2->getAxis(2)), boxDistance);    // Compute the contact normal with the correct sign
     }
 
     // Compute the contact info
