@@ -74,8 +74,8 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
 
         r1 = points[i] - body1Position;
         r2 = points[i] - body2Position;
-        r1CrossN = r1.crossProduct(normal);
-        r2CrossN = r2.crossProduct(normal);
+        r1CrossN = r1.cross(normal);
+        r2CrossN = r2.cross(normal);
 
         // Compute the jacobian matrix for the body 1 for the contact constraint
         //J_sp[currentIndex][0].changeSize(1, 6);
@@ -98,10 +98,10 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
         currentIndex++;
 
         // Compute the jacobian matrix for the body 1 for the first friction constraint
-        r1CrossU1 = r1.crossProduct(frictionVectors[0]);
-        r2CrossU1 = r2.crossProduct(frictionVectors[0]);
-        r1CrossU2 = r1.crossProduct(frictionVectors[1]);
-        r2CrossU2 = r2.crossProduct(frictionVectors[1]);
+        r1CrossU1 = r1.cross(frictionVectors[0]);
+        r2CrossU1 = r2.cross(frictionVectors[0]);
+        r1CrossU2 = r1.cross(frictionVectors[1]);
+        r2CrossU2 = r2.cross(frictionVectors[1]);
         //J_sp[currentIndex][0].changeSize(1, 6);
         J_sp[currentIndex][0].setValue(0, -frictionVectors[0].getX());
         J_sp[currentIndex][0].setValue(1, -frictionVectors[0].getY());
@@ -193,7 +193,7 @@ void Contact::computeErrorValue(int noConstraint, Vector& errorValues) const {
     Vector3D velocity1 = rigidBody1->getLinearVelocity();
     Vector3D velocity2 = rigidBody2->getLinearVelocity();
     double restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
-    double errorValue = restitutionCoeff * (normal.scalarProduct(velocity1) - normal.scalarProduct(velocity2)) + PENETRATION_FACTOR * penetrationDepth;
+    double errorValue = restitutionCoeff * (normal.dot(velocity1) - normal.dot(velocity2)) + PENETRATION_FACTOR * penetrationDepth;
 
     // Assign the error value to the vector of error values
     for (int i=0; i<nbPoints; i++) {

@@ -48,8 +48,8 @@ class NarrowBoundingVolume : public BoundingVolume {
         NarrowBoundingVolume();                 // Constructor
         virtual ~NarrowBoundingVolume();        // Destructor
 
-        virtual AABB* computeAABB() const=0;                                    // Return the corresponding AABB
-        virtual Vector3D getSupportPoint(const Vector3D& direction) const=0;    // Return a support point in a given direction
+        virtual AABB* computeAABB() const=0;                                                        // Return the corresponding AABB
+        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const=0;     // Return a support point in a given direction
 };
 
 }

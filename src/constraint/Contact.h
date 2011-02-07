@@ -87,7 +87,7 @@ inline void Contact::computeFrictionVectors() {
     frictionVectors.push_back(vector1);
 
     // Compute the second orthogonal vector using the cross product
-    frictionVectors.push_back(normal.crossProduct(vector1));
+    frictionVectors.push_back(normal.cross(vector1));
 }
 
 // Return the normal vector of the contact

@@ -26,10 +26,10 @@
 #define GJKALGORITHM_H
 
 // Libraries
-#include "NarrowPhaseAlgorithm.h"
-#include "ContactInfo.h"
-#include "../body/NarrowBoundingVolume.h"
-#include "EPAAlgorithm.h"
+#include "../NarrowPhaseAlgorithm.h"
+#include "../ContactInfo.h"
+#include "../../body/NarrowBoundingVolume.h"
+#include "../EPA/EPAAlgorithm.h"
 
 
 // ReactPhysics3D namespace

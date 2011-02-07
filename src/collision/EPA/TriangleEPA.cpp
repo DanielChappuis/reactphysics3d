@@ -71,7 +71,7 @@ bool TriangleEPA::computeClosestPoint(const Vector3D* vertices) {
     // If the determinant is positive
     if (det > 0.0) {
         // Compute the closest point v
-        closestPoint = p0 + (lambda1 * v1 * lambda2 * v2) / det;
+        closestPoint = p0 + 1.0 / det * (lambda1 * v1 + lambda2 * v2);
 
         // Compute the square distance of closest point to the origin
         distSquare = closestPoint.dot(closestPoint);

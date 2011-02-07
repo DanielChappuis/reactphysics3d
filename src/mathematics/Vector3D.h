@@ -67,9 +67,9 @@ class Vector3D {
         bool isUnit() const;                                    // Return true if the vector is unit and false otherwise
         bool isZero() const;                                    // Return true if the current vector is the zero vector
         Vector3D getOpposite() const;                           // Return the vector in the opposite direction
-        Vector3D getOneOrthogonalVector() const;               // Return one unit orthogonal vectors of the current vector
-        double scalarProduct(const Vector3D& vector) const;     // Scalar product of two vectors
-        Vector3D crossProduct(const Vector3D& vector) const;    // Cross product of two vectors
+        Vector3D getOneOrthogonalVector() const;                // Return one unit orthogonal vectors of the current vector
+        double dot(const Vector3D& vector) const;               // Dot product of two vectors
+        Vector3D cross(const Vector3D& vector) const;           // Cross product of two vectors
         bool isParallelWith(const Vector3D& vector) const;      // Return true if two vectors are parallel
 
         // --- Overloaded operators --- //
@@ -151,20 +151,20 @@ inline Vector3D Vector3D::getOpposite() const {
 }
 
 // Scalar product of two vectors (inline)
-inline double Vector3D::scalarProduct(const Vector3D& vector) const {
+inline double Vector3D::dot(const Vector3D& vector) const {
     // Compute and return the result of the scalar product
     return (x * vector.x + y * vector.y + z * vector.z);
 }
 
 // Cross product of two vectors (inline)
-inline Vector3D Vector3D::crossProduct(const Vector3D& vector) const {
+inline Vector3D Vector3D::cross(const Vector3D& vector) const {
     // Compute and return the cross product
     return Vector3D(y * vector.z - z * vector.y, z * vector.x - x * vector.z , x * vector.y - y * vector.x);
 }
 
 // Return true if two vectors are parallel
 inline bool Vector3D::isParallelWith(const Vector3D& vector) const {
-    double scalarProd = this->scalarProduct(vector);
+    double scalarProd = this->dot(vector);
     return approxEqual(std::abs(scalarProd), length() * vector.length());
 }
 

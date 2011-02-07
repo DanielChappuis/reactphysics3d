@@ -68,7 +68,7 @@ class Quaternion {
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
         Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
         Matrix3x3 getMatrix() const;                                          // Return the orientation matrix corresponding to this quaternion
-        double scalarProduct(const Quaternion& quaternion) const;             // Scalar product between two quaternions
+        double dot(const Quaternion& quaternion) const;                       // Dot product between two quaternions
         void getRotationAngleAxis(double& angle, Vector3D& axis) const;       // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
                                 const Quaternion& quaternion2, double t);     // Compute the spherical linear interpolation between two quaternions
@@ -174,7 +174,7 @@ inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
 }
 
 // Scalar product between two quaternions
-inline double Quaternion::scalarProduct(const Quaternion& quaternion) const {
+inline double Quaternion::dot(const Quaternion& quaternion) const {
     return (x*quaternion.x + y*quaternion.y + z*quaternion.z + w*quaternion.w);
 }
 
@@ -199,7 +199,7 @@ inline Quaternion Quaternion::operator*(double nb) const {
 // Overloaded operator for the multiplication of two quaternions
 inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
     // Return the result of the multiplication
-    return Quaternion(w*quaternion.w - vectorV().scalarProduct(quaternion.vectorV()), w*quaternion.vectorV()+quaternion.w*vectorV() + vectorV().crossProduct(quaternion.vectorV()));
+    return Quaternion(w*quaternion.w - vectorV().dot(quaternion.vectorV()), w*quaternion.vectorV()+quaternion.w*vectorV() + vectorV().cross(quaternion.vectorV()));
 }
 
 // Overloaded operator for the assignment

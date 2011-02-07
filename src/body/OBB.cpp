@@ -131,7 +131,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
 
     // Check if the given axis is parallel to an axis on the OBB
     if (axis[0].isParallelWith(directionAxis)) {
-        if (axis[0].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction
+        if (axis[0].dot(directionAxis) >= 0) {    // If both axis are in the same direction
             extremeVertices = getFace(0);           // The extreme is the face 0
         }
         else {
@@ -139,7 +139,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
         }
     }
     else if(axis[1].isParallelWith(directionAxis)) {
-        if (axis[1].scalarProduct(directionAxis) >= 0) {    // If both axis are in the same direction
+        if (axis[1].dot(directionAxis) >= 0) {    // If both axis are in the same direction
            extremeVertices = getFace(2);            // The extreme is the face 2
         }
         else {
@@ -148,7 +148,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
 
     }
     else if(axis[2].isParallelWith(directionAxis)) {
-        if (axis[2].scalarProduct(directionAxis) >= 0) {     // If both axis are in the same direction
+        if (axis[2].dot(directionAxis) >= 0) {     // If both axis are in the same direction
           extremeVertices = getFace(4);             // The extreme is the face 4
         }
         else {
@@ -163,7 +163,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
             Vector3D vertex = getVertex(i);
 
             // Compute the projection length of the current vertex onto the projection axis
-            double projectionLength = directionAxis.scalarProduct(vertex-center) / directionAxis.length();
+            double projectionLength = directionAxis.dot(vertex-center) / directionAxis.length();
 
             // If we found a bigger projection length
             if (projectionLength > maxProjectionLength + EPSILON) {

@@ -197,7 +197,7 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& qu
     double invert = 1.0;
 
     // Compute cos(theta) using the quaternion scalar product
-    double cosineTheta = quaternion1.scalarProduct(quaternion2);
+    double cosineTheta = quaternion1.dot(quaternion2);
 
     // Take care of the sign of cosineTheta
     if (cosineTheta < 0.0) {

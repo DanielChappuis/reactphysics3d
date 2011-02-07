@@ -65,11 +65,11 @@ inline void closestPointsBetweenTwoLines(const reactphysics3d::Vector3D& point1,
                                          const reactphysics3d::Vector3D& d2, double* alpha, double* beta) {
 
     reactphysics3d::Vector3D r = point1 - point2;
-    double a = d1.scalarProduct(d1);
-    double b = d1.scalarProduct(d2);
-    double c = d1.scalarProduct(r);
-    double e = d2.scalarProduct(d2);
-    double f = d2.scalarProduct(r);
+    double a = d1.dot(d1);
+    double b = d1.dot(d2);
+    double c = d1.dot(r);
+    double e = d2.dot(d2);
+    double f = d2.dot(r);
     double d = a*e-b*b;
 
     // The two lines must not be parallel
@@ -183,7 +183,7 @@ inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::v
     // For each point of the set
     for (unsigned int i=0; i<points.size(); ++i) {
         // Compute the projection of the point onto the plane
-        projectedPoints.push_back(points[i] - (n * (points[i] - A).scalarProduct(n)));
+        projectedPoints.push_back(points[i] - (n * (points[i] - A).dot(n)));
 
     }
 
@@ -195,13 +195,13 @@ inline std::vector<reactphysics3d::Vector3D> projectPointsOntoPlane(const std::v
 // Compute the distance between a point "P" and a line (given by a point "A" and a vector "v")
 inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
     assert(v.length() != 0);
-    return ((P-A).crossProduct(v).length() / (v.length()));
+    return ((P-A).cross(v).length() / (v.length()));
 }
 
 
 // Compute the orthogonal projection of a point "P" on a line (given by a point "A" and a vector "v")
 inline reactphysics3d::Vector3D computeOrthogonalProjectionOfPointOntoALine(const reactphysics3d::Vector3D& P, const reactphysics3d::Vector3D& A, const reactphysics3d::Vector3D& v) {
-    return (A + ((P-A).scalarProduct(v) / (v.scalarProduct(v))) * v);
+    return (A + ((P-A).dot(v) / (v.dot(v))) * v);
 }
 
 // Given a point P and 4 points that form a rectangle (point P and the 4 points have to be on the same plane) this method computes
@@ -281,8 +281,8 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3D& 
     assert(d1.isParallelWith(d2));
 
     // Compute the projection of the two points of the second segment onto the vector of segment 1
-    double projSeg2PointA = d1.getUnit().scalarProduct(seg2PointA - seg1PointA);
-    double projSeg2PointB = d1.getUnit().scalarProduct(seg2PointB - seg1PointA);
+    double projSeg2PointA = d1.getUnit().dot(seg2PointA - seg1PointA);
+    double projSeg2PointB = d1.getUnit().dot(seg2PointB - seg1PointA);
 
     // The projections intervals should intersect
     assert(!(projSeg2PointA < 0.0 && projSeg2PointB < 0.0));
@@ -343,9 +343,9 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
         reactphysics3d::Vector3D planeNormal = clipRectangle[(i+2) % 4] - clipRectangle[(i+1) % 4];
 
         // If the point P is inside the clip plane
-        if (planeNormal.scalarProduct(P-A) >= 0.0 - epsilon) {
+        if (planeNormal.dot(P-A) >= 0.0 - epsilon) {
             // If the point S is inside the clip plane
-            if (planeNormal.scalarProduct(S-A) >= 0.0 - epsilon) {
+            if (planeNormal.dot(S-A) >= 0.0 - epsilon) {
                 outputSegment.push_back(P);
                 outputSegment.push_back(S);
             }
@@ -357,7 +357,7 @@ inline std::vector<reactphysics3d::Vector3D> clipSegmentWithRectangleInPlane(con
                 outputSegment.push_back(intersectPoint);
             }
         }
-        else if (planeNormal.scalarProduct(S-A) > 0.0 - epsilon) {    // P is outside and S is inside the clip plane
+        else if (planeNormal.dot(S-A) > 0.0 - epsilon) {    // P is outside and S is inside the clip plane
                 // Compute the intersection point between the segment SP and the clip plane
                 reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
@@ -398,10 +398,10 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
             reactphysics3d::Vector3D P = inputPolygon[(j+1) % inputPolygon.size()];
 
             // If the point P is inside the clip plane
-            double test = planeNormal.scalarProduct(P-A);
-            if (planeNormal.scalarProduct(P-A) >= 0.0 - epsilon) {
+            double test = planeNormal.dot(P-A);
+            if (planeNormal.dot(P-A) >= 0.0 - epsilon) {
                 // If the point S is also inside the clip plane
-                if (planeNormal.scalarProduct(S-A) >= 0.0 - epsilon) {
+                if (planeNormal.dot(S-A) >= 0.0 - epsilon) {
                     outputPolygon.push_back(P);
                 }
                 else {  // If the point S is outside the clip plane
@@ -412,7 +412,7 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
                     outputPolygon.push_back(P);
                 }
             }
-            else if (planeNormal.scalarProduct(S-A) > 0.0) {
+            else if (planeNormal.dot(S-A) > 0.0) {
                 // Compute the intersection point between the segment SP and the clip plane
                 reactphysics3d::Vector3D intersectPoint = computeLinesIntersection(S, P-S, A, B-A);
 
@@ -431,13 +431,13 @@ inline std::vector<reactphysics3d::Vector3D> clipPolygonWithRectangleInPlane(con
 // the lineVector must not be orthogonal to the planeNormal.
 inline reactphysics3d::Vector3D intersectLineWithPlane(const reactphysics3d::Vector3D& linePoint, const reactphysics3d::Vector3D& lineVector,
                                                        const reactphysics3d::Vector3D& planePoint, const reactphysics3d::Vector3D& planeNormal) {
-    assert(!approxEqual(lineVector.scalarProduct(planeNormal), 0.0));
+    assert(!approxEqual(lineVector.dot(planeNormal), 0.0));
 
     // The plane is represented by the equation planeNormal dot X = d where X is a point of the plane
-    double d  = planeNormal.scalarProduct(planePoint);
+    double d  = planeNormal.dot(planePoint);
 
     // Compute the parameter t
-    double t = (d - planeNormal.scalarProduct(linePoint)) / planeNormal.scalarProduct(lineVector);
+    double t = (d - planeNormal.dot(linePoint)) / planeNormal.dot(lineVector);
 
     // Compute the intersection point
     return linePoint + lineVector * t;

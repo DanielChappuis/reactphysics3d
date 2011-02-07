@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010 Daniel Chappuis                                            *
+* Copyright (c) 2011 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -46,14 +46,14 @@ class BoundingSphere : public NarrowBoundingVolume {
         BoundingSphere(const Vector3D& center, double radius);      // Constructor
         virtual ~BoundingSphere();                                  // Destructor
 
-        Vector3D getCenter() const;                                         // Return the center point of the sphere
-        void setCenter(const Vector3D& center);                             // Set the center point of the sphere
-        double getRadius() const;                                           // Return the radius of the sphere
-        void setRadius(double radius);                                      // Set the radius of the sphere
+        Vector3D getCenter() const;                                                             // Return the center point of the sphere
+        void setCenter(const Vector3D& center);                                                 // Set the center point of the sphere
+        double getRadius() const;                                                               // Return the radius of the sphere
+        void setRadius(double radius);                                                          // Set the radius of the sphere
         virtual void update(const Vector3D& newCenter,
-                            const Quaternion& rotationQuaternion);          // Update the sphere orientation according to a new orientation of the rigid body
-        virtual AABB* computeAABB() const;                                  // Return the corresponding AABB
-        virtual Vector3D getSupportPoint(const Vector3D& direction) const;  // Return a support point in a given direction
+                            const Quaternion& rotationQuaternion);                              // Update the sphere orientation according to a new orientation of the rigid body
+        virtual AABB* computeAABB() const;                                                      // Return the corresponding AABB
+        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;   // Return a support point in a given direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -87,11 +87,12 @@ inline void BoundingSphere::update(const Vector3D& newCenter, const Quaternion& 
 }
 
 // Return a support point in a given direction
-inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction) const {
+inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, double margin) const {
     assert(direction.length() > 0.0);
+    assert(margin >= 0.0);
 
     // Return the support point of the sphere in the given direction
-    return center + radius * direction.getUnit();
+    return center + (radius + margin) * direction.getUnit();
 }
 
 }; // End of the ReactPhysics3D namespace

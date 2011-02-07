@@ -66,7 +66,7 @@ class OBB : public NarrowBoundingVolume {
         virtual std::vector<Vector3D> getExtremeVertices(const Vector3D& axis) const;                       // Return all the vertices that are projected at the extreme of the projection of the bouding volume on the axis
         virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion);               // Update the oriented bounding box orientation according to a new orientation of the rigid body
         virtual AABB* computeAABB() const;                                                                  // Return the corresponding AABB
-        virtual Vector3D getSupportPoint(const Vector3D& direction) const;                                  // Return a support point in a given direction
+        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;               // Return a support point in a given direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                                                                      // Draw the OBB (only for testing purpose)
@@ -228,7 +228,10 @@ inline void OBB::update(const Vector3D& newCenter, const Quaternion& rotationQua
 }
 
 // Return a support point in a given direction
-inline Vector3D OBB::getSupportPoint(const Vector3D& direction) const {
+inline Vector3D OBB::getSupportPoint(const Vector3D& direction, double margin) const {
+    assert(direction.length() > 0.0);
+    assert(margin >= 0.0);
+    
     // TODO : Implement this method
     assert(false);
     return Vector3D();

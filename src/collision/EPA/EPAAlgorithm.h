@@ -27,9 +27,9 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../body/NarrowBoundingVolume.h"
-#include "ContactInfo.h"
-#include "../mathematics/mathematics.h"
+#include "../../body/NarrowBoundingVolume.h"
+#include "../ContactInfo.h"
+#include "../../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
