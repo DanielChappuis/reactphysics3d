@@ -54,15 +54,14 @@ uint EdgeEPA::getSource() const {
 
 // Return the index of the target vertex of the edge (vertex ending the edge)
 uint EdgeEPA::getTarget() const {
-    return (*ownerTriangle)[IndexOfNextCounterClockwiseEdge(index)];
+    return (*ownerTriangle)[indexOfNextCounterClockwiseEdge(index)];
 }
 
 // Link the edge with another one (meaning that the current edge of a triangle will
 // is associated with the edge of another triangle in order that both triangles
 // are neighbour along both edges)
-bool EdgeEPA::link(EdgeEPA& edge) {
-    bool isPossible = (this->getSource() == edge.getTarget() &&
-                       this->getTarget() == edge.getSource());
+bool EdgeEPA::link(EdgeEPA edge) {
+    bool isPossible = (this->getSource() == edge.getTarget() && this->getTarget() == edge.getSource());
 
     // If the link is possible
     if (isPossible) {
@@ -74,13 +73,66 @@ bool EdgeEPA::link(EdgeEPA& edge) {
     return isPossible;
 }
 
-// Half link the edge with another one
-void EdgeEPA::halfLink(EdgeEPA& edge) const {
+// Half link the edge with another one from another triangle
+void EdgeEPA::halfLink(EdgeEPA edge) {
+    assert(this->getSource() == edge.getTarget() && this->getTarget() == edge.getSource());
 
+    // Link
+    this->getOwnerTriangle()->setAdjacentEdge(index, edge);
 }
 
 
 // Compute the silhouette
-bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore trianglesStore) {
-    // TODO : Implement this
+bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore triangleStore) {
+    // If the edge has not already been visited
+    if (!ownerTriangle->getIsObsolete()) {
+        // If the triangle of this edge is not visible from the given point
+        if (!ownerTriangle->isVisibleFromVertex(vertices, index)) {
+            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+
+            // If the triangle has been created
+            if (triangle) {
+                EdgeEPA(triangle, 1).halfLink(*this);
+                return true;
+            }
+
+            return false;
+        }
+    }
+    else {
+        // The current triangle is visible and therefore obsolete
+        ownerTriangle->setIsObsolete(true);
+
+        int backup = triangleStore.getNbTriangles();
+
+        if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(index)).computeSilhouette(vertices, index, triangleStore)) {
+            ownerTriangle->setIsObsolete(false);
+
+            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+
+            // If the triangle has been created
+            if (triangle) {
+                EdgeEPA(triangle, 1).halfLink(*this);
+                return true;
+            }
+
+            return false;
+        }
+        else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(index)).computeSilhouette(vertices, index, triangleStore)) {
+            ownerTriangle->setIsObsolete(false);
+
+            triangleStore.setNbTriangles(backup);
+
+            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+
+            if (triangle) {
+                EdgeEPA(triangle, 1).halfLink(*this);
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    return true;
 }

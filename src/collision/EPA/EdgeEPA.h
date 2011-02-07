@@ -52,15 +52,14 @@ class EdgeEPA {
         EdgeEPA();                                          // Constructor
         EdgeEPA(TriangleEPA* ownerTriangle, int index);     // Constructor
         ~EdgeEPA();                                         // Destructor
-
         TriangleEPA* getOwnerTriangle() const;                          // Return the pointer to the owner triangle
         int getIndex() const;                                           // Return the index of the edge in the triangle
         uint getSource() const;                                         // Return index of the source vertex of the edge
         uint getTarget() const;                                         // Return the index of the target vertex of the edge
-        bool link(EdgeEPA& edge);                                       // Link the edge with another one
-        void halfLink(EdgeEPA& edge) const;                             // Half link the edge with another one
+        bool link(EdgeEPA edge);                                        // Link the edge with another one
+        void halfLink(EdgeEPA edge);                                    // Half link the edge with another one
         bool computeSilhouette(const Vector3D* vertices, uint index,
-                               TrianglesStore trianglesStore);          // Compute the recursive silhouette algorithm
+                               TrianglesStore triangleStore);           // Compute the recursive silhouette algorithm
 };
 
 
@@ -75,12 +74,12 @@ inline int EdgeEPA::getIndex() const {
 }
 
 // Return the index of the next counter-clockwise edge of the ownver triangle
-inline int IndexOfNextCounterClockwiseEdge(int i) {
+inline int indexOfNextCounterClockwiseEdge(int i) {
     return (i + 1) % 3;
 }
 
 // Return the index of the previous counter-clockwise edge of the ownver triangle
-inline int IndexOfPreviousCounterClockwiseEdge(int i) {
+inline int indexOfPreviousCounterClockwiseEdge(int i) {
     return (i + 2) % 3;
 }
 

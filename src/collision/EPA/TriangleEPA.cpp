@@ -96,4 +96,18 @@ bool TriangleEPA::computeSilhouette(const Vector3D* vertices, uint index, Triang
                   adjacentEdges[1].computeSilhouette(vertices, index, triangleStore) &&
                   adjacentEdges[2].computeSilhouette(vertices, index, triangleStore);
 
+    if (result) {
+        int i,j;
+        for (i=first, j=triangleStore.getNbTriangles()-1; i != triangleStore.getNbTriangles(); j = i++) {
+            TriangleEPA* triangle = &triangleStore[i];
+            triangle->getAdjacentEdge(1).halfLink(EdgeEPA(triangle, 1));
+
+            if (!EdgeEPA(triangle, 0).link(EdgeEPA(&triangleStore[j], 2))) {
+                return false;
+            }
+        }
+
+    }
+
+    return result;
 }

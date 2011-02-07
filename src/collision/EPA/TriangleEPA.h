@@ -56,7 +56,7 @@ class TriangleEPA {
         TriangleEPA(uint v1, uint v2, uint v3);     // Constructor
         ~TriangleEPA();                             // Destructor
 
-        const EdgeEPA& getAdjacentEdge(int index) const;                                    // Return an adjacent edge of the triangle
+        EdgeEPA& getAdjacentEdge(int index);                                                // Return an adjacent edge of the triangle
         void setAdjacentEdge(int index, EdgeEPA& edge);                                     // Set an adjacent edge of the triangle
         double getDistSquare() const;                                                       // Return the square distance  of the closest point to origin
         void setIsObsolete(bool isObsolete);                                                // Set the isObsolete value
@@ -73,7 +73,7 @@ class TriangleEPA {
 };
 
 // Return an edge of the triangle
-inline const EdgeEPA& TriangleEPA::getAdjacentEdge(int index) const {
+inline EdgeEPA& TriangleEPA::getAdjacentEdge(int index) {
     assert(index >= 0 && index < 3);
     return adjacentEdges[index];
 }
