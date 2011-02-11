@@ -30,6 +30,8 @@
 #include "../../body/NarrowBoundingVolume.h"
 #include "../ContactInfo.h"
 #include "../../mathematics/mathematics.h"
+#include "TriangleEPA.h"
+#include <algorithm>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -37,6 +39,20 @@ namespace reactphysics3d {
 // Constants
 const unsigned int MAX_SUPPORT_POINTS = 100;    // Maximum number of support points of the polytope
 const unsigned int MAX_FACETS = 200;            // Maximum number of facets of the polytope
+
+
+// Class TriangleComparison that allow the comparison of two triangles in the heap
+// The comparison between two triangles is made using their square distance to the closest
+// point to the origin. The goal is that in the heap, the first triangle is the one with the
+// smallest square distance.
+class TriangleComparison {
+    public:
+        // Comparison operator
+        bool operator()(const TriangleEPA* face1, const TriangleEPA* face2) {
+            return (face1->getDistSquare() > face2->getDistSquare());
+        }
+};
+
 
 /*  -------------------------------------------------------------------
     Class EPAAlgorithm :
@@ -54,10 +70,12 @@ const unsigned int MAX_FACETS = 200;            // Maximum number of facets of t
 */
 class EPAAlgorithm {
     private:
-        
+        TriangleComparison triangleComparison;           // Triangle comparison operator
 
-        bool isOrigininInTetrahedron(const Vector3D& p1, const Vector3D& p2,
-                                     const Vector3D& p3, const Vector3D& p4) const; // Return true if the origin is in the tetrahedron
+        void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
+                              uint& nbTriangles, double upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
+        int isOriginInTetrahedron(const Vector3D& p1, const Vector3D& p2,
+                                  const Vector3D& p3, const Vector3D& p4) const;        // Decide if the origin is in the tetrahedron
 
     public:
         EPAAlgorithm();         // Constructor
@@ -67,6 +85,20 @@ class EPAAlgorithm {
                                                      const NarrowBoundingVolume* const boundingVolume2,
                                                      Vector3D& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
+
+// Add a triangle face in the candidate triangle heap in the EPA algorithm
+inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
+                                           uint& nbTriangles, double upperBoundSquarePenDepth) {
+    
+    // If the closest point of the affine hull of triangle points is internal to the triangle and
+    // if the distance of the closest point from the origin is at most the penetration depth upper bound
+    if (triangle->isClosestPointInternalToTriangle() && triangle->getDistSquare() <= upperBoundSquarePenDepth) {
+        // Add the triangle face to the list of candidates
+        heap[nbTriangles] = triangle;
+        nbTriangles++;
+        std::push_heap(&heap[0], &heap[nbTriangles], triangleComparison);
+    }
+}
 
 } // End of ReactPhysics3D namespace
 

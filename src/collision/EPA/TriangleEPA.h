@@ -118,8 +118,8 @@ inline bool TriangleEPA::isVisibleFromVertex(const Vector3D* vertices, uint inde
 // Compute the point of an object closest to the origin
 inline Vector3D TriangleEPA::computeClosestPointOfObject(const Vector3D* supportPointsOfObject) const {
     const Vector3D& p0 = supportPointsOfObject[indicesVertices[0]];
-    return p0 + (lambda1 * (supportPointsOfObject[indicesVertices[1]] - p0) +
-                 lambda2 * 1.0/det * (supportPointsOfObject[indicesVertices[2]] - p0));
+    return p0 + 1.0/det * (lambda1 * (supportPointsOfObject[indicesVertices[1]] - p0) +
+                           lambda2 * (supportPointsOfObject[indicesVertices[2]] - p0));
 }
 
 // Access operator
