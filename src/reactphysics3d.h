@@ -40,6 +40,7 @@
 #include "engine/PhysicsEngine.h"
 #include "body/BoundingVolume.h"
 #include "body/OBB.h"
+#include "body/BoundingSphere.h"
 #include "body/AABB.h"
 
 // Alias to the ReactPhysics3D namespace

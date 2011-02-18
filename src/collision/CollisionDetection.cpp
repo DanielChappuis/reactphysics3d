@@ -25,6 +25,7 @@
 // Libraries
 #include "CollisionDetection.h"
 #include "SAPAlgorithm.h"
+#include "GJK/GJKAlgorithm.h"
 #include "SATAlgorithm.h"
 #include "../body/Body.h"
 #include "../body/OBB.h"
@@ -44,7 +45,7 @@ CollisionDetection::CollisionDetection(PhysicsWorld* world) {
     broadPhaseAlgorithm = new SAPAlgorithm();
 
     // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
-    narrowPhaseAlgorithm = new SATAlgorithm();
+    narrowPhaseAlgorithm = new GJKAlgorithm();
 }
 
 // Destructor
@@ -107,7 +108,7 @@ void CollisionDetection::computeAllContacts() {
         assert(contactInfo);
         
         // Compute one or several new contacts and add them into the physics world
-        computeContactSAT(contactInfo);
+        computeContactGJK(contactInfo);
     }
 }
 

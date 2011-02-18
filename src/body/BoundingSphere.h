@@ -88,11 +88,18 @@ inline void BoundingSphere::update(const Vector3D& newCenter, const Quaternion& 
 
 // Return a support point in a given direction
 inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, double margin) const {
-    assert(direction.length() > 0.0);
     assert(margin >= 0.0);
+    double length = direction.length();
 
-    // Return the support point of the sphere in the given direction
-    return center + (radius + margin) * direction.getUnit();
+    // If the direction vector is not the zero vector
+    if (length > EPSILON) {
+        // Return the support point of the sphere in the given direction
+        return center + (radius + margin) * direction.getUnit();
+    }
+
+    // If the direction vector is the zero vector we return a point on the
+    // boundary of the sphere
+    return center + Vector3D(radius + margin, 0.0, 0.0);   
 }
 
 }; // End of the ReactPhysics3D namespace

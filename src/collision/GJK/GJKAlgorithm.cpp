@@ -37,6 +37,8 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// TODO : Check that allocated memory is correctly deleted
+
 // Constructor
 GJKAlgorithm::GJKAlgorithm() {
     
@@ -115,9 +117,8 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             pB = pB + (OBJECT_MARGIN / dist) * v;
 
             // Compute the contact info
-            Vector3D normal = (pB - pA).getUnit();
+            Vector3D normal = v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
-            assert(penetrationDepth > 0.0);
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
 
@@ -141,9 +142,8 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             pB = pB + (OBJECT_MARGIN / dist) * v;
 
             // Compute the contact info
-            Vector3D normal = (pB - pA).getUnit();
+            Vector3D normal = v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
-            assert(penetrationDepth > 0.0);
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
 
@@ -165,9 +165,8 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             pB = pB + (OBJECT_MARGIN / dist) * v;
 
             // Compute the contact info
-            Vector3D normal = (pB - pA).getUnit();
+            Vector3D normal = v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
-            assert(penetrationDepth > 0.0);
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
 
@@ -197,9 +196,8 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             pB = pB + (OBJECT_MARGIN / dist) * v;
 
             // Compute the contact info
-            Vector3D normal = (pB - pA).getUnit();
+            Vector3D normal = v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
-            assert(penetrationDepth > 0.0);
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
 

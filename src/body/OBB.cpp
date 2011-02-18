@@ -166,7 +166,7 @@ vector<Vector3D> OBB::getExtremeVertices(const Vector3D& directionAxis) const {
             double projectionLength = directionAxis.dot(vertex-center) / directionAxis.length();
 
             // If we found a bigger projection length
-            if (projectionLength > maxProjectionLength + EPSILON) {
+            if (projectionLength > maxProjectionLength + EPSILON_TEST) {
                 maxProjectionLength = projectionLength;
                 extremeVertices.clear();
                 extremeVertices.push_back(vertex);

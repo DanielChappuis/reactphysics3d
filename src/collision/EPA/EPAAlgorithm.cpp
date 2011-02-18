@@ -30,6 +30,8 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// TODO : Check that allocated memory is correctly deleted
+
 // Constructor
 EPAAlgorithm::EPAAlgorithm() {
 

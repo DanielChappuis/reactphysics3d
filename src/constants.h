@@ -33,17 +33,18 @@
 typedef unsigned int uint;
 
 // Mathematical constants
-const double EPSILON = 0.00001;                                             // Epsilon value to avoid numerical errors
-const double ONE_MINUS_EPSILON = 0.99999;                                   // 1 - espilon
+const double EPSILON = 1.0e-10;                                             // Epsilon value
+const double MACHINE_EPSILON = DBL_EPSILON;                                 // Machine epsilon
+const double EPSILON_TEST = 0.00001;                                        // TODO : Try not to use this value
+const double ONE_MINUS_EPSILON_TEST = 0.99999;                              // TODO : Try not to use this value
 const double INFINITY_CONST = std::numeric_limits<double>::infinity();      // Infinity constant
 const double PI = 3.14159265;                                               // Pi constant
-const double MACHINE_EPSILON = DBL_EPSILON;
 
 // Physics Engine constants
 const double DEFAULT_TIMESTEP = 0.002;
 
 // GJK Algorithm parameters
-const double OBJECT_MARGIN = 0.1;           // Object margin for the hybrid GJK algorithm
+const double OBJECT_MARGIN = 0.04;          // Object margin for collision detection
 
 // Contact constants
 const double FRICTION_COEFFICIENT = 0.4;    // Friction coefficient

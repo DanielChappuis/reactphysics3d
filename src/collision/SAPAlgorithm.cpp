@@ -142,7 +142,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
         variance[i] = esperanceSquare[i] - esperance[i] * esperance[i] / nbAABBs;
     }
 
-    // Update the sorted Axis according to the axis with the largest variance
+    // Update the sorted axis according to the axis with the largest variance
     sortAxis = 0;
     if (variance[1] > variance[0]) sortAxis = 1;
     if (variance[2] > variance[sortAxis]) sortAxis = 2;

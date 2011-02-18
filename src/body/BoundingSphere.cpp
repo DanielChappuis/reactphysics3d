@@ -53,6 +53,8 @@ void BoundingSphere::draw() const {
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
+    glTranslatef(center.getX(), center.getY(), center.getZ());
+
     // Draw the sphere
     glutWireSphere(radius, 50, 50);
 }
