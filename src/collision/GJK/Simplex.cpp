@@ -312,11 +312,11 @@ bool Simplex::computeClosestPoint(Vector3D& v) {
         }
     }
 
-    // If the simplex that contains only the last added point is valid for the
-    // Johnson's algorithm test
+    // If the simplex that contains only the last added point is valid for the Johnson's algorithm test
     if (isValidSubset(lastFoundBit)) {
-        bitsCurrentSimplex = lastFoundBit;      // Set the current simplex to the set that contains only the last added point
-        v = points[lastFound];                  // The closest point of the simplex "v" is the last added point
+        bitsCurrentSimplex = lastFoundBit;                  // Set the current simplex to the set that contains only the last added point
+        maxLengthSquare = pointsLengthSquare[lastFound];    // Update the maximum square length
+        v = points[lastFound];                              // The closest point of the simplex "v" is the last added point
         return true;
     }
 
@@ -344,9 +344,9 @@ void Simplex::backupClosestPointInSimplex(Vector3D& v) {
 
 // Return the closest point "v" in the convex hull of the points in the subset
 // represented by the bits "subset"
-Vector3D Simplex::computeClosestPointForSubset(Bits subset) const {
+Vector3D Simplex::computeClosestPointForSubset(Bits subset) {
     Vector3D v(0.0, 0.0, 0.0);      // Closet point v = sum(lambda_i * points[i])
-    double maxLenSquare = 0.0;
+    maxLengthSquare = 0.0;
     double deltaX = 0.0;            // deltaX = sum of all det[subset][i]
     int i;
     Bits bit;
@@ -358,8 +358,8 @@ Vector3D Simplex::computeClosestPointForSubset(Bits subset) const {
             // deltaX = sum of all det[subset][i]
             deltaX += det[subset][i];
 
-            if (maxLenSquare < pointsLengthSquare[i]) {
-                maxLenSquare = pointsLengthSquare[i];
+            if (maxLengthSquare < pointsLengthSquare[i]) {
+                maxLengthSquare = pointsLengthSquare[i];
             }
 
             // Closest point v = sum(lambda_i * points[i])

@@ -81,7 +81,6 @@ void EdgeEPA::halfLink(EdgeEPA edge) {
     this->getOwnerTriangle()->setAdjacentEdge(index, edge);
 }
 
-
 // Compute the silhouette
 bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore triangleStore) {
     // If the edge has not already been visited

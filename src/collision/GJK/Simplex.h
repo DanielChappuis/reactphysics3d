@@ -67,7 +67,7 @@ class Simplex {
         bool isProperSubset(Bits subset) const;                     // Return true if the subset is a proper subset
         void updateCache();                                         // Update the cached values used during the GJK algorithm
         void computeDeterminants();                                 // Compute the cached determinant values
-        Vector3D computeClosestPointForSubset(Bits subset) const;   // Return the closest point "v" in the convex hull of a subset of points
+        Vector3D computeClosestPointForSubset(Bits subset);         // Return the closest point "v" in the convex hull of a subset of points
 
     public:
         Simplex();                          // Constructor

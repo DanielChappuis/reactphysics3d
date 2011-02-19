@@ -204,6 +204,9 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             // There is an intersection, therefore we return true
             return true;
         }
+
+        double test = simplex.getMaxLengthSquareOfAPoint(); // TODO : Remove this
+        test = 4.5;
         
     } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
 
