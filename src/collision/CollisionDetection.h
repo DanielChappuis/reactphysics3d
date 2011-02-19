@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef COLLISIONDETECTION_H
-#define COLLISIONDETECTION_H
+#ifndef COLLISION_DETECTION_H
+#define COLLISION_DETECTION_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"

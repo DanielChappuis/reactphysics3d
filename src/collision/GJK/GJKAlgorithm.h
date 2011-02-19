@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef GJKALGORITHM_H
-#define GJKALGORITHM_H
+#ifndef GJK_ALGORITHM_H
+#define GJK_ALGORITHM_H
 
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"

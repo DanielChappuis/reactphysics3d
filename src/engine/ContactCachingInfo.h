@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef CONTACTCACHINGINFO_H
-#define	CONTACTCACHINGINFO_H
+#ifndef CONTACT_CACHING_INFO_H
+#define	CONTACT_CACHING_INFO_H
 
 // Libraries
 #include "../body/OBB.h"

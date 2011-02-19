@@ -148,7 +148,7 @@ inline reactphysics3d::Vector3D computeNonParallelSegmentsIntersection(const rea
 
     // If the two closest point aren't very close, there is no intersection between the segments
     reactphysics3d::Vector3D d = point2 - point1;
-    assert(d.length() <= EPSILON);
+    assert(d.length() <= EPSILON_TEST);
 
     // They are very close so we return the intersection point (halfway between "point1" and "point2"
     return 0.5 * (point1 + point2);

@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef PHYSICSENGINE_H
-#define PHYSICSENGINE_H
+#ifndef PHYSICS_ENGINE_H
+#define PHYSICS_ENGINE_H
 
 // Libraries
 #include "PhysicsWorld.h"

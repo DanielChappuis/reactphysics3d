@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef BROADPHASEALGORITHM_H
-#define BROADPHASEALGORITHM_H
+#ifndef BROAD_PHASE_ALGORITHM_H
+#define BROAD_PHASE_ALGORITHM_H
 
 // Libraries
 #include "../body/BoundingVolume.h"

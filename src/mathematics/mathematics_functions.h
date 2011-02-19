@@ -37,7 +37,7 @@ namespace reactphysics3d {
 // We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool approxEqual(double a, double b) {
     double difference = a - b;
-    return (difference < EPSILON && difference > -EPSILON);
+    return (difference < EPSILON_TEST && difference > -EPSILON_TEST);
 }
 
 } // End of ReactPhysics3D namespace

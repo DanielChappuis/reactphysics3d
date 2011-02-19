@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef TRIANGLESSTORE_H
-#define TRIANGLESSTORE_H
+#ifndef TRIANGLES_STORE_H
+#define TRIANGLES_STORE_H
 
 #include "TriangleEPA.h"
 

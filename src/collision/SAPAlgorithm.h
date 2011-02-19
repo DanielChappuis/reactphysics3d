@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef SAPALGORITHM_H
-#define SAPALGORITHM_H
+#ifndef SAP_ALGORITHM_H
+#define SAP_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"

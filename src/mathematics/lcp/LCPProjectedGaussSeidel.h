@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef LCPPROJECTEDGAUSSSEIDEL_H
-#define LCPPROJECTEDGAUSSSEIDEL_H
+#ifndef LCP_PROJECTED_GAUSS_SEIDEL_H
+#define LCP_PROJECTED_GAUSS_SEIDEL_H
 
 // Libraries
 #include "LCPSolver.h"

@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef CONTACTCACHE_H
-#define	CONTACTCACHE_H
+#ifndef CONTACT_CACHE_H
+#define	CONTACT_CACHE_H
 
 // Libraries
 #include <map>

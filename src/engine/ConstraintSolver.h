@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef CONSTRAINTSOLVER_H
-#define CONSTRAINTSOLVER_H
+#ifndef CONSTRAINT_SOLVER_H
+#define CONSTRAINT_SOLVER_H
 
 // Libraries
 #include "../constants.h"

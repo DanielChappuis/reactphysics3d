@@ -70,6 +70,9 @@ class Vector3D {
         Vector3D getOneOrthogonalVector() const;                // Return one unit orthogonal vectors of the current vector
         double dot(const Vector3D& vector) const;               // Dot product of two vectors
         Vector3D cross(const Vector3D& vector) const;           // Cross product of two vectors
+        Vector3D getAbsoluteVector() const;                     // Return the corresponding absolute value vector
+        int getMinAxis() const;                                 // Return the axis with the minimal value
+        int getMaxAxis() const;                                 // Return the axis with the maximal value
         bool isParallelWith(const Vector3D& vector) const;      // Return true if two vectors are parallel
 
         // --- Overloaded operators --- //
@@ -162,10 +165,25 @@ inline Vector3D Vector3D::cross(const Vector3D& vector) const {
     return Vector3D(y * vector.z - z * vector.y, z * vector.x - x * vector.z , x * vector.y - y * vector.x);
 }
 
+// Return the corresponding absolute value vector
+inline Vector3D Vector3D::getAbsoluteVector() const {
+    return Vector3D(std::abs(x), std::abs(y), std::abs(z));
+}       
+
 // Return true if two vectors are parallel
 inline bool Vector3D::isParallelWith(const Vector3D& vector) const {
     double scalarProd = this->dot(vector);
     return approxEqual(std::abs(scalarProd), length() * vector.length());
+}
+
+// Return the axis with the minimal value
+inline int Vector3D::getMinAxis() const {
+    return (x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2));
+}
+
+// Return the axis with the maximal value
+inline int Vector3D::getMaxAxis() const {
+    return (x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0));
 }
 
 // Return true if the vector is unit and false otherwise

@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef SATALGORITHM_H
-#define SATALGORITHM_H
+#ifndef SAT_ALGORITHM_H
+#define SAT_ALGORITHM_H
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"

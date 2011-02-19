@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef NARROWPHASEALGORITHM_H
-#define NARROWPHASEALGORITHM_H
+#ifndef NARROW_PHASE_ALGORITHM_H
+#define NARROW_PHASE_ALGORITHM_H
 
 // Libraries
 #include "../body/BoundingVolume.h"

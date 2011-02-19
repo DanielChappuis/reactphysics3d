@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef LCPSOLVER_H
-#define LCPSOLVER_H
+#ifndef LCP_SOLVER_H
+#define LCP_SOLVER_H
 
 // Libraries
 #include <vector>

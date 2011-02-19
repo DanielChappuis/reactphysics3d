@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef EDGEEPA_H
-#define EDGEEPA_H
+#ifndef EDGE_EPA_H
+#define EDGE_EPA_H
 
 
 // Libraries
@@ -49,9 +49,9 @@ class EdgeEPA {
                                             // The edge with index i connect triangle vertices i and (i+1 % 3)
 
     public:
-        EdgeEPA();                                          // Constructor
-        EdgeEPA(TriangleEPA* ownerTriangle, int index);     // Constructor
-        ~EdgeEPA();                                         // Destructor
+        EdgeEPA();                                                      // Constructor
+        EdgeEPA(TriangleEPA* ownerTriangle, int index);                 // Constructor
+        ~EdgeEPA();                                                     // Destructor
         TriangleEPA* getOwnerTriangle() const;                          // Return the pointer to the owner triangle
         int getIndex() const;                                           // Return the index of the edge in the triangle
         uint getSource() const;                                         // Return index of the source vertex of the edge
@@ -59,7 +59,7 @@ class EdgeEPA {
         bool link(EdgeEPA edge);                                        // Link the edge with another one
         void halfLink(EdgeEPA edge);                                    // Half link the edge with another one
         bool computeSilhouette(const Vector3D* vertices, uint index,
-                               TrianglesStore triangleStore);           // Compute the recursive silhouette algorithm
+                               TrianglesStore& triangleStore);          // Compute the recursive silhouette algorithm
 };
 
 

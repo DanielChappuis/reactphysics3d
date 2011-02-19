@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef PHYSICSWORLD_H
-#define PHYSICSWORLD_H
+#ifndef PHYSICS_WORLD_H
+#define PHYSICS_WORLD_H
 
 // Libraries
 #include <vector>

@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef TRIANGLEEPA_H
-#define TRIANGLEEPA_H
+#ifndef TRIANGLE_EPA_H
+#define TRIANGLE_EPA_H
 
 // Libraries
 #include "../../mathematics/mathematics.h"

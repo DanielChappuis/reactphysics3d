@@ -323,7 +323,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
             // Compute the support point of the Minkowski difference (A-B) in the closest point direction
             suppPointsA[nbVertices] = boundingVolume1->getSupportPoint(triangle->getClosestPoint(), OBJECT_MARGIN);
-            suppPointsB[nbVertices] = boundingVolume2->getSupportPoint(triangle->getClosestPoint().getOpposite());
+            suppPointsB[nbVertices] = boundingVolume2->getSupportPoint(triangle->getClosestPoint().getOpposite(), OBJECT_MARGIN);
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;
@@ -360,7 +360,6 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             // polytope is always convex
             while(i != triangleStore.getNbTriangles()) {
                 TriangleEPA* newTriangle = &triangleStore[i];
-
                 addFaceCandidate(newTriangle, triangleHeap, nbTriangles, upperBoundSquarePenDepth);
                 i++;
             }

@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef NOBROADPHASEALGORITHM_H
-#define NOBROADPHASEALGORITHM_H
+#ifndef NO_BROAD_PHASE_ALGORITHM_H
+#define NO_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"

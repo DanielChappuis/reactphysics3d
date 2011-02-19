@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef CONTACTINFO_H
-#define	CONTACTINFO_H
+#ifndef CONTACT_INFO_H
+#define	CONTACT_INFO_H
 
 // Libraries
 #include "../body/OBB.h"

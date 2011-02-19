@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef EPAAlgorithm_H
-#define EPAAlgorithm_H
+#ifndef EPA_ALGORITHM_H
+#define EPA_ALGORITHM_H
 
 // Libraries
 #include "../GJK/Simplex.h"

@@ -207,7 +207,7 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& qu
 
     // Because of precision, if cos(theta) is nearly 1, therefore theta is nearly 0 and we can write
     // sin((1-t)*theta) as (1-t) and sin(t*theta) as t
-    if(1-cosineTheta < EPSILON) {
+    if(1-cosineTheta < EPSILON_TEST) {
         return quaternion1 * (1.0-t) + quaternion2 * (t * invert);
     }
 

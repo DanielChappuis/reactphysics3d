@@ -82,7 +82,7 @@ void EdgeEPA::halfLink(EdgeEPA edge) {
 }
 
 // Compute the silhouette
-bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore triangleStore) {
+bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore& triangleStore) {
     // If the edge has not already been visited
     if (!ownerTriangle->getIsObsolete()) {
         // If the triangle of this edge is not visible from the given point
@@ -104,7 +104,7 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
         int backup = triangleStore.getNbTriangles();
 
-        if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(index)).computeSilhouette(vertices, index, triangleStore)) {
+        if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
             ownerTriangle->setIsObsolete(false);
 
             TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
@@ -117,7 +117,7 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
             return false;
         }
-        else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(index)).computeSilhouette(vertices, index, triangleStore)) {
+        else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
             ownerTriangle->setIsObsolete(false);
 
             triangleStore.setNbTriangles(backup);
