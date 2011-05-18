@@ -34,6 +34,11 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Prototypes
+bool link(const EdgeEPA& edge0, const EdgeEPA& edge1);
+void halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1);
+
+
 /*  -------------------------------------------------------------------
     Class TriangleEPA :
         This class represents a triangle face of the current polytope in the EPA
@@ -70,6 +75,8 @@ class TriangleEPA {
                                TrianglesStore& triangleStore);                              // Compute recursive silhouette algorithm for that triangle
 
         uint operator[](int i) const;                                                       // Access operator
+        friend bool link(const EdgeEPA& edge0, const EdgeEPA& edge1);                       // Associate two edges
+        friend void halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1);                   // Make a half-link between two edges
 };
 
 // Return an edge of the triangle
@@ -106,7 +113,7 @@ inline const Vector3D& TriangleEPA::getClosestPoint() const {
 
 // Return true if the closest point on affine hull is inside the triangle
 inline bool TriangleEPA::isClosestPointInternalToTriangle() const {
-    return (lambda1 >= 0.0 && lambda2 >= 0.0 && lambda1 + lambda2 <= det);
+    return (lambda1 >= 0.0 && lambda2 >= 0.0 && (lambda1 + lambda2) <= det);
 }
 
 // Return true if the triangle is visible from a given vertex

@@ -82,6 +82,28 @@ bool TriangleEPA::computeClosestPoint(const Vector3D* vertices) {
     return false;
 }
 
+// Link an edge with another one (meaning that the current edge of a triangle will
+// be associated with the edge of another triangle in order that both triangles
+// are neighbour along both edges)
+bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
+    bool isPossible = (edge0.getSource() == edge1.getTarget() && edge0.getTarget() == edge1.getSource());
+
+    if (isPossible) {
+        edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
+        edge1.getOwnerTriangle()->adjacentEdges[edge1.getIndex()] = edge0;
+    }
+
+    return isPossible;
+}
+
+// Make an half link of an edge with another one from another triangle
+void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
+    assert(edge0.getSource() == edge1.getTarget() && edge0.getTarget() == edge1.getSource());
+
+    // Link
+    edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
+}
+
 // Compute recursive silhouette algorithm for that triangle
 bool TriangleEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore& triangleStore) {
     
@@ -100,9 +122,9 @@ bool TriangleEPA::computeSilhouette(const Vector3D* vertices, uint index, Triang
         int i,j;
         for (i=first, j=triangleStore.getNbTriangles()-1; i != triangleStore.getNbTriangles(); j = i++) {
             TriangleEPA* triangle = &triangleStore[i];
-            triangle->getAdjacentEdge(1).halfLink(EdgeEPA(triangle, 1));
+            halfLink(triangle->getAdjacentEdge(1), EdgeEPA(triangle, 1));
 
-            if (!EdgeEPA(triangle, 0).link(EdgeEPA(&triangleStore[j], 2))) {
+            if (!link(EdgeEPA(triangle, 0), EdgeEPA(&triangleStore[j], 2))) {
                 return false;
             }
         }

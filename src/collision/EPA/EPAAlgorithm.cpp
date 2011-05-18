@@ -210,12 +210,12 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
                 }
 
                 // Associate the edges of neighbouring triangle faces
-                EdgeEPA(face0, 0).link(EdgeEPA(face1, 2));
-                EdgeEPA(face0, 1).link(EdgeEPA(face3, 2));
-                EdgeEPA(face0, 2).link(EdgeEPA(face2, 0));
-                EdgeEPA(face1, 0).link(EdgeEPA(face2, 2));
-                EdgeEPA(face1, 1).link(EdgeEPA(face3, 0));
-                EdgeEPA(face2, 1).link(EdgeEPA(face3, 1));
+                link(EdgeEPA(face0, 0), EdgeEPA(face1, 2));
+                link(EdgeEPA(face0, 1), EdgeEPA(face3, 2));
+                link(EdgeEPA(face0, 2), EdgeEPA(face2, 0));
+                link(EdgeEPA(face1, 0), EdgeEPA(face2, 2));
+                link(EdgeEPA(face1, 1), EdgeEPA(face3, 0));
+                link(EdgeEPA(face2, 1), EdgeEPA(face3, 1));
 
                 // Add the triangle faces in the candidate heap
                 addFaceCandidate(face0, triangleHeap, nbTriangles, DBL_MAX);
@@ -252,18 +252,20 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             suppPointsA[3] = boundingVolume1->getSupportPoint(n, OBJECT_MARGIN);
             suppPointsB[3] = boundingVolume2->getSupportPoint(n.getOpposite(), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
-            suppPointsA[4] = boundingVolume1->getSupportPoint(n.getOpposite(), OBJECT_MARGIN);
-            suppPointsB[4] = boundingVolume2->getSupportPoint(n, OBJECT_MARGIN);
-            points[4] = suppPointsA[4] - suppPointsB[4];
+            suppPointsA[4] = boundingVolume1->getSupportPoint(n.getOpposite(), OBJECT_MARGIN);    // TODO : Uncomment this
+            suppPointsB[4] = boundingVolume2->getSupportPoint(n, OBJECT_MARGIN);                  // TODO : Uncomment this
+            points[4] = suppPointsA[4] - suppPointsB[4];                                          // TODO : Uncomment this
 
             // Construct the triangle faces
             TriangleEPA* face0 = triangleStore.newTriangle(points, 0, 1, 3);
             TriangleEPA* face1 = triangleStore.newTriangle(points, 1, 2, 3);
             TriangleEPA* face2 = triangleStore.newTriangle(points, 2, 0, 3);
-            TriangleEPA* face3 = triangleStore.newTriangle(points, 0, 2, 4);
-            TriangleEPA* face4 = triangleStore.newTriangle(points, 2, 1, 4);
-            TriangleEPA* face5 = triangleStore.newTriangle(points, 1, 0, 4);
+            //TriangleEPA* face3 = triangleStore.newTriangle(points, 0, 1, 2);    // TODO : Remove this
+            TriangleEPA* face3 = triangleStore.newTriangle(points, 0, 2, 4);// TODO : Uncomment this
+            TriangleEPA* face4 = triangleStore.newTriangle(points, 2, 1, 4);// TODO : Uncomment this
+            TriangleEPA* face5 = triangleStore.newTriangle(points, 1, 0, 4);// TODO : Uncomment this
 
+            // TODO : Uncomment this
             // If the polytope hasn't been correctly constructed
             if (!(face0 && face1 && face2 && face3 && face4 && face5 &&
                   face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0 &&
@@ -271,27 +273,38 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
                   face4->getDistSquare() > 0.0 && face5->getDistSquare() > 0.0)) {
                 return false;
             }
+            
+            
+            // TODO : Remove this
+            /*
+            if (!(face0 && face1 && face2 && face3 &&
+                  face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0 &&
+                  face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
+                return false;
+            }
+            */
 
             // Associate the edges of neighbouring faces
-            EdgeEPA(face0, 1).link(EdgeEPA(face1, 2));
-            EdgeEPA(face1, 1).link(EdgeEPA(face2, 2));
-            EdgeEPA(face2, 1).link(EdgeEPA(face0, 2));
-            EdgeEPA(face0, 0).link(EdgeEPA(face5, 0));
-            EdgeEPA(face1, 0).link(EdgeEPA(face4, 0));
-            EdgeEPA(face2, 0).link(EdgeEPA(face3, 0));
-            EdgeEPA(face3, 1).link(EdgeEPA(face4, 2));
-            EdgeEPA(face4, 1).link(EdgeEPA(face5, 2));
-            EdgeEPA(face5, 1).link(EdgeEPA(face3, 2));
+            link(EdgeEPA(face0, 1), EdgeEPA(face1, 2));
+            link(EdgeEPA(face1, 1), EdgeEPA(face2, 2));
+            link(EdgeEPA(face2, 1), EdgeEPA(face0, 2));
+            link(EdgeEPA(face0, 0), EdgeEPA(face5, 0));
+            link(EdgeEPA(face1, 0), EdgeEPA(face4, 0));
+            link(EdgeEPA(face2, 0), EdgeEPA(face3, 0));
+            link(EdgeEPA(face3, 1), EdgeEPA(face4, 2));
+            link(EdgeEPA(face4, 1), EdgeEPA(face5, 2));
+            link(EdgeEPA(face5, 1), EdgeEPA(face3, 2));
 
             // Add the candidate faces in the heap
             addFaceCandidate(face0, triangleHeap, nbTriangles, DBL_MAX);
             addFaceCandidate(face1, triangleHeap, nbTriangles, DBL_MAX);
             addFaceCandidate(face2, triangleHeap, nbTriangles, DBL_MAX);
             addFaceCandidate(face3, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face4, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face5, triangleHeap, nbTriangles, DBL_MAX);
+            addFaceCandidate(face4, triangleHeap, nbTriangles, DBL_MAX);  // TODO : Uncomment this
+            addFaceCandidate(face5, triangleHeap, nbTriangles, DBL_MAX);  // TODO : Uncomment this
 
-            nbVertices = 5;
+            nbVertices = 5;   // TODO : Uncomment this
+            //nbVertices = 4;     // TODO : Remove this
         }
         break;
     }
@@ -338,6 +351,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             }
 
             // Compute the error
+            double distSquare = triangle->getDistSquare();  // TODO : REMOVE THIS
             double error = wDotv - triangle->getDistSquare();
             if (error <= std::max(tolerance, REL_ERROR_SQUARE * wDotv) ||
                 points[indexNewVertex] == points[(*triangle)[0]] ||
@@ -368,7 +382,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = triangle->getClosestPoint();
+    v = triangle->getClosestPoint();    // TODO : Check if we have to compute this vector here
     Vector3D pA = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3D pB = triangle->computeClosestPointOfObject(suppPointsB);
     Vector3D diff = pB - pA;

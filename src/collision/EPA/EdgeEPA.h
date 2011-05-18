@@ -56,12 +56,9 @@ class EdgeEPA {
         int getIndex() const;                                           // Return the index of the edge in the triangle
         uint getSource() const;                                         // Return index of the source vertex of the edge
         uint getTarget() const;                                         // Return the index of the target vertex of the edge
-        bool link(EdgeEPA edge);                                        // Link the edge with another one
-        void halfLink(EdgeEPA edge);                                    // Half link the edge with another one
         bool computeSilhouette(const Vector3D* vertices, uint index,
                                TrianglesStore& triangleStore);          // Compute the recursive silhouette algorithm
 };
-
 
 // Return the pointer to the owner triangle
 inline TriangleEPA* EdgeEPA::getOwnerTriangle() const {

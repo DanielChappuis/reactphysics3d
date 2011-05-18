@@ -90,8 +90,7 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3D* vertices, uint v
 
     // If we have not reach the maximum number of triangles
     if (nbTriangles != MAX_TRIANGLES) {
-        newTriangle = &triangles[nbTriangles];
-        nbTriangles++;
+        newTriangle = &triangles[nbTriangles++];
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
             nbTriangles--;

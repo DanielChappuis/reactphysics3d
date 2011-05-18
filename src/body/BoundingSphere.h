@@ -92,14 +92,14 @@ inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, doubl
     double length = direction.length();
 
     // If the direction vector is not the zero vector
-    if (length > EPSILON) {
+    if (length > 0.0) {
         // Return the support point of the sphere in the given direction
         return center + (radius + margin) * direction.getUnit();
     }
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return center + Vector3D(radius + margin, 0.0, 0.0);   
+    return center + Vector3D(0, radius + margin, 0);
 }
 
 }; // End of the ReactPhysics3D namespace

@@ -31,6 +31,7 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+
 // Constructor
 EdgeEPA::EdgeEPA() {
     
@@ -57,30 +58,6 @@ uint EdgeEPA::getTarget() const {
     return (*ownerTriangle)[indexOfNextCounterClockwiseEdge(index)];
 }
 
-// Link the edge with another one (meaning that the current edge of a triangle will
-// is associated with the edge of another triangle in order that both triangles
-// are neighbour along both edges)
-bool EdgeEPA::link(EdgeEPA edge) {
-    bool isPossible = (this->getSource() == edge.getTarget() && this->getTarget() == edge.getSource());
-
-    // If the link is possible
-    if (isPossible) {
-        this->getOwnerTriangle()->setAdjacentEdge(index, edge);
-        edge.getOwnerTriangle()->setAdjacentEdge(edge.getIndex(), *this);
-    }
-
-    // Return if the link has been made
-    return isPossible;
-}
-
-// Half link the edge with another one from another triangle
-void EdgeEPA::halfLink(EdgeEPA edge) {
-    assert(this->getSource() == edge.getTarget() && this->getTarget() == edge.getSource());
-
-    // Link
-    this->getOwnerTriangle()->setAdjacentEdge(index, edge);
-}
-
 // Compute the silhouette
 bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore& triangleStore) {
     // If the edge has not already been visited
@@ -91,7 +68,7 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
             // If the triangle has been created
             if (triangle) {
-                EdgeEPA(triangle, 1).halfLink(*this);
+                halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
 
@@ -111,7 +88,7 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
             // If the triangle has been created
             if (triangle) {
-                EdgeEPA(triangle, 1).halfLink(*this);
+                halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
 
@@ -125,7 +102,7 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
             TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
 
             if (triangle) {
-                EdgeEPA(triangle, 1).halfLink(*this);
+                halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
 
