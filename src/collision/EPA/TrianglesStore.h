@@ -94,6 +94,7 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3D* vertices, uint v
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
             nbTriangles--;
+            // TODO : DO WE HAVE TO add "delete newTriangle;" here ??
             newTriangle = 0;
         }
     }

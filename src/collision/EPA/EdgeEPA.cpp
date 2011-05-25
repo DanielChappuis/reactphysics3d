@@ -74,39 +74,39 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
             return false;
         }
-    }
-    else {
-        // The current triangle is visible and therefore obsolete
-        ownerTriangle->setIsObsolete(true);
+        else {
+            // The current triangle is visible and therefore obsolete
+            ownerTriangle->setIsObsolete(true);
 
-        int backup = triangleStore.getNbTriangles();
+            int backup = triangleStore.getNbTriangles();
 
-        if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
-            ownerTriangle->setIsObsolete(false);
+            if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
+                ownerTriangle->setIsObsolete(false);
 
-            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+                TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
 
-            // If the triangle has been created
-            if (triangle) {
-                halfLink(EdgeEPA(triangle, 1), *this);
-                return true;
+                // If the triangle has been created
+                if (triangle) {
+                    halfLink(EdgeEPA(triangle, 1), *this);
+                    return true;
+                }
+
+                return false;
             }
+            else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
+                ownerTriangle->setIsObsolete(false);
 
-            return false;
-        }
-        else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
-            ownerTriangle->setIsObsolete(false);
+                triangleStore.setNbTriangles(backup);
 
-            triangleStore.setNbTriangles(backup);
+                TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
 
-            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+                if (triangle) {
+                    halfLink(EdgeEPA(triangle, 1), *this);
+                    return true;
+                }
 
-            if (triangle) {
-                halfLink(EdgeEPA(triangle, 1), *this);
-                return true;
+                return false;
             }
-
-            return false;
         }
     }
 
