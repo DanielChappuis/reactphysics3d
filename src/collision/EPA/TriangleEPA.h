@@ -72,7 +72,7 @@ class TriangleEPA {
         bool computeClosestPoint(const Vector3D* vertices);                                 // Compute the point v closest to the origin of this triangle
         Vector3D computeClosestPointOfObject(const Vector3D* supportPointsOfObject) const;  // Compute the point of an object closest to the origin
         bool computeSilhouette(const Vector3D* vertices, uint index,
-                               TrianglesStore& triangleStore);                              // Compute recursive silhouette algorithm for that triangle
+                               TrianglesStore& triangleStore);                              // Execute the recursive silhouette algorithm from this triangle face
 
         uint operator[](int i) const;                                                       // Access operator
         friend bool link(const EdgeEPA& edge0, const EdgeEPA& edge1);                       // Associate two edges

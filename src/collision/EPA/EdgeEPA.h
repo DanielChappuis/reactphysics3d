@@ -54,10 +54,10 @@ class EdgeEPA {
         ~EdgeEPA();                                                     // Destructor
         TriangleEPA* getOwnerTriangle() const;                          // Return the pointer to the owner triangle
         int getIndex() const;                                           // Return the index of the edge in the triangle
-        uint getSource() const;                                         // Return index of the source vertex of the edge
-        uint getTarget() const;                                         // Return the index of the target vertex of the edge
+        uint getSourceVertexIndex() const;                              // Return index of the source vertex of the edge
+        uint getTargetVertexIndex() const;                              // Return the index of the target vertex of the edge
         bool computeSilhouette(const Vector3D* vertices, uint index,
-                               TrianglesStore& triangleStore);          // Compute the recursive silhouette algorithm
+                               TrianglesStore& triangleStore);          // Execute the recursive silhouette algorithm from this edge
 };
 
 // Return the pointer to the owner triangle

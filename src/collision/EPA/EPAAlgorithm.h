@@ -65,7 +65,8 @@ class TriangleComparison {
         that contains the origin and expend it in order to find the point on the boundary
         of (A-B) that is closest to the origin. An initial simplex that contains origin
         has been computed wit GJK algorithm. The EPA Algorithm will extend this simplex
-        polytope to find the correct penetration depth.
+        polytope to find the correct penetration depth. The implementation of the EPA
+        algorithm is based on the book "Collision Detection in 3D Environments".
     -------------------------------------------------------------------
 */
 class EPAAlgorithm {

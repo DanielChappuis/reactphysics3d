@@ -49,22 +49,22 @@ EdgeEPA::~EdgeEPA() {
 }
 
 // Return the index of the source vertex of the edge (vertex starting the edge)
-uint EdgeEPA::getSource() const {
+uint EdgeEPA::getSourceVertexIndex() const {
     return (*ownerTriangle)[index];
 }
 
 // Return the index of the target vertex of the edge (vertex ending the edge)
-uint EdgeEPA::getTarget() const {
+uint EdgeEPA::getTargetVertexIndex() const {
     return (*ownerTriangle)[indexOfNextCounterClockwiseEdge(index)];
 }
 
-// Compute the silhouette
-bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore& triangleStore) {
+// Execute the recursive silhouette algorithm from this edge
+bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint indexNewVertex, TrianglesStore& triangleStore) {
     // If the edge has not already been visited
     if (!ownerTriangle->getIsObsolete()) {
         // If the triangle of this edge is not visible from the given point
-        if (!ownerTriangle->isVisibleFromVertex(vertices, index)) {
-            TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+        if (!ownerTriangle->isVisibleFromVertex(vertices, indexNewVertex)) {
+            TriangleEPA* triangle = triangleStore.newTriangle(vertices, indexNewVertex, getTargetVertexIndex(), getSourceVertexIndex());
 
             // If the triangle has been created
             if (triangle) {
@@ -80,10 +80,10 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
             int backup = triangleStore.getNbTriangles();
 
-            if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
+            if(!ownerTriangle->getAdjacentEdge(indexOfNextCounterClockwiseEdge(this->index)).computeSilhouette(vertices, indexNewVertex, triangleStore)) {
                 ownerTriangle->setIsObsolete(false);
 
-                TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+                TriangleEPA* triangle = triangleStore.newTriangle(vertices, indexNewVertex, getTargetVertexIndex(), getSourceVertexIndex());
 
                 // If the triangle has been created
                 if (triangle) {
@@ -93,12 +93,12 @@ bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesS
 
                 return false;
             }
-            else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this->index)).computeSilhouette(vertices, index, triangleStore)) {
+            else if (!ownerTriangle->getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this->index)).computeSilhouette(vertices, indexNewVertex, triangleStore)) {
                 ownerTriangle->setIsObsolete(false);
 
                 triangleStore.setNbTriangles(backup);
 
-                TriangleEPA* triangle = triangleStore.newTriangle(vertices, index, getTarget(), getSource());
+                TriangleEPA* triangle = triangleStore.newTriangle(vertices, indexNewVertex, getTargetVertexIndex(), getSourceVertexIndex());
 
                 if (triangle) {
                     halfLink(EdgeEPA(triangle, 1), *this);

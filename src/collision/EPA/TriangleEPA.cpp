@@ -86,7 +86,8 @@ bool TriangleEPA::computeClosestPoint(const Vector3D* vertices) {
 // be associated with the edge of another triangle in order that both triangles
 // are neighbour along both edges)
 bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
-    bool isPossible = (edge0.getSource() == edge1.getTarget() && edge0.getTarget() == edge1.getSource());
+    bool isPossible = (edge0.getSourceVertexIndex() == edge1.getTargetVertexIndex() &&
+                       edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
 
     if (isPossible) {
         edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
@@ -96,30 +97,44 @@ bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
     return isPossible;
 }
 
-// Make an half link of an edge with another one from another triangle
+// Make an half link of an edge with another one from another triangle. An half-link
+// between an edge "edge0" and an edge "edge1" represents the fact that "edge1" is an
+// adjacent edge of "edge0" but not the opposite. The opposite edge connection will
+// be made later.
 void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
-    assert(edge0.getSource() == edge1.getTarget() && edge0.getTarget() == edge1.getSource());
+    assert(edge0.getSourceVertexIndex() == edge1.getTargetVertexIndex() &&
+           edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
 
     // Link
     edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
 }
 
-// Compute recursive silhouette algorithm for that triangle
-bool TriangleEPA::computeSilhouette(const Vector3D* vertices, uint index, TrianglesStore& triangleStore) {
+// Execute the recursive silhouette algorithm from this triangle face
+// The parameter "vertices" is an array that contains the vertices of the current polytope and the
+// parameter "indexNewVertex" is the index of the new vertex in this array. The goal of the silhouette algorithm is
+// to add the new vertex in the polytope by keeping it convex. Therefore, the triangle faces that are visible from the
+// new vertex must be removed from the polytope and we need to add triangle faces where each face contains the new vertex
+// and an edge of the silhouette. The silhouette is the connected set of edges that are part of the border between faces that
+// are seen and faces that are not seen from the new vertex. This method starts from the nearest face from the new vertex,
+// computes the silhouette and create the new faces from the new vertex in order that we always have a convex polytope. The
+// faces visible from the new vertex are set obselete and will not be considered as being a candidate face in the future.
+bool TriangleEPA::computeSilhouette(const Vector3D* vertices, uint indexNewVertex, TrianglesStore& triangleStore) {
     
     uint first = triangleStore.getNbTriangles();
 
-    // Mark the current triangle as obsolete
+    // Mark the current triangle as obsolete because it
     setIsObsolete(true);
 
     // Execute recursively the silhouette algorithm for the ajdacent edges of neighbouring
     // triangles of the current triangle
-    bool result = adjacentEdges[0].computeSilhouette(vertices, index, triangleStore) &&
-                  adjacentEdges[1].computeSilhouette(vertices, index, triangleStore) &&
-                  adjacentEdges[2].computeSilhouette(vertices, index, triangleStore);
+    bool result = adjacentEdges[0].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
+                  adjacentEdges[1].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
+                  adjacentEdges[2].computeSilhouette(vertices, indexNewVertex, triangleStore);
 
     if (result) {
         int i,j;
+
+        // For each triangle face that contains the new vertex and an edge of the silhouette
         for (i=first, j=triangleStore.getNbTriangles()-1; i != triangleStore.getNbTriangles(); j = i++) {
             TriangleEPA* triangle = &triangleStore[i];
             halfLink(triangle->getAdjacentEdge(1), EdgeEPA(triangle, 1));

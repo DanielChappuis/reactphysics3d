@@ -30,8 +30,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// TODO : Check that allocated memory is correctly deleted
-
 // Constructor
 EPAAlgorithm::EPAAlgorithm() {
 
@@ -89,8 +87,6 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     Vector3D points[MAX_SUPPORT_POINTS];            // Current points
     TrianglesStore triangleStore;                   // Store the triangles
     TriangleEPA* triangleHeap[MAX_FACETS];          // Heap that contains the face candidate of the EPA algorithm
-    
-    // TODO : Check that we call all the supportPoint() function with a margin
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -338,7 +334,6 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             }
 
             // Compute the error
-            double distSquare = triangle->getDistSquare();  // TODO : REMOVE THIS
             double error = wDotv - triangle->getDistSquare();
             if (error <= std::max(tolerance, REL_ERROR_SQUARE * wDotv) ||
                 points[indexNewVertex] == points[(*triangle)[0]] ||
@@ -347,18 +342,16 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
                 break;
             }
 
-            // Now, we compute the silhouette cast by the new vertex.
-            // The current triangle face will not be in the convex hull.
-            // We start the local recursive silhouette algorithm from
-            // the current triangle face.
+            // Now, we compute the silhouette cast by the new vertex. The current triangle
+            // face will not be in the convex hull. We start the local recursive silhouette
+            // algorithm from the current triangle face.
             int i = triangleStore.getNbTriangles();
             if (!triangle->computeSilhouette(points, indexNewVertex, triangleStore)) {
                 break;
             }
 
-            // Construct the new polytope by constructing triangle faces from the
-            // silhouette to the new vertex of the polytope in order that the new
-            // polytope is always convex
+            // Add all the new triangle faces computed with the silhouette algorithm
+            // to the candidates list of faces of the current polytope
             while(i != triangleStore.getNbTriangles()) {
                 TriangleEPA* newTriangle = &triangleStore[i];
                 addFaceCandidate(newTriangle, triangleHeap, nbTriangles, upperBoundSquarePenDepth);
@@ -369,12 +362,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = triangle->getClosestPoint();    // TODO : Check if we have to compute this vector here
+    v = triangle->getClosestPoint();
     Vector3D pA = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3D pB = triangle->computeClosestPointOfObject(suppPointsB);
-    Vector3D diff = pB - pA;
-    Vector3D normal = diff.getUnit();
-    double penetrationDepth = diff.length();
+    Vector3D normal = v.getUnit();
+    double penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
     contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                   normal, penetrationDepth, pA, pB);

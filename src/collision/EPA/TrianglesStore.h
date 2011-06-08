@@ -50,13 +50,13 @@ class TrianglesStore {
         int nbTriangles;                            // Number of triangles
         
     public:
-        TrianglesStore();               // Constructor
-        ~TrianglesStore();              // Destructor
+        TrianglesStore();                           // Constructor
+        ~TrianglesStore();                          // Destructor
 
-        void clear();                       // Clear all the storage
-        int getNbTriangles() const;         // Return the number of triangles
-        void setNbTriangles(int backup);    // Set the number of triangles
-        TriangleEPA& last();                // Return the last triangle
+        void clear();                               // Clear all the storage
+        int getNbTriangles() const;                 // Return the number of triangles
+        void setNbTriangles(int backup);            // Set the number of triangles
+        TriangleEPA& last();                        // Return the last triangle
 
         TriangleEPA* newTriangle(const Vector3D* vertices, uint v0, uint v1, uint v2);  // Create a new triangle
 
@@ -94,7 +94,6 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3D* vertices, uint v
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
             nbTriangles--;
-            // TODO : DO WE HAVE TO add "delete newTriangle;" here ??
             newTriangle = 0;
         }
     }
