@@ -70,20 +70,6 @@ Matrix3x3 Matrix3x3::getInverse() const {
     return (invDeterminant * tempMatrix.getTranspose());
 }
 
-// Overloaded operator for multiplication with a matrix
-Matrix3x3 Matrix3x3::operator*(const Matrix3x3& matrix2) const {
-    // Compute and return the multiplication of the matrices
-    return Matrix3x3(array[0][0]*matrix2.array[0][0] + array[0][1]*matrix2.array[1][0] + array[0][2]*matrix2.array[2][0],
-                     array[0][0]*matrix2.array[0][1] + array[0][1]*matrix2.array[1][1] + array[0][2]*matrix2.array[2][1],
-                     array[0][0]*matrix2.array[0][2] + array[0][1]*matrix2.array[1][2] + array[0][2]*matrix2.array[2][2],
-                     array[1][0]*matrix2.array[0][0] + array[1][1]*matrix2.array[1][0] + array[1][2]*matrix2.array[2][0],
-                     array[1][0]*matrix2.array[0][1] + array[1][1]*matrix2.array[1][1] + array[1][2]*matrix2.array[2][1],
-                     array[1][0]*matrix2.array[0][2] + array[1][1]*matrix2.array[1][2] + array[1][2]*matrix2.array[2][2],
-                     array[2][0]*matrix2.array[0][0] + array[2][1]*matrix2.array[1][0] + array[2][2]*matrix2.array[2][0],
-                     array[2][0]*matrix2.array[0][1] + array[2][1]*matrix2.array[1][1] + array[2][2]*matrix2.array[2][1],
-                     array[2][0]*matrix2.array[0][2] + array[2][1]*matrix2.array[1][2] + array[2][2]*matrix2.array[2][2]);
-}
-
 // Overloaded operator for assignment
 Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix2) {
     // Check for self-assignment

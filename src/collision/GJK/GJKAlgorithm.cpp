@@ -59,8 +59,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 // algorithm on the enlarged object to obtain a simplex polytope that contains the
 // origin, they we give that simplex polytope to the EPA algorithm which will compute
 // the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1,
-                                 const NarrowBoundingVolume* const boundingVolume2,
+bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1, const Transform& transform1,
+                                 const NarrowBoundingVolume* const boundingVolume2, const Transform& transform2,
                                  ContactInfo*& contactInfo) {
     Vector3D suppA;             // Support point of object A
     Vector3D suppB;             // Support point of object B
@@ -69,6 +69,12 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     Vector3D pB;                // Closest point of object B
     double vDotw;
     double prevDistSquare;
+
+    // Transform a point from body space of shape 2 to body space of shape 1 (the GJK algorithm is done in body space of shape 1)
+    Transform shape2ToShape1 = transform1.inverse() * transform2;
+
+    // Matrix that transform a direction from body space of shape 1 into body space of shape 2
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
 
     assert(boundingVolume1 != boundingVolume2);
 
@@ -83,7 +89,7 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     // Get the last point V (last separating axis)
     // TODO : Implement frame coherence. For each pair of body, store
     //        the last separating axis and use it to initialize the v vector
-    Vector3D v(1.0, 1.0, 1.0);
+    Vector3D v(0.0, 1.0, 0.0);
 
     // Initialize the upper bound for the square distance
     double distSquare = DBL_MAX;
@@ -91,7 +97,7 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     do {
         // Compute the support points for original objects (without margins) A and B
         suppA = boundingVolume1->getSupportPoint(v.getOpposite());
-        suppB = boundingVolume2->getSupportPoint(v);
+        suppB = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -113,11 +119,11 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = pA - (OBJECT_MARGIN / dist) * v;
-            pB = pB + (OBJECT_MARGIN / dist) * v;
+            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
+            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
@@ -138,11 +144,11 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = pA - (OBJECT_MARGIN / dist) * v;
-            pB = pB + (OBJECT_MARGIN / dist) * v;
+            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
+            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
@@ -161,11 +167,11 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = pA - (OBJECT_MARGIN / dist) * v;
-            pB = pB + (OBJECT_MARGIN / dist) * v;
+            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
+            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
@@ -192,11 +198,11 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = pA - (OBJECT_MARGIN / dist) * v;
-            pB = pB + (OBJECT_MARGIN / dist) * v;
+            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
+            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(boundingVolume1->getBodyPointer(), boundingVolume2->getBodyPointer(),
                                           normal, penetrationDepth, pA, pB);
@@ -214,7 +220,7 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     // enlarged objects to compute a simplex polytope that contains the origin. Then, we give that simplex
     // polytope to the EPA algorithm to compute the correct penetration depth and contact points between
     // the enlarged objects.
-    return computePenetrationDepthForEnlargedObjects(boundingVolume1, boundingVolume2, contactInfo, v);
+    return computePenetrationDepthForEnlargedObjects(boundingVolume1, transform1, boundingVolume2, transform2, contactInfo, v);
 }
 
 // This method runs the GJK algorithm on the two enlarged objects (with margin)
@@ -222,8 +228,8 @@ bool GJKAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
 // assumed to intersect in the original objects (without margin). Therefore such
 // a polytope must exist. Then, we give that polytope to the EPA algorithm to
 // compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1,
-                                                             const NarrowBoundingVolume* const boundingVolume2,
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1, const Transform& transform1,
+                                                             const NarrowBoundingVolume* const boundingVolume2, const Transform& transform2,
                                                              ContactInfo*& contactInfo, Vector3D& v) {
     Simplex simplex;
     Vector3D suppA;
@@ -232,11 +238,17 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowBoundin
     double vDotw;
     double distSquare = DBL_MAX;
     double prevDistSquare;
+
+    // Transform a point from body space of shape 2 to body space of shape 1 (the GJK algorithm is done in body space of shape 1)
+    Transform shape2ToShape1 = transform1.inverse() * transform2;
+
+    // Matrix that transform a direction from body space of shape 1 into body space of shape 2
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
     
     do {
         // Compute the support points for the enlarged object A and B
         suppA = boundingVolume1->getSupportPoint(v.getOpposite(), OBJECT_MARGIN);
-        suppB = boundingVolume2->getSupportPoint(v, OBJECT_MARGIN);
+        suppB = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * v, OBJECT_MARGIN);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -272,5 +284,6 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowBoundin
 
     // Give the simplex computed with GJK algorithm to the EPA algorithm which will compute the correct
     // penetration depth and contact points between the two enlarged objects
-    return algoEPA.computePenetrationDepthAndContactPoints(simplex, boundingVolume1, boundingVolume2, v, contactInfo);
+    return algoEPA.computePenetrationDepthAndContactPoints(simplex, boundingVolume1, transform1,
+                                                           boundingVolume2, transform2, v, contactInfo);
 }

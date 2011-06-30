@@ -22,37 +22,31 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef NO_BROAD_PHASE_ALGORITHM_H
-#define NO_BROAD_PHASE_ALGORITHM_H
-
 // Libraries
-#include "BroadPhaseAlgorithm.h"
-#include <algorithm>
+#include "Transform.h"
 
-// Namespace ReactPhysics3D
-namespace reactphysics3d {
+// Namespaces
+using namespace reactphysics3d;
 
-/*  --------------------------------------------------------------------
-    Class NoBroadPhaseAlgorithm :
-        This class implements a broad-phase algorithm that does nothing.
-        It should be use if we don't want to perform a broad-phase for
-        the collision detection.
-    --------------------------------------------------------------------
-*/
-class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
-    protected :
-        std::vector<Body*> bodies;     // All bodies of the engine
+// Constructor
+Transform::Transform() {
+    position = Vector3D(0.0, 0.0, 0.0);
+    orientation.setToIdentity();
+}
 
-    public :
-        NoBroadPhaseAlgorithm();              // Constructor
-        virtual ~NoBroadPhaseAlgorithm();     // Destructor
+// Constructor
+Transform::Transform(const Vector3D& position, const Matrix3x3& orientation) {
+    this->position = position;
+    this->orientation = orientation;
+}
 
-        virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
-                                                   std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
-};
+// Constructor
+Transform::Transform(const Vector3D& position, const Quaternion& orientation) {
+    this->position = position;
+    this->orientation = orientation.getMatrix();
+}
 
-} // End of reactphysics3d namespace
-
-#endif
-
-
+// Destructor
+Transform::~Transform() {
+    
+}

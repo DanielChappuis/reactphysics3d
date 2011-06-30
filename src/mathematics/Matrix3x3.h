@@ -54,10 +54,13 @@ class Matrix3x3 {
         void setValue(int i, int j, double value);                                              // Set a value in the matrix
         void setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
                   double c1, double c2, double c3);                                             // Set all the values in the matrix
+        Vector3D getColumn(int i) const;                                                        // Return a column
         Matrix3x3 getTranspose() const;                                                         // Return the transpose matrix
         double getDeterminant() const;                                                          // Return the determinant of the matrix
         double getTrace() const;                                                                // Return the trace of the matrix
         Matrix3x3 getInverse() const;                                                           // Return the inverse matrix
+        Matrix3x3 getAbsoluteMatrix() const;                                                    // Return the matrix with absolute values
+        void setToIdentity();                                                                   // Set the matrix to the identity matrix
         static Matrix3x3 identity();                                                            // Return the 3x3 identity matrix
 
         // --- Overloaded operators --- //
@@ -89,6 +92,12 @@ inline void Matrix3x3::setAllValues(double a1, double a2, double a3, double b1, 
     array[0][0] = a1; array[0][1] = a2; array[0][2] = a3;
     array[1][0] = b1; array[1][1] = b2; array[1][2] = b3;
     array[2][0] = c1; array[2][1] = c2; array[2][2] = c3;
+}
+
+// Return a column
+inline Vector3D Matrix3x3::getColumn(int i) const {
+    assert(i>= 0 && i<3);
+    return Vector3D(array[0][i], array[1][i], array[2][i]);
 }
 
 // Return the transpose matrix
@@ -133,10 +142,38 @@ inline bool Matrix3x3::operator==(const Matrix3x3& matrix2) const {
             array[2][0] == matrix2.array[2][0] && array[2][1] == matrix2.array[2][1] && array[2][2] == matrix2.array[2][2]);
 }
 
+// Set the matrix to the identity matrix
+inline void Matrix3x3::setToIdentity() {
+    array[0][0] = 1.0; array[0][1] = 0.0; array[0][2] = 0.0;
+    array[1][0] = 0.0; array[1][1] = 1.0; array[1][2] = 0.0;
+    array[2][0] = 0.0; array[2][1] = 0.0; array[2][2] = 1.0;
+}
+
 // Return the 3x3 identity matrix
 inline Matrix3x3 Matrix3x3::identity() {
     // Return the isdentity matrix
     return Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+}
+
+// Return the matrix with absolute values
+inline Matrix3x3 Matrix3x3::getAbsoluteMatrix() const {
+    return Matrix3x3(fabs(array[0][0]), fabs(array[0][1]), fabs(array[0][2]),
+                     fabs(array[1][0]), fabs(array[1][1]), fabs(array[1][2]),
+                     fabs(array[2][0]), fabs(array[2][1]), fabs(array[2][2]));
+}
+
+// Overloaded operator for multiplication with a matrix
+inline Matrix3x3 Matrix3x3::operator*(const Matrix3x3& matrix2) const {
+    // Compute and return the multiplication of the matrices
+    return Matrix3x3(array[0][0]*matrix2.array[0][0] + array[0][1]*matrix2.array[1][0] + array[0][2]*matrix2.array[2][0],
+                     array[0][0]*matrix2.array[0][1] + array[0][1]*matrix2.array[1][1] + array[0][2]*matrix2.array[2][1],
+                     array[0][0]*matrix2.array[0][2] + array[0][1]*matrix2.array[1][2] + array[0][2]*matrix2.array[2][2],
+                     array[1][0]*matrix2.array[0][0] + array[1][1]*matrix2.array[1][0] + array[1][2]*matrix2.array[2][0],
+                     array[1][0]*matrix2.array[0][1] + array[1][1]*matrix2.array[1][1] + array[1][2]*matrix2.array[2][1],
+                     array[1][0]*matrix2.array[0][2] + array[1][1]*matrix2.array[1][2] + array[1][2]*matrix2.array[2][2],
+                     array[2][0]*matrix2.array[0][0] + array[2][1]*matrix2.array[1][0] + array[2][2]*matrix2.array[2][0],
+                     array[2][0]*matrix2.array[0][1] + array[2][1]*matrix2.array[1][1] + array[2][2]*matrix2.array[2][1],
+                     array[2][0]*matrix2.array[0][2] + array[2][1]*matrix2.array[1][2] + array[2][2]*matrix2.array[2][2]);
 }
 
 // Overloaded operator for addition

@@ -38,4 +38,37 @@ NoBroadPhaseAlgorithm::~NoBroadPhaseAlgorithm() {
 
 }
 
+// Compute the possible collision pairs of bodies
+// The arguments "addedBodies" and "removedBodies" are respectively the set
+// of bodies that have been added and removed since the last broad-phase
+// computation. Before the call, the argument "possibleCollisionPairs"
+// correspond to the possible colliding pairs of bodies from the last broad-phase
+// computation. This methods computes the current possible collision pairs of
+// bodies and update the "possibleCollisionPairs" argument. This broad-phase
+// algorithm doesn't do anything and therefore the "possibleCollisionPairs" set
+// must contains all the possible pairs of bodies
+void NoBroadPhaseAlgorithm::computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
+                                                                 std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs) {
+    // Add the new bodies
+    for (std::vector<Body*>::iterator it = addedBodies.begin(); it < addedBodies.end(); it++) {
+        bodies.push_back(*it);
+    }
 
+    // Remove the bodies to be removed
+    for (std::vector<Body*>::iterator it = removedBodies.begin(); it < removedBodies.end(); it++) {
+        bodies.erase(std::find(bodies.begin(), bodies.end(), *it));
+    }
+
+    // If the set of bodies have been changed
+    if (addedBodies.size() + removedBodies.size() > 0) {
+        // Recompute all the possible pairs of bodies
+        possibleCollisionPairs.clear();
+        for (std::vector<Body*>::iterator it1 = addedBodies.begin(); it1 < addedBodies.end(); it1++) {
+            for (std::vector<Body*>::iterator it2 = addedBodies.begin(); it2 < addedBodies.end(); it2++) {
+                if (*it1 != *it2) {
+                    possibleCollisionPairs.push_back(std::make_pair(*it1, *it2));
+                }
+            }
+        }
+    }
+}

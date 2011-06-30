@@ -83,7 +83,9 @@ class EPAAlgorithm {
         ~EPAAlgorithm();        // Destructor
 
         bool computePenetrationDepthAndContactPoints(Simplex simplex, const NarrowBoundingVolume* const boundingVolume1,
+                                                     const Transform& transform1,
                                                      const NarrowBoundingVolume* const boundingVolume2,
+                                                     const Transform& transform2,
                                                      Vector3D& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
 

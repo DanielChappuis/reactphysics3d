@@ -29,6 +29,7 @@
 #include "NarrowPhaseAlgorithm.h"
 #include "../constraint/Contact.h"
 #include "../body/OBB.h"
+#include "../mathematics/Transform.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -49,7 +50,9 @@ namespace reactphysics3d {
 */
 class SATAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        bool computeCollisionTest(const OBB* const obb1, const OBB* const obb2, ContactInfo*& contactInfo) const;     // Return true and compute a contact info if the two OBB collide
+        bool computeCollisionTest(const OBB* const obb1, const Transform& transform1,
+                                  const OBB* const obb2, const Transform& transform2,
+                                  ContactInfo*& contactInfo) const;     // Return true and compute a contact info if the two OBB collide
         double computePenetrationDepth(double min1, double max1, double min2, double max2) const;                     // Compute the penetration depth of two projection intervals                             
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                    // Compute a contact normal
 
@@ -58,7 +61,9 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
         ~SATAlgorithm();          // Destructor
 
         virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
+                                   const Transform& transform1,
                                    const NarrowBoundingVolume* const boundingVolume2,
+                                   const Transform& transform2,
                                    ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
 };
 

@@ -62,8 +62,8 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     Vector3D r2CrossU1;
     Vector3D r1CrossU2;
     Vector3D r2CrossU2;
-    Vector3D body1Position = rigidBody1->getPosition();
-    Vector3D body2Position = rigidBody2->getPosition();
+    Vector3D body1Position = rigidBody1->getTransform().getPosition();
+    Vector3D body2Position = rigidBody2->getTransform().getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
 
     assert(rigidBody1);

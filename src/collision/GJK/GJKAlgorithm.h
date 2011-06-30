@@ -62,15 +62,17 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         EPAAlgorithm algoEPA;             // EPA Algorithm
 
         bool computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1,
+                                                       const Transform& transform1,
                                                        const NarrowBoundingVolume* const boundingVolume2,
+                                                        const Transform& transform2,
                                                        ContactInfo*& contactInfo, Vector3D& v);             // Compute the penetration depth for enlarged objects
 
     public :
         GJKAlgorithm();           // Constructor
         ~GJKAlgorithm();          // Destructor
 
-        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
-                                   const NarrowBoundingVolume* const boundingVolume2,
+        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1, const Transform& transform1,
+                                   const NarrowBoundingVolume* const boundingVolume2, const Transform& transform2,
                                    ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
 };
 

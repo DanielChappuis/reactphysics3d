@@ -144,6 +144,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
             updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
 
             // If the body state has changed, we have to update some informations in the rigid body
+            // TODO : DELETE THIS
             rigidBody->update();
         }
     }
@@ -159,18 +160,20 @@ void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3
     assert(rigidBody);
 
     // Update the old position and orientation of the body
-    rigidBody->updateOldPositionAndOrientation();
-
-    // Normalize the orientation quaternion
-    rigidBody->setOrientation(rigidBody->getOrientation().getUnit());
+    rigidBody->updateOldTransform();
 
     // Update the linear and angular velocity of the body
     rigidBody->setLinearVelocity(newLinVelocity);
     rigidBody->setAngularVelocity(newAngVelocity);
 
-    // Update the position and the orientation of the body
-    rigidBody->setPosition(rigidBody->getPosition() + newLinVelocity * dt);
-    rigidBody->setOrientation(rigidBody->getOrientation() + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * rigidBody->getOrientation() * 0.5 * dt);
+    // Get current position and orientation of the body
+    Vector3D currentPosition = rigidBody->getTransform().getPosition();
+    Quaternion currentOrientation = Quaternion(rigidBody->getTransform().getOrientation());
+
+    Vector3D newPosition = currentPosition + newLinVelocity * dt;
+    Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;
+    Transform newTransform(newPosition, newOrientation.getUnit());
+    rigidBody->setTransform(newTransform);
 }
 
 // Compute and set the interpolation factor to all bodies

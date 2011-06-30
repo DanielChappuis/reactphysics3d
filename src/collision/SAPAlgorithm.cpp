@@ -50,7 +50,7 @@ void SAPAlgorithm::removeBodiesAABB(vector<Body*> bodies) {
 
     // Removed the AABB of the bodies that have been removed
     for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        aabb = dynamic_cast<const AABB*>((*it)->getBroadBoundingVolume());
+        aabb = (*it)->getAABB();
         assert(aabb);
         elemToRemove = find(sortedAABBs.begin(), sortedAABBs.end(), aabb);
         assert((*elemToRemove) == aabb);
@@ -64,7 +64,7 @@ void SAPAlgorithm::addBodiesAABB(vector<Body*> bodies) {
     
     for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
         aabb = 0;
-        aabb = dynamic_cast<const AABB*>((*it)->getBroadBoundingVolume());
+        aabb = (*it)->getAABB();
         assert(aabb);
         sortedAABBs.push_back(aabb);
     }
@@ -123,7 +123,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
         // Test collision against all possible overlapping AABBs following the current one
         for (it2 = it + 1; it2 != sortedAABBs.end(); ++it2) {
             // Stop when the tested AABBs are beyond the end of the current AABB
-            if ((*it2)->getMinValueOnAxis(sortAxis) > (*it)->getMaxValueOnAxis(sortAxis)) {
+            if ((*it2)->getMinCoordinates().getValue(sortAxis) > (*it)->getMaxCoordinates().getValue(sortAxis)) {
                 break;
             }
 

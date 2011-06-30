@@ -32,6 +32,9 @@
 #include <cmath>
 #include <cassert>
 
+// TODO : SAT Algorithm for box-box collision does not work anymore since the use of
+//        transform. Maybe a problem with the computation of the normal vector
+//        Anyway, the GJK algorithm should be used instead
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -48,8 +51,8 @@ SATAlgorithm::~SATAlgorithm() {
 
 // Return true and compute a contact info if the two bounding volume collide.
 // The method returns false if there is no collision between the two bounding volumes.
-bool SATAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1,
-                                 const NarrowBoundingVolume* const boundingVolume2,
+bool SATAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolume1, const Transform& transform1,
+                                 const NarrowBoundingVolume* const boundingVolume2, const Transform& transform2,
                                  ContactInfo*& contactInfo) {
     
     assert(boundingVolume1 != boundingVolume2);
@@ -63,7 +66,7 @@ bool SATAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
     // If the two bounding volumes are OBB
     if (obb1 && obb2) {
         // Compute the collision test between two OBB
-        return computeCollisionTest(obb1, obb2, contactInfo);
+        return computeCollisionTest(obb1, transform1, obb2, transform2, contactInfo);
     }
     else {
         return false;
@@ -78,7 +81,8 @@ bool SATAlgorithm::testCollision(const NarrowBoundingVolume* const boundingVolum
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const obb2, ContactInfo*& contactInfo) const {
+bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const Transform& transform1,
+                                        const OBB* const obb2, const Transform& transform2, ContactInfo*& contactInfo) const {
 
 
     double center;                              // Center of a projection interval
@@ -104,17 +108,18 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     double udc1[3];                             // DotProduct(obb1.Ai, obb2.center - obb1.center)
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
     
-    Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Vector between the centers of the OBBs
+    //Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Vector between the centers of the OBBs
+    Vector3D boxDistance = transform2.getPosition() - transform1.getPosition();   // Vector between the centers of the OBBs
 
     // Axis A0
     for (int i=0; i<3; ++i) {
-        c[0][i] = obb1->getAxis(0).dot(obb2->getAxis(i));
+        c[0][i] = transform1.getOrientation().getColumn(0).dot(transform2.getOrientation().getColumn(i));
         absC[0][i] = fabs(c[0][i]);
         if (absC[0][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[0] = obb1->getAxis(0).dot(boxDistance);
+    udc1[0] = transform1.getOrientation().getColumn(0).dot(boxDistance);
     center = udc1[0];
     radius1 = obb1->getExtent(0);
     radius2 = obb2->getExtent(0)*absC[0][0] + obb2->getExtent(1)*absC[0][1] + obb2->getExtent(2) * absC[0][2];
@@ -133,13 +138,13 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 
     // Axis A1
     for (int i=0; i<3; ++i) {
-        c[1][i] = obb1->getAxis(1).dot(obb2->getAxis(i));
+        c[1][i] = transform1.getOrientation().getColumn(1).dot(transform2.getOrientation().getColumn(i));
         absC[1][i] = fabs(c[1][i]);
         if (absC[1][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[1] = obb1->getAxis(1).dot(boxDistance);
+    udc1[1] = transform1.getOrientation().getColumn(1).dot(boxDistance);
     center = udc1[1];
     radius1 = obb1->getExtent(1);
     radius2 = obb2->getExtent(0)*absC[1][0] + obb2->getExtent(1)*absC[1][1] + obb2->getExtent(2) * absC[1][2];
@@ -158,13 +163,13 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
 
     // Axis A2
     for (int i=0; i<3; ++i) {
-        c[2][i] = obb1->getAxis(2).dot(obb2->getAxis(i));
+        c[2][i] = transform1.getOrientation().getColumn(2).dot(transform2.getOrientation().getColumn(i));
         absC[2][i] = fabs(c[2][i]);
         if (absC[2][i] > cutoff) {
             existsParallelPair = true;
         }
     }
-    udc1[2] = obb1->getAxis(2).dot(boxDistance);
+    udc1[2] = transform1.getOrientation().getColumn(2).dot(boxDistance);
     center = udc1[2];
     radius1 = obb1->getExtent(2);
     radius2 = obb2->getExtent(0)*absC[2][0] + obb2->getExtent(1)*absC[2][1] + obb2->getExtent(2)*absC[2][2];
@@ -182,7 +187,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B0
-    udc2[0] = obb2->getAxis(0).dot(boxDistance);
+    udc2[0] = transform2.getOrientation().getColumn(0).dot(boxDistance);
     center = udc2[0];
     radius1 = obb1->getExtent(0)*absC[0][0] + obb1->getExtent(1)*absC[1][0] + obb1->getExtent(2) * absC[2][0];
     radius2 = obb2->getExtent(0);
@@ -200,7 +205,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B1
-    udc2[1] = obb2->getAxis(1).dot(boxDistance);
+    udc2[1] = transform2.getOrientation().getColumn(1).dot(boxDistance);
     center = udc2[1];
     radius1 = obb1->getExtent(0)*absC[0][1] + obb1->getExtent(1)*absC[1][1] + obb1->getExtent(2) * absC[2][1];
     radius2 = obb2->getExtent(1);
@@ -218,7 +223,7 @@ bool SATAlgorithm::computeCollisionTest(const OBB* const obb1, const OBB* const 
     }
 
     // Axis B2
-    udc2[2] = obb2->getAxis(2).dot(boxDistance);
+    udc2[2] = transform2.getOrientation().getColumn(2).dot(boxDistance);
     center = udc2[2];
     radius1 = obb1->getExtent(0)*absC[0][2] + obb1->getExtent(1)*absC[1][2] + obb1->getExtent(2)*absC[2][2];
     radius2 = obb2->getExtent(2);

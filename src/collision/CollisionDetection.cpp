@@ -45,7 +45,7 @@ CollisionDetection::CollisionDetection(PhysicsWorld* world) {
     broadPhaseAlgorithm = new SAPAlgorithm();
 
     // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
-    narrowPhaseAlgorithm = new GJKAlgorithm();
+    narrowPhaseAlgorithm = new GJKAlgorithm();  // TODO : Use GJK algo here
 }
 
 // Destructor
@@ -90,8 +90,13 @@ void CollisionDetection::computeNarrowPhase() {
     for (unsigned int i=0; i<possibleCollisionPairs.size(); i++) {
         ContactInfo* contactInfo = NULL;
 
-        // Use the narrow-phase collision detection algorithm to check if the really are a contact
-        if (narrowPhaseAlgorithm->testCollision(possibleCollisionPairs.at(i).first->getNarrowBoundingVolume(), possibleCollisionPairs.at(i).second->getNarrowBoundingVolume(), contactInfo)) {
+        const RigidBody* rigidBody1 = dynamic_cast<const RigidBody*>(possibleCollisionPairs.at(i).first);
+        const RigidBody* rigidBody2 = dynamic_cast<const RigidBody*>(possibleCollisionPairs.at(i).second);
+        
+        // Use the narrow-phase collision detection algorithm to check if there really are a contact
+        if (narrowPhaseAlgorithm->testCollision(rigidBody1->getNarrowBoundingVolume(), rigidBody1->getTransform(),
+                                                rigidBody2->getNarrowBoundingVolume(), rigidBody2->getTransform(),
+                                                contactInfo)) {
             assert(contactInfo);
 
             // Add the contact info the current list of collision informations
@@ -108,7 +113,7 @@ void CollisionDetection::computeAllContacts() {
         assert(contactInfo);
         
         // Compute one or several new contacts and add them into the physics world
-        computeContactGJK(contactInfo);
+        computeContactGJK(contactInfo); // TODO : Call computeContactGJK() here
     }
 }
 
@@ -128,6 +133,7 @@ void CollisionDetection::computeContactGJK(const ContactInfo* const contactInfo)
      world->addConstraint(contact);
 }
 
+/* TODO : DELETE THIS 
 // Compute a contact for the SAT algorithm (and add it to the physics world) for two colliding bodies
 // This method only works for collision between two OBB bounding volumes
 void CollisionDetection::computeContactSAT(const ContactInfo* const contactInfo) {
@@ -257,4 +263,5 @@ void CollisionDetection::computeContactSAT(const ContactInfo* const contactInfo)
         world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace));
     }
 }
+*/
 

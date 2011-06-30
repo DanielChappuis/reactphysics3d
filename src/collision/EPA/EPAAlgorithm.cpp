@@ -80,13 +80,21 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3D& p1, const Vector3D& p2, 
 // GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 // the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, const NarrowBoundingVolume* const boundingVolume1,
+                                                           const Transform& transform1,
                                                            const NarrowBoundingVolume* const boundingVolume2,
+                                                           const Transform& transform2,
                                                            Vector3D& v, ContactInfo*& contactInfo) {
     Vector3D suppPointsA[MAX_SUPPORT_POINTS];       // Support points of object A in local coordinates
     Vector3D suppPointsB[MAX_SUPPORT_POINTS];       // Support points of object B in local coordinates
     Vector3D points[MAX_SUPPORT_POINTS];            // Current points
     TrianglesStore triangleStore;                   // Store the triangles
     TriangleEPA* triangleHeap[MAX_FACETS];          // Heap that contains the face candidate of the EPA algorithm
+
+    // Transform a point from body space of shape 2 to body space of shape 1 (the GJK algorithm is done in body space of shape 1)
+    Transform shape2ToShape1 = transform1.inverse() * transform2;
+
+    // Matrix that transform a direction from body space of shape 1 into body space of shape 2
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -141,17 +149,17 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
             // Compute the support point in the direction of v1
             suppPointsA[2] = boundingVolume1->getSupportPoint(v1, OBJECT_MARGIN);
-            suppPointsB[2] = boundingVolume2->getSupportPoint(v1.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[2] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * v1.getOpposite(), OBJECT_MARGIN);
             points[2] = suppPointsA[2] - suppPointsB[2];
 
             // Compute the support point in the direction of v2
             suppPointsA[3] = boundingVolume1->getSupportPoint(v2, OBJECT_MARGIN);
-            suppPointsB[3] = boundingVolume2->getSupportPoint(v2.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[3] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * v2.getOpposite(), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
 
             // Compute the support point in the direction of v3
             suppPointsA[4] = boundingVolume1->getSupportPoint(v3, OBJECT_MARGIN);
-            suppPointsB[4] = boundingVolume2->getSupportPoint(v3.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[4] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * v3.getOpposite(), OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Now we have an hexahedron (two tetrahedron glued together). We can simply keep the
@@ -246,10 +254,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
             // Compute the two new vertices to obtain a hexahedron
             suppPointsA[3] = boundingVolume1->getSupportPoint(n, OBJECT_MARGIN);
-            suppPointsB[3] = boundingVolume2->getSupportPoint(n.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[3] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * n.getOpposite(), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
             suppPointsA[4] = boundingVolume1->getSupportPoint(n.getOpposite(), OBJECT_MARGIN);
-            suppPointsB[4] = boundingVolume2->getSupportPoint(n, OBJECT_MARGIN);
+            suppPointsB[4] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * n, OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Construct the triangle faces
@@ -319,7 +327,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
             // Compute the support point of the Minkowski difference (A-B) in the closest point direction
             suppPointsA[nbVertices] = boundingVolume1->getSupportPoint(triangle->getClosestPoint(), OBJECT_MARGIN);
-            suppPointsB[nbVertices] = boundingVolume2->getSupportPoint(triangle->getClosestPoint().getOpposite(), OBJECT_MARGIN);
+            suppPointsB[nbVertices] = shape2ToShape1 * boundingVolume2->getSupportPoint(rotateToShape2 * triangle->getClosestPoint().getOpposite(), OBJECT_MARGIN);
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;
@@ -361,10 +369,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
-    // Compute the contact info
-    v = triangle->getClosestPoint();
-    Vector3D pA = triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3D pB = triangle->computeClosestPointOfObject(suppPointsB);
+    // Compute the contact info (in world-space)
+    v = transform1.getOrientation() * triangle->getClosestPoint();
+    Vector3D pA = transform1 * triangle->computeClosestPointOfObject(suppPointsA);
+    Vector3D pB = transform1 * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3D normal = v.getUnit();
     double penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
