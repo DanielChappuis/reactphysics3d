@@ -52,7 +52,7 @@ class BoundingVolume {
         Body* getBodyPointer() const;       // Return the body pointer
         void setBodyPointer(Body* body);    // Set the body pointer
 
-        virtual void update(const Vector3D& newCenter, const Quaternion& rotationQuaternion)=0;      // Update the orientation of the bounding volume according to the new orientation of the body
+        
         #ifdef VISUAL_DEBUG
             virtual void draw() const=0;                                                             // Display the bounding volume (only for testing purpose)
         #endif

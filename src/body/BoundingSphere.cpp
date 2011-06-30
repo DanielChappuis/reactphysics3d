@@ -60,9 +60,10 @@ void BoundingSphere::draw() const {
 }
 #endif
 
-
+/*TODO: DELETE THIS
 // Return the corresponding AABB
 AABB* BoundingSphere::computeAABB() const {
     // Create and return the AABB
     return new AABB(center, radius, radius, radius);
 }
+*/

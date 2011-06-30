@@ -28,12 +28,12 @@
 // Libraries
 #include <stdexcept>
 #include <cassert>
-
+#include "../mathematics/Transform.h"
+#include "../body/AABB.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
-class BroadBoundingVolume;
 class NarrowBoundingVolume;
 
 /*  -------------------------------------------------------------------
@@ -44,33 +44,52 @@ class NarrowBoundingVolume;
 */
 class Body {
     protected :
-        double mass;                                    // Mass of the body
-        BroadBoundingVolume* broadBoundingVolume;       // Bounding volume used for the broad-phase collision detection
+        double mass;                                // Mass of the body
+        Transform transform;                        // Position and orientation of the body
+        Transform oldTransform;                     // Last position and orientation of the body
+        double interpolationFactor;                 // Interpolation factor used for the state interpolation
+        // TODO : DELETE BroadBoundingVolume* broadBoundingVolume;       // Bounding volume used for the broad-phase collision detection
         NarrowBoundingVolume* narrowBoundingVolume;     // Bounding volume used for the narrow-phase collision detection
         bool isMotionEnabled;                           // True if the body is able to move
         bool isCollisionEnabled;                        // True if the body can collide with others bodies
+        AABB* aabb;                                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
 
-        void setBroadBoundingVolume(BroadBoundingVolume* broadBoundingVolume);      // Set the broad-phase bounding volume
         void setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume);   // Set the narrow-phase bounding volume
 
     public :
-        Body(double mass) throw(std::invalid_argument);    // Constructor
+        Body(const Transform& transform, double mass) throw(std::invalid_argument);    // Constructor
         virtual ~Body();                                   // Destructor
 
         double getMass() const;                                         // Return the mass of the body
         void setMass(double mass);                                      // Set the mass of the body
+        const Transform& getTransform() const;                          // Return the current position and orientation
+        void setTransform(const Transform& transform);                  // Set the current position and orientation
+        const AABB* getAABB() const;                                    // Return the AAABB of the body
+        Transform getInterpolatedTransform() const;                     // Return the interpolated transform for rendering
+        void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
         bool getIsMotionEnabled() const;                                // Return if the rigid body can move
         void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
         bool getIsCollisionEnabled() const;                             // Return true if the body can collide with others bodies
         void setIsCollisionEnabled(bool isCollisionEnabled);            // Set the isCollisionEnabled value
-        const BroadBoundingVolume* getBroadBoundingVolume() const;      // Return the broad-phase bounding volume
         const NarrowBoundingVolume* getNarrowBoundingVolume() const;    // Return the narrow-phase bounding volume of the body
+        void updateOldTransform();                                      // Update the old transform with the current one
 };
 
 // Method that return the mass of the body
 inline double Body::getMass() const {
     return mass;
 };
+
+// Return the interpolated transform for rendering
+inline Transform Body::getInterpolatedTransform() const {
+    return Transform::interpolateTransforms(oldTransform, transform, interpolationFactor);
+}
+
+// Set the interpolation factor of the body
+inline void Body::setInterpolationFactor(double factor) {
+    // Set the factor
+    interpolationFactor = factor;
+}
 
 // Return if the rigid body can move
 inline bool Body::getIsMotionEnabled() const {
@@ -87,6 +106,21 @@ inline void Body::setMass(double mass) {
     this->mass = mass;
 }
 
+// Return the current position and orientation
+inline const Transform& Body::getTransform() const {
+    return transform;
+}
+
+// Set the current position and orientation
+inline void Body::setTransform(const Transform& transform) {
+    this->transform = transform;
+}
+
+// Return the AAABB of the body
+inline const AABB* Body::getAABB() const {
+    return aabb;
+}
+
  // Return true if the body can collide with others bodies
 inline bool Body::getIsCollisionEnabled() const {
     return isCollisionEnabled;
@@ -97,15 +131,24 @@ inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
     this->isCollisionEnabled = isCollisionEnabled;
 }
 
+/* TODO : DELETE
 // Return the broad-phase bounding volume
 inline const BroadBoundingVolume* Body::getBroadBoundingVolume() const {
     return broadBoundingVolume;
 }
+*/
 
 // Return the oriented bounding box of the rigid body
 inline const NarrowBoundingVolume* Body::getNarrowBoundingVolume() const {
     return narrowBoundingVolume;
 }
+
+// Update the old transform with the current one
+// This is used to compute the interpolated position and orientation of the body
+inline void Body::updateOldTransform() {
+    oldTransform = transform;
+}
+
 
 }
 

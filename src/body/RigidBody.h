@@ -42,10 +42,11 @@ namespace reactphysics3d {
 */
 class RigidBody : public Body {
     protected :
-        Vector3D position;                          // Position of the center of mass of the body
-        Vector3D oldPosition;                       // Old position used to compute the interpolated position
-        Quaternion orientation;                     // Orientation quaternion of the body
-        Quaternion oldOrientation;                  // Old orientation used to compute the interpolated orientation
+        // TODO : Remove some of the following variables
+        //Vector3D position;                          // Position of the center of mass of the body
+        //Vector3D oldPosition;                       // Old position used to compute the interpolated position
+        //Quaternion orientation;                     // Orientation quaternion of the body
+        //Quaternion oldOrientation;                  // Old orientation used to compute the interpolated orientation
         Vector3D linearVelocity;                    // Linear velocity of the body
         Vector3D angularVelocity;                   // Angular velocity of the body
         Vector3D externalForce;                     // Current external force on the body
@@ -53,18 +54,13 @@ class RigidBody : public Body {
         Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;        // Inverse of the inertia tensor of the body (in body coordinates)
         double massInverse;                         // Inverse of the mass of the body
-        double interpolationFactor;                 // Interpolation factor used for the state interpolation
         double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
 
     public :
-        RigidBody(const Vector3D& position, const Quaternion& orientation, double mass,
+        RigidBody(const Transform& transform, double mass,
                   const Matrix3x3& inertiaTensorLocal, NarrowBoundingVolume* narrowBoundingVolume);     // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                                           // Destructor
 
-        Vector3D getPosition() const;                                           // Return the position of the body
-        void setPosition(const Vector3D& position);                             // Set the position of the body
-        Quaternion getOrientation() const;                                      // Return the orientation quaternion
-        void setOrientation(const Quaternion& orientation);                     // Set the orientation quaternion
         Vector3D getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3D& linearVelocity);                 // Set the linear velocity of the body
         Vector3D getAngularVelocity() const;                                    // Return the angular velocity
@@ -80,39 +76,11 @@ class RigidBody : public Body {
         Matrix3x3 getInertiaTensorLocalInverse() const;                         // Get the inverse of the inertia tensor
         Matrix3x3 getInertiaTensorWorld() const;                                // Return the inertia tensor in world coordinates
         Matrix3x3 getInertiaTensorInverseWorld() const;                         // Return the inverse of the inertia tensor in world coordinates
-        void setInterpolationFactor(double factor);                             // Set the interpolation factor of the body
-        Vector3D getInterpolatedPosition() const;                               // Return the interpolated position
-        Quaternion getInterpolatedOrientation() const;                          // Return the interpolated orientation
+        
         double getRestitution() const;                                          // Get the restitution coefficient
         void setRestitution(double restitution) throw(std::invalid_argument);   // Set the restitution coefficient
-        void updateOldPositionAndOrientation();                                 // Update the previous position and orientation of the body
         void update();                                                          // Update the rigid body in order to reflect a change in the body state
 };
-
-// --- Inline functions --- //
-
-// Return the position of the body
-inline Vector3D RigidBody::getPosition() const {
-    return position;
-}
-
-// Set the position of the body
-inline void RigidBody::setPosition(const Vector3D& position) {
-    this->position = position;
-}
-
-// Return the orientation quaternion of the body
-inline Quaternion RigidBody::getOrientation() const {
-    return orientation;
-}
-
-// Set the orientation quaternion
-inline void RigidBody::setOrientation(const Quaternion& orientation) {
-    this->orientation = orientation;
-
-    // Normalize the orientation quaternion
-    orientation.getUnit();
-}
 
 // Return the linear velocity
 inline Vector3D RigidBody::getLinearVelocity() const {
@@ -179,7 +147,7 @@ inline void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal
 // where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
     // Compute and return the inertia tensor in world coordinates
-    return orientation.getMatrix() * inertiaTensorLocal * orientation.getMatrix().getTranspose();
+    return transform.getOrientation() * inertiaTensorLocal * transform.getOrientation().getTranspose();
 }
 
 // Return the inverse of the inertia tensor in world coordinates
@@ -188,25 +156,7 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
 // where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
     // Compute and return the inertia tensor in world coordinates
-    return orientation.getMatrix() * inertiaTensorLocalInverse * orientation.getMatrix().getTranspose();
-}
-
-// Set the interpolation factor of the body
-inline void RigidBody::setInterpolationFactor(double factor) {
-    // Set the factor
-    interpolationFactor = factor;
-}
-
-// Return the interpolated position
-inline Vector3D RigidBody::getInterpolatedPosition() const {
-    // Compute the interpolated position
-    return oldPosition * (1-interpolationFactor) + position * interpolationFactor;
-}
-
- // Return the interpolated orientation
-inline Quaternion RigidBody::getInterpolatedOrientation() const {
-    // Compute the interpolated orientation
-    return Quaternion::slerp(oldOrientation, orientation, interpolationFactor);
+    return transform.getOrientation() * inertiaTensorLocalInverse * transform.getOrientation().getTranspose();
 }
 
 // Set the linear velocity of the rigid body
@@ -234,12 +184,6 @@ inline void RigidBody::setRestitution(double restitution) throw(std::invalid_arg
     }
 }
 
-// Update the previous body state of the body
-// This is used to compute the interpolated position and orientation of the body
-inline void RigidBody::updateOldPositionAndOrientation() {
-    oldPosition = position;
-    oldOrientation = orientation;
-}
 
 } // End of the ReactPhyscis3D namespace
 

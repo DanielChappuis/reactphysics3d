@@ -52,8 +52,9 @@ class BoundingSphere : public NarrowBoundingVolume {
         void setRadius(double radius);                                                          // Set the radius of the sphere
         virtual void update(const Vector3D& newCenter,
                             const Quaternion& rotationQuaternion);                              // Update the sphere orientation according to a new orientation of the rigid body
-        virtual AABB* computeAABB() const;                                                      // Return the corresponding AABB
+        // TODO : DELETE virtual AABB* computeAABB() const;                                                      // Return the corresponding AABB
         virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;   // Return a support point in a given direction
+        virtual Vector3D getLocalExtents() const;                                               // Return the local extents in x,y and z direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -94,12 +95,18 @@ inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, doubl
     // If the direction vector is not the zero vector
     if (length > 0.0) {
         // Return the support point of the sphere in the given direction
-        return center + (radius + margin) * direction.getUnit();
+        return (radius + margin) * direction.getUnit();
     }
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return center + Vector3D(0, radius + margin, 0);
+    return Vector3D(0, radius + margin, 0);
+}
+
+// Return the local extents of the shape (half-width) in x,y and z local direction
+// This method is used to compute the AABB of the box
+inline Vector3D BoundingSphere::getLocalExtents() const {
+    return Vector3D(radius, radius, radius);
 }
 
 }; // End of the ReactPhysics3D namespace

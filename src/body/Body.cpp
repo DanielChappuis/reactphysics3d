@@ -31,31 +31,45 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(double mass) throw(std::invalid_argument)
-     : mass(mass), broadBoundingVolume(0), narrowBoundingVolume(0)  {
+Body::Body(const Transform& transform, double mass) throw(std::invalid_argument)
+     : transform(transform), mass(mass), narrowBoundingVolume(0), aabb(0) {
     // Check if the mass is not larger than zero
     if (mass <= 0.0) {
         // We throw an exception
         throw std::invalid_argument("Exception in Body constructor : the mass has to be different larger than zero");
     }
+
+    // Initialize the old transform
+    oldTransform = transform;
+
+    // Create the AABB for Broad-Phase collision detection
+    aabb = new AABB(this);
 }
 
 // Destructor
 Body::~Body() {
+    /* TODO : DELETE THIS
     if (broadBoundingVolume) {
         delete broadBoundingVolume;
     }
+    */
+    
     if (narrowBoundingVolume) {
         delete narrowBoundingVolume;
     }
+
+    // Delete the AABB
+    delete aabb;
 }
 
+/* TODO : DELETE THIS
 // Set the broad-phase bounding volume
 void Body::setBroadBoundingVolume(BroadBoundingVolume* broadBoundingVolume) {
     assert(broadBoundingVolume);
     this->broadBoundingVolume = broadBoundingVolume;
     broadBoundingVolume->setBodyPointer(this);
 }
+*/
 
 // Set the narrow-phase bounding volume
 void Body::setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume) {

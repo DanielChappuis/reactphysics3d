@@ -31,10 +31,11 @@
  using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Vector3D& position, const Quaternion& orientation, double mass, const Matrix3x3& inertiaTensorLocal,
+ // TODO : Use a Transform in the constructor instead of "position" and "orientation"
+ RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal,
                       NarrowBoundingVolume* narrowBoundingVolume)
-           : Body(mass), position(position), orientation(orientation.getUnit()), inertiaTensorLocal(inertiaTensorLocal),
-             inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass), oldPosition(position), oldOrientation(orientation) {
+           : Body(transform, mass), inertiaTensorLocal(inertiaTensorLocal),
+             inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
 
     restitution = 1.0;
     isMotionEnabled = true;
@@ -44,13 +45,9 @@
     // Set the bounding volume for the narrow-phase collision detection
     setNarrowBoundingVolume(narrowBoundingVolume);
 
-    // Compute the broad-phase bounding volume (an AABB)
-    setBroadBoundingVolume(narrowBoundingVolume->computeAABB());
-
     // Update the orientation of the OBB according to the orientation of the rigid body
     update();
 
-    assert(broadBoundingVolume);
     assert(narrowBoundingVolume);
 }
 
@@ -61,7 +58,8 @@ RigidBody::~RigidBody() {
 
 // Update the rigid body in order to reflect a change in the body state
 void RigidBody::update() {
-    // Update the orientation of the corresponding bounding volumes of the rigid body
-    broadBoundingVolume->update(position, orientation);
-    narrowBoundingVolume->update(position, orientation);
+    // TODO : Remove the following code when using a Transform
+
+    // Update the AABB
+    aabb->update(transform, narrowBoundingVolume->getLocalExtents());
 }
