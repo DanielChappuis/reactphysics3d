@@ -50,8 +50,8 @@ namespace reactphysics3d {
 */
 class SATAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        bool computeCollisionTest(const OBB* const obb1, const Transform& transform1,
-                                  const OBB* const obb2, const Transform& transform2,
+        bool computeCollisionTest(const OBB* obb1, const Transform& transform1,
+                                  const OBB* obb2, const Transform& transform2,
                                   ContactInfo*& contactInfo) const;     // Return true and compute a contact info if the two OBB collide
         double computePenetrationDepth(double min1, double max1, double min2, double max2) const;                     // Compute the penetration depth of two projection intervals                             
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                    // Compute a contact normal
@@ -60,11 +60,7 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
         SATAlgorithm();           // Constructor
         ~SATAlgorithm();          // Destructor
 
-        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
-                                   const Transform& transform1,
-                                   const NarrowBoundingVolume* const boundingVolume2,
-                                   const Transform& transform2,
-                                   ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const Body* body1, const Body* body2, ContactInfo*& contactInfo);                   // Return true and compute a contact info if the two bounding volume collide
 };
 
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the

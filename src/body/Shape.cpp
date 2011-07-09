@@ -1,4 +1,3 @@
-/****************************************************************************
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2010 Daniel Chappuis                                            *
@@ -23,36 +22,18 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef NARROW_BOUNDING_VOLUME_H
-#define NARROW_BOUNDING_VOLUME_H
-
 // Libraries
-#include "BoundingVolume.h"
-#include "AABB.h"
+#include "Shape.h"
 
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-// ReactPhysics3D namespace
-namespace reactphysics3d {
-
-/*  -------------------------------------------------------------------
-    Class NarrowBoundingVolume :
-        This class represents the volume that contains a rigid body
-        This volume will be used to compute the narrow-phase collision
-        detection.
-    -------------------------------------------------------------------
-*/
-class NarrowBoundingVolume : public BoundingVolume {
-    protected :
-
-    public :
-        NarrowBoundingVolume();                 // Constructor
-        virtual ~NarrowBoundingVolume();        // Destructor
-
-        // TODO : DELETE virtual AABB* computeAABB() const=0;                                                        // Return the corresponding AABB
-        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const=0;     // Return a support point in a given direction
-        virtual Vector3D getLocalExtents() const=0;                                                 // Return the local extents in x,y and z direction
-};
-
+// Constructor
+Shape::Shape() {
+    
 }
 
-#endif
+// Destructor
+Shape::~Shape() {
+
+}

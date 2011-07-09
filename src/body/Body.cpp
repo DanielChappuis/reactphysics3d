@@ -24,56 +24,31 @@
 
  // Libraries
 #include "Body.h"
-#include "BroadBoundingVolume.h"
-#include "NarrowBoundingVolume.h"
+#include "Shape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(const Transform& transform, double mass) throw(std::invalid_argument)
-     : transform(transform), mass(mass), narrowBoundingVolume(0), aabb(0) {
-    // Check if the mass is not larger than zero
-    if (mass <= 0.0) {
-        // We throw an exception
-        throw std::invalid_argument("Exception in Body constructor : the mass has to be different larger than zero");
-    }
+Body::Body(const Transform& transform, Shape* shape, double mass)
+     : shape(shape), transform(transform), mass(mass) {
+    assert(mass > 0.0);
+    assert(shape);
+
+    isMotionEnabled = true;
+    isCollisionEnabled = true;
+    interpolationFactor = 0.0;
 
     // Initialize the old transform
     oldTransform = transform;
 
-    // Create the AABB for Broad-Phase collision detection
-    aabb = new AABB(this);
+    // Create the AABB for broad-phase collision detection
+    aabb = new AABB(transform, shape->getLocalExtents());
 }
 
 // Destructor
 Body::~Body() {
-    /* TODO : DELETE THIS
-    if (broadBoundingVolume) {
-        delete broadBoundingVolume;
-    }
-    */
-    
-    if (narrowBoundingVolume) {
-        delete narrowBoundingVolume;
-    }
 
     // Delete the AABB
     delete aabb;
-}
-
-/* TODO : DELETE THIS
-// Set the broad-phase bounding volume
-void Body::setBroadBoundingVolume(BroadBoundingVolume* broadBoundingVolume) {
-    assert(broadBoundingVolume);
-    this->broadBoundingVolume = broadBoundingVolume;
-    broadBoundingVolume->setBodyPointer(this);
-}
-*/
-
-// Set the narrow-phase bounding volume
-void Body::setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume) {
-    assert(narrowBoundingVolume);
-    this->narrowBoundingVolume = narrowBoundingVolume;
-    narrowBoundingVolume->setBodyPointer(this);
 }

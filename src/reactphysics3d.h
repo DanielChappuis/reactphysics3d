@@ -38,7 +38,7 @@
 #include "body/RigidBody.h"
 #include "engine/PhysicsWorld.h"
 #include "engine/PhysicsEngine.h"
-#include "body/BoundingVolume.h"
+#include "body/Shape.h"
 #include "body/OBB.h"
 #include "body/BoundingSphere.h"
 #include "body/AABB.h"

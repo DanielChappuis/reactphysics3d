@@ -52,8 +52,9 @@ Contact::~Contact() {
 // of the contact. The argument "noConstraint", is the row were the method have
 // to start to fill in the J_sp matrix.
 void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
-    RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
-    RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
+    assert(body1);
+    assert(body2);
+
     Vector3D r1;
     Vector3D r2;
     Vector3D r1CrossN;
@@ -62,12 +63,9 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     Vector3D r2CrossU1;
     Vector3D r1CrossU2;
     Vector3D r2CrossU2;
-    Vector3D body1Position = rigidBody1->getTransform().getPosition();
-    Vector3D body2Position = rigidBody2->getTransform().getPosition();
+    Vector3D body1Position = body1->getTransform().getPosition();
+    Vector3D body2Position = body2->getTransform().getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
-
-    assert(rigidBody1);
-    assert(rigidBody2);
 
     // For each point in the contact
     for (int i=0; i<nbPoints; i++) {
@@ -181,12 +179,13 @@ void Contact::computeUpperBound(int noConstraint, Vector& upperBounds) const {
 // "errorValues" is the error values vector of the constraint solver and this
 // method has to fill in this vector starting from the row "noConstraint"
 void Contact::computeErrorValue(int noConstraint, Vector& errorValues) const {
+    assert(body1);
+    assert(body2);
+
     RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
     RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
     int index = noConstraint;
 
-    assert(rigidBody1);
-    assert(rigidBody2);
     assert(noConstraint >= 0 && noConstraint + nbConstraints <= errorValues.getNbComponent());
 
     // Compute the error value for the contact constraint

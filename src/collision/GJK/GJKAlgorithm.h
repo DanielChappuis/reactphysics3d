@@ -28,7 +28,7 @@
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
 #include "../ContactInfo.h"
-#include "../../body/NarrowBoundingVolume.h"
+#include "../../body/Shape.h"
 #include "../EPA/EPAAlgorithm.h"
 
 
@@ -61,23 +61,19 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
     private :
         EPAAlgorithm algoEPA;             // EPA Algorithm
 
-        bool computePenetrationDepthForEnlargedObjects(const NarrowBoundingVolume* const boundingVolume1,
-                                                       const Transform& transform1,
-                                                       const NarrowBoundingVolume* const boundingVolume2,
-                                                        const Transform& transform2,
+        bool computePenetrationDepthForEnlargedObjects(const Shape* shape1, const Transform& transform1,
+                                                       const Shape* shape2, const Transform& transform2,
                                                        ContactInfo*& contactInfo, Vector3D& v);             // Compute the penetration depth for enlarged objects
 
     public :
         GJKAlgorithm();           // Constructor
         ~GJKAlgorithm();          // Destructor
 
-        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1, const Transform& transform1,
-                                   const NarrowBoundingVolume* const boundingVolume2, const Transform& transform2,
-                                   ContactInfo*& contactInfo);                          // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const Shape* shape1, const Transform& transform1,
+                                   const Shape* shape2,  const Transform& transform2,
+                                   ContactInfo*& contactInfo);                      // Return true and compute a contact info if the two bounding volume collide
 };
 
 } // End of the ReactPhysics3D namespace
-
-// TODO : Check what would be a correct value for the OBJECT_MARGIN constant
 
 #endif

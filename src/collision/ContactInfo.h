@@ -49,9 +49,9 @@ struct ContactInfo {
         const Vector3D normal;                  // Normal vector the the collision contact
         const double penetrationDepth;          // Penetration depth of the contact
         
-        ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal,
+        ContactInfo(Body* body1, Body* body2, const Vector3D& normal,
                     double penetrationDepth);                                                    // Constructor for SAT
-        ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal,
+        ContactInfo(Body* body1, Body* body2, const Vector3D& normal,
                     double penetrationDepth, const Vector3D& point1, const Vector3D& point2);    // Constructor for GJK
 };
 

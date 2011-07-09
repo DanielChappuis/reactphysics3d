@@ -78,7 +78,7 @@ void SAPAlgorithm::addBodiesAABB(vector<Body*> bodies) {
 // computation. This methods computes the current possible collision pairs of
 // bodies and update the "possibleCollisionPairs" argument.
 void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vector<Body*> removedBodies,
-                                                 vector<pair<const Body*, const Body* > >& possibleCollisionPairs) {
+                                                 vector<pair<Body*, Body*> >& possibleCollisionPairs) {
     double variance[3];                             // Variance of the distribution of the AABBs on the three x, y and z axis
     double esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
     double esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis

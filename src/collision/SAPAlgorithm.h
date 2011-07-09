@@ -62,7 +62,7 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
         virtual ~SAPAlgorithm();                                    // Destructor
 
         virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
-                                                   std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
+                                                   std::vector<std::pair<Body*, Body*> >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
 };
 
 // Static method that compare two AABBs. This method will be used to compare to AABBs

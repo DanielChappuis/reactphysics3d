@@ -30,11 +30,11 @@
 #include <cassert>
 #include "../mathematics/Transform.h"
 #include "../body/AABB.h"
+#include "../body/Shape.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
 
-class NarrowBoundingVolume;
 
 /*  -------------------------------------------------------------------
     Class Body :
@@ -44,22 +44,21 @@ class NarrowBoundingVolume;
 */
 class Body {
     protected :
-        double mass;                                // Mass of the body
-        Transform transform;                        // Position and orientation of the body
-        Transform oldTransform;                     // Last position and orientation of the body
-        double interpolationFactor;                 // Interpolation factor used for the state interpolation
-        // TODO : DELETE BroadBoundingVolume* broadBoundingVolume;       // Bounding volume used for the broad-phase collision detection
-        NarrowBoundingVolume* narrowBoundingVolume;     // Bounding volume used for the narrow-phase collision detection
-        bool isMotionEnabled;                           // True if the body is able to move
-        bool isCollisionEnabled;                        // True if the body can collide with others bodies
-        AABB* aabb;                                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
-
-        void setNarrowBoundingVolume(NarrowBoundingVolume* narrowBoundingVolume);   // Set the narrow-phase bounding volume
+        Shape* shape;                   // Collision shape of the body
+        double mass;                    // Mass of the body
+        Transform transform;            // Position and orientation of the body
+        Transform oldTransform;         // Last position and orientation of the body
+        double interpolationFactor;     // Interpolation factor used for the state interpolation
+        bool isMotionEnabled;           // True if the body is able to move
+        bool isCollisionEnabled;        // True if the body can collide with others bodies
+        AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
 
     public :
-        Body(const Transform& transform, double mass) throw(std::invalid_argument);    // Constructor
-        virtual ~Body();                                   // Destructor
+        Body(const Transform& transform, Shape* shape, double mass);    // Constructor
+        virtual ~Body();                                                // Destructor
 
+        Shape* getShape() const;                                        // Return the collision shape
+        void setShape(Shape* shape);                                    // Set the collision shape
         double getMass() const;                                         // Return the mass of the body
         void setMass(double mass);                                      // Set the mass of the body
         const Transform& getTransform() const;                          // Return the current position and orientation
@@ -71,9 +70,21 @@ class Body {
         void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
         bool getIsCollisionEnabled() const;                             // Return true if the body can collide with others bodies
         void setIsCollisionEnabled(bool isCollisionEnabled);            // Set the isCollisionEnabled value
-        const NarrowBoundingVolume* getNarrowBoundingVolume() const;    // Return the narrow-phase bounding volume of the body
         void updateOldTransform();                                      // Update the old transform with the current one
+        void updateAABB();                                              // Update the Axis-Aligned Bounding Box coordinates
 };
+
+// Return the collision shape
+inline Shape* Body::getShape() const {
+    assert(shape);
+    return shape;
+}
+
+// Set the collision shape
+inline void Body::setShape(Shape* shape) {
+    assert(shape);
+    this->shape = shape;
+}
 
 // Method that return the mass of the body
 inline double Body::getMass() const {
@@ -131,22 +142,16 @@ inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
     this->isCollisionEnabled = isCollisionEnabled;
 }
 
-/* TODO : DELETE
-// Return the broad-phase bounding volume
-inline const BroadBoundingVolume* Body::getBroadBoundingVolume() const {
-    return broadBoundingVolume;
-}
-*/
-
-// Return the oriented bounding box of the rigid body
-inline const NarrowBoundingVolume* Body::getNarrowBoundingVolume() const {
-    return narrowBoundingVolume;
-}
-
 // Update the old transform with the current one
 // This is used to compute the interpolated position and orientation of the body
 inline void Body::updateOldTransform() {
     oldTransform = transform;
+}
+
+// Update the rigid body in order to reflect a change in the body state
+inline void Body::updateAABB() {
+    // Update the AABB
+    aabb->update(transform, shape->getLocalExtents());
 }
 
 

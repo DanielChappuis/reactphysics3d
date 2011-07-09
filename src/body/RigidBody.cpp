@@ -24,31 +24,24 @@
 
 // Libraries
 #include "RigidBody.h"
-#include "BroadBoundingVolume.h"
-#include "NarrowBoundingVolume.h"
+#include "Shape.h"
 
- // We want to use the ReactPhysics3D namespace
- using namespace reactphysics3d;
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
  // Constructor
- // TODO : Use a Transform in the constructor instead of "position" and "orientation"
- RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal,
-                      NarrowBoundingVolume* narrowBoundingVolume)
-           : Body(transform, mass), inertiaTensorLocal(inertiaTensorLocal),
+ RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape)
+           : Body(transform, shape, mass), inertiaTensorLocal(inertiaTensorLocal),
              inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
 
     restitution = 1.0;
-    isMotionEnabled = true;
-    isCollisionEnabled = true;
-    interpolationFactor = 0.0;
 
-    // Set the bounding volume for the narrow-phase collision detection
-    setNarrowBoundingVolume(narrowBoundingVolume);
+    // Set the body pointer of the AABB and the shape
+    aabb->setBodyPointer(this);
+    shape->setBodyPointer(this);
 
-    // Update the orientation of the OBB according to the orientation of the rigid body
-    update();
-
-    assert(narrowBoundingVolume);
+    assert(shape);
+    assert(aabb);
 }
 
 // Destructor
@@ -56,10 +49,3 @@ RigidBody::~RigidBody() {
 
 };
 
-// Update the rigid body in order to reflect a change in the body state
-void RigidBody::update() {
-    // TODO : Remove the following code when using a Transform
-
-    // Update the AABB
-    aabb->update(transform, narrowBoundingVolume->getLocalExtents());
-}

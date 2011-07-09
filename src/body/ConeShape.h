@@ -26,7 +26,7 @@
 #define BOUNDING_CONE_H
 
 // Libraries
-#include "NarrowBoundingVolume.h"
+#include "Shape.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -37,7 +37,7 @@ namespace reactphysics3d {
         This class represents a cone bounding volume.
     -------------------------------------------------------------------
 */
-class ConeShape : public NarrowBoundingVolume {
+class ConeShape : public Shape {
     protected :
         Vector3D center;            // Center point of the sphere
         double radius;              // Radius of the sphere

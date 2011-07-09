@@ -90,13 +90,12 @@ void CollisionDetection::computeNarrowPhase() {
     for (unsigned int i=0; i<possibleCollisionPairs.size(); i++) {
         ContactInfo* contactInfo = NULL;
 
-        const RigidBody* rigidBody1 = dynamic_cast<const RigidBody*>(possibleCollisionPairs.at(i).first);
-        const RigidBody* rigidBody2 = dynamic_cast<const RigidBody*>(possibleCollisionPairs.at(i).second);
+        Body* const body1 = possibleCollisionPairs.at(i).first;
+        Body* const body2 = possibleCollisionPairs.at(i).second;
         
         // Use the narrow-phase collision detection algorithm to check if there really are a contact
-        if (narrowPhaseAlgorithm->testCollision(rigidBody1->getNarrowBoundingVolume(), rigidBody1->getTransform(),
-                                                rigidBody2->getNarrowBoundingVolume(), rigidBody2->getTransform(),
-                                                contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(body1->getShape(), body1->getTransform(),
+                                                body2->getShape(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
 
             // Add the contact info the current list of collision informations

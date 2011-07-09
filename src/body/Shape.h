@@ -1,3 +1,4 @@
+/****************************************************************************
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2010 Daniel Chappuis                                            *
@@ -22,18 +23,50 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
+#ifndef SHAPE_H
+#define SHAPE_H
+
 // Libraries
-#include "NarrowBoundingVolume.h"
+#include <cassert>
+#include "../mathematics/Vector3D.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-NarrowBoundingVolume::NarrowBoundingVolume() : BoundingVolume() {
-    
+// Declarations
+class Body;
+
+/*  -------------------------------------------------------------------
+    Class Shape :
+        This abstract class represents the shape of a body that is used during
+        the narrow-phase collision detection.
+    -------------------------------------------------------------------
+*/
+class Shape {
+    protected :
+        Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
+
+    public :
+        Shape();                        // Constructor
+        virtual ~Shape();               // Destructor
+
+        Body* getBodyPointer() const;                                                               // Return the body pointer
+        void setBodyPointer(Body* bodyPointer);                                                     // Set the body pointer
+        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const=0;     // Return a support point in a given direction
+        virtual Vector3D getLocalExtents() const=0;                                                 // Return the local extents in x,y and z direction
+};
+
+// Return the body pointer
+inline Body* Shape::getBodyPointer() const {
+    assert(bodyPointer != NULL);
+    return bodyPointer;
 }
 
-// Destructor
-NarrowBoundingVolume::~NarrowBoundingVolume() {
+// Set the body pointer
+inline void Shape::setBodyPointer(Body* bodyPointer) {
+    this->bodyPointer = bodyPointer;
+}
 
 }
+
+#endif

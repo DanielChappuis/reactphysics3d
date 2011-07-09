@@ -46,19 +46,20 @@ class AABB {
     private :
         Vector3D minCoordinates;        // Minimum world coordinates of the AABB on the x,y and z axis
         Vector3D maxCoordinates;        // Maximum world coordinates of the AABB on the x,y and z axis
-        const Body* bodyPointer;        // Pointer to the owner body
+        Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
 
     public :
-        AABB(const Body* body);                                                                    // Constructor
-        AABB(const Body* bodyPointer, const Transform& transform, const Vector3D& extents);        // Constructor
-        virtual ~AABB();                                                                           // Destructor
+        AABB();                                                           // Constructor
+        AABB(const Transform& transform, const Vector3D& extents);        // Constructor
+        virtual ~AABB();                                                  // Destructor
 
-        Vector3D getCenter() const;                                                                 // Return the center point
-        const Vector3D& getMinCoordinates() const;                                                  // Return the minimum coordinates of the AABB
-        const Vector3D& getMaxCoordinates() const;                                                  // Return the maximum coordinates of the AABB
-        const Body* getBodyPointer() const;                                                         // Return a pointer to the owner body
-        bool testCollision(const AABB& aabb) const;                                                 // Return true if the current AABB is overlapping is the AABB in argument
-        virtual void update(const Transform& newTransform, const Vector3D& extents);                // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        Vector3D getCenter() const;                                                     // Return the center point
+        const Vector3D& getMinCoordinates() const;                                      // Return the minimum coordinates of the AABB
+        const Vector3D& getMaxCoordinates() const;                                      // Return the maximum coordinates of the AABB
+        Body* getBodyPointer() const;                                                   // Return a pointer to the owner body
+        void setBodyPointer(Body* bodyPointer);                                         // Set the body pointer
+        bool testCollision(const AABB& aabb) const;                                     // Return true if the current AABB is overlapping is the AABB in argument
+        virtual void update(const Transform& newTransform, const Vector3D& extents);    // Update the oriented bounding box orientation according to a new orientation of the rigid body
         #ifdef VISUAL_DEBUG
            virtual void draw() const;                                                               // Draw the AABB (only for testing purpose)
         #endif
@@ -80,15 +81,18 @@ inline const Vector3D& AABB::getMaxCoordinates() const {
 }
 
 // Return a pointer to the owner body
-inline const Body* AABB::getBodyPointer() const {
+inline Body* AABB::getBodyPointer() const {
     return bodyPointer;
+}
+
+// Set the body pointer
+inline void AABB::setBodyPointer(Body* bodyPointer) {
+    this->bodyPointer = bodyPointer;
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument
 // Two AABB overlap if they overlap in the three x, y and z axis at the same time
 inline bool AABB::testCollision(const AABB& aabb) const {
-    Vector3D center2 = aabb.getCenter();
-    double margin = 2 * OBJECT_MARGIN;
     if (maxCoordinates.getX() + OBJECT_MARGIN < aabb.minCoordinates.getX() - OBJECT_MARGIN || 
         aabb.maxCoordinates.getX() + OBJECT_MARGIN < minCoordinates.getX() - OBJECT_MARGIN) return false;
     if (maxCoordinates.getY() + OBJECT_MARGIN < aabb.minCoordinates.getY() - OBJECT_MARGIN ||

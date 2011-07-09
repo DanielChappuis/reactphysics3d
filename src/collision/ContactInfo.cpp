@@ -28,13 +28,14 @@
 using namespace reactphysics3d;
 
 // Constructor for SAT
-ContactInfo::ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth)
+// TODO : DELETE THIS
+ContactInfo::ContactInfo(Body* body1, Body* body2, const Vector3D& normal, double penetrationDepth)
             : body1(body1), body2(body2), normal(normal), penetrationDepth(penetrationDepth), point1(0.0, 0.0, 0.0), point2(0.0, 0.0, 0.0) {
 
 }
 
 // Constructor for GJK
-ContactInfo::ContactInfo(Body* const body1, Body* const body2, const Vector3D& normal,
+ContactInfo::ContactInfo(Body* body1, Body* body2, const Vector3D& normal,
             double penetrationDepth, const Vector3D& point1, const Vector3D& point2)
             : body1(body1), body2(body2), normal(normal), penetrationDepth(penetrationDepth), point1(point1), point2(point2) {
     

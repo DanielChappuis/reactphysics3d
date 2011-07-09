@@ -27,7 +27,7 @@
 
 // Libraries
 #include <cfloat>
-#include "NarrowBoundingVolume.h"
+#include "Shape.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -41,7 +41,7 @@ namespace reactphysics3d {
         rigid body given an orientation and a position to the box
     -------------------------------------------------------------------
 */
-class OBB : public NarrowBoundingVolume {
+class OBB : public Shape {
     private :
         Vector3D extent;           // Extent sizes of the box
 

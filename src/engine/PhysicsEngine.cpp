@@ -143,9 +143,8 @@ void PhysicsEngine::updateAllBodiesMotion() {
             // Update the position and the orientation of the body according to the new velocity
             updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
 
-            // If the body state has changed, we have to update some informations in the rigid body
-            // TODO : DELETE THIS
-            rigidBody->update();
+            // Update the AABB of the rigid body
+            rigidBody->updateAABB();
         }
     }
 }

@@ -26,7 +26,7 @@
 #define NARROW_PHASE_ALGORITHM_H
 
 // Libraries
-#include "../body/BoundingVolume.h"
+#include "../body/Body.h"
 #include "ContactInfo.h"
 
 // Namespace ReactPhysics3D
@@ -47,11 +47,9 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm();              // Constructor
         virtual ~NarrowPhaseAlgorithm();     // Destructor
 
-        virtual bool testCollision(const NarrowBoundingVolume* const boundingVolume1,
-                                   const Transform& transform1,
-                                   const NarrowBoundingVolume* const boundingVolume2,
-                                   const Transform& transform2,
-                                   ContactInfo*& contactInfo)=0;                        // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const Shape* shape1, const Transform& transform1,
+                                   const Shape* shape2, const Transform& transform2,
+                                   ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
 };
 
 } // End of reactphysics3d namespace

@@ -26,7 +26,7 @@
 #define BOUNDING_SPHERE_H
 
 // Libraries
-#include "NarrowBoundingVolume.h"
+#include "Shape.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -37,7 +37,7 @@ namespace reactphysics3d {
         This class represents a sphere bounding volume.
     -------------------------------------------------------------------
 */
-class BoundingSphere : public NarrowBoundingVolume {
+class BoundingSphere : public Shape {
     protected :
         Vector3D center;            // Center point of the sphere
         double radius;              // Radius of the sphere

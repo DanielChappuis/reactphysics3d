@@ -47,7 +47,7 @@ namespace reactphysics3d {
 class CollisionDetection {
     private :
         PhysicsWorld* world;                                                        // Pointer to the physics world
-        std::vector<std::pair<const Body*, const Body* > > possibleCollisionPairs;  // Possible collision pairs of bodies (computed by broadphase)
+        std::vector<std::pair<Body*, Body*> > possibleCollisionPairs;               // Possible collision pairs of bodies (computed by broadphase)
         std::vector<ContactInfo*> contactInfos;                                     // Contact informations (computed by narrowphase)
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                                   // Broad-phase algorithm
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                                 // Narrow-phase algorithm

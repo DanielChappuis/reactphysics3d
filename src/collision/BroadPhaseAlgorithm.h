@@ -26,7 +26,8 @@
 #define BROAD_PHASE_ALGORITHM_H
 
 // Libraries
-#include "../body/BoundingVolume.h"
+#include <vector>
+#include "../body/Body.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -52,7 +53,7 @@ class BroadPhaseAlgorithm {
         virtual ~BroadPhaseAlgorithm();     // Destructor
 
         virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
-                                                   std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs)=0;  // Compute the possible collision pairs of bodies
+                                                   std::vector<std::pair<Body*, Body*> >& possibleCollisionPairs)=0;  // Compute the possible collision pairs of bodies
 };
 
 } // End of reactphysics3d namespace

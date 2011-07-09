@@ -34,13 +34,12 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-AABB::AABB(const Body* bodyPointer) : bodyPointer(bodyPointer) {
+AABB::AABB() : bodyPointer(0) {
     
 }
 
 // Constructor
-AABB::AABB(const Body* bodyPointer, const Transform& transform, const Vector3D& extents)
-     : bodyPointer(bodyPointer) {
+AABB::AABB(const Transform& transform, const Vector3D& extents) : bodyPointer(0) {
     update(transform, extents);
 }
 

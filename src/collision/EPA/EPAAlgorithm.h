@@ -27,7 +27,7 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../../body/NarrowBoundingVolume.h"
+#include "../../body/Shape.h"
 #include "../ContactInfo.h"
 #include "../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
@@ -82,10 +82,8 @@ class EPAAlgorithm {
         EPAAlgorithm();         // Constructor
         ~EPAAlgorithm();        // Destructor
 
-        bool computePenetrationDepthAndContactPoints(Simplex simplex, const NarrowBoundingVolume* const boundingVolume1,
-                                                     const Transform& transform1,
-                                                     const NarrowBoundingVolume* const boundingVolume2,
-                                                     const Transform& transform2,
+        bool computePenetrationDepthAndContactPoints(Simplex simplex, const Shape* shape1, const Transform& transform1,
+                                                     const Shape* shape2, const Transform& transform2,
                                                      Vector3D& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
 

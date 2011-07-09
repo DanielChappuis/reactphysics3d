@@ -28,6 +28,7 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
+#include "Shape.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
@@ -42,11 +43,6 @@ namespace reactphysics3d {
 */
 class RigidBody : public Body {
     protected :
-        // TODO : Remove some of the following variables
-        //Vector3D position;                          // Position of the center of mass of the body
-        //Vector3D oldPosition;                       // Old position used to compute the interpolated position
-        //Quaternion orientation;                     // Orientation quaternion of the body
-        //Quaternion oldOrientation;                  // Old orientation used to compute the interpolated orientation
         Vector3D linearVelocity;                    // Linear velocity of the body
         Vector3D angularVelocity;                   // Angular velocity of the body
         Vector3D externalForce;                     // Current external force on the body
@@ -58,8 +54,8 @@ class RigidBody : public Body {
 
     public :
         RigidBody(const Transform& transform, double mass,
-                  const Matrix3x3& inertiaTensorLocal, NarrowBoundingVolume* narrowBoundingVolume);     // Constructor                                                                                                         // Copy-constructor
-        virtual ~RigidBody();                                                                           // Destructor
+                  const Matrix3x3& inertiaTensorLocal, Shape* shape);           // Constructor                                                                                                         // Copy-constructor
+        virtual ~RigidBody();                                                   // Destructor
 
         Vector3D getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3D& linearVelocity);                 // Set the linear velocity of the body
@@ -79,7 +75,6 @@ class RigidBody : public Body {
         
         double getRestitution() const;                                          // Get the restitution coefficient
         void setRestitution(double restitution) throw(std::invalid_argument);   // Set the restitution coefficient
-        void update();                                                          // Update the rigid body in order to reflect a change in the body state
 };
 
 // Return the linear velocity
