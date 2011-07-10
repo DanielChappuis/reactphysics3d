@@ -28,7 +28,7 @@
 #include "GJK/GJKAlgorithm.h"
 #include "SATAlgorithm.h"
 #include "../body/Body.h"
-#include "../body/OBB.h"
+#include "../body/BoxShape.h"
 #include "../body/RigidBody.h"
 #include <cassert>
 #include <complex>

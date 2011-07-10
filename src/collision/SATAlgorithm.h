@@ -28,7 +28,7 @@
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
 #include "../constraint/Contact.h"
-#include "../body/OBB.h"
+#include "../body/BoxShape.h"
 #include "../mathematics/Transform.h"
 
 // ReactPhysics3D namespace
@@ -50,8 +50,8 @@ namespace reactphysics3d {
 */
 class SATAlgorithm : public NarrowPhaseAlgorithm {
     private :
-        bool computeCollisionTest(const OBB* obb1, const Transform& transform1,
-                                  const OBB* obb2, const Transform& transform2,
+        bool computeCollisionTest(const BoxShape* obb1, const Transform& transform1,
+                                  const BoxShape* obb2, const Transform& transform2,
                                   ContactInfo*& contactInfo) const;     // Return true and compute a contact info if the two OBB collide
         double computePenetrationDepth(double min1, double max1, double min2, double max2) const;                     // Compute the penetration depth of two projection intervals                             
         Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                    // Compute a contact normal

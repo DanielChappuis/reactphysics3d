@@ -39,8 +39,8 @@
 #include "engine/PhysicsWorld.h"
 #include "engine/PhysicsEngine.h"
 #include "body/Shape.h"
-#include "body/OBB.h"
-#include "body/BoundingSphere.h"
+#include "body/BoxShape.h"
+#include "body/SphereShape.h"
 #include "body/AABB.h"
 
 // Alias to the ReactPhysics3D namespace

@@ -24,7 +24,7 @@
 
 // Libraries
 #include "SATAlgorithm.h"
-#include "../body/OBB.h"
+#include "../body/BoxShape.h"
 #include "../body/RigidBody.h"
 #include "../constraint/Contact.h"
 #include "../mathematics/Transform.h"
@@ -60,8 +60,8 @@ bool SATAlgorithm::testCollision(const Body* body1, const Body* body2, ContactIn
     const Transform& transform2 = body2->getTransform();
     const RigidBody* rigidBody1 = dynamic_cast<const RigidBody*>(body1);
     const RigidBody* rigidBody2 = dynamic_cast<const RigidBody*>(body2);
-    const OBB* obb1 = dynamic_cast<const OBB*>(rigidBody1->getShape());
-    const OBB* obb2 = dynamic_cast<const OBB*>(rigidBody2->getShape());
+    const BoxShape* obb1 = dynamic_cast<const BoxShape*>(rigidBody1->getShape());
+    const BoxShape* obb2 = dynamic_cast<const BoxShape*>(rigidBody2->getShape());
 
     // If the two bounding volumes are OBB
     if (obb1 && obb2) {
@@ -81,8 +81,8 @@ bool SATAlgorithm::testCollision(const Body* body1, const Body* body2, ContactIn
 // OBB are the six face normals (3 for each OBB) and the nine vectors V = Ai x Bj where Ai is the ith face normal
 // vector of OBB 1 and Bj is the jth face normal vector of OBB 2. We will use the notation Ai for the ith face
 // normal of OBB 1 and Bj for the jth face normal of OBB 2.
-bool SATAlgorithm::computeCollisionTest(const OBB* obb1, const Transform& transform1,
-                                        const OBB* obb2, const Transform& transform2, ContactInfo*& contactInfo) const {
+bool SATAlgorithm::computeCollisionTest(const BoxShape* obb1, const Transform& transform1,
+                                        const BoxShape* obb2, const Transform& transform2, ContactInfo*& contactInfo) const {
 
 
     double center;                              // Center of a projection interval
