@@ -1,6 +1,7 @@
+
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010 Daniel Chappuis                                            *
+* Copyright (c) 2011 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -23,8 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "OBB.h"
-#include <vector>
+#include "SphereShape.h"
 #include <cassert>
 
 #ifdef VISUAL_DEBUG
@@ -36,63 +36,34 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-OBB::OBB(const Vector3D& extent) : extent(extent) {
-
+SphereShape::SphereShape(const Vector3D& center, double radius) {
+    this->center = center;
+    this->radius = radius;
 }
 
 // Destructor
-OBB::~OBB() {
+SphereShape::~SphereShape() {
 
 }
 
 #ifdef VISUAL_DEBUG
-// Draw the OBB (only for testing purpose)
-void OBB::draw() const {
-    double e1 = extent.getX();
-    double e2 = extent.getY();
-    double e3 = extent.getZ();
+// Draw the sphere (only for testing purpose)
+void SphereShape::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
-    // Draw the OBB
-    glBegin(GL_LINES);
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, e2, -e3);
+    glTranslatef(center.getX(), center.getY(), center.getZ());
 
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, -e2, e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(e1, e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(-e1, -e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-        glVertex3f(-e1, e2, e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-    glEnd();
+    // Draw the sphere
+    glutWireSphere(radius, 50, 50);
 }
 #endif
+
+/*TODO: DELETE THIS
+// Return the corresponding AABB
+AABB* BoundingSphere::computeAABB() const {
+    // Create and return the AABB
+    return new AABB(center, radius, radius, radius);
+}
+*/

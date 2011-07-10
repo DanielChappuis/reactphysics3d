@@ -49,13 +49,13 @@ AABB::~AABB() {
 }
 
 #ifdef VISUAL_DEBUG
-// Draw the OBB (only for testing purpose)
+// Draw the AABB (only for testing purpose)
 void AABB::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
-    // Draw the OBB
+    // Draw the AABB
     glBegin(GL_LINES);
         glVertex3f(maxCoordinates.getX(), minCoordinates.getY(), minCoordinates.getZ());
         glVertex3f(maxCoordinates.getX(), maxCoordinates.getY(), minCoordinates.getZ());

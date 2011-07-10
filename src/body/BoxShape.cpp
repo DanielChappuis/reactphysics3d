@@ -1,7 +1,6 @@
-
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2011 Daniel Chappuis                                            *
+* Copyright (c) 2010 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -24,7 +23,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "BoundingSphere.h"
+#include "BoxShape.h"
+#include <vector>
 #include <cassert>
 
 #ifdef VISUAL_DEBUG
@@ -36,34 +36,63 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-BoundingSphere::BoundingSphere(const Vector3D& center, double radius) {
-    this->center = center;
-    this->radius = radius;
+BoxShape::BoxShape(const Vector3D& extent) : extent(extent) {
+
 }
 
 // Destructor
-BoundingSphere::~BoundingSphere() {
+BoxShape::~BoxShape() {
 
 }
 
 #ifdef VISUAL_DEBUG
-// Draw the sphere (only for testing purpose)
-void BoundingSphere::draw() const {
+// Draw the Box (only for testing purpose)
+void BoxShape::draw() const {
+    double e1 = extent.getX();
+    double e2 = extent.getY();
+    double e3 = extent.getZ();
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
-    glTranslatef(center.getX(), center.getY(), center.getZ());
+    // Draw the Box
+    glBegin(GL_LINES);
+        glVertex3f(e1, -e2, -e3);
+        glVertex3f(e1, e2, -e3);
 
-    // Draw the sphere
-    glutWireSphere(radius, 50, 50);
+        glVertex3f(e1, -e2, -e3);
+        glVertex3f(e1, -e2, e3);
+
+        glVertex3f(e1, -e2, e3);
+        glVertex3f(e1, e2, e3);
+
+        glVertex3f(e1, e2, e3);
+        glVertex3f(e1, e2, -e3);
+
+        glVertex3f(-e1, -e2, -e3);
+        glVertex3f(-e1, e2, -e3);
+
+        glVertex3f(-e1, -e2, -e3);
+        glVertex3f(-e1, -e2, e3);
+
+        glVertex3f(-e1, -e2, e3);
+        glVertex3f(-e1, e2, e3);
+
+        glVertex3f(-e1, e2, e3);
+        glVertex3f(-e1, e2, -e3);
+
+        glVertex3f(e1, -e2, -e3);
+        glVertex3f(-e1, -e2, -e3);
+
+        glVertex3f(e1, -e2, -e3);
+        glVertex3f(-e1, -e2, -e3);
+
+        glVertex3f(e1, -e2, e3);
+        glVertex3f(-e1, -e2, e3);
+
+        glVertex3f(e1, e2, e3);
+        glVertex3f(-e1, e2, e3);
+
+    glEnd();
 }
 #endif
-
-/*TODO: DELETE THIS
-// Return the corresponding AABB
-AABB* BoundingSphere::computeAABB() const {
-    // Create and return the AABB
-    return new AABB(center, radius, radius, radius);
-}
-*/

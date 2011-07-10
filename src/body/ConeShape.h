@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef BOUNDING_CONE_H
-#define BOUNDING_CONE_H
+#ifndef CONE_SHAPE_H
+#define CONE_SHAPE_H
 
 // Libraries
 #include "Shape.h"
@@ -61,33 +61,33 @@ class ConeShape : public Shape {
 };
 
 // Return the center point of the sphere
-inline Vector3D BoundingSphere::getCenter() const {
+inline Vector3D SphereShape::getCenter() const {
     return center;
 }
 
 // Set the center point of the sphere
-inline void BoundingSphere::setCenter(const Vector3D& center) {
+inline void SphereShape::setCenter(const Vector3D& center) {
     this->center = center;
 }
 
 // Get the radius of the sphere
-inline double BoundingSphere::getRadius() const {
+inline double SphereShape::getRadius() const {
     return radius;
 }
 
 // Set the radius of the sphere
-inline void BoundingSphere::setRadius(double radius) {
+inline void SphereShape::setRadius(double radius) {
     this->radius = radius;
 }
 
 // Update the orientation of the shere according to the orientation of the rigid body
-inline void BoundingSphere::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
+inline void SphereShape::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
     // Update the center of the sphere
     center = newCenter;
 }
 
 // Return a support point in a given direction
-inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3D SphereShape::getSupportPoint(const Vector3D& direction, double margin) const {
     assert(margin >= 0.0);
     double length = direction.length();
 

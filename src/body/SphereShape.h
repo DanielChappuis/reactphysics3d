@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef BOUNDING_SPHERE_H
-#define BOUNDING_SPHERE_H
+#ifndef SPHERE_SHAPE_H
+#define SPHERE_SHAPE_H
 
 // Libraries
 #include "Shape.h"
@@ -33,18 +33,18 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class BoundingSphere :
+    Class SphereShape :
         This class represents a sphere bounding volume.
     -------------------------------------------------------------------
 */
-class BoundingSphere : public Shape {
+class SphereShape : public Shape {
     protected :
         Vector3D center;            // Center point of the sphere
         double radius;              // Radius of the sphere
 
     public :
-        BoundingSphere(const Vector3D& center, double radius);      // Constructor
-        virtual ~BoundingSphere();                                  // Destructor
+        SphereShape(const Vector3D& center, double radius);      // Constructor
+        virtual ~SphereShape();                                  // Destructor
 
         Vector3D getCenter() const;                                                             // Return the center point of the sphere
         void setCenter(const Vector3D& center);                                                 // Set the center point of the sphere
@@ -62,33 +62,33 @@ class BoundingSphere : public Shape {
 };
 
 // Return the center point of the sphere
-inline Vector3D BoundingSphere::getCenter() const {
+inline Vector3D SphereShape::getCenter() const {
     return center;
 }
 
 // Set the center point of the sphere
-inline void BoundingSphere::setCenter(const Vector3D& center) {
+inline void SphereShape::setCenter(const Vector3D& center) {
     this->center = center;
 }
 
 // Get the radius of the sphere
-inline double BoundingSphere::getRadius() const {
+inline double SphereShape::getRadius() const {
     return radius;
 }
 
 // Set the radius of the sphere
-inline void BoundingSphere::setRadius(double radius) {
+inline void SphereShape::setRadius(double radius) {
     this->radius = radius;
 }
 
 // Update the orientation of the shere according to the orientation of the rigid body
-inline void BoundingSphere::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
+inline void SphereShape::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
     // Update the center of the sphere
     center = newCenter;
 }
 
 // Return a support point in a given direction
-inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3D SphereShape::getSupportPoint(const Vector3D& direction, double margin) const {
     assert(margin >= 0.0);
     double length = direction.length();
 
@@ -105,7 +105,7 @@ inline Vector3D BoundingSphere::getSupportPoint(const Vector3D& direction, doubl
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D BoundingSphere::getLocalExtents() const {
+inline Vector3D SphereShape::getLocalExtents() const {
     return Vector3D(radius, radius, radius);
 }
 

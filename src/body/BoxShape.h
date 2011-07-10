@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef OBB_H
-#define OBB_H
+#ifndef BOX_SHAPE_H
+#define BOX_SHAPE_H
 
 // Libraries
 #include <cfloat>
@@ -34,20 +34,20 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class OBB :
+    Class BoxShape :
         This class represents a 3D box. Those axis are unit length.
         The three extents are half-widths of the box along the three
         axis x, y, z local axis. The "transform" of the corresponding
         rigid body given an orientation and a position to the box
     -------------------------------------------------------------------
 */
-class OBB : public Shape {
+class BoxShape : public Shape {
     private :
         Vector3D extent;           // Extent sizes of the box
 
     public :
-        OBB(const Vector3D& extent);        // Constructor
-        virtual ~OBB();                     // Destructor
+        BoxShape(const Vector3D& extent);        // Constructor
+        virtual ~BoxShape();                     // Destructor
 
         const Vector3D& getExtent() const;                                                          // Return the extents of the box
         void setExtent(const Vector3D& extent);                                                     // Set the extents of the box
@@ -55,28 +55,28 @@ class OBB : public Shape {
         virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;       // Return a support point in a given direction
 
 #ifdef VISUAL_DEBUG
-            virtual void draw() const;                                                                      // Draw the OBB (only for testing purpose)
+            virtual void draw() const;                                                                      // Draw the Box (only for testing purpose)
 #endif
 };
 
 // Return the extents of the box
-inline const Vector3D& OBB::getExtent() const {
+inline const Vector3D& BoxShape::getExtent() const {
     return extent;
 }
 
  // Set the extents of the box
-inline void OBB::setExtent(const Vector3D& extent) {
+inline void BoxShape::setExtent(const Vector3D& extent) {
     this->extent = extent;
 }
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D OBB::getLocalExtents() const {
+inline Vector3D BoxShape::getLocalExtents() const {
     return extent;
 }
 
 // Return a support point in a given direction
-inline Vector3D OBB::getSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3D BoxShape::getSupportPoint(const Vector3D& direction, double margin) const {
     assert(margin >= 0.0);
     
     return Vector3D(direction.getX() < 0.0 ? -extent.getX()-margin : extent.getX()+margin,
