@@ -26,7 +26,7 @@
 #define	CONTACT_INFO_H
 
 // Libraries
-#include "../body/BoxShape.h"
+#include "../shapes/BoxShape.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace

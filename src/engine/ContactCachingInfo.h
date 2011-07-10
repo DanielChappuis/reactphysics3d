@@ -26,7 +26,7 @@
 #define	CONTACT_CACHING_INFO_H
 
 // Libraries
-#include "../body/BoxShape.h"
+#include "../shapes/BoxShape.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

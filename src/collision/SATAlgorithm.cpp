@@ -24,7 +24,7 @@
 
 // Libraries
 #include "SATAlgorithm.h"
-#include "../body/BoxShape.h"
+#include "../shapes/BoxShape.h"
 #include "../body/RigidBody.h"
 #include "../constraint/Contact.h"
 #include "../mathematics/Transform.h"

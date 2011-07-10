@@ -29,8 +29,8 @@
 #include <stdexcept>
 #include <cassert>
 #include "../mathematics/Transform.h"
-#include "../body/AABB.h"
-#include "../body/Shape.h"
+#include "../shapes/AABB.h"
+#include "../shapes/Shape.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {

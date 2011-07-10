@@ -38,7 +38,7 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class SphereShape : public Shape {
-    protected :
+    private :
         Vector3D center;            // Center point of the sphere
         double radius;              // Radius of the sphere
 

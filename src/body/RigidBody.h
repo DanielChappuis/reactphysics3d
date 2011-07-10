@@ -28,7 +28,7 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
-#include "Shape.h"
+#include "../shapes/Shape.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d

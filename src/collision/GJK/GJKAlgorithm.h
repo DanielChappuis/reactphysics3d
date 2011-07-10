@@ -28,7 +28,7 @@
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
 #include "../ContactInfo.h"
-#include "../../body/Shape.h"
+#include "../../shapes/Shape.h"
 #include "../EPA/EPAAlgorithm.h"
 
 

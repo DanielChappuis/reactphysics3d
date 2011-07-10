@@ -38,16 +38,15 @@
 #include "body/RigidBody.h"
 #include "engine/PhysicsWorld.h"
 #include "engine/PhysicsEngine.h"
-#include "body/Shape.h"
-#include "body/BoxShape.h"
-#include "body/SphereShape.h"
-#include "body/AABB.h"
+#include "shapes/Shape.h"
+#include "shapes/BoxShape.h"
+#include "shapes/SphereShape.h"
+#include "shapes/ConeShape.h"
+#include "shapes/AABB.h"
 
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
 
 // TODO : Use using namespace std in every possible cpp files to increase readability
-
-
 
 #endif

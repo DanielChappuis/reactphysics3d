@@ -27,7 +27,7 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../../body/Shape.h"
+#include "../../shapes/Shape.h"
 #include "../ContactInfo.h"
 #include "../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
