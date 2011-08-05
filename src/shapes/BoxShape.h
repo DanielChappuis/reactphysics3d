@@ -30,6 +30,9 @@
 #include "Shape.h"
 #include "../mathematics/mathematics.h"
 
+// TODO : CHECK THAT THE AABB IS CORRECT
+// TODO : TEST THIS SHAPE WITH GJK AND EPA ALGORITHMS
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -38,7 +41,7 @@ namespace reactphysics3d {
         This class represents a 3D box. Those axis are unit length.
         The three extents are half-widths of the box along the three
         axis x, y, z local axis. The "transform" of the corresponding
-        rigid body given an orientation and a position to the box
+        rigid body gives an orientation and a position to the box.
     -------------------------------------------------------------------
 */
 class BoxShape : public Shape {
@@ -51,8 +54,8 @@ class BoxShape : public Shape {
 
         const Vector3D& getExtent() const;                                                          // Return the extents of the box
         void setExtent(const Vector3D& extent);                                                     // Set the extents of the box
-        virtual Vector3D getLocalExtents() const;                                                   // Return the local extents in x,y and z direction
-        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;       // Return a support point in a given direction
+        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a local support point in a given direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                                                                      // Draw the Box (only for testing purpose)
@@ -71,12 +74,12 @@ inline void BoxShape::setExtent(const Vector3D& extent) {
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D BoxShape::getLocalExtents() const {
-    return extent;
+inline Vector3D BoxShape::getLocalExtents(double margin) const {
+    return extent + Vector3D(margin, margin, margin);
 }
 
-// Return a support point in a given direction
-inline Vector3D BoxShape::getSupportPoint(const Vector3D& direction, double margin) const {
+// Return a local support point in a given direction
+inline Vector3D BoxShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
     assert(margin >= 0.0);
     
     return Vector3D(direction.getX() < 0.0 ? -extent.getX()-margin : extent.getX()+margin,

@@ -42,6 +42,7 @@
 #include "shapes/BoxShape.h"
 #include "shapes/SphereShape.h"
 #include "shapes/ConeShape.h"
+#include "shapes/CylinderShape.h"
 #include "shapes/AABB.h"
 
 // Alias to the ReactPhysics3D namespace

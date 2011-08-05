@@ -22,8 +22,8 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef CONE_SHAPE_H
-#define CONE_SHAPE_H
+#ifndef CYLINDER_SHAPE_H
+#define CYLINDER_SHAPE_H
 
 // Libraries
 #include "Shape.h"
@@ -36,24 +36,21 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class ConeShape :
-        This class represents a cone collision shape centered at the
-        origin and alligned with the Y axis. The cone is defined
-        by its height and by the radius of its base. The center of the
-        cone is at the half of the height. The "transform" of the
-        corresponding rigid body gives an orientation and a position
-        to the cone.
+    Class CylinderShape :
+        This class represents a cylinder collision shape around the Y axis
+        and centered at the origin. The cylinder is defined by its height
+        and the radius of its base. The "transform" of the corresponding
+        rigid body gives an orientation and a position to the cylinder.
     -------------------------------------------------------------------
 */
-class ConeShape : public Shape {
+class CylinderShape : public Shape {
     private :
         double radius;              // Radius of the base
         double halfHeight;          // Half height of the cone
-        double sinTheta;            // sine of the semi angle at the apex point
-        
+
     public :
-        ConeShape(double radius, double height);        // Constructor
-        virtual ~ConeShape();                           // Destructor
+        CylinderShape(double radius, double height);        // Constructor
+        virtual ~CylinderShape();                           // Destructor
 
         double getRadius() const;                                                                   // Return the radius
         void setRadius(double radius);                                                              // Set the radius
@@ -69,36 +66,31 @@ class ConeShape : public Shape {
 };
 
 // Return the radius
-inline double ConeShape::getRadius() const {
+inline double CylinderShape::getRadius() const {
     return radius;
 }
 
 // Set the radius
-inline void ConeShape::setRadius(double radius) {
+inline void CylinderShape::setRadius(double radius) {
     this->radius = radius;
-
-    // Update sine of the semi-angle at the apex point
-    sinTheta = radius / (sqrt(radius * radius + 4 * halfHeight * halfHeight));
 }
 
 // Return the height
-inline double ConeShape::getHeight() const {
-    return 2.0 * halfHeight;
+inline double CylinderShape::getHeight() const {
+    return halfHeight * 2.0;
 }
 
 // Set the height
-inline void ConeShape::setHeight(double height) {
+inline void CylinderShape::setHeight(double height) {
     this->halfHeight = height / 2.0;
-
-    // Update the sine of the semi-angle at the apex point
-    sinTheta = radius / (sqrt(radius * radius + height * height));
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3D ConeShape::getLocalExtents(double margin) const {
+inline Vector3D CylinderShape::getLocalExtents(double margin) const {
     return Vector3D(radius + margin, halfHeight + margin, radius + margin);
 }
 
 }; // End of the ReactPhysics3D namespace
 
 #endif
+

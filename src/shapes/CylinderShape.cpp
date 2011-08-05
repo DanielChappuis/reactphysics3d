@@ -1,4 +1,3 @@
-
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2011 Daniel Chappuis                                            *
@@ -24,30 +23,58 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereShape.h"
-#include <cassert>
-
+#include "CylinderShape.h"
 #ifdef VISUAL_DEBUG
    #include <GL/freeglut.h>        // TODO : Remove this in the final version
    #include <GL/gl.h>              // TODO : Remove this in the final version
 #endif
 
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
-SphereShape::SphereShape(double radius) : radius(radius) {
+CylinderShape::CylinderShape(double radius, double height) : radius(radius), halfHeight(height/2.0) {
 
 }
 
 // Destructor
-SphereShape::~SphereShape() {
+CylinderShape::~CylinderShape() {
 
 }
 
+// Return a local support point in a given direction
+Vector3D CylinderShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
+    assert(margin >= 0.0);
+
+    Vector3D supportPoint(0.0, 0.0, 0.0);
+    double uDotv = direction.getY();
+    Vector3D w(direction.getX(), 0.0, direction.getZ());
+    double lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
+
+    if (lengthW != 0.0) {
+        if (uDotv < 0.0) supportPoint.setY(-halfHeight);
+        else supportPoint.setY(halfHeight);
+        supportPoint = supportPoint + (radius / lengthW) * w;
+    }
+    else {
+         if (uDotv < 0.0) supportPoint.setY(-halfHeight);
+         else supportPoint.setY(halfHeight);
+    }
+
+    // Add the margin to the support point
+    if (margin != 0.0) {
+        Vector3D unitVec(0.0, 1.0, 0.0);
+        if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
+            unitVec = direction.getUnit();
+        }
+        supportPoint = supportPoint + unitVec * margin;
+    }
+
+    return supportPoint;
+}
+
 #ifdef VISUAL_DEBUG
-// Draw the sphere (only for testing purpose)
-void SphereShape::draw() const {
+// Draw the cone (only for debuging purpose)
+void CylinderShape::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);

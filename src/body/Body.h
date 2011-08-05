@@ -151,7 +151,7 @@ inline void Body::updateOldTransform() {
 // Update the rigid body in order to reflect a change in the body state
 inline void Body::updateAABB() {
     // Update the AABB
-    aabb->update(transform, shape->getLocalExtents());
+    aabb->update(transform, shape->getLocalExtents(OBJECT_MARGIN));
 }
 
 

@@ -50,10 +50,10 @@ class Shape {
         Shape();                        // Constructor
         virtual ~Shape();               // Destructor
 
-        Body* getBodyPointer() const;                                                               // Return the body pointer
-        void setBodyPointer(Body* bodyPointer);                                                     // Set the body pointer
-        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const=0;     // Return a support point in a given direction
-        virtual Vector3D getLocalExtents() const=0;                                                 // Return the local extents in x,y and z direction
+        Body* getBodyPointer() const;                                                                   // Return the body pointer
+        void setBodyPointer(Body* bodyPointer);                                                         // Set the body pointer
+        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const=0;    // Return a local support point in a given direction
+        virtual Vector3D getLocalExtents(double margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
 };
 
 // Return the body pointer

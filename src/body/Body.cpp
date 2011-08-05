@@ -43,7 +43,7 @@ Body::Body(const Transform& transform, Shape* shape, double mass)
     oldTransform = transform;
 
     // Create the AABB for broad-phase collision detection
-    aabb = new AABB(transform, shape->getLocalExtents());
+    aabb = new AABB(transform, shape->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Destructor

@@ -63,6 +63,7 @@ class Vector3D {
         void setZ(double z);                                    // Set the z component of the vector
         void setAllValues(double x, double y, double z);        // Set all the values of the vector
         double length() const;                                  // Return the lenght of the vector
+        double lengthSquare() const;                            // Return the square of the length of the vector
         Vector3D getUnit() const throw(MathematicsException);   // Return the corresponding unit vector
         bool isUnit() const;                                    // Return true if the vector is unit and false otherwise
         bool isZero() const;                                    // Return true if the current vector is the zero vector
@@ -146,6 +147,11 @@ inline void Vector3D::setAllValues(double x, double y, double z) {
 inline double Vector3D::length() const {
     // Compute and return the length of the vector
     return sqrt(x*x + y*y + z*z);
+}
+
+// Return the square of the length of the vector
+inline double Vector3D::lengthSquare() const {
+    return x*x + y*y + z*z;
 }
 
 // Return the vector in the opposite direction

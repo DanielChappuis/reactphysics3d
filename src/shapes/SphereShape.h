@@ -34,42 +34,27 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class SphereShape :
-        This class represents a sphere bounding volume.
+        This class represents a sphere collision shape that is centered
+        at the origin and defined by its radius.
     -------------------------------------------------------------------
 */
 class SphereShape : public Shape {
     private :
-        Vector3D center;            // Center point of the sphere
         double radius;              // Radius of the sphere
 
     public :
-        SphereShape(const Vector3D& center, double radius);      // Constructor
-        virtual ~SphereShape();                                  // Destructor
+        SphereShape(double radius);                 // Constructor
+        virtual ~SphereShape();                     // Destructor
 
-        Vector3D getCenter() const;                                                             // Return the center point of the sphere
-        void setCenter(const Vector3D& center);                                                 // Set the center point of the sphere
-        double getRadius() const;                                                               // Return the radius of the sphere
-        void setRadius(double radius);                                                          // Set the radius of the sphere
-        virtual void update(const Vector3D& newCenter,
-                            const Quaternion& rotationQuaternion);                              // Update the sphere orientation according to a new orientation of the rigid body
-        // TODO : DELETE virtual AABB* computeAABB() const;                                                      // Return the corresponding AABB
-        virtual Vector3D getSupportPoint(const Vector3D& direction, double margin=0.0) const;   // Return a support point in a given direction
-        virtual Vector3D getLocalExtents() const;                                               // Return the local extents in x,y and z direction
+        double getRadius() const;                                                                   // Return the radius of the sphere
+        void setRadius(double radius);                                                              // Set the radius of the sphere
+        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a local support point in a given direction
+        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
 #endif
 };
-
-// Return the center point of the sphere
-inline Vector3D SphereShape::getCenter() const {
-    return center;
-}
-
-// Set the center point of the sphere
-inline void SphereShape::setCenter(const Vector3D& center) {
-    this->center = center;
-}
 
 // Get the radius of the sphere
 inline double SphereShape::getRadius() const {
@@ -81,14 +66,8 @@ inline void SphereShape::setRadius(double radius) {
     this->radius = radius;
 }
 
-// Update the orientation of the shere according to the orientation of the rigid body
-inline void SphereShape::update(const Vector3D& newCenter, const Quaternion& rotationQuaternion) {
-    // Update the center of the sphere
-    center = newCenter;
-}
-
-// Return a support point in a given direction
-inline Vector3D SphereShape::getSupportPoint(const Vector3D& direction, double margin) const {
+// Return a local support point in a given direction
+inline Vector3D SphereShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
     assert(margin >= 0.0);
     double length = direction.length();
 
@@ -105,8 +84,8 @@ inline Vector3D SphereShape::getSupportPoint(const Vector3D& direction, double m
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D SphereShape::getLocalExtents() const {
-    return Vector3D(radius, radius, radius);
+inline Vector3D SphereShape::getLocalExtents(double margin) const {
+    return Vector3D(radius + margin, radius + margin, radius + margin);
 }
 
 }; // End of the ReactPhysics3D namespace

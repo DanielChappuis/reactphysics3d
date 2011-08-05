@@ -37,8 +37,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// TODO : Check that allocated memory is correctly deleted
-
 // Constructor
 GJKAlgorithm::GJKAlgorithm() {
     
@@ -91,15 +89,15 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
     // Get the last point V (last separating axis)
     // TODO : Implement frame coherence. For each pair of body, store
     //        the last separating axis and use it to initialize the v vector
-    Vector3D v(0.0, 1.0, 0.0);
+    Vector3D v(1.0, 1.0, 1.0);
 
     // Initialize the upper bound for the square distance
     double distSquare = DBL_MAX;
     
     do {
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape1->getSupportPoint(v.getOpposite());
-        suppB = shape2ToShape1 * shape2->getSupportPoint(rotateToShape2 * v);
+        suppA = shape1->getLocalSupportPoint(v.getOpposite());
+        suppB = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -208,10 +206,6 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // There is an intersection, therefore we return true
             return true;
         }
-
-        double test = simplex.getMaxLengthSquareOfAPoint(); // TODO : Remove this
-        test = 4.5;
-        
     } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
 
     // The objects (without margins) intersect. Therefore, we run the GJK algorithm again but on the
@@ -245,8 +239,8 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Shape* const 
     
     do {
         // Compute the support points for the enlarged object A and B
-        suppA = shape1->getSupportPoint(v.getOpposite(), OBJECT_MARGIN);
-        suppB = shape2ToShape1 * shape2->getSupportPoint(rotateToShape2 * v, OBJECT_MARGIN);
+        suppA = shape1->getLocalSupportPoint(v.getOpposite(), OBJECT_MARGIN);
+        suppB = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v, OBJECT_MARGIN);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;

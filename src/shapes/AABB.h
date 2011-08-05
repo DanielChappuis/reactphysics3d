@@ -60,9 +60,9 @@ class AABB {
         void setBodyPointer(Body* bodyPointer);                                         // Set the body pointer
         bool testCollision(const AABB& aabb) const;                                     // Return true if the current AABB is overlapping is the AABB in argument
         virtual void update(const Transform& newTransform, const Vector3D& extents);    // Update the oriented bounding box orientation according to a new orientation of the rigid body
-        #ifdef VISUAL_DEBUG
-           virtual void draw() const;                                                               // Draw the AABB (only for testing purpose)
-        #endif
+#ifdef VISUAL_DEBUG
+       virtual void draw() const;                                                       // Draw the AABB (only for testing purpose)
+#endif
 };
 
 // Return the center point of the AABB in world coordinates
@@ -93,22 +93,18 @@ inline void AABB::setBodyPointer(Body* bodyPointer) {
 // Return true if the current AABB is overlapping with the AABB in argument
 // Two AABB overlap if they overlap in the three x, y and z axis at the same time
 inline bool AABB::testCollision(const AABB& aabb) const {
-    if (maxCoordinates.getX() + OBJECT_MARGIN < aabb.minCoordinates.getX() - OBJECT_MARGIN || 
-        aabb.maxCoordinates.getX() + OBJECT_MARGIN < minCoordinates.getX() - OBJECT_MARGIN) return false;
-    if (maxCoordinates.getY() + OBJECT_MARGIN < aabb.minCoordinates.getY() - OBJECT_MARGIN ||
-        aabb.maxCoordinates.getY() + OBJECT_MARGIN < minCoordinates.getY() - OBJECT_MARGIN) return false;
-    if (maxCoordinates.getZ() + OBJECT_MARGIN < aabb.minCoordinates.getZ() - OBJECT_MARGIN ||
-        aabb.maxCoordinates.getZ() + OBJECT_MARGIN < minCoordinates.getZ() - OBJECT_MARGIN) return false;
+    if (maxCoordinates.getX() < aabb.minCoordinates.getX() || aabb.maxCoordinates.getX() < minCoordinates.getX()) return false;
+    if (maxCoordinates.getY() < aabb.minCoordinates.getY() || aabb.maxCoordinates.getY() < minCoordinates.getY()) return false;
+    if (maxCoordinates.getZ() < aabb.minCoordinates.getZ() || aabb.maxCoordinates.getZ() < minCoordinates.getZ()) return false;
     return true;
 }
 
 // Update the world minimum and maximum coordinates of the AABB on the three x,y and z axis
 inline void AABB::update(const Transform& newTransform, const Vector3D& extents) {
-    Vector3D localExtents = extents + Vector3D(OBJECT_MARGIN, OBJECT_MARGIN, OBJECT_MARGIN);
     Matrix3x3 worldAxis = newTransform.getOrientation().getAbsoluteMatrix();
-    Vector3D worldExtents = Vector3D(worldAxis.getColumn(0).dot(localExtents),
-                                     worldAxis.getColumn(1).dot(localExtents),
-                                     worldAxis.getColumn(2).dot(localExtents));
+    Vector3D worldExtents = Vector3D(worldAxis.getColumn(0).dot(extents),
+                                     worldAxis.getColumn(1).dot(extents),
+                                     worldAxis.getColumn(2).dot(extents));
     minCoordinates = newTransform.getPosition() - worldExtents;
     maxCoordinates = newTransform.getPosition() + worldExtents;
 }
