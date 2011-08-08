@@ -101,7 +101,7 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 
 // Update the world minimum and maximum coordinates of the AABB on the three x,y and z axis
 inline void AABB::update(const Transform& newTransform, const Vector3D& extents) {
-    Matrix3x3 worldAxis = newTransform.getOrientation().getAbsoluteMatrix();
+    Matrix3x3 worldAxis = newTransform.getOrientation().getMatrix().getAbsoluteMatrix();
     Vector3D worldExtents = Vector3D(worldAxis.getColumn(0).dot(extents),
                                      worldAxis.getColumn(1).dot(extents),
                                      worldAxis.getColumn(2).dot(extents));

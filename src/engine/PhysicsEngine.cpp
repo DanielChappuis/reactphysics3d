@@ -166,8 +166,8 @@ void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3
     rigidBody->setAngularVelocity(newAngVelocity);
 
     // Get current position and orientation of the body
-    Vector3D currentPosition = rigidBody->getTransform().getPosition();
-    Quaternion currentOrientation = Quaternion(rigidBody->getTransform().getOrientation());
+    const Vector3D& currentPosition = rigidBody->getTransform().getPosition();
+    const Quaternion& currentOrientation = rigidBody->getTransform().getOrientation();
 
     Vector3D newPosition = currentPosition + newLinVelocity * dt;
     Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;

@@ -142,7 +142,7 @@ inline void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal
 // where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
     // Compute and return the inertia tensor in world coordinates
-    return transform.getOrientation() * inertiaTensorLocal * transform.getOrientation().getTranspose();
+    return transform.getOrientation().getMatrix() * inertiaTensorLocal * transform.getOrientation().getMatrix().getTranspose();
 }
 
 // Return the inverse of the inertia tensor in world coordinates
@@ -151,7 +151,7 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
 // where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
     // Compute and return the inertia tensor in world coordinates
-    return transform.getOrientation() * inertiaTensorLocalInverse * transform.getOrientation().getTranspose();
+    return transform.getOrientation().getMatrix() * inertiaTensorLocalInverse * transform.getOrientation().getMatrix().getTranspose();
 }
 
 // Set the linear velocity of the rigid body

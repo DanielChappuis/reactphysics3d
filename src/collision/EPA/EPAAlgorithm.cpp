@@ -92,7 +92,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     Transform shape2ToShape1 = transform1.inverse() * transform2;
 
     // Matrix that transform a direction from body space of shape 1 into body space of shape 2
-    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -367,7 +367,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info (in world-space)
-    v = transform1.getOrientation() * triangle->getClosestPoint();
+    v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
     Vector3D pA = transform1 * triangle->computeClosestPointOfObject(suppPointsA);
     Vector3D pB = transform1 * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3D normal = v.getUnit();

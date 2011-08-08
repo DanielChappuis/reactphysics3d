@@ -64,10 +64,11 @@ class Quaternion {
         void setW(double w);                                                  // Set the value w
         Vector3D vectorV() const;                                             // Return the vector v=(x y z) of the quaternion
         double length() const;                                                // Return the length of the quaternion
-        Quaternion getUnit() const throw (MathematicsException);              // Return the unit quaternion
+        Quaternion getUnit() const;                                           // Return the unit quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
         Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
         Matrix3x3 getMatrix() const;                                          // Return the orientation matrix corresponding to this quaternion
+        static Quaternion identity();                                         // Return the identity quaternion
         double dot(const Quaternion& quaternion) const;                       // Dot product between two quaternions
         void getRotationAngleAxis(double& angle, Vector3D& axis) const;       // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
@@ -136,19 +137,19 @@ inline double Quaternion::length() const {
 }
 
 // Return the unit quaternion
-inline Quaternion Quaternion::getUnit() const throw(MathematicsException) {
+inline Quaternion Quaternion::getUnit() const {
     double lengthQuaternion = length();
 
     // Check if the length is not equal to zero
-    if (lengthQuaternion != 0.0) {
+    assert (lengthQuaternion != 0.0);
 
-        // Compute and return the unit quaternion
-        return Quaternion(x/lengthQuaternion, y/lengthQuaternion, z/lengthQuaternion, w/lengthQuaternion);
-    }
-    else {
-        // Throw an exception because it's impossible to compute a unit quaternion if its length is equal to zero
-        throw MathematicsException("MathematicsException : Impossible to compute the unit quaternion if the length of the quaternion is zero");
-    }
+    // Compute and return the unit quaternion
+    return Quaternion(x/lengthQuaternion, y/lengthQuaternion, z/lengthQuaternion, w/lengthQuaternion);
+}
+
+// Return the identity quaternion
+inline Quaternion Quaternion::identity() {
+    return Quaternion(0.0, 0.0, 0.0, 1.0);
 }
 
 // Return the conjugate of the quaternion (inline)

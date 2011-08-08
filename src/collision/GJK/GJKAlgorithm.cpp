@@ -76,7 +76,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
     Transform shape2ToShape1 = transform1.inverse() * transform2;
 
     // Matrix that transform a direction from body space of shape 1 into body space of shape 2
-    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
 
     // Initialize the margin (sum of margins of both objects)
     double margin = 2 * OBJECT_MARGIN;
@@ -123,7 +123,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -147,7 +147,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -169,7 +169,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -199,7 +199,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation() * v.getOpposite().getUnit();
+            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -235,7 +235,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Shape* const 
     Transform shape2ToShape1 = transform1.inverse() * transform2;
 
     // Matrix that transform a direction from body space of shape 1 into body space of shape 2
-    Matrix3x3 rotateToShape2 = transform2.getOrientation().getTranspose() * transform1.getOrientation();
+    Matrix3x3 rotateToShape2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
     
     do {
         // Compute the support points for the enlarged object A and B
