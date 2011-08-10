@@ -27,6 +27,7 @@
 
 // Libraries
 #include "Constraint.h"
+#include "../collision/ContactInfo.h"
 #include "../body/RigidBody.h"
 #include "../constants.h"
 #include "../mathematics/mathematics.h"
@@ -43,29 +44,29 @@ namespace reactphysics3d {
         This class represents a collision contact between two bodies in
         the physics engine. The contact class inherits from the
         Constraint class. Each Contact represent a contact between two bodies
-        and can have several contact points. The Contact will have 3 mathematical
-        constraints for each contact point (1 for the contact constraint, and 2
+        and contains the two contact points on each body. The contact has 3
+        mathematical constraints (1 for the contact constraint, and 2
         for the friction constraints).
     -------------------------------------------------------------------
 */
 class Contact : public Constraint {
     protected :
-        const Vector3D normal;                          // Normal vector of the contact (From body1 toward body2)
-        const double penetrationDepth;                  // Penetration depth
-        const std::vector<Vector3D> points;             // Contact points between the two bodies
-        const int nbPoints;                             // Number of points in the contact
-        std::vector<Vector3D> frictionVectors;          // Two orthogonal vectors that span the tangential friction plane
+        const Vector3D normal;                  // Normal vector of the contact (From body1 toward body2)
+        const double penetrationDepth;          // Penetration depth
+        const Vector3D pointOnBody1;            // Contact point on body 1
+        const Vector3D pointOnBody2;            // Contact point on body 2
+        std::vector<Vector3D> frictionVectors;  // Two orthogonal vectors that span the tangential friction plane
         double mu_mc_g;
         
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
     public :
-        Contact(Body* const body1, Body* const body2, const Vector3D& normal, double penetrationDepth, const std::vector<Vector3D>& points);      // Constructor
-        virtual ~Contact();                                                                                                                             // Destructor
+        Contact(const ContactInfo* contactInfo);        // Constructor
+        virtual ~Contact();                             // Destructor
 
         Vector3D getNormal() const;                                                     // Return the normal vector of the contact
-        Vector3D getPoint(int index) const;                                             // Return a contact point
-        int getNbPoints() const;                                                        // Return the number of contact points
+        Vector3D getPointOnBody1() const;                                               // Return the contact point on body 1
+        Vector3D getPointOnBody2() const;                                               // Return the contact point on body 2
         virtual void computeJacobian(int noConstraint, Matrix1x6**& J_SP) const;        // Compute the jacobian matrix for all mathematical constraints
         virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const;    // Compute the lowerbounds values for all the mathematical constraints
         virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const;    // Compute the upperbounds values for all the mathematical constraints
@@ -95,15 +96,14 @@ inline Vector3D Contact::getNormal() const {
     return normal;
 }
 
-// Return a contact points
-inline Vector3D Contact::getPoint(int index) const {
-    assert(index >= 0 && index < nbPoints);
-    return points[index];
+// Return the contact point on body 1
+inline Vector3D Contact::getPointOnBody1() const {
+    return pointOnBody1;
 }
 
-// Return the number of contact points
-inline int Contact::getNbPoints() const {
-    return nbPoints;
+// Return the contact point on body 2
+inline Vector3D Contact::getPointOnBody2() const {
+    return pointOnBody2;
 }
 
 // Return the penetration depth of the contact

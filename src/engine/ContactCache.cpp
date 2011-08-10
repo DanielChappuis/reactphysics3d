@@ -65,30 +65,38 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         assert((*entry).first.first == contact->getBody1());
         assert((*entry).first.second == contact->getBody2());
 
-        // If the new contact and the contact caching info doesn't have the same number of contact points
-        if (contact->getNbPoints() != contactInfo->positions.size()) {
-            // We return NULL because, the contact doesn't match
+        // Get the position of the current contact
+        posX = contact->getPointOnBody1().getX();
+        posY = contact->getPointOnBody1().getY();
+        posZ = contact->getPointOnBody1().getZ();
+
+        // Get the position of the old contact
+        Vector3D& contactPos1 = contactInfo->positions[0];
+
+        // If the old contact point doesn't match the current one
+        if (posX > contactPos1.getX() + POSITION_TOLERANCE || posX < contactPos1.getX() - POSITION_TOLERANCE ||
+            posY > contactPos1.getY() + POSITION_TOLERANCE || posY < contactPos1.getY() - POSITION_TOLERANCE ||
+            posZ > contactPos1.getZ() + POSITION_TOLERANCE || posZ < contactPos1.getZ() - POSITION_TOLERANCE) {
+
+            // Return NULL
             return NULL;
         }
 
-        for (int i=0; i<contactInfo->positions.size(); i++) {
+        // Get the position of the current contact
+        posX = contact->getPointOnBody2().getX();
+        posY = contact->getPointOnBody2().getY();
+        posZ = contact->getPointOnBody2().getZ();
 
-            // Get the position of the current contact
-            posX = contact->getPoint(i).getX();
-            posY = contact->getPoint(i).getY();
-            posZ = contact->getPoint(i).getZ();
+        // Get the position of the old contact
+        Vector3D& contactPos2 = contactInfo->positions[1];
 
-            // Get the position of the old contact
-            Vector3D& contactPos = contactInfo->positions[i];
+        // If the old contact point doesn't match the current one
+        if (posX > contactPos2.getX() + POSITION_TOLERANCE || posX < contactPos2.getX() - POSITION_TOLERANCE ||
+            posY > contactPos2.getY() + POSITION_TOLERANCE || posY < contactPos2.getY() - POSITION_TOLERANCE ||
+            posZ > contactPos2.getZ() + POSITION_TOLERANCE || posZ < contactPos2.getZ() - POSITION_TOLERANCE) {
 
-            // If the old contact point doesn't match the current one
-            if (posX > contactPos.getX() + POSITION_TOLERANCE || posX < contactPos.getX() - POSITION_TOLERANCE ||
-                posY > contactPos.getY() + POSITION_TOLERANCE || posY < contactPos.getY() - POSITION_TOLERANCE ||
-                posZ > contactPos.getZ() + POSITION_TOLERANCE || posZ < contactPos.getZ() - POSITION_TOLERANCE) {
-
-                // Return NULL
-                return NULL;
-            }
+            // Return NULL
+            return NULL;
         }
 
         // The old contact positions match the current contact, therefore we return the contact caching info

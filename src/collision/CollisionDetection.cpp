@@ -120,13 +120,8 @@ void CollisionDetection::computeAllContacts() {
 void CollisionDetection::computeContactGJK(const ContactInfo* const contactInfo) {
     // TODO : Compute PersisentContact here instead
 
-    // Compute the set of contact points
-    vector<Vector3D> contactPoints;
-    contactPoints.push_back(contactInfo->point1);
-    contactPoints.push_back(contactInfo->point2);
-
     // Create a new contact
-    Contact* contact = new Contact(contactInfo->body1, contactInfo->body2, contactInfo->normal, contactInfo->penetrationDepth, contactPoints);
+    Contact* contact = new Contact(contactInfo);
 
     // Add the contact to the physics world
      world->addConstraint(contact);

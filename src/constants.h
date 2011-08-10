@@ -47,7 +47,7 @@ const double DEFAULT_TIMESTEP = 0.002;
 const double OBJECT_MARGIN = 0.04;          // Object margin for collision detection
 
 // Contact constants
-const double FRICTION_COEFFICIENT = 0.4;    // Friction coefficient
+const double FRICTION_COEFFICIENT = 1.0;    // Friction coefficient
 const double PENETRATION_FACTOR = 0.2;      // Penetration factor (between 0 and 1) which specify the importance of the
                                             // penetration depth in order to calculate the correct impulse for the contact
 
