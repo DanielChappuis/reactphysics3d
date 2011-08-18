@@ -75,8 +75,8 @@ class EPAAlgorithm {
 
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
                               uint& nbTriangles, double upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
-        int isOriginInTetrahedron(const Vector3D& p1, const Vector3D& p2,
-                                  const Vector3D& p3, const Vector3D& p4) const;        // Decide if the origin is in the tetrahedron
+        int isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
+                                  const Vector3& p3, const Vector3& p4) const;        // Decide if the origin is in the tetrahedron
 
     public:
         EPAAlgorithm();         // Constructor
@@ -84,7 +84,7 @@ class EPAAlgorithm {
 
         bool computePenetrationDepthAndContactPoints(Simplex simplex, const Shape* shape1, const Transform& transform1,
                                                      const Shape* shape2, const Transform& transform2,
-                                                     Vector3D& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
+                                                     Vector3& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm

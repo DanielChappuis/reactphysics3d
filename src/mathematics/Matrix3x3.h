@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "Vector3D.h"
+#include "Vector3.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -54,7 +54,7 @@ class Matrix3x3 {
         void setValue(int i, int j, double value);                                              // Set a value in the matrix
         void setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
                   double c1, double c2, double c3);                                             // Set all the values in the matrix
-        Vector3D getColumn(int i) const;                                                        // Return a column
+        Vector3 getColumn(int i) const;                                                         // Return a column
         Matrix3x3 getTranspose() const;                                                         // Return the transpose matrix
         double getDeterminant() const;                                                          // Return the determinant of the matrix
         double getTrace() const;                                                                // Return the trace of the matrix
@@ -64,13 +64,19 @@ class Matrix3x3 {
         static Matrix3x3 identity();                                                            // Return the 3x3 identity matrix
 
         // --- Overloaded operators --- //
-        Matrix3x3 operator+(const Matrix3x3& matrix2) const;        // Overloaded operator for addition
-        Matrix3x3 operator-(const Matrix3x3& matrix2) const ;       // Overloaded operator for substraction
-        Matrix3x3 operator*(double nb) const;                       // Overloaded operator for multiplication with a number
-        Matrix3x3 operator*(const Matrix3x3& matrix2) const;        // Overloaded operator for multiplication with a matrix
-        Vector3D operator*(const Vector3D& vector3d) const;         // Overloaded operator for multiplication with a vector
-        Matrix3x3& operator=(const Matrix3x3& matrix2);             // Overloaded operator for assignment
-        bool operator==(const Matrix3x3& matrix2) const;            // Overloaded operator for equality condition
+        friend Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for addition
+        friend Matrix3x3 operator-(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for substraction
+        friend Matrix3x3 operator-(const Matrix3x3& matrix);                                    // Overloaded operator for the negative of the matrix
+        friend Matrix3x3 operator*(double nb, const Matrix3x3& matrix);                         // Overloaded operator for multiplication with a number
+        friend Matrix3x3 operator*(const Matrix3x3& matrix, double nb);                         // Overloaded operator for multiplication with a matrix
+        friend Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for matrix multiplication
+        friend Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector);               // Overloaded operator for multiplication with a vector
+
+        bool operator==(const Matrix3x3& matrix) const;                                         // Overloaded operator for equality condition
+        bool operator!= (const Matrix3x3& matrix) const;                                        // Overloaded operator for the is different condition
+        Matrix3x3& operator+=(const Matrix3x3& matrix);                                         // Overloaded operator for addition with assignment
+        Matrix3x3& operator-=(const Matrix3x3& matrix);                                         // Overloaded operator for substraction with assignment
+        Matrix3x3& operator*=(double nb);                                                      // Overloaded operator for multiplication with a number with assignment
 };
 
 
@@ -88,16 +94,16 @@ inline void Matrix3x3::setValue(int i, int j, double value) {
 
 // Method to set all the values in the matrix
 inline void Matrix3x3::setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
-                  double c1, double c2, double c3) {
+                                    double c1, double c2, double c3) {
     array[0][0] = a1; array[0][1] = a2; array[0][2] = a3;
     array[1][0] = b1; array[1][1] = b2; array[1][2] = b3;
     array[2][0] = c1; array[2][1] = c2; array[2][2] = c3;
 }
 
 // Return a column
-inline Vector3D Matrix3x3::getColumn(int i) const {
+inline Vector3 Matrix3x3::getColumn(int i) const {
     assert(i>= 0 && i<3);
-    return Vector3D(array[0][i], array[1][i], array[2][i]);
+    return Vector3(array[0][i], array[1][i], array[2][i]);
 }
 
 // Return the transpose matrix
@@ -121,27 +127,6 @@ inline double Matrix3x3::getTrace() const {
     return (array[0][0] + array[1][1] + array[2][2]);
 }
 
-// Overloaded operator for multiplication between a number and a Matrix3x3 (inline)
-inline Matrix3x3 operator*(double number, const Matrix3x3& matrix) {
-    // Return the multiplied matrix
-    return matrix * number;
-}
-
-// Overloaded operator for multiplication with a vector
-inline Vector3D Matrix3x3::operator*(const Vector3D& vector3d) const {
-    // Compute and return the result
-    return Vector3D(array[0][0]*vector3d.getX() + array[0][1]*vector3d.getY() + array[0][2]*vector3d.getZ(),
-                    array[1][0]*vector3d.getX() + array[1][1]*vector3d.getY() + array[1][2]*vector3d.getZ(),
-                    array[2][0]*vector3d.getX() + array[2][1]*vector3d.getY() + array[2][2]*vector3d.getZ());
-}
-
-// Overloaded operator for equality condition
-inline bool Matrix3x3::operator==(const Matrix3x3& matrix2) const {
-    return (array[0][0] == matrix2.array[0][0] && array[0][1] == matrix2.array[0][1] && array[0][2] == matrix2.array[0][2] &&
-            array[1][0] == matrix2.array[1][0] && array[1][1] == matrix2.array[1][1] && array[1][2] == matrix2.array[1][2] &&
-            array[2][0] == matrix2.array[2][0] && array[2][1] == matrix2.array[2][1] && array[2][2] == matrix2.array[2][2]);
-}
-
 // Set the matrix to the identity matrix
 inline void Matrix3x3::setToIdentity() {
     array[0][0] = 1.0; array[0][1] = 0.0; array[0][2] = 0.0;
@@ -162,42 +147,93 @@ inline Matrix3x3 Matrix3x3::getAbsoluteMatrix() const {
                      fabs(array[2][0]), fabs(array[2][1]), fabs(array[2][2]));
 }
 
-// Overloaded operator for multiplication with a matrix
-inline Matrix3x3 Matrix3x3::operator*(const Matrix3x3& matrix2) const {
-    // Compute and return the multiplication of the matrices
-    return Matrix3x3(array[0][0]*matrix2.array[0][0] + array[0][1]*matrix2.array[1][0] + array[0][2]*matrix2.array[2][0],
-                     array[0][0]*matrix2.array[0][1] + array[0][1]*matrix2.array[1][1] + array[0][2]*matrix2.array[2][1],
-                     array[0][0]*matrix2.array[0][2] + array[0][1]*matrix2.array[1][2] + array[0][2]*matrix2.array[2][2],
-                     array[1][0]*matrix2.array[0][0] + array[1][1]*matrix2.array[1][0] + array[1][2]*matrix2.array[2][0],
-                     array[1][0]*matrix2.array[0][1] + array[1][1]*matrix2.array[1][1] + array[1][2]*matrix2.array[2][1],
-                     array[1][0]*matrix2.array[0][2] + array[1][1]*matrix2.array[1][2] + array[1][2]*matrix2.array[2][2],
-                     array[2][0]*matrix2.array[0][0] + array[2][1]*matrix2.array[1][0] + array[2][2]*matrix2.array[2][0],
-                     array[2][0]*matrix2.array[0][1] + array[2][1]*matrix2.array[1][1] + array[2][2]*matrix2.array[2][1],
-                     array[2][0]*matrix2.array[0][2] + array[2][1]*matrix2.array[1][2] + array[2][2]*matrix2.array[2][2]);
-}
-
 // Overloaded operator for addition
-inline Matrix3x3 Matrix3x3::operator+(const Matrix3x3& matrix2) const {
-    // Return the sum matrix
-    return Matrix3x3(array[0][0] + matrix2.array[0][0], array[0][1] + matrix2.array[0][1], array[0][2] + matrix2.array[0][2],
-                     array[1][0] + matrix2.array[1][0], array[1][1] + matrix2.array[1][1], array[1][2] + matrix2.array[1][2],
-                     array[2][0] + matrix2.array[2][0], array[2][1] + matrix2.array[2][1], array[2][2] + matrix2.array[2][2]);
+inline Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
+    return Matrix3x3(matrix1.array[0][0] + matrix2.array[0][0], matrix1.array[0][1] + matrix2.array[0][1], matrix1.array[0][2] + matrix2.array[0][2],
+                     matrix1.array[1][0] + matrix2.array[1][0], matrix1.array[1][1] + matrix2.array[1][1], matrix1.array[1][2] + matrix2.array[1][2],
+                     matrix1.array[2][0] + matrix2.array[2][0], matrix1.array[2][1] + matrix2.array[2][1], matrix1.array[2][2] + matrix2.array[2][2]);
 }
 
 // Overloaded operator for substraction
-inline Matrix3x3 Matrix3x3::operator-(const Matrix3x3& matrix2) const {
-    // Return the substraction matrix
-    return Matrix3x3(array[0][0] - matrix2.array[0][0], array[0][1] - matrix2.array[0][1], array[0][2] - matrix2.array[0][2],
-                     array[1][0] - matrix2.array[1][0], array[1][1] - matrix2.array[1][1], array[1][2] - matrix2.array[1][2],
-                     array[2][0] - matrix2.array[2][0], array[2][1] - matrix2.array[2][1], array[2][2] - matrix2.array[2][2]);
+inline Matrix3x3 operator-(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
+    return Matrix3x3(matrix1.array[0][0] - matrix2.array[0][0], matrix1.array[0][1] - matrix2.array[0][1], matrix1.array[0][2] - matrix2.array[0][2],
+                     matrix1.array[1][0] - matrix2.array[1][0], matrix1.array[1][1] - matrix2.array[1][1], matrix1.array[1][2] - matrix2.array[1][2],
+                     matrix1.array[2][0] - matrix2.array[2][0], matrix1.array[2][1] - matrix2.array[2][1], matrix1.array[2][2] - matrix2.array[2][2]);
+}
+
+// Overloaded operator for the negative of the matrix
+inline Matrix3x3 operator-(const Matrix3x3& matrix) {
+    return Matrix3x3(-matrix.array[0][0], -matrix.array[0][1], -matrix.array[0][2],
+                     -matrix.array[1][0], -matrix.array[1][1], -matrix.array[1][2],
+                     -matrix.array[2][0], -matrix.array[2][1], -matrix.array[2][2]);
 }
 
 // Overloaded operator for multiplication with a number
-inline Matrix3x3 Matrix3x3::operator*(double nb) const {
-    // Return multiplied matrix
-    return Matrix3x3(array[0][0] * nb, array[0][1] * nb, array[0][2] * nb,
-                     array[1][0] * nb, array[1][1] * nb, array[1][2] * nb,
-                     array[2][0] * nb, array[2][1] * nb, array[2][2] * nb);
+inline Matrix3x3 operator*(double nb, const Matrix3x3& matrix) {
+    return Matrix3x3(matrix.array[0][0] * nb, matrix.array[0][1] * nb, matrix.array[0][2] * nb,
+                     matrix.array[1][0] * nb, matrix.array[1][1] * nb, matrix.array[1][2] * nb,
+                     matrix.array[2][0] * nb, matrix.array[2][1] * nb, matrix.array[2][2] * nb);
+}
+
+// Overloaded operator for multiplication with a matrix
+inline Matrix3x3 operator*(const Matrix3x3& matrix, double nb) {
+    return nb * matrix;
+}
+
+// Overloaded operator for matrix multiplication
+inline Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
+    return Matrix3x3(matrix1.array[0][0]*matrix2.array[0][0] + matrix1.array[0][1]*matrix2.array[1][0] + matrix1.array[0][2]*matrix2.array[2][0],
+                     matrix1.array[0][0]*matrix2.array[0][1] + matrix1.array[0][1]*matrix2.array[1][1] + matrix1.array[0][2]*matrix2.array[2][1],
+                     matrix1.array[0][0]*matrix2.array[0][2] + matrix1.array[0][1]*matrix2.array[1][2] + matrix1.array[0][2]*matrix2.array[2][2],
+                     matrix1.array[1][0]*matrix2.array[0][0] + matrix1.array[1][1]*matrix2.array[1][0] + matrix1.array[1][2]*matrix2.array[2][0],
+                     matrix1.array[1][0]*matrix2.array[0][1] + matrix1.array[1][1]*matrix2.array[1][1] + matrix1.array[1][2]*matrix2.array[2][1],
+                     matrix1.array[1][0]*matrix2.array[0][2] + matrix1.array[1][1]*matrix2.array[1][2] + matrix1.array[1][2]*matrix2.array[2][2],
+                     matrix1.array[2][0]*matrix2.array[0][0] + matrix1.array[2][1]*matrix2.array[1][0] + matrix1.array[2][2]*matrix2.array[2][0],
+                     matrix1.array[2][0]*matrix2.array[0][1] + matrix1.array[2][1]*matrix2.array[1][1] + matrix1.array[2][2]*matrix2.array[2][1],
+                     matrix1.array[2][0]*matrix2.array[0][2] + matrix1.array[2][1]*matrix2.array[1][2] + matrix1.array[2][2]*matrix2.array[2][2]);
+}
+
+// Overloaded operator for multiplication with a vector
+inline Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector) {
+    return Vector3(matrix.array[0][0]*vector.getX() + matrix.array[0][1]*vector.getY() + matrix.array[0][2]*vector.getZ(),
+                   matrix.array[1][0]*vector.getX() + matrix.array[1][1]*vector.getY() + matrix.array[1][2]*vector.getZ(),
+                   matrix.array[2][0]*vector.getX() + matrix.array[2][1]*vector.getY() + matrix.array[2][2]*vector.getZ());
+}
+
+// Overloaded operator for equality condition
+inline bool Matrix3x3::operator==(const Matrix3x3& matrix) const {
+    return (array[0][0] == matrix.array[0][0] && array[0][1] == matrix.array[0][1] && array[0][2] == matrix.array[0][2] &&
+            array[1][0] == matrix.array[1][0] && array[1][1] == matrix.array[1][1] && array[1][2] == matrix.array[1][2] &&
+            array[2][0] == matrix.array[2][0] && array[2][1] == matrix.array[2][1] && array[2][2] == matrix.array[2][2]);
+}
+
+// Overloaded operator for the is different condition
+inline bool Matrix3x3::operator!= (const Matrix3x3& matrix) const {
+    return !(*this == matrix);
+}
+
+// Overloaded operator for addition with assignment
+inline Matrix3x3& Matrix3x3::operator+=(const Matrix3x3& matrix) {
+   array[0][0] += matrix.array[0][0]; array[0][1] += matrix.array[0][1]; array[0][2] += matrix.array[0][2];
+   array[1][0] += matrix.array[1][0]; array[1][1] += matrix.array[1][1]; array[1][2] += matrix.array[1][2];
+   array[2][0] += matrix.array[2][0]; array[2][1] += matrix.array[2][1]; array[2][2] += matrix.array[2][2];
+   return *this;
+}
+
+// Overloaded operator for substraction with assignment
+inline Matrix3x3& Matrix3x3::operator-=(const Matrix3x3& matrix) {
+   array[0][0] -= matrix.array[0][0]; array[0][1] -= matrix.array[0][1]; array[0][2] -= matrix.array[0][2];
+   array[1][0] -= matrix.array[1][0]; array[1][1] -= matrix.array[1][1]; array[1][2] -= matrix.array[1][2];
+   array[2][0] -= matrix.array[2][0]; array[2][1] -= matrix.array[2][1]; array[2][2] -= matrix.array[2][2];
+   return *this;
+}
+
+// Overloaded operator for multiplication with a number with assignment
+inline Matrix3x3& Matrix3x3::operator*=(double nb) {
+   array[0][0] *= nb; array[0][1] *= nb; array[0][2] *= nb;
+   array[1][0] *= nb; array[1][1] *= nb; array[1][2] *= nb;
+   array[2][0] *= nb; array[2][1] *= nb; array[2][2] *= nb;
+   return *this;
 }
 
 } // End of the ReactPhysics3D namespace

@@ -51,7 +51,7 @@ class TriangleEPA {
         EdgeEPA adjacentEdges[3];   // Three adjacent edges of the triangle (edges of other triangles)
         bool isObsolete;            // True if the triangle face is visible from the new support point
         double det;                 // Determinant
-        Vector3D closestPoint;      // Point v closest to the origin on the affine hull of the triangle
+        Vector3 closestPoint;      // Point v closest to the origin on the affine hull of the triangle
         double lambda1;             // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
         double lambda2;             // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
         double distSquare;          // Square distance of the point closest point v to the origin
@@ -66,12 +66,12 @@ class TriangleEPA {
         double getDistSquare() const;                                                       // Return the square distance  of the closest point to origin
         void setIsObsolete(bool isObsolete);                                                // Set the isObsolete value
         bool getIsObsolete() const;                                                         // Return true if the triangle face is obsolete
-        const Vector3D& getClosestPoint() const;                                            // Return the point closest to the origin
+        const Vector3& getClosestPoint() const;                                            // Return the point closest to the origin
         bool isClosestPointInternalToTriangle() const;                                      // Return true if the closest point on affine hull is inside the triangle
-        bool isVisibleFromVertex(const Vector3D* vertices, uint index) const;               // Return true if the triangle is visible from a given vertex
-        bool computeClosestPoint(const Vector3D* vertices);                                 // Compute the point v closest to the origin of this triangle
-        Vector3D computeClosestPointOfObject(const Vector3D* supportPointsOfObject) const;  // Compute the point of an object closest to the origin
-        bool computeSilhouette(const Vector3D* vertices, uint index,
+        bool isVisibleFromVertex(const Vector3* vertices, uint index) const;               // Return true if the triangle is visible from a given vertex
+        bool computeClosestPoint(const Vector3* vertices);                                 // Compute the point v closest to the origin of this triangle
+        Vector3 computeClosestPointOfObject(const Vector3* supportPointsOfObject) const;  // Compute the point of an object closest to the origin
+        bool computeSilhouette(const Vector3* vertices, uint index,
                                TrianglesStore& triangleStore);                              // Execute the recursive silhouette algorithm from this triangle face
 
         uint operator[](int i) const;                                                       // Access operator
@@ -107,7 +107,7 @@ inline bool TriangleEPA::getIsObsolete() const {
 }
 
 // Return the point closest to the origin
-inline const Vector3D& TriangleEPA::getClosestPoint() const {
+inline const Vector3& TriangleEPA::getClosestPoint() const {
     return closestPoint;
 }
 
@@ -117,14 +117,14 @@ inline bool TriangleEPA::isClosestPointInternalToTriangle() const {
 }
 
 // Return true if the triangle is visible from a given vertex
-inline bool TriangleEPA::isVisibleFromVertex(const Vector3D* vertices, uint index) const {
-    Vector3D closestToVert = vertices[index] - closestPoint;
+inline bool TriangleEPA::isVisibleFromVertex(const Vector3* vertices, uint index) const {
+    Vector3 closestToVert = vertices[index] - closestPoint;
     return (closestPoint.dot(closestToVert) > 0.0);
 }
 
 // Compute the point of an object closest to the origin
-inline Vector3D TriangleEPA::computeClosestPointOfObject(const Vector3D* supportPointsOfObject) const {
-    const Vector3D& p0 = supportPointsOfObject[indicesVertices[0]];
+inline Vector3 TriangleEPA::computeClosestPointOfObject(const Vector3* supportPointsOfObject) const {
+    const Vector3& p0 = supportPointsOfObject[indicesVertices[0]];
     return p0 + 1.0/det * (lambda1 * (supportPointsOfObject[indicesVertices[1]] - p0) +
                            lambda2 * (supportPointsOfObject[indicesVertices[2]] - p0));
 }

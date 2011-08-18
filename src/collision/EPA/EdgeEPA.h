@@ -56,7 +56,7 @@ class EdgeEPA {
         int getIndex() const;                                           // Return the index of the edge in the triangle
         uint getSourceVertexIndex() const;                              // Return index of the source vertex of the edge
         uint getTargetVertexIndex() const;                              // Return the index of the target vertex of the edge
-        bool computeSilhouette(const Vector3D* vertices, uint index,
+        bool computeSilhouette(const Vector3* vertices, uint index,
                                TrianglesStore& triangleStore);          // Execute the recursive silhouette algorithm from this edge
 };
 

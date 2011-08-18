@@ -54,7 +54,7 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
                                   const BoxShape* obb2, const Transform& transform2,
                                   ContactInfo*& contactInfo) const;     // Return true and compute a contact info if the two OBB collide
         double computePenetrationDepth(double min1, double max1, double min2, double max2) const;                     // Compute the penetration depth of two projection intervals                             
-        Vector3D computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const;                    // Compute a contact normal
+        Vector3 computeContactNormal(const Vector3& axis, const Vector3& distanceOfOBBs) const;                    // Compute a contact normal
 
     public :
         SATAlgorithm();           // Constructor
@@ -65,12 +65,12 @@ class SATAlgorithm : public NarrowPhaseAlgorithm {
 
 // Return the contact normal with the correct sign (from obb1 toward obb2). "axis" is the axis vector direction where the
 // collision occurs and "distanceOfOBBs" is the vector (obb2.center - obb1.center).
-inline Vector3D SATAlgorithm::computeContactNormal(const Vector3D& axis, const Vector3D& distanceOfOBBs) const {
+inline Vector3 SATAlgorithm::computeContactNormal(const Vector3& axis, const Vector3& distanceOfOBBs) const {
     if (distanceOfOBBs.dot(axis) >= 0.0) {
         return axis;
     }
     else {
-        return axis.getOpposite();
+        return -axis;
     }
 }
 

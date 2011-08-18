@@ -30,19 +30,10 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep = DEFAULT_TIMESTEP) throw (invalid_argument)
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep = DEFAULT_TIMESTEP)
               : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world) {
-    // Check if the pointer to the world is not NULL
-    if (world == 0) {
-        // Throw an exception
-        throw invalid_argument("Error : The argument world to the PhysicsEngine constructor cannot be NULL");
-    }
-
-    // Check if the timeStep is positive
-    if (timeStep <= 0.0) {
-        // Throw an exception
-        throw invalid_argument("Error : The timeStep argument to the PhysicsEngine constructor have to be greater than zero");
-    }
+    assert(world);
+    assert(timeStep > 0.0);
 }
 
 // Destructor
@@ -51,52 +42,46 @@ PhysicsEngine::~PhysicsEngine() {
 }
 
 // Update the physics simulation
-void PhysicsEngine::update() throw (logic_error) {
+void PhysicsEngine::update() {
     bool existCollision = false;
 
-    // Check that the timer is running
-    if (timer.getIsRunning()) {
+    assert(timer.getIsRunning());
 
-        // Compute the time since the last update() call and update the timer
-        timer.update();
+    // Compute the time since the last update() call and update the timer
+    timer.update();
 
-        // Apply the gravity force to all bodies
-        applyGravity();
+    // Apply the gravity force to all bodies
+    applyGravity();
 
-        // While the time accumulator is not empty
-        while(timer.isPossibleToTakeStep()) {
-            existCollision = false;
-            
-            // Compute the collision detection
-            if (collisionDetection.computeCollisionDetection()) {
-                existCollision = true;
+    // While the time accumulator is not empty
+    while(timer.isPossibleToTakeStep()) {
+        existCollision = false;
 
-                // Solve constraints
-                constraintSolver.solve(timer.getTimeStep());
-            }
+        // Compute the collision detection
+        if (collisionDetection.computeCollisionDetection()) {
+            existCollision = true;
 
-            // Update the timer
-            timer.nextStep();
-
-            // Update the position and orientation of each body
-            updateAllBodiesMotion();
-
-            // Cleanup of the constraint solver
-            if (existCollision) {
-               constraintSolver.cleanup();
-            }
-
-            // Clear the added and removed bodies from last update() method call
-            world->clearAddedAndRemovedBodies();
+            // Solve constraints
+            constraintSolver.solve(timer.getTimeStep());
         }
 
-        // Compute and set the interpolation factor to all the bodies
-        setInterpolationFactorToAllBodies();
+        // Update the timer
+        timer.nextStep();
+
+        // Update the position and orientation of each body
+        updateAllBodiesMotion();
+
+        // Cleanup of the constraint solver
+        if (existCollision) {
+           constraintSolver.cleanup();
+        }
+
+        // Clear the added and removed bodies from last update() method call
+        world->clearAddedAndRemovedBodies();
     }
-    else {  // Call to update() but the timer is not running
-        // Throw an exception
-        throw logic_error("Error : The PhysicsEngine::start() method have to be called before calling PhysicsEngine::update()");
-    }
+
+    // Compute and set the interpolation factor to all the bodies
+    setInterpolationFactorToAllBodies();
 }
 
 // Compute the motion of all bodies and update their positions and orientations
@@ -110,8 +95,8 @@ void PhysicsEngine::update() throw (logic_error) {
 // orientation of the body
 void PhysicsEngine::updateAllBodiesMotion() {
     double dt = timer.getTimeStep();
-    Vector3D newLinearVelocity;
-    Vector3D newAngularVelocity;
+    Vector3 newLinearVelocity;
+    Vector3 newAngularVelocity;
 
     // For each body of thephysics world
     for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
@@ -133,12 +118,12 @@ void PhysicsEngine::updateAllBodiesMotion() {
 
             // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
             // external forces and torques.
-            newLinearVelocity = newLinearVelocity + dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
-            newAngularVelocity = newAngularVelocity + dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+            newLinearVelocity += dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
+            newAngularVelocity += dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
 
             // Add the velocity V1 to the new velocity
-            newLinearVelocity = newLinearVelocity + rigidBody->getLinearVelocity();
-            newAngularVelocity = newAngularVelocity + rigidBody->getAngularVelocity();
+            newLinearVelocity += rigidBody->getLinearVelocity();
+            newAngularVelocity += rigidBody->getAngularVelocity();
 
             // Update the position and the orientation of the body according to the new velocity
             updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
@@ -152,7 +137,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
 // Update the position and orientation of a body
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
-void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3D& newLinVelocity, const Vector3D& newAngVelocity) {
+void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity) {
     double dt = timer.getTimeStep();
 
     RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
@@ -166,10 +151,10 @@ void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3
     rigidBody->setAngularVelocity(newAngVelocity);
 
     // Get current position and orientation of the body
-    const Vector3D& currentPosition = rigidBody->getTransform().getPosition();
+    const Vector3& currentPosition = rigidBody->getTransform().getPosition();
     const Quaternion& currentOrientation = rigidBody->getTransform().getOrientation();
 
-    Vector3D newPosition = currentPosition + newLinVelocity * dt;
+    Vector3 newPosition = currentPosition + newLinVelocity * dt;
     Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;
     Transform newTransform(newPosition, newOrientation.getUnit());
     rigidBody->setTransform(newTransform);

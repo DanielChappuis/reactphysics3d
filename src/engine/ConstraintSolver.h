@@ -98,8 +98,8 @@ class ConstraintSolver {
         virtual ~ConstraintSolver();                                            // Destructor
         void solve(double dt);                                                  // Solve the current LCP problem
         bool isConstrainedBody(Body* body) const;                               // Return true if the body is in at least one constraint
-        Vector3D getConstrainedLinearVelocityOfBody(Body* body);                // Return the constrained linear velocity of a body after solving the LCP problem
-        Vector3D getConstrainedAngularVelocityOfBody(Body* body);               // Return the constrained angular velocity of a body after solving the LCP problem
+        Vector3 getConstrainedLinearVelocityOfBody(Body* body);                // Return the constrained linear velocity of a body after solving the LCP problem
+        Vector3 getConstrainedAngularVelocityOfBody(Body* body);               // Return the constrained angular velocity of a body after solving the LCP problem
         void cleanup();
 };
 
@@ -112,18 +112,18 @@ inline bool ConstraintSolver::isConstrainedBody(Body* body) const {
 }
 
 // Return the constrained linear velocity of a body after solving the LCP problem
-inline Vector3D ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
+inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
     const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
-    return Vector3D(vec.getValue(0), vec.getValue(1), vec.getValue(2));
+    return Vector3(vec.getValue(0), vec.getValue(1), vec.getValue(2));
 
 }
 
 // Return the constrained angular velocity of a body after solving the LCP problem
-inline Vector3D ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
+inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
     const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
-    return Vector3D(vec.getValue(3), vec.getValue(4), vec.getValue(5));
+    return Vector3(vec.getValue(3), vec.getValue(4), vec.getValue(5));
 }
 
 // Cleanup of the constraint solver

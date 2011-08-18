@@ -27,7 +27,7 @@
 
 // Libraries
 #include <cmath>
-#include "Vector3D.h"
+#include "Vector3.h"
 #include "Matrix3x3.h"
 #include "exceptions.h"
 
@@ -50,7 +50,7 @@ class Quaternion {
     public :
         Quaternion();                                                         // Constructor
         Quaternion(double x, double y, double z, double w);                   // Constructor with arguments
-        Quaternion(double w, const Vector3D& v);                              // Constructor with the component w and the vector v=(x y z)
+        Quaternion(double w, const Vector3& v);                              // Constructor with the component w and the vector v=(x y z)
         Quaternion(const Quaternion& quaternion);                             // Copy-constructor
         Quaternion(const Matrix3x3& matrix);                                  // Create a unit quaternion from a rotation matrix
         ~Quaternion();                                                        // Destructor
@@ -62,7 +62,7 @@ class Quaternion {
         void setY(double y);                                                  // Set the value y
         void setZ(double z);                                                  // Set the value z
         void setW(double w);                                                  // Set the value w
-        Vector3D vectorV() const;                                             // Return the vector v=(x y z) of the quaternion
+        Vector3 vectorV() const;                                             // Return the vector v=(x y z) of the quaternion
         double length() const;                                                // Return the length of the quaternion
         Quaternion getUnit() const;                                           // Return the unit quaternion
         Quaternion getConjugate() const;                                      // Return the conjugate quaternion
@@ -70,7 +70,7 @@ class Quaternion {
         Matrix3x3 getMatrix() const;                                          // Return the orientation matrix corresponding to this quaternion
         static Quaternion identity();                                         // Return the identity quaternion
         double dot(const Quaternion& quaternion) const;                       // Dot product between two quaternions
-        void getRotationAngleAxis(double& angle, Vector3D& axis) const;       // Compute the rotation angle (in radians) and the axis
+        void getRotationAngleAxis(double& angle, Vector3& axis) const;       // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
                                 const Quaternion& quaternion2, double t);     // Compute the spherical linear interpolation between two quaternions
 
@@ -126,9 +126,9 @@ inline void Quaternion::setW(double w) {
 }
 
 // Return the vector v=(x y z) of the quaternion
-inline Vector3D Quaternion::vectorV() const {
+inline Vector3 Quaternion::vectorV() const {
     // Return the vector v
-    return Vector3D(x, y, z);
+    return Vector3(x, y, z);
 }
 
 // Return the length of the quaternion (inline)

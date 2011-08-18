@@ -42,12 +42,12 @@ CylinderShape::~CylinderShape() {
 }
 
 // Return a local support point in a given direction
-Vector3D CylinderShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
+Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
     assert(margin >= 0.0);
 
-    Vector3D supportPoint(0.0, 0.0, 0.0);
+    Vector3 supportPoint(0.0, 0.0, 0.0);
     double uDotv = direction.getY();
-    Vector3D w(direction.getX(), 0.0, direction.getZ());
+    Vector3 w(direction.getX(), 0.0, direction.getZ());
     double lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
 
     if (lengthW != 0.0) {
@@ -62,7 +62,7 @@ Vector3D CylinderShape::getLocalSupportPoint(const Vector3D& direction, double m
 
     // Add the margin to the support point
     if (margin != 0.0) {
-        Vector3D unitVec(0.0, 1.0, 0.0);
+        Vector3 unitVec(0.0, 1.0, 0.0);
         if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
             unitVec = direction.getUnit();
         }

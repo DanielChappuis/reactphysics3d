@@ -63,7 +63,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         bool computePenetrationDepthForEnlargedObjects(const Shape* shape1, const Transform& transform1,
                                                        const Shape* shape2, const Transform& transform2,
-                                                       ContactInfo*& contactInfo, Vector3D& v);             // Compute the penetration depth for enlarged objects
+                                                       ContactInfo*& contactInfo, Vector3& v);             // Compute the penetration depth for enlarged objects
 
     public :
         GJKAlgorithm();           // Constructor

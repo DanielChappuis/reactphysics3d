@@ -24,7 +24,7 @@
 
 // Libraries
 #include "Quaternion.h"
-#include "Vector3D.h"
+#include "Vector3.h"
 #include <cassert>
 
 // Namespace
@@ -43,7 +43,7 @@ Quaternion::Quaternion(double x, double y, double z, double w)
 }
 
 // Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(double w, const Vector3D& v)
+Quaternion::Quaternion(double w, const Vector3& v)
            :x(v.getX()), y(v.getY()), z(v.getZ()), w(w) {
 
 }
@@ -134,7 +134,7 @@ Quaternion::~Quaternion() {
 // Compute the rotation angle (in radians) and the 3D rotation axis
 // This method is used to get the rotation angle (in radian) and the unit
 // rotation axis of an orientation quaternion.
-void Quaternion::getRotationAngleAxis(double& angle, Vector3D& axis) const {
+void Quaternion::getRotationAngleAxis(double& angle, Vector3& axis) const {
     Quaternion quaternion;
 
     // If the quaternion is unit
@@ -150,7 +150,7 @@ void Quaternion::getRotationAngleAxis(double& angle, Vector3D& axis) const {
     angle = acos(quaternion.w) * 2.0;
 
     // Compute the 3D rotation axis
-    Vector3D rotationAxis(quaternion.x, quaternion.y, quaternion.z);
+    Vector3 rotationAxis(quaternion.x, quaternion.y, quaternion.z);
 
     // Normalize the rotation axis
     rotationAxis = rotationAxis.getUnit();

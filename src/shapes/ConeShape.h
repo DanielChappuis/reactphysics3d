@@ -29,9 +29,6 @@
 #include "Shape.h"
 #include "../mathematics/mathematics.h"
 
-// TODO : CHECK THAT THE AABB IS CORRECT
-// TODO : TEST THIS SHAPE WITH GJK AND EPA ALGORITHMS
-
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -59,8 +56,8 @@ class ConeShape : public Shape {
         void setRadius(double radius);                                                              // Set the radius
         double getHeight() const;                                                                   // Return the height
         void setHeight(double height);                                                              // Set the height
-        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a support point in a given direction
-        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
 
 
 #ifdef VISUAL_DEBUG
@@ -95,8 +92,8 @@ inline void ConeShape::setHeight(double height) {
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3D ConeShape::getLocalExtents(double margin) const {
-    return Vector3D(radius + margin, halfHeight + margin, radius + margin);
+inline Vector3 ConeShape::getLocalExtents(double margin) const {
+    return Vector3(radius + margin, halfHeight + margin, radius + margin);
 }
 
 }; // End of the ReactPhysics3D namespace

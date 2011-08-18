@@ -27,7 +27,7 @@
 
 // Libraries
 #include "Matrix3x3.h"
-#include "Vector3D.h"
+#include "Vector3.h"
 #include "Quaternion.h"
 
 // ReactPhysiscs3D namespace
@@ -41,17 +41,17 @@ namespace reactphysics3d {
 */
 class Transform {
     private :
-        Vector3D position;          // Position
+        Vector3 position;          // Position
         Quaternion orientation;     // Orientation
 
     public :
         Transform();                                                            // Constructor
-        Transform(const Vector3D& position, const Matrix3x3& orientation);      // Constructor
-        Transform(const Vector3D& position, const Quaternion& orientation);     // Constructor
+        Transform(const Vector3& position, const Matrix3x3& orientation);      // Constructor
+        Transform(const Vector3& position, const Quaternion& orientation);     // Constructor
         ~Transform();                                                           // Destructor
 
-        const Vector3D& getPosition() const;                                    // Return the origin of the transform
-        void setPosition(const Vector3D& position);                             // Set the origin of the transform
+        const Vector3& getPosition() const;                                    // Return the origin of the transform
+        void setPosition(const Vector3& position);                             // Set the origin of the transform
         const Quaternion& getOrientation() const;                               // Return the orientation quaternion
         void setOrientation(const Quaternion& orientation);                     // Set the rotation quaternion
         void setToIdentity();                                                   // Set the transform to the identity transform
@@ -62,17 +62,17 @@ class Transform {
                                                const Transform& newTransform,
                                                double interpolationFactor);     // Return an interpolated transform
 
-        Vector3D operator*(const Vector3D& vector) const;           // Return the transformed vector
+        Vector3 operator*(const Vector3& vector) const;           // Return the transformed vector
         Transform operator*(const Transform& transform2) const;     // Operator of multiplication of a transform with another one
 };
 
 // Return the position of the transform
-inline const Vector3D& Transform::getPosition() const {
+inline const Vector3& Transform::getPosition() const {
     return position;
 }
 
 // Set the origin of the transform
-inline void Transform::setPosition(const Vector3D& position) {
+inline void Transform::setPosition(const Vector3& position) {
     this->position = position;
 }
 
@@ -88,7 +88,7 @@ inline void Transform::setOrientation(const Quaternion& orientation) {
 
 // Set the transform to the identity transform
 inline void Transform::setToIdentity() {
-    position = Vector3D(0.0, 0.0, 0.0);
+    position = Vector3(0.0, 0.0, 0.0);
     orientation = Quaternion::identity();
 }
 
@@ -114,18 +114,18 @@ inline void Transform::getOpenGLMatrix(double* openglMatrix) const {
 inline Transform Transform::inverse() const {
     const Quaternion& invQuaternion = orientation.getInverse();
     Matrix3x3 invMatrix = invQuaternion.getMatrix();
-    return Transform(invMatrix * position.getOpposite(), invQuaternion);
+    return Transform(invMatrix * (-position), invQuaternion);
 }
 
 // Return an interpolated transform
 inline Transform Transform::interpolateTransforms(const Transform& oldTransform, const Transform& newTransform, double interpolationFactor) {
-    Vector3D interPosition = oldTransform.position * (1.0 - interpolationFactor) + newTransform.position * interpolationFactor;
+    Vector3 interPosition = oldTransform.position * (1.0 - interpolationFactor) + newTransform.position * interpolationFactor;
     Quaternion interOrientation = Quaternion::slerp(oldTransform.orientation, newTransform.orientation, interpolationFactor);
     return Transform(interPosition, interOrientation);
 }
 
 // Return the transformed vector
-inline Vector3D Transform::operator*(const Vector3D& vector) const {
+inline Vector3 Transform::operator*(const Vector3& vector) const {
     return (orientation.getMatrix() * vector) + position;
 }
 

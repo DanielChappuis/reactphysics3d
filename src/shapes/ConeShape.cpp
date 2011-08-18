@@ -48,30 +48,30 @@ ConeShape::~ConeShape() {
 }
 
 // Return a local support point in a given direction
-inline Vector3D ConeShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
     assert(margin >= 0.0);
 
-    const Vector3D& v = direction;
+    const Vector3& v = direction;
     double sinThetaTimesLengthV = sinTheta * v.length();
-    Vector3D supportPoint;
+    Vector3 supportPoint;
 
     if (v.getY() >= sinThetaTimesLengthV) {
-        supportPoint = Vector3D(0.0, halfHeight, 0.0);
+        supportPoint = Vector3(0.0, halfHeight, 0.0);
     }
     else {
         double projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
         if (projectedLength > MACHINE_EPSILON) {
             double d = radius / projectedLength;
-            supportPoint = Vector3D(v.getX() * d, -halfHeight, v.getZ() * d);
+            supportPoint = Vector3(v.getX() * d, -halfHeight, v.getZ() * d);
         }
         else {
-            supportPoint = Vector3D(radius, -halfHeight, 0.0);
+            supportPoint = Vector3(radius, -halfHeight, 0.0);
         }
     }
 
     // Add the margin to the support point
     if (margin != 0.0) {
-        Vector3D unitVec(0.0, -1.0, 0.0);
+        Vector3 unitVec(0.0, -1.0, 0.0);
         if (v.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
             unitVec = v.getUnit();
         }

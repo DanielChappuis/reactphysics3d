@@ -58,7 +58,7 @@ class TrianglesStore {
         void setNbTriangles(int backup);            // Set the number of triangles
         TriangleEPA& last();                        // Return the last triangle
 
-        TriangleEPA* newTriangle(const Vector3D* vertices, uint v0, uint v1, uint v2);  // Create a new triangle
+        TriangleEPA* newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2);  // Create a new triangle
 
         TriangleEPA& operator[](int i);     // Access operator
 };
@@ -85,7 +85,7 @@ inline TriangleEPA& TrianglesStore::last() {
 }
 
 // Create a new triangle
-inline TriangleEPA* TrianglesStore::newTriangle(const Vector3D* vertices, uint v0, uint v1, uint v2) {
+inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2) {
     TriangleEPA* newTriangle = 0;
 
     // If we have not reach the maximum number of triangles

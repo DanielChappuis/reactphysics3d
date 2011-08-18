@@ -56,14 +56,14 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     assert(body1);
     assert(body2);
 
-    Vector3D body1Position = body1->getTransform().getPosition();
-    Vector3D body2Position = body2->getTransform().getPosition();
+    Vector3 body1Position = body1->getTransform().getPosition();
+    Vector3 body2Position = body2->getTransform().getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
 
-    Vector3D r1 = pointOnBody1 - body1Position;
-    Vector3D r2 = pointOnBody2 - body2Position;
-    Vector3D r1CrossN = r1.cross(normal);
-    Vector3D r2CrossN = r2.cross(normal);
+    Vector3 r1 = pointOnBody1 - body1Position;
+    Vector3 r2 = pointOnBody2 - body2Position;
+    Vector3 r1CrossN = r1.cross(normal);
+    Vector3 r2CrossN = r2.cross(normal);
 
     // Compute the jacobian matrix for the body 1 for the contact constraint
     J_sp[currentIndex][0].setValue(0, -normal.getX());
@@ -84,10 +84,10 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     currentIndex++;
 
     // Compute the jacobian matrix for the body 1 for the first friction constraint
-    Vector3D r1CrossU1 = r1.cross(frictionVectors[0]);
-    Vector3D r2CrossU1 = r2.cross(frictionVectors[0]);
-    Vector3D r1CrossU2 = r1.cross(frictionVectors[1]);
-    Vector3D r2CrossU2 = r2.cross(frictionVectors[1]);
+    Vector3 r1CrossU1 = r1.cross(frictionVectors[0]);
+    Vector3 r2CrossU1 = r2.cross(frictionVectors[0]);
+    Vector3 r1CrossU2 = r1.cross(frictionVectors[1]);
+    Vector3 r2CrossU2 = r2.cross(frictionVectors[1]);
     J_sp[currentIndex][0].setValue(0, -frictionVectors[0].getX());
     J_sp[currentIndex][0].setValue(1, -frictionVectors[0].getY());
     J_sp[currentIndex][0].setValue(2, -frictionVectors[0].getZ());
@@ -157,8 +157,8 @@ void Contact::computeErrorValue(int noConstraint, Vector& errorValues) const {
     assert(noConstraint >= 0 && noConstraint + nbConstraints <= errorValues.getNbComponent());
 
     // Compute the error value for the contact constraint
-    Vector3D velocity1 = rigidBody1->getLinearVelocity();
-    Vector3D velocity2 = rigidBody2->getLinearVelocity();
+    Vector3 velocity1 = rigidBody1->getLinearVelocity();
+    Vector3 velocity2 = rigidBody2->getLinearVelocity();
     double restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
     double errorValue = restitutionCoeff * (normal.dot(velocity1) - normal.dot(velocity2)) + PENETRATION_FACTOR * penetrationDepth;
 

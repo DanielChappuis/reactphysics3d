@@ -29,7 +29,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactCachingInfo::ContactCachingInfo(Body* body1, Body* body2, const vector<Vector3D>& positions, const vector<double>& lambdas)
+ContactCachingInfo::ContactCachingInfo(Body* body1, Body* body2, const vector<Vector3>& positions, const vector<double>& lambdas)
             : body1(body1), body2(body2), positions(positions), lambdas(lambdas) {
 
 }

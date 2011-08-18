@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-PhysicsWorld::PhysicsWorld(const Vector3D& gravity)
+PhysicsWorld::PhysicsWorld(const Vector3& gravity)
              : gravity(gravity), isGravityOn(true) {
 
 }

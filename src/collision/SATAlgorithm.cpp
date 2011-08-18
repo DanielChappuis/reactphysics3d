@@ -92,7 +92,7 @@ bool SATAlgorithm::computeCollisionTest(const BoxShape* obb1, const Transform& t
     double max1;                                // Maximum of interval 1
     double min2;                                // Minimm of interval 2
     double max2;                                // Maximum of interval 2
-    Vector3D normal;                            // Contact normal (correspond to the separation axis with the smallest positive penetration depth)
+    Vector3 normal;                            // Contact normal (correspond to the separation axis with the smallest positive penetration depth)
                                                 // The contact normal point out of OBB1 toward OBB2
     double minPenetrationDepth = DBL_MAX;       // Minimum penetration depth detected among all separated axis
     const double cutoff = 0.99;                 // Cutoff for cosine of angles between box axes
@@ -109,7 +109,7 @@ bool SATAlgorithm::computeCollisionTest(const BoxShape* obb1, const Transform& t
     double udc2[3];                             // DotProduct(obb2.Ai, obb2.center - obb1.center)
     
     //Vector3D boxDistance = obb2->getCenter() - obb1->getCenter();   // Vector between the centers of the OBBs
-    Vector3D boxDistance = transform2.getPosition() - transform1.getPosition();   // Vector between the centers of the OBBs
+    Vector3 boxDistance = transform2.getPosition() - transform1.getPosition();   // Vector between the centers of the OBBs
 
     // Axis A0
     for (int i=0; i<3; ++i) {

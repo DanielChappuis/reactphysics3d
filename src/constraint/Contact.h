@@ -51,11 +51,11 @@ namespace reactphysics3d {
 */
 class Contact : public Constraint {
     protected :
-        const Vector3D normal;                  // Normal vector of the contact (From body1 toward body2)
+        const Vector3 normal;                  // Normal vector of the contact (From body1 toward body2)
         const double penetrationDepth;          // Penetration depth
-        const Vector3D pointOnBody1;            // Contact point on body 1
-        const Vector3D pointOnBody2;            // Contact point on body 2
-        std::vector<Vector3D> frictionVectors;  // Two orthogonal vectors that span the tangential friction plane
+        const Vector3 pointOnBody1;            // Contact point on body 1
+        const Vector3 pointOnBody2;            // Contact point on body 2
+        std::vector<Vector3> frictionVectors;  // Two orthogonal vectors that span the tangential friction plane
         double mu_mc_g;
         
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
@@ -64,9 +64,9 @@ class Contact : public Constraint {
         Contact(const ContactInfo* contactInfo);        // Constructor
         virtual ~Contact();                             // Destructor
 
-        Vector3D getNormal() const;                                                     // Return the normal vector of the contact
-        Vector3D getPointOnBody1() const;                                               // Return the contact point on body 1
-        Vector3D getPointOnBody2() const;                                               // Return the contact point on body 2
+        Vector3 getNormal() const;                                                     // Return the normal vector of the contact
+        Vector3 getPointOnBody1() const;                                               // Return the contact point on body 1
+        Vector3 getPointOnBody2() const;                                               // Return the contact point on body 2
         virtual void computeJacobian(int noConstraint, Matrix1x6**& J_SP) const;        // Compute the jacobian matrix for all mathematical constraints
         virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const;    // Compute the lowerbounds values for all the mathematical constraints
         virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const;    // Compute the upperbounds values for all the mathematical constraints
@@ -84,7 +84,7 @@ inline void Contact::computeFrictionVectors() {
     frictionVectors.clear();
 
     // Compute the first orthogonal vector
-    Vector3D vector1 = normal.getOneOrthogonalVector();
+    Vector3 vector1 = normal.getOneOrthogonalVector();
     frictionVectors.push_back(vector1);
 
     // Compute the second orthogonal vector using the cross product
@@ -92,17 +92,17 @@ inline void Contact::computeFrictionVectors() {
 }
 
 // Return the normal vector of the contact
-inline Vector3D Contact::getNormal() const {
+inline Vector3 Contact::getNormal() const {
     return normal;
 }
 
 // Return the contact point on body 1
-inline Vector3D Contact::getPointOnBody1() const {
+inline Vector3 Contact::getPointOnBody1() const {
     return pointOnBody1;
 }
 
 // Return the contact point on body 2
-inline Vector3D Contact::getPointOnBody2() const {
+inline Vector3 Contact::getPointOnBody2() const {
     return pointOnBody2;
 }
 

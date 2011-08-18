@@ -66,7 +66,7 @@ Vector::Vector(const Vector& vector) {
 }
 
 // Conversion from Vector3D to Vector
-Vector::Vector(const Vector3D& vector3d) {
+Vector::Vector(const Vector3& vector3d) {
     nbComponent = 3;
     tab = new double[3];
 

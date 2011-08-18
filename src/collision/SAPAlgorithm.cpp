@@ -84,7 +84,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
     double esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
     vector<const AABB*>::iterator it;               // Iterator on the sortedAABBs set
     vector<const AABB*>::iterator it2;              // Second iterator
-    Vector3D center3D;                              // Center of the current AABB
+    Vector3 center3D;                              // Center of the current AABB
     double center[3];                               // Coordinates of the center of the current AABB
     int i;
     const Body* body;                               // Body pointer on the body corresponding to an AABB
@@ -123,7 +123,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
         // Test collision against all possible overlapping AABBs following the current one
         for (it2 = it + 1; it2 != sortedAABBs.end(); ++it2) {
             // Stop when the tested AABBs are beyond the end of the current AABB
-            if ((*it2)->getMinCoordinates().getValue(sortAxis) > (*it)->getMaxCoordinates().getValue(sortAxis)) {
+            if ((*it2)->getMinCoordinates()[sortAxis] > (*it)->getMaxCoordinates()[sortAxis]) {
                 break;
             }
 

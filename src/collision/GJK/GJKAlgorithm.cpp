@@ -62,11 +62,11 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
 
     assert(shape1 != shape2);
     
-    Vector3D suppA;             // Support point of object A
-    Vector3D suppB;             // Support point of object B
-    Vector3D w;                 // Support point of Minkowski difference A-B
-    Vector3D pA;                // Closest point of object A
-    Vector3D pB;                // Closest point of object B
+    Vector3 suppA;             // Support point of object A
+    Vector3 suppB;             // Support point of object B
+    Vector3 w;                 // Support point of Minkowski difference A-B
+    Vector3 pA;                // Closest point of object A
+    Vector3 pB;                // Closest point of object B
     double vDotw;
     double prevDistSquare;
     Body* const body1 = shape1->getBodyPointer();
@@ -89,14 +89,14 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
     // Get the last point V (last separating axis)
     // TODO : Implement frame coherence. For each pair of body, store
     //        the last separating axis and use it to initialize the v vector
-    Vector3D v(1.0, 1.0, 1.0);
+    Vector3 v(1.0, 1.0, 1.0);
 
     // Initialize the upper bound for the square distance
     double distSquare = DBL_MAX;
     
     do {
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape1->getLocalSupportPoint(v.getOpposite());
+        suppA = shape1->getLocalSupportPoint(-v);
         suppB = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v);
 
         // Compute the support point for the Minkowski difference A-B
@@ -123,7 +123,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -147,7 +147,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -169,7 +169,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -179,14 +179,14 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
 
         // Store and update the squared distance of the closest point
         prevDistSquare = distSquare;
-        distSquare = v.dot(v);
+        distSquare = v.lengthSquare();
 
         // If the distance to the closest point doesn't improve a lot
         if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
             simplex.backupClosestPointInSimplex(v);
             
             // Get the new squared distance
-            distSquare = v.dot(v);
+            distSquare = v.lengthSquare();
 
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
@@ -199,7 +199,7 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
-            Vector3D normal = transform1.getOrientation().getMatrix() * v.getOpposite().getUnit();
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
 
@@ -222,11 +222,11 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
 // compute the correct penetration depth and contact points of the enlarged objects.
 bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Shape* const shape1, const Transform& transform1,
                                                              const Shape* const shape2, const Transform& transform2,
-                                                             ContactInfo*& contactInfo, Vector3D& v) {
+                                                             ContactInfo*& contactInfo, Vector3& v) {
     Simplex simplex;
-    Vector3D suppA;
-    Vector3D suppB;
-    Vector3D w;
+    Vector3 suppA;
+    Vector3 suppB;
+    Vector3 w;
     double vDotw;
     double distSquare = DBL_MAX;
     double prevDistSquare;
@@ -239,7 +239,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Shape* const 
     
     do {
         // Compute the support points for the enlarged object A and B
-        suppA = shape1->getLocalSupportPoint(v.getOpposite(), OBJECT_MARGIN);
+        suppA = shape1->getLocalSupportPoint(-v, OBJECT_MARGIN);
         suppB = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v, OBJECT_MARGIN);
 
         // Compute the support point for the Minkowski difference A-B
@@ -266,7 +266,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Shape* const 
 
         // Store and update the square distance
         prevDistSquare = distSquare;
-        distSquare = v.dot(v);
+        distSquare = v.lengthSquare();
 
         if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
             return false;

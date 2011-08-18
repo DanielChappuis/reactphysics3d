@@ -48,8 +48,8 @@ class SphereShape : public Shape {
 
         double getRadius() const;                                                                   // Return the radius of the sphere
         void setRadius(double radius);                                                              // Set the radius of the sphere
-        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a local support point in a given direction
-        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a local support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -67,7 +67,7 @@ inline void SphereShape::setRadius(double radius) {
 }
 
 // Return a local support point in a given direction
-inline Vector3D SphereShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
     assert(margin >= 0.0);
     double length = direction.length();
 
@@ -79,13 +79,13 @@ inline Vector3D SphereShape::getLocalSupportPoint(const Vector3D& direction, dou
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return Vector3D(0, radius + margin, 0);
+    return Vector3(0, radius + margin, 0);
 }
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D SphereShape::getLocalExtents(double margin) const {
-    return Vector3D(radius + margin, radius + margin, radius + margin);
+inline Vector3 SphereShape::getLocalExtents(double margin) const {
+    return Vector3(radius + margin, radius + margin, radius + margin);
 }
 
 }; // End of the ReactPhysics3D namespace

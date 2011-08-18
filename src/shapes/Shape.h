@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "../mathematics/Vector3D.h"
+#include "../mathematics/Vector3.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -52,8 +52,8 @@ class Shape {
 
         Body* getBodyPointer() const;                                                                   // Return the body pointer
         void setBodyPointer(Body* bodyPointer);                                                         // Set the body pointer
-        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const=0;    // Return a local support point in a given direction
-        virtual Vector3D getLocalExtents(double margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const=0;    // Return a local support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
 };
 
 // Return the body pointer

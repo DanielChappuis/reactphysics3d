@@ -46,16 +46,16 @@ namespace reactphysics3d {
 */
 class BoxShape : public Shape {
     private :
-        Vector3D extent;           // Extent sizes of the box
+        Vector3 extent;           // Extent sizes of the box
 
     public :
-        BoxShape(const Vector3D& extent);        // Constructor
+        BoxShape(const Vector3& extent);        // Constructor
         virtual ~BoxShape();                     // Destructor
 
-        const Vector3D& getExtent() const;                                                          // Return the extents of the box
-        void setExtent(const Vector3D& extent);                                                     // Set the extents of the box
-        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
-        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a local support point in a given direction
+        const Vector3& getExtent() const;                                                          // Return the extents of the box
+        void setExtent(const Vector3& extent);                                                     // Set the extents of the box
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a local support point in a given direction
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                                                                      // Draw the Box (only for testing purpose)
@@ -63,26 +63,26 @@ class BoxShape : public Shape {
 };
 
 // Return the extents of the box
-inline const Vector3D& BoxShape::getExtent() const {
+inline const Vector3& BoxShape::getExtent() const {
     return extent;
 }
 
  // Set the extents of the box
-inline void BoxShape::setExtent(const Vector3D& extent) {
+inline void BoxShape::setExtent(const Vector3& extent) {
     this->extent = extent;
 }
 
 // Return the local extents of the shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3D BoxShape::getLocalExtents(double margin) const {
-    return extent + Vector3D(margin, margin, margin);
+inline Vector3 BoxShape::getLocalExtents(double margin) const {
+    return extent + Vector3(margin, margin, margin);
 }
 
 // Return a local support point in a given direction
-inline Vector3D BoxShape::getLocalSupportPoint(const Vector3D& direction, double margin) const {
+inline Vector3 BoxShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
     assert(margin >= 0.0);
     
-    return Vector3D(direction.getX() < 0.0 ? -extent.getX()-margin : extent.getX()+margin,
+    return Vector3(direction.getX() < 0.0 ? -extent.getX()-margin : extent.getX()+margin,
                     direction.getY() < 0.0 ? -extent.getY()-margin : extent.getY()+margin,
                     direction.getZ() < 0.0 ? -extent.getZ()-margin : extent.getZ()+margin);
 }

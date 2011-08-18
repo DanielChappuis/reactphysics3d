@@ -44,39 +44,39 @@ class Body;
 */
 class AABB {
     private :
-        Vector3D minCoordinates;        // Minimum world coordinates of the AABB on the x,y and z axis
-        Vector3D maxCoordinates;        // Maximum world coordinates of the AABB on the x,y and z axis
+        Vector3 minCoordinates;        // Minimum world coordinates of the AABB on the x,y and z axis
+        Vector3 maxCoordinates;        // Maximum world coordinates of the AABB on the x,y and z axis
         Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
 
     public :
         AABB();                                                           // Constructor
-        AABB(const Transform& transform, const Vector3D& extents);        // Constructor
+        AABB(const Transform& transform, const Vector3& extents);        // Constructor
         virtual ~AABB();                                                  // Destructor
 
-        Vector3D getCenter() const;                                                     // Return the center point
-        const Vector3D& getMinCoordinates() const;                                      // Return the minimum coordinates of the AABB
-        const Vector3D& getMaxCoordinates() const;                                      // Return the maximum coordinates of the AABB
+        Vector3 getCenter() const;                                                     // Return the center point
+        const Vector3& getMinCoordinates() const;                                      // Return the minimum coordinates of the AABB
+        const Vector3& getMaxCoordinates() const;                                      // Return the maximum coordinates of the AABB
         Body* getBodyPointer() const;                                                   // Return a pointer to the owner body
         void setBodyPointer(Body* bodyPointer);                                         // Set the body pointer
         bool testCollision(const AABB& aabb) const;                                     // Return true if the current AABB is overlapping is the AABB in argument
-        virtual void update(const Transform& newTransform, const Vector3D& extents);    // Update the oriented bounding box orientation according to a new orientation of the rigid body
+        virtual void update(const Transform& newTransform, const Vector3& extents);    // Update the oriented bounding box orientation according to a new orientation of the rigid body
 #ifdef VISUAL_DEBUG
        virtual void draw() const;                                                       // Draw the AABB (only for testing purpose)
 #endif
 };
 
 // Return the center point of the AABB in world coordinates
-inline Vector3D AABB::getCenter() const {
+inline Vector3 AABB::getCenter() const {
     return (minCoordinates + maxCoordinates) * 0.5;
 }
 
 // Return the minimum coordinates of the AABB
-inline const Vector3D& AABB::getMinCoordinates() const {
+inline const Vector3& AABB::getMinCoordinates() const {
     return minCoordinates;
 }
 
 // Return the maximum coordinates of the AABB
-inline const Vector3D& AABB::getMaxCoordinates() const {
+inline const Vector3& AABB::getMaxCoordinates() const {
     return maxCoordinates;
 }
 
@@ -100,9 +100,9 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 }
 
 // Update the world minimum and maximum coordinates of the AABB on the three x,y and z axis
-inline void AABB::update(const Transform& newTransform, const Vector3D& extents) {
+inline void AABB::update(const Transform& newTransform, const Vector3& extents) {
     Matrix3x3 worldAxis = newTransform.getOrientation().getMatrix().getAbsoluteMatrix();
-    Vector3D worldExtents = Vector3D(worldAxis.getColumn(0).dot(extents),
+    Vector3 worldExtents = Vector3(worldAxis.getColumn(0).dot(extents),
                                      worldAxis.getColumn(1).dot(extents),
                                      worldAxis.getColumn(2).dot(extents));
     minCoordinates = newTransform.getPosition() - worldExtents;

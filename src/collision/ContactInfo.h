@@ -44,15 +44,15 @@ struct ContactInfo {
     public:
         Body* const body1;                // Pointer to the first body of the contact
         Body* const body2;                // Pointer to the second body of the contact
-        const Vector3D point1;                  // Contact point of body 1
-        const Vector3D point2;                  // Contact point of body 2
-        const Vector3D normal;                  // Normal vector the the collision contact
+        const Vector3 point1;                  // Contact point of body 1
+        const Vector3 point2;                  // Contact point of body 2
+        const Vector3 normal;                  // Normal vector the the collision contact
         const double penetrationDepth;          // Penetration depth of the contact
         
-        ContactInfo(Body* body1, Body* body2, const Vector3D& normal,
+        ContactInfo(Body* body1, Body* body2, const Vector3& normal,
                     double penetrationDepth);                                                    // Constructor for SAT
-        ContactInfo(Body* body1, Body* body2, const Vector3D& normal,
-                    double penetrationDepth, const Vector3D& point1, const Vector3D& point2);    // Constructor for GJK
+        ContactInfo(Body* body1, Body* body2, const Vector3& normal,
+                    double penetrationDepth, const Vector3& point1, const Vector3& point2);    // Constructor for GJK
 };
 
 } // End of the ReactPhysics3D namespace

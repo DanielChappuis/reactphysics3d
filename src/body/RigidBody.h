@@ -43,10 +43,10 @@ namespace reactphysics3d {
 */
 class RigidBody : public Body {
     protected :
-        Vector3D linearVelocity;                    // Linear velocity of the body
-        Vector3D angularVelocity;                   // Angular velocity of the body
-        Vector3D externalForce;                     // Current external force on the body
-        Vector3D externalTorque;                    // Current external torque on the body
+        Vector3 linearVelocity;                    // Linear velocity of the body
+        Vector3 angularVelocity;                   // Angular velocity of the body
+        Vector3 externalForce;                     // Current external force on the body
+        Vector3 externalTorque;                    // Current external torque on the body
         Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;        // Inverse of the inertia tensor of the body (in body coordinates)
         double massInverse;                         // Inverse of the mass of the body
@@ -57,15 +57,15 @@ class RigidBody : public Body {
                   const Matrix3x3& inertiaTensorLocal, Shape* shape);           // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                   // Destructor
 
-        Vector3D getLinearVelocity() const;                                     // Return the linear velocity
-        void setLinearVelocity(const Vector3D& linearVelocity);                 // Set the linear velocity of the body
-        Vector3D getAngularVelocity() const;                                    // Return the angular velocity
-        void setAngularVelocity(const Vector3D& angularVelocity);               // Set the angular velocity
+        Vector3 getLinearVelocity() const;                                     // Return the linear velocity
+        void setLinearVelocity(const Vector3& linearVelocity);                 // Set the linear velocity of the body
+        Vector3 getAngularVelocity() const;                                    // Return the angular velocity
+        void setAngularVelocity(const Vector3& angularVelocity);               // Set the angular velocity
         void setMassInverse(double massInverse);                                // Set the inverse of the mass
-        Vector3D getExternalForce() const;                                      // Return the current external force of the body
-        void setExternalForce(const Vector3D& force);                           // Set the current external force on the body
-        Vector3D getExternalTorque() const;                                     // Return the current external torque of the body
-        void setExternalTorque(const Vector3D& torque);                         // Set the current external torque of the body
+        Vector3 getExternalForce() const;                                      // Return the current external force of the body
+        void setExternalForce(const Vector3& force);                           // Set the current external force on the body
+        Vector3 getExternalTorque() const;                                     // Return the current external torque of the body
+        void setExternalTorque(const Vector3& torque);                         // Set the current external torque of the body
         double getMassInverse() const;                                          // Return the inverse of the mass of the body
         Matrix3x3 getInertiaTensorLocal() const;                                // Return the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);        // Set the local inertia tensor of the body (in body coordinates)
@@ -78,16 +78,16 @@ class RigidBody : public Body {
 };
 
 // Return the linear velocity
-inline Vector3D RigidBody::getLinearVelocity() const {
+inline Vector3 RigidBody::getLinearVelocity() const {
     return linearVelocity;
 }
 
 // Return the angular velocity of the body
-inline Vector3D RigidBody::getAngularVelocity() const {
+inline Vector3 RigidBody::getAngularVelocity() const {
     return angularVelocity;
 }
 
-inline void RigidBody::setAngularVelocity(const Vector3D& angularVelocity) {
+inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
      this->angularVelocity = angularVelocity;
 }
 
@@ -102,22 +102,22 @@ inline Matrix3x3 RigidBody::getInertiaTensorLocalInverse() const {
 }
 
 // Return the external force on the body
-inline Vector3D RigidBody::getExternalForce() const {
+inline Vector3 RigidBody::getExternalForce() const {
     return externalForce;
 }
 
 // Set the external force on the body
-inline void RigidBody::setExternalForce(const Vector3D& force) {
+inline void RigidBody::setExternalForce(const Vector3& force) {
     this->externalForce = force;
 }
 
 // Return the current external torque on the body
-inline Vector3D RigidBody::getExternalTorque() const {
+inline Vector3 RigidBody::getExternalTorque() const {
     return externalTorque;
 }
 
  // Set the current external torque on the body
-inline void RigidBody::setExternalTorque(const Vector3D& torque) {
+inline void RigidBody::setExternalTorque(const Vector3& torque) {
     this->externalTorque = torque;
 }
 
@@ -155,7 +155,7 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 }
 
 // Set the linear velocity of the rigid body
-inline void RigidBody::setLinearVelocity(const Vector3D& linearVelocity) {
+inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     // If the body is able to move
     if (isMotionEnabled) {
         // Update the linear velocity of the current body state

@@ -241,25 +241,29 @@ void ConstraintSolver::fillInMatrices() {
         // TODO : Use polymorphism and remove this downcasting
         rigidBody = dynamic_cast<RigidBody*>(body);
         assert(rigidBody);
-        
+
         // Compute the vector V1 with initial velocities values
-        V1[bodyNumber].setValue(0, rigidBody->getLinearVelocity().getValue(0));
-        V1[bodyNumber].setValue(1, rigidBody->getLinearVelocity().getValue(1));
-        V1[bodyNumber].setValue(2, rigidBody->getLinearVelocity().getValue(2));
-        V1[bodyNumber].setValue(3, rigidBody->getAngularVelocity().getValue(0));
-        V1[bodyNumber].setValue(4, rigidBody->getAngularVelocity().getValue(1));
-        V1[bodyNumber].setValue(5, rigidBody->getAngularVelocity().getValue(2));
+        Vector3 linearVelocity = rigidBody->getLinearVelocity();
+        Vector3 angularVelocity = rigidBody->getAngularVelocity();
+        V1[bodyNumber].setValue(0, linearVelocity[0]);
+        V1[bodyNumber].setValue(1, linearVelocity[1]);
+        V1[bodyNumber].setValue(2, linearVelocity[2]);
+        V1[bodyNumber].setValue(3, angularVelocity[0]);
+        V1[bodyNumber].setValue(4, angularVelocity[1]);
+        V1[bodyNumber].setValue(5, angularVelocity[2]);
 
         // Compute the vector Vconstraint with final constraint velocities
         Vconstraint[bodyNumber].initWithValue(0.0);
         
         // Compute the vector with forces and torques values
-        Fext[bodyNumber].setValue(0, rigidBody->getExternalForce().getValue(0));
-        Fext[bodyNumber].setValue(1, rigidBody->getExternalForce().getValue(1));
-        Fext[bodyNumber].setValue(2, rigidBody->getExternalForce().getValue(2));
-        Fext[bodyNumber].setValue(3,  rigidBody->getExternalTorque().getValue(0));
-        Fext[bodyNumber].setValue(4,  rigidBody->getExternalTorque().getValue(1));
-        Fext[bodyNumber].setValue(5,  rigidBody->getExternalTorque().getValue(2));
+        Vector3 externalForce = rigidBody->getExternalForce();
+        Vector3 externalTorque = rigidBody->getExternalTorque();
+        Fext[bodyNumber].setValue(0, externalForce[0]);
+        Fext[bodyNumber].setValue(1, externalForce[1]);
+        Fext[bodyNumber].setValue(2, externalForce[2]);
+        Fext[bodyNumber].setValue(3, externalTorque[0]);
+        Fext[bodyNumber].setValue(4, externalTorque[1]);
+        Fext[bodyNumber].setValue(5, externalTorque[2]);
 
         // Compute the inverse sparse mass matrix
         Minv_sp[bodyNumber].initWithValue(0.0);
@@ -351,7 +355,7 @@ void ConstraintSolver::updateContactCache() {
         if (contact) {
             
             // Get all the contact points of the contact
-            vector<Vector3D> points;
+            vector<Vector3> points;
             vector<double> lambdas;
             points.push_back(contact->getPointOnBody1());
             points.push_back(contact->getPointOnBody2());

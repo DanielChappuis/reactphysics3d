@@ -59,7 +59,7 @@ uint EdgeEPA::getTargetVertexIndex() const {
 }
 
 // Execute the recursive silhouette algorithm from this edge
-bool EdgeEPA::computeSilhouette(const Vector3D* vertices, uint indexNewVertex, TrianglesStore& triangleStore) {
+bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex, TrianglesStore& triangleStore) {
     // If the edge has not already been visited
     if (!ownerTriangle->getIsObsolete()) {
         // If the triangle of this edge is not visible from the given point

@@ -23,52 +23,73 @@
 ********************************************************************************/
 
 // Libraries
+#include "Vector3.h"
 #include <iostream>
-#include "Matrix3x3.h"
+#include <cassert>
+#include <vector>
 
 // Namespaces
 using namespace reactphysics3d;
 
-// Constructor of the class Matrix3x3
-Matrix3x3::Matrix3x3() {
-    // Initialize all values in the matrix to zero
-    setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-}
-
-// Constructor
-Matrix3x3::Matrix3x3(double value) {
-    setAllValues(value, value, value, value, value, value, value, value, value);
+// Constructor of the class Vector3D
+Vector3::Vector3() {
+    values[0] = 0.0;
+    values[1] = 0.0;
+    values[2] = 0.0;
 }
 
 // Constructor with arguments
-Matrix3x3::Matrix3x3(double a1, double a2, double a3, double b1, double b2, double b3, double c1, double c2, double c3) {
-    // Initialize the matrix with the values
-    setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
+Vector3::Vector3(double x, double y, double z) {
+    values[0] = x;
+    values[1] = y;
+    values[2] = z;
+}
+
+// Copy-constructor
+Vector3::Vector3(const Vector3& vector) {
+    values[0] = vector.values[0];
+    values[1] = vector.values[1];
+    values[2] = vector.values[2];
 }
 
 // Destructor
-Matrix3x3::~Matrix3x3() {
+Vector3::~Vector3() {
 
 }
 
-// Return the inverse matrix
-Matrix3x3 Matrix3x3::getInverse() const {
-    // Compute the determinant of the matrix
-    double determinant = getDeterminant();
+// Return the corresponding unit vector
+Vector3 Vector3::getUnit() const {
+    double lengthVector = length();
 
-    // Check if the determinant is equal to zero
-    assert(determinant != 0.0);
-    double invDeterminant = 1.0 / determinant;
-    Matrix3x3 tempMatrix;
+    assert(lengthVector != 0.0);
 
-    // Compute the inverse of the matrix
-    tempMatrix.setAllValues((array[1][1]*array[2][2]-array[2][1]*array[1][2]), -(array[1][0]*array[2][2]-array[2][0]*array[1][2]), (array[1][0]*array[2][1]-array[2][0]*array[1][1]),
-                            -(array[0][1]*array[2][2]-array[2][1]*array[0][2]), (array[0][0]*array[2][2]-array[2][0]*array[0][2]), -(array[0][0]*array[2][1]-array[2][0]*array[0][1]),
-                            (array[0][1]*array[1][2]-array[0][2]*array[1][1]), -(array[0][0]*array[1][2]-array[1][0]*array[0][2]), (array[0][0]*array[1][1]-array[0][1]*array[1][0]));
-
-    // Return the inverse matrix
-    return (invDeterminant * tempMatrix.getTranspose());
+    // Compute and return the unit vector
+    double lengthInv = 1.0 / lengthVector;
+    return Vector3(values[0] * lengthInv, values[1] * lengthInv, values[2] * lengthInv);
 }
 
+// Return two unit orthogonal vectors of the current vector
+Vector3 Vector3::getOneOrthogonalVector() const {
+    assert(!this->isZero());
 
+    // Compute a first orthogonal vector
+    Vector3 vector1;
+    if (!approxEqual(values[0], 0.0)) {   // If x != 0
+        vector1.setY(values[0]);
+        vector1.setZ((-2*values[0]*values[1]*values[2] + 2*values[0]*values[2])/(2*(values[2]*values[2] + values[0]*values[0])));
+        vector1.setX((-values[0]*values[1]-values[2]*vector1.getZ())/values[0]);
+    }
+    else if (!approxEqual(values[1], 0.0)) { // If y != 0
+        vector1.setZ(values[1]);
+        vector1.setX((-2*values[0]*values[1]*values[2] + 2*values[0]*values[1])/(2*(values[1]*values[1] + values[0]*values[0])));
+        vector1.setY((-values[2]*values[1]-values[0]*vector1.getX())/values[1]);
+    }
+    else if (!approxEqual(values[2], 0.0)) { // If z != 0
+        vector1.setX(values[2]);
+        vector1.setY((-2*values[0]*values[1]*values[2] + 2*values[1]*values[2])/(2*(values[2]*values[2] + values[1]*values[1])));
+        vector1.setZ((-values[0]*values[2]-values[1]*vector1.getY())/values[2]);
+    }
 
+    assert(vector1.isUnit());
+    return vector1;
+}

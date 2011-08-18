@@ -43,10 +43,10 @@ struct ContactCachingInfo {
     public:
         Body* body1;                            // Body pointer of the first bounding volume
         Body* body2;                            // Body pointer of the second bounding volume
-        std::vector<Vector3D> positions;        // Positions of the contact points
+        std::vector<Vector3> positions;        // Positions of the contact points
         std::vector<double> lambdas;            // Last lambdas value for the constraint
 
-        ContactCachingInfo(Body* body1, Body* body2, const std::vector<Vector3D>& positions, const std::vector<double>& lambdas);   // Constructor
+        ContactCachingInfo(Body* body1, Body* body2, const std::vector<Vector3>& positions, const std::vector<double>& lambdas);   // Constructor
 };
 
 } // End of the ReactPhysics3D namespace

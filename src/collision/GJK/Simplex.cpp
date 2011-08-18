@@ -43,7 +43,7 @@ Simplex::~Simplex() {
 // suppPointA : support point of object A in a direction -v
 // suppPointB : support point of object B in a direction v
 // point      : support point of object (A-B) => point = suppPointA - suppPointB
-void Simplex::addPoint(const Vector3D& point, const Vector3D& suppPointA, const Vector3D& suppPointB) {
+void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Vector3& suppPointB) {
     assert(!isFull());
 
     lastFound = 0;
@@ -75,7 +75,7 @@ void Simplex::addPoint(const Vector3D& point, const Vector3D& suppPointA, const 
 }
 
 // Return true if the point is in the simplex
-bool Simplex::isPointInSimplex(const Vector3D& point) const {
+bool Simplex::isPointInSimplex(const Vector3& point) const {
     int i;
     Bits bit;
 
@@ -100,7 +100,7 @@ void Simplex::updateCache() {
             
             // Compute the distance between two points in the possible simplex set
             diffLength[i][lastFound] = points[i] - points[lastFound];
-            diffLength[lastFound][i] = diffLength[i][lastFound].getOpposite();
+            diffLength[lastFound][i] = -diffLength[i][lastFound];
 
             // Compute the squared length of the vector distances from points in the possible simplex set
             normSquare[i][lastFound] = normSquare[lastFound][i] = diffLength[i][lastFound].dot(diffLength[i][lastFound]);
@@ -109,7 +109,7 @@ void Simplex::updateCache() {
 }
 
 // Return the points of the simplex
-unsigned int Simplex::getSimplex(Vector3D* suppPointsA, Vector3D* suppPointsB, Vector3D* points) const {
+unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vector3* points) const {
     unsigned int nbVertices = 0;
     int i;
     Bits bit;
@@ -271,7 +271,7 @@ bool Simplex::isValidSubset(Bits subset) const {
 //      pA = sum(lambda_i * a_i)    where "a_i" are the support points of object A
 //      pB = sum(lambda_i * b_i)    where "b_i" are the support points of object B
 //      with lambda_i = deltaX_i / deltaX
-void Simplex::computeClosestPointsOfAandB(Vector3D& pA, Vector3D& pB) const {
+void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     double deltaX = 0.0;
     pA.setAllValues(0.0, 0.0, 0.0);
     pB.setAllValues(0.0, 0.0, 0.0);
@@ -283,22 +283,22 @@ void Simplex::computeClosestPointsOfAandB(Vector3D& pA, Vector3D& pB) const {
         // If the current point is part of the simplex
         if (overlap(bitsCurrentSimplex, bit)) {
             deltaX += det[bitsCurrentSimplex][i];
-            pA = pA + det[bitsCurrentSimplex][i] * suppPointsA[i];
-            pB = pB + det[bitsCurrentSimplex][i] * suppPointsB[i];
+            pA += det[bitsCurrentSimplex][i] * suppPointsA[i];
+            pB += det[bitsCurrentSimplex][i] * suppPointsB[i];
         }
     }
 
     assert(deltaX > 0.0);
     double factor = 1.0 / deltaX;
-    pA = factor * pA;
-    pB = factor * pB;
+    pA *= factor;
+    pB *= factor;
 }
 
 // Compute the closest point "v" to the origin of the current simplex
 // This method executes the Jonhnson's algorithm for computing the point
 // "v" of simplex that is closest to the origin. The method returns true
 // if a closest point has been found.
-bool Simplex::computeClosestPoint(Vector3D& v) {
+bool Simplex::computeClosestPoint(Vector3& v) {
     Bits subset;
 
     // For each possible simplex set
@@ -325,13 +325,13 @@ bool Simplex::computeClosestPoint(Vector3D& v) {
 }
 
 // Backup the closest point
-void Simplex::backupClosestPointInSimplex(Vector3D& v) {
+void Simplex::backupClosestPointInSimplex(Vector3& v) {
     double minDistSquare = DBL_MAX;
     Bits bit;
 
     for (bit = allBits; bit != 0x0; bit--) {
         if (isSubset(bit, allBits) && isProperSubset(bit)) {
-            Vector3D u = computeClosestPointForSubset(bit);
+            Vector3 u = computeClosestPointForSubset(bit);
             double distSquare = u.dot(u);
             if (distSquare < minDistSquare) {
                 minDistSquare = distSquare;
@@ -344,8 +344,8 @@ void Simplex::backupClosestPointInSimplex(Vector3D& v) {
 
 // Return the closest point "v" in the convex hull of the points in the subset
 // represented by the bits "subset"
-Vector3D Simplex::computeClosestPointForSubset(Bits subset) {
-    Vector3D v(0.0, 0.0, 0.0);      // Closet point v = sum(lambda_i * points[i])
+Vector3 Simplex::computeClosestPointForSubset(Bits subset) {
+    Vector3 v(0.0, 0.0, 0.0);      // Closet point v = sum(lambda_i * points[i])
     maxLengthSquare = 0.0;
     double deltaX = 0.0;            // deltaX = sum of all det[subset][i]
     int i;
@@ -363,7 +363,7 @@ Vector3D Simplex::computeClosestPointForSubset(Bits subset) {
             }
 
             // Closest point v = sum(lambda_i * points[i])
-            v = v + det[subset][i] * points[i];
+            v += det[subset][i] * points[i];
         }
     }
 

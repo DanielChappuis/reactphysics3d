@@ -71,7 +71,7 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         posZ = contact->getPointOnBody1().getZ();
 
         // Get the position of the old contact
-        Vector3D& contactPos1 = contactInfo->positions[0];
+        Vector3& contactPos1 = contactInfo->positions[0];
 
         // If the old contact point doesn't match the current one
         if (posX > contactPos1.getX() + POSITION_TOLERANCE || posX < contactPos1.getX() - POSITION_TOLERANCE ||
@@ -88,7 +88,7 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         posZ = contact->getPointOnBody2().getZ();
 
         // Get the position of the old contact
-        Vector3D& contactPos2 = contactInfo->positions[1];
+        Vector3& contactPos2 = contactInfo->positions[1];
 
         // If the old contact point doesn't match the current one
         if (posX > contactPos2.getX() + POSITION_TOLERANCE || posX < contactPos2.getX() - POSITION_TOLERANCE ||

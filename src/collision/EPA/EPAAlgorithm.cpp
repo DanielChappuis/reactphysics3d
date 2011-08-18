@@ -43,28 +43,28 @@ EPAAlgorithm::~EPAAlgorithm() {
 // Decide if the origin is in the tetrahedron
 // Return 0 if the origin is in the tetrahedron and return the number (1,2,3 or 4) of
 // the vertex that is wrong if the origin is not in the tetrahedron
-int EPAAlgorithm::isOriginInTetrahedron(const Vector3D& p1, const Vector3D& p2, const Vector3D& p3, const Vector3D& p4) const {
+int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4) const {
 
     // Check vertex 1
-    Vector3D normal1 = (p2-p1).cross(p3-p1);
+    Vector3 normal1 = (p2-p1).cross(p3-p1);
     if (normal1.dot(p1) > 0.0 == normal1.dot(p4) > 0.0) {
         return 4;
     }
 
     // Check vertex 2
-    Vector3D normal2 = (p4-p2).cross(p3-p2);
+    Vector3 normal2 = (p4-p2).cross(p3-p2);
     if (normal2.dot(p2) > 0.0 == normal2.dot(p1) > 0.0) {
         return 1;
     }
 
     // Check vertex 3
-    Vector3D normal3 = (p4-p3).cross(p1-p3);
+    Vector3 normal3 = (p4-p3).cross(p1-p3);
     if (normal3.dot(p3) > 0.0 == normal3.dot(p2) > 0.0) {
         return 2;
     }
 
     // Check vertex 4
-    Vector3D normal4 = (p2-p4).cross(p1-p4);
+    Vector3 normal4 = (p2-p4).cross(p1-p4);
     if (normal4.dot(p4) > 0.0 == normal4.dot(p3) > 0.0) {
         return 3;
     }
@@ -81,10 +81,10 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3D& p1, const Vector3D& p2, 
 // the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, const Shape* shape1, const Transform& transform1,
                                                            const Shape* shape2, const Transform& transform2,
-                                                           Vector3D& v, ContactInfo*& contactInfo) {
-    Vector3D suppPointsA[MAX_SUPPORT_POINTS];       // Support points of object A in local coordinates
-    Vector3D suppPointsB[MAX_SUPPORT_POINTS];       // Support points of object B in local coordinates
-    Vector3D points[MAX_SUPPORT_POINTS];            // Current points
+                                                           Vector3& v, ContactInfo*& contactInfo) {
+    Vector3 suppPointsA[MAX_SUPPORT_POINTS];       // Support points of object A in local coordinates
+    Vector3 suppPointsB[MAX_SUPPORT_POINTS];       // Support points of object B in local coordinates
+    Vector3 points[MAX_SUPPORT_POINTS];            // Current points
     TrianglesStore triangleStore;                   // Store the triangles
     TriangleEPA* triangleHeap[MAX_FACETS];          // Heap that contains the face candidate of the EPA algorithm
 
@@ -125,7 +125,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             // v1, v2 and v3.
 
             // Direction of the segment
-            Vector3D d = (points[1] - points[0]).getUnit();
+            Vector3 d = (points[1] - points[0]).getUnit();
 
             // Choose the coordinate axis from the minimal absolute component of the vector d
             int minAxis = d.getAbsoluteVector().getMinAxis();
@@ -141,23 +141,23 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             Matrix3x3 rotationMat = rotationQuat.getMatrix();
 
             // Compute the vector v1, v2, v3
-            Vector3D v1 = d.cross(Vector3D(minAxis == 0, minAxis == 1, minAxis == 2));
-            Vector3D v2 = rotationMat * v1;
-            Vector3D v3 = rotationMat * v2;
+            Vector3 v1 = d.cross(Vector3(minAxis == 0, minAxis == 1, minAxis == 2));
+            Vector3 v2 = rotationMat * v1;
+            Vector3 v3 = rotationMat * v2;
 
             // Compute the support point in the direction of v1
             suppPointsA[2] = shape1->getLocalSupportPoint(v1, OBJECT_MARGIN);
-            suppPointsB[2] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v1.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[2] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v1), OBJECT_MARGIN);
             points[2] = suppPointsA[2] - suppPointsB[2];
 
             // Compute the support point in the direction of v2
             suppPointsA[3] = shape1->getLocalSupportPoint(v2, OBJECT_MARGIN);
-            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v2.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v2), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
 
             // Compute the support point in the direction of v3
             suppPointsA[4] = shape1->getLocalSupportPoint(v3, OBJECT_MARGIN);
-            suppPointsB[4] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * v3.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[4] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v3), OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Now we have an hexahedron (two tetrahedron glued together). We can simply keep the
@@ -246,15 +246,15 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             // normal of the triangle.
 
             // Compute the normal of the triangle
-            Vector3D v1 = points[1] - points[0];
-            Vector3D v2 = points[2] - points[0];
-            Vector3D n = v1.cross(v2);
+            Vector3 v1 = points[1] - points[0];
+            Vector3 v2 = points[2] - points[0];
+            Vector3 n = v1.cross(v2);
 
             // Compute the two new vertices to obtain a hexahedron
             suppPointsA[3] = shape1->getLocalSupportPoint(n, OBJECT_MARGIN);
-            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * n.getOpposite(), OBJECT_MARGIN);
+            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-n), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
-            suppPointsA[4] = shape1->getLocalSupportPoint(n.getOpposite(), OBJECT_MARGIN);
+            suppPointsA[4] = shape1->getLocalSupportPoint(-n, OBJECT_MARGIN);
             suppPointsB[4] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * n, OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
@@ -325,7 +325,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
             // Compute the support point of the Minkowski difference (A-B) in the closest point direction
             suppPointsA[nbVertices] = shape1->getLocalSupportPoint(triangle->getClosestPoint(), OBJECT_MARGIN);
-            suppPointsB[nbVertices] = shape2ToShape1 *shape2->getLocalSupportPoint(rotateToShape2 * triangle->getClosestPoint().getOpposite(), OBJECT_MARGIN);
+            suppPointsB[nbVertices] = shape2ToShape1 *shape2->getLocalSupportPoint(rotateToShape2 * (-triangle->getClosestPoint()), OBJECT_MARGIN);
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;
@@ -368,9 +368,9 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
 
     // Compute the contact info (in world-space)
     v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
-    Vector3D pA = transform1 * triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3D pB = transform1 * triangle->computeClosestPointOfObject(suppPointsB);
-    Vector3D normal = v.getUnit();
+    Vector3 pA = transform1 * triangle->computeClosestPointOfObject(suppPointsA);
+    Vector3 pB = transform1 * triangle->computeClosestPointOfObject(suppPointsB);
+    Vector3 normal = v.getUnit();
     double penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
     contactInfo = new ContactInfo(shape1->getBodyPointer(), shape2->getBodyPointer(), normal, penetrationDepth, pA, pB);

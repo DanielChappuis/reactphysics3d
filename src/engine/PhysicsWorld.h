@@ -49,17 +49,17 @@ class PhysicsWorld {
         std::vector<Body*> addedBodies;             // Added bodies since last update
         std::vector<Body*> removedBodies;           // Removed bodies since last update
         std::vector<Constraint*> constraints;       // List that contains all the current constraints
-        Vector3D gravity;                           // Gravity vector of the world
+        Vector3 gravity;                           // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
 
     public :
-        PhysicsWorld(const Vector3D& gravity);      // Constructor
+        PhysicsWorld(const Vector3& gravity);      // Constructor
         virtual ~PhysicsWorld();                    // Destructor
 
         void addBody(Body* body);                                               // Add a body to the physics world
         void removeBody(Body const* const body);                                // Remove a body from the physics world
         void clearAddedAndRemovedBodies();                                      // Clear the addedBodies and removedBodies sets
-        Vector3D getGravity() const;                                            // Return the gravity vector of the world
+        Vector3 getGravity() const;                                            // Return the gravity vector of the world
         bool getIsGravityOn() const;                                            // Return if the gravity is on
         void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
         void addConstraint(Constraint* constraint);                             // Add a constraint
@@ -129,7 +129,7 @@ inline void PhysicsWorld::clearAddedAndRemovedBodies() {
 }
 
 // Return the gravity vector of the world
-inline Vector3D PhysicsWorld::getGravity() const {
+inline Vector3 PhysicsWorld::getGravity() const {
     return gravity;
 }
 

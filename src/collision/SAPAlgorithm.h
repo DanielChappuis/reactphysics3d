@@ -72,7 +72,7 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
 // sorting axis (sortAxis) is smaller than the minimum value of "b" on this same
 // axis.
 inline bool SAPAlgorithm::compareAABBs(const AABB* a, const AABB* b) {
-    return (a->getMinCoordinates().getValue(sortAxis) < b->getMinCoordinates().getValue(sortAxis));
+    return (a->getMinCoordinates()[sortAxis] < b->getMinCoordinates()[sortAxis]);
 }
 
 } // End of reactphysics3d namespace

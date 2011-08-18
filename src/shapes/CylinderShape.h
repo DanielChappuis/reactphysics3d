@@ -56,8 +56,8 @@ class CylinderShape : public Shape {
         void setRadius(double radius);                                                              // Set the radius
         double getHeight() const;                                                                   // Return the height
         void setHeight(double height);                                                              // Set the height
-        virtual Vector3D getLocalSupportPoint(const Vector3D& direction, double margin=0.0) const;  // Return a support point in a given direction
-        virtual Vector3D getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
 
 
 #ifdef VISUAL_DEBUG
@@ -86,8 +86,8 @@ inline void CylinderShape::setHeight(double height) {
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3D CylinderShape::getLocalExtents(double margin) const {
-    return Vector3D(radius + margin, halfHeight + margin, radius + margin);
+inline Vector3 CylinderShape::getLocalExtents(double margin) const {
+    return Vector3(radius + margin, halfHeight + margin, radius + margin);
 }
 
 }; // End of the ReactPhysics3D namespace

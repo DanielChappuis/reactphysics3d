@@ -47,12 +47,12 @@ typedef unsigned int Bits;
 */
 class Simplex {
     private:
-        Vector3D points[4];                 // Current points
+        Vector3 points[4];                 // Current points
         double pointsLengthSquare[4];       // pointsLengthSquare[i] = (points[i].length)^2
         double maxLengthSquare;             // Maximum length of pointsLengthSquare[i]
-        Vector3D suppPointsA[4];            // Support points of object A in local coordinates
-        Vector3D suppPointsB[4];            // Support points of object B in local coordinates
-        Vector3D diffLength[4][4];          // diff[i][j] contains points[i] - points[j]
+        Vector3 suppPointsA[4];            // Support points of object A in local coordinates
+        Vector3 suppPointsB[4];            // Support points of object B in local coordinates
+        Vector3 diffLength[4][4];          // diff[i][j] contains points[i] - points[j]
         double det[16][4];                  // Cached determinant values
         double normSquare[4][4];            // norm[i][j] = (diff[i][j].length())^2
         Bits bitsCurrentSimplex;            // 4 bits that identify the current points of the simplex
@@ -67,7 +67,7 @@ class Simplex {
         bool isProperSubset(Bits subset) const;                     // Return true if the subset is a proper subset
         void updateCache();                                         // Update the cached values used during the GJK algorithm
         void computeDeterminants();                                 // Compute the cached determinant values
-        Vector3D computeClosestPointForSubset(Bits subset);         // Return the closest point "v" in the convex hull of a subset of points
+        Vector3 computeClosestPointForSubset(Bits subset);         // Return the closest point "v" in the convex hull of a subset of points
 
     public:
         Simplex();                          // Constructor
@@ -75,14 +75,14 @@ class Simplex {
 
         bool isFull() const;                                                                            // Return true if the simplex contains 4 points
         bool isEmpty() const;                                                                           // Return true if the simple is empty
-        unsigned int getSimplex(Vector3D* suppPointsA, Vector3D* suppPointsB, Vector3D* points) const;  // Return the points of the simplex
+        unsigned int getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vector3* points) const;  // Return the points of the simplex
         double getMaxLengthSquareOfAPoint() const;                                                      // Return the maximum squared length of a point
-        void addPoint(const Vector3D& point, const Vector3D& suppPointA, const Vector3D& suppPointB);   // Addd a point to the simplex
-        bool isPointInSimplex(const Vector3D& point) const;                                             // Return true if the point is in the simplex
+        void addPoint(const Vector3& point, const Vector3& suppPointA, const Vector3& suppPointB);   // Addd a point to the simplex
+        bool isPointInSimplex(const Vector3& point) const;                                             // Return true if the point is in the simplex
         bool isAffinelyDependent() const;                                                               // Return true if the set is affinely dependent
-        void backupClosestPointInSimplex(Vector3D& point);                                              // Backup the closest point
-        void computeClosestPointsOfAandB(Vector3D& pA, Vector3D& pB) const;                             // Compute the closest points of object A and B
-        bool computeClosestPoint(Vector3D& v);                                                          // Compute the closest point to the origin of the current simplex
+        void backupClosestPointInSimplex(Vector3& point);                                              // Backup the closest point
+        void computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const;                             // Compute the closest points of object A and B
+        bool computeClosestPoint(Vector3& v);                                                          // Compute the closest point to the origin of the current simplex
 };
 
 // Return true if some bits of "a" overlap with bits of "b"

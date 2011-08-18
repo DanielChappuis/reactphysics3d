@@ -39,7 +39,7 @@ AABB::AABB() : bodyPointer(0) {
 }
 
 // Constructor
-AABB::AABB(const Transform& transform, const Vector3D& extents) : bodyPointer(0) {
+AABB::AABB(const Transform& transform, const Vector3& extents) : bodyPointer(0) {
     update(transform, extents);
 }
 

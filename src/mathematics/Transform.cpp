@@ -30,18 +30,18 @@ using namespace reactphysics3d;
 
 // Constructor
 Transform::Transform() {
-    position = Vector3D(0.0, 0.0, 0.0);
+    position = Vector3(0.0, 0.0, 0.0);
     orientation = Quaternion::identity();
 }
 
 // Constructor
-Transform::Transform(const Vector3D& position, const Matrix3x3& orientation) {
+Transform::Transform(const Vector3& position, const Matrix3x3& orientation) {
     this->position = position;
     this->orientation = Quaternion(orientation);
 }
 
 // Constructor
-Transform::Transform(const Vector3D& position, const Quaternion& orientation) {
+Transform::Transform(const Vector3& position, const Quaternion& orientation) {
     this->position = position;
     this->orientation = orientation;
 }
