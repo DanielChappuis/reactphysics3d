@@ -48,8 +48,9 @@ class SphereShape : public Shape {
 
         double getRadius() const;                                                                   // Return the radius of the sphere
         void setRadius(double radius);                                                              // Set the radius of the sphere
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a local support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -86,6 +87,12 @@ inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, doubl
 // This method is used to compute the AABB of the box
 inline Vector3 SphereShape::getLocalExtents(double margin) const {
     return Vector3(radius + margin, radius + margin, radius + margin);
+}
+
+// Return the local inertia tensor of the sphere
+inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
+    double diag = 0.4 * mass * radius * radius;
+    tensor.setAllValues(diag, 0.0, 0.0, 0.0, diag, 0.0, 0.0, 0.0, diag);
 }
 
 }; // End of the ReactPhysics3D namespace

@@ -56,8 +56,9 @@ class ConeShape : public Shape {
         void setRadius(double radius);                                                              // Set the radius
         double getHeight() const;                                                                   // Return the height
         void setHeight(double height);                                                              // Set the height
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
 
 
 #ifdef VISUAL_DEBUG
@@ -94,6 +95,13 @@ inline void ConeShape::setHeight(double height) {
 // Return the local extents in x,y and z direction
 inline Vector3 ConeShape::getLocalExtents(double margin) const {
     return Vector3(radius + margin, halfHeight + margin, radius + margin);
+}
+
+// Return the local inertia tensor of the shape
+inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
+    double rSquare = radius * radius;
+    double diagXZ = 0.15 * mass * (rSquare + halfHeight);
+    tensor.setAllValues(diagXZ, 0.0, 0.0, 0.0, 0.3 * mass * rSquare, 0.0, 0.0, 0.0, diagXZ);
 }
 
 }; // End of the ReactPhysics3D namespace

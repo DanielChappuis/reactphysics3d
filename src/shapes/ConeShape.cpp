@@ -75,7 +75,7 @@ inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, double 
         if (v.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
             unitVec = v.getUnit();
         }
-        supportPoint = supportPoint + unitVec * margin;
+        supportPoint += unitVec * margin;
     }
 
     return supportPoint;

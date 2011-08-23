@@ -46,16 +46,17 @@ namespace reactphysics3d {
 */
 class BoxShape : public Shape {
     private :
-        Vector3 extent;           // Extent sizes of the box
+        Vector3 extent;           // Extent sizes of the box in the x, y and z direction
 
     public :
         BoxShape(const Vector3& extent);        // Constructor
         virtual ~BoxShape();                     // Destructor
 
-        const Vector3& getExtent() const;                                                          // Return the extents of the box
-        void setExtent(const Vector3& extent);                                                     // Set the extents of the box
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a local support point in a given direction
+        const Vector3& getExtent() const;                                                           // Return the extents of the box
+        void setExtent(const Vector3& extent);                                                      // Set the extents of the box
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a local support point in a given direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                                                                      // Draw the Box (only for testing purpose)

@@ -56,9 +56,9 @@ class CylinderShape : public Shape {
         void setRadius(double radius);                                                              // Set the radius
         double getHeight() const;                                                                   // Return the height
         void setHeight(double height);                                                              // Set the height
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;  // Return a support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                  // Return the local extents in x,y and z direction
-
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a support point in a given direction
+        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
 
 #ifdef VISUAL_DEBUG
         virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -88,6 +88,13 @@ inline void CylinderShape::setHeight(double height) {
 // Return the local extents in x,y and z direction
 inline Vector3 CylinderShape::getLocalExtents(double margin) const {
     return Vector3(radius + margin, halfHeight + margin, radius + margin);
+}
+
+// Return the local inertia tensor of the cylinder
+inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
+    double height = 2.0 * halfHeight;
+    double diag = (1.0 / 12.0) * mass * (3 * radius * radius + height * height);
+    tensor.setAllValues(diag, 0.0, 0.0, 0.0, 0.5 * mass * radius * radius, 0.0, 0.0, 0.0, diag);
 }
 
 }; // End of the ReactPhysics3D namespace

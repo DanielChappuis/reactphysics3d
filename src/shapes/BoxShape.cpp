@@ -45,6 +45,17 @@ BoxShape::~BoxShape() {
 
 }
 
+// Return the local inertia tensor of the shape
+void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
+    double factor = (1.0 / 3.0) * mass;
+    double xSquare = extent.getX() * extent.getX();
+    double ySquare = extent.getY() * extent.getY();
+    double zSquare = extent.getZ() * extent.getZ();
+    tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
+                        0.0, factor * (xSquare + zSquare), 0.0,
+                        0.0, 0.0, factor * (xSquare + ySquare));
+}
+
 #ifdef VISUAL_DEBUG
 // Draw the Box (only for testing purpose)
 void BoxShape::draw() const {
