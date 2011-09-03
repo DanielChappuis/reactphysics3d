@@ -44,20 +44,21 @@ const double PI = 3.14159265;                                               // P
 const double DEFAULT_TIMESTEP = 0.002;
 
 // GJK Algorithm parameters
-const double OBJECT_MARGIN = 0.04;          // Object margin for collision detection
+const double OBJECT_MARGIN = 0.04;                      // Object margin for collision detection
 
 // Contact constants
-const double FRICTION_COEFFICIENT = 1.0;    // Friction coefficient
-const double PENETRATION_FACTOR = 0.2;      // Penetration factor (between 0 and 1) which specify the importance of the
-                                            // penetration depth in order to calculate the correct impulse for the contact
+const double FRICTION_COEFFICIENT = 1.0;                // Friction coefficient
+const double PENETRATION_FACTOR = 0.2;                  // Penetration factor (between 0 and 1) which specify the importance of the
+                                                        // penetration depth in order to calculate the correct impulse for the contact
+const double PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
 
 // Constraint solver constants
-const uint MAX_LCP_ITERATIONS = 10;         // Maximum number of iterations when solving a LCP problem
-const double AV_COUNTER_LIMIT = 500;        // Maximum number value of the avBodiesCounter or avConstraintsCounter
-const double AV_PERCENT_TO_FREE = 0.5;      // We will free the memory if the current nb of bodies (or constraints) is
-                                            // less than AV_PERCENT_TO_FREE * bodiesCapacity (or constraintsCapacity). This
-                                            // is used to avoid to keep to much memory for a long time if the system doesn't
-                                            // need that memory. This value is between 0.0 and 1.0
+const uint MAX_LCP_ITERATIONS = 10;                     // Maximum number of iterations when solving a LCP problem
+const double AV_COUNTER_LIMIT = 500;                    // Maximum number value of the avBodiesCounter or avConstraintsCounter
+const double AV_PERCENT_TO_FREE = 0.5;                  // We will free the memory if the current nb of bodies (or constraints) is
+                                                        // less than AV_PERCENT_TO_FREE * bodiesCapacity (or constraintsCapacity). This
+                                                        // is used to avoid to keep to much memory for a long time if the system doesn't
+                                                        // need that memory. This value is between 0.0 and 1.0
 
 
 #endif

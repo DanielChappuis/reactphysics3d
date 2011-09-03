@@ -119,13 +119,13 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
-            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (OBJECT_MARGIN / dist) * v);
+            pB = shape2ToShape1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
+            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -143,13 +143,13 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
-            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (OBJECT_MARGIN / dist) * v);
+            pB = shape2ToShape1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
+            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -165,13 +165,13 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
-            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (OBJECT_MARGIN / dist) * v);
+            pB = shape2ToShape1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
+            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -195,13 +195,13 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // object with the margins
             double dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = transform1 * (pA - (OBJECT_MARGIN / dist) * v);
-            pB = transform1 * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (OBJECT_MARGIN / dist) * v);
+            pB = shape2ToShape1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB);
+            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;

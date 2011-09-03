@@ -31,8 +31,10 @@ using namespace std;
 // Constructor
 Contact::Contact(const ContactInfo* contactInfo)
         : Constraint(contactInfo->body1, contactInfo->body2, 3, true), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
-          pointOnBody1(contactInfo->point1), pointOnBody2(contactInfo->point2) {
-
+          localPointOnBody1(contactInfo->localPoint1), localPointOnBody2(contactInfo->localPoint2),
+          worldPointOnBody1(contactInfo->worldPoint1), worldPointOnBody2(contactInfo->worldPoint2) {
+    assert(penetrationDepth > 0.0);
+    
     // Compute the auxiliary lower and upper bounds
     // TODO : Now mC is only the mass of the first body but it is probably wrong
     // TODO : Now g is 9.81 but we should use the true gravity value of the physics world.
@@ -60,8 +62,8 @@ void Contact::computeJacobian(int noConstraint, Matrix1x6**& J_sp) const {
     Vector3 body2Position = body2->getTransform().getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
 
-    Vector3 r1 = pointOnBody1 - body1Position;
-    Vector3 r2 = pointOnBody2 - body2Position;
+    Vector3 r1 = worldPointOnBody1 - body1Position;
+    Vector3 r2 = worldPointOnBody2 - body2Position;
     Vector3 r1CrossN = r1.cross(normal);
     Vector3 r2CrossN = r2.cross(normal);
 

@@ -66,9 +66,9 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         assert((*entry).first.second == contact->getBody2());
 
         // Get the position of the current contact
-        posX = contact->getPointOnBody1().getX();
-        posY = contact->getPointOnBody1().getY();
-        posZ = contact->getPointOnBody1().getZ();
+        posX = contact->getWorldPointOnBody1().getX();
+        posY = contact->getWorldPointOnBody1().getY();
+        posZ = contact->getWorldPointOnBody1().getZ();
 
         // Get the position of the old contact
         Vector3& contactPos1 = contactInfo->positions[0];
@@ -83,9 +83,9 @@ ContactCachingInfo* ContactCache::getContactCachingInfo(Contact* contact) const 
         }
 
         // Get the position of the current contact
-        posX = contact->getPointOnBody2().getX();
-        posY = contact->getPointOnBody2().getY();
-        posZ = contact->getPointOnBody2().getZ();
+        posX = contact->getWorldPointOnBody2().getX();
+        posY = contact->getWorldPointOnBody2().getY();
+        posZ = contact->getWorldPointOnBody2().getZ();
 
         // Get the position of the old contact
         Vector3& contactPos2 = contactInfo->positions[1];

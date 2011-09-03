@@ -357,8 +357,8 @@ void ConstraintSolver::updateContactCache() {
             // Get all the contact points of the contact
             vector<Vector3> points;
             vector<double> lambdas;
-            points.push_back(contact->getPointOnBody1());
-            points.push_back(contact->getPointOnBody2());
+            points.push_back(contact->getWorldPointOnBody1());
+            points.push_back(contact->getWorldPointOnBody2());
 
             // For each constraint of the contact
             for (int i=0; i<contact->getNbConstraints(); i++) {

@@ -366,14 +366,15 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
         }
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
-    // Compute the contact info (in world-space)
+    // Compute the contact info
     v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
-    Vector3 pA = transform1 * triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3 pB = transform1 * triangle->computeClosestPointOfObject(suppPointsB);
+    Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
+    Vector3 pBLocal = shape2ToShape1.inverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
     double penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
-    contactInfo = new ContactInfo(shape1->getBodyPointer(), shape2->getBodyPointer(), normal, penetrationDepth, pA, pB);
+    contactInfo = new ContactInfo(shape1->getBodyPointer(), shape2->getBodyPointer(), normal,
+                                  penetrationDepth, pALocal, pBLocal, transform1, transform2);
     
     return true;
 }

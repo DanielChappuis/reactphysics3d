@@ -33,6 +33,7 @@
 #include <cmath>
 #include <cassert>
 
+/*
 // TODO : SAT Algorithm for box-box collision does not work anymore since the use of
 //        transform. Maybe a problem with the computation of the normal vector
 //        Anyway, the GJK algorithm should be used instead
@@ -426,3 +427,4 @@ double SATAlgorithm::computePenetrationDepth(double min1, double max1, double mi
     // Compute the current penetration depth
     return (lengthInterval1 + lengthInterval2) - lengthBothIntervals;
 }
+*/

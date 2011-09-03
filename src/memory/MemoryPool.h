@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010 Daniel Chappuis                                            *
+* Copyright (c) 2011 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * Permission is hereby granted, free of charge, to any person obtaining a copy  *
@@ -22,17 +22,49 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
+#ifndef MEMORY_POOL_H
+#define	MEMORY_POOL_H
+
 // Libraries
-#include "ContactInfo.h"
+#include "../constants.h"
+#include <cstddef>
 
-using namespace reactphysics3d;
+// ReactPhysics3D namespace
+namespace reactphysics3d {
 
+/*  -------------------------------------------------------------------
+    Class MemoryPool :
+        This class represents a memory pool that allows us to allocate
+        dynamic memory at the beginning of the application in order to
+        avoid memory fragmentation and also a large number of allocation
+        and deallocation.
+    -------------------------------------------------------------------
+*/
+template<typename T>    // TODO : Check if we need to use a template here
+class MemoryPool {
+    private:
 
-// Constructor for GJK
-ContactInfo::ContactInfo(Body* body1, Body* body2, const Vector3& normal, double penetrationDepth,
-                         const Vector3& localPoint1, const Vector3& localPoint2,
-                         const Transform& transform1, const Transform& transform2)
-            : body1(body1), body2(body2), normal(normal), penetrationDepth(penetrationDepth),
-              localPoint1(localPoint1), localPoint2(localPoint2), worldPoint1(transform1 * localPoint1), worldPoint2(transform2 * localPoint2) {
+        // Unit of memory
+        struct Unit {
+            struct Unit* pNext;         // Pointer to the next memory unit
+            struct Unit* pPrevious;     // Pointer to the previous memory unit
+        };
+
+        void* pMemoryBlock;                     // Pointer to the whole memory block
+        struct Unit* pAllocatedLinkedList;      // Pointer to the linked list of allocated memory units
+        struct Unit* pFreeLinkedList;           // Pointer to the linked list of free memory units
+        size_t memorySize;                      // Total allocated memory in the pool
+
+    public:
+        MemoryPool(uint nbObjectsToAllocate) throw(std::bad_alloc);     // Constructor
+        ~MemoryPool();                                                  // Destructor
+
+        void* allocateObject();                     // Return a pointer to an memory allocated location to store a new object
+        void freeObject(void* pObjectToFree);       // Tell the pool that an object doesn't need to be store in the pool anymore
+};
+
 
 }
+
+#endif
+
