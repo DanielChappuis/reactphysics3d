@@ -25,18 +25,31 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+// TODO : Test this code on Windows platform
+// TODO : Test this code on Linux platform
+
 // Libraries
 #include <stdexcept>
 #include <iostream>
 #include <ctime>
 #include <cassert>
 
+#if defined(WIN32) || defined(_WIN32)   // For Windows platform
+   #define WINDOWS_TIME
+   #include <windows.h>
+#else                                   // For Mac OS or Linux platform
+   #include <sys/time.h>
+#endif
+
+
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Timer :
-        This class will take care of the time in the physics engine.
+        This class will take care of the time in the physics engine. It
+        uses fuunctions that depend on the current platform to get the
+        current time.
     -------------------------------------------------------------------
 */
 class Timer {
@@ -63,8 +76,6 @@ class Timer {
         void nextStep();                                                        // Take a new step => update the timer by adding the timeStep value to the current time
         double computeInterpolationFactor();                                    // Compute the interpolation factor
 };
-
-// --- Inline functions --- //
 
 // Return the timestep of the physics engine
 inline double Timer::getTimeStep() const {
@@ -96,8 +107,20 @@ inline bool Timer::getIsRunning() const {
 // Start the timer
 inline void Timer::start() {
     if (!isRunning) {
+        
+#ifdef WINDOWS_TIME
+        LARGE_INTEGER ticksPerSecond;
+        LARGE_INTEGER ticks;
+        QueryPerformanceFrequency(&ticksPerSecond);
+        QueryPerformanceCounter(&ticks);
+        lastUpdateTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
+#else
         // Initialize the lastUpdateTime with the current time in seconds
-        lastUpdateTime = std::clock() / double(CLOCKS_PER_SEC);
+        timeval timeValue;
+        gettimeofday(&timeValue, NULL);
+        lastUpdateTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
+#endif
+        
         accumulator = 0.0;
         isRunning = true;
     }
@@ -105,9 +128,7 @@ inline void Timer::start() {
 
 // Stop the timer
 inline void Timer::stop() {
-    if (isRunning) {
-        isRunning = false;
-    }
+    isRunning = false;
 }
 
 // True if it's possible to take a new step
@@ -133,9 +154,20 @@ inline double Timer::computeInterpolationFactor() {
 
 // Compute the time since the last update() call and add it to the accumulator
 inline void Timer::update() {
-
+    long double currentTime;
+    
+#ifdef WINDOWS_TIME
+   LARGE_INTEGER ticksPerSecond;
+   LARGE_INTEGER ticks;
+   QueryPerformanceFrequency(&ticksPerSecond);
+   QueryPerformanceCounter(&ticks);
+   currentTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
+#else
     // Compute the current time is seconds
-    long double currentTime = std::clock() / double(CLOCKS_PER_SEC);
+    timeval timeValue;
+    gettimeofday(&timeValue, NULL);
+    currentTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
+#endif
     
     // Compute the delta display time between two display frames
     deltaTime = currentTime - lastUpdateTime;
