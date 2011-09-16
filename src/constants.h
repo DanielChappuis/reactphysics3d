@@ -52,6 +52,9 @@ const double PENETRATION_FACTOR = 0.2;                  // Penetration factor (b
                                                         // penetration depth in order to calculate the correct impulse for the contact
 const double PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
 
+// TODO : Change this number
+const int NB_MAX_CONTACTS = 10000;                         // Maximum number of contacts (for memory pool allocation)
+
 // Constraint solver constants
 const uint MAX_LCP_ITERATIONS = 10;                     // Maximum number of iterations when solving a LCP problem
 const double AV_COUNTER_LIMIT = 500;                    // Maximum number value of the avBodiesCounter or avConstraintsCounter

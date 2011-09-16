@@ -43,7 +43,7 @@ namespace reactphysics3d {
         and deallocation.
     -------------------------------------------------------------------
 */
-template<class T>    // TODO : Check if we need to use a template here
+template<class T>
 class MemoryPool {
     private:
 
@@ -57,15 +57,17 @@ class MemoryPool {
         struct Unit* pAllocatedLinkedList;      // Pointer to the linked list of allocated memory units
         struct Unit* pFreeLinkedList;           // Pointer to the linked list of free memory units
         size_t memorySize;                      // Total allocated memory in the pool
+        const uint maxNbObjects;                // Maximum number of objects in the pool
         uint currentNbObjects;                  // Current number of objects in the pool
-        const uint initNbAllocatedObjects;      // Number of objects allocated at the beginning (used for reallocation)
 
     public:
         MemoryPool(uint nbObjectsToAllocate) throw(std::bad_alloc);     // Constructor
         ~MemoryPool();                                                  // Destructor
 
-        void* allocateObject();                     // Return a pointer to an memory allocated location to store a new object
-        void freeObject(void* pObjectToFree);       // Tell the pool that an object doesn't need to be store in the pool anymore
+        uint getMaxNbObjects() const;           // Return the maximum number of objects allowed in the pool
+        uint getCurrentNbObjects() const;       // Return the current number of objects in the pool
+        void* allocateObject();                 // Return a pointer to an memory allocated location to store a new object
+        void freeObject(void* pObjectToFree);   // Tell the pool that an object doesn't need to be store in the pool anymore
 };
 
 
@@ -74,7 +76,7 @@ class MemoryPool {
 // a given number of object of the template type T
 template<class T>
 MemoryPool<T>::MemoryPool(uint nbObjectsToAllocate) throw(std::bad_alloc)
-              : initNbAllocatedObjects(nbObjectsToAllocate), currentNbObjects(0)  {
+              : currentNbObjects(0), maxNbObjects(nbObjectsToAllocate) {
     pMemoryBlock = NULL;
     pAllocatedLinkedList = NULL;
     pFreeLinkedList = NULL;
@@ -120,12 +122,9 @@ MemoryPool<T>::~MemoryPool() {
 template<class T>
 void* MemoryPool<T>::allocateObject() {
     // If no memory unit is available in the current allocated memory block
-    if (!pFreeLinkedList) {
-        // TODO : REALLOCATE MEMORY HERE
-        assert(false);
-    }
-
+    assert(currentNbObjects < maxNbObjects);
     assert(pFreeLinkedList);
+    
     struct Unit* currentUnit = pFreeLinkedList;
     pFreeLinkedList = currentUnit->pNext;
     if (pFreeLinkedList) {
@@ -169,7 +168,17 @@ void MemoryPool<T>::freeObject(void* pObjectToFree) {
     currentNbObjects--;
 }
 
+// Return the maximum number of objects allowed in the pool
+template<class T>
+uint MemoryPool<T>::getMaxNbObjects() const {
+    return maxNbObjects;
+}
 
+// Return the current number of objects in the pool
+template<class T>
+uint MemoryPool<T>::getCurrentNbObjects() const {
+    return currentNbObjects;
+}      
 
 }
 
