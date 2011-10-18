@@ -24,7 +24,7 @@
 
 // Libraries
 #include "EPAAlgorithm.h"
-#include "../GJK/GJKAlgorithm.h"
+#include "../../GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
 
 // We want to use the ReactPhysics3D namespace

@@ -29,7 +29,7 @@
 #include "../NarrowPhaseAlgorithm.h"
 #include "../ContactInfo.h"
 #include "../../shapes/Shape.h"
-#include "../EPA/EPAAlgorithm.h"
+#include "../narrowphase/EPA/EPAAlgorithm.h"
 
 
 // ReactPhysics3D namespace

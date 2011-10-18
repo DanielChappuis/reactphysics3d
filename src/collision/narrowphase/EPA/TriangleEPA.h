@@ -26,8 +26,8 @@
 #define TRIANGLE_EPA_H
 
 // Libraries
-#include "../../mathematics/mathematics.h"
-#include "../../constants.h"
+#include "../../../mathematics/mathematics.h"
+#include "../../../constants.h"
 #include "EdgeEPA.h"
 #include <cassert>
 

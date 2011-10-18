@@ -26,10 +26,10 @@
 #define EPA_ALGORITHM_H
 
 // Libraries
-#include "../GJK/Simplex.h"
-#include "../../shapes/Shape.h"
-#include "../ContactInfo.h"
-#include "../../mathematics/mathematics.h"
+#include "../../GJK/Simplex.h"
+#include "../../../shapes/Shape.h"
+#include "../../ContactInfo.h"
+#include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
 #include <algorithm>
 
