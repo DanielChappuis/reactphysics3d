@@ -36,7 +36,6 @@ namespace reactphysics3d {
 // Constants
 const uint MAX_CONTACTS_IN_CACHE = 4;           // Maximum number of contacts in the persistent cache
 
-// TODO : Move this class in collision/ folder
 
 /*  -------------------------------------------------------------------
     Class PersistentContactCache :

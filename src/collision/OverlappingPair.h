@@ -26,7 +26,7 @@
 #define	OVERLAPPING_PAIR_H
 
 // Libraries
-#include "../engine/PersistentContactCache.h"
+#include "PersistentContactCache.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
