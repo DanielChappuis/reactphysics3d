@@ -24,9 +24,8 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "SAPAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "SATAlgorithm.h"
+#include "broadphase/SAPAlgorithm.h"
+#include "narrowphase/GJK/GJKAlgorithm.h"
 #include "../body/Body.h"
 #include "../shapes/BoxShape.h"
 #include "../body/RigidBody.h"

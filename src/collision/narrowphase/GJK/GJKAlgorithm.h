@@ -27,9 +27,9 @@
 
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
-#include "../ContactInfo.h"
-#include "../../shapes/Shape.h"
-#include "../narrowphase/EPA/EPAAlgorithm.h"
+#include "../../ContactInfo.h"
+#include "../../../shapes/Shape.h"
+#include "../EPA/EPAAlgorithm.h"
 
 
 // ReactPhysics3D namespace

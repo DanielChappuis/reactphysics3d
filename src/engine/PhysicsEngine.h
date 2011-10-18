@@ -61,7 +61,6 @@ public :
         void start();                                           // Start the physics simulation
         void stop();                                            // Stop the physics simulation
         void update();                                          // Update the physics simulation
-        CollisionDetection& getCollisionDetection();            // TODO : DELETE THIS METHOD
 };
 
 // --- Inline functions --- //
@@ -73,12 +72,7 @@ inline void PhysicsEngine::start() {
 
 inline void PhysicsEngine::stop() {
     timer.stop();
-}
-
-// TODO : DELETE THIS METHOD
-inline CollisionDetection& PhysicsEngine::getCollisionDetection() {
-    return collisionDetection;
-}           
+}        
 
 }
 

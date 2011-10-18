@@ -24,7 +24,7 @@
 
 // Libraries
 #include "SAPAlgorithm.h"
-#include "CollisionDetection.h"
+#include "../CollisionDetection.h"
 #include <algorithm>
 
 // Namespaces

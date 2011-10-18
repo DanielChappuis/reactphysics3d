@@ -22,46 +22,40 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
-#ifndef BROAD_PHASE_ALGORITHM_H
-#define BROAD_PHASE_ALGORITHM_H
+#ifndef NARROW_PHASE_ALGORITHM_H
+#define NARROW_PHASE_ALGORITHM_H
 
 // Libraries
-#include <vector>
-#include "../body/Body.h"
+#include "../../body/Body.h"
+#include "../ContactInfo.h"
+#include "../CollisionDetection.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Declarations
-class CollisionDetection;
-    
-/*  --------------------------------------------------------------------
-    Class BroadPhaseAlgorithm :
+/*  -------------------------------------------------------------------
+    Class NarrowPhaseAlgorithm :
         This class is an abstract class that represents an algorithm
-        used to perform the broad-phase of a collision detection. The
-        goal of the broad-phase algorithm is to compute the pair of bodies
-        that can collide. But it's important to understand that the
-        broad-phase doesn't compute only body pairs that can collide but
-        could also pairs of body that doesn't collide but are very close.
-        The goal of the broad-phase is to remove pairs of body that cannot
-        collide in order to avoid to much bodies to be tested in the
-        narrow-phase.
-    --------------------------------------------------------------------
+        used to perform the narrow phase of a collision detection. The
+        goal of the narrow phase algorithm is to compute contact
+        informations of a collision between two bodies.
+    -------------------------------------------------------------------
 */
-class BroadPhaseAlgorithm {
+class NarrowPhaseAlgorithm {
     protected :
         CollisionDetection& collisionDetection;  // Reference to the collision detection object
         
     public :
-        BroadPhaseAlgorithm(CollisionDetection& collisionDetection);    // Constructor
-        virtual ~BroadPhaseAlgorithm();                                 // Destructor
+        NarrowPhaseAlgorithm(CollisionDetection& collisionDetection);   // Constructor
+        virtual ~NarrowPhaseAlgorithm();                                // Destructor
 
-        virtual void computePossibleCollisionPairs()=0;                 // Compute the possible collision pairs of bodies
-        virtual void notifyAddedBodies(std::vector<Body*> bodies)=0;    // Notify the broad-phase algorithm about new bodies in the physics world
-        virtual void notifyRemovedBodies(std::vector<Body*> bodies)=0;  // Notify the broad-phase algorithm about removed bodies in the physics world
+        virtual bool testCollision(const Shape* shape1, const Transform& transform1,
+                                   const Shape* shape2, const Transform& transform2,
+                                   ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
 };
 
 } // End of reactphysics3d namespace
 
 #endif
+
 

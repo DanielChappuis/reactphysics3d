@@ -27,7 +27,7 @@
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
-#include "../shapes/AABB.h"
+#include "../../shapes/AABB.h"
 
 // TODO : Rename this class SweepAndPruneAlgorithm
 

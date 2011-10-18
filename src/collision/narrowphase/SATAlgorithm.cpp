@@ -24,10 +24,10 @@
 
 // Libraries
 #include "SATAlgorithm.h"
-#include "../shapes/BoxShape.h"
-#include "../body/RigidBody.h"
-#include "../constraint/Contact.h"
-#include "../mathematics/Transform.h"
+#include "../../shapes/BoxShape.h"
+#include "../../body/RigidBody.h"
+#include "../../constraint/Contact.h"
+#include "../../mathematics/Transform.h"
 #include <algorithm>
 #include <cfloat>
 #include <cmath>

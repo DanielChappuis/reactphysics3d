@@ -36,7 +36,6 @@
 #include <set>
 #include <utility>
 
-// TODO : Add a broadphase and a narrowphase folder in the src/collision/ folder
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

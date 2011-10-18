@@ -30,8 +30,6 @@
 #include "Shape.h"
 #include "../mathematics/mathematics.h"
 
-// TODO : CHECK THAT THE AABB IS CORRECT
-// TODO : TEST THIS SHAPE WITH GJK AND EPA ALGORITHMS
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

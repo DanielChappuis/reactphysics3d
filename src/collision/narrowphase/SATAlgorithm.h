@@ -27,9 +27,9 @@
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
-#include "../constraint/Contact.h"
-#include "../shapes/BoxShape.h"
-#include "../mathematics/Transform.h"
+#include "../../constraint/Contact.h"
+#include "../../shapes/BoxShape.h"
+#include "../../mathematics/Transform.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

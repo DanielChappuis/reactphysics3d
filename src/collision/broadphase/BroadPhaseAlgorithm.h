@@ -22,49 +22,46 @@
 * THE SOFTWARE.                                                                 *
 ********************************************************************************/
 
+#ifndef BROAD_PHASE_ALGORITHM_H
+#define BROAD_PHASE_ALGORITHM_H
+
 // Libraries
-#include "NoBroadPhaseAlgorithm.h"
-#include "CollisionDetection.h"
+#include <vector>
+#include "../../body/Body.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
-using namespace std;
+// Namespace ReactPhysics3D
+namespace reactphysics3d {
 
-// Constructor
-NoBroadPhaseAlgorithm::NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection)
-                      : BroadPhaseAlgorithm(collisionDetection) {
+// Declarations
+class CollisionDetection;
+    
+/*  --------------------------------------------------------------------
+    Class BroadPhaseAlgorithm :
+        This class is an abstract class that represents an algorithm
+        used to perform the broad-phase of a collision detection. The
+        goal of the broad-phase algorithm is to compute the pair of bodies
+        that can collide. But it's important to understand that the
+        broad-phase doesn't compute only body pairs that can collide but
+        could also pairs of body that doesn't collide but are very close.
+        The goal of the broad-phase is to remove pairs of body that cannot
+        collide in order to avoid to much bodies to be tested in the
+        narrow-phase.
+    --------------------------------------------------------------------
+*/
+class BroadPhaseAlgorithm {
+    protected :
+        CollisionDetection& collisionDetection;  // Reference to the collision detection object
+        
+    public :
+        BroadPhaseAlgorithm(CollisionDetection& collisionDetection);    // Constructor
+        virtual ~BroadPhaseAlgorithm();                                 // Destructor
 
-}
+        virtual void computePossibleCollisionPairs()=0;                 // Compute the possible collision pairs of bodies
+        virtual void notifyAddedBodies(std::vector<Body*> bodies)=0;    // Notify the broad-phase algorithm about new bodies in the physics world
+        virtual void notifyRemovedBodies(std::vector<Body*> bodies)=0;  // Notify the broad-phase algorithm about removed bodies in the physics world
+};
 
-// Destructor
-NoBroadPhaseAlgorithm::~NoBroadPhaseAlgorithm() {
+} // End of reactphysics3d namespace
 
-}
+#endif
 
-// Compute the possible collision pairs of bodies. This broad-phase algorithm
-// doesn't do anything
-
-void NoBroadPhaseAlgorithm::computePossibleCollisionPairs() {
-    // For each pair of bodies
-    for (vector<Body*>::iterator it1 = bodies.begin(); it1 != bodies.end(); it1++) {
-        for (vector<Body*>::iterator it2 = it1+1; it2 != bodies.end(); it2++) {
-            collisionDetection.broadPhaseNotifyOverlappingPair(*it1, *it2);
-        }
-    }
-}
-
-// Notify the broad-phase algorithm about new bodies in the physics world
-void NoBroadPhaseAlgorithm::notifyAddedBodies(vector<Body*> addedBodies) {
-    // Add the new bodies
-    for (vector<Body*>::iterator it = addedBodies.begin(); it < addedBodies.end(); it++) {
-        bodies.push_back(*it);
-    }
-}   
-
-// Notify the broad-phase algorithm about removed bodies in the physics world
-void NoBroadPhaseAlgorithm::notifyRemovedBodies(vector<Body*> removedBodies) {
-    // Remove the bodies to be removed
-    for (vector<Body*>::iterator it = removedBodies.begin(); it < removedBodies.end(); it++) {
-        bodies.erase(std::find(bodies.begin(), bodies.end(), *it));
-    }
-} 
