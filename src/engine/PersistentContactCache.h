@@ -36,6 +36,8 @@ namespace reactphysics3d {
 // Constants
 const uint MAX_CONTACTS_IN_CACHE = 4;           // Maximum number of contacts in the persistent cache
 
+// TODO : Move this class in collision/ folder
+
 /*  -------------------------------------------------------------------
     Class PersistentContactCache :
         This class represents a cache of at most 4 contact points between
@@ -55,19 +57,42 @@ class PersistentContactCache {
         Body* const body2;                          // Pointer to the second body
         Contact* contacts[MAX_CONTACTS_IN_CACHE];   // Contacts in the cache
         uint nbContacts;                            // Number of contacts in the cache
+        MemoryPool<Contact>& memoryPoolContacts;    // Reference to the memory pool with the contacts
 
         int getMaxArea(double area0, double area1, double area2, double area3) const;   // Return the index of maximum area
         int getIndexOfDeepestPenetration(Contact* newContact) const;                    // Return the index of the contact with the larger penetration depth
         int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;   // Return the index that will be removed
         void removeContact(int index);                                                  // Remove a contact from the cache
+        bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;       // Return true if two vectors are approximatively equal    
         
     public:
-        PersistentContactCache(Body* const body1, Body* const body2);                   // Constructor
-        ~PersistentContactCache();                                                      // Destructor
-        void addContact(Contact* contact);                                              // Add a contact
-        void update(const Transform& transform1, const Transform& transform2);          // Update the contact cache
-        void clear();                                                                   // Clear the cache
+        PersistentContactCache(Body* const body1, Body* const body2, MemoryPool<Contact>& memoryPoolContacts);  // Constructor
+        ~PersistentContactCache();                                                                              // Destructor
+        void addContact(Contact* contact);                                                                      // Add a contact
+        void update(const Transform& transform1, const Transform& transform2);                                  // Update the contact cache
+        void clear();                                                                                           // Clear the cache
+        uint getNbContacts() const;                                                                             // Return the number of contacts in the cache
+        Contact* getContact(uint index) const;                                                                  // Return a contact of the cache                           
 };
+
+// Return the number of contacts in the cache
+inline uint PersistentContactCache::getNbContacts() const {
+    return nbContacts;
+} 
+
+// Return a contact of the cache
+inline Contact* PersistentContactCache::getContact(uint index) const {
+    assert(index >= 0 && index < nbContacts);
+    return contacts[index];
+}  
+
+// Return true if two vectors are approximatively equal
+inline bool PersistentContactCache::isApproxEqual(const Vector3& vector1, const Vector3& vector2) const {
+    const double epsilon = 0.1;
+    return (approxEqual(vector1.getX(), vector2.getX(), epsilon) &&
+            approxEqual(vector1.getY(), vector2.getY(), epsilon) &&
+            approxEqual(vector1.getZ(), vector2.getZ(), epsilon));
+}  
 
 }
 #endif

@@ -32,9 +32,11 @@
 #include "../body/Body.h"
 #include "../constraint/Constraint.h"
 #include "../constraint/Contact.h"
+#include "../memory/MemoryPool.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
+    
 
 /*  -------------------------------------------------------------------
     Class PhysicsWorld :
@@ -49,30 +51,36 @@ class PhysicsWorld {
         std::vector<Body*> addedBodies;             // Added bodies since last update
         std::vector<Body*> removedBodies;           // Removed bodies since last update
         std::vector<Constraint*> constraints;       // List that contains all the current constraints
-        Vector3 gravity;                           // Gravity vector of the world
+        Vector3 gravity;                            // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
+        long unsigned int currentBodyID;            // Current body ID
 
+        void addBody(Body* body);                   // Add a body to the physics world
+        void removeBody(Body* body);                 // Remove a body from the physics world
+        
     public :
         PhysicsWorld(const Vector3& gravity);      // Constructor
         virtual ~PhysicsWorld();                    // Destructor
 
-        void addBody(Body* body);                                               // Add a body to the physics world
-        void removeBody(Body const* const body);                                // Remove a body from the physics world
-        void clearAddedAndRemovedBodies();                                      // Clear the addedBodies and removedBodies sets
-        Vector3 getGravity() const;                                            // Return the gravity vector of the world
-        bool getIsGravityOn() const;                                            // Return if the gravity is on
-        void setIsGratityOn(bool isGravityOn);                                  // Set the isGravityOn attribute
-        void addConstraint(Constraint* constraint);                             // Add a constraint
-        void removeConstraint(Constraint* constraint);                          // Remove a constraint
-        void removeAllContactConstraints();                                     // Remove all collision contacts constraints
-        void removeAllConstraints();                                            // Remove all constraints and delete them (free their memory)
-        std::vector<Constraint*>::iterator getConstraintsBeginIterator();       // Return a start iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsEndIterator();         // Return a end iterator on the constraint list
-        std::vector<Body*>::iterator getBodiesBeginIterator();                  // Return an iterator to the beginning of the bodies of the physics world
-        std::vector<Body*>::iterator getBodiesEndIterator();                    // Return an iterator to the end of the bodies of the physics world
-        std::vector<Body*>& getAddedBodies();                                   // Return the added bodies since last update of the physics engine
-        std::vector<Body*>& getRemovedBodies();                                 // Retrun the removed bodies since last update of the physics engine
+        RigidBody* createRigidBody(const Transform& transform, double mass,
+                                   const Matrix3x3& inertiaTensorLocal, Shape* shape);  // Create a rigid body into the physics world
+        void destroyRigidBody(RigidBody* rigidBody);                                    // Destroy a rigid body
+        void clearAddedAndRemovedBodies();                                              // Clear the addedBodies and removedBodies sets
+        Vector3 getGravity() const;                                                     // Return the gravity vector of the world
+        bool getIsGravityOn() const;                                                    // Return if the gravity is on
+        void setIsGratityOn(bool isGravityOn);                                          // Set the isGravityOn attribute
+        void addConstraint(Constraint* constraint);                                     // Add a constraint
+        void removeConstraint(Constraint* constraint);                                  // Remove a constraint
+        void removeAllContactConstraints();                                             // Remove all collision contacts constraints
+        void removeAllConstraints();                                                    // Remove all constraints and delete them (free their memory)
+        std::vector<Constraint*>::iterator getConstraintsBeginIterator();               // Return a start iterator on the constraint list
+        std::vector<Constraint*>::iterator getConstraintsEndIterator();                 // Return a end iterator on the constraint list
+        std::vector<Body*>::iterator getBodiesBeginIterator();                          // Return an iterator to the beginning of the bodies of the physics world
+        std::vector<Body*>::iterator getBodiesEndIterator();                            // Return an iterator to the end of the bodies of the physics world
+        std::vector<Body*>& getAddedBodies();                                           // Return the added bodies since last update of the physics engine
+        std::vector<Body*>& getRemovedBodies();                                         // Retrun the removed bodies since last update of the physics engine
 };
+                         
 
 // Add a body to the physics world
 inline void PhysicsWorld::addBody(Body* body) {
@@ -81,7 +89,7 @@ inline void PhysicsWorld::addBody(Body* body) {
     assert(body);
     it = std::find(bodies.begin(), bodies.end(), body);
     assert(it == bodies.end());
-
+    
     // The body isn't already in the bodyList, therefore we add it to the list
     bodies.push_back(body);
     addedBodies.push_back(body);
@@ -92,16 +100,19 @@ inline void PhysicsWorld::addBody(Body* body) {
 }
 
 // Remove a body from the physics world
-inline void PhysicsWorld::removeBody(Body const* const body) {
-    std::vector<Body*>::iterator it;
-
+inline void PhysicsWorld::removeBody(Body* body) {
+    std::vector<Body*>::iterator it;    
+    
     assert(body);
     it = std::find(bodies.begin(), bodies.end(), body);
     assert(*it == body);
-
-    // Remove the body
     bodies.erase(it);
-    addedBodies.erase(it);
+ 
+    it = std::find(addedBodies.begin(), addedBodies.end(), body);
+    if (it != addedBodies.end()) {
+        addedBodies.erase(it);
+    }
+    
     removedBodies.push_back(*it);
 }
 

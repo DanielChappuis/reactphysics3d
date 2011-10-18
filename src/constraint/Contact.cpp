@@ -153,6 +153,7 @@ void Contact::computeErrorValue(int noConstraint, Vector& errorValues) const {
     assert(body1);
     assert(body2);
 
+	// TODO : Do we need this casting anymore
     RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
     RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
 

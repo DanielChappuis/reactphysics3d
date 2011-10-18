@@ -30,232 +30,144 @@
 #include "../body/Body.h"
 #include "../shapes/BoxShape.h"
 #include "../body/RigidBody.h"
+#include "../constants.h"
 #include <cassert>
 #include <complex>
+#include <set>
+#include <utility>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(PhysicsWorld* world) {
-    this->world = world;
-    
+CollisionDetection::CollisionDetection(PhysicsWorld* world)
+                   : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS) {
+
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
-    broadPhaseAlgorithm = new SAPAlgorithm();
+    broadPhaseAlgorithm = new SAPAlgorithm(*this);
 
     // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
-    narrowPhaseAlgorithm = new GJKAlgorithm();  // TODO : Use GJK algo here
+    narrowPhaseAlgorithm = new GJKAlgorithm(*this);
 }
 
 // Destructor
 CollisionDetection::~CollisionDetection() {
-
+    // Delete the remaining overlapping pairs
+    for (map<std::pair<luint, luint>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
+        // Delete the overlapping pair
+        (*it).second->OverlappingPair::~OverlappingPair();
+		memoryPoolOverlappingPairs.freeObject((*it).second);
+    }
 }
 
 // Compute the collision detection
 bool CollisionDetection::computeCollisionDetection() {
-
+	
     world->removeAllContactConstraints();
-    possibleCollisionPairs.clear();
-    contactInfos.clear();
 
     // Compute the broad-phase collision detection
     computeBroadPhase();
 
     // Compute the narrow-phase collision detection
-    computeNarrowPhase();
-
-    // Compute all the new contacts
-    computeAllContacts();
-
+    bool collisionExists = computeNarrowPhase();
+	
     // Return true if at least one contact has been found
-    return (contactInfos.size() > 0);
+    return collisionExists;
 }
 
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
-    // Clear the set of possible colliding pairs of bodies
-    possibleCollisionPairs.clear();
+    // Notify the broad-phase algorithm about new and removed bodies in the physics world
+    broadPhaseAlgorithm->notifyAddedBodies(world->getAddedBodies());
+    broadPhaseAlgorithm->notifyRemovedBodies(world->getRemovedBodies());
+    
+    // Clear the set of the overlapping pairs in the current step
+    currentStepOverlappingPairs.clear();
 
-    // Compute the set of possible collision pairs of bodies
-    broadPhaseAlgorithm->computePossibleCollisionPairs(world->getAddedBodies(), world->getRemovedBodies(), possibleCollisionPairs);
+    // Execute the broad-phase collision algorithm in order to compute the overlapping pairs of bodies
+    broadPhaseAlgorithm->computePossibleCollisionPairs();
+    
+    // At this point, the pairs in the set lastStepOverlappingPairs contains
+    // only the pairs that are not overlapping anymore. Therefore, we can
+    // remove them from the overlapping pairs map
+    for (set<pair<luint, luint> >::iterator it = lastStepOverlappingPairs.begin(); it != lastStepOverlappingPairs.end(); it++) {
+        // Remove the overlapping pair from the memory pool
+		overlappingPairs.at((*it))->OverlappingPair::~OverlappingPair();
+		memoryPoolOverlappingPairs.freeObject(overlappingPairs.at((*it)));
+        overlappingPairs.erase(*it);
+    }
+    
+    
+    // The current overlapping pairs become the last step overlapping pairs
+    lastStepOverlappingPairs = currentStepOverlappingPairs;
 }
 
 // Compute the narrow-phase collision detection
-void CollisionDetection::computeNarrowPhase() {
+bool CollisionDetection::computeNarrowPhase() {
+    bool collisionExists = false;
+    map<std::pair<luint, luint>, OverlappingPair*>::iterator it;
     
     // For each possible collision pair of bodies
-    for (unsigned int i=0; i<possibleCollisionPairs.size(); i++) {
+    for (it = overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
         ContactInfo* contactInfo = NULL;
 
-        Body* const body1 = possibleCollisionPairs.at(i).first;
-        Body* const body2 = possibleCollisionPairs.at(i).second;
+        Body* const body1 = (*it).second->getBody1();
+        Body* const body2 = (*it).second->getBody2();
+        
+        // Update the contact cache of the overlapping pair
+        (*it).second->update();
         
         // Use the narrow-phase collision detection algorithm to check if there really are a contact
         if (narrowPhaseAlgorithm->testCollision(body1->getShape(), body1->getTransform(),
                                                 body2->getShape(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
+            collisionExists = true;
 
-            // Add the contact info the current list of collision informations
-            contactInfos.push_back(contactInfo);
+            // Create a new contact
+            Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(contactInfo);
+            
+            // Add the contact to the contact cache of the corresponding overlapping pair
+            (*it).second->addContact(contact);
+            
+            // Add all the contacts in the contact cache of the two bodies
+            // to the set of constraints in the physics world
+            for (uint i=0; i<(*it).second->getNbContacts(); i++) {
+                world->addConstraint((*it).second->getContact(i));
+            }
         }
     }
-}
-
-// Compute all the contacts from the contact info list
-void CollisionDetection::computeAllContacts() {
-    // For each possible contact info (computed during narrow-phase collision detection)
-    for (unsigned int i=0; i<contactInfos.size(); i++) {
-        ContactInfo* contactInfo = contactInfos.at(i);
-        assert(contactInfo);
-        
-        // Compute one or several new contacts and add them into the physics world
-        computeContactGJK(contactInfo); // TODO : Call computeContactGJK() here
-    }
-}
-
-// Compute a contact for GJK (and add it to the physics world)
-void CollisionDetection::computeContactGJK(const ContactInfo* const contactInfo) {
-    // TODO : Compute PersisentContact here instead
-
-    // Create a new contact
-    Contact* contact = new Contact(contactInfo);
-
-    // Add the contact to the physics world
-     world->addConstraint(contact);
-}
-
-/* TODO : DELETE THIS 
-// Compute a contact for the SAT algorithm (and add it to the physics world) for two colliding bodies
-// This method only works for collision between two OBB bounding volumes
-void CollisionDetection::computeContactSAT(const ContactInfo* const contactInfo) {
     
-    // Extract informations from the contact info structure
-    const OBB* const obb1 = dynamic_cast<const OBB* const>(contactInfo->body1->getNarrowBoundingVolume());
-    const OBB* const obb2 = dynamic_cast<const OBB* const>(contactInfo->body2->getNarrowBoundingVolume());
-    Vector3D normal = contactInfo->normal;
-    double penetrationDepth = contactInfo->penetrationDepth;
-
-    const vector<Vector3D> obb1ExtremePoints = obb1->getExtremeVertices(normal);
-    const vector<Vector3D> obb2ExtremePoints = obb2->getExtremeVertices(normal.getOpposite());
-    unsigned int nbVerticesExtremeOBB1 = obb1ExtremePoints.size();
-    unsigned int nbVerticesExtremeOBB2 = obb2ExtremePoints.size();
-    assert(nbVerticesExtremeOBB1==1 || nbVerticesExtremeOBB1==2 || nbVerticesExtremeOBB1==4);
-    assert(nbVerticesExtremeOBB2==1 || nbVerticesExtremeOBB2==2 || nbVerticesExtremeOBB2==4);
-    assert(approxEqual(normal.length(), 1.0));
-
-    // If it's a Vertex-Something contact
-    if (nbVerticesExtremeOBB1 == 1) {
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb1ExtremePoints));
-    }
-    else if(nbVerticesExtremeOBB2 == 1) {  // If its a Vertex-Something contact
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, obb2ExtremePoints));
-    }
-    else if (nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 2) {    // If it's an edge-edge contact
-        // Compute the two vectors of the segment lines
-        Vector3D d1 = obb1ExtremePoints[1] - obb1ExtremePoints[0];
-        Vector3D d2 = obb2ExtremePoints[1] - obb2ExtremePoints[0];
-
-        double alpha, beta;
-        vector<Vector3D> contactSet;
-
-        // If the two edges are parallel
-        if (d1.isParallelWith(d2)) {
-            Vector3D contactPointA;
-            Vector3D contactPointB;
-
-            // Compute the intersection between the two edges
-            computeParallelSegmentsIntersection(obb1ExtremePoints[0], obb1ExtremePoints[1], obb2ExtremePoints[0], obb2ExtremePoints[1],
-                                                contactPointA, contactPointB);
-
-            // Add the two contact points in the contact set
-            contactSet.push_back(contactPointA);
-            contactSet.push_back(contactPointB);
-        }
-        else {  // If the two edges are not parallel
-            // Compute the closest two points between the two line segments
-            closestPointsBetweenTwoLines(obb1ExtremePoints[0], d1, obb2ExtremePoints[0], d2, &alpha, &beta);
-            Vector3D pointA = obb1ExtremePoints[0] + d1 * alpha;
-            Vector3D pointB = obb2ExtremePoints[0] + d2 * beta;
-
-            // Compute the contact point as halfway between the 2 closest points
-            Vector3D contactPoint = 0.5 * (pointA + pointB);
-
-            // Add the contact point into the contact set
-            contactSet.push_back(contactPoint);
-        }
-
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, contactSet));
-    }
-    else if(nbVerticesExtremeOBB1 == 2 && nbVerticesExtremeOBB2 == 4) {     // If it's an edge-face contact
-        // Compute the projection of the edge of OBB1 onto the same plane of the face of OBB2
-        vector<Vector3D> edge = projectPointsOntoPlane(obb1ExtremePoints, obb2ExtremePoints[0], normal);
-
-        // Clip the edge of OBB1 using the face of OBB2
-        vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
-
-        // TODO : Correct this bug
-        // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
-        // of obb1ExtremePoints. Therefore, we compute the nearest two points that are on the rectangle.
-        if (clippedEdge.size() != 2) {
-            edge.clear();
-            edge.push_back(computeNearestPointOnRectangle(edge[0], obb2ExtremePoints));
-            edge.push_back(computeNearestPointOnRectangle(edge[1], obb2ExtremePoints));
-            clippedEdge = clipSegmentWithRectangleInPlane(edge, obb2ExtremePoints);
-        }
-        
-        // Move the clipped edge halway between the edge of OBB1 and the face of OBB2
-        clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal.getOpposite());
-
-        assert(clippedEdge.size() == 2);
-
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge));
-    }
-    else if(nbVerticesExtremeOBB1 == 4 && nbVerticesExtremeOBB2 == 2) {     // If it's an edge-face contact
-        // Compute the projection of the edge of OBB2 onto the same plane of the face of OBB1
-        vector<Vector3D> edge = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
-
-        // Clip the edge of OBB2 using the face of OBB1
-        vector<Vector3D> clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
-
-        // TODO : Correct this bug
-        // The following code is to correct a bug when the projected "edge" is not inside the clip rectangle
-        // of obb1ExtremePoints. Therefore, we compute the nearest two points that are on the rectangle.
-        if (clippedEdge.size() != 2) {
-            edge.clear();
-            edge.push_back(computeNearestPointOnRectangle(edge[0], obb1ExtremePoints));
-            edge.push_back(computeNearestPointOnRectangle(edge[1], obb1ExtremePoints));
-            clippedEdge = clipSegmentWithRectangleInPlane(edge, obb1ExtremePoints);
-        }
-        
-        // Move the clipped edge halfway between the face of OBB1 and the edge of OBB2
-        clippedEdge = movePoints(clippedEdge, penetrationDepth/2.0 * normal);
-
-        assert(clippedEdge.size() == 2);
-
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedEdge));
-    }
-    else {      // If it's a face-face contact
-        // Compute the projection of the face vertices of OBB2 onto the plane of the face of OBB1
-        vector<Vector3D> faceOBB2 = projectPointsOntoPlane(obb2ExtremePoints, obb1ExtremePoints[0], normal);
-
-        // Clip the face of OBB2 using the face of OBB1
-        vector<Vector3D> clippedFace = clipPolygonWithRectangleInPlane(faceOBB2, obb1ExtremePoints);
-
-        // Move the clipped face halfway between the face of OBB1 and the face of OBB2
-        clippedFace = movePoints(clippedFace, penetrationDepth/2.0 * normal);
-        assert(clippedFace.size() >= 3);
-
-        // Create a new contact and add it to the physics world
-        world->addConstraint(new Contact(obb1->getBodyPointer(), obb2->getBodyPointer(), normal, penetrationDepth, clippedFace));
-    }
+    return collisionExists;
 }
-*/
 
+
+// Allow the broadphase to notify the collision detection about an overlapping pair
+// This method is called by a broad-phase collision detection algorithm
+void CollisionDetection::broadPhaseNotifyOverlappingPair(Body* body1, Body* body2) {
+    // Construct the pair of index
+    pair<luint, luint> indexPair = body1->getID() < body2->getID() ? make_pair(body1->getID(), body2->getID()) :
+                                                                make_pair(body2->getID(), body1->getID());
+    assert(indexPair.first != indexPair.second);
+    
+    // Add the pair to the overlapping pairs of the current step
+    currentStepOverlappingPairs.insert(indexPair);
+    
+    // Remove the pair from the set of overlapping pairs in the last step
+    // if the pair of bodies were already overlapping (used to compute the 
+    // set of pair that were overlapping in the last step but are not overlapping
+    // in the current one anymore
+    lastStepOverlappingPairs.erase(indexPair);
+    
+    // Add the pair into the set of overlapping pairs (if not there yet)
+	OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(body1, body2, memoryPoolContacts);
+    pair<map<pair<luint, luint>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
+	
+	// If the overlapping pair was already in the set of overlapping pair
+	if (!check.second) {
+		// Delete the new pair
+		newPair->OverlappingPair::~OverlappingPair();
+		memoryPoolOverlappingPairs.freeObject(newPair);
+	}
+}

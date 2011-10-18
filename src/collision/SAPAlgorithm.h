@@ -29,6 +29,8 @@
 #include "BroadPhaseAlgorithm.h"
 #include "../shapes/AABB.h"
 
+// TODO : Rename this class SweepAndPruneAlgorithm
+
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
     
@@ -54,15 +56,15 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
         static unsigned short int sortAxis;     // Current sorting axis (0 for x, 1 for y, 2 for z axis)
 
         static bool compareAABBs(const AABB* a, const AABB* b);     // Static method that compare two AABBs (in order to sort them)
-        void removeBodiesAABB(std::vector<Body*> bodies);           // Remove the AABB representation of a given set of bodies from the sortedAABBs set
-        void addBodiesAABB(std::vector<Body*> bodies);              // Add the AABB representation of a given set of bodies in the sortedAABBs set
+        
 
     public :
-        SAPAlgorithm();                                             // Constructor
-        virtual ~SAPAlgorithm();                                    // Destructor
+        SAPAlgorithm(CollisionDetection& collisionDetection);   // Constructor
+        virtual ~SAPAlgorithm();                                // Destructor
 
-        virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
-                                                   std::vector<std::pair<Body*, Body*> >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
+        virtual void computePossibleCollisionPairs();                   // Compute the possible collision pairs of bodies
+        virtual void notifyAddedBodies(std::vector<Body*> bodies);      // Notify the broad-phase algorithm about new bodies in the physics world
+        virtual void notifyRemovedBodies(std::vector<Body*> bodies);    // Notify the broad-phase algorithm about removed bodies in the physics world
 };
 
 // Static method that compare two AABBs. This method will be used to compare to AABBs

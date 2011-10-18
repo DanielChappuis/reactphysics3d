@@ -43,19 +43,19 @@ namespace reactphysics3d {
 */
 class RigidBody : public Body {
     protected :
-        Vector3 linearVelocity;                    // Linear velocity of the body
-        Vector3 angularVelocity;                   // Angular velocity of the body
-        Vector3 externalForce;                     // Current external force on the body
-        Vector3 externalTorque;                    // Current external torque on the body
-        Matrix3x3 inertiaTensorLocal;               // Local inertia tensor of the body (in body coordinates)
-        Matrix3x3 inertiaTensorLocalInverse;        // Inverse of the inertia tensor of the body (in body coordinates)
-        double massInverse;                         // Inverse of the mass of the body
-        double restitution;                         // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
+        Vector3 linearVelocity;                 // Linear velocity of the body
+        Vector3 angularVelocity;                // Angular velocity of the body
+        Vector3 externalForce;                  // Current external force on the body
+        Vector3 externalTorque;                 // Current external torque on the body
+        Matrix3x3 inertiaTensorLocal;           // Local inertia tensor of the body (in body coordinates)
+        Matrix3x3 inertiaTensorLocalInverse;    // Inverse of the inertia tensor of the body (in body coordinates)
+        double massInverse;                     // Inverse of the mass of the body
+        double restitution;                     // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
 
     public :
-        RigidBody(const Transform& transform, double mass,
-                  const Matrix3x3& inertiaTensorLocal, Shape* shape);           // Constructor                                                                                                         // Copy-constructor
-        virtual ~RigidBody();                                                   // Destructor
+        RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal,
+                  Shape* shape, long unsigned int id);                                          // Constructor                                                                                                         // Copy-constructor
+        virtual ~RigidBody();                                                                   // Destructor
 
         Vector3 getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3& linearVelocity);                 // Set the linear velocity of the body

@@ -28,6 +28,7 @@
 // Libraries
 #include "../body/Body.h"
 #include "ContactInfo.h"
+#include "CollisionDetection.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -41,11 +42,12 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class NarrowPhaseAlgorithm {
-    private :
-
+    protected :
+        CollisionDetection& collisionDetection;  // Reference to the collision detection object
+        
     public :
-        NarrowPhaseAlgorithm();              // Constructor
-        virtual ~NarrowPhaseAlgorithm();     // Destructor
+        NarrowPhaseAlgorithm(CollisionDetection& collisionDetection);   // Constructor
+        virtual ~NarrowPhaseAlgorithm();                                // Destructor
 
         virtual bool testCollision(const Shape* shape1, const Transform& transform1,
                                    const Shape* shape2, const Transform& transform2,

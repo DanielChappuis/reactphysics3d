@@ -25,6 +25,8 @@
 #ifndef CONTACT_CACHING_INFO_H
 #define	CONTACT_CACHING_INFO_H
 
+// TODO : Remove this class
+
 // Libraries
 #include "../shapes/BoxShape.h"
 

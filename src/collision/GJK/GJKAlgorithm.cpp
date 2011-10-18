@@ -38,7 +38,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm() {
+GJKAlgorithm::GJKAlgorithm(CollisionDetection& collisionDetection)
+             :NarrowPhaseAlgorithm(collisionDetection) {
     
 }
 
@@ -58,7 +59,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 // origin, they we give that simplex polytope to the EPA algorithm which will compute
 // the correct penetration depth and contact points between the enlarged objects.
 bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform1,
-                                 const Shape* shape2,  const Transform& transform2, ContactInfo*& contactInfo) {
+                                 const Shape* shape2,  const Transform& transform2,
+		                         ContactInfo*& contactInfo) {
 
     assert(shape1 != shape2);
     
@@ -86,11 +88,10 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
     // Create a simplex set
     Simplex simplex;
 
-    // Get the last point V (last separating axis)
-    // TODO : Implement frame coherence. For each pair of body, store
-    //        the last separating axis and use it to initialize the v vector
-    Vector3 v(1.0, 1.0, 1.0);
-
+    // Get the previous point V (last cached separating axis)
+	OverlappingPair* overlappingPair = collisionDetection.getOverlappingPair(body1->getID(), body2->getID());
+	Vector3 v = (overlappingPair) ? overlappingPair->getCachedSeparatingAxis() : Vector3(1.0, 1.0, 1.0);
+			
     // Initialize the upper bound for the square distance
     double distSquare = DBL_MAX;
     

@@ -183,12 +183,9 @@ void ConstraintSolver::freeMemory(bool freeBodiesMemory) {
 // Notice that all the active constraints should have been evaluated first
 void ConstraintSolver::fillInMatrices() {
     Constraint* constraint;
-    Contact* contact;
-    ContactCachingInfo* contactInfo;
 
     // For each active constraint
     int noConstraint = 0;
-    //uint nbAuxConstraints = 0;
     
     for (int c=0; c<activeConstraints.size(); c++) {
         
@@ -196,7 +193,6 @@ void ConstraintSolver::fillInMatrices() {
 
         // Fill in the J_sp matrix
         constraint->computeJacobian(noConstraint, J_sp);
-        //constraint->computeJacobian(noConstraint, J_sp);
 
         // Fill in the body mapping matrix
         for(int i=0; i<constraint->getNbConstraints(); i++) {
@@ -211,20 +207,9 @@ void ConstraintSolver::fillInMatrices() {
         // Fill in the error vector
         constraint->computeErrorValue(noConstraint, errorValues);
 
-        // Set the init lambda values
-        contact = dynamic_cast<Contact*>(constraint);
-        contactInfo = NULL;
-        if (contact) {
-            // Get the lambda init value from the cache if exists
-            contactInfo = contactCache.getContactCachingInfo(contact);
-        }
+        // Get the cached lambda values of the constraint
         for (int i=0; i<constraint->getNbConstraints(); i++) {
-            if (contactInfo) { // If the last lambda init value is in the cache
-                lambdaInit.setValue(noConstraint + i, contactInfo->lambdas[i]);
-            }
-            else {  // The las lambda init value was not in the cache
-                lambdaInit.setValue(noConstraint + i, 0.0);
-            }
+            lambdaInit.setValue(noConstraint + i, constraint->getCachedLambda(i));
         }
 
         noConstraint += constraint->getNbConstraints();
@@ -336,43 +321,20 @@ void ConstraintSolver::computeVectorVconstraint(double dt) {
     }
 }
 
-// Clear and Fill in the contact cache with the new lambda values
-void ConstraintSolver::updateContactCache() {
-    Contact* contact;
-    ContactCachingInfo* contactInfo;
-    int index;
-
-    // Clear the contact cache
-    contactCache.clear();
+// Cache the lambda values in order to reuse them in the next step
+// to initialize the lambda vector
+void ConstraintSolver::cacheLambda() {
     
     // For each active constraint
     int noConstraint = 0;
     for (int c=0; c<activeConstraints.size(); c++) {
-        index = noConstraint;
 
-        // If it's a contact constraint
-        contact = dynamic_cast<Contact*>(activeConstraints.at(c));
-        if (contact) {
-            
-            // Get all the contact points of the contact
-            vector<Vector3> points;
-            vector<double> lambdas;
-            points.push_back(contact->getWorldPointOnBody1());
-            points.push_back(contact->getWorldPointOnBody2());
-
-            // For each constraint of the contact
-            for (int i=0; i<contact->getNbConstraints(); i++) {
-                // Get the lambda value that have just been computed
-                lambdas.push_back(lambda.getValue(noConstraint + i));
-            }
-            
-            // Create a new ContactCachingInfo
-            contactInfo = new ContactCachingInfo(contact->getBody1(), contact->getBody2(), points, lambdas);
-
-            // Add it to the contact cache
-            contactCache.addContactCachingInfo(contactInfo);
+        // For each constraint of the contact
+        for (int i=0; i<activeConstraints[c]->getNbConstraints(); i++) {
+            // Get the lambda value that have just been computed
+            activeConstraints[c]->setCachedLambda(i, lambda.getValue(noConstraint + i));
         }
 
-        noConstraint += activeConstraints.at(c)->getNbConstraints();
+        noConstraint += activeConstraints[c]->getNbConstraints();
     }
 }

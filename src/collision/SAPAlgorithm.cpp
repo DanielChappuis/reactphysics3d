@@ -24,6 +24,7 @@
 
 // Libraries
 #include "SAPAlgorithm.h"
+#include "CollisionDetection.h"
 #include <algorithm>
 
 // Namespaces
@@ -34,7 +35,8 @@ using namespace std;
 unsigned short int SAPAlgorithm::sortAxis = 0;
 
 // Constructor
-SAPAlgorithm::SAPAlgorithm() {
+SAPAlgorithm::SAPAlgorithm(CollisionDetection& collisionDetection)
+             :BroadPhaseAlgorithm(collisionDetection) {
 
 }
 
@@ -43,8 +45,9 @@ SAPAlgorithm::~SAPAlgorithm() {
 
 }
 
-// Remove the AABB representation of a given set of bodies from the sortedAABBs set
-void SAPAlgorithm::removeBodiesAABB(vector<Body*> bodies) {
+// Notify the broad-phase algorithm about new bodies in the physics world
+// This method removes the AABB representation of a given set of bodies from the sortedAABBs set
+void SAPAlgorithm::notifyRemovedBodies(vector<Body*> bodies) {
     vector<const AABB*>::iterator elemToRemove;
     const AABB* aabb;
 
@@ -58,8 +61,9 @@ void SAPAlgorithm::removeBodiesAABB(vector<Body*> bodies) {
     }
 }
 
-// Add the AABB representation of a given body in the sortedAABBs set
-void SAPAlgorithm::addBodiesAABB(vector<Body*> bodies) {
+// Notify the broad-phase algorithm about new bodies in the physics world
+// This method adds the AABB representation of a given body in the sortedAABBs set
+void SAPAlgorithm::notifyAddedBodies(vector<Body*> bodies) {
     const AABB* aabb;
     
     for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
@@ -70,31 +74,20 @@ void SAPAlgorithm::addBodiesAABB(vector<Body*> bodies) {
     }
 }
 
-// Compute the possible collision pairs of bodies
-// The arguments "addedBodies" and "removedBodies" are respectively the set
-// of bodies that have been added and removed since the last broad-phase
-// computation. Before the call, the argument "possibleCollisionPairs"
-// correspond to the possible colliding pairs of bodies from the last broad-phase
-// computation. This methods computes the current possible collision pairs of
-// bodies and update the "possibleCollisionPairs" argument.
-void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vector<Body*> removedBodies,
-                                                 vector<pair<Body*, Body*> >& possibleCollisionPairs) {
+// This method computes the possible collision pairs of bodies and notify
+// the collision detection object about overlapping pairs using the
+// broadPhaseNotifyOverlappingPair() method from the CollisionDetection class
+void SAPAlgorithm::computePossibleCollisionPairs() {
     double variance[3];                             // Variance of the distribution of the AABBs on the three x, y and z axis
     double esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
     double esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
     vector<const AABB*>::iterator it;               // Iterator on the sortedAABBs set
     vector<const AABB*>::iterator it2;              // Second iterator
-    Vector3 center3D;                              // Center of the current AABB
+    Vector3 center3D;                               // Center of the current AABB
     double center[3];                               // Coordinates of the center of the current AABB
     int i;
     const Body* body;                               // Body pointer on the body corresponding to an AABB
     uint nbAABBs = sortedAABBs.size();              // Number of AABBs
-
-    // Removed the bodies to remove
-    removeBodiesAABB(removedBodies);
-
-    // Add the bodies to add
-    addBodiesAABB(addedBodies);
 
     // Sort the set of AABBs
     sort(sortedAABBs.begin(), sortedAABBs.end(), compareAABBs);
@@ -121,7 +114,7 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
         }
 
         // Test collision against all possible overlapping AABBs following the current one
-        for (it2 = it + 1; it2 != sortedAABBs.end(); ++it2) {
+        for (it2 = it + 1; it2 != sortedAABBs.end(); it2++) {
             // Stop when the tested AABBs are beyond the end of the current AABB
             if ((*it2)->getMinCoordinates()[sortAxis] > (*it)->getMaxCoordinates()[sortAxis]) {
                 break;
@@ -131,8 +124,8 @@ void SAPAlgorithm::computePossibleCollisionPairs(vector<Body*> addedBodies, vect
 
             // Test if both AABBs overlap
             if (body->getIsCollisionEnabled() && (*it)->testCollision(*(*it2))) {
-                // Add the current pair of AABBs into the possibleCollisionPairs set
-                possibleCollisionPairs.push_back(make_pair((*it)->getBodyPointer(), (*it2)->getBodyPointer()));
+                // Notify the collision detection object about this current overlapping pair of bodies
+                collisionDetection.broadPhaseNotifyOverlappingPair((*it)->getBodyPointer(), (*it2)->getBodyPointer());
             }
         }
     }

@@ -31,6 +31,7 @@
 #include "../mathematics/Transform.h"
 #include "../shapes/AABB.h"
 #include "../shapes/Shape.h"
+#include "../constants.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -52,11 +53,13 @@ class Body {
         bool isMotionEnabled;           // True if the body is able to move
         bool isCollisionEnabled;        // True if the body can collide with others bodies
         AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
+        luint id;                       // ID of the body
 
     public :
-        Body(const Transform& transform, Shape* shape, double mass);    // Constructor
-        virtual ~Body();                                                // Destructor
+        Body(const Transform& transform, Shape* shape, double mass, long unsigned int id);      // Constructor
+        virtual ~Body();                                                                        // Destructor
 
+        luint getID() const;                                            // Return the id of the body
         Shape* getShape() const;                                        // Return the collision shape
         void setShape(Shape* shape);                                    // Set the collision shape
         double getMass() const;                                         // Return the mass of the body
@@ -73,6 +76,11 @@ class Body {
         void updateOldTransform();                                      // Update the old transform with the current one
         void updateAABB();                                              // Update the Axis-Aligned Bounding Box coordinates
 };
+
+// Return the id of the body
+inline luint Body::getID() const {
+    return id;
+}                               
 
 // Return the collision shape
 inline Shape* Body::getShape() const {

@@ -33,6 +33,7 @@
 #include "PhysicsWorld.h"
 #include <map>
 #include <set>
+#include <sys/time.h> // TODO : Remove this
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -47,7 +48,6 @@ class ConstraintSolver {
     protected:
         PhysicsWorld* physicsWorld;                             // Reference to the physics world
         LCPSolver* lcpSolver;                                   // LCP Solver
-        ContactCache contactCache;                              // Contact cache
         std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
         uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
         uint nbBodies;                                          // Current number of bodies in the physics world
@@ -90,7 +90,7 @@ class ConstraintSolver {
         void computeVectorB(double dt);                         // Compute the vector b
         void computeMatrixB_sp();                               // Compute the matrix B_sp
         void computeVectorVconstraint(double dt);               // Compute the vector V2
-        void updateContactCache();                              // Clear and Fill in the contact cache with the new lambda values
+        void cacheLambda();                                     // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
         void freeMemory(bool freeBodiesMemory);                 // Free some memory previously allocated for the constraint solver
         
     public:
@@ -135,6 +135,14 @@ inline void ConstraintSolver::cleanup() {
 
 // Solve the current LCP problem
 inline void ConstraintSolver::solve(double dt) {
+    
+    // TODO : Remove the following timing code
+    timeval timeValueStart;
+	timeval timeValueEnd;
+	std::cout << "------ START (Constraint Solver) -----" << std::endl;
+	gettimeofday(&timeValueStart, NULL);
+    
+
     // Allocate memory for the matrices
     initialize();
 
@@ -151,11 +159,19 @@ inline void ConstraintSolver::solve(double dt) {
     lcpSolver->setLambdaInit(lambdaInit);
     lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
 
-    // Update the contact chaching informations
-    updateContactCache();
-
+    // Cache the lambda values in order to use them in the next step
+    cacheLambda();
+    
     // Compute the vector Vconstraint
     computeVectorVconstraint(dt);
+    
+    // TODO : Remove the following timing code
+    std::cout << "NB constraints : " << nbConstraints << std::endl;
+    gettimeofday(&timeValueEnd, NULL);
+	long double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
+	long double endTime = timeValueEnd.tv_sec * 1000000.0 + (timeValueEnd.tv_usec);
+	std::cout << "------ END (Constraint Solver) => (" << "time = " << endTime - startTime << " micro sec)-----" << std::endl;
+    
 }
 
 } // End of ReactPhysics3D namespace

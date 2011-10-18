@@ -31,9 +31,11 @@
 #include "../body/RigidBody.h"
 #include "../constants.h"
 #include "../mathematics/mathematics.h"
+#include "../memory/MemoryPool.h"
+#include <new>
 #ifdef VISUAL_DEBUG
-    #include <GL/freeglut.h>
-    #include <GL/gl.h>
+    #include <GLUT/glut.h>
+    #include <OpenGL/gl.h>
 #endif
 
 // ReactPhysics3D namespace
@@ -82,6 +84,9 @@ class Contact : public Constraint {
         #ifdef VISUAL_DEBUG
            void draw() const;                                                          // Draw the contact (for debugging)
         #endif
+
+        //void* operator new(size_t, MemoryPool<Contact>& pool) throw(std::bad_alloc);                 // Overloaded new operator for customized memory allocation
+        //void operator delete(void* p, MemoryPool<Contact>& pool);                               // Overloaded delete operator for customized memory allocation
 };
 
 // Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
@@ -142,6 +147,7 @@ inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
 inline double Contact::getPenetrationDepth() const {
     return penetrationDepth;
 }
+
 
 #ifdef VISUAL_DEBUG
 // TODO : Delete this (Used to debug collision detection)

@@ -29,7 +29,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-NarrowPhaseAlgorithm::NarrowPhaseAlgorithm() {
+NarrowPhaseAlgorithm::NarrowPhaseAlgorithm(CollisionDetection& collisionDetection)
+                     :collisionDetection(collisionDetection) {
 
 }
 

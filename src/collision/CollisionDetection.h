@@ -26,44 +26,65 @@
 #define COLLISION_DETECTION_H
 
 // Libraries
-#include "BroadPhaseAlgorithm.h"
-#include "NarrowPhaseAlgorithm.h"
 #include "../body/Body.h"
+#include "OverlappingPair.h"
 #include "../engine/PhysicsWorld.h"
+#include "../memory/MemoryPool.h"
 #include "ContactInfo.h"
 #include <vector>
+#include <map>
+#include <set>
+#include <utility>
+
+// TODO : Add a broadphase and a narrowphase folder in the src/collision/ folder
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Declarations
+class BroadPhaseAlgorithm;
+class NarrowPhaseAlgorithm;
+    
 /*  -------------------------------------------------------------------
     Class CollisionDetection :
         This class computes the collision detection algorithms. We first
-        perfom a broad-phase algorithm to know wich pairs of bodies can
+        perfom a broad-phase algorithm to know which pairs of bodies can
         collide and then we run a narrow-phase algorithm to compute the
         collision contacts between bodies.
     -------------------------------------------------------------------
 */
 class CollisionDetection {
     private :
-        PhysicsWorld* world;                                                // Pointer to the physics world
-        std::vector<std::pair<Body*, Body*> > possibleCollisionPairs;       // Possible collision pairs of bodies (computed by broadphase)
-        std::vector<ContactInfo*> contactInfos;                             // Contact informations (computed by narrowphase)
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                           // Broad-phase algorithm
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                         // Narrow-phase algorithm
-
-        void computeBroadPhase();                                           // Compute the broad-phase collision detection
-        void computeNarrowPhase();                                          // Compute the narrow-phase collision detection
-        void computeAllContacts();                                          // Compute all the contacts from the collision info list
-        //void computeContactSAT(const ContactInfo* const contactInfo);     // Compute a contact for SAT (and add it to the physics world) for two colliding bodies
-        void computeContactGJK(const ContactInfo* const contactInfo);       // Compute a contact for GJK (and add it to the physics world)
-
+        PhysicsWorld* world;                                                    // Pointer to the physics world        
+        std::map<std::pair<luint, luint>, OverlappingPair*>  overlappingPairs;  // Broad-phase overlapping pairs of bodies 
+        std::set<std::pair<luint, luint> > currentStepOverlappingPairs;         // Overlapping pairs of bodies at the current collision detection step
+        std::set<std::pair<luint, luint> > lastStepOverlappingPairs;            // Overlapping pairs of bodies at the last collision detection step
+        BroadPhaseAlgorithm* broadPhaseAlgorithm;                               // Broad-phase algorithm
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm;                             // Narrow-phase algorithm
+        MemoryPool<Contact> memoryPoolContacts;                                 // Memory pool for the contacts
+        MemoryPool<OverlappingPair> memoryPoolOverlappingPairs;                 // Memory pool for the overlapping pairs
+        
+        void computeBroadPhase();                                               // Compute the broad-phase collision detection
+        bool computeNarrowPhase();                                              // Compute the narrow-phase collision detection
+        
     public :
-        CollisionDetection(PhysicsWorld* physicsWorld);                      // Constructor
-        ~CollisionDetection();                                               // Destructor
-
-        bool computeCollisionDetection();                                    // Compute the collision detection
+        CollisionDetection(PhysicsWorld* physicsWorld);                             // Constructor
+        ~CollisionDetection();                                                      // Destructor
+                                                                                            
+        OverlappingPair* getOverlappingPair(luint body1ID, luint body2ID);          // Return an overlapping pair or null     
+        bool computeCollisionDetection();                                           // Compute the collision detection
+        void broadPhaseNotifyOverlappingPair(Body* body1, Body* body2);             // Allow the broadphase to notify the collision detection about an overlapping pair
 };
+
+// Return an overlapping pair of bodies according to the given bodies ID
+// The method returns null if the pair of bodies is not overlapping    
+inline OverlappingPair* CollisionDetection::getOverlappingPair(luint body1ID, luint body2ID) {
+    std::pair<luint, luint> pair = (body1ID < body2ID) ? std::make_pair(body1ID, body2ID) : std::make_pair(body2ID, body1ID);
+    if (overlappingPairs.count(pair) == 1) {
+        return overlappingPairs[pair];
+    }
+    return NULL;
+}
 
 } // End of the ReactPhysics3D namespace
 

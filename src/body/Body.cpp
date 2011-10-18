@@ -30,8 +30,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(const Transform& transform, Shape* shape, double mass)
-     : shape(shape), transform(transform), mass(mass) {
+Body::Body(const Transform& transform, Shape* shape, double mass, long unsigned int id)
+     : shape(shape), transform(transform), mass(mass), id(id) {
     assert(mass > 0.0);
     assert(shape);
 

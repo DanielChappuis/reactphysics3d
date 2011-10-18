@@ -24,6 +24,7 @@
 
 // Libraries
 #include "PhysicsWorld.h"
+#include "PhysicsEngine.h"
 #include <algorithm>
 
 // Namespaces
@@ -32,17 +33,37 @@ using namespace std;
 
 // Constructor
 PhysicsWorld::PhysicsWorld(const Vector3& gravity)
-             : gravity(gravity), isGravityOn(true) {
+             : gravity(gravity), isGravityOn(true), currentBodyID(0) {
 
 }
 
 // Destructor
 PhysicsWorld::~PhysicsWorld() {
-    // Remove and free the memory of all constraints
-    removeAllConstraints();
+
 }
 
+// Create a rigid body into the physics world
+RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape) {
+    // TODO : Use Memory Pool memory allocation for the rigid body instead
+    
+    // Create the rigid body
+    RigidBody* rigidBody = new RigidBody(transform, mass, inertiaTensorLocal, shape, currentBodyID);
+    
+    currentBodyID++;
+    
+    // Add the rigid body to the physics world and return it
+    addBody(rigidBody);
+    return rigidBody;
+}       
+
+// Destroy a rigid body
+void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
+    removeBody(rigidBody);
+    delete rigidBody;
+}  
+
 // Remove all collision contacts constraints
+// TODO : This method should be in the collision detection class
 void PhysicsWorld::removeAllContactConstraints() {
     // For all constraints
     for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
@@ -52,8 +73,7 @@ void PhysicsWorld::removeAllContactConstraints() {
 
         // If the constraint is a contact
         if (contact) {
-            // Delete the  contact
-            delete (*it);
+            // Remove it from the constraints of the physics world
             it = constraints.erase(it);
         }
         else {
@@ -62,11 +82,8 @@ void PhysicsWorld::removeAllContactConstraints() {
     }
 }
 
-// Remove all constraints in the physics world and also delete them (free their memory)
+// Remove all constraints in the physics world
 void PhysicsWorld::removeAllConstraints() {
-    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ++it) {
-        delete *it;
-    }
     constraints.clear();
 }
 

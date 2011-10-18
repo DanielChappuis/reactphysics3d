@@ -44,11 +44,12 @@ class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
         std::vector<Body*> bodies;     // All bodies of the engine
 
     public :
-        NoBroadPhaseAlgorithm();              // Constructor
-        virtual ~NoBroadPhaseAlgorithm();     // Destructor
+        NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection);  // Constructor
+        virtual ~NoBroadPhaseAlgorithm();                               // Destructor
 
-        virtual void computePossibleCollisionPairs(std::vector<Body*> addedBodies, std::vector<Body*> removedBodies,
-                                                   std::vector<std::pair<const Body*, const Body* > >& possibleCollisionPairs);     // Compute the possible collision pairs of bodies
+        virtual void computePossibleCollisionPairs();                   // Compute the possible collision pairs of bodies
+        virtual void notifyAddedBodies(std::vector<Body*> bodies);      // Notify the broad-phase algorithm about new bodies in the physics world
+        virtual void notifyRemovedBodies(std::vector<Body*> bodies);    // Notify the broad-phase algorithm about removed bodies in the physics world
 };
 
 } // End of reactphysics3d namespace

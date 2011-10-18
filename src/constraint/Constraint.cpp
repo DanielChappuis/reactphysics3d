@@ -31,7 +31,11 @@ using namespace reactphysics3d;
 // Constructor
 Constraint::Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active)
            :body1(body1), body2(body2), active(active), nbConstraints(nbConstraints) {
-
+    
+    // Initialize the cached lambda values
+    for (int i=0; i<nbConstraints; i++) {
+        cachedLambdas.push_back(0.0);
+    }
 }
 
 // Destructor

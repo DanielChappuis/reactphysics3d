@@ -31,6 +31,7 @@
 
 // Type definitions
 typedef unsigned int uint;
+typedef long unsigned int luint;
 
 // Mathematical constants
 const double EPSILON = 1.0e-10;                                             // Epsilon value
@@ -47,13 +48,13 @@ const double DEFAULT_TIMESTEP = 0.002;
 const double OBJECT_MARGIN = 0.04;                      // Object margin for collision detection
 
 // Contact constants
-const double FRICTION_COEFFICIENT = 1.0;                // Friction coefficient
+const double FRICTION_COEFFICIENT = 0.4;                // Friction coefficient
 const double PENETRATION_FACTOR = 0.2;                  // Penetration factor (between 0 and 1) which specify the importance of the
                                                         // penetration depth in order to calculate the correct impulse for the contact
 const double PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
 
-// TODO : Change this number
-const int NB_MAX_CONTACTS = 10000;                         // Maximum number of contacts (for memory pool allocation)
+const int NB_MAX_CONTACTS = 100000;                     // Maximum number of contacts (for memory pool allocation)
+const int NB_MAX_COLLISION_PAIRS = 10000;               // Maximum number of collision pairs of bodies (for memory pool allocation)
 
 // Constraint solver constants
 const uint MAX_LCP_ITERATIONS = 10;                     // Maximum number of iterations when solving a LCP problem

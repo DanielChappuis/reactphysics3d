@@ -71,7 +71,7 @@ class Vector3 {
         int getMinAxis() const;                                 // Return the axis with the minimal value
         int getMaxAxis() const;                                 // Return the axis with the maximal value
         bool isParallelWith(const Vector3& vector) const;       // Return true if two vectors are parallel
-
+        
         // --- Overloaded operators --- //
         bool operator== (const Vector3& vector) const;          // Overloaded operator for the equality condition
         bool operator!= (const Vector3& vector) const;          // Overloaded operator for the is different condition
@@ -160,7 +160,8 @@ inline Vector3 Vector3::getAbsoluteVector() const {
 inline bool Vector3::isParallelWith(const Vector3& vector) const {
     double scalarProd = this->dot(vector);
     return approxEqual(std::abs(scalarProd), length() * vector.length());
-}
+}    
+
 
 // Return the axis with the minimal value
 inline int Vector3::getMinAxis() const {

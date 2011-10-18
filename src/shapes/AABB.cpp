@@ -26,8 +26,8 @@
 #include "AABB.h"
 #include <cassert>
 #ifdef VISUAL_DEBUG
-   #include <GL/freeglut.h>
-   #include <GL/gl.h>        
+   #include <GLUT/glut.h>
+   #include <OpenGL/gl.h>        
 #endif
 
 using namespace reactphysics3d;

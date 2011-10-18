@@ -42,10 +42,11 @@ namespace reactphysics3d {
 */
 class Constraint {
     protected :
-        Body* const body1;          // Pointer to the first body of the constraint
-        Body* const body2;          // Pointer to the second body of the constraint
-        bool active;                // True if the constraint is active
-        uint nbConstraints;         // Number mathematical constraints associated with this Constraint
+        Body* const body1;                      // Pointer to the first body of the constraint
+        Body* const body2;                      // Pointer to the second body of the constraint
+        bool active;                            // True if the constraint is active
+        uint nbConstraints;                     // Number mathematical constraints associated with this Constraint
+        std::vector<double> cachedLambdas;      // Cached lambda values of each mathematical constraint for more precise initializaton of LCP solver
 
     public :
         Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active);  // Constructor                                                                                                   // Constructor
@@ -58,6 +59,8 @@ class Constraint {
         virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const=0;      // Compute the upperbounds values for all the mathematical constraints
         virtual void computeErrorValue(int noConstraint, Vector& errorValues) const=0;      // Compute the error values for all the mathematical constraints
         unsigned int getNbConstraints() const;                                              // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
+        double getCachedLambda(int index) const;                                            // Get one cached lambda value
+        void setCachedLambda(int index, double lambda);                                      // Set on cached lambda value  
 };
 
 // Return the reference to the body 1
@@ -79,6 +82,20 @@ inline bool Constraint::isActive() const {
 inline uint Constraint::getNbConstraints() const {
     return nbConstraints;
 }
+
+// Get one previous lambda value
+inline double Constraint::getCachedLambda(int index) const {
+    assert(index >= 0 && index < nbConstraints);
+    return cachedLambdas[index];
+} 
+
+// Set on cached lambda value  
+inline void Constraint::setCachedLambda(int index, double lambda) {
+    assert(index >= 0 && index < nbConstraints);
+    cachedLambdas[index] = lambda;
+}                                                   
+
+
 
 } // End of the ReactPhysics3D namespace
 

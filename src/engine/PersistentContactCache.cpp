@@ -28,8 +28,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-PersistentContactCache::PersistentContactCache(Body* const body1, Body* const body2)
-                       : body1(body1), body2(body2), nbContacts(0) {
+PersistentContactCache::PersistentContactCache(Body* const body1, Body* const body2, MemoryPool<Contact>& memoryPoolContacts)
+                       : body1(body1), body2(body2), nbContacts(0), memoryPoolContacts(memoryPoolContacts) {
     
 }
 
@@ -40,8 +40,22 @@ PersistentContactCache::~PersistentContactCache() {
 
 // Add a contact in the cache
 void PersistentContactCache::addContact(Contact* contact) {
-    int indexNewContact = nbContacts;
 
+    int indexNewContact = nbContacts;
+	
+	// For contact already in the cache
+	for (uint i=0; i<nbContacts; i++) {
+		// Check if the new point point does not correspond to a same contact point
+		// already in the cache. If it's the case, we do not add the new contact
+		if (isApproxEqual(contact->getLocalPointOnBody1(), contacts[i]->getLocalPointOnBody1())) {
+			// Delete the new contact
+			contact->Contact::~Contact();
+			memoryPoolContacts.freeObject(contact);
+			
+			return;
+		}
+	}
+    
     // If the contact cache is full
     if (nbContacts == MAX_CONTACTS_IN_CACHE) {
         int indexMaxPenetration = getIndexOfDeepestPenetration(contact);
@@ -59,9 +73,12 @@ void PersistentContactCache::addContact(Contact* contact) {
 void PersistentContactCache::removeContact(int index) {
     assert(index >= 0 && index < nbContacts);
     assert(nbContacts > 0);
-
-    delete contacts[index];
-
+	
+	// Call the destructor explicitly and tell the memory pool that
+	// the corresponding memory block is now free
+	contacts[index]->Contact::~Contact();
+	memoryPoolContacts.freeObject(contacts[index]);
+	
     // If we don't remove the last index
     if (index < nbContacts - 1) {
         contacts[index] = contacts[nbContacts - 1];
@@ -77,15 +94,19 @@ void PersistentContactCache::removeContact(int index) {
 // the contacts with a too large distance between the contact points in the plane orthogonal to the
 // contact normal
 void PersistentContactCache::update(const Transform& transform1, const Transform& transform2) {
+    if (nbContacts == 0) return;
+
     // Update the world coordinates and penetration depth of the contacts in the cache
-    for (uint i=0; i<nbContacts; i++) {
+    for (int i=0; i<nbContacts; i++) {
         contacts[i]->setWorldPointOnBody1(transform1 * contacts[i]->getLocalPointOnBody1());
         contacts[i]->setWorldPointOnBody2(transform2 * contacts[i]->getLocalPointOnBody2());
         contacts[i]->setPenetrationDepth((contacts[i]->getWorldPointOnBody1() - contacts[i]->getWorldPointOnBody2()).dot(contacts[i]->getNormal()));
     }
 
     // Remove the contacts that don't represent very well the persistent contact
-    for (uint i=nbContacts-1; i>=0; i--) {
+    for (int i=nbContacts-1; i>=0; i--) {
+        assert(i>= 0 && i < nbContacts);
+        
         // Remove the contacts with a negative penetration depth (meaning that the bodies are not penetrating anymore)
         if (contacts[i]->getPenetrationDepth() <= 0.0) {
             removeContact(i);
@@ -100,7 +121,7 @@ void PersistentContactCache::update(const Transform& transform1, const Transform
                 removeContact(i);
             }
         }
-    }
+    }    
 }
 
 // Return the index of the contact with the larger penetration depth. This
@@ -195,7 +216,11 @@ int PersistentContactCache::getMaxArea(double area0, double area1, double area2,
 // Clear the cache
 void PersistentContactCache::clear() {
     for (uint i=0; i<nbContacts; i++) {
-        delete contacts[i];
+		
+		// Call the destructor explicitly and tell the memory pool that
+		// the corresponding memory block is now free
+		contacts[i]->Contact::~Contact();
+		memoryPoolContacts.freeObject(contacts[i]);
     }
     nbContacts = 0;
 }

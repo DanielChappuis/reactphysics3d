@@ -1,4 +1,3 @@
-
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2011 Daniel Chappuis                                            *
@@ -24,35 +23,18 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereShape.h"
-#include <cassert>
-
-#ifdef VISUAL_DEBUG
-   #include <GLUT/glut.h>        // TODO : Remove this in the final version
-   #include <OpenGL/gl.h>              // TODO : Remove this in the final version
-#endif
+#include "OverlappingPair.h"
 
 using namespace reactphysics3d;
-using namespace std;
+
 
 // Constructor
-SphereShape::SphereShape(double radius) : radius(radius) {
-
-}
+OverlappingPair::OverlappingPair(Body* body1, Body* body2, MemoryPool<Contact>& memoryPoolContacts)
+                : body1(body1), body2(body2), contactsCache(body1, body2, memoryPoolContacts), cachedSeparatingAxis(1.0, 1.0, 1.0) {
+    
+}   
 
 // Destructor
-SphereShape::~SphereShape() {
-
-}
-
-#ifdef VISUAL_DEBUG
-// Draw the sphere (only for testing purpose)
-void SphereShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireSphere(radius, 50, 50);
-}
-#endif
+OverlappingPair::~OverlappingPair() {
+    // TODO : MAYBE DELETE THE CONTACTS HERE
+}                                  

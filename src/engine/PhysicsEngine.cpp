@@ -46,7 +46,7 @@ void PhysicsEngine::update() {
     bool existCollision = false;
 
     assert(timer.getIsRunning());
-
+    
     // Compute the time since the last update() call and update the timer
     timer.update();
 
@@ -57,6 +57,7 @@ void PhysicsEngine::update() {
     while(timer.isPossibleToTakeStep()) {
         existCollision = false;
 
+		
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection()) {
             existCollision = true;

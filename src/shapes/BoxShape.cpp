@@ -28,8 +28,8 @@
 #include <cassert>
 
 #ifdef VISUAL_DEBUG
-   #include <GL/freeglut.h>        // TODO : Remove this in the final version
-   #include <GL/gl.h>              // TODO : Remove this in the final version
+   #include <GLUT/glut.h>        // TODO : Remove this in the final version
+   #include <OpenGL/gl.h>              // TODO : Remove this in the final version
 #endif
 
 using namespace reactphysics3d;

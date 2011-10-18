@@ -30,8 +30,8 @@
 using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape)
-           : Body(transform, shape, mass), inertiaTensorLocal(inertiaTensorLocal),
+ RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape, long unsigned id)
+           : Body(transform, shape, mass, id), inertiaTensorLocal(inertiaTensorLocal),
              inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
 
     restitution = 1.0;

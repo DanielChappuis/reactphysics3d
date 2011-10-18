@@ -32,6 +32,8 @@
 #include "ContactCachingInfo.h"
 #include "../constraint/Contact.h"
 
+// TODO : Remove this class
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
