@@ -47,7 +47,7 @@ namespace reactphysics3d {
 */
 class PhysicsWorld {
     protected :
-        std::vector<Body*> bodies;                  // list that contains all bodies of the physics world
+        std::vector<Body*> bodies;         // All the rigid bodies of the physics world
         std::vector<Body*> addedBodies;             // Added bodies since last update
         std::vector<Body*> removedBodies;           // Removed bodies since last update
         std::vector<Constraint*> constraints;       // List that contains all the current constraints
@@ -56,11 +56,11 @@ class PhysicsWorld {
         long unsigned int currentBodyID;            // Current body ID
 
         void addBody(Body* body);                   // Add a body to the physics world
-        void removeBody(Body* body);                 // Remove a body from the physics world
+        void removeBody(Body* body);                // Remove a body from the physics world
         
     public :
         PhysicsWorld(const Vector3& gravity);      // Constructor
-        virtual ~PhysicsWorld();                    // Destructor
+        virtual ~PhysicsWorld();                   // Destructor
 
         RigidBody* createRigidBody(const Transform& transform, double mass,
                                    const Matrix3x3& inertiaTensorLocal, Shape* shape);  // Create a rigid body into the physics world

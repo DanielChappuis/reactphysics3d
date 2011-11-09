@@ -37,70 +37,72 @@
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
-
- /*  -------------------------------------------------------------------
+    
+    
+/*  -------------------------------------------------------------------
     Class ConstrainSolver :
-        This class represents the constraint solver. The goal is to
-        solve A constraint-base LCP problem.
+        This class represents the constraint solver. The constraint solver
+        is based on the theory from the paper "Iterative Dynamics with
+        Temporal Coherence" from Erin Catto. We keep the same notations as
+        in the paper. The idea is to construct a LCP problem and then solve
+        it using a Projected Gauss Seidel (PGS) solver.
     -------------------------------------------------------------------
 */
 class ConstraintSolver {
-    protected:
-        PhysicsWorld* physicsWorld;                             // Reference to the physics world
-        LCPSolver* lcpSolver;                                   // LCP Solver
-        std::vector<Constraint*> activeConstraints;             // Current active constraints in the physics world
-        uint nbConstraints;                                     // Total number of constraints (with the auxiliary constraints)
-        uint nbBodies;                                          // Current number of bodies in the physics world
-        uint constraintsCapacity;                               // Number of constraints that are currently allocated in memory in the solver
-        uint bodiesCapacity;                                    // Number of bodies that are currently allocated in memory in the solver
-        uint avConstraintsCapacity;                             // Average constraint capacity
-        uint avBodiesCapacity;                                  // Average bodies capacity
-        uint avBodiesNumber;                                    // Total bodies number for average computation
-        uint avConstraintsNumber;                               // Total constraints number for average computation
-        uint avBodiesCounter;                                   // Counter used to compute the average
-        uint avConstraintsCounter;
-        std::set<Body*> constraintBodies;                       // Bodies that are implied in some constraint
-        std::map<Body*, uint> bodyNumberMapping;                // Map a body pointer with its index number
-        Body*** bodyMapping;                                    // 2-dimensional array that contains the mapping of body reference
-                                                                // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
-                                                                // the pointer to the body that correspond to the 1x6 J_ij matrix in the
-                                                                // J_sp matrix. A integer body index refers to its index in the "bodies" std::vector
-        Matrix1x6** J_sp;                                       // 2-dimensional array thar correspond to the sparse representation of the jacobian matrix of all constraints
-                                                                // The dimension of this array is nbConstraints times 2. Each cell will contain
-                                                                // a 1x6 matrix
-        Vector6D** B_sp;                                        // 2-dimensional array that correspond to a useful matrix in sparse representation
-                                                                // The dimension of this array is 2 times nbConstraints. Each cell will contain
-                                                                // a 6x1 matrix
-        Vector b;                                               // Vector "b" of the LCP problem
-        Vector lambda;                                          // Lambda vector of the LCP problem
-        Vector lambdaInit;                                      // Lambda init vector for the LCP solver
-        Vector errorValues;                                     // Error vector of all constraints
-        Vector lowerBounds;                                     // Vector that contains the low limits for the variables of the LCP problem
-        Vector upperBounds;                                     // Vector that contains the high limits for the variables of the LCP problem
-        Matrix6x6* Minv_sp;                                     // Sparse representation of the Matrix that contains information about mass and inertia of each body
-                                                                // This is an array of size nbBodies that contains in each cell a 6x6 matrix
-        Vector6D* V1;                                           // Array that contains for each body the Vector that contains linear and angular velocities
-                                                                // Each cell contains a 6x1 vector with linear and angular velocities
-        Vector6D* Vconstraint;                                  // Same kind of vector as V1 but contains the final constraint velocities
-        Vector6D* Fext;                                         // Array that contains for each body the vector that contains external forces and torques
-                                                                // Each cell contains a 6x1 vector with external force and torque.
-        void initialize();                                      // Initialize the constraint solver before each solving
-        void allocate();                                        // Allocate all the memory needed to solve the LCP problem
-        void fillInMatrices();                                  // Fill in all the matrices needed to solve the LCP problem
-        void computeVectorB(double dt);                         // Compute the vector b
-        void computeMatrixB_sp();                               // Compute the matrix B_sp
-        void computeVectorVconstraint(double dt);               // Compute the vector V2
-        void cacheLambda();                                     // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
-        void freeMemory(bool freeBodiesMemory);                 // Free some memory previously allocated for the constraint solver
+    private:
+        PhysicsWorld* physicsWorld;                     // Reference to the physics world
+        std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
+        uint nbIterationsLCP;                           // Number of iterations of the LCP solver
+        uint nbConstraints;                             // Total number of constraints (with the auxiliary constraints)
+        uint nbBodies;                                  // Current number of bodies in the physics world
+        double penetrationFactor;                       // Penetration factor "beta" for penetration correction
+        std::set<Body*> constraintBodies;               // Bodies that are implied in some constraint
+        std::map<Body*, uint> bodyNumberMapping;        // Map a body pointer with its index number
+        Body* bodyMapping[NB_MAX_CONSTRAINTS][2];       // 2-dimensional array that contains the mapping of body reference
+                                                        // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
+                                                        // the pointer to the body that correspond to the 1x6 J_ij matrix in the
+                                                        // J_sp matrix. An integer body index refers to its index in the "bodies" std::vector
+        double J_sp[NB_MAX_CONSTRAINTS][2*6];           // 2-dimensional array that correspond to the sparse representation of the jacobian matrix of all constraints
+                                                        // This array contains for each constraint two 1x6 Jacobian matrices (one for each body of the constraint)
+                                                        // a 1x6 matrix
+        double B_sp[2][6*NB_MAX_CONSTRAINTS];           // 2-dimensional array that correspond to a useful matrix in sparse representation
+                                                        // This array contains for each constraint two 6x1 matrices (one for each body of the constraint)
+                                                        // a 6x1 matrix
+        double b[NB_MAX_CONSTRAINTS];                   // Vector "b" of the LCP problem
+        double d[NB_MAX_CONSTRAINTS];                   // Vector "d"
+        double a[6*NB_MAX_BODIES];                      // Vector "a"
+        double lambda[NB_MAX_CONSTRAINTS];              // Lambda vector of the LCP problem
+        double lambdaInit[NB_MAX_CONSTRAINTS];          // Lambda init vector for the LCP solver
+        double errorValues[NB_MAX_CONSTRAINTS];         // Error vector of all constraints
+        double lowerBounds[NB_MAX_CONSTRAINTS];         // Vector that contains the low limits for the variables of the LCP problem
+        double upperBounds[NB_MAX_CONSTRAINTS];         // Vector that contains the high limits for the variables of the LCP problem
+        Matrix3x3 Minv_sp_inertia[NB_MAX_BODIES];       // 3x3 world inertia tensor matrix I for each body (from the Minv_sp matrix)
+        double Minv_sp_mass_diag[NB_MAX_BODIES];        // Array that contains for each body the inverse of its mass
+                                                        // This is an array of size nbBodies that contains in each cell a 6x6 matrix
+        double V1[6*NB_MAX_BODIES];                     // Array that contains for each body the 6x1 vector that contains linear and angular velocities
+                                                        // Each cell contains a 6x1 vector with linear and angular velocities
+        double Vconstraint[6*NB_MAX_BODIES];            // Same kind of vector as V1 but contains the final constraint velocities
+        double Fext[6*NB_MAX_BODIES];                   // Array that contains for each body the 6x1 vector that contains external forces and torques
+                                                        // Each cell contains a 6x1 vector with external force and torque.
+        void initialize();                              // Initialize the constraint solver before each solving
+        void fillInMatrices();                          // Fill in all the matrices needed to solve the LCP problem
+        void computeVectorB(double dt);                 // Compute the vector b
+        void computeMatrixB_sp();                       // Compute the matrix B_sp
+        void computeVectorVconstraint(double dt);       // Compute the vector V2
+        void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
+        void computeVectorA();                          // Compute the vector a used in the solve() method
+        void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
         
     public:
-        ConstraintSolver(PhysicsWorld* world);                                  // Constructor
-        virtual ~ConstraintSolver();                                            // Destructor
-        void solve(double dt);                                                  // Solve the current LCP problem
-        bool isConstrainedBody(Body* body) const;                               // Return true if the body is in at least one constraint
-        Vector3 getConstrainedLinearVelocityOfBody(Body* body);                // Return the constrained linear velocity of a body after solving the LCP problem
-        Vector3 getConstrainedAngularVelocityOfBody(Body* body);               // Return the constrained angular velocity of a body after solving the LCP problem
-        void cleanup();
+        ConstraintSolver(PhysicsWorld* world);                      // Constructor
+        virtual ~ConstraintSolver();                                // Destructor
+        void solve(double dt);                                      // Solve the current LCP problem
+        bool isConstrainedBody(Body* body) const;                   // Return true if the body is in at least one constraint
+        Vector3 getConstrainedLinearVelocityOfBody(Body* body);     // Return the constrained linear velocity of a body after solving the LCP problem
+        Vector3 getConstrainedAngularVelocityOfBody(Body* body);    // Return the constrained angular velocity of a body after solving the LCP problem
+        void cleanup();                                             // Cleanup of the constraint solver
+        void setPenetrationFactor(double penetrationFactor);        // Set the penetration factor 
+        void setNbLCPIterations(uint nbIterations);                 // Set the number of iterations of the LCP solver
 };
 
 // Return true if the body is in at least one constraint
@@ -114,16 +116,16 @@ inline bool ConstraintSolver::isConstrainedBody(Body* body) const {
 // Return the constrained linear velocity of a body after solving the LCP problem
 inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
-    const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
-    return Vector3(vec.getValue(0), vec.getValue(1), vec.getValue(2));
-
+    uint indexBodyArray = 6 * bodyNumberMapping[body];
+    return Vector3(Vconstraint[indexBodyArray], Vconstraint[indexBodyArray + 1], Vconstraint[indexBodyArray + 2]);
 }
+
 
 // Return the constrained angular velocity of a body after solving the LCP problem
 inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
     assert(isConstrainedBody(body));
-    const Vector6D& vec = Vconstraint[bodyNumberMapping[body]];
-    return Vector3(vec.getValue(3), vec.getValue(4), vec.getValue(5));
+    uint indexBodyArray = 6 * bodyNumberMapping[body];
+    return Vector3(Vconstraint[indexBodyArray + 3], Vconstraint[indexBodyArray + 4], Vconstraint[indexBodyArray + 5]);
 }
 
 // Cleanup of the constraint solver
@@ -133,16 +135,25 @@ inline void ConstraintSolver::cleanup() {
     activeConstraints.clear();
 }
 
+// Set the penetration factor 
+inline void ConstraintSolver::setPenetrationFactor(double factor) {
+    penetrationFactor = factor;
+}   
+
+// Set the number of iterations of the LCP solver
+inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
+    nbIterationsLCP = nbIterations;
+}                 
+
 // Solve the current LCP problem
 inline void ConstraintSolver::solve(double dt) {
-    
+
     // TODO : Remove the following timing code
     timeval timeValueStart;
 	timeval timeValueEnd;
 	std::cout << "------ START (Constraint Solver) -----" << std::endl;
 	gettimeofday(&timeValueStart, NULL);
     
-
     // Allocate memory for the matrices
     initialize();
 
@@ -156,8 +167,7 @@ inline void ConstraintSolver::solve(double dt) {
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    lcpSolver->setLambdaInit(lambdaInit);
-    lcpSolver->solve(J_sp, B_sp, nbConstraints, nbBodies, bodyMapping, bodyNumberMapping, b, lowerBounds, upperBounds, lambda);
+    solveLCP();
 
     // Cache the lambda values in order to use them in the next step
     cacheLambda();
@@ -171,7 +181,6 @@ inline void ConstraintSolver::solve(double dt) {
 	long double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
 	long double endTime = timeValueEnd.tv_sec * 1000000.0 + (timeValueEnd.tv_usec);
 	std::cout << "------ END (Constraint Solver) => (" << "time = " << endTime - startTime << " micro sec)-----" << std::endl;
-    
 }
 
 } // End of ReactPhysics3D namespace

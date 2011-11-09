@@ -42,18 +42,20 @@ const double INFINITY_CONST = std::numeric_limits<double>::infinity();      // I
 const double PI = 3.14159265;                                               // Pi constant
 
 // Physics Engine constants
-const double DEFAULT_TIMESTEP = 0.002;
+const double DEFAULT_TIMESTEP = 1.0 / 60.0;             // Default internal constant timestep in seconds
 
 // GJK Algorithm parameters
-const double OBJECT_MARGIN = 0.04;                      // Object margin for collision detection
+const double OBJECT_MARGIN = 0.04;                      // Object margin for collision detection in cm
 
 // Contact constants
 const double FRICTION_COEFFICIENT = 0.4;                // Friction coefficient
-const double PENETRATION_FACTOR = 0.2;                  // Penetration factor (between 0 and 1) which specify the importance of the
+const double PENETRATION_FACTOR = 5.0;                  // Penetration factor (between 0 and 1) which specify the importance of the
                                                         // penetration depth in order to calculate the correct impulse for the contact
 const double PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
 
+const int NB_MAX_BODIES = 100000;                       // Maximum number of bodies
 const int NB_MAX_CONTACTS = 100000;                     // Maximum number of contacts (for memory pool allocation)
+const int NB_MAX_CONSTRAINTS = 100000;                  // Maximum number of constraints
 const int NB_MAX_COLLISION_PAIRS = 10000;               // Maximum number of collision pairs of bodies (for memory pool allocation)
 
 // Constraint solver constants

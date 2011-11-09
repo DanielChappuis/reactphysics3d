@@ -61,6 +61,8 @@ public :
         void start();                                           // Start the physics simulation
         void stop();                                            // Stop the physics simulation
         void update();                                          // Update the physics simulation
+        void setPenetrationFactor(double factor);               // Set the penetration factor for the constraint solver
+        void setNbLCPIterations(uint nbIterations);             // Set the number of iterations of the LCP solver
 };
 
 // --- Inline functions --- //
@@ -72,7 +74,17 @@ inline void PhysicsEngine::start() {
 
 inline void PhysicsEngine::stop() {
     timer.stop();
-}        
+}      
+
+// Set the penetration factor for the constraint solver
+inline void PhysicsEngine::setPenetrationFactor(double factor) {
+    constraintSolver.setPenetrationFactor(factor);
+}               
+
+// Set the number of iterations of the LCP solver
+inline void PhysicsEngine::setNbLCPIterations(uint nbIterations) {
+    constraintSolver.setNbLCPIterations(nbIterations);
+}             
 
 }
 

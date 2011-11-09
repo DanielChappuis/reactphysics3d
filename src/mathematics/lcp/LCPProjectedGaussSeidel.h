@@ -41,16 +41,16 @@ namespace reactphysics3d {
 class LCPProjectedGaussSeidel : public LCPSolver {
     protected: 
 
-        void computeVectorA(const Vector& lambda, uint nbConstraints, Body*** const bodyMapping,
-                            Vector6D** B_sp, std::map<Body*, uint> bodyNumberMapping,
+        void computeVectorA(double lambda[NB_MAX_CONSTRAINTS], uint nbConstraints, Body* bodyMapping[NB_MAX_CONSTRAINTS][2],
+                            double B_sp[2][6*NB_MAX_CONSTRAINTS], std::map<Body*, uint> bodyNumberMapping,
                             Vector6D* const a, uint nbBodies) const ;                                                       // Compute the vector a used in the solve() method
 
     public:
         LCPProjectedGaussSeidel(uint maxIterations);                                                                    // Constructor
         virtual ~LCPProjectedGaussSeidel();                                                                             // Destructor
-        virtual void solve(Matrix1x6** J_sp, Vector6D** B_sp, uint nbConstraints,
-                           uint nbBodies, Body*** const bodyMapping, std::map<Body*, uint> bodyNumberMapping,
-                           const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const;   // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
+        virtual void solve(double J_sp[NB_MAX_CONSTRAINTS][2*6], double B_sp[2][6*NB_MAX_CONSTRAINTS], uint nbConstraints,
+                           uint nbBodies, Body* bodyMapping[NB_MAX_CONSTRAINTS][2], std::map<Body*, uint> bodyNumberMapping,
+                           double b[], double lowLimits[NB_MAX_CONSTRAINTS], double highLimits[NB_MAX_CONSTRAINTS], double lambda[NB_MAX_CONSTRAINTS]) const;   // Solve a LCP problem using Projected-Gauss-Seidel algorithm                                                                                                       // Set the initial value for lambda
 };
 
 } // End of the ReactPhysics3D namespace

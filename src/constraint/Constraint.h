@@ -53,14 +53,14 @@ class Constraint {
         virtual ~Constraint();                                                              // Destructor
         Body* const getBody1() const;                                                       // Return the reference to the body 1
         Body* const getBody2() const;                                                       // Return the reference to the body 2                                                                        // Evaluate the constraint
-        bool isActive() const;                                                              // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
-        virtual void computeJacobian(int noConstraint, Matrix1x6**& J_sp) const=0;          // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const=0;      // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const=0;      // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, Vector& errorValues) const=0;      // Compute the error values for all the mathematical constraints
-        unsigned int getNbConstraints() const;                                              // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
-        double getCachedLambda(int index) const;                                            // Get one cached lambda value
-        void setCachedLambda(int index, double lambda);                                      // Set on cached lambda value  
+        bool isActive() const;                                                                                      // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
+        virtual void computeJacobian(int noConstraint, double J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;               // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the lowerbounds values for all the mathematical constraints
+        virtual void computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the upperbounds values for all the mathematical constraints
+        virtual void computeErrorValue(int noConstraint, double errorValues[], double penetrationFactor) const=0;   // Compute the error values for all the mathematical constraints
+        unsigned int getNbConstraints() const;                                                                      // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
+        double getCachedLambda(int index) const;                                                                    // Get one cached lambda value
+        void setCachedLambda(int index, double lambda);                                                             // Set on cached lambda value  
 };
 
 // Return the reference to the body 1

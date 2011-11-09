@@ -42,11 +42,14 @@ LCPProjectedGaussSeidel::~LCPProjectedGaussSeidel() {
 
 // Solve a LCP problem using the Projected-Gauss-Seidel algorithm
 // This method outputs the result in the lambda vector
-void LCPProjectedGaussSeidel::solve(Matrix1x6** J_sp, Vector6D** B_sp, uint nbConstraints,
-                                    uint nbBodies, Body*** const bodyMapping, map<Body*, uint> bodyNumberMapping,
-                                    const Vector& b, const Vector& lowLimits, const Vector& highLimits, Vector& lambda) const {
+void LCPProjectedGaussSeidel::solve(double J_sp[NB_MAX_CONSTRAINTS][2*6], double B_sp[2][6*NB_MAX_CONSTRAINTS], uint nbConstraints,
+                                    uint nbBodies, Body* bodyMapping[NB_MAX_CONSTRAINTS][2], map<Body*, uint> bodyNumberMapping,
+                                    double b[], double lowLimits[NB_MAX_CONSTRAINTS], double highLimits[NB_MAX_CONSTRAINTS], double lambda[NB_MAX_CONSTRAINTS]) const {
 
-    lambda = lambdaInit;
+	for (uint i=0; i<nbConstraints; i++) {
+		lambda[i] = lambdaInit[i];
+	}
+
 
     double* d = new double[nbConstraints];         // TODO : Avoid those kind of memory allocation here for optimization (allocate once in the object)
     uint indexBody1, indexBody2;
@@ -55,26 +58,41 @@ void LCPProjectedGaussSeidel::solve(Matrix1x6** J_sp, Vector6D** B_sp, uint nbCo
     uint i, iter;
     Vector6D* a = new Vector6D[nbBodies];           // Array that contains nbBodies vector of dimension 6x1
 
+
     // Compute the vector a
     computeVectorA(lambda, nbConstraints, bodyMapping, B_sp, bodyNumberMapping, a, nbBodies);
 
+
     // For each constraint
     for (i=0; i<nbConstraints; i++) {
-        d[i] = (J_sp[i][0] * B_sp[0][i] + J_sp[i][1] * B_sp[1][i]);
+		uint indexConstraintArray = 6 * i;
+		d[i] = 0.0;
+		for (uint j=0; j<6; j++) {
+			d[i] += J_sp[i][j] * B_sp[0][indexConstraintArray + j] + J_sp[i][6 + j] * B_sp[1][indexConstraintArray + j];
+		}
     }
+
 
     for(iter=0; iter<maxIterations; iter++) {
         for (i=0; i<nbConstraints; i++) {
             indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
             indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-            deltaLambda = (b.getValue(i) - (J_sp[i][0] * a[indexBody1]) - (J_sp[i][1] * a[indexBody2])) / d[i];
-            lambdaTemp = lambda.getValue(i);
-            lambda.setValue(i, std::max(lowLimits.getValue(i), std::min(lambda.getValue(i) + deltaLambda, highLimits.getValue(i))));
-            deltaLambda = lambda.getValue(i) - lambdaTemp;
-            a[indexBody1] = a[indexBody1] + (B_sp[0][i] * deltaLambda);
-            a[indexBody2] = a[indexBody2] + (B_sp[1][i] * deltaLambda);
+			uint indexConstraintArray = 6 * i;
+			deltaLambda = b[i];
+			for (uint j=0; j<6; j++) {
+				deltaLambda -= (J_sp[i][j] * a[indexBody1].getValue(j) + J_sp[i][6 + j] * a[indexBody2].getValue(j));
+			}
+			deltaLambda /= d[i];
+            lambdaTemp = lambda[i];
+            lambda[i] = std::max(lowLimits[i], std::min(lambda[i] + deltaLambda, highLimits[i]));
+            deltaLambda = lambda[i] - lambdaTemp;
+			for (uint j=0; j<6; j++) {
+				a[indexBody1].setValue(j, a[indexBody1].getValue(j) + (B_sp[0][indexConstraintArray + j] * deltaLambda));
+				a[indexBody2].setValue(j, a[indexBody2].getValue(j) + (B_sp[1][indexConstraintArray + j] * deltaLambda));
+			}
         }
     }
+
 
     // Clean
     delete[] d;
@@ -83,8 +101,8 @@ void LCPProjectedGaussSeidel::solve(Matrix1x6** J_sp, Vector6D** B_sp, uint nbCo
 
 // Compute the vector a used in the solve() method
 // Note that a = B * lambda
-void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstraints, Body*** const bodyMapping,
-                                             Vector6D** B_sp, map<Body*, uint> bodyNumberMapping,
+void LCPProjectedGaussSeidel::computeVectorA(double lambda[NB_MAX_CONSTRAINTS], uint nbConstraints, Body* bodyMapping[NB_MAX_CONSTRAINTS][2],
+                                             double B_sp[2][6*NB_MAX_CONSTRAINTS], map<Body*, uint> bodyNumberMapping,
                                              Vector6D* const a, uint nbBodies) const {
     uint i;
     uint indexBody1, indexBody2;
@@ -94,11 +112,14 @@ void LCPProjectedGaussSeidel::computeVectorA(const Vector& lambda, uint nbConstr
        a[i].initWithValue(0.0);
     }
 
+
     for(i=0; i<nbConstraints; i++) {
         indexBody1 = bodyNumberMapping[bodyMapping[i][0]];
         indexBody2 = bodyNumberMapping[bodyMapping[i][1]];
-        a[indexBody1] = a[indexBody1] + (B_sp[0][i] * lambda.getValue(i));
-        a[indexBody2] = a[indexBody2] + (B_sp[1][i] * lambda.getValue(i));
+		uint indexConstraintArray = 6 * i;
+		for (uint j=0; j<6; j++) {
+			a[indexBody1].setValue(j, a[indexBody1].getValue(j) + (B_sp[0][indexConstraintArray + j] * lambda[i]));
+			a[indexBody2].setValue(j, a[indexBody2].getValue(j) + (B_sp[1][indexConstraintArray + j] * lambda[i]));
+		}
     }
-
 }

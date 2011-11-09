@@ -32,6 +32,9 @@
 #include <cassert>
 #include <new>
 
+// TODO : Check that casting is done correctly in this class using
+//        C++ cast operator like reinterpret_cast<>, ...
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 

@@ -75,18 +75,15 @@ class Contact : public Constraint {
         Vector3 getWorldPointOnBody1() const;                                          // Return the contact world point on body 1
         Vector3 getWorldPointOnBody2() const;                                          // Return the contact world point on body 2
         void setWorldPointOnBody1(const Vector3& worldPoint);                          // Set the contact world point on body 1
-        void setWorldPointOnBody2(const Vector3& worldPoint);                          // Set the contact world point on body 2
-        virtual void computeJacobian(int noConstraint, Matrix1x6**& J_SP) const;       // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeLowerBound(int noConstraint, Vector& lowerBounds) const;   // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint, Vector& upperBounds) const;   // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, Vector& errorValues) const;   // Compute the error values for all the mathematical constraints
-        double getPenetrationDepth() const;                                            // Return the penetration depth
+        void setWorldPointOnBody2(const Vector3& worldPoint);                                                   // Set the contact world point on body 2
+        virtual void computeJacobian(int noConstraint, double J_SP[NB_MAX_CONSTRAINTS][2*6]) const;             // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the lowerbounds values for all the mathematical constraints
+        virtual void computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the upperbounds values for all the mathematical constraints
+        virtual void computeErrorValue(int noConstraint, double errorValues[], double penetrationFactor) const; // Compute the error values for all the mathematical constraints
+        double getPenetrationDepth() const;                                                                     // Return the penetration depth
         #ifdef VISUAL_DEBUG
-           void draw() const;                                                          // Draw the contact (for debugging)
+           void draw() const;                                                                                   // Draw the contact (for debugging)
         #endif
-
-        //void* operator new(size_t, MemoryPool<Contact>& pool) throw(std::bad_alloc);                 // Overloaded new operator for customized memory allocation
-        //void operator delete(void* p, MemoryPool<Contact>& pool);                               // Overloaded delete operator for customized memory allocation
 };
 
 // Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
