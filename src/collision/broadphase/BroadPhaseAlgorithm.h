@@ -27,7 +27,7 @@
 
 // Libraries
 #include <vector>
-#include "../../body/Body.h"
+#include "../../body/RigidBody.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -56,9 +56,9 @@ class BroadPhaseAlgorithm {
         BroadPhaseAlgorithm(CollisionDetection& collisionDetection);    // Constructor
         virtual ~BroadPhaseAlgorithm();                                 // Destructor
 
-        virtual void computePossibleCollisionPairs()=0;                 // Compute the possible collision pairs of bodies
-        virtual void notifyAddedBodies(std::vector<Body*> bodies)=0;    // Notify the broad-phase algorithm about new bodies in the physics world
-        virtual void notifyRemovedBodies(std::vector<Body*> bodies)=0;  // Notify the broad-phase algorithm about removed bodies in the physics world
+        virtual void computePossibleCollisionPairs()=0;                     // Compute the possible collision pairs of bodies
+        virtual void notifyAddedBodies(std::vector<RigidBody*> bodies)=0;   // Notify the broad-phase algorithm about new bodies in the physics world
+        virtual void notifyRemovedBodies(std::vector<RigidBody*> bodies)=0; // Notify the broad-phase algorithm about removed bodies in the physics world
 };
 
 } // End of reactphysics3d namespace

@@ -79,8 +79,8 @@ bool CollisionDetection::computeCollisionDetection() {
 void CollisionDetection::computeBroadPhase() {
 
     // Notify the broad-phase algorithm about new and removed bodies in the physics world
-    broadPhaseAlgorithm->notifyAddedBodies(world->getAddedBodies());
-    broadPhaseAlgorithm->notifyRemovedBodies(world->getRemovedBodies());
+    broadPhaseAlgorithm->notifyAddedBodies(world->getAddedRigidBodies());
+    broadPhaseAlgorithm->notifyRemovedBodies(world->getRemovedRigidBodies());
     
     // Clear the set of the overlapping pairs in the current step
     currentStepOverlappingPairs.clear();

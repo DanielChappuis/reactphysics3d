@@ -47,12 +47,12 @@ SAPAlgorithm::~SAPAlgorithm() {
 
 // Notify the broad-phase algorithm about new bodies in the physics world
 // This method removes the AABB representation of a given set of bodies from the sortedAABBs set
-void SAPAlgorithm::notifyRemovedBodies(vector<Body*> bodies) {
+void SAPAlgorithm::notifyRemovedBodies(vector<RigidBody*> bodies) {
     vector<const AABB*>::iterator elemToRemove;
     const AABB* aabb;
 
     // Removed the AABB of the bodies that have been removed
-    for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+    for (vector<RigidBody*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
         aabb = (*it)->getAABB();
         assert(aabb);
         elemToRemove = find(sortedAABBs.begin(), sortedAABBs.end(), aabb);
@@ -63,10 +63,10 @@ void SAPAlgorithm::notifyRemovedBodies(vector<Body*> bodies) {
 
 // Notify the broad-phase algorithm about new bodies in the physics world
 // This method adds the AABB representation of a given body in the sortedAABBs set
-void SAPAlgorithm::notifyAddedBodies(vector<Body*> bodies) {
+void SAPAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
     const AABB* aabb;
     
-    for (vector<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+    for (vector<RigidBody*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
         aabb = 0;
         aabb = (*it)->getAABB();
         assert(aabb);

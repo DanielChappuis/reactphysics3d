@@ -63,8 +63,8 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
         virtual ~SAPAlgorithm();                                // Destructor
 
         virtual void computePossibleCollisionPairs();                   // Compute the possible collision pairs of bodies
-        virtual void notifyAddedBodies(std::vector<Body*> bodies);      // Notify the broad-phase algorithm about new bodies in the physics world
-        virtual void notifyRemovedBodies(std::vector<Body*> bodies);    // Notify the broad-phase algorithm about removed bodies in the physics world
+        virtual void notifyAddedBodies(std::vector<RigidBody*> bodies);      // Notify the broad-phase algorithm about new bodies in the physics world
+        virtual void notifyRemovedBodies(std::vector<RigidBody*> bodies);    // Notify the broad-phase algorithm about removed bodies in the physics world
 };
 
 // Static method that compare two AABBs. This method will be used to compare to AABBs

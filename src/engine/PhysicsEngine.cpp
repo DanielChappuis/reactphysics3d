@@ -100,9 +100,9 @@ void PhysicsEngine::updateAllBodiesMotion() {
     Vector3 newAngularVelocity;
 
     // For each body of thephysics world
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
+    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
-        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
+        RigidBody* rigidBody = *it;
         assert(rigidBody);
 
         // If the body is able to move
@@ -138,10 +138,9 @@ void PhysicsEngine::updateAllBodiesMotion() {
 // Update the position and orientation of a body
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
-void PhysicsEngine::updatePositionAndOrientationOfBody(Body* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity) {
+void PhysicsEngine::updatePositionAndOrientationOfBody(RigidBody* rigidBody, const Vector3& newLinVelocity, const Vector3& newAngVelocity) {
     double dt = timer.getTimeStep();
 
-    RigidBody* rigidBody = dynamic_cast<RigidBody*>(body);
     assert(rigidBody);
 
     // Update the old position and orientation of the body
@@ -168,7 +167,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
     assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor to all bodies
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
+    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
@@ -181,7 +180,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
 void PhysicsEngine::applyGravity() {
 
     // For each body of the physics world
-    for (vector<Body*>::iterator it=world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); ++it) {
+    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);

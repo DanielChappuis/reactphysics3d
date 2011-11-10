@@ -50,7 +50,7 @@ class PhysicsEngine {
         ConstraintSolver constraintSolver;              // Constraint solver
 
         void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
-        void updatePositionAndOrientationOfBody(Body* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity);    // Update the position and orientation of a body
+        void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity);    // Update the position and orientation of a body
         void setInterpolationFactorToAllBodies();                                                                                // Compute and set the interpolation factor to all bodies
         void applyGravity();                                                                                                    // Apply the gravity force to all bodies
 

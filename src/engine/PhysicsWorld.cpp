@@ -52,13 +52,13 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, double mass
     currentBodyID++;
     
     // Add the rigid body to the physics world and return it
-    addBody(rigidBody);
+    addRigidBody(rigidBody);
     return rigidBody;
 }       
 
 // Destroy a rigid body
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
-    removeBody(rigidBody);
+    removeRigidBody(rigidBody);
     delete rigidBody;
 }  
 

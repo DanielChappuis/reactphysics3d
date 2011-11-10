@@ -47,16 +47,16 @@ namespace reactphysics3d {
 */
 class PhysicsWorld {
     protected :
-        std::vector<Body*> bodies;         // All the rigid bodies of the physics world
-        std::vector<Body*> addedBodies;             // Added bodies since last update
-        std::vector<Body*> removedBodies;           // Removed bodies since last update
+        std::vector<RigidBody*> rigidBodies;        // All the rigid bodies of the physics world
+        std::vector<RigidBody*> addedBodies;             // Added bodies since last update
+        std::vector<RigidBody*> removedBodies;           // Removed bodies since last update
         std::vector<Constraint*> constraints;       // List that contains all the current constraints
         Vector3 gravity;                            // Gravity vector of the world
         bool isGravityOn;                           // True if the gravity force is on
         long unsigned int currentBodyID;            // Current body ID
 
-        void addBody(Body* body);                   // Add a body to the physics world
-        void removeBody(Body* body);                // Remove a body from the physics world
+        void addRigidBody(RigidBody* body);         // Add a body to the physics world
+        void removeRigidBody(RigidBody* body);      // Remove a body from the physics world
         
     public :
         PhysicsWorld(const Vector3& gravity);      // Constructor
@@ -75,23 +75,23 @@ class PhysicsWorld {
         void removeAllConstraints();                                                    // Remove all constraints and delete them (free their memory)
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();               // Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();                 // Return a end iterator on the constraint list
-        std::vector<Body*>::iterator getBodiesBeginIterator();                          // Return an iterator to the beginning of the bodies of the physics world
-        std::vector<Body*>::iterator getBodiesEndIterator();                            // Return an iterator to the end of the bodies of the physics world
-        std::vector<Body*>& getAddedBodies();                                           // Return the added bodies since last update of the physics engine
-        std::vector<Body*>& getRemovedBodies();                                         // Retrun the removed bodies since last update of the physics engine
+        std::vector<RigidBody*>::iterator getRigidBodiesBeginIterator();                // Return an iterator to the beginning of the bodies of the physics world
+        std::vector<RigidBody*>::iterator getRigidBodiesEndIterator();                  // Return an iterator to the end of the bodies of the physics world
+        std::vector<RigidBody*>& getAddedRigidBodies();                                 // Return the added bodies since last update of the physics engine
+        std::vector<RigidBody*>& getRemovedRigidBodies();                               // Retrun the removed bodies since last update of the physics engine
 };
                          
 
 // Add a body to the physics world
-inline void PhysicsWorld::addBody(Body* body) {
-    std::vector<Body*>::iterator it;
+inline void PhysicsWorld::addRigidBody(RigidBody* body) {
+    std::vector<RigidBody*>::iterator it;
 
     assert(body);
-    it = std::find(bodies.begin(), bodies.end(), body);
-    assert(it == bodies.end());
+    it = std::find(rigidBodies.begin(), rigidBodies.end(), body);
+    assert(it == rigidBodies.end());
     
     // The body isn't already in the bodyList, therefore we add it to the list
-    bodies.push_back(body);
+    rigidBodies.push_back(body);
     addedBodies.push_back(body);
     it = std::find(removedBodies.begin(), removedBodies.end(), body);
     if (it != removedBodies.end()) {
@@ -100,13 +100,13 @@ inline void PhysicsWorld::addBody(Body* body) {
 }
 
 // Remove a body from the physics world
-inline void PhysicsWorld::removeBody(Body* body) {
-    std::vector<Body*>::iterator it;    
+inline void PhysicsWorld::removeRigidBody(RigidBody* body) {
+    std::vector<RigidBody*>::iterator it;    
     
     assert(body);
-    it = std::find(bodies.begin(), bodies.end(), body);
+    it = std::find(rigidBodies.begin(), rigidBodies.end(), body);
     assert(*it == body);
-    bodies.erase(it);
+    rigidBodies.erase(it);
  
     it = std::find(addedBodies.begin(), addedBodies.end(), body);
     if (it != addedBodies.end()) {
@@ -165,22 +165,22 @@ inline std::vector<Constraint*>::iterator PhysicsWorld::getConstraintsEndIterato
 }
 
 // Return an iterator to the beginning of the bodies of the physics world
-inline std::vector<Body*>::iterator PhysicsWorld::getBodiesBeginIterator() {
-    return bodies.begin();
+inline std::vector<RigidBody*>::iterator PhysicsWorld::getRigidBodiesBeginIterator() {
+    return rigidBodies.begin();
 }
 
 // Return an iterator to the end of the bodies of the physics world
-inline std::vector<Body*>::iterator PhysicsWorld::getBodiesEndIterator() {
-    return bodies.end();
+inline std::vector<RigidBody*>::iterator PhysicsWorld::getRigidBodiesEndIterator() {
+    return rigidBodies.end();
 }
 
 // Return the added bodies since last update of the physics engine
-inline std::vector<Body*>& PhysicsWorld::getAddedBodies() {
+inline std::vector<RigidBody*>& PhysicsWorld::getAddedRigidBodies() {
     return addedBodies;
 }
 
 // Retrun the removed bodies since last update of the physics engine
-inline std::vector<Body*>& PhysicsWorld::getRemovedBodies() {
+inline std::vector<RigidBody*>& PhysicsWorld::getRemovedRigidBodies() {
     return removedBodies;
 }
 
