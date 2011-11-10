@@ -26,10 +26,8 @@
 #define MATHEMATICS_H
 
 // Libraries
-#include "Matrix.h"
 #include "Matrix3x3.h"
 #include "Quaternion.h"
-#include "Vector.h"
 #include "Vector3.h"
 #include "Transform.h"
 #include "../constants.h"
