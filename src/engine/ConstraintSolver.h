@@ -28,12 +28,9 @@
 // Libraries
 #include "../constants.h"
 #include "../constraint/Constraint.h"
-#include "../mathematics/lcp/LCPSolver.h"
-#include "ContactCache.h"
 #include "PhysicsWorld.h"
 #include <map>
 #include <set>
-#include <sys/time.h> // TODO : Remove this
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -147,12 +144,6 @@ inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
 
 // Solve the current LCP problem
 inline void ConstraintSolver::solve(double dt) {
-
-    // TODO : Remove the following timing code
-    timeval timeValueStart;
-	timeval timeValueEnd;
-	std::cout << "------ START (Constraint Solver) -----" << std::endl;
-	gettimeofday(&timeValueStart, NULL);
     
     // Allocate memory for the matrices
     initialize();
@@ -174,13 +165,6 @@ inline void ConstraintSolver::solve(double dt) {
     
     // Compute the vector Vconstraint
     computeVectorVconstraint(dt);
-    
-    // TODO : Remove the following timing code
-    std::cout << "NB constraints : " << nbConstraints << std::endl;
-    gettimeofday(&timeValueEnd, NULL);
-	long double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
-	long double endTime = timeValueEnd.tv_sec * 1000000.0 + (timeValueEnd.tv_usec);
-	std::cout << "------ END (Constraint Solver) => (" << "time = " << endTime - startTime << " micro sec)-----" << std::endl;
 }
 
 } // End of ReactPhysics3D namespace

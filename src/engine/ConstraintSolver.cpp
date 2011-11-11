@@ -24,7 +24,6 @@
 
 // Libraries
 #include "ConstraintSolver.h"
-#include "../mathematics/lcp/LCPProjectedGaussSeidel.h"
 #include "../body/RigidBody.h"
 
 using namespace reactphysics3d;

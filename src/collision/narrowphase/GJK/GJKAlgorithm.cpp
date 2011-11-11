@@ -126,6 +126,10 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
+			
+			// Reject the contact if the penetration depth is negative (due too numerical errors)
+			if (penetrationDepth <= 0.0) return false;
+			
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
@@ -150,6 +154,10 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
+			
+			// Reject the contact if the penetration depth is negative (due too numerical errors)
+			if (penetrationDepth <= 0.0) return false;
+			
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
@@ -172,6 +180,10 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
+			
+			// Reject the contact if the penetration depth is negative (due too numerical errors)
+			if (penetrationDepth <= 0.0) return false;
+			
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
@@ -202,6 +214,10 @@ bool GJKAlgorithm::testCollision(const Shape* shape1, const Transform& transform
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
             double penetrationDepth = margin - dist;
+			
+			// Reject the contact if the penetration depth is negative (due too numerical errors)
+			if (penetrationDepth <= 0.0) return false;
+			
             contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
