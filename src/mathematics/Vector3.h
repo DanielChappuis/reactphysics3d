@@ -28,7 +28,6 @@
 
 // Libraries
 #include <cmath>
-#include "exceptions.h"
 #include "mathematics_functions.h"
 
 
@@ -45,11 +44,10 @@ class Vector3 {
         double values[3];                                       // Values of the 3D vector
 
     public :
-        Vector3();                                             // Constructor of the class Vector3D
-        Vector3(double x, double y, double z);                 // Constructor with arguments
-        Vector3(const Vector3& vector);                       // Copy-constructor
-        virtual ~Vector3();                                    // Destructor
-        void setValue(int index, double value) throw(std::invalid_argument); // Set a component of the vector
+        Vector3();                                              // Constructor of the class Vector3D
+        Vector3(double x, double y, double z);                  // Constructor with arguments
+        Vector3(const Vector3& vector);                         // Copy-constructor
+        virtual ~Vector3();                                     // Destructor
         double getX() const;                                    // Get the x component of the vector
         double getY() const;                                    // Get the y component of the vector
         double getZ() const;                                    // Get the z component of the vector

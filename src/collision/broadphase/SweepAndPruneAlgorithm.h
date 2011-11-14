@@ -51,7 +51,7 @@ namespace reactphysics3d {
         broad-phase computation.
     --------------------------------------------------------------------
 */
-class SAPAlgorithm : public BroadPhaseAlgorithm {
+class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
     protected :
         std::vector<const AABB*> sortedAABBs;   // Sorted set of AABB of the bodies on one of the x.y or z axis
         static unsigned short int sortAxis;     // Current sorting axis (0 for x, 1 for y, 2 for z axis)
@@ -60,8 +60,8 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
         
 
     public :
-        SAPAlgorithm(CollisionDetection& collisionDetection);   // Constructor
-        virtual ~SAPAlgorithm();                                // Destructor
+        SweepAndPruneAlgorithm(CollisionDetection& collisionDetection);   // Constructor
+        virtual ~SweepAndPruneAlgorithm();                                // Destructor
 
         virtual void computePossibleCollisionPairs();                   // Compute the possible collision pairs of bodies
         virtual void notifyAddedBodies(std::vector<RigidBody*> bodies);      // Notify the broad-phase algorithm about new bodies in the physics world
@@ -74,7 +74,7 @@ class SAPAlgorithm : public BroadPhaseAlgorithm {
 // consider that "a" goes before "b" if the minimum value of "a" on the current
 // sorting axis (sortAxis) is smaller than the minimum value of "b" on this same
 // axis.
-inline bool SAPAlgorithm::compareAABBs(const AABB* a, const AABB* b) {
+inline bool SweepAndPruneAlgorithm::compareAABBs(const AABB* a, const AABB* b) {
     return (a->getMinCoordinates()[sortAxis] < b->getMinCoordinates()[sortAxis]);
 }
 

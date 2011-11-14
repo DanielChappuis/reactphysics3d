@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "broadphase/SAPAlgorithm.h"
+#include "broadphase/SweepAndPruneAlgorithm.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "../body/Body.h"
 #include "../shapes/BoxShape.h"
@@ -45,7 +45,7 @@ CollisionDetection::CollisionDetection(PhysicsWorld* world)
                    : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
-    broadPhaseAlgorithm = new SAPAlgorithm(*this);
+    broadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
 
     // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
     narrowPhaseAlgorithm = new GJKAlgorithm(*this);

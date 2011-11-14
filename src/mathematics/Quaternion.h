@@ -30,7 +30,6 @@
 #include <cmath>
 #include "Vector3.h"
 #include "Matrix3x3.h"
-#include "exceptions.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -49,31 +48,31 @@ class Quaternion {
         double w;                       // Component w of the quaternion
 
     public :
-        Quaternion();                                                         // Constructor
-        Quaternion(double x, double y, double z, double w);                   // Constructor with arguments
-        Quaternion(double w, const Vector3& v);                              // Constructor with the component w and the vector v=(x y z)
-        Quaternion(const Quaternion& quaternion);                             // Copy-constructor
-        Quaternion(const Matrix3x3& matrix);                                  // Create a unit quaternion from a rotation matrix
-        ~Quaternion();                                                        // Destructor
-        double getX() const;                                                  // Return the component x of the quaternion
-        double getY() const;                                                  // Return the component y of the quaternion
-        double getZ() const;                                                  // Return the component z of the quaternion
-        double getW() const;                                                  // Return the component w of the quaternion
-        void setX(double x);                                                  // Set the value x
-        void setY(double y);                                                  // Set the value y
-        void setZ(double z);                                                  // Set the value z
-        void setW(double w);                                                  // Set the value w
-        Vector3 vectorV() const;                                             // Return the vector v=(x y z) of the quaternion
-        double length() const;                                                // Return the length of the quaternion
-        Quaternion getUnit() const;                                           // Return the unit quaternion
-        Quaternion getConjugate() const;                                      // Return the conjugate quaternion
-        Quaternion getInverse() const throw (MathematicsException);           // Return the inverse of the quaternion
-        Matrix3x3 getMatrix() const;                                          // Return the orientation matrix corresponding to this quaternion
-        static Quaternion identity();                                         // Return the identity quaternion
-        double dot(const Quaternion& quaternion) const;                       // Dot product between two quaternions
-        void getRotationAngleAxis(double& angle, Vector3& axis) const;       // Compute the rotation angle (in radians) and the axis
+        Quaternion();                                                       // Constructor
+        Quaternion(double x, double y, double z, double w);                 // Constructor with arguments
+        Quaternion(double w, const Vector3& v);                             // Constructor with the component w and the vector v=(x y z)
+        Quaternion(const Quaternion& quaternion);                           // Copy-constructor
+        Quaternion(const Matrix3x3& matrix);                                // Create a unit quaternion from a rotation matrix
+        ~Quaternion();                                                      // Destructor
+        double getX() const;                                                // Return the component x of the quaternion
+        double getY() const;                                                // Return the component y of the quaternion
+        double getZ() const;                                                // Return the component z of the quaternion
+        double getW() const;                                                // Return the component w of the quaternion
+        void setX(double x);                                                // Set the value x
+        void setY(double y);                                                // Set the value y
+        void setZ(double z);                                                // Set the value z
+        void setW(double w);                                                // Set the value w
+        Vector3 vectorV() const;                                            // Return the vector v=(x y z) of the quaternion
+        double length() const;                                              // Return the length of the quaternion
+        Quaternion getUnit() const;                                         // Return the unit quaternion
+        Quaternion getConjugate() const;                                    // Return the conjugate quaternion
+        Quaternion getInverse() const;                                      // Return the inverse of the quaternion
+        Matrix3x3 getMatrix() const;                                        // Return the orientation matrix corresponding to this quaternion
+        static Quaternion identity();                                       // Return the identity quaternion
+        double dot(const Quaternion& quaternion) const;                     // Dot product between two quaternions
+        void getRotationAngleAxis(double& angle, Vector3& axis) const;      // Compute the rotation angle (in radians) and the axis
         static Quaternion slerp(const Quaternion& quaternion1,
-                                const Quaternion& quaternion2, double t);     // Compute the spherical linear interpolation between two quaternions
+                                const Quaternion& quaternion2, double t);   // Compute the spherical linear interpolation between two quaternions
 
         // --- Overloaded operators --- //
         Quaternion operator+(const Quaternion& quaternion) const;             // Overloaded operator for the addition
@@ -159,20 +158,14 @@ inline Quaternion Quaternion::getConjugate() const {
 }
 
 // Return the inverse of the quaternion (inline)
-inline Quaternion Quaternion::getInverse() const throw(MathematicsException) {
+inline Quaternion Quaternion::getInverse() const {
     double lengthQuaternion = length();
     lengthQuaternion = lengthQuaternion * lengthQuaternion;
 
-    // Check if the length is not equal to zero
-    if (lengthQuaternion != 0.0) {
+    assert (lengthQuaternion != 0.0);
 
-        // Compute and return the inverse quaternion
-        return Quaternion(-x/lengthQuaternion, -y/lengthQuaternion, -z/lengthQuaternion, w/lengthQuaternion);
-    }
-    else {
-        // Throw an exception because the inverse cannot be computed
-        throw MathematicsException("MathematicsException : Impossible to compute the inverse of the quaternion because it's length is zero");
-    }
+    // Compute and return the inverse quaternion
+    return Quaternion(-x/lengthQuaternion, -y/lengthQuaternion, -z/lengthQuaternion, w/lengthQuaternion);
 }
 
 // Scalar product between two quaternions

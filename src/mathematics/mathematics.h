@@ -32,7 +32,6 @@
 #include "Vector3.h"
 #include "Transform.h"
 #include "../constants.h"
-#include "exceptions.h"
 #include "mathematics_functions.h"
 #include <vector>
 #include <cstdio>

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "SAPAlgorithm.h"
+#include "SweepAndPruneAlgorithm.h"
 #include "../CollisionDetection.h"
 #include <algorithm>
 
@@ -33,22 +33,22 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Initialize the static attributes
-unsigned short int SAPAlgorithm::sortAxis = 0;
+unsigned short int SweepAndPruneAlgorithm::sortAxis = 0;
 
 // Constructor
-SAPAlgorithm::SAPAlgorithm(CollisionDetection& collisionDetection)
+SweepAndPruneAlgorithm::SweepAndPruneAlgorithm(CollisionDetection& collisionDetection)
              :BroadPhaseAlgorithm(collisionDetection) {
 
 }
 
 // Destructor
-SAPAlgorithm::~SAPAlgorithm() {
+SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 
 }
 
 // Notify the broad-phase algorithm about new bodies in the physics world
 // This method removes the AABB representation of a given set of bodies from the sortedAABBs set
-void SAPAlgorithm::notifyRemovedBodies(vector<RigidBody*> bodies) {
+void SweepAndPruneAlgorithm::notifyRemovedBodies(vector<RigidBody*> bodies) {
     vector<const AABB*>::iterator elemToRemove;
     const AABB* aabb;
 
@@ -64,7 +64,7 @@ void SAPAlgorithm::notifyRemovedBodies(vector<RigidBody*> bodies) {
 
 // Notify the broad-phase algorithm about new bodies in the physics world
 // This method adds the AABB representation of a given body in the sortedAABBs set
-void SAPAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
+void SweepAndPruneAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
     const AABB* aabb;
     
     for (vector<RigidBody*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
@@ -78,7 +78,7 @@ void SAPAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
 // This method computes the possible collision pairs of bodies and notify
 // the collision detection object about overlapping pairs using the
 // broadPhaseNotifyOverlappingPair() method from the CollisionDetection class
-void SAPAlgorithm::computePossibleCollisionPairs() {
+void SweepAndPruneAlgorithm::computePossibleCollisionPairs() {
     double variance[3];                             // Variance of the distribution of the AABBs on the three x, y and z axis
     double esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
     double esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
