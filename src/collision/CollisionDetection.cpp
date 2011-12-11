@@ -94,8 +94,8 @@ void CollisionDetection::computeBroadPhase() {
     // remove them from the overlapping pairs map
     for (set<pair<luint, luint> >::iterator it = lastStepOverlappingPairs.begin(); it != lastStepOverlappingPairs.end(); it++) {
         // Remove the overlapping pair from the memory pool
-		overlappingPairs.at((*it))->OverlappingPair::~OverlappingPair();
-		memoryPoolOverlappingPairs.freeObject(overlappingPairs.at((*it)));
+		overlappingPairs[(*it)]->OverlappingPair::~OverlappingPair();
+		memoryPoolOverlappingPairs.freeObject(overlappingPairs[(*it)]);
         overlappingPairs.erase(*it);
     }
     

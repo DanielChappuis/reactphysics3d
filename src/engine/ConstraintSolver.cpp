@@ -33,8 +33,8 @@ using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
-                 :physicsWorld(world), nbConstraints(0), nbIterationsLCP(MAX_LCP_ITERATIONS),
-                  penetrationFactor(10.0) {
+                 :physicsWorld(world), nbConstraints(0), nbIterationsLCP(DEFAULT_LCP_ITERATIONS),
+                  penetrationFactor(DEFAULT_PENETRATION_FACTOR) {
 
 }
 
@@ -120,7 +120,7 @@ void ConstraintSolver::fillInMatrices() {
     uint b=0;
     for (set<Body*>::iterator it = constraintBodies.begin(); it != constraintBodies.end(); ++it, b++) {
         body = *it;
-        uint bodyNumber = bodyNumberMapping.at(body);
+        uint bodyNumber = bodyNumberMapping[body];
         
         // TODO : Use polymorphism and remove this downcasting
         rigidBody = dynamic_cast<RigidBody*>(body);

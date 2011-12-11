@@ -33,10 +33,20 @@
 #include "../constants.h"
 #include "../mathematics/mathematics.h"
 #include "../memory/MemoryPool.h"
+#include "../configuration.h"
 #include <new>
-#ifdef VISUAL_DEBUG
-    #include <GLUT/glut.h>
-    #include <OpenGL/gl.h>
+
+#if defined(VISUAL_DEBUG)
+	#if defined(APPLE_OS)
+		#include <GLUT/glut.h>
+		#include <OpenGL/gl.h>
+	#elif defined(WINDOWS_OS)
+		#include <GL/glut.h>
+		#include <GL/gl.h>
+	#elif defined(LINUX_OS)
+        #include <GL/freeglut.h>
+        #include <GL/gl.h>
+    #endif
 #endif
 
 // ReactPhysics3D namespace
@@ -148,7 +158,6 @@ inline double Contact::getPenetrationDepth() const {
 
 
 #ifdef VISUAL_DEBUG
-// TODO : Delete this (Used to debug collision detection)
 inline void Contact::draw() const {
     glColor3f(1.0, 0.0, 0.0);
     glutSolidSphere(0.3, 20, 20);

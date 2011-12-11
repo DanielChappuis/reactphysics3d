@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.01                                                                  *
+* Version 0.02                                                                  *
 * http://code.google.com/p/reactphysics3d/                                      *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
@@ -35,6 +35,7 @@
 #define REACTPHYSICS3D_H
 
 // Libraries
+#include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "body/RigidBody.h"
 #include "engine/PhysicsWorld.h"

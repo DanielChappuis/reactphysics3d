@@ -45,12 +45,12 @@ struct ContactInfo {
     public:
         Body* const body1;              // Pointer to the first body of the contact
         Body* const body2;              // Pointer to the second body of the contact
+        const Vector3 normal;           // Normal vector the the collision contact in world space
+        const double penetrationDepth;  // Penetration depth of the contact
         const Vector3 localPoint1;      // Contact point of body 1 in local space of body 1
         const Vector3 localPoint2;      // Contact point of body 2 in local space of body 2
         const Vector3 worldPoint1;      // Contact point of body 1 in world space
         const Vector3 worldPoint2;      // Contact point of body 2 in world space
-        const Vector3 normal;           // Normal vector the the collision contact in world space
-        const double penetrationDepth;  // Penetration depth of the contact
         
         ContactInfo(Body* body1, Body* body2, const Vector3& normal, double penetrationDepth,
                     const Vector3& localPoint1, const Vector3& localPoint2,

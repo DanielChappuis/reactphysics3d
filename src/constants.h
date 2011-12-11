@@ -50,7 +50,7 @@ const double OBJECT_MARGIN = 0.04;                      // Object margin for col
 
 // Contact constants
 const double FRICTION_COEFFICIENT = 0.4;                // Friction coefficient
-const double PENETRATION_FACTOR = 5.0;                  // Penetration factor (between 0 and 1) which specify the importance of the
+const double DEFAULT_PENETRATION_FACTOR = 5.0;          // Penetration factor (between 0 and 1) which specify the importance of the
                                                         // penetration depth in order to calculate the correct impulse for the contact
 const double PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
 
@@ -60,7 +60,7 @@ const int NB_MAX_CONSTRAINTS = 100000;                  // Maximum number of con
 const int NB_MAX_COLLISION_PAIRS = 10000;               // Maximum number of collision pairs of bodies (for memory pool allocation)
 
 // Constraint solver constants
-const uint MAX_LCP_ITERATIONS = 10;                     // Maximum number of iterations when solving a LCP problem
+const uint DEFAULT_LCP_ITERATIONS = 15;                 // Number of iterations when solving a LCP problem
 const double AV_COUNTER_LIMIT = 500;                    // Maximum number value of the avBodiesCounter or avConstraintsCounter
 const double AV_PERCENT_TO_FREE = 0.5;                  // We will free the memory if the current nb of bodies (or constraints) is
                                                         // less than AV_PERCENT_TO_FREE * bodiesCapacity (or constraintsCapacity). This

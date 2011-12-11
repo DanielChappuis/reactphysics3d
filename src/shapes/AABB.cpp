@@ -25,10 +25,20 @@
 
 // Libraries
 #include "AABB.h"
+#include "../configuration.h"
 #include <cassert>
-#ifdef VISUAL_DEBUG
-   #include <GLUT/glut.h>
-   #include <OpenGL/gl.h>        
+
+#if defined(VISUAL_DEBUG)
+	#if defined(APPLE_OS)
+		#include <GLUT/glut.h>
+		#include <OpenGL/gl.h>
+	#elif defined(WINDOWS_OS)
+		#include <GL/glut.h>
+		#include <GL/gl.h>
+	#elif defined(LINUX_OS)
+		#include <GL/freeglut.h>
+		#include <GL/gl.h>
+	#endif
 #endif
 
 using namespace reactphysics3d;

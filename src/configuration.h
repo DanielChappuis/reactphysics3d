@@ -23,74 +23,16 @@
 *                                                                               *
 ********************************************************************************/
 
-// Libraries
-#include "CylinderShape.h"
-#include "../configuration.h"
+#ifndef CONFIGURATION_H
+#define	CONFIGURATION_H
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
+// Windows platform
+#if defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+    #define WINDOWS_OS
+#elif defined(__APPLE__)     // Apple platform
+    #define APPLE_OS
+#elif defined(__linux__) || defined(linux) || defined(__linux)    // Linux platform
+    #define LINUX_OS
 #endif
 
-using namespace reactphysics3d;
-
-// Constructor
-CylinderShape::CylinderShape(double radius, double height) : radius(radius), halfHeight(height/2.0) {
-
-}
-
-// Destructor
-CylinderShape::~CylinderShape() {
-
-}
-
-// Return a local support point in a given direction
-Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
-    assert(margin >= 0.0);
-
-    Vector3 supportPoint(0.0, 0.0, 0.0);
-    double uDotv = direction.getY();
-    Vector3 w(direction.getX(), 0.0, direction.getZ());
-    double lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
-
-    if (lengthW != 0.0) {
-        if (uDotv < 0.0) supportPoint.setY(-halfHeight);
-        else supportPoint.setY(halfHeight);
-        supportPoint += (radius / lengthW) * w;
-    }
-    else {
-         if (uDotv < 0.0) supportPoint.setY(-halfHeight);
-         else supportPoint.setY(halfHeight);
-    }
-
-    // Add the margin to the support point
-    if (margin != 0.0) {
-        Vector3 unitVec(0.0, 1.0, 0.0);
-        if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-            unitVec = direction.getUnit();
-        }
-        supportPoint += unitVec * margin;
-    }
-
-    return supportPoint;
-}
-
-#ifdef VISUAL_DEBUG
-// Draw the cone (only for debuging purpose)
-void CylinderShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireSphere(radius, 50, 50);
-}
 #endif

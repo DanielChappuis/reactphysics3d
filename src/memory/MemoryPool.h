@@ -61,8 +61,8 @@ class MemoryPool {
         struct Unit* pAllocatedLinkedList;      // Pointer to the linked list of allocated memory units
         struct Unit* pFreeLinkedList;           // Pointer to the linked list of free memory units
         size_t memorySize;                      // Total allocated memory in the pool
-        const uint maxNbObjects;                // Maximum number of objects in the pool
         uint currentNbObjects;                  // Current number of objects in the pool
+        const uint maxNbObjects;                // Maximum number of objects in the pool
 
     public:
         MemoryPool(uint nbObjectsToAllocate) throw(std::bad_alloc);     // Constructor

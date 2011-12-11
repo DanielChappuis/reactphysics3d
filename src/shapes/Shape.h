@@ -60,7 +60,7 @@ class Shape {
 
 // Return the body pointer
 inline Body* Shape::getBodyPointer() const {
-    assert(bodyPointer != NULL);
+    assert(bodyPointer != 0);
     return bodyPointer;
 }
 

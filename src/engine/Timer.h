@@ -26,17 +26,14 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-// TODO : Test this code on Windows platform
-// TODO : Test this code on Linux platform
-
 // Libraries
 #include <stdexcept>
 #include <iostream>
 #include <ctime>
 #include <cassert>
+#include "../configuration.h"
 
-#if defined(WIN32) || defined(_WIN32)   // For Windows platform
-   #define WINDOWS_TIME
+#if defined(WINDOWS_OS)   // For Windows platform
    #include <windows.h>
 #else                                   // For Mac OS or Linux platform
    #include <sys/time.h>
@@ -109,7 +106,7 @@ inline bool Timer::getIsRunning() const {
 inline void Timer::start() {
     if (!isRunning) {
         
-#ifdef WINDOWS_TIME
+#if defined(WINDOWS_OS)
         LARGE_INTEGER ticksPerSecond;
         LARGE_INTEGER ticks;
         QueryPerformanceFrequency(&ticksPerSecond);
@@ -157,7 +154,7 @@ inline double Timer::computeInterpolationFactor() {
 inline void Timer::update() {
     long double currentTime;
     
-#ifdef WINDOWS_TIME
+#if defined(WINDOWS_OS)
    LARGE_INTEGER ticksPerSecond;
    LARGE_INTEGER ticks;
    QueryPerformanceFrequency(&ticksPerSecond);

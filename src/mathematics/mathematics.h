@@ -397,7 +397,6 @@ inline std::vector<reactphysics3d::Vector3> clipPolygonWithRectangleInPlane(cons
             reactphysics3d::Vector3 P = inputPolygon[(j+1) % inputPolygon.size()];
 
             // If the point P is inside the clip plane
-            double test = planeNormal.dot(P-A);
             if (planeNormal.dot(P-A) >= 0.0 - epsilon) {
                 // If the point S is also inside the clip plane
                 if (planeNormal.dot(S-A) >= 0.0 - epsilon) {
