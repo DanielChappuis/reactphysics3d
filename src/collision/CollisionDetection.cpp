@@ -28,7 +28,7 @@
 #include "broadphase/SweepAndPruneAlgorithm.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "../body/Body.h"
-#include "../shapes/BoxCollider.h"
+#include "../colliders/BoxCollider.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include <cassert>

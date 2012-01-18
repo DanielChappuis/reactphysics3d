@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../../../shapes/Collider.h"
+#include "../../../colliders/Collider.h"
 #include "../../ContactInfo.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"

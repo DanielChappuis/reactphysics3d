@@ -29,7 +29,7 @@
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
 #include "../../ContactInfo.h"
-#include "../../../shapes/Collider.h"
+#include "../../../colliders/Collider.h"
 #include "../EPA/EPAAlgorithm.h"
 
 

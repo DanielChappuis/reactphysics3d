@@ -30,8 +30,8 @@
 #include <stdexcept>
 #include <cassert>
 #include "../mathematics/Transform.h"
-#include "../shapes/AABB.h"
-#include "../shapes/Collider.h"
+#include "../colliders/AABB.h"
+#include "../colliders/Collider.h"
 #include "../configuration.h"
 
 // Namespace reactphysics3d

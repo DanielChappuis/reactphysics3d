@@ -28,7 +28,7 @@
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
-#include "../../shapes/AABB.h"
+#include "../../colliders/AABB.h"
 
 
 // Namespace ReactPhysics3D

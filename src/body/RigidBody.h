@@ -29,7 +29,7 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
-#include "../shapes/Collider.h"
+#include "../colliders/Collider.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d

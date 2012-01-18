@@ -40,12 +40,12 @@
 #include "body/RigidBody.h"
 #include "engine/PhysicsWorld.h"
 #include "engine/PhysicsEngine.h"
-#include "shapes/Collider.h"
-#include "shapes/BoxCollider.h"
-#include "shapes/SphereCollider.h"
-#include "shapes/ConeCollider.h"
-#include "shapes/CylinderCollider.h"
-#include "shapes/AABB.h"
+#include "colliders/Collider.h"
+#include "colliders/BoxCollider.h"
+#include "colliders/SphereCollider.h"
+#include "colliders/ConeCollider.h"
+#include "colliders/CylinderCollider.h"
+#include "colliders/AABB.h"
 
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
