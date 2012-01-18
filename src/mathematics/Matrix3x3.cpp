@@ -37,12 +37,12 @@ Matrix3x3::Matrix3x3() {
 }
 
 // Constructor
-Matrix3x3::Matrix3x3(double value) {
+Matrix3x3::Matrix3x3(decimal value) {
     setAllValues(value, value, value, value, value, value, value, value, value);
 }
 
 // Constructor with arguments
-Matrix3x3::Matrix3x3(double a1, double a2, double a3, double b1, double b2, double b3, double c1, double c2, double c3) {
+Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3, decimal c1, decimal c2, decimal c3) {
     // Initialize the matrix with the values
     setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
 }
@@ -55,11 +55,11 @@ Matrix3x3::~Matrix3x3() {
 // Return the inverse matrix
 Matrix3x3 Matrix3x3::getInverse() const {
     // Compute the determinant of the matrix
-    double determinant = getDeterminant();
+    decimal determinant = getDeterminant();
 
     // Check if the determinant is equal to zero
     assert(determinant != 0.0);
-    double invDeterminant = 1.0 / determinant;
+    decimal invDeterminant = 1.0 / determinant;
     Matrix3x3 tempMatrix;
 
     // Compute the inverse of the matrix

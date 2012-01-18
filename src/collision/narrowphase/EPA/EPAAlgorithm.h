@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../../../shapes/Shape.h"
+#include "../../../shapes/Collider.h"
 #include "../../ContactInfo.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
@@ -75,7 +75,7 @@ class EPAAlgorithm {
         TriangleComparison triangleComparison;           // Triangle comparison operator
 
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
-                              uint& nbTriangles, double upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
+                              uint& nbTriangles, decimal upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
         int isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
                                   const Vector3& p3, const Vector3& p4) const;        // Decide if the origin is in the tetrahedron
 
@@ -83,14 +83,14 @@ class EPAAlgorithm {
         EPAAlgorithm();         // Constructor
         ~EPAAlgorithm();        // Destructor
 
-        bool computePenetrationDepthAndContactPoints(Simplex simplex, const Shape* shape1, const Transform& transform1,
-                                                     const Shape* shape2, const Transform& transform2,
+        bool computePenetrationDepthAndContactPoints(Simplex simplex, const Collider* collider1, const Transform& transform1,
+                                                     const Collider* collider2, const Transform& transform2,
                                                      Vector3& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm
 inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
-                                           uint& nbTriangles, double upperBoundSquarePenDepth) {
+                                           uint& nbTriangles, decimal upperBoundSquarePenDepth) {
     
     // If the closest point of the affine hull of triangle points is internal to the triangle and
     // if the distance of the closest point from the origin is at most the penetration depth upper bound

@@ -222,7 +222,7 @@ bool Simplex::isProperSubset(Bits subset) const {
 // Return true if the set is affinely dependent meaning that a point of the set
 // is an affine combination of other points in the set
 bool Simplex::isAffinelyDependent() const {
-    double sum = 0.0;
+    decimal sum = 0.0;
     int i;
     Bits bit;
 
@@ -273,7 +273,7 @@ bool Simplex::isValidSubset(Bits subset) const {
 //      pB = sum(lambda_i * b_i)    where "b_i" are the support points of object B
 //      with lambda_i = deltaX_i / deltaX
 void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
-    double deltaX = 0.0;
+    decimal deltaX = 0.0;
     pA.setAllValues(0.0, 0.0, 0.0);
     pB.setAllValues(0.0, 0.0, 0.0);
     int i;
@@ -290,7 +290,7 @@ void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     }
 
     assert(deltaX > 0.0);
-    double factor = 1.0 / deltaX;
+    decimal factor = 1.0 / deltaX;
     pA *= factor;
     pB *= factor;
 }
@@ -327,13 +327,13 @@ bool Simplex::computeClosestPoint(Vector3& v) {
 
 // Backup the closest point
 void Simplex::backupClosestPointInSimplex(Vector3& v) {
-    double minDistSquare = DBL_MAX;
+    decimal minDistSquare = DECIMAL_MAX;
     Bits bit;
 
     for (bit = allBits; bit != 0x0; bit--) {
         if (isSubset(bit, allBits) && isProperSubset(bit)) {
             Vector3 u = computeClosestPointForSubset(bit);
-            double distSquare = u.dot(u);
+            decimal distSquare = u.dot(u);
             if (distSquare < minDistSquare) {
                 minDistSquare = distSquare;
                 bitsCurrentSimplex = bit;
@@ -348,7 +348,7 @@ void Simplex::backupClosestPointInSimplex(Vector3& v) {
 Vector3 Simplex::computeClosestPointForSubset(Bits subset) {
     Vector3 v(0.0, 0.0, 0.0);      // Closet point v = sum(lambda_i * points[i])
     maxLengthSquare = 0.0;
-    double deltaX = 0.0;            // deltaX = sum of all det[subset][i]
+    decimal deltaX = 0.0;            // deltaX = sum of all det[subset][i]
     int i;
     Bits bit;
 

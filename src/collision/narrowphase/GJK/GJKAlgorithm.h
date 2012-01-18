@@ -29,7 +29,7 @@
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
 #include "../../ContactInfo.h"
-#include "../../../shapes/Shape.h"
+#include "../../../shapes/Collider.h"
 #include "../EPA/EPAAlgorithm.h"
 
 
@@ -37,8 +37,8 @@
 namespace reactphysics3d {
 
 // Constants
-const double REL_ERROR = 1.0e-3;
-const double REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
+const decimal REL_ERROR = 1.0e-3;
+const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
 
 /*  -------------------------------------------------------------------
     Class GJKAlgorithm :
@@ -61,16 +61,16 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
     private :
         EPAAlgorithm algoEPA;             // EPA Algorithm
 
-        bool computePenetrationDepthForEnlargedObjects(const Shape* shape1, const Transform& transform1,
-                                                       const Shape* shape2, const Transform& transform2,
+        bool computePenetrationDepthForEnlargedObjects(const Collider* collider1, const Transform& transform1,
+                                                       const Collider* collider2, const Transform& transform2,
                                                        ContactInfo*& contactInfo, Vector3& v);             // Compute the penetration depth for enlarged objects
 
     public :
         GJKAlgorithm(CollisionDetection& collisionDetection);       // Constructor
         ~GJKAlgorithm();                                            // Destructor
 
-        virtual bool testCollision(const Shape* shape1, const Transform& transform1,
-                                   const Shape* shape2,  const Transform& transform2,
+        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
+                                   const Collider* collider2,  const Transform& transform2,
                                    ContactInfo*& contactInfo);                      // Return true and compute a contact info if the two bounding volume collide
 };
 

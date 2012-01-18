@@ -23,14 +23,13 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SAP_ALGORITHM_H
-#define SAP_ALGORITHM_H
+#ifndef SWEEP_AND_PRUNE_ALGORITHM_H
+#define SWEEP_AND_PRUNE_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
 #include "../../shapes/AABB.h"
 
-// TODO : Rename this class SweepAndPruneAlgorithm
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {

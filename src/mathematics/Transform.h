@@ -46,22 +46,22 @@ class Transform {
         Quaternion orientation;     // Orientation
 
     public :
-        Transform();                                                            // Constructor
+        Transform();                                                           // Constructor
         Transform(const Vector3& position, const Matrix3x3& orientation);      // Constructor
         Transform(const Vector3& position, const Quaternion& orientation);     // Constructor
-        ~Transform();                                                           // Destructor
+        ~Transform();                                                          // Destructor
 
-        const Vector3& getPosition() const;                                    // Return the origin of the transform
-        void setPosition(const Vector3& position);                             // Set the origin of the transform
+        const Vector3& getPosition() const;                                     // Return the origin of the transform
+        void setPosition(const Vector3& position);                              // Set the origin of the transform
         const Quaternion& getOrientation() const;                               // Return the orientation quaternion
         void setOrientation(const Quaternion& orientation);                     // Set the rotation quaternion
         void setToIdentity();                                                   // Set the transform to the identity transform
-        void setFromOpenGL(double* openglMatrix);                               // Set the transform from an OpenGL transform matrix
-        void getOpenGLMatrix(double* openglMatrix) const;                       // Get the OpenGL matrix of the transform
+        void setFromOpenGL(decimal* openglMatrix);                              // Set the transform from an OpenGL transform matrix
+        void getOpenGLMatrix(decimal* openglMatrix) const;                      // Get the OpenGL matrix of the transform
         Transform inverse() const;                                              // Return the inverse of the transform
         static Transform interpolateTransforms(const Transform& oldTransform,
                                                const Transform& newTransform,
-                                               double interpolationFactor);     // Return an interpolated transform
+                                               decimal interpolationFactor);    // Return an interpolated transform
 
         Vector3 operator*(const Vector3& vector) const;           // Return the transformed vector
         Transform operator*(const Transform& transform2) const;     // Operator of multiplication of a transform with another one
@@ -94,7 +94,7 @@ inline void Transform::setToIdentity() {
 }
 
 // Set the transform from an OpenGL transform matrix
-inline void Transform::setFromOpenGL(double* openglMatrix) {
+inline void Transform::setFromOpenGL(decimal* openglMatrix) {
     Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],
                      openglMatrix[1], openglMatrix[5], openglMatrix[9],
                      openglMatrix[2], openglMatrix[6], openglMatrix[10]);
@@ -103,7 +103,7 @@ inline void Transform::setFromOpenGL(double* openglMatrix) {
 }
 
 // Get the OpenGL matrix of the transform
-inline void Transform::getOpenGLMatrix(double* openglMatrix) const {
+inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
     const Matrix3x3& matrix = orientation.getMatrix();
     openglMatrix[0] = matrix.getValue(0, 0); openglMatrix[1] = matrix.getValue(1, 0); openglMatrix[2] = matrix.getValue(2, 0); openglMatrix[3] = 0.0;
     openglMatrix[4] = matrix.getValue(0, 1); openglMatrix[5] = matrix.getValue(1, 1); openglMatrix[6] = matrix.getValue(2, 1); openglMatrix[7] = 0.0;
@@ -119,7 +119,7 @@ inline Transform Transform::inverse() const {
 }
 
 // Return an interpolated transform
-inline Transform Transform::interpolateTransforms(const Transform& oldTransform, const Transform& newTransform, double interpolationFactor) {
+inline Transform Transform::interpolateTransforms(const Transform& oldTransform, const Transform& newTransform, decimal interpolationFactor) {
     Vector3 interPosition = oldTransform.position * (1.0 - interpolationFactor) + newTransform.position * interpolationFactor;
     Quaternion interOrientation = Quaternion::slerp(oldTransform.orientation, newTransform.orientation, interpolationFactor);
     return Transform(interPosition, interOrientation);

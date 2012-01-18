@@ -32,6 +32,9 @@
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
+    
+// Enumeration for the type of a constraint
+enum ConstraintType {CONTACT};
 
 /*  -------------------------------------------------------------------
     Class Constraint :
@@ -47,21 +50,24 @@ class Constraint {
         Body* const body2;                      // Pointer to the second body of the constraint
         bool active;                            // True if the constraint is active
         uint nbConstraints;                     // Number mathematical constraints associated with this Constraint
-        std::vector<double> cachedLambdas;      // Cached lambda values of each mathematical constraint for more precise initializaton of LCP solver
+        const ConstraintType type;              // Type of the constraint
+        std::vector<decimal> cachedLambdas;     // Cached lambda values of each mathematical constraint for more precise initializaton of LCP solver
 
     public :
-        Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active);  // Constructor                                                                                                   // Constructor
-        virtual ~Constraint();                                                              // Destructor
-        Body* const getBody1() const;                                                       // Return the reference to the body 1
-        Body* const getBody2() const;                                                       // Return the reference to the body 2                                                                        // Evaluate the constraint
-        bool isActive() const;                                                                                      // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
-        virtual void computeJacobian(int noConstraint, double J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;               // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, double errorValues[], double penetrationFactor) const=0;   // Compute the error values for all the mathematical constraints
+        Constraint(Body* const body1, Body* const body2, uint nbConstraints,
+                   bool active, ConstraintType type);                           // Constructor                                                                                                   // Constructor
+        virtual ~Constraint();                                                  // Destructor
+        Body* const getBody1() const;                                           // Return the reference to the body 1
+        Body* const getBody2() const;                                           // Return the reference to the body 2                                                                        // Evaluate the constraint
+        bool isActive() const;                                                  // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
+        ConstraintType getType() const;                                         // Return the type of the constraint                 
+        virtual void computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;               // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeLowerBound(int noConstraint, decimal lowerBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the lowerbounds values for all the mathematical constraints
+        virtual void computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the upperbounds values for all the mathematical constraints
+        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const=0;   // Compute the error values for all the mathematical constraints
         unsigned int getNbConstraints() const;                                                                      // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
-        double getCachedLambda(int index) const;                                                                    // Get one cached lambda value
-        void setCachedLambda(int index, double lambda);                                                             // Set on cached lambda value  
+        decimal getCachedLambda(int index) const;                                                                    // Get one cached lambda value
+        void setCachedLambda(int index, decimal lambda);                                                             // Set on cached lambda value  
 };
 
 // Return the reference to the body 1
@@ -79,19 +85,25 @@ inline bool Constraint::isActive() const {
     return active;
 }
 
+// Return the type of the constraint
+inline ConstraintType Constraint::getType() const {
+    return type;
+}                                                          
+
+
 // Return the number auxiliary constraints
 inline uint Constraint::getNbConstraints() const {
     return nbConstraints;
 }
 
 // Get one previous lambda value
-inline double Constraint::getCachedLambda(int index) const {
+inline decimal Constraint::getCachedLambda(int index) const {
     assert(index >= 0 && index < nbConstraints);
     return cachedLambdas[index];
 } 
 
 // Set on cached lambda value  
-inline void Constraint::setCachedLambda(int index, double lambda) {
+inline void Constraint::setCachedLambda(int index, decimal lambda) {
     assert(index >= 0 && index < nbConstraints);
     cachedLambdas[index] = lambda;
 }                                                   

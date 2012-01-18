@@ -30,11 +30,10 @@
 #include "Constraint.h"
 #include "../collision/ContactInfo.h"
 #include "../body/RigidBody.h"
-#include "../constants.h"
+#include "../configuration.h"
 #include "../mathematics/mathematics.h"
 #include "../memory/MemoryPool.h"
 #include "../configuration.h"
-#include <new>
 
 #if defined(VISUAL_DEBUG)
 	#if defined(APPLE_OS)
@@ -65,13 +64,13 @@ namespace reactphysics3d {
 class Contact : public Constraint {
     protected :
         const Vector3 normal;                   // Normal vector of the contact (From body1 toward body2) in world space
-        double penetrationDepth;                // Penetration depth
+        decimal penetrationDepth;                // Penetration depth
         const Vector3 localPointOnBody1;        // Contact point on body 1 in local space of body 1
         const Vector3 localPointOnBody2;        // Contact point on body 2 in local space of body 2
         Vector3 worldPointOnBody1;              // Contact point on body 1 in world space
         Vector3 worldPointOnBody2;              // Contact point on body 2 in world space
         std::vector<Vector3> frictionVectors;   // Two orthogonal vectors that span the tangential friction plane
-        double mu_mc_g;
+        decimal mu_mc_g;
         
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
@@ -80,18 +79,18 @@ class Contact : public Constraint {
         virtual ~Contact();                             // Destructor
 
         Vector3 getNormal() const;                                                     // Return the normal vector of the contact
-        void setPenetrationDepth(double penetrationDepth);                             // Set the penetration depth of the contact
+        void setPenetrationDepth(decimal penetrationDepth);                             // Set the penetration depth of the contact
         Vector3 getLocalPointOnBody1() const;                                          // Return the contact local point on body 1
         Vector3 getLocalPointOnBody2() const;                                          // Return the contact local point on body 2
         Vector3 getWorldPointOnBody1() const;                                          // Return the contact world point on body 1
         Vector3 getWorldPointOnBody2() const;                                          // Return the contact world point on body 2
         void setWorldPointOnBody1(const Vector3& worldPoint);                          // Set the contact world point on body 1
         void setWorldPointOnBody2(const Vector3& worldPoint);                                                   // Set the contact world point on body 2
-        virtual void computeJacobian(int noConstraint, double J_SP[NB_MAX_CONSTRAINTS][2*6]) const;             // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, double errorValues[], double penetrationFactor) const; // Compute the error values for all the mathematical constraints
-        double getPenetrationDepth() const;                                                                     // Return the penetration depth
+        virtual void computeJacobian(int noConstraint, decimal J_SP[NB_MAX_CONSTRAINTS][2*6]) const;             // Compute the jacobian matrix for all mathematical constraints
+        virtual void computeLowerBound(int noConstraint, decimal lowerBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the lowerbounds values for all the mathematical constraints
+        virtual void computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CONSTRAINTS]) const;         // Compute the upperbounds values for all the mathematical constraints
+        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const; // Compute the error values for all the mathematical constraints
+        decimal getPenetrationDepth() const;                                                                     // Return the penetration depth
         #ifdef VISUAL_DEBUG
            void draw() const;                                                                                   // Draw the contact (for debugging)
         #endif
@@ -117,7 +116,7 @@ inline Vector3 Contact::getNormal() const {
 }
 
 // Set the penetration depth of the contact
-inline void Contact::setPenetrationDepth(double penetrationDepth) {
+inline void Contact::setPenetrationDepth(decimal penetrationDepth) {
     this->penetrationDepth = penetrationDepth;
 }
 
@@ -152,7 +151,7 @@ inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
 }
 
 // Return the penetration depth of the contact
-inline double Contact::getPenetrationDepth() const {
+inline decimal Contact::getPenetrationDepth() const {
     return penetrationDepth;
 }
 
@@ -162,7 +161,7 @@ inline void Contact::draw() const {
     glColor3f(1.0, 0.0, 0.0);
     glutSolidSphere(0.3, 20, 20);
 }
-#endif
+#endif 
 
 } // End of the ReactPhysics3D namespace
 

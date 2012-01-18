@@ -80,26 +80,26 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2, co
 // intersect. An initial simplex that contains origin has been computed with
 // GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 // the correct penetration depth
-bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, const Shape* shape1, const Transform& transform1,
-                                                           const Shape* shape2, const Transform& transform2,
+bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, const Collider* collider1, const Transform& transform1,
+                                                           const Collider* collider2, const Transform& transform2,
                                                            Vector3& v, ContactInfo*& contactInfo) {
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];       // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];       // Support points of object B in local coordinates
     Vector3 points[MAX_SUPPORT_POINTS];            // Current points
-    TrianglesStore triangleStore;                   // Store the triangles
-    TriangleEPA* triangleHeap[MAX_FACETS];          // Heap that contains the face candidate of the EPA algorithm
+    TrianglesStore triangleStore;                  // Store the triangles
+    TriangleEPA* triangleHeap[MAX_FACETS];         // Heap that contains the face candidate of the EPA algorithm
 
-    // Transform a point from body space of shape 2 to body space of shape 1 (the GJK algorithm is done in body space of shape 1)
-    Transform shape2ToShape1 = transform1.inverse() * transform2;
+    // Transform a point from local space of body 2 to local space of body 1 (the GJK algorithm is done in local space of body 1)
+    Transform body2Tobody1 = transform1.inverse() * transform2;
 
-    // Matrix that transform a direction from body space of shape 1 into body space of shape 2
-    Matrix3x3 rotateToShape2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
+    // Matrix that transform a direction from local space of body 1 into local space of body 2
+    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
 
     // Compute the tolerance
-    double tolerance = MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
+    decimal tolerance = MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
 
     // Number of triangles in the polytope
     unsigned int nbTriangles = 0;
@@ -132,7 +132,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             int minAxis = d.getAbsoluteVector().getMinAxis();
 
             // Compute sin(60)
-            const double sin60 = sqrt(3.0) * 0.5;
+            const decimal sin60 = sqrt(3.0) * 0.5;
 
             // Create a rotation quaternion to rotate the vector v1 to get the vectors
             // v2 and v3
@@ -147,18 +147,18 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             Vector3 v3 = rotationMat * v2;
 
             // Compute the support point in the direction of v1
-            suppPointsA[2] = shape1->getLocalSupportPoint(v1, OBJECT_MARGIN);
-            suppPointsB[2] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v1), OBJECT_MARGIN);
+            suppPointsA[2] = collider1->getLocalSupportPoint(v1, OBJECT_MARGIN);
+            suppPointsB[2] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * (-v1), OBJECT_MARGIN);
             points[2] = suppPointsA[2] - suppPointsB[2];
 
             // Compute the support point in the direction of v2
-            suppPointsA[3] = shape1->getLocalSupportPoint(v2, OBJECT_MARGIN);
-            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v2), OBJECT_MARGIN);
+            suppPointsA[3] = collider1->getLocalSupportPoint(v2, OBJECT_MARGIN);
+            suppPointsB[3] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * (-v2), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
 
             // Compute the support point in the direction of v3
-            suppPointsA[4] = shape1->getLocalSupportPoint(v3, OBJECT_MARGIN);
-            suppPointsB[4] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-v3), OBJECT_MARGIN);
+            suppPointsA[4] = collider1->getLocalSupportPoint(v3, OBJECT_MARGIN);
+            suppPointsB[4] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * (-v3), OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Now we have an hexahedron (two tetrahedron glued together). We can simply keep the
@@ -221,10 +221,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
                 link(EdgeEPA(face2, 1), EdgeEPA(face3, 1));
 
                 // Add the triangle faces in the candidate heap
-                addFaceCandidate(face0, triangleHeap, nbTriangles, DBL_MAX);
-                addFaceCandidate(face1, triangleHeap, nbTriangles, DBL_MAX);
-                addFaceCandidate(face2, triangleHeap, nbTriangles, DBL_MAX);
-                addFaceCandidate(face3, triangleHeap, nbTriangles, DBL_MAX);
+                addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_MAX);
+                addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_MAX);
+                addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_MAX);
+                addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_MAX);
 
                 break;
             }
@@ -252,11 +252,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             Vector3 n = v1.cross(v2);
 
             // Compute the two new vertices to obtain a hexahedron
-            suppPointsA[3] = shape1->getLocalSupportPoint(n, OBJECT_MARGIN);
-            suppPointsB[3] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * (-n), OBJECT_MARGIN);
+            suppPointsA[3] = collider1->getLocalSupportPoint(n, OBJECT_MARGIN);
+            suppPointsB[3] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * (-n), OBJECT_MARGIN);
             points[3] = suppPointsA[3] - suppPointsB[3];
-            suppPointsA[4] = shape1->getLocalSupportPoint(-n, OBJECT_MARGIN);
-            suppPointsB[4] = shape2ToShape1 * shape2->getLocalSupportPoint(rotateToShape2 * n, OBJECT_MARGIN);
+            suppPointsA[4] = collider1->getLocalSupportPoint(-n, OBJECT_MARGIN);
+            suppPointsB[4] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * n, OBJECT_MARGIN);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Construct the triangle faces
@@ -287,12 +287,12 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             link(EdgeEPA(face5, 1), EdgeEPA(face3, 2));
 
             // Add the candidate faces in the heap
-            addFaceCandidate(face0, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face1, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face2, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face3, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face4, triangleHeap, nbTriangles, DBL_MAX);
-            addFaceCandidate(face5, triangleHeap, nbTriangles, DBL_MAX);
+            addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face4, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face5, triangleHeap, nbTriangles, DECIMAL_MAX);
 
             nbVertices = 5;
         }
@@ -307,7 +307,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     }
 
     TriangleEPA* triangle = 0;
-    double upperBoundSquarePenDepth = DBL_MAX;
+    decimal upperBoundSquarePenDepth = DECIMAL_MAX;
 
     do {
         triangle = triangleHeap[0];
@@ -325,23 +325,23 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             }
 
             // Compute the support point of the Minkowski difference (A-B) in the closest point direction
-            suppPointsA[nbVertices] = shape1->getLocalSupportPoint(triangle->getClosestPoint(), OBJECT_MARGIN);
-            suppPointsB[nbVertices] = shape2ToShape1 *shape2->getLocalSupportPoint(rotateToShape2 * (-triangle->getClosestPoint()), OBJECT_MARGIN);
+            suppPointsA[nbVertices] = collider1->getLocalSupportPoint(triangle->getClosestPoint(), OBJECT_MARGIN);
+            suppPointsB[nbVertices] = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * (-triangle->getClosestPoint()), OBJECT_MARGIN);
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;
             nbVertices++;
 
             // Update the upper bound of the penetration depth
-            double wDotv = points[indexNewVertex].dot(triangle->getClosestPoint());
+            decimal wDotv = points[indexNewVertex].dot(triangle->getClosestPoint());
             assert(wDotv > 0.0);
-            double wDotVSquare = wDotv * wDotv / triangle->getDistSquare();
+            decimal wDotVSquare = wDotv * wDotv / triangle->getDistSquare();
             if (wDotVSquare < upperBoundSquarePenDepth) {
                 upperBoundSquarePenDepth = wDotVSquare;
             }
 
             // Compute the error
-            double error = wDotv - triangle->getDistSquare();
+            decimal error = wDotv - triangle->getDistSquare();
             if (error <= std::max(tolerance, REL_ERROR_SQUARE * wDotv) ||
                 points[indexNewVertex] == points[(*triangle)[0]] ||
                 points[indexNewVertex] == points[(*triangle)[1]] ||
@@ -370,11 +370,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     // Compute the contact info
     v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3 pBLocal = shape2ToShape1.inverse() * triangle->computeClosestPointOfObject(suppPointsB);
+    Vector3 pBLocal = body2Tobody1.inverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
-    double penetrationDepth = v.length();
+    decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
-    contactInfo = new ContactInfo(shape1->getBodyPointer(), shape2->getBodyPointer(), normal,
+    contactInfo = new ContactInfo(collider1->getBodyPointer(), collider2->getBodyPointer(), normal,
                                   penetrationDepth, pALocal, pBLocal, transform1, transform2);
     
     return true;

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "BoxShape.h"
+#include "BoxCollider.h"
 #include "../configuration.h"
 #include <vector>
 #include <cassert>
@@ -46,21 +46,21 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-BoxShape::BoxShape(const Vector3& extent) : extent(extent) {
+BoxCollider::BoxCollider(const Vector3& extent) : extent(extent) {
 
 }
 
 // Destructor
-BoxShape::~BoxShape() {
+BoxCollider::~BoxCollider() {
 
 }
 
-// Return the local inertia tensor of the shape
-void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
-    double factor = (1.0 / 3.0) * mass;
-    double xSquare = extent.getX() * extent.getX();
-    double ySquare = extent.getY() * extent.getY();
-    double zSquare = extent.getZ() * extent.getZ();
+// Return the local inertia tensor of the collider
+void BoxCollider::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+    decimal factor = (1.0 / 3.0) * mass;
+    decimal xSquare = extent.getX() * extent.getX();
+    decimal ySquare = extent.getY() * extent.getY();
+    decimal zSquare = extent.getZ() * extent.getZ();
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));
@@ -68,10 +68,10 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
 
 #ifdef VISUAL_DEBUG
 // Draw the Box (only for testing purpose)
-void BoxShape::draw() const {
-    double e1 = extent.getX();
-    double e2 = extent.getY();
-    double e3 = extent.getZ();
+void BoxCollider::draw() const {
+    decimal e1 = extent.getX();
+    decimal e2 = extent.getY();
+    decimal e3 = extent.getZ();
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);

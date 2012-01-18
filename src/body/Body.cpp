@@ -25,16 +25,16 @@
 
  // Libraries
 #include "Body.h"
-#include "../shapes/Shape.h"
+#include "../shapes/Collider.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(const Transform& transform, Shape* shape, double mass, long unsigned int id)
-     : shape(shape), mass(mass), transform(transform), id(id) {
+Body::Body(const Transform& transform, Collider* collider, decimal mass, long unsigned int id)
+     : collider(collider), mass(mass), transform(transform), id(id) {
     assert(mass > 0.0);
-    assert(shape);
+    assert(collider);
 
     isMotionEnabled = true;
     isCollisionEnabled = true;
@@ -44,7 +44,7 @@ Body::Body(const Transform& transform, Shape* shape, double mass, long unsigned 
     oldTransform = transform;
 
     // Create the AABB for broad-phase collision detection
-    aabb = new AABB(transform, shape->getLocalExtents(OBJECT_MARGIN));
+    aabb = new AABB(transform, collider->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Destructor

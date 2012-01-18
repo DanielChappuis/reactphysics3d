@@ -68,12 +68,12 @@ class CollisionDetection {
         bool computeNarrowPhase();                                              // Compute the narrow-phase collision detection
         
     public :
-        CollisionDetection(PhysicsWorld* physicsWorld);                             // Constructor
-        ~CollisionDetection();                                                      // Destructor
-                                                                                            
-        OverlappingPair* getOverlappingPair(luint body1ID, luint body2ID);          // Return an overlapping pair or null     
-        bool computeCollisionDetection();                                           // Compute the collision detection
-        void broadPhaseNotifyOverlappingPair(Body* body1, Body* body2);             // Allow the broadphase to notify the collision detection about an overlapping pair
+        CollisionDetection(PhysicsWorld* physicsWorld);                         // Constructor
+        ~CollisionDetection();                                                  // Destructor
+                                                                                           
+        OverlappingPair* getOverlappingPair(luint body1ID, luint body2ID);      // Return an overlapping pair or null     
+        bool computeCollisionDetection();                                       // Compute the collision detection
+        void broadPhaseNotifyOverlappingPair(Body* body1, Body* body2);         // Allow the broadphase to notify the collision detection about an overlapping pair
 };
 
 // Return an overlapping pair of bodies according to the given bodies ID

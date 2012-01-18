@@ -50,8 +50,8 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm(CollisionDetection& collisionDetection);   // Constructor
         virtual ~NarrowPhaseAlgorithm();                                // Destructor
 
-        virtual bool testCollision(const Shape* shape1, const Transform& transform1,
-                                   const Shape* shape2, const Transform& transform2,
+        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
+                                   const Collider* collider2, const Transform& transform2,
                                    ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
 };
 

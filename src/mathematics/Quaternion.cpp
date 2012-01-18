@@ -38,13 +38,13 @@ Quaternion::Quaternion()
 }
 
 // Constructor with arguments
-Quaternion::Quaternion(double x, double y, double z, double w)
+Quaternion::Quaternion(decimal x, decimal y, decimal z, decimal w)
            :x(x), y(y), z(z), w(w) {
 
 }
 
 // Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(double w, const Vector3& v)
+Quaternion::Quaternion(decimal w, const Vector3& v)
            :x(v.getX()), y(v.getY()), z(v.getZ()), w(w) {
 
 }
@@ -59,17 +59,17 @@ Quaternion::Quaternion(const Quaternion& quaternion)
 Quaternion::Quaternion(const Matrix3x3& matrix) {
 
     // Get the trace of the matrix
-    double trace = matrix.getTrace();
+    decimal trace = matrix.getTrace();
 
-    double array[3][3];
+    decimal array[3][3];
     for (int i=0; i<3; i++) {
         for (int j=0; j<3; j++) {
             array[i][j] = matrix.getValue(i, j);
         }
     }
 
-    double r;
-    double s;
+    decimal r;
+    decimal s;
 
     if (trace < 0.0) {
         if (array[1][1] > array[0][0]) {
@@ -135,7 +135,7 @@ Quaternion::~Quaternion() {
 // Compute the rotation angle (in radians) and the 3D rotation axis
 // This method is used to get the rotation angle (in radian) and the unit
 // rotation axis of an orientation quaternion.
-void Quaternion::getRotationAngleAxis(double& angle, Vector3& axis) const {
+void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     Quaternion quaternion;
 
     // If the quaternion is unit
@@ -163,26 +163,26 @@ void Quaternion::getRotationAngleAxis(double& angle, Vector3& axis) const {
 // Return the orientation matrix corresponding to this quaternion
 Matrix3x3 Quaternion::getMatrix() const {
 
-    double nQ = x*x + y*y + z*z + w*w;
-    double s = 0.0;
+    decimal nQ = x*x + y*y + z*z + w*w;
+    decimal s = 0.0;
 
     if (nQ > 0.0) {
         s = 2.0/nQ;
     }
 
     // Computations used for optimization (less multiplications)
-    double xs = x*s;
-    double ys = y*s;
-    double zs = z*s;
-    double wxs = w*xs;
-    double wys = w*ys;
-    double wzs = w*zs;
-    double xxs = x*xs;
-    double xys = x*ys;
-    double xzs = x*zs;
-    double yys = y*ys;
-    double yzs = y*zs;
-    double zzs = z*zs;
+    decimal xs = x*s;
+    decimal ys = y*s;
+    decimal zs = z*s;
+    decimal wxs = w*xs;
+    decimal wys = w*ys;
+    decimal wzs = w*zs;
+    decimal xxs = x*xs;
+    decimal xys = x*ys;
+    decimal xzs = x*zs;
+    decimal yys = y*ys;
+    decimal yzs = y*zs;
+    decimal zzs = z*zs;
 
     // Create the matrix corresponding to the quaternion
     return Matrix3x3(1.0-yys-zzs, xys-wzs, xzs + wys,
@@ -192,13 +192,13 @@ Matrix3x3 Quaternion::getMatrix() const {
 
 // Compute the spherical linear interpolation between two quaternions.
 // The t argument has to be such that 0 <= t <= 1. This method is static.
-Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, double t) {
+Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, decimal t) {
     assert(t >= 0.0 && t <= 1.0);
 
-    double invert = 1.0;
+    decimal invert = 1.0;
 
     // Compute cos(theta) using the quaternion scalar product
-    double cosineTheta = quaternion1.dot(quaternion2);
+    decimal cosineTheta = quaternion1.dot(quaternion2);
 
     // Take care of the sign of cosineTheta
     if (cosineTheta < 0.0) {
@@ -208,19 +208,20 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& qu
 
     // Because of precision, if cos(theta) is nearly 1, therefore theta is nearly 0 and we can write
     // sin((1-t)*theta) as (1-t) and sin(t*theta) as t
-    if(1-cosineTheta < EPSILON_TEST) {
+    const decimal epsilon = 0.00001;
+    if(1-cosineTheta < epsilon) {
         return quaternion1 * (1.0-t) + quaternion2 * (t * invert);
     }
 
     // Compute the theta angle
-    double theta = acos(cosineTheta);
+    decimal theta = acos(cosineTheta);
 
     // Compute sin(theta)
-    double sineTheta = sin(theta);
+    decimal sineTheta = sin(theta);
 
     // Compute the two coefficients that are in the spherical linear interpolation formula
-    double coeff1 = sin((1.0-t)*theta) / sineTheta;
-    double coeff2 = sin(t*theta) / sineTheta * invert;
+    decimal coeff1 = sin((1.0-t)*theta) / sineTheta;
+    decimal coeff2 = sin(t*theta) / sineTheta * invert;
 
     // Compute and return the interpolated quaternion
     return quaternion1 * coeff1 + quaternion2 * coeff2;

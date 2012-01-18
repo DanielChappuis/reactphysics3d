@@ -26,7 +26,7 @@
 // Libraries
 #include <complex>
 #include "../configuration.h"
-#include "ConeShape.h"
+#include "ConeCollider.h"
 
 #if defined(VISUAL_DEBUG)
 	#if defined(APPLE_OS)
@@ -44,7 +44,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConeShape::ConeShape(double radius, double height) : radius(radius), halfHeight(height/2.0) {
+ConeCollider::ConeCollider(decimal radius, decimal height) : radius(radius), halfHeight(height/2.0) {
     assert(radius > 0.0);
     assert(halfHeight > 0.0);
     
@@ -53,25 +53,25 @@ ConeShape::ConeShape(double radius, double height) : radius(radius), halfHeight(
 }
 
 // Destructor
-ConeShape::~ConeShape() {
+ConeCollider::~ConeCollider() {
 
 }
 
 // Return a local support point in a given direction
-inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
+inline Vector3 ConeCollider::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
     assert(margin >= 0.0);
 
     const Vector3& v = direction;
-    double sinThetaTimesLengthV = sinTheta * v.length();
+    decimal sinThetaTimesLengthV = sinTheta * v.length();
     Vector3 supportPoint;
 
     if (v.getY() >= sinThetaTimesLengthV) {
         supportPoint = Vector3(0.0, halfHeight, 0.0);
     }
     else {
-        double projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
+        decimal projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
         if (projectedLength > MACHINE_EPSILON) {
-            double d = radius / projectedLength;
+            decimal d = radius / projectedLength;
             supportPoint = Vector3(v.getX() * d, -halfHeight, v.getZ() * d);
         }
         else {
@@ -93,7 +93,7 @@ inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, double 
 
 #ifdef VISUAL_DEBUG
 // Draw the cone (only for debuging purpose)
-void ConeShape::draw() const {
+void ConeCollider::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);

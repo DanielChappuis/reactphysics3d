@@ -27,7 +27,7 @@
 #define	MEMORY_POOL_H
 
 // Libraries
-#include "../constants.h"
+#include "../configuration.h"
 #include <cstddef>
 #include <cstdlib>
 #include <cassert>
@@ -115,6 +115,10 @@ MemoryPool<T>::MemoryPool(uint nbObjectsToAllocate) throw(std::bad_alloc)
 // Deallocate the block of memory that has been allocated previously
 template<class T>
 MemoryPool<T>::~MemoryPool() {
+    
+    // Check if we have a memory leak
+    assert(currentNbObjects == 0);
+    
     // Release the whole memory block
     free(pMemoryBlock);
 }

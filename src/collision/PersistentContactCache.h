@@ -59,11 +59,11 @@ class PersistentContactCache {
         uint nbContacts;                            // Number of contacts in the cache
         MemoryPool<Contact>& memoryPoolContacts;    // Reference to the memory pool with the contacts
 
-        int getMaxArea(double area0, double area1, double area2, double area3) const;   // Return the index of maximum area
-        int getIndexOfDeepestPenetration(Contact* newContact) const;                    // Return the index of the contact with the larger penetration depth
-        int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;   // Return the index that will be removed
-        void removeContact(int index);                                                  // Remove a contact from the cache
-        bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;       // Return true if two vectors are approximatively equal    
+        int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;   // Return the index of maximum area
+        int getIndexOfDeepestPenetration(Contact* newContact) const;                        // Return the index of the contact with the larger penetration depth
+        int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;       // Return the index that will be removed
+        void removeContact(int index);                                                      // Remove a contact from the cache
+        bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;           // Return true if two vectors are approximatively equal    
         
     public:
         PersistentContactCache(Body* const body1, Body* const body2, MemoryPool<Contact>& memoryPoolContacts);  // Constructor
@@ -88,7 +88,7 @@ inline Contact* PersistentContactCache::getContact(uint index) const {
 
 // Return true if two vectors are approximatively equal
 inline bool PersistentContactCache::isApproxEqual(const Vector3& vector1, const Vector3& vector2) const {
-    const double epsilon = 0.1;
+    const decimal epsilon = 0.1;
     return (approxEqual(vector1.getX(), vector2.getX(), epsilon) &&
             approxEqual(vector1.getY(), vector2.getY(), epsilon) &&
             approxEqual(vector1.getZ(), vector2.getZ(), epsilon));

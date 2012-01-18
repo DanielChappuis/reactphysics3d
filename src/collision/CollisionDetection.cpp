@@ -28,9 +28,9 @@
 #include "broadphase/SweepAndPruneAlgorithm.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "../body/Body.h"
-#include "../shapes/BoxShape.h"
+#include "../shapes/BoxCollider.h"
 #include "../body/RigidBody.h"
-#include "../constants.h"
+#include "../configuration.h"
 #include <cassert>
 #include <complex>
 #include <set>
@@ -99,7 +99,6 @@ void CollisionDetection::computeBroadPhase() {
         overlappingPairs.erase(*it);
     }
     
-    
     // The current overlapping pairs become the last step overlapping pairs
     lastStepOverlappingPairs = currentStepOverlappingPairs;
 }
@@ -120,13 +119,16 @@ bool CollisionDetection::computeNarrowPhase() {
         (*it).second->update();
         
         // Use the narrow-phase collision detection algorithm to check if there really are a contact
-        if (narrowPhaseAlgorithm->testCollision(body1->getShape(), body1->getTransform(),
-                                                body2->getShape(), body2->getTransform(), contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(body1->getCollider(), body1->getTransform(),
+                                                body2->getCollider(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
             collisionExists = true;
 
             // Create a new contact
             Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(contactInfo);
+            
+            // Free the contact info memory
+            delete contactInfo;
             
             // Add the contact to the contact cache of the corresponding overlapping pair
             (*it).second->addContact(contact);
@@ -146,7 +148,7 @@ bool CollisionDetection::computeNarrowPhase() {
 // Allow the broadphase to notify the collision detection about an overlapping pair
 // This method is called by a broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyOverlappingPair(Body* body1, Body* body2) {
-    // Construct the pair of index
+    // Construct the pair of body index
     pair<luint, luint> indexPair = body1->getID() < body2->getID() ? make_pair(body1->getID(), body2->getID()) :
                                                                 make_pair(body2->getID(), body1->getID());
     assert(indexPair.first != indexPair.second);

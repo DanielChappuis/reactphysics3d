@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-PhysicsEngine::PhysicsEngine(PhysicsWorld* world, double timeStep = DEFAULT_TIMESTEP)
+PhysicsEngine::PhysicsEngine(PhysicsWorld* world, decimal timeStep = DEFAULT_TIMESTEP)
               : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world) {
     assert(world);
     assert(timeStep > 0.0);
@@ -57,7 +57,6 @@ void PhysicsEngine::update() {
     // While the time accumulator is not empty
     while(timer.isPossibleToTakeStep()) {
         existCollision = false;
-
 		
         // Compute the collision detection
         if (collisionDetection.computeCollisionDetection()) {
@@ -96,10 +95,12 @@ void PhysicsEngine::update() {
 // This method uses the semi-implicit Euler method to update the position and
 // orientation of the body
 void PhysicsEngine::updateAllBodiesMotion() {
-    double dt = timer.getTimeStep();
+    decimal dt = timer.getTimeStep();
     Vector3 newLinearVelocity;
     Vector3 newAngularVelocity;
-
+    Vector3 linearVelocityErrorCorrection;
+    Vector3 angularVelocityErrorCorrection;
+    
     // For each body of thephysics world
     for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
@@ -110,12 +111,17 @@ void PhysicsEngine::updateAllBodiesMotion() {
         if (rigidBody->getIsMotionEnabled()) {
             newLinearVelocity.setAllValues(0.0, 0.0, 0.0);
             newAngularVelocity.setAllValues(0.0, 0.0, 0.0);
+            linearVelocityErrorCorrection.setAllValues(0.0, 0.0, 0.0);
+            angularVelocityErrorCorrection.setAllValues(0.0, 0.0, 0.0);
 
             // If it's a constrained body
             if (constraintSolver.isConstrainedBody(*it)) {
                 // Get the constrained linear and angular velocities from the constraint solver
                 newLinearVelocity = constraintSolver.getConstrainedLinearVelocityOfBody(*it);
                 newAngularVelocity = constraintSolver.getConstrainedAngularVelocityOfBody(*it);
+                
+                linearVelocityErrorCorrection = constraintSolver.getErrorConstrainedLinearVelocityOfBody(rigidBody);
+                angularVelocityErrorCorrection = constraintSolver.getErrorConstrainedAngularVelocityOfBody(rigidBody);
             }
 
             // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
@@ -126,9 +132,10 @@ void PhysicsEngine::updateAllBodiesMotion() {
             // Add the velocity V1 to the new velocity
             newLinearVelocity += rigidBody->getLinearVelocity();
             newAngularVelocity += rigidBody->getAngularVelocity();
-
+            
             // Update the position and the orientation of the body according to the new velocity
-            updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
+            updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity,
+                                               linearVelocityErrorCorrection, angularVelocityErrorCorrection);
 
             // Update the AABB of the rigid body
             rigidBody->updateAABB();
@@ -139,8 +146,9 @@ void PhysicsEngine::updateAllBodiesMotion() {
 // Update the position and orientation of a body
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
-void PhysicsEngine::updatePositionAndOrientationOfBody(RigidBody* rigidBody, const Vector3& newLinVelocity, const Vector3& newAngVelocity) {
-    double dt = timer.getTimeStep();
+void PhysicsEngine::updatePositionAndOrientationOfBody(RigidBody* rigidBody, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
+                                                       const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection) {
+    decimal dt = timer.getTimeStep();
 
     assert(rigidBody);
 
@@ -150,21 +158,27 @@ void PhysicsEngine::updatePositionAndOrientationOfBody(RigidBody* rigidBody, con
     // Update the linear and angular velocity of the body
     rigidBody->setLinearVelocity(newLinVelocity);
     rigidBody->setAngularVelocity(newAngVelocity);
-
+    
     // Get current position and orientation of the body
     const Vector3& currentPosition = rigidBody->getTransform().getPosition();
     const Quaternion& currentOrientation = rigidBody->getTransform().getOrientation();
+        
+    // Error correction projection
+    Vector3 correctedPosition = currentPosition + dt * linearVelocityErrorCorrection;
+    Quaternion correctedOrientation = currentOrientation + Quaternion(angularVelocityErrorCorrection.getX(), angularVelocityErrorCorrection.getY(), angularVelocityErrorCorrection.getZ(), 0) * currentOrientation * 0.5 * dt;
+    
+    Vector3 newPosition = correctedPosition + newLinVelocity * dt;
+    Quaternion newOrientation = correctedOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * correctedOrientation * 0.5 * dt;
 
-    Vector3 newPosition = currentPosition + newLinVelocity * dt;
-    Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;
     Transform newTransform(newPosition, newOrientation.getUnit());
     rigidBody->setTransform(newTransform);
 }
 
 // Compute and set the interpolation factor to all bodies
 void PhysicsEngine::setInterpolationFactorToAllBodies() {
+    
     // Compute the interpolation factor
-    double factor = timer.computeInterpolationFactor();
+    decimal factor = timer.computeInterpolationFactor();
     assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor to all bodies

@@ -131,7 +131,7 @@ void PersistentContactCache::update(const Transform& transform1, const Transform
 int PersistentContactCache::getIndexOfDeepestPenetration(Contact* newContact) const {
     assert(nbContacts == MAX_CONTACTS_IN_CACHE);
     int indexMaxPenetrationDepth = -1;
-    double maxPenetrationDepth = newContact->getPenetrationDepth();
+    decimal maxPenetrationDepth = newContact->getPenetrationDepth();
 
     // For each contact in the cache
     for (uint i=0; i<nbContacts; i++) {
@@ -152,10 +152,10 @@ int PersistentContactCache::getIndexOfDeepestPenetration(Contact* newContact) co
 // kept.
 int PersistentContactCache::getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const {
     assert(nbContacts == MAX_CONTACTS_IN_CACHE);
-    double area0 = 0.0;       // Area with contact 1,2,3 and newPoint
-    double area1 = 0.0;       // Area with contact 0,2,3 and newPoint
-    double area2 = 0.0;       // Area with contact 0,1,3 and newPoint
-    double area3 = 0.0;       // Area with contact 0,1,2 and newPoint
+    decimal area0 = 0.0;       // Area with contact 1,2,3 and newPoint
+    decimal area1 = 0.0;       // Area with contact 0,2,3 and newPoint
+    decimal area2 = 0.0;       // Area with contact 0,1,3 and newPoint
+    decimal area3 = 0.0;       // Area with contact 0,1,2 and newPoint
 
     if (indexMaxPenetration != 0) {
         // Compute the area
@@ -191,7 +191,7 @@ int PersistentContactCache::getIndexToRemove(int indexMaxPenetration, const Vect
 }
 
 // Return the index of maximum area
-int PersistentContactCache::getMaxArea(double area0, double area1, double area2, double area3) const {
+int PersistentContactCache::getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const {
     if (area0 < area1) {
         if (area1 < area2) {
             if (area2 < area3) return 3;

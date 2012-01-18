@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereShape.h"
+#include "SphereCollider.h"
 #include "../configuration.h"
 #include <cassert>
 
@@ -45,18 +45,18 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-SphereShape::SphereShape(double radius) : radius(radius) {
+SphereCollider::SphereCollider(decimal radius) : radius(radius) {
 
 }
 
 // Destructor
-SphereShape::~SphereShape() {
+SphereCollider::~SphereCollider() {
 
 }
 
 #ifdef VISUAL_DEBUG
 // Draw the sphere (only for testing purpose)
-void SphereShape::draw() const {
+void SphereCollider::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);

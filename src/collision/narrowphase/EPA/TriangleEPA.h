@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../../../mathematics/mathematics.h"
-#include "../../../constants.h"
+#include "../../../configuration.h"
 #include "EdgeEPA.h"
 #include <cassert>
 
@@ -51,11 +51,11 @@ class TriangleEPA {
         uint indicesVertices[3];    // Indices of the vertices y_i of the triangle
         EdgeEPA adjacentEdges[3];   // Three adjacent edges of the triangle (edges of other triangles)
         bool isObsolete;            // True if the triangle face is visible from the new support point
-        double det;                 // Determinant
-        Vector3 closestPoint;      // Point v closest to the origin on the affine hull of the triangle
-        double lambda1;             // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
-        double lambda2;             // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
-        double distSquare;          // Square distance of the point closest point v to the origin
+        decimal det;                // Determinant
+        Vector3 closestPoint;       // Point v closest to the origin on the affine hull of the triangle
+        decimal lambda1;            // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
+        decimal lambda2;            // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
+        decimal distSquare;         // Square distance of the point closest point v to the origin
 
     public:
         TriangleEPA();                              // Constructor
@@ -64,7 +64,7 @@ class TriangleEPA {
 
         EdgeEPA& getAdjacentEdge(int index);                                                // Return an adjacent edge of the triangle
         void setAdjacentEdge(int index, EdgeEPA& edge);                                     // Set an adjacent edge of the triangle
-        double getDistSquare() const;                                                       // Return the square distance  of the closest point to origin
+        decimal getDistSquare() const;                                                       // Return the square distance  of the closest point to origin
         void setIsObsolete(bool isObsolete);                                                // Set the isObsolete value
         bool getIsObsolete() const;                                                         // Return true if the triangle face is obsolete
         const Vector3& getClosestPoint() const;                                            // Return the point closest to the origin
@@ -93,7 +93,7 @@ inline void TriangleEPA::setAdjacentEdge(int index, EdgeEPA& edge) {
 }
 
 // Return the square distance  of the closest point to origin
-inline double TriangleEPA::getDistSquare() const {
+inline decimal TriangleEPA::getDistSquare() const {
     return distSquare;
 }
 

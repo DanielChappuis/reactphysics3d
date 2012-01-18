@@ -31,7 +31,7 @@
 #include "Quaternion.h"
 #include "Vector3.h"
 #include "Transform.h"
-#include "../constants.h"
+#include "../configuration.h"
 #include "mathematics_functions.h"
 #include <vector>
 #include <cstdio>
@@ -61,15 +61,15 @@ inline reactphysics3d::Vector3 rotateVectorWithQuaternion(const reactphysics3d::
 // P1 = point1 + alpha * d1
 // P2 = point2 + beta * d2
 inline void closestPointsBetweenTwoLines(const reactphysics3d::Vector3& point1, const reactphysics3d::Vector3& d1, const reactphysics3d::Vector3& point2,
-                                         const reactphysics3d::Vector3& d2, double* alpha, double* beta) {
+                                         const reactphysics3d::Vector3& d2, decimal* alpha, decimal* beta) {
 
     reactphysics3d::Vector3 r = point1 - point2;
-    double a = d1.dot(d1);
-    double b = d1.dot(d2);
-    double c = d1.dot(r);
-    double e = d2.dot(d2);
-    double f = d2.dot(r);
-    double d = a*e-b*b;
+    decimal a = d1.dot(d1);
+    decimal b = d1.dot(d2);
+    decimal c = d1.dot(r);
+    decimal e = d2.dot(d2);
+    decimal f = d2.dot(r);
+    decimal d = a*e-b*b;
 
     // The two lines must not be parallel
     assert(!reactphysics3d::approxEqual(d, 0.0));
@@ -90,11 +90,11 @@ inline bool isPointOnSegment(const reactphysics3d::Vector3& segPointA, const rea
     }
 
     // Compute the length of the segment
-    double segmentLength = d.length();
+    decimal segmentLength = d.length();
 
     // Compute the distance from point "P" to points "segPointA" and "segPointB"
-    double distA = dP.length();
-    double distB = (P - segPointB).length();
+    decimal distA = dP.length();
+    decimal distB = (P - segPointB).length();
 
     // If one of the "distA" and "distB" is greather than the length of the segment, then P is not on the segment
     if (distA > segmentLength || distB > segmentLength) {
@@ -111,7 +111,7 @@ inline bool isPointOnSegment(const reactphysics3d::Vector3& segPointA, const rea
 inline reactphysics3d::Vector3 computeLinesIntersection(const reactphysics3d::Vector3& p1, const reactphysics3d::Vector3& d1,
                                                          const reactphysics3d::Vector3& p2, const reactphysics3d::Vector3& d2) {
     // Computes the two closest points on the lines
-    double alpha, beta;
+    decimal alpha, beta;
     closestPointsBetweenTwoLines(p1, d1, p2, d2, &alpha, &beta);
     reactphysics3d::Vector3 point1 = p1 + alpha * d1;
     reactphysics3d::Vector3 point2 = p2 + beta * d2;
@@ -136,7 +136,7 @@ inline reactphysics3d::Vector3 computeNonParallelSegmentsIntersection(const reac
     assert(!d1.isParallelWith(d2));
 
     // Compute the closet points between the two lines
-    double alpha, beta;
+    decimal alpha, beta;
     closestPointsBetweenTwoLines(seg1PointA, d1, seg2PointA, d2, &alpha, &beta);
     reactphysics3d::Vector3 point1 = seg1PointA + alpha * d1;
     reactphysics3d::Vector3 point2 = seg2PointA + beta * d2;
@@ -147,7 +147,8 @@ inline reactphysics3d::Vector3 computeNonParallelSegmentsIntersection(const reac
 
     // If the two closest point aren't very close, there is no intersection between the segments
     reactphysics3d::Vector3 d = point2 - point1;
-    assert(d.length() <= EPSILON_TEST);
+    const decimal epsilon = 0.00001;
+    assert(d.length() <= epsilon);
 
     // They are very close so we return the intersection point (halfway between "point1" and "point2"
     return 0.5 * (point1 + point2);
@@ -192,7 +193,7 @@ inline std::vector<reactphysics3d::Vector3> projectPointsOntoPlane(const std::ve
 
 
 // Compute the distance between a point "P" and a line (given by a point "A" and a vector "v")
-inline double computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3& P, const reactphysics3d::Vector3& A, const reactphysics3d::Vector3& v) {
+inline decimal computeDistanceBetweenPointAndLine(const reactphysics3d::Vector3& P, const reactphysics3d::Vector3& A, const reactphysics3d::Vector3& v) {
     assert(v.length() != 0);
     return ((P-A).cross(v).length() / (v.length()));
 }
@@ -208,12 +209,12 @@ inline reactphysics3d::Vector3 computeOrthogonalProjectionOfPointOntoALine(const
 // The result point Q will be in a segment of the rectangle
 inline reactphysics3d::Vector3 computeNearestPointOnRectangle(const reactphysics3d::Vector3& P, const std::vector<reactphysics3d::Vector3> rectangle) {
     assert(rectangle.size() == 4);
-    double distPSegment1 = computeDistanceBetweenPointAndLine(P, rectangle[0], rectangle[1] - rectangle[0]);
-    double distPSegment2 = computeDistanceBetweenPointAndLine(P, rectangle[1], rectangle[2] - rectangle[1]);
-    double distPSegment3 = computeDistanceBetweenPointAndLine(P, rectangle[2], rectangle[3] - rectangle[2]);
-    double distPSegment4 = computeDistanceBetweenPointAndLine(P, rectangle[3], rectangle[0] - rectangle[3]);
-    double distSegment1Segment3 = computeDistanceBetweenPointAndLine(rectangle[0], rectangle[3], rectangle[3] - rectangle[2]);
-    double distSegment2Segment4 = computeDistanceBetweenPointAndLine(rectangle[1], rectangle[3], rectangle[0] - rectangle[3]);
+    decimal distPSegment1 = computeDistanceBetweenPointAndLine(P, rectangle[0], rectangle[1] - rectangle[0]);
+    decimal distPSegment2 = computeDistanceBetweenPointAndLine(P, rectangle[1], rectangle[2] - rectangle[1]);
+    decimal distPSegment3 = computeDistanceBetweenPointAndLine(P, rectangle[2], rectangle[3] - rectangle[2]);
+    decimal distPSegment4 = computeDistanceBetweenPointAndLine(P, rectangle[3], rectangle[0] - rectangle[3]);
+    decimal distSegment1Segment3 = computeDistanceBetweenPointAndLine(rectangle[0], rectangle[3], rectangle[3] - rectangle[2]);
+    decimal distSegment2Segment4 = computeDistanceBetweenPointAndLine(rectangle[1], rectangle[3], rectangle[0] - rectangle[3]);
     Vector3 resultPoint;
     
     // Check if P is between the lines of the first pair of parallel segments of the rectangle
@@ -280,8 +281,8 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3& s
     assert(d1.isParallelWith(d2));
 
     // Compute the projection of the two points of the second segment onto the vector of segment 1
-    double projSeg2PointA = d1.getUnit().dot(seg2PointA - seg1PointA);
-    double projSeg2PointB = d1.getUnit().dot(seg2PointB - seg1PointA);
+    decimal projSeg2PointA = d1.getUnit().dot(seg2PointA - seg1PointA);
+    decimal projSeg2PointB = d1.getUnit().dot(seg2PointB - seg1PointA);
 
     // The projections intervals should intersect
     assert(!(projSeg2PointA < 0.0 && projSeg2PointB < 0.0));
@@ -319,7 +320,7 @@ inline void computeParallelSegmentsIntersection(const reactphysics3d::Vector3& s
 // The segment is given by the two vertices in "segment" and the rectangle is given by the ordered vertices in "clipRectangle".
 // This method returns the clipped segment.
 inline std::vector<reactphysics3d::Vector3> clipSegmentWithRectangleInPlane(const std::vector<reactphysics3d::Vector3>& segment, const std::vector<reactphysics3d::Vector3> clipRectangle) {
-    double const epsilon = 0.01;
+    decimal const epsilon = 0.01;
 
     assert(segment.size() == 2);
     assert(clipRectangle.size() == 4);
@@ -375,7 +376,7 @@ inline std::vector<reactphysics3d::Vector3> clipSegmentWithRectangleInPlane(cons
 // a rectangle polygon (given by the ordered 3D vertices in "clipRectangle"). The subject polygon and the clip rectangle are in 3D but we assumed that
 // they are on a same plane in 3D. The method returns the ordered 3D vertices of the subject polygon clipped using the rectangle polygon.
 inline std::vector<reactphysics3d::Vector3> clipPolygonWithRectangleInPlane(const std::vector<reactphysics3d::Vector3>& subjectPolygon, const std::vector<reactphysics3d::Vector3>& clipRectangle) {
-    double const epsilon = 0.1;
+    decimal const epsilon = 0.1;
     assert(clipRectangle.size() == 4);
 
     std::vector<reactphysics3d::Vector3> outputPolygon;
@@ -432,10 +433,10 @@ inline reactphysics3d::Vector3 intersectLineWithPlane(const reactphysics3d::Vect
     assert(!approxEqual(lineVector.dot(planeNormal), 0.0));
 
     // The plane is represented by the equation planeNormal dot X = d where X is a point of the plane
-    double d  = planeNormal.dot(planePoint);
+    decimal d  = planeNormal.dot(planePoint);
 
     // Compute the parameter t
-    double t = (d - planeNormal.dot(linePoint)) / planeNormal.dot(lineVector);
+    decimal t = (d - planeNormal.dot(linePoint)) / planeNormal.dot(lineVector);
 
     // Compute the intersection point
     return linePoint + lineVector * t;

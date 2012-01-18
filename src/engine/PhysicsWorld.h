@@ -64,8 +64,8 @@ class PhysicsWorld {
         PhysicsWorld(const Vector3& gravity);      // Constructor
         virtual ~PhysicsWorld();                   // Destructor
 
-        RigidBody* createRigidBody(const Transform& transform, double mass,
-                                   const Matrix3x3& inertiaTensorLocal, Shape* shape);  // Create a rigid body into the physics world
+        RigidBody* createRigidBody(const Transform& transform, decimal mass,
+                                   const Matrix3x3& inertiaTensorLocal, Collider* collider);  // Create a rigid body into the physics world
         void destroyRigidBody(RigidBody* rigidBody);                                    // Destroy a rigid body
         void clearAddedAndRemovedBodies();                                              // Clear the addedBodies and removedBodies sets
         Vector3 getGravity() const;                                                     // Return the gravity vector of the world

@@ -23,19 +23,19 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONE_SHAPE_H
-#define CONE_SHAPE_H
+#ifndef CONE_COLLIDER_H
+#define CONE_COLLIDER_H
 
 // Libraries
-#include "Shape.h"
+#include "Collider.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class ConeShape :
-        This class represents a cone collision shape centered at the
+    Class ConeCollider :
+        This class represents a cone collider centered at the
         origin and alligned with the Y axis. The cone is defined
         by its height and by the radius of its base. The center of the
         cone is at the half of the height. The "transform" of the
@@ -43,23 +43,23 @@ namespace reactphysics3d {
         to the cone.
     -------------------------------------------------------------------
 */
-class ConeShape : public Shape {
+class ConeCollider : public Collider {
     private :
-        double radius;              // Radius of the base
-        double halfHeight;          // Half height of the cone
-        double sinTheta;            // sine of the semi angle at the apex point
+        decimal radius;              // Radius of the base
+        decimal halfHeight;          // Half height of the cone
+        decimal sinTheta;            // sine of the semi angle at the apex point
         
     public :
-        ConeShape(double radius, double height);        // Constructor
-        virtual ~ConeShape();                           // Destructor
+        ConeCollider(decimal radius, decimal height);      // Constructor
+        virtual ~ConeCollider();                           // Destructor
 
-        double getRadius() const;                                                                   // Return the radius
-        void setRadius(double radius);                                                              // Set the radius
-        double getHeight() const;                                                                   // Return the height
-        void setHeight(double height);                                                              // Set the height
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
+        decimal getRadius() const;                                                                   // Return the radius
+        void setRadius(decimal radius);                                                              // Set the radius
+        decimal getHeight() const;                                                                   // Return the height
+        void setHeight(decimal height);                                                              // Set the height
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;    // Return a support point in a given direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const;                                   // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;               // Return the local inertia tensor of the collider
 
 
 #ifdef VISUAL_DEBUG
@@ -68,12 +68,12 @@ class ConeShape : public Shape {
 };
 
 // Return the radius
-inline double ConeShape::getRadius() const {
+inline decimal ConeCollider::getRadius() const {
     return radius;
 }
 
 // Set the radius
-inline void ConeShape::setRadius(double radius) {
+inline void ConeCollider::setRadius(decimal radius) {
     this->radius = radius;
 
     // Update sine of the semi-angle at the apex point
@@ -81,12 +81,12 @@ inline void ConeShape::setRadius(double radius) {
 }
 
 // Return the height
-inline double ConeShape::getHeight() const {
+inline decimal ConeCollider::getHeight() const {
     return 2.0 * halfHeight;
 }
 
 // Set the height
-inline void ConeShape::setHeight(double height) {
+inline void ConeCollider::setHeight(decimal height) {
     this->halfHeight = height / 2.0;
 
     // Update the sine of the semi-angle at the apex point
@@ -94,14 +94,14 @@ inline void ConeShape::setHeight(double height) {
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3 ConeShape::getLocalExtents(double margin) const {
+inline Vector3 ConeCollider::getLocalExtents(decimal margin) const {
     return Vector3(radius + margin, halfHeight + margin, radius + margin);
 }
 
-// Return the local inertia tensor of the shape
-inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
-    double rSquare = radius * radius;
-    double diagXZ = 0.15 * mass * (rSquare + halfHeight);
+// Return the local inertia tensor of the collider
+inline void ConeCollider::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+    decimal rSquare = radius * radius;
+    decimal diagXZ = 0.15 * mass * (rSquare + halfHeight);
     tensor.setAllValues(diagXZ, 0.0, 0.0, 0.0, 0.3 * mass * rSquare, 0.0, 0.0, 0.0, diagXZ);
 }
 

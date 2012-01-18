@@ -42,23 +42,23 @@ namespace reactphysics3d {
 */
 class Matrix3x3 {
     private :
-        double array[3][3];                                                                     // Array with the values of the matrix
+        decimal array[3][3];                                                                    // Array with the values of the matrix
 
     public :
         Matrix3x3();                                                                            // Constructor
-        Matrix3x3(double value);                                                                // Constructor
-        Matrix3x3(double a1, double a2, double a3, double b1, double b2, double b3,
-                  double c1, double c2, double c3);                                             // Constructor
+        Matrix3x3(decimal value);                                                               // Constructor
+        Matrix3x3(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
+                  decimal c1, decimal c2, decimal c3);                                          // Constructor
         virtual ~Matrix3x3();                                                                   // Destructor
 
-        double getValue(int i, int j) const;                                                    // Get a value in the matrix
-        void setValue(int i, int j, double value);                                              // Set a value in the matrix
-        void setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
-                  double c1, double c2, double c3);                                             // Set all the values in the matrix
+        decimal getValue(int i, int j) const;                                                   // Get a value in the matrix
+        void setValue(int i, int j, decimal value);                                             // Set a value in the matrix
+        void setAllValues(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
+                  decimal c1, decimal c2, decimal c3);                                          // Set all the values in the matrix
         Vector3 getColumn(int i) const;                                                         // Return a column
         Matrix3x3 getTranspose() const;                                                         // Return the transpose matrix
-        double getDeterminant() const;                                                          // Return the determinant of the matrix
-        double getTrace() const;                                                                // Return the trace of the matrix
+        decimal getDeterminant() const;                                                         // Return the determinant of the matrix
+        decimal getTrace() const;                                                               // Return the trace of the matrix
         Matrix3x3 getInverse() const;                                                           // Return the inverse matrix
         Matrix3x3 getAbsoluteMatrix() const;                                                    // Return the matrix with absolute values
         void setToIdentity();                                                                   // Set the matrix to the identity matrix
@@ -68,8 +68,8 @@ class Matrix3x3 {
         friend Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for addition
         friend Matrix3x3 operator-(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for substraction
         friend Matrix3x3 operator-(const Matrix3x3& matrix);                                    // Overloaded operator for the negative of the matrix
-        friend Matrix3x3 operator*(double nb, const Matrix3x3& matrix);                         // Overloaded operator for multiplication with a number
-        friend Matrix3x3 operator*(const Matrix3x3& matrix, double nb);                         // Overloaded operator for multiplication with a matrix
+        friend Matrix3x3 operator*(decimal nb, const Matrix3x3& matrix);                        // Overloaded operator for multiplication with a number
+        friend Matrix3x3 operator*(const Matrix3x3& matrix, decimal nb);                        // Overloaded operator for multiplication with a matrix
         friend Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2);         // Overloaded operator for matrix multiplication
         friend Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector);               // Overloaded operator for multiplication with a vector
 
@@ -77,25 +77,25 @@ class Matrix3x3 {
         bool operator!= (const Matrix3x3& matrix) const;                                        // Overloaded operator for the is different condition
         Matrix3x3& operator+=(const Matrix3x3& matrix);                                         // Overloaded operator for addition with assignment
         Matrix3x3& operator-=(const Matrix3x3& matrix);                                         // Overloaded operator for substraction with assignment
-        Matrix3x3& operator*=(double nb);                                                      // Overloaded operator for multiplication with a number with assignment
+        Matrix3x3& operator*=(decimal nb);                                                      // Overloaded operator for multiplication with a number with assignment
 };
 
 
 // Method to get a value in the matrix (inline)
-inline double Matrix3x3::getValue(int i, int j) const {
+inline decimal Matrix3x3::getValue(int i, int j) const {
     assert(i>=0 && i<3 && j>=0 && j<3);
     return array[i][j];
 }
 
 // Method to set a value in the matrix (inline)
-inline void Matrix3x3::setValue(int i, int j, double value) {
+inline void Matrix3x3::setValue(int i, int j, decimal value) {
     assert(i>=0 && i<3 && j>=0 && j<3);
     array[i][j] = value;
 }
 
 // Method to set all the values in the matrix
-inline void Matrix3x3::setAllValues(double a1, double a2, double a3, double b1, double b2, double b3,
-                                    double c1, double c2, double c3) {
+inline void Matrix3x3::setAllValues(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
+                                    decimal c1, decimal c2, decimal c3) {
     array[0][0] = a1; array[0][1] = a2; array[0][2] = a3;
     array[1][0] = b1; array[1][1] = b2; array[1][2] = b3;
     array[2][0] = c1; array[2][1] = c2; array[2][2] = c3;
@@ -116,14 +116,14 @@ inline Matrix3x3 Matrix3x3::getTranspose() const {
 }
 
 // Return the determinant of the matrix
-inline double Matrix3x3::getDeterminant() const {
+inline decimal Matrix3x3::getDeterminant() const {
     // Compute and return the determinant of the matrix
     return (array[0][0]*(array[1][1]*array[2][2]-array[2][1]*array[1][2]) - array[0][1]*(array[1][0]*array[2][2]-array[2][0]*array[1][2]) +
             array[0][2]*(array[1][0]*array[2][1]-array[2][0]*array[1][1]));
 }
 
 // Return the trace of the matrix
-inline double Matrix3x3::getTrace() const {
+inline decimal Matrix3x3::getTrace() const {
     // Compute and return the trace
     return (array[0][0] + array[1][1] + array[2][2]);
 }
@@ -170,14 +170,14 @@ inline Matrix3x3 operator-(const Matrix3x3& matrix) {
 }
 
 // Overloaded operator for multiplication with a number
-inline Matrix3x3 operator*(double nb, const Matrix3x3& matrix) {
+inline Matrix3x3 operator*(decimal nb, const Matrix3x3& matrix) {
     return Matrix3x3(matrix.array[0][0] * nb, matrix.array[0][1] * nb, matrix.array[0][2] * nb,
                      matrix.array[1][0] * nb, matrix.array[1][1] * nb, matrix.array[1][2] * nb,
                      matrix.array[2][0] * nb, matrix.array[2][1] * nb, matrix.array[2][2] * nb);
 }
 
 // Overloaded operator for multiplication with a matrix
-inline Matrix3x3 operator*(const Matrix3x3& matrix, double nb) {
+inline Matrix3x3 operator*(const Matrix3x3& matrix, decimal nb) {
     return nb * matrix;
 }
 
@@ -230,7 +230,7 @@ inline Matrix3x3& Matrix3x3::operator-=(const Matrix3x3& matrix) {
 }
 
 // Overloaded operator for multiplication with a number with assignment
-inline Matrix3x3& Matrix3x3::operator*=(double nb) {
+inline Matrix3x3& Matrix3x3::operator*=(decimal nb) {
    array[0][0] *= nb; array[0][1] *= nb; array[0][2] *= nb;
    array[1][0] *= nb; array[1][1] *= nb; array[1][2] *= nb;
    array[2][0] *= nb; array[2][1] *= nb; array[2][2] *= nb;

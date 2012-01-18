@@ -32,7 +32,7 @@
 #include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
-#include "../constants.h"
+#include "../configuration.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -50,20 +50,23 @@ class PhysicsEngine {
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
 
-        void updateAllBodiesMotion();                                                                                           // Compute the motion of all bodies and update their positions and orientations
-        void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity);    // Update the position and orientation of a body
-        void setInterpolationFactorToAllBodies();                                                                                // Compute and set the interpolation factor to all bodies
-        void applyGravity();                                                                                                    // Apply the gravity force to all bodies
+        void updateAllBodiesMotion();                                                                                                            // Compute the motion of all bodies and update their positions and orientations
+        void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
+                                                const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection);    // Update the position and orientation of a body
+        void setInterpolationFactorToAllBodies();                                                                                                // Compute and set the interpolation factor to all bodies
+        void applyGravity();                                                                                                                     // Apply the gravity force to all bodies
 
 public :
-        PhysicsEngine(PhysicsWorld* world, double timeStep);    // Constructor
+        PhysicsEngine(PhysicsWorld* world, decimal timeStep);    // Constructor
         ~PhysicsEngine();                                       // Destructor
 
-        void start();                                           // Start the physics simulation
-        void stop();                                            // Stop the physics simulation
-        void update();                                          // Update the physics simulation
-        void setPenetrationFactor(double factor);               // Set the penetration factor for the constraint solver
-        void setNbLCPIterations(uint nbIterations);             // Set the number of iterations of the LCP solver
+        void start();                                                   // Start the physics simulation
+        void stop();                                                    // Stop the physics simulation
+        void update();                                                  // Update the physics simulation
+        void setPenetrationFactor(decimal factor);                      // Set the penetration factor for the constraint solver
+        void setNbLCPIterations(uint nbIterations);                     // Set the number of iterations of the LCP solver
+        void setIsErrorCorrectionActive(bool isErrorCorrectionActive);  // Set the isErrorCorrectionActive value
+
 };
 
 // --- Inline functions --- //
@@ -78,14 +81,20 @@ inline void PhysicsEngine::stop() {
 }      
 
 // Set the penetration factor for the constraint solver
-inline void PhysicsEngine::setPenetrationFactor(double factor) {
+inline void PhysicsEngine::setPenetrationFactor(decimal factor) {
     constraintSolver.setPenetrationFactor(factor);
 }               
 
 // Set the number of iterations of the LCP solver
 inline void PhysicsEngine::setNbLCPIterations(uint nbIterations) {
     constraintSolver.setNbLCPIterations(nbIterations);
-}             
+}   
+
+// Set the isErrorCorrectionActive value
+inline void PhysicsEngine::setIsErrorCorrectionActive(bool isErrorCorrectionActive) {
+    constraintSolver.setIsErrorCorrectionActive(isErrorCorrectionActive);
+}
+
 
 }
 

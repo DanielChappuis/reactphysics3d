@@ -47,22 +47,22 @@ class AABB {
     private :
         Vector3 minCoordinates;        // Minimum world coordinates of the AABB on the x,y and z axis
         Vector3 maxCoordinates;        // Maximum world coordinates of the AABB on the x,y and z axis
-        Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
+        Body* bodyPointer;             // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
 
     public :
-        AABB();                                                           // Constructor
+        AABB();                                                          // Constructor
         AABB(const Transform& transform, const Vector3& extents);        // Constructor
-        virtual ~AABB();                                                  // Destructor
+        virtual ~AABB();                                                 // Destructor
 
         Vector3 getCenter() const;                                                     // Return the center point
         const Vector3& getMinCoordinates() const;                                      // Return the minimum coordinates of the AABB
         const Vector3& getMaxCoordinates() const;                                      // Return the maximum coordinates of the AABB
-        Body* getBodyPointer() const;                                                   // Return a pointer to the owner body
-        void setBodyPointer(Body* bodyPointer);                                         // Set the body pointer
-        bool testCollision(const AABB& aabb) const;                                     // Return true if the current AABB is overlapping is the AABB in argument
+        Body* getBodyPointer() const;                                                  // Return a pointer to the owner body
+        void setBodyPointer(Body* bodyPointer);                                        // Set the body pointer
+        bool testCollision(const AABB& aabb) const;                                    // Return true if the current AABB is overlapping is the AABB in argument
         virtual void update(const Transform& newTransform, const Vector3& extents);    // Update the oriented bounding box orientation according to a new orientation of the rigid body
 #ifdef VISUAL_DEBUG
-       virtual void draw() const;                                                       // Draw the AABB (only for testing purpose)
+       virtual void draw() const;                                                      // Draw the AABB (only for testing purpose)
 #endif
 };
 

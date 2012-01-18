@@ -79,13 +79,13 @@ void SweepAndPruneAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
 // the collision detection object about overlapping pairs using the
 // broadPhaseNotifyOverlappingPair() method from the CollisionDetection class
 void SweepAndPruneAlgorithm::computePossibleCollisionPairs() {
-    double variance[3];                             // Variance of the distribution of the AABBs on the three x, y and z axis
-    double esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
-    double esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
+    decimal variance[3];                            // Variance of the distribution of the AABBs on the three x, y and z axis
+    decimal esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
+    decimal esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
     vector<const AABB*>::iterator it;               // Iterator on the sortedAABBs set
     vector<const AABB*>::iterator it2;              // Second iterator
     Vector3 center3D;                               // Center of the current AABB
-    double center[3];                               // Coordinates of the center of the current AABB
+    decimal center[3];                               // Coordinates of the center of the current AABB
     int i;
     const Body* body;                               // Body pointer on the body corresponding to an AABB
     uint nbAABBs = sortedAABBs.size();              // Number of AABBs

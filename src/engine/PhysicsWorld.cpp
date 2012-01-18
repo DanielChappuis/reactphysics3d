@@ -44,10 +44,10 @@ PhysicsWorld::~PhysicsWorld() {
 }
 
 // Create a rigid body into the physics world
-RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape) {
+RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider) {
     
     // Create the rigid body
-    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, shape, currentBodyID);
+    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collider, currentBodyID);
     
     currentBodyID++;
     
@@ -60,11 +60,11 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, double mass
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     removeRigidBody(rigidBody);
 	
-	// Call the constructor of the rigid body
-	rigidBody->RigidBody::~RigidBody();
-	
-	// Free the object from the memory pool
-	memoryPoolRigidBodies.freeObject(rigidBody);
+    // Call the constructor of the rigid body
+    rigidBody->RigidBody::~RigidBody();
+
+    // Free the object from the memory pool
+    memoryPoolRigidBodies.freeObject(rigidBody);
 }  
 
 // Remove all collision contacts constraints

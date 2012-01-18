@@ -89,7 +89,7 @@ inline TriangleEPA& TrianglesStore::last() {
 inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2) {
     TriangleEPA* newTriangle = 0;
 
-    // If we have not reach the maximum number of triangles
+    // If we have not reached the maximum number of triangles
     if (nbTriangles != MAX_TRIANGLES) {
         newTriangle = &triangles[nbTriangles++];
         new (newTriangle) TriangleEPA(v0, v1, v2);

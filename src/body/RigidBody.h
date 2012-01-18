@@ -29,7 +29,7 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
-#include "../shapes/Shape.h"
+#include "../shapes/Collider.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
@@ -50,32 +50,32 @@ class RigidBody : public Body {
         Vector3 externalTorque;                 // Current external torque on the body
         Matrix3x3 inertiaTensorLocal;           // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;    // Inverse of the inertia tensor of the body (in body coordinates)
-        double massInverse;                     // Inverse of the mass of the body
-        double restitution;                     // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
+        decimal massInverse;                     // Inverse of the mass of the body
+        decimal restitution;                     // Coefficient of restitution (between 0 and 1), 1 for a very boucing body
 
     public :
-        RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal,
-                  Shape* shape, long unsigned int id);                                          // Constructor                                                                                                         // Copy-constructor
+        RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
+                  Collider* collider, long unsigned int id);                                          // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                                   // Destructor
 
         Vector3 getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3& linearVelocity);                 // Set the linear velocity of the body
         Vector3 getAngularVelocity() const;                                    // Return the angular velocity
         void setAngularVelocity(const Vector3& angularVelocity);               // Set the angular velocity
-        void setMassInverse(double massInverse);                                // Set the inverse of the mass
+        void setMassInverse(decimal massInverse);                              // Set the inverse of the mass
         Vector3 getExternalForce() const;                                      // Return the current external force of the body
         void setExternalForce(const Vector3& force);                           // Set the current external force on the body
         Vector3 getExternalTorque() const;                                     // Return the current external torque of the body
         void setExternalTorque(const Vector3& torque);                         // Set the current external torque of the body
-        double getMassInverse() const;                                          // Return the inverse of the mass of the body
-        Matrix3x3 getInertiaTensorLocal() const;                                // Return the local inertia tensor of the body (in body coordinates)
-        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);        // Set the local inertia tensor of the body (in body coordinates)
-        Matrix3x3 getInertiaTensorLocalInverse() const;                         // Get the inverse of the inertia tensor
-        Matrix3x3 getInertiaTensorWorld() const;                                // Return the inertia tensor in world coordinates
-        Matrix3x3 getInertiaTensorInverseWorld() const;                         // Return the inverse of the inertia tensor in world coordinates
+        decimal getMassInverse() const;                                        // Return the inverse of the mass of the body
+        Matrix3x3 getInertiaTensorLocal() const;                               // Return the local inertia tensor of the body (in body coordinates)
+        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);       // Set the local inertia tensor of the body (in body coordinates)
+        Matrix3x3 getInertiaTensorLocalInverse() const;                        // Get the inverse of the inertia tensor
+        Matrix3x3 getInertiaTensorWorld() const;                               // Return the inertia tensor in world coordinates
+        Matrix3x3 getInertiaTensorInverseWorld() const;                        // Return the inverse of the inertia tensor in world coordinates
         
-        double getRestitution() const;                                          // Get the restitution coefficient
-        void setRestitution(double restitution) throw(std::invalid_argument);   // Set the restitution coefficient
+        decimal getRestitution() const;                                        // Get the restitution coefficient
+        void setRestitution(decimal restitution) throw(std::invalid_argument); // Set the restitution coefficient
 };
 
 // Return the linear velocity
@@ -93,7 +93,7 @@ inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 }
 
 // Set the inverse of the mass
-inline void RigidBody::setMassInverse(double massInverse) {
+inline void RigidBody::setMassInverse(decimal massInverse) {
     this->massInverse = massInverse;
 }
 
@@ -123,7 +123,7 @@ inline void RigidBody::setExternalTorque(const Vector3& torque) {
 }
 
 // Return the inverse of the mass of the body
-inline double RigidBody::getMassInverse() const {
+inline decimal RigidBody::getMassInverse() const {
     return massInverse;
 }
 
@@ -165,12 +165,12 @@ inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 }
 
 // Get the restitution coeffficient of the rigid body
-inline double RigidBody::getRestitution() const {
+inline decimal RigidBody::getRestitution() const {
     return restitution;
 }
 
 // Set the restitution coefficient
-inline void RigidBody::setRestitution(double restitution) throw(std::invalid_argument) {
+inline void RigidBody::setRestitution(decimal restitution) throw(std::invalid_argument) {
     // Check if the restitution coefficient is between 0 and 1
     if (restitution >= 0.0 && restitution <= 1.0) {
         this->restitution = restitution;

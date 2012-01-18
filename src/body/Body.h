@@ -31,8 +31,8 @@
 #include <cassert>
 #include "../mathematics/Transform.h"
 #include "../shapes/AABB.h"
-#include "../shapes/Shape.h"
-#include "../constants.h"
+#include "../shapes/Collider.h"
+#include "../configuration.h"
 
 // Namespace reactphysics3d
 namespace reactphysics3d {
@@ -46,36 +46,36 @@ namespace reactphysics3d {
 */
 class Body {
     protected :
-        Shape* shape;                   // Collision shape of the body
-        double mass;                    // Mass of the body
+        Collider* collider;             // Collider of the body
+        decimal mass;                   // Mass of the body
         Transform transform;            // Position and orientation of the body
         Transform oldTransform;         // Last position and orientation of the body
-        double interpolationFactor;     // Interpolation factor used for the state interpolation
+        decimal interpolationFactor;    // Interpolation factor used for the state interpolation
         bool isMotionEnabled;           // True if the body is able to move
         bool isCollisionEnabled;        // True if the body can collide with others bodies
         AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
         luint id;                       // ID of the body
 
     public :
-        Body(const Transform& transform, Shape* shape, double mass, long unsigned int id);      // Constructor
-        virtual ~Body();                                                                        // Destructor
+        Body(const Transform& transform, Collider* collider, decimal mass, long unsigned int id);       // Constructor
+        virtual ~Body();                                                                                // Destructor
 
-        luint getID() const;                                            // Return the id of the body
-        Shape* getShape() const;                                        // Return the collision shape
-        void setShape(Shape* shape);                                    // Set the collision shape
-        double getMass() const;                                         // Return the mass of the body
-        void setMass(double mass);                                      // Set the mass of the body
-        const Transform& getTransform() const;                          // Return the current position and orientation
-        void setTransform(const Transform& transform);                  // Set the current position and orientation
-        const AABB* getAABB() const;                                    // Return the AAABB of the body
-        Transform getInterpolatedTransform() const;                     // Return the interpolated transform for rendering
-        void setInterpolationFactor(double factor);                     // Set the interpolation factor of the body
-        bool getIsMotionEnabled() const;                                // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);                  // Set the value to true if the body can move
-        bool getIsCollisionEnabled() const;                             // Return true if the body can collide with others bodies
-        void setIsCollisionEnabled(bool isCollisionEnabled);            // Set the isCollisionEnabled value
-        void updateOldTransform();                                      // Update the old transform with the current one
-        void updateAABB();                                              // Update the Axis-Aligned Bounding Box coordinates
+        luint getID() const;                                    // Return the id of the body
+        Collider* getCollider() const;                          // Return the collision collider
+        void setCollider(Collider* collider);                         // Set the collision collider
+        decimal getMass() const;                                // Return the mass of the body
+        void setMass(decimal mass);                             // Set the mass of the body
+        const Transform& getTransform() const;                  // Return the current position and orientation
+        void setTransform(const Transform& transform);          // Set the current position and orientation
+        const AABB* getAABB() const;                            // Return the AAABB of the body
+        Transform getInterpolatedTransform() const;             // Return the interpolated transform for rendering
+        void setInterpolationFactor(decimal factor);            // Set the interpolation factor of the body
+        bool getIsMotionEnabled() const;                        // Return if the rigid body can move
+        void setIsMotionEnabled(bool isMotionEnabled);          // Set the value to true if the body can move
+        bool getIsCollisionEnabled() const;                     // Return true if the body can collide with others bodies
+        void setIsCollisionEnabled(bool isCollisionEnabled);    // Set the isCollisionEnabled value
+        void updateOldTransform();                              // Update the old transform with the current one
+        void updateAABB();                                      // Update the Axis-Aligned Bounding Box coordinates
 };
 
 // Return the id of the body
@@ -83,20 +83,20 @@ inline luint Body::getID() const {
     return id;
 }                               
 
-// Return the collision shape
-inline Shape* Body::getShape() const {
-    assert(shape);
-    return shape;
+// Return the collider
+inline Collider* Body::getCollider() const {
+    assert(collider);
+    return collider;
 }
 
-// Set the collision shape
-inline void Body::setShape(Shape* shape) {
-    assert(shape);
-    this->shape = shape;
+// Set the collider
+inline void Body::setCollider(Collider* collider) {
+    assert(collider);
+    this->collider = collider;
 }
 
 // Method that return the mass of the body
-inline double Body::getMass() const {
+inline decimal Body::getMass() const {
     return mass;
 };
 
@@ -106,7 +106,7 @@ inline Transform Body::getInterpolatedTransform() const {
 }
 
 // Set the interpolation factor of the body
-inline void Body::setInterpolationFactor(double factor) {
+inline void Body::setInterpolationFactor(decimal factor) {
     // Set the factor
     interpolationFactor = factor;
 }
@@ -122,7 +122,7 @@ inline void Body::setIsMotionEnabled(bool isMotionEnabled) {
 }
 
 // Method that set the mass of the body
-inline void Body::setMass(double mass) {
+inline void Body::setMass(decimal mass) {
     this->mass = mass;
 }
 
@@ -160,7 +160,7 @@ inline void Body::updateOldTransform() {
 // Update the rigid body in order to reflect a change in the body state
 inline void Body::updateAABB() {
     // Update the AABB
-    aabb->update(transform, shape->getLocalExtents(OBJECT_MARGIN));
+    aabb->update(transform, collider->getLocalExtents(OBJECT_MARGIN));
 }
 
 

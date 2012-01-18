@@ -23,35 +23,35 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SPHERE_SHAPE_H
-#define SPHERE_SHAPE_H
+#ifndef SPHERE_COLLIDER_H
+#define SPHERE_COLLIDER_H
 
 // Libraries
-#include "Shape.h"
+#include "Collider.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class SphereShape :
-        This class represents a sphere collision shape that is centered
+    Class SphereCollider :
+        This class represents a sphere collider that is centered
         at the origin and defined by its radius.
     -------------------------------------------------------------------
 */
-class SphereShape : public Shape {
+class SphereCollider : public Collider {
     private :
-        double radius;              // Radius of the sphere
+        decimal radius;              // Radius of the sphere
 
     public :
-        SphereShape(double radius);                 // Constructor
-        virtual ~SphereShape();                     // Destructor
+        SphereCollider(decimal radius);                 // Constructor
+        virtual ~SphereCollider();                     // Destructor
 
-        double getRadius() const;                                                                   // Return the radius of the sphere
-        void setRadius(double radius);                                                              // Set the radius of the sphere
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const;    // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const;                                   // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const;               // Return the local inertia tensor of the shape
+        decimal getRadius() const;                                                                  // Return the radius of the sphere
+        void setRadius(decimal radius);                                                             // Set the radius of the sphere
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;   // Return a local support point in a given direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const;                                  // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;              // Return the local inertia tensor of the collider
 
 #ifdef VISUAL_DEBUG
             virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -59,19 +59,19 @@ class SphereShape : public Shape {
 };
 
 // Get the radius of the sphere
-inline double SphereShape::getRadius() const {
+inline decimal SphereCollider::getRadius() const {
     return radius;
 }
 
 // Set the radius of the sphere
-inline void SphereShape::setRadius(double radius) {
+inline void SphereCollider::setRadius(decimal radius) {
     this->radius = radius;
 }
 
 // Return a local support point in a given direction
-inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, double margin) const {
+inline Vector3 SphereCollider::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
     assert(margin >= 0.0);
-    double length = direction.length();
+    decimal length = direction.length();
 
     // If the direction vector is not the zero vector
     if (length > 0.0) {
@@ -84,15 +84,15 @@ inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, doubl
     return Vector3(0, radius + margin, 0);
 }
 
-// Return the local extents of the shape (half-width) in x,y and z local direction
+// Return the local extents of the collider (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3 SphereShape::getLocalExtents(double margin) const {
+inline Vector3 SphereCollider::getLocalExtents(decimal margin) const {
     return Vector3(radius + margin, radius + margin, radius + margin);
 }
 
 // Return the local inertia tensor of the sphere
-inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const {
-    double diag = 0.4 * mass * radius * radius;
+inline void SphereCollider::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+    decimal diag = 0.4 * mass * radius * radius;
     tensor.setAllValues(diag, 0.0, 0.0, 0.0, diag, 0.0, 0.0, 0.0, diag);
 }
 

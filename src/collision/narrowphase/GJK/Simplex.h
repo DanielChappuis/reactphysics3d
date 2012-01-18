@@ -49,13 +49,13 @@ typedef unsigned int Bits;
 class Simplex {
     private:
         Vector3 points[4];                 // Current points
-        double pointsLengthSquare[4];       // pointsLengthSquare[i] = (points[i].length)^2
-        double maxLengthSquare;             // Maximum length of pointsLengthSquare[i]
+        decimal pointsLengthSquare[4];       // pointsLengthSquare[i] = (points[i].length)^2
+        decimal maxLengthSquare;             // Maximum length of pointsLengthSquare[i]
         Vector3 suppPointsA[4];            // Support points of object A in local coordinates
         Vector3 suppPointsB[4];            // Support points of object B in local coordinates
         Vector3 diffLength[4][4];          // diff[i][j] contains points[i] - points[j]
-        double det[16][4];                  // Cached determinant values
-        double normSquare[4][4];            // norm[i][j] = (diff[i][j].length())^2
+        decimal det[16][4];                  // Cached determinant values
+        decimal normSquare[4][4];            // norm[i][j] = (diff[i][j].length())^2
         Bits bitsCurrentSimplex;            // 4 bits that identify the current points of the simplex
                                             // For instance, 0101 means that points[1] and points[3] are in the simplex
         Bits lastFound;                     // Number between 1 and 4 that identify the last found support point
@@ -77,7 +77,7 @@ class Simplex {
         bool isFull() const;                                                                            // Return true if the simplex contains 4 points
         bool isEmpty() const;                                                                           // Return true if the simple is empty
         unsigned int getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vector3* points) const;  // Return the points of the simplex
-        double getMaxLengthSquareOfAPoint() const;                                                      // Return the maximum squared length of a point
+        decimal getMaxLengthSquareOfAPoint() const;                                                      // Return the maximum squared length of a point
         void addPoint(const Vector3& point, const Vector3& suppPointA, const Vector3& suppPointB);   // Addd a point to the simplex
         bool isPointInSimplex(const Vector3& point) const;                                             // Return true if the point is in the simplex
         bool isAffinelyDependent() const;                                                               // Return true if the set is affinely dependent
@@ -107,7 +107,7 @@ inline bool Simplex::isEmpty() const {
 }
 
 // Return the maximum squared length of a point
-inline double Simplex::getMaxLengthSquareOfAPoint() const {
+inline decimal Simplex::getMaxLengthSquareOfAPoint() const {
     return maxLengthSquare;
 }
 

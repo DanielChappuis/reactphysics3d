@@ -40,7 +40,7 @@ Vector3::Vector3() {
 }
 
 // Constructor with arguments
-Vector3::Vector3(double x, double y, double z) {
+Vector3::Vector3(decimal x, decimal y, decimal z) {
     values[0] = x;
     values[1] = y;
     values[2] = z;
@@ -60,12 +60,12 @@ Vector3::~Vector3() {
 
 // Return the corresponding unit vector
 Vector3 Vector3::getUnit() const {
-    double lengthVector = length();
+    decimal lengthVector = length();
 
     assert(lengthVector != 0.0);
 
     // Compute and return the unit vector
-    double lengthInv = 1.0 / lengthVector;
+    decimal lengthInv = 1.0 / lengthVector;
     return Vector3(values[0] * lengthInv, values[1] * lengthInv, values[2] * lengthInv);
 }
 
@@ -91,6 +91,6 @@ Vector3 Vector3::getOneOrthogonalVector() const {
         vector1.setZ((-values[0]*values[2]-values[1]*vector1.getY())/values[2]);
     }
 
-    assert(vector1.isUnit());
+    //assert(vector1.isUnit());
     return vector1;
 }

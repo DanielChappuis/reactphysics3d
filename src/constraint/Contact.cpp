@@ -31,7 +31,7 @@ using namespace std;
 
 // Constructor
 Contact::Contact(const ContactInfo* contactInfo)
-        : Constraint(contactInfo->body1, contactInfo->body2, 3, true), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
+        : Constraint(contactInfo->body1, contactInfo->body2, 3, true, CONTACT), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
           localPointOnBody1(contactInfo->localPoint1), localPointOnBody2(contactInfo->localPoint2),
           worldPointOnBody1(contactInfo->worldPoint1), worldPointOnBody2(contactInfo->worldPoint2) {
     assert(penetrationDepth > 0.0);
@@ -55,7 +55,7 @@ Contact::~Contact() {
 // fill in this matrix with all the jacobian matrix of the mathematical constraint
 // of the contact. The argument "noConstraint", is the row were the method have
 // to start to fill in the J_sp matrix.
-void Contact::computeJacobian(int noConstraint, double J_sp[NB_MAX_CONSTRAINTS][2*6]) const {
+void Contact::computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const {
     assert(body1);
     assert(body2);
 
@@ -128,7 +128,7 @@ void Contact::computeJacobian(int noConstraint, double J_sp[NB_MAX_CONSTRAINTS][
 // Compute the lowerbounds values for all the mathematical constraints. The
 // argument "lowerBounds" is the lowerbounds values vector of the constraint solver and
 // this methods has to fill in this vector starting from the row "noConstraint"
-void Contact::computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONSTRAINTS]) const {
+void Contact::computeLowerBound(int noConstraint, decimal lowerBounds[NB_MAX_CONSTRAINTS]) const {
     assert(noConstraint >= 0 && noConstraint + nbConstraints <= NB_MAX_CONSTRAINTS);
 
     lowerBounds[noConstraint] = 0.0;                // Lower bound for the contact constraint
@@ -139,10 +139,10 @@ void Contact::computeLowerBound(int noConstraint, double lowerBounds[NB_MAX_CONS
 // Compute the upperbounds values for all the mathematical constraints. The
 // argument "upperBounds" is the upperbounds values vector of the constraint solver and
 // this methods has to fill in this vector starting from the row "noConstraint"
-void Contact::computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONSTRAINTS]) const {
+void Contact::computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CONSTRAINTS]) const {
     assert(noConstraint >= 0 && noConstraint + nbConstraints <= NB_MAX_CONSTRAINTS);
 
-    upperBounds[noConstraint] = INFINITY_CONST;    // Upper bound for the contact constraint
+    upperBounds[noConstraint] = DECIMAL_INFINITY;    // Upper bound for the contact constraint
     upperBounds[noConstraint + 1] = mu_mc_g;       // Upper bound for the first friction constraint
     upperBounds[noConstraint + 2] = mu_mc_g;       // Upper bound for the second friction constraint
 }
@@ -150,11 +150,11 @@ void Contact::computeUpperBound(int noConstraint, double upperBounds[NB_MAX_CONS
 // Compute the error values for all the mathematical constraints. The argument
 // "errorValues" is the error values vector of the constraint solver and this
 // method has to fill in this vector starting from the row "noConstraint"
-void Contact::computeErrorValue(int noConstraint, double errorValues[], double penetrationFactor) const {
+void Contact::computeErrorValue(int noConstraint, decimal errorValues[]) const {
     assert(body1);
     assert(body2);
 
-	// TODO : Do we need this casting anymore
+	// TODO : Do we need this casting anymore ?
     RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
     RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
 
@@ -163,9 +163,9 @@ void Contact::computeErrorValue(int noConstraint, double errorValues[], double p
     // Compute the error value for the contact constraint
     Vector3 velocity1 = rigidBody1->getLinearVelocity();
     Vector3 velocity2 = rigidBody2->getLinearVelocity();
-    double restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
-    double errorValue = restitutionCoeff * (normal.dot(velocity1) - normal.dot(velocity2)) + penetrationFactor * penetrationDepth;
-
+    decimal restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
+    decimal errorValue = restitutionCoeff * (normal.dot(velocity1) - normal.dot(velocity2));
+    
     // Assign the error value to the vector of error values
     errorValues[noConstraint] = errorValue;    // Error value for contact constraint
     errorValues[noConstraint + 1] = 0.0;       // Error value for friction constraint

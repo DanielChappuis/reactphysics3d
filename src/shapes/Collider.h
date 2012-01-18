@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SHAPE_H
-#define SHAPE_H
+#ifndef COLLIDER_H
+#define COLLIDER_H
 
 // Libraries
 #include <cassert>
@@ -38,34 +38,34 @@ namespace reactphysics3d {
 class Body;
 
 /*  -------------------------------------------------------------------
-    Class Shape :
-        This abstract class represents the shape of a body that is used during
-        the narrow-phase collision detection.
+    Class Collider :
+        This abstract class represents the collider associated with a
+        body that is used during the narrow-phase collision detection.
     -------------------------------------------------------------------
 */
-class Shape {
+class Collider {
     protected :
         Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
 
     public :
-        Shape();                        // Constructor
-        virtual ~Shape();               // Destructor
+        Collider();                        // Constructor
+        virtual ~Collider();               // Destructor
 
         Body* getBodyPointer() const;                                                                   // Return the body pointer
         void setBodyPointer(Body* bodyPointer);                                                         // Set the body pointer
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, double margin=0.0) const=0;      // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(double margin=0.0) const=0;                                     // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, double mass) const=0;                 // Return the local inertia tensor of the shape
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const=0;     // Return a local support point in a given direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;                // Return the local inertia tensor of the collider
 };
 
 // Return the body pointer
-inline Body* Shape::getBodyPointer() const {
+inline Body* Collider::getBodyPointer() const {
     assert(bodyPointer != 0);
     return bodyPointer;
 }
 
 // Set the body pointer
-inline void Shape::setBodyPointer(Body* bodyPointer) {
+inline void Collider::setBodyPointer(Body* bodyPointer) {
     this->bodyPointer = bodyPointer;
 }
 

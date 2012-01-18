@@ -25,23 +25,23 @@
 
 // Libraries
 #include "RigidBody.h"
-#include "../shapes/Shape.h"
+#include "../shapes/Collider.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Transform& transform, double mass, const Matrix3x3& inertiaTensorLocal, Shape* shape, long unsigned id)
-           : Body(transform, shape, mass, id), inertiaTensorLocal(inertiaTensorLocal),
+ RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider, long unsigned id)
+           : Body(transform, collider, mass, id), inertiaTensorLocal(inertiaTensorLocal),
              inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
 
     restitution = 1.0;
 
-    // Set the body pointer of the AABB and the shape
+    // Set the body pointer of the AABB and the collider
     aabb->setBodyPointer(this);
-    shape->setBodyPointer(this);
+    collider->setBodyPointer(this);
 
-    assert(shape);
+    assert(collider);
     assert(aabb);
 }
 

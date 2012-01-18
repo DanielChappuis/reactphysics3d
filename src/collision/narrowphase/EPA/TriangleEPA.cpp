@@ -56,11 +56,11 @@ bool TriangleEPA::computeClosestPoint(const Vector3* vertices) {
 
     Vector3 v1 = vertices[indicesVertices[1]] - p0;
     Vector3 v2 = vertices[indicesVertices[2]] - p0;
-    double v1Dotv1 = v1.dot(v1);
-    double v1Dotv2 = v1.dot(v2);
-    double v2Dotv2 = v2.dot(v2);
-    double p0Dotv1 = p0.dot(v1);
-    double p0Dotv2 = p0.dot(v2);
+    decimal v1Dotv1 = v1.dot(v1);
+    decimal v1Dotv2 = v1.dot(v2);
+    decimal v2Dotv2 = v2.dot(v2);
+    decimal p0Dotv1 = p0.dot(v1);
+    decimal p0Dotv2 = p0.dot(v2);
 
     // Compute determinant
     det = v1Dotv1 * v2Dotv2 - v1Dotv2 * v1Dotv2;
@@ -126,7 +126,7 @@ bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex
     // Mark the current triangle as obsolete because it
     setIsObsolete(true);
 
-    // Execute recursively the silhouette algorithm for the ajdacent edges of neighbouring
+    // Execute recursively the silhouette algorithm for the adjacent edges of neighboring
     // triangles of the current triangle
     bool result = adjacentEdges[0].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
                   adjacentEdges[1].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
