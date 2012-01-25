@@ -44,7 +44,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConeCollider::ConeCollider(decimal radius, decimal height) : radius(radius), halfHeight(height/2.0) {
+ConeCollider::ConeCollider(decimal radius, decimal height) : Collider(CONE), radius(radius), halfHeight(height/2.0) {
     assert(radius > 0.0);
     assert(halfHeight > 0.0);
     

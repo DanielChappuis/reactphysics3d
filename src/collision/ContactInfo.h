@@ -36,7 +36,7 @@ namespace reactphysics3d {
 /*  -------------------------------------------------------------------
     Structure ContactInfo :
        This structure contains informations about a collision contact
-       computed durring the narow phase collision detection. Those
+       computed during the narrow-phase collision detection. Those
        informations are use to compute the contact set for a contact
        between two bodies.
     -------------------------------------------------------------------
@@ -46,7 +46,7 @@ struct ContactInfo {
         Body* const body1;              // Pointer to the first body of the contact
         Body* const body2;              // Pointer to the second body of the contact
         const Vector3 normal;           // Normal vector the the collision contact in world space
-        const decimal penetrationDepth;  // Penetration depth of the contact
+        const decimal penetrationDepth; // Penetration depth of the contact
         const Vector3 localPoint1;      // Contact point of body 1 in local space of body 1
         const Vector3 localPoint2;      // Contact point of body 2 in local space of body 2
         const Vector3 worldPoint1;      // Contact point of body 1 in world space
@@ -54,7 +54,7 @@ struct ContactInfo {
         
         ContactInfo(Body* body1, Body* body2, const Vector3& normal, decimal penetrationDepth,
                     const Vector3& localPoint1, const Vector3& localPoint2,
-                    const Transform& transform1, const Transform& transform2);    // Constructor for GJK
+                    const Transform& transform1, const Transform& transform2);    // Constructor
 };
 
 } // End of the ReactPhysics3D namespace

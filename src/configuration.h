@@ -52,7 +52,8 @@ const reactphysics3d::decimal DECIMAL_INFINITY = std::numeric_limits<reactphysic
 const reactphysics3d::decimal PI = 3.14159265;                                                                  // Pi constant
 
 // Physics Engine constants
-const reactphysics3d::decimal DEFAULT_TIMESTEP = 1.0 / 60.0;             // Default internal constant timestep in seconds
+const reactphysics3d::decimal DEFAULT_TIMESTEP = 1.0 / 60.0;  // Default internal constant timestep in seconds
+const bool DEACTIVATION_ENABLED = true;                       // True if the deactivation (sleeping) of inactive bodies is enabled
 
 // GJK Algorithm parameters
 const reactphysics3d::decimal OBJECT_MARGIN = 0.04;                      // Object margin for collision detection in cm

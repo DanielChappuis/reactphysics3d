@@ -46,7 +46,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-BoxCollider::BoxCollider(const Vector3& extent) : extent(extent) {
+BoxCollider::BoxCollider(const Vector3& extent) : Collider(BOX), extent(extent) {
 
 }
 

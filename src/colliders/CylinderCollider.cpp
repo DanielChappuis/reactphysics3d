@@ -43,7 +43,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-CylinderCollider::CylinderCollider(decimal radius, decimal height) : radius(radius), halfHeight(height/2.0) {
+CylinderCollider::CylinderCollider(decimal radius, decimal height)
+                 : Collider(CYLINDER), radius(radius), halfHeight(height/2.0) {
 
 }
 

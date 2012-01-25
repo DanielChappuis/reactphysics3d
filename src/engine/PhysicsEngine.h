@@ -44,12 +44,12 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class PhysicsEngine {
-    protected :
+    private :
         PhysicsWorld* world;                            // Pointer to the physics world of the physics engine
         Timer timer;                                    // Timer of the physics engine
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
-
+        bool isDeactivationActive;                      // True if the deactivation (sleeping) of inactive bodies is enabled
         void updateAllBodiesMotion();                                                                                                            // Compute the motion of all bodies and update their positions and orientations
         void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
                                                 const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection);    // Update the position and orientation of a body
@@ -63,7 +63,6 @@ public :
         void start();                                                   // Start the physics simulation
         void stop();                                                    // Stop the physics simulation
         void update();                                                  // Update the physics simulation
-        void setPenetrationFactor(decimal factor);                      // Set the penetration factor for the constraint solver
         void setNbLCPIterations(uint nbIterations);                     // Set the number of iterations of the LCP solver
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);  // Set the isErrorCorrectionActive value
 
@@ -78,12 +77,7 @@ inline void PhysicsEngine::start() {
 
 inline void PhysicsEngine::stop() {
     timer.stop();
-}      
-
-// Set the penetration factor for the constraint solver
-inline void PhysicsEngine::setPenetrationFactor(decimal factor) {
-    constraintSolver.setPenetrationFactor(factor);
-}               
+}                
 
 // Set the number of iterations of the LCP solver
 inline void PhysicsEngine::setNbLCPIterations(uint nbIterations) {

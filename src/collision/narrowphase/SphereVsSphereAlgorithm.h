@@ -23,63 +23,37 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLIDER_H
-#define COLLIDER_H
+#ifndef SPHERE_VS_SPHERE_ALGORITHM_H
+#define	SPHERE_VS_SPHERE_ALGORITHM_H
 
 // Libraries
-#include <cassert>
-#include "../mathematics/Vector3.h"
-#include "../mathematics/Matrix3x3.h"
+#include "../../body/Body.h"
+#include "../ContactInfo.h"
+#include "NarrowPhaseAlgorithm.h"
 
-// ReactPhysics3D namespace
+
+// Namespace ReactPhysics3D
 namespace reactphysics3d {
-    
-// Enumeration
-enum ColliderType {BOX, SPHERE, CONE, CYLINDER};    // Type of the collider
-
-// Declarations
-class Body;
 
 /*  -------------------------------------------------------------------
-    Class Collider :
-        This abstract class represents the collider associated with a
-        body that is used during the narrow-phase collision detection.
+    Class SphereVsSphereAlgorithm :
+        This class is used to compute the narrow-phase collision detection
+        between two sphere colliders.
     -------------------------------------------------------------------
 */
-class Collider {
-        
+class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
     protected :
-        Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
-        ColliderType type;              // Type of the collider
         
     public :
-        Collider(ColliderType type);    // Constructor
-        virtual ~Collider();            // Destructor
+        SphereVsSphereAlgorithm(CollisionDetection& collisionDetection);   // Constructor
+        virtual ~SphereVsSphereAlgorithm();                                // Destructor
 
-        Body* getBodyPointer() const;                                                                   // Return the body pointer
-        void setBodyPointer(Body* bodyPointer);                                                         // Set the body pointer
-        ColliderType getType() const;                                                                   // Return the type of the collider
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const=0;     // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;                // Return the local inertia tensor of the collider
+        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
+                                   const Collider* collider2, const Transform& transform2,
+                                   ContactInfo*& contactInfo);  // Return true and compute a contact info if the two bounding volume collide
 };
 
-// Return the body pointer
-inline Body* Collider::getBodyPointer() const {
-    assert(bodyPointer != 0);
-    return bodyPointer;
-}
-
-// Set the body pointer
-inline void Collider::setBodyPointer(Body* bodyPointer) {
-    this->bodyPointer = bodyPointer;
-}
-
-// Return the type of the collider
-inline ColliderType Collider::getType() const {
-    return type;
-}                                                                  
-
-}
+} // End of reactphysics3d namespace
 
 #endif
+

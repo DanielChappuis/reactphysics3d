@@ -26,7 +26,6 @@
 // Libraries
 #include "CollisionDetection.h"
 #include "broadphase/SweepAndPruneAlgorithm.h"
-#include "narrowphase/GJK/GJKAlgorithm.h"
 #include "../body/Body.h"
 #include "../colliders/BoxCollider.h"
 #include "../body/RigidBody.h"
@@ -42,13 +41,14 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(PhysicsWorld* world)
-                   : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS) {
+                   : world(world), narrowPhaseGJKAlgorithm(*this), narrowPhaseSphereVsSphereAlgorithm(*this),
+                     memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     broadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
 
-    // Create the narrow-phase algorithm that will be used (Separating axis algorithm)
-    narrowPhaseAlgorithm = new GJKAlgorithm(*this);
+    // Create the narrow-phase algorithm that will be used
+    //narrowPhaseAlgorithm = new GJKAlgorithm(*this);
 }
 
 // Destructor
@@ -118,9 +118,12 @@ bool CollisionDetection::computeNarrowPhase() {
         // Update the contact cache of the overlapping pair
         (*it).second->update();
         
+        // Select the narrow phase algorithm to use according to the two colliders
+        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollider(), body2->getCollider());
+        
         // Use the narrow-phase collision detection algorithm to check if there really are a contact
-        if (narrowPhaseAlgorithm->testCollision(body1->getCollider(), body1->getTransform(),
-                                                body2->getCollider(), body2->getTransform(), contactInfo)) {
+        if (narrowPhaseAlgorithm.testCollision(body1->getCollider(), body1->getTransform(),
+                                               body2->getCollider(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
             collisionExists = true;
 

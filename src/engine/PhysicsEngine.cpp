@@ -32,7 +32,8 @@ using namespace std;
 
 // Constructor
 PhysicsEngine::PhysicsEngine(PhysicsWorld* world, decimal timeStep = DEFAULT_TIMESTEP)
-              : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world) {
+              : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world),
+                isDeactivationActive(DEACTIVATION_ENABLED) {
     assert(world);
     assert(timeStep > 0.0);
 }

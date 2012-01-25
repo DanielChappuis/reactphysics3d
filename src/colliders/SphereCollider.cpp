@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-SphereCollider::SphereCollider(decimal radius) : radius(radius) {
+SphereCollider::SphereCollider(decimal radius) : Collider(SPHERE), radius(radius) {
 
 }
 

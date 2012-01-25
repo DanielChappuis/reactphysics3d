@@ -134,7 +134,6 @@ class ConstraintSolver {
         Vector3 getErrorConstrainedLinearVelocityOfBody(Body* body);   // Return the constrained linear velocity of a body after solving the LCP problem for error correction
         Vector3 getErrorConstrainedAngularVelocityOfBody(Body* body);  // Return the constrained angular velocity of a body after solving the LCP problem for error correction
         void cleanup();                                                 // Cleanup of the constraint solver
-        void setPenetrationFactor(decimal penetrationFactor);           // Set the penetration factor 
         void setNbLCPIterations(uint nbIterations);                     // Set the number of iterations of the LCP solver
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);  // Set the isErrorCorrectionActive value
 };

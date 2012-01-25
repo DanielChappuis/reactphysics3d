@@ -51,6 +51,7 @@ class Body {
         Transform transform;            // Position and orientation of the body
         Transform oldTransform;         // Last position and orientation of the body
         decimal interpolationFactor;    // Interpolation factor used for the state interpolation
+        bool isActive;                  // True if the body is active (not sleeping because of deactivation)
         bool isMotionEnabled;           // True if the body is able to move
         bool isCollisionEnabled;        // True if the body can collide with others bodies
         AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
@@ -65,6 +66,8 @@ class Body {
         void setCollider(Collider* collider);                         // Set the collision collider
         decimal getMass() const;                                // Return the mass of the body
         void setMass(decimal mass);                             // Set the mass of the body
+        bool getIsActive() const;                               // Return true if the body is active
+        void setIsActive(bool isActive);                        // Set the isActive variable
         const Transform& getTransform() const;                  // Return the current position and orientation
         void setTransform(const Transform& transform);          // Set the current position and orientation
         const AABB* getAABB() const;                            // Return the AAABB of the body
@@ -100,6 +103,21 @@ inline decimal Body::getMass() const {
     return mass;
 };
 
+// Method that set the mass of the body
+inline void Body::setMass(decimal mass) {
+    this->mass = mass;
+}
+
+// Return true if the body is active
+inline bool Body::getIsActive() const {
+    return isActive;
+}                  
+
+// Set the isActive variable
+inline void Body::setIsActive(bool isActive) {
+    this->isActive = isActive;
+}                        
+
 // Return the interpolated transform for rendering
 inline Transform Body::getInterpolatedTransform() const {
     return Transform::interpolateTransforms(oldTransform, transform, interpolationFactor);
@@ -119,11 +137,6 @@ inline bool Body::getIsMotionEnabled() const {
 // Set the value to true if the body can move
 inline void Body::setIsMotionEnabled(bool isMotionEnabled) {
     this->isMotionEnabled = isMotionEnabled;
-}
-
-// Method that set the mass of the body
-inline void Body::setMass(decimal mass) {
-    this->mass = mass;
 }
 
 // Return the current position and orientation

@@ -29,10 +29,12 @@
 // Libraries
 #include "../../body/Body.h"
 #include "../ContactInfo.h"
-#include "../CollisionDetection.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
+    
+// Class declarations
+class CollisionDetection;
 
 /*  -------------------------------------------------------------------
     Class NarrowPhaseAlgorithm :

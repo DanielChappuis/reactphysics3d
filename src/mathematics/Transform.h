@@ -63,8 +63,8 @@ class Transform {
                                                const Transform& newTransform,
                                                decimal interpolationFactor);    // Return an interpolated transform
 
-        Vector3 operator*(const Vector3& vector) const;           // Return the transformed vector
-        Transform operator*(const Transform& transform2) const;     // Operator of multiplication of a transform with another one
+        Vector3 operator*(const Vector3& vector) const;                         // Return the transformed vector
+        Transform operator*(const Transform& transform2) const;                 // Operator of multiplication of a transform with another one
 };
 
 // Return the position of the transform

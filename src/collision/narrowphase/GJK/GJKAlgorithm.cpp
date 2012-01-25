@@ -28,6 +28,8 @@
 #include "Simplex.h"
 #include "../../../constraint/Contact.h"
 #include "../../../configuration.h"
+#include "../../OverlappingPair.h"
+#include "../../CollisionDetection.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>

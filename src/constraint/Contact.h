@@ -64,7 +64,7 @@ namespace reactphysics3d {
 class Contact : public Constraint {
     protected :
         const Vector3 normal;                   // Normal vector of the contact (From body1 toward body2) in world space
-        decimal penetrationDepth;                // Penetration depth
+        decimal penetrationDepth;               // Penetration depth
         const Vector3 localPointOnBody1;        // Contact point on body 1 in local space of body 1
         const Vector3 localPointOnBody2;        // Contact point on body 2 in local space of body 2
         Vector3 worldPointOnBody1;              // Contact point on body 1 in world space
