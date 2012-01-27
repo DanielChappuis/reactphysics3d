@@ -29,11 +29,11 @@
 using namespace reactphysics3d;
 
 
-// Constructor for GJK
-ContactInfo::ContactInfo(Body* body1, Body* body2, const Vector3& normal, decimal penetrationDepth,
+// Constructor
+ContactInfo::ContactInfo(const Vector3& normal, decimal penetrationDepth,
                          const Vector3& localPoint1, const Vector3& localPoint2,
                          const Transform& transform1, const Transform& transform2)
-            : body1(body1), body2(body2), normal(normal), penetrationDepth(penetrationDepth),
-              localPoint1(localPoint1), localPoint2(localPoint2), worldPoint1(transform1 * localPoint1), worldPoint2(transform2 * localPoint2) {
+            : normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1), localPoint2(localPoint2),
+              worldPoint1(transform1 * localPoint1), worldPoint2(transform2 * localPoint2) {
 
 }

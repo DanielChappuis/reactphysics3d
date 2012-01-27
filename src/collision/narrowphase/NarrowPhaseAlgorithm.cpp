@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 
 // Constructor
 NarrowPhaseAlgorithm::NarrowPhaseAlgorithm(CollisionDetection& collisionDetection)
-                     :collisionDetection(collisionDetection) {
+                     :collisionDetection(collisionDetection), currentOverlappingPair(0) {
 
 }
 

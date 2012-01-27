@@ -43,8 +43,6 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
 
 bool SphereVsSphereAlgorithm::testCollision(const Collider* collider1, const Transform& transform1,
                                             const Collider* collider2, const Transform& transform2, ContactInfo*& contactInfo) {
-
-    assert(collider1 != collider2);
     
     // Get the sphere colliders
     const SphereCollider* sphereCollider1 = dynamic_cast<const SphereCollider*>(collider1);
@@ -64,8 +62,8 @@ bool SphereVsSphereAlgorithm::testCollision(const Collider* collider1, const Tra
         Vector3 intersectionOnBody1 = sphereCollider1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
         Vector3 intersectionOnBody2 = sphereCollider2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
-        contactInfo = new ContactInfo(collider1->getBodyPointer(), collider2->getBodyPointer(), vectorBetweenCenters.getUnit(),
-                                      penetrationDepth, intersectionOnBody1, intersectionOnBody2, transform1, transform2);
+        contactInfo = new ContactInfo(vectorBetweenCenters.getUnit(), penetrationDepth, intersectionOnBody1,
+                                      intersectionOnBody2, transform1, transform2);
     
         return true;
     }

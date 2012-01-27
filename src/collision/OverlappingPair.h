@@ -52,13 +52,14 @@ class OverlappingPair {
         OverlappingPair(Body* body1, Body* body2, MemoryPool<Contact>& memoryPoolContacts);     // Constructor
         ~OverlappingPair();                                                                     // Destructor
         
-        Body* const getBody1() const;                 // Return the pointer to first body
-        Body* const getBody2() const;                 // Return the pointer to second body
-        void addContact(Contact* contact);            // Add a contact to the contact cache
-        void update();                                // Update the contact cache
-        Vector3 getCachedSeparatingAxis() const;      // Return the cached separating axis
-        uint getNbContacts() const;                   // Return the number of contacts in the cache
-        Contact* getContact(uint index) const;        // Return a contact of the cache                           
+        Body* const getBody1() const;                           // Return the pointer to first body
+        Body* const getBody2() const;                           // Return the pointer to second body
+        void addContact(Contact* contact);                      // Add a contact to the contact cache
+        void update();                                          // Update the contact cache
+        Vector3 getCachedSeparatingAxis() const;                // Return the cached separating axis
+        void setCachedSeparatingAxis(const Vector3& axis);      // Set the cached separating axis
+        uint getNbContacts() const;                             // Return the number of contacts in the cache
+        Contact* getContact(uint index) const;                  // Return a contact of the cache                           
 };
 
 // Return the pointer to first body
@@ -84,7 +85,12 @@ inline void OverlappingPair::update() {
 // Return the cached separating axis
 inline Vector3 OverlappingPair::getCachedSeparatingAxis() const {
     return cachedSeparatingAxis;
-}      
+} 
+
+// Set the cached separating axis
+inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
+    cachedSeparatingAxis = axis;
+}              
 
 
 // Return the number of contacts in the cache

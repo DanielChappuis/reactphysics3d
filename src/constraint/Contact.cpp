@@ -30,8 +30,8 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-Contact::Contact(const ContactInfo* contactInfo)
-        : Constraint(contactInfo->body1, contactInfo->body2, 3, true, CONTACT), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
+Contact::Contact(Body* const body1, Body* const body2, const ContactInfo* contactInfo)
+        : Constraint(body1, body2, 3, true, CONTACT), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
           localPointOnBody1(contactInfo->localPoint1), localPointOnBody2(contactInfo->localPoint2),
           worldPointOnBody1(contactInfo->worldPoint1), worldPointOnBody2(contactInfo->worldPoint2) {
     assert(penetrationDepth > 0.0);

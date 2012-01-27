@@ -75,11 +75,11 @@ class Contact : public Constraint {
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
     public :
-        Contact(const ContactInfo* contactInfo);        // Constructor
+        Contact(Body* const body1, Body* const body2, const ContactInfo* contactInfo); // Constructor
         virtual ~Contact();                             // Destructor
 
         Vector3 getNormal() const;                                                     // Return the normal vector of the contact
-        void setPenetrationDepth(decimal penetrationDepth);                             // Set the penetration depth of the contact
+        void setPenetrationDepth(decimal penetrationDepth);                            // Set the penetration depth of the contact
         Vector3 getLocalPointOnBody1() const;                                          // Return the contact local point on body 1
         Vector3 getLocalPointOnBody2() const;                                          // Return the contact local point on body 2
         Vector3 getWorldPointOnBody1() const;                                          // Return the contact world point on body 1

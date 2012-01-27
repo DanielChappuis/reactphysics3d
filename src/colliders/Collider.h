@@ -49,31 +49,17 @@ class Body;
 class Collider {
         
     protected :
-        Body* bodyPointer;              // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
         ColliderType type;              // Type of the collider
         
     public :
         Collider(ColliderType type);    // Constructor
         virtual ~Collider();            // Destructor
 
-        Body* getBodyPointer() const;                                                                   // Return the body pointer
-        void setBodyPointer(Body* bodyPointer);                                                         // Set the body pointer
         ColliderType getType() const;                                                                   // Return the type of the collider
         virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const=0;     // Return a local support point in a given direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;                // Return the local inertia tensor of the collider
 };
-
-// Return the body pointer
-inline Body* Collider::getBodyPointer() const {
-    assert(bodyPointer != 0);
-    return bodyPointer;
-}
-
-// Set the body pointer
-inline void Collider::setBodyPointer(Body* bodyPointer) {
-    this->bodyPointer = bodyPointer;
-}
 
 // Return the type of the collider
 inline ColliderType Collider::getType() const {

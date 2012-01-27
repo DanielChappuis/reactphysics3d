@@ -374,8 +374,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
-    contactInfo = new ContactInfo(collider1->getBodyPointer(), collider2->getBodyPointer(), normal,
-                                  penetrationDepth, pALocal, pBLocal, transform1, transform2);
+    contactInfo = new ContactInfo(normal, penetrationDepth, pALocal, pBLocal, transform1, transform2);
     
     return true;
 }

@@ -29,6 +29,7 @@
 // Libraries
 #include "../../body/Body.h"
 #include "../ContactInfo.h"
+#include "../OverlappingPair.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -39,7 +40,7 @@ class CollisionDetection;
 /*  -------------------------------------------------------------------
     Class NarrowPhaseAlgorithm :
         This class is an abstract class that represents an algorithm
-        used to perform the narrow phase of a collision detection. The
+        used to perform the narrow-phase of a collision detection. The
         goal of the narrow phase algorithm is to compute contact
         informations of a collision between two bodies.
     -------------------------------------------------------------------
@@ -47,15 +48,22 @@ class CollisionDetection;
 class NarrowPhaseAlgorithm {
     protected :
         CollisionDetection& collisionDetection;  // Reference to the collision detection object
+        OverlappingPair* currentOverlappingPair; // Overlapping pair of the bodies currently tested for collision
         
     public :
         NarrowPhaseAlgorithm(CollisionDetection& collisionDetection);   // Constructor
         virtual ~NarrowPhaseAlgorithm();                                // Destructor
-
+        
+        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);       // Set the current overlapping pair of bodies
         virtual bool testCollision(const Collider* collider1, const Transform& transform1,
                                    const Collider* collider2, const Transform& transform2,
                                    ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
 };
+
+// Set the current overlapping pair of bodies
+inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
+    currentOverlappingPair = overlappingPair;
+}      
 
 } // End of reactphysics3d namespace
 

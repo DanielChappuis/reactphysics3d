@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cfloat>
 #include <cassert>
+#include <iostream> // TODO : DELETE THIS
 
 
 // We want to use the ReactPhysics3D namespace
@@ -63,8 +64,6 @@ GJKAlgorithm::~GJKAlgorithm() {
 bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& transform1,
                                  const Collider* collider2,  const Transform& transform2,
 		                         ContactInfo*& contactInfo) {
-
-    assert(collider1 != collider2);
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -73,8 +72,6 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     Vector3 pB;                // Closest point of object B
     decimal vDotw;
     decimal prevDistSquare;
-    Body* const body1 = collider1->getBodyPointer();
-    Body* const body2 = collider2->getBodyPointer();
 
     // Transform a point from local space of body 2 to local space of body 1 (the GJK algorithm is done in local space of body 1)
     Transform body2Tobody1 = transform1.inverse() * transform2;
@@ -91,13 +88,13 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     Simplex simplex;
 
     // Get the previous point V (last cached separating axis)
-	OverlappingPair* overlappingPair = collisionDetection.getOverlappingPair(body1->getID(), body2->getID());
-	Vector3 v = (overlappingPair) ? overlappingPair->getCachedSeparatingAxis() : Vector3(1.0, 1.0, 1.0);
-			
+	Vector3 v = currentOverlappingPair->getCachedSeparatingAxis();
+
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_MAX;
     
     do {
+              
         // Compute the support points for original objects (without margins) A and B
         suppA = collider1->getLocalSupportPoint(-v);
         suppB = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * v);
@@ -109,6 +106,10 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
         
         // If the enlarge objects (with margins) do not intersect
         if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
+                        
+            // Cache the current separating axis for frame coherence
+            currentOverlappingPair->setCachedSeparatingAxis(v);
+            
             // No intersection, we return false
             return false;
         }
@@ -132,7 +133,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
+            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -160,7 +161,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
+            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -186,7 +187,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
+            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;
@@ -220,7 +221,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(body1, body2, normal, penetrationDepth, pA, pB, transform1, transform2);
+            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
 
             // There is an intersection, therefore we return true
             return true;

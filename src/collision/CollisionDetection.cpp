@@ -121,14 +121,17 @@ bool CollisionDetection::computeNarrowPhase() {
         // Select the narrow phase algorithm to use according to the two colliders
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollider(), body2->getCollider());
         
-        // Use the narrow-phase collision detection algorithm to check if there really are a contact
+        // Notify the narrow-phase algorithm about the overlapping pair we are going to test
+        narrowPhaseAlgorithm.setCurrentOverlappingPair((*it).second);
+        
+        // Use the narrow-phase collision detection algorithm to check if there really is a collision
         if (narrowPhaseAlgorithm.testCollision(body1->getCollider(), body1->getTransform(),
                                                body2->getCollider(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
             collisionExists = true;
 
             // Create a new contact
-            Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(contactInfo);
+            Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
             
             // Free the contact info memory
             delete contactInfo;

@@ -39,7 +39,6 @@ using namespace reactphysics3d;
 
     // Set the body pointer of the AABB and the collider
     aabb->setBodyPointer(this);
-    collider->setBodyPointer(this);
 
     assert(collider);
     assert(aabb);
