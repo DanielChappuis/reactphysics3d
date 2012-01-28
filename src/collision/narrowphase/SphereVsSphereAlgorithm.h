@@ -45,8 +45,9 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
     protected :
         
     public :
-        SphereVsSphereAlgorithm(CollisionDetection& collisionDetection);   // Constructor
-        virtual ~SphereVsSphereAlgorithm();                                // Destructor
+        SphereVsSphereAlgorithm(CollisionDetection& collisionDetection,
+                                MemoryPool<ContactInfo>& memoryPoolContactInfos);       // Constructor
+        virtual ~SphereVsSphereAlgorithm();                                             // Destructor
 
         virtual bool testCollision(const Collider* collider1, const Transform& transform1,
                                    const Collider* collider2, const Transform& transform2,

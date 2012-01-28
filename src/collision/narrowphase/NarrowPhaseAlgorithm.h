@@ -47,12 +47,13 @@ class CollisionDetection;
 */
 class NarrowPhaseAlgorithm {
     protected :
-        CollisionDetection& collisionDetection;  // Reference to the collision detection object
-        OverlappingPair* currentOverlappingPair; // Overlapping pair of the bodies currently tested for collision
+        CollisionDetection& collisionDetection;                 // Reference to the collision detection object
+        MemoryPool<ContactInfo>& memoryPoolContactInfos;        // Reference to the memory pool for contact infos
+        OverlappingPair* currentOverlappingPair;                // Overlapping pair of the bodies currently tested for collision
         
     public :
-        NarrowPhaseAlgorithm(CollisionDetection& collisionDetection);   // Constructor
-        virtual ~NarrowPhaseAlgorithm();                                // Destructor
+        NarrowPhaseAlgorithm(CollisionDetection& collisionDetection, MemoryPool<ContactInfo>& memoryPool);      // Constructor
+        virtual ~NarrowPhaseAlgorithm();                                                                        // Destructor
         
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);       // Set the current overlapping pair of bodies
         virtual bool testCollision(const Collider* collider1, const Transform& transform1,

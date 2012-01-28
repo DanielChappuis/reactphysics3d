@@ -32,6 +32,7 @@
 #include "../../ContactInfo.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
+#include "../../../memory/MemoryPool.h"
 #include <algorithm>
 
 // ReactPhysics3D namespace
@@ -72,16 +73,17 @@ class TriangleComparison {
 */
 class EPAAlgorithm {
     private:
+        MemoryPool<ContactInfo>& memoryPoolContactInfos; // Reference to the memory pool for contact infos
         TriangleComparison triangleComparison;           // Triangle comparison operator
-
+        
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
                               uint& nbTriangles, decimal upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
         int isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
                                   const Vector3& p3, const Vector3& p4) const;        // Decide if the origin is in the tetrahedron
 
     public:
-        EPAAlgorithm();         // Constructor
-        ~EPAAlgorithm();        // Destructor
+        EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);          // Constructor
+        ~EPAAlgorithm();                                                        // Destructor
 
         bool computePenetrationDepthAndContactPoints(Simplex simplex, const Collider* collider1, const Transform& transform1,
                                                      const Collider* collider2, const Transform& transform2,

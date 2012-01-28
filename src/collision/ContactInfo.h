@@ -47,12 +47,9 @@ struct ContactInfo {
         const decimal penetrationDepth; // Penetration depth of the contact
         const Vector3 localPoint1;      // Contact point of body 1 in local space of body 1
         const Vector3 localPoint2;      // Contact point of body 2 in local space of body 2
-        const Vector3 worldPoint1;      // Contact point of body 1 in world space
-        const Vector3 worldPoint2;      // Contact point of body 2 in world space
         
         ContactInfo(const Vector3& normal, decimal penetrationDepth,
-                    const Vector3& localPoint1, const Vector3& localPoint2,
-                    const Transform& transform1, const Transform& transform2);    // Constructor
+                    const Vector3& localPoint1, const Vector3& localPoint2);    // Constructor
 };
 
 } // End of the ReactPhysics3D namespace

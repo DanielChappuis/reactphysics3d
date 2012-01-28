@@ -65,6 +65,7 @@ class CollisionDetection {
         SphereVsSphereAlgorithm narrowPhaseSphereVsSphereAlgorithm;                     // Narrow-phase Sphere vs Sphere algorithm
         MemoryPool<Contact> memoryPoolContacts;                                         // Memory pool for the contacts
         MemoryPool<OverlappingPair> memoryPoolOverlappingPairs;                         // Memory pool for the overlapping pairs
+        MemoryPool<ContactInfo> memoryPoolContactInfos;                                 // Memory pool for the contact info
         
         void computeBroadPhase();                                                       // Compute the broad-phase collision detection
         bool computeNarrowPhase();                                                      // Compute the narrow-phase collision detection

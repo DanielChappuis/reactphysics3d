@@ -41,14 +41,12 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(PhysicsWorld* world)
-                   : world(world), narrowPhaseGJKAlgorithm(*this), narrowPhaseSphereVsSphereAlgorithm(*this),
-                     memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS) {
+                   : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS),
+                     memoryPoolContactInfos(NB_MAX_CONTACTS), narrowPhaseGJKAlgorithm(*this, memoryPoolContactInfos),
+                     narrowPhaseSphereVsSphereAlgorithm(*this, memoryPoolContactInfos) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     broadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
-
-    // Create the narrow-phase algorithm that will be used
-    //narrowPhaseAlgorithm = new GJKAlgorithm(*this);
 }
 
 // Destructor
@@ -133,8 +131,9 @@ bool CollisionDetection::computeNarrowPhase() {
             // Create a new contact
             Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
             
-            // Free the contact info memory
-            delete contactInfo;
+            // Delete and remove the contact info from the memory pool
+            contactInfo->ContactInfo::~ContactInfo();
+            memoryPoolContactInfos.freeObject(contactInfo);
             
             // Add the contact to the contact cache of the corresponding overlapping pair
             (*it).second->addContact(contact);

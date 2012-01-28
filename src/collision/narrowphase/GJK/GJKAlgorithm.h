@@ -66,8 +66,9 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                                        ContactInfo*& contactInfo, Vector3& v);             // Compute the penetration depth for enlarged objects
 
     public :
-        GJKAlgorithm(CollisionDetection& collisionDetection);       // Constructor
-        ~GJKAlgorithm();                                            // Destructor
+        GJKAlgorithm(CollisionDetection& collisionDetection,
+                     MemoryPool<ContactInfo>& memoryPoolContactInfos);  // Constructor
+        ~GJKAlgorithm();                                                // Destructor
 
         virtual bool testCollision(const Collider* collider1, const Transform& transform1,
                                    const Collider* collider2,  const Transform& transform2,

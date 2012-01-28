@@ -41,8 +41,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm(CollisionDetection& collisionDetection)
-             :NarrowPhaseAlgorithm(collisionDetection) {
+GJKAlgorithm::GJKAlgorithm(CollisionDetection& collisionDetection, MemoryPool<ContactInfo>& memoryPoolContactInfos)
+             :NarrowPhaseAlgorithm(collisionDetection, memoryPoolContactInfos), algoEPA(memoryPoolContactInfos) {
     
 }
 
@@ -133,7 +133,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
+            // Create the contact info object
+            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -161,7 +162,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
+            // Create the contact info object
+            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -187,7 +189,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
+            // Create the contact info object
+            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -221,7 +224,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
 			if (penetrationDepth <= 0.0) return false;
 			
-            contactInfo = new ContactInfo(normal, penetrationDepth, pA, pB, transform1, transform2);
+            // Create the contact info object
+            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
