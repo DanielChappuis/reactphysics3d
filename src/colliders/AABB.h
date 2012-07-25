@@ -39,8 +39,8 @@ class Body;
     Class AABB :
         This class represents a bounding volume of type "Axis Aligned
         Bounding Box". It's a box where all the edges are always aligned
-        with the world coordinate system. The AABB is defined by a center
-        point and three extent size in the x,y and z directions.
+        with the world coordinate system. The AABB is defined by the
+        minimum and maximum world coordinates of the three axis.
     -------------------------------------------------------------------
 */
 class AABB {
@@ -50,13 +50,14 @@ class AABB {
         Body* bodyPointer;             // Pointer to the owner body (not the abstract class Body but its derivative which is instanciable)
 
     public :
-        AABB();                                                          // Constructor
-        AABB(const Transform& transform, const Vector3& extents);        // Constructor
-        virtual ~AABB();                                                 // Destructor
+        AABB();                                                                                     // Constructor
+        AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates, Body* bodyPointer);      // Constructor
+        AABB(const Transform& transform, const Vector3& extents);                                   // Constructor
+        virtual ~AABB();                                                                            // Destructor
 
         Vector3 getCenter() const;                                                     // Return the center point
-        const Vector3& getMinCoordinates() const;                                      // Return the minimum coordinates of the AABB
-        const Vector3& getMaxCoordinates() const;                                      // Return the maximum coordinates of the AABB
+        const Vector3& getMin() const;                                                  // Return the minimum coordinates of the AABB
+        const Vector3& getMax() const;                                      // Return the maximum coordinates of the AABB
         Body* getBodyPointer() const;                                                  // Return a pointer to the owner body
         void setBodyPointer(Body* bodyPointer);                                        // Set the body pointer
         bool testCollision(const AABB& aabb) const;                                    // Return true if the current AABB is overlapping is the AABB in argument
@@ -72,12 +73,12 @@ inline Vector3 AABB::getCenter() const {
 }
 
 // Return the minimum coordinates of the AABB
-inline const Vector3& AABB::getMinCoordinates() const {
+inline const Vector3& AABB::getMin() const {
     return minCoordinates;
 }
 
 // Return the maximum coordinates of the AABB
-inline const Vector3& AABB::getMaxCoordinates() const {
+inline const Vector3& AABB::getMax() const {
     return maxCoordinates;
 }
 

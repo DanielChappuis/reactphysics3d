@@ -42,8 +42,8 @@ namespace reactphysics3d {
 */
 class Transform {
     private :
-        Vector3 position;          // Position
-        Quaternion orientation;     // Orientation
+        Vector3 position;               // Position
+        Quaternion orientation;         // Orientation
 
     public :
         Transform();                                                           // Constructor
@@ -65,6 +65,8 @@ class Transform {
 
         Vector3 operator*(const Vector3& vector) const;                         // Return the transformed vector
         Transform operator*(const Transform& transform2) const;                 // Operator of multiplication of a transform with another one
+        bool operator==(const Transform& transform2) const;                     // Return true if the two transforms are equal
+        bool operator!=(const Transform& transform2) const;                     // Return true if the two transforms are different
 };
 
 // Return the position of the transform
@@ -91,7 +93,7 @@ inline void Transform::setOrientation(const Quaternion& orientation) {
 inline void Transform::setToIdentity() {
     position = Vector3(0.0, 0.0, 0.0);
     orientation = Quaternion::identity();
-}
+}                                           
 
 // Set the transform from an OpenGL transform matrix
 inline void Transform::setFromOpenGL(decimal* openglMatrix) {
@@ -134,6 +136,16 @@ inline Vector3 Transform::operator*(const Vector3& vector) const {
 inline Transform Transform::operator*(const Transform& transform2) const {
     return Transform(position + orientation.getMatrix() * transform2.position, orientation * transform2.orientation);
 }
+
+// Return true if the two transforms are equal
+inline bool Transform::operator==(const Transform& transform2) const {
+    return (position == transform2.position) && (orientation == transform2.orientation);
+}    
+
+// Return true if the two transforms are different
+inline bool Transform::operator!=(const Transform& transform2) const {
+    return !(*this == transform2);
+}                    
 
 } // End of the ReactPhysics3D namespace
 

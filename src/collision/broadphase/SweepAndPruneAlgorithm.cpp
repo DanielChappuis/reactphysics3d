@@ -26,120 +26,415 @@
 // Libraries
 #include "SweepAndPruneAlgorithm.h"
 #include "../CollisionDetection.h"
-#include <algorithm>
+#include "PairManager.h"
+#include <climits>
 
 // Namespaces
 using namespace reactphysics3d;
 using namespace std;
 
-// Initialize the static attributes
-unsigned short int SweepAndPruneAlgorithm::sortAxis = 0;
+// Constructor of AABBInt
+AABBInt::AABBInt(const AABB& aabb) {
+    for (int axis=0; axis<3; axis++) {
+        min[axis] = encodeFloatIntoInteger(aabb.getMin()[axis]);
+        max[axis] = encodeFloatIntoInteger(aabb.getMax()[axis]);
+    }
+}      
 
 // Constructor
 SweepAndPruneAlgorithm::SweepAndPruneAlgorithm(CollisionDetection& collisionDetection)
              :BroadPhaseAlgorithm(collisionDetection) {
-
+    boxes = 0;
+    endPoints[0] = 0;
+    endPoints[1] = 0;
+    endPoints[2] = 0;
+    nbBoxes = 0;
+    nbMaxBoxes = 0;
 }
 
 // Destructor
 SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
-
+    delete[] boxes;
+    delete[] endPoints[0];
+    delete[] endPoints[1];
+    delete[] endPoints[2];
 }
 
-// Notify the broad-phase algorithm about new bodies in the physics world
-// This method removes the AABB representation of a given set of bodies from the sortedAABBs set
-void SweepAndPruneAlgorithm::notifyRemovedBodies(vector<RigidBody*> bodies) {
-    vector<const AABB*>::iterator elemToRemove;
-    const AABB* aabb;
-
-    // Removed the AABB of the bodies that have been removed
-    for (vector<RigidBody*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        aabb = (*it)->getAABB();
-        assert(aabb);
-        elemToRemove = find(sortedAABBs.begin(), sortedAABBs.end(), aabb);
-        assert((*elemToRemove) == aabb);
-        sortedAABBs.erase(elemToRemove);
-    }
-}
-
-// Notify the broad-phase algorithm about new bodies in the physics world
-// This method adds the AABB representation of a given body in the sortedAABBs set
-void SweepAndPruneAlgorithm::notifyAddedBodies(vector<RigidBody*> bodies) {
-    const AABB* aabb;
+// Notify the broad-phase about a new object in the world
+// This method adds the AABB of the object ion to broad-phase
+void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
+    luint boxIndex;
     
-    for (vector<RigidBody*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
-        aabb = 0;
-        aabb = (*it)->getAABB();
-        assert(aabb);
-        sortedAABBs.push_back(aabb);
+    // If the index of the first free box is valid (means that
+    // there is a bucket in the middle of the array that doesn't
+    // contain a box anymore because it has been removed)
+    if (!freeBoxIndices.empty()) {
+        boxIndex = freeBoxIndices.back();
+        freeBoxIndices.pop_back();
+    }
+    else {
+        // If the array boxes and end-points arrays are full
+        if (nbBoxes == nbMaxBoxes) {
+            // Resize the arrays to make them larger
+            resizeArrays();
+        }
+        
+        boxIndex = nbBoxes;
+    }
+    
+    // Move the maximum limit end-point two elements further
+    // at the end-points array in all three axis
+    const luint nbSentinels = 2;
+    const luint indexLimitEndPoint = 2 * nbBoxes + nbSentinels - 1;
+    for (int axis=0; axis<3; axis++) {
+        EndPoint* maxLimitEndPoint = &endPoints[axis][indexLimitEndPoint];
+        assert(endPoints[axis][0].boxID == INVALID_INDEX && endPoints[axis][0].isMin == true);
+        assert(maxLimitEndPoint->boxID == INVALID_INDEX && maxLimitEndPoint->isMin == false);
+        EndPoint* newMaxLimitEndPoint = &endPoints[axis][indexLimitEndPoint + 2];
+        newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin, maxLimitEndPoint->value);
+    }
+    
+    // Create a new box
+    BoxAABB* box = &boxes[boxIndex];
+    box->body = body;
+    const uint minEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 2.0);
+    const uint maxEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 1.0);
+    for (uint axis=0; axis<3; axis++) {
+        box->min[axis] = indexLimitEndPoint;
+        box->max[axis] = indexLimitEndPoint + 1;
+        EndPoint* minimumEndPoint = &endPoints[axis][box->min[axis]];
+        minimumEndPoint->setValues(body->getID(), true, minEndPointValue);
+        EndPoint* maximumEndPoint = &endPoints[axis][box->max[axis]];
+        maximumEndPoint->setValues(body->getID(), false, maxEndPointValue);
+    }
+    
+    // Add the body pointer to box index mapping
+    mapBodyToBoxIndex.insert(pair<Body*, luint>(body, boxIndex));
+    
+    nbBoxes++;
+
+    // Call the update method to put the end-points of the new AABB at the
+    // correct position in the array. This will also create the overlapping
+    // pairs in the pair manager if the new AABB is overlapping with others
+    // AABBs
+    updateObject(body, aabb);
+} 
+
+// Notify the broad-phase about a object that has been removed from the world
+void SweepAndPruneAlgorithm::removeObject(Body* body) {
+
+    // Call the update method with an AABB that is very far away
+    // in order to remove all overlapping pairs from the pair manager
+    const decimal max = DECIMAL_LARGEST;
+    const Vector3 maxVector(max, max, max);
+    const AABB aabb(maxVector, maxVector, body);
+    updateObject(body, aabb);
+
+    // Get the corresponding box
+    luint boxIndex = mapBodyToBoxIndex[body];
+    BoxAABB* box = &boxes[boxIndex];
+
+    // Add the box index into the list of free indices
+    freeBoxIndices.push_back(boxIndex);
+
+    mapBodyToBoxIndex.erase(body);
+    nbBoxes--;
+} 
+        
+// Notify the broad-phase that the AABB of an object has changed
+void SweepAndPruneAlgorithm::updateObject(Body* body, const AABB& aabb) {
+    
+    // Compute the AABB with integer coordinates
+    AABBInt aabbInt(aabb);
+    
+    // Get the corresponding box
+    luint boxIndex = mapBodyToBoxIndex[body];
+    BoxAABB* box = &boxes[boxIndex];
+        
+    // Current axis
+    for (uint axis=0; axis<3; axis++) {
+        
+        // Get the two others axis
+        const uint otherAxis1 = (1 << axis) & 3;
+        const uint otherAxis2 = (1 << otherAxis1) & 3;
+        
+        // Get the starting end-point of the current axis
+        EndPoint* startEndPointsCurrentAxis = endPoints[axis];
+        
+        // -------- Update the minimum end-point ------------//
+        
+        EndPoint* currentMinEndPoint = &startEndPointsCurrentAxis[box->min[axis]];
+        assert(currentMinEndPoint->isMin);
+        
+        // Get the minimum value of the AABB on the current axis
+        uint limit = aabbInt.min[axis];
+        
+        // If the minimum value of the AABB is smaller
+        // than the current minimum endpoint
+        if (limit < currentMinEndPoint->value) {
+            
+            currentMinEndPoint->value = limit;
+            
+            // The minimum end-point is moving left
+            EndPoint savedEndPoint = *currentMinEndPoint;
+            luint indexEndPoint = (size_t(currentMinEndPoint) - size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            const luint savedEndPointIndex = indexEndPoint;
+            
+            while ((--currentMinEndPoint)->value > limit) {
+                BoxAABB* id1 = &boxes[currentMinEndPoint->boxID];
+                const bool isMin = currentMinEndPoint->isMin;
+                
+                // If it's a maximum end-point
+                if (!isMin) {
+                    // The minimum end-point is moving to the left and
+                    // passed a maximum end-point. Thus, the boxes start
+                    // overlapping on the current axis. Therefore we test
+                    // for box intersection
+                    if (box != id1) {
+                        if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2) &&
+                            testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+                            
+                            // Add an overlapping pair to the pair manager
+                            pairManager.addPair(body, id1->body);
+                        }
+                    }
+                    
+                    id1->max[axis] = indexEndPoint--;
+                }
+                else {
+                    id1->min[axis] = indexEndPoint--;
+                }
+                
+                *(currentMinEndPoint+1) = *currentMinEndPoint;
+            }
+            
+            // Update the current minimum endpoint that we are moving
+            if (savedEndPointIndex != indexEndPoint) {
+                if (savedEndPoint.isMin) {
+                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                }
+                else {
+                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                }
+
+                startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+            }
+        }
+        else if (limit > currentMinEndPoint->value) {   // The minimum of the box has moved to the right
+            
+            currentMinEndPoint->value = limit;
+            
+            // The minimum en-point is moving right
+            EndPoint savedEndPoint = *currentMinEndPoint;
+            luint indexEndPoint = (size_t(currentMinEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            const luint savedEndPointIndex = indexEndPoint;
+            
+            // For each end-point between the current position of the minimum
+            // end-point and the new position of the minimum end-point
+            while ((++currentMinEndPoint)->value < limit) {
+                BoxAABB* id1 = &boxes[currentMinEndPoint->boxID];
+                const bool isMin = currentMinEndPoint->isMin;
+                
+                // If it's a maximum end-point
+                if (!isMin) {
+                    // The minimum end-point is moving to the right and
+                    // passed a maximum end-point. Thus, the boxes stop
+                    // overlapping on the current axis.
+                    if (box != id1) {
+                        if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2)) {
+                            
+                            // Remove the pair from the pair manager
+                            pairManager.removePair(body->getID(), id1->body->getID());
+                        }
+                    }
+                    
+                    id1->max[axis] = indexEndPoint++;
+                }
+                else {
+                    id1->min[axis] = indexEndPoint++;
+                }
+                
+                *(currentMinEndPoint-1) = *currentMinEndPoint;
+            }
+            
+            // Update the current minimum endpoint that we are moving
+            if (savedEndPointIndex != indexEndPoint) {
+                if (savedEndPoint.isMin) {
+                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                }
+                else {
+                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                }
+
+                startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+            }
+        }
+        
+        // ------- Update the maximum end-point ------------ //
+        
+        EndPoint* currentMaxEndPoint = &startEndPointsCurrentAxis[box->max[axis]];
+        assert(!currentMaxEndPoint->isMin);
+        
+        // Get the maximum value of the AABB on the current axis
+        limit = aabbInt.max[axis];
+        
+        // If the new maximum value of the AABB is larger
+        // than the current maximum end-point value. It means
+        // that the AABB is moving to the right.
+        if (limit > currentMaxEndPoint->value) {
+            
+            currentMaxEndPoint->value = limit;
+            
+            EndPoint savedEndPoint = *currentMaxEndPoint;
+            luint indexEndPoint = (size_t(currentMaxEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            const luint savedEndPointIndex = indexEndPoint;
+            
+            while ((++currentMaxEndPoint)->value < limit) {
+                
+                // Get the next end-point
+                BoxAABB* id1 = &boxes[currentMaxEndPoint->boxID];
+                const bool isMin = currentMaxEndPoint->isMin;
+                
+                // If it's a maximum end-point
+                if (isMin) {
+                    // The maximum end-point is moving to the right and
+                    // passed a minimum end-point. Thus, the boxes start
+                    // overlapping on the current axis. Therefore we test
+                    // for box intersection
+                    if (box != id1) {
+                        if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2) &&
+                            testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis,axis)) {
+                            
+                            // Add an overlapping pair to the pair manager
+                            pairManager.addPair(body, id1->body);
+                        }
+                    }
+                    
+                    id1->min[axis] = indexEndPoint++;
+                }
+                else {
+                    id1->max[axis] = indexEndPoint++;
+                }
+                
+                *(currentMaxEndPoint-1) = *currentMaxEndPoint;
+            }
+            
+            // Update the current minimum endpoint that we are moving
+            if (savedEndPointIndex != indexEndPoint) {
+                if (savedEndPoint.isMin) {
+                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                }
+                else {
+                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                }
+
+                startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+            }
+        }
+        else if (limit < currentMaxEndPoint->value) {   // If the AABB is moving to the left 
+            currentMaxEndPoint->value = limit;
+            
+            EndPoint savedEndPoint = *currentMaxEndPoint;
+            luint indexEndPoint = (size_t(currentMaxEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            const luint savedEndPointIndex = indexEndPoint;
+            
+            // For each end-point between the current position of the maximum
+            // end-point and the new position of the maximum end-point
+            while ((--currentMaxEndPoint)->value > limit) {
+                BoxAABB* id1 = &boxes[currentMaxEndPoint->boxID];
+                const bool isMin = currentMaxEndPoint->isMin;
+                
+                // If it's a minimum end-point
+                if (isMin) {
+                    // The maximum end-point is moving to the right and
+                    // passed a minimum end-point. Thus, the boxes stop
+                    // overlapping on the current axis.
+                    if (box != id1) {
+                        if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2)) {
+                            
+                            // Remove the pair from the pair manager
+                            pairManager.removePair(body->getID(), id1->body->getID());
+                        }
+                    }
+                    
+                    id1->min[axis] = indexEndPoint--;
+                }
+                else {
+                    id1->max[axis] = indexEndPoint--;
+                }
+                
+                *(currentMaxEndPoint+1) = *currentMaxEndPoint;
+            }
+            
+            // Update the current minimum endpoint that we are moving
+            if (savedEndPointIndex != indexEndPoint) {
+                if (savedEndPoint.isMin) {
+                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                }
+                else {
+                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                }
+
+                startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+            }
+        }
     }
 }
 
-// This method computes the possible collision pairs of bodies and notify
-// the collision detection object about overlapping pairs using the
-// broadPhaseNotifyOverlappingPair() method from the CollisionDetection class
-void SweepAndPruneAlgorithm::computePossibleCollisionPairs() {
-    decimal variance[3];                            // Variance of the distribution of the AABBs on the three x, y and z axis
-    decimal esperance[] = {0.0, 0.0, 0.0};           // Esperance of the distribution of the AABBs on the three x, y and z axis
-    decimal esperanceSquare[] = {0.0, 0.0, 0.0};     // Esperance of the square of the distribution values of the AABBs on the three x, y and z axis
-    vector<const AABB*>::iterator it;               // Iterator on the sortedAABBs set
-    vector<const AABB*>::iterator it2;              // Second iterator
-    Vector3 center3D;                               // Center of the current AABB
-    decimal center[3];                               // Coordinates of the center of the current AABB
-    int i;
-    const Body* body;                               // Body pointer on the body corresponding to an AABB
-    uint nbAABBs = sortedAABBs.size();              // Number of AABBs
-
-    // Sort the set of AABBs
-    sort(sortedAABBs.begin(), sortedAABBs.end(), compareAABBs);
-
-    // Sweep the sorted set of AABBs
-    for (vector<const AABB*>::iterator it = sortedAABBs.begin(); it != sortedAABBs.end(); ++it) {
-
-        // If the collision of the AABB's corresponding body is disabled
-        if (!(*it)->getBodyPointer()->getIsCollisionEnabled()) {
-            // Go to the next AABB to test
-            continue;
-        }
-
-        // Center of the current AABB
-        center3D = (*it)->getCenter();
-        center[0] = center3D.getX();
-        center[1] = center3D.getY();
-        center[2] = center3D.getZ();
-
-        // Update the esperance and esperanceSquare values to compute the variance
-        for (i=0; i<3; i++) {
-            esperance[i] += center[i];
-            esperanceSquare[i] += center[i] * center[i];
-        }
-
-        // Test collision against all possible overlapping AABBs following the current one
-        for (it2 = it + 1; it2 != sortedAABBs.end(); it2++) {
-            // Stop when the tested AABBs are beyond the end of the current AABB
-            if ((*it2)->getMinCoordinates()[sortAxis] > (*it)->getMaxCoordinates()[sortAxis]) {
-                break;
-            }
-
-            body = (*it2)->getBodyPointer();
-
-            // Test if both AABBs overlap
-            if (body->getIsCollisionEnabled() && (*it)->testCollision(*(*it2))) {
-                // Notify the collision detection object about this current overlapping pair of bodies
-                collisionDetection.broadPhaseNotifyOverlappingPair((*it)->getBodyPointer(), (*it2)->getBodyPointer());
-            }
-        }
+// Resize the boxes and end-points arrays when it is full
+void SweepAndPruneAlgorithm::resizeArrays() {
+    
+    // New number of boxes in the array
+    const luint nbSentinels = 2;
+    const luint newNbMaxBoxes = nbMaxBoxes ? 2 * nbMaxBoxes : 100;
+    const luint nbEndPoints = nbBoxes * 2 + nbSentinels;
+    const luint newNbEndPoints = newNbMaxBoxes * 2 + nbSentinels;
+    
+    // Allocate memory for the new boxes and end-points arrays
+    BoxAABB* newBoxesArray = new BoxAABB[newNbMaxBoxes];
+    EndPoint* newEndPointsXArray = new EndPoint[newNbEndPoints];
+    EndPoint* newEndPointsYArray = new EndPoint[newNbEndPoints];
+    EndPoint* newEndPointsZArray = new EndPoint[newNbEndPoints];
+    
+    assert(newBoxesArray);
+    assert(newEndPointsXArray);
+    assert(newEndPointsYArray);
+    assert(newEndPointsZArray);
+    
+    // If the arrays were not empty before
+    if (nbBoxes > 0) {
+        
+        // Copy the data in the old arrays into the new one
+        memcpy(newBoxesArray, boxes, sizeof(BoxAABB) * nbBoxes);
+        size_t nbBytesNewEndPoints = sizeof(EndPoint) * nbEndPoints;
+        memcpy(newEndPointsXArray, endPoints[0], nbBytesNewEndPoints);
+        memcpy(newEndPointsYArray, endPoints[1], nbBytesNewEndPoints);
+        memcpy(newEndPointsZArray, endPoints[2], nbBytesNewEndPoints);
+    }
+    else {   // If the arrays were empty
+        
+        // Add the limits endpoints (sentinels) into the array
+        const uint min = encodeFloatIntoInteger(DECIMAL_SMALLEST);
+        const uint max = encodeFloatIntoInteger(DECIMAL_LARGEST);
+        newEndPointsXArray[0].setValues(INVALID_INDEX, true, min);
+        newEndPointsXArray[1].setValues(INVALID_INDEX, false, max);
+        newEndPointsYArray[0].setValues(INVALID_INDEX, true, min);
+        newEndPointsYArray[1].setValues(INVALID_INDEX, false, max);
+        newEndPointsZArray[0].setValues(INVALID_INDEX, true, min);
+        newEndPointsZArray[1].setValues(INVALID_INDEX, false, max);
     }
 
-    // Compute the variance of the distribution of the AABBs on the three x,y and z axis
-    for (i=0; i<3; i++) {
-        variance[i] = esperanceSquare[i] - esperance[i] * esperance[i] / nbAABBs;
-    }
-
-    // Update the sorted axis according to the axis with the largest variance
-    sortAxis = 0;
-    if (variance[1] > variance[0]) sortAxis = 1;
-    if (variance[2] > variance[sortAxis]) sortAxis = 2;
+    // Delete the old arrays
+    delete[] boxes;
+    delete[] endPoints[0];
+    delete[] endPoints[1];
+    delete[] endPoints[2];
+    
+    // Assign the pointer to the new arrays
+    boxes = newBoxesArray;
+    endPoints[0] = newEndPointsXArray;
+    endPoints[1] = newEndPointsYArray;
+    endPoints[2] = newEndPointsZArray;
+    
+    nbMaxBoxes = newNbMaxBoxes;
 }
-
-

@@ -50,6 +50,12 @@ AABB::AABB() : bodyPointer(0) {
 }
 
 // Constructor
+AABB::AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates, Body* bodyPointer)
+     :minCoordinates(minCoordinates), maxCoordinates(maxCoordinates), bodyPointer(bodyPointer) {
+
+}
+
+// Constructor
 AABB::AABB(const Transform& transform, const Vector3& extents) : bodyPointer(0) {
     update(transform, extents);
 }

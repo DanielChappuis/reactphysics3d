@@ -29,7 +29,6 @@
 #include "../../../constraint/Contact.h"
 #include "../../../configuration.h"
 #include "../../OverlappingPair.h"
-#include "../../CollisionDetection.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
@@ -41,8 +40,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm(CollisionDetection& collisionDetection, MemoryPool<ContactInfo>& memoryPoolContactInfos)
-             :NarrowPhaseAlgorithm(collisionDetection, memoryPoolContactInfos), algoEPA(memoryPoolContactInfos) {
+GJKAlgorithm::GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
+             :NarrowPhaseAlgorithm(memoryPoolContactInfos), algoEPA(memoryPoolContactInfos) {
     
 }
 
@@ -91,7 +90,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 	Vector3 v = currentOverlappingPair->getCachedSeparatingAxis();
 
     // Initialize the upper bound for the square distance
-    decimal distSquare = DECIMAL_MAX;
+    decimal distSquare = DECIMAL_LARGEST;
     
     do {
               
@@ -252,7 +251,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
     Vector3 suppB;
     Vector3 w;
     decimal vDotw;
-    decimal distSquare = DECIMAL_MAX;
+    decimal distSquare = DECIMAL_LARGEST;
     decimal prevDistSquare;
 
     // Transform a point from local space of body 2 to local space of body 1 (the GJK algorithm is done in local space of body 1)

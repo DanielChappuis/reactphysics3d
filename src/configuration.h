@@ -43,10 +43,11 @@
 // Type definitions
 typedef unsigned int uint;
 typedef long unsigned int luint;
+typedef short unsigned int bodyindex;  // TODO : Replace whenever possible using the bodyindex type
 
 // Mathematical constants
-const reactphysics3d::decimal DECIMAL_MIN = std::numeric_limits<reactphysics3d::decimal>::min();                // Minimun decimal value
-const reactphysics3d::decimal DECIMAL_MAX = std::numeric_limits<reactphysics3d::decimal>::max();               // Maximum decimal value
+const reactphysics3d::decimal DECIMAL_SMALLEST = - std::numeric_limits<reactphysics3d::decimal>::max();                // Minimun decimal value
+const reactphysics3d::decimal DECIMAL_LARGEST = std::numeric_limits<reactphysics3d::decimal>::max();               // Maximum decimal value
 const reactphysics3d::decimal MACHINE_EPSILON = std::numeric_limits<reactphysics3d::decimal>::epsilon();        // Machine epsilon
 const reactphysics3d::decimal DECIMAL_INFINITY = std::numeric_limits<reactphysics3d::decimal>::infinity();      // Infinity
 const reactphysics3d::decimal PI = 3.14159265;                                                                  // Pi constant

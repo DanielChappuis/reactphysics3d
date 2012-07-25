@@ -40,7 +40,7 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Body :
-        This class is an abstract class to represent body of the physics
+        This class is an abstract class to represent a body of the physics
         engine.
     -------------------------------------------------------------------
 */
@@ -56,14 +56,17 @@ class Body {
         bool isCollisionEnabled;        // True if the body can collide with others bodies
         AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
         luint id;                       // ID of the body
+        bool hasMoved;                  // True if the body has moved during the last frame
 
     public :
         Body(const Transform& transform, Collider* collider, decimal mass, long unsigned int id);       // Constructor
         virtual ~Body();                                                                                // Destructor
 
         luint getID() const;                                    // Return the id of the body
+        bool getHasMoved() const;                               // Return true if the body has moved during the last frame
+        void setHasMoved(bool hasMoved);                        // Set the hasMoved variable (true if the body has moved during the last frame)
         Collider* getCollider() const;                          // Return the collision collider
-        void setCollider(Collider* collider);                         // Set the collision collider
+        void setCollider(Collider* collider);                   // Set the collision collider
         decimal getMass() const;                                // Return the mass of the body
         void setMass(decimal mass);                             // Set the mass of the body
         bool getIsActive() const;                               // Return true if the body is active
@@ -79,12 +82,28 @@ class Body {
         void setIsCollisionEnabled(bool isCollisionEnabled);    // Set the isCollisionEnabled value
         void updateOldTransform();                              // Update the old transform with the current one
         void updateAABB();                                      // Update the Axis-Aligned Bounding Box coordinates
+
+        // Operators
+        bool operator<(const Body& body2) const;                // Smaller than operator
+        bool operator>(const Body& body2) const;                // Larger than operator
+        bool operator==(const Body& body2) const;               // Equal operator
+        bool operator!=(const Body& body2) const;               // Equal operator
 };
 
 // Return the id of the body
 inline luint Body::getID() const {
     return id;
-}                               
+}
+
+// Return true if the body has moved during the last frame
+inline bool Body::getHasMoved() const {
+    return hasMoved;
+}
+
+// Set the hasMoved variable (true if the body has moved during the last frame)
+inline void Body::setHasMoved(bool hasMoved) {
+    this->hasMoved = hasMoved;
+}
 
 // Return the collider
 inline Collider* Body::getCollider() const {
@@ -146,6 +165,12 @@ inline const Transform& Body::getTransform() const {
 
 // Set the current position and orientation
 inline void Body::setTransform(const Transform& transform) {
+
+    // Check if the body has moved
+    if (this->transform != transform) {
+        hasMoved = true;
+    }
+
     this->transform = transform;
 }
 
@@ -172,10 +197,32 @@ inline void Body::updateOldTransform() {
 
 // Update the rigid body in order to reflect a change in the body state
 inline void Body::updateAABB() {
+    
+    // TODO : An AABB should not be updated every frame but only if the body has moved
+    
     // Update the AABB
     aabb->update(transform, collider->getLocalExtents(OBJECT_MARGIN));
 }
 
+// Smaller than operator
+inline bool Body::operator<(const Body& body2) const {
+    return (id < body2.id);
+} 
+
+// Larger than operator
+inline bool Body::operator>(const Body& body2) const {
+    return (id > body2.id);
+} 
+
+// Equal operator
+inline bool Body::operator==(const Body& body2) const {
+    return (id == body2.id);
+}
+        
+// Equal operator
+inline bool Body::operator!=(const Body& body2) const {
+    return (id != body2.id);
+}               
 
 }
 

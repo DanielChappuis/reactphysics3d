@@ -222,10 +222,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
                 link(EdgeEPA(face2, 1), EdgeEPA(face3, 1));
 
                 // Add the triangle faces in the candidate heap
-                addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_MAX);
-                addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_MAX);
-                addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_MAX);
-                addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_MAX);
+                addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+                addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+                addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+                addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_LARGEST);
 
                 break;
             }
@@ -288,12 +288,12 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
             link(EdgeEPA(face5, 1), EdgeEPA(face3, 2));
 
             // Add the candidate faces in the heap
-            addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_MAX);
-            addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_MAX);
-            addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_MAX);
-            addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_MAX);
-            addFaceCandidate(face4, triangleHeap, nbTriangles, DECIMAL_MAX);
-            addFaceCandidate(face5, triangleHeap, nbTriangles, DECIMAL_MAX);
+            addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+            addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+            addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+            addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+            addFaceCandidate(face4, triangleHeap, nbTriangles, DECIMAL_LARGEST);
+            addFaceCandidate(face5, triangleHeap, nbTriangles, DECIMAL_LARGEST);
 
             nbVertices = 5;
         }
@@ -308,7 +308,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(Simplex simplex, cons
     }
 
     TriangleEPA* triangle = 0;
-    decimal upperBoundSquarePenDepth = DECIMAL_MAX;
+    decimal upperBoundSquarePenDepth = DECIMAL_LARGEST;
 
     do {
         triangle = triangleHeap[0];

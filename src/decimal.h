@@ -31,7 +31,7 @@ namespace reactphysics3d {
 
 #if defined(DOUBLE_PRECISION_ENABLED)   // If we are compiling for double precision
     typedef double decimal;
-#else                           // If we are compiling for single precision
+#else                                   // If we are compiling for single precision
     typedef float decimal;
 #endif
 

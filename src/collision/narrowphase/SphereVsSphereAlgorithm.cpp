@@ -31,8 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(CollisionDetection& collisionDetection, MemoryPool<ContactInfo>& memoryPoolContactInfos)
-                        :NarrowPhaseAlgorithm(collisionDetection, memoryPoolContactInfos) {
+SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
+                        :NarrowPhaseAlgorithm(memoryPoolContactInfos) {
     
 }
 

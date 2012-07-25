@@ -29,7 +29,7 @@
 // Libraries
 #include "../body/Body.h"
 #include "OverlappingPair.h"
-#include "../engine/PhysicsWorld.h"
+#include "broadphase/BroadPhaseAlgorithm.h"
 #include "../memory/MemoryPool.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
@@ -38,6 +38,7 @@
 #include <map>
 #include <set>
 #include <utility>
+#include <iostream>     // TODO : Delete this
 
 
 // ReactPhysics3D namespace
@@ -45,7 +46,8 @@ namespace reactphysics3d {
 
 // Declarations
 class BroadPhaseAlgorithm;
-    
+class PhysicsWorld;
+
 /*  -------------------------------------------------------------------
     Class CollisionDetection :
         This class computes the collision detection algorithms. We first
@@ -70,15 +72,18 @@ class CollisionDetection {
         void computeBroadPhase();                                                       // Compute the broad-phase collision detection
         bool computeNarrowPhase();                                                      // Compute the narrow-phase collision detection
         NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(Collider* collider1,
-                                                               Collider* collider2);    // Select the narrow phase algorithm to use given two colliders
+                                                         Collider* collider2);          // Select the narrow phase algorithm to use given two colliders
    
     public :
         CollisionDetection(PhysicsWorld* physicsWorld);                                 // Constructor
         ~CollisionDetection();                                                          // Destructor
-                                                                                           
+        
+        void addBody(Body* body);                                                       // Add a body to the collision detection
+        void removeBody(Body* body);                                                    // Remove a body from the collision detection
         OverlappingPair* getOverlappingPair(luint body1ID, luint body2ID);              // Return an overlapping pair or null     
         bool computeCollisionDetection();                                               // Compute the collision detection
-        void broadPhaseNotifyOverlappingPair(Body* body1, Body* body2);                 // Allow the broadphase to notify the collision detection about an overlapping pair
+        void broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* pair);          // Allow the broadphase to notify the collision detection about a new overlapping pair
+        void broadPhaseNotifyRemovedOverlappingPair(const BroadPhasePair* pair);        // Allow the broadphase to notify the collision detection about a removed overlapping pair
 };
 
 // Return an overlapping pair of bodies according to the given bodies ID
@@ -88,7 +93,7 @@ inline OverlappingPair* CollisionDetection::getOverlappingPair(luint body1ID, lu
     if (overlappingPairs.count(pair) == 1) {
         return overlappingPairs[pair];
     }
-    return NULL;
+    return 0;
 }
 
 // Select the narrow-phase collision algorithm to use given two colliders
@@ -101,7 +106,21 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(Coll
     else {   // GJK algorithm
         return narrowPhaseGJKAlgorithm; 
     }
-}   
+}  
+
+// Add a body to the collision detection
+inline void CollisionDetection::addBody(Body* body) {
+    
+    // Add the body to the broad-phase
+    broadPhaseAlgorithm->addObject(body, *(body->getAABB()));
+}  
+
+// Remove a body from the collision detection
+inline void CollisionDetection::removeBody(Body* body) {
+    
+    // Remove the body from the broad-phase
+    broadPhaseAlgorithm->removeObject(body);
+}                                                    
 
 } // End of the ReactPhysics3D namespace
 

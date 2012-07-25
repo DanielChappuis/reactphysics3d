@@ -36,6 +36,13 @@
 // TODO : Check that casting is done correctly in this class using
 //        C++ cast operator like reinterpret_cast<>, ...
 
+// TODO : Rename the variable "maxNbObjects" into "capacity"
+
+// TODO : Replace uint by luint in this class
+
+// TODO : Make the memory pool to start without allocated memory and to grow
+//        by using several blocks instead of only one.
+
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 

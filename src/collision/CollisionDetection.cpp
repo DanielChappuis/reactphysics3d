@@ -25,7 +25,9 @@
 
 // Libraries
 #include "CollisionDetection.h"
+#include "../engine/PhysicsWorld.h"
 #include "broadphase/SweepAndPruneAlgorithm.h"
+#include "broadphase/NoBroadPhaseAlgorithm.h"
 #include "../body/Body.h"
 #include "../colliders/BoxCollider.h"
 #include "../body/RigidBody.h"
@@ -34,6 +36,9 @@
 #include <complex>
 #include <set>
 #include <utility>
+#include <utility>
+#include <sys/time.h>       // TODO : Delete this
+#include <iostream>         // TODO : Delete this
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -42,11 +47,12 @@ using namespace std;
 // Constructor
 CollisionDetection::CollisionDetection(PhysicsWorld* world)
                    : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS),
-                     memoryPoolContactInfos(NB_MAX_CONTACTS), narrowPhaseGJKAlgorithm(*this, memoryPoolContactInfos),
-                     narrowPhaseSphereVsSphereAlgorithm(*this, memoryPoolContactInfos) {
+                     narrowPhaseGJKAlgorithm(memoryPoolContactInfos), memoryPoolContactInfos(NB_MAX_CONTACTS),
+                     narrowPhaseSphereVsSphereAlgorithm(memoryPoolContactInfos) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     broadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
+    assert(broadPhaseAlgorithm);
 }
 
 // Destructor
@@ -57,16 +63,31 @@ CollisionDetection::~CollisionDetection() {
         (*it).second->OverlappingPair::~OverlappingPair();
 		memoryPoolOverlappingPairs.freeObject((*it).second);
     }
+    
+    // Delete the broad-phase algorithm
+    delete broadPhaseAlgorithm;
 }
 
 // Compute the collision detection
 bool CollisionDetection::computeCollisionDetection() {
 	
     world->removeAllContactConstraints();
+    
+    // TODO : Remove this code
+    timeval timeValueStart;
+    timeval timeValueStop;
+    gettimeofday(&timeValueStart, NULL);
 
     // Compute the broad-phase collision detection
     computeBroadPhase();
-
+    
+    // TODO : Remove this code
+    gettimeofday(&timeValueStop, NULL);
+    double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
+    double stopTime = timeValueStop.tv_sec * 1000000.0 + (timeValueStop.tv_usec);
+    double deltaTime = stopTime - startTime;
+    printf("Broadphase time : %f micro sec \n", deltaTime);
+    
     // Compute the narrow-phase collision detection
     bool collisionExists = computeNarrowPhase();
 	
@@ -77,28 +98,20 @@ bool CollisionDetection::computeCollisionDetection() {
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
-    // Notify the broad-phase algorithm about new and removed bodies in the physics world
-    broadPhaseAlgorithm->notifyAddedBodies(world->getAddedRigidBodies());
-    broadPhaseAlgorithm->notifyRemovedBodies(world->getRemovedRigidBodies());
-    
-    // Clear the set of the overlapping pairs in the current step
-    currentStepOverlappingPairs.clear();
+    // Notify the broad-phase algorithm about the bodies that have moved since last frame
+    for (set<Body*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
 
-    // Execute the broad-phase collision algorithm in order to compute the overlapping pairs of bodies
-    broadPhaseAlgorithm->computePossibleCollisionPairs();
+        // If the body has moved
+        if ((*it)->getHasMoved()) {
+
+            // Notify the broad-phase that the body has moved
+            broadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
+        }
+    }  
     
-    // At this point, the pairs in the set lastStepOverlappingPairs contains
-    // only the pairs that are not overlapping anymore. Therefore, we can
-    // remove them from the overlapping pairs map
-    for (set<pair<luint, luint> >::iterator it = lastStepOverlappingPairs.begin(); it != lastStepOverlappingPairs.end(); it++) {
-        // Remove the overlapping pair from the memory pool
-		overlappingPairs[(*it)]->OverlappingPair::~OverlappingPair();
-		memoryPoolOverlappingPairs.freeObject(overlappingPairs[(*it)]);
-        overlappingPairs.erase(*it);
-    }
-    
-    // The current overlapping pairs become the last step overlapping pairs
-    lastStepOverlappingPairs = currentStepOverlappingPairs;
+    // TODO : DELETE THIS
+    std::cout << "Nb overlapping pairs : " <<  overlappingPairs.size() << std::endl;
+    std::cout << "Nb active pairs in pair manager : " << broadPhaseAlgorithm->getNbOverlappingPairs() << std::endl;
 }
 
 // Compute the narrow-phase collision detection
@@ -129,7 +142,7 @@ bool CollisionDetection::computeNarrowPhase() {
             collisionExists = true;
 
             // Create a new contact
-            Contact* contact = new(memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
+            Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
             
             // Delete and remove the contact info from the memory pool
             contactInfo->ContactInfo::~ContactInfo();
@@ -149,26 +162,18 @@ bool CollisionDetection::computeNarrowPhase() {
     return collisionExists;
 }
 
-
 // Allow the broadphase to notify the collision detection about an overlapping pair
 // This method is called by a broad-phase collision detection algorithm
-void CollisionDetection::broadPhaseNotifyOverlappingPair(Body* body1, Body* body2) {
+void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
+    std::cout << "New overlapping pair : id0=" << addedPair->body1->getID() << ", id=" << addedPair->body2->getID() << std::endl;
+    
     // Construct the pair of body index
-    pair<luint, luint> indexPair = body1->getID() < body2->getID() ? make_pair(body1->getID(), body2->getID()) :
-                                                                make_pair(body2->getID(), body1->getID());
+    pair<luint, luint> indexPair = addedPair->body1->getID() < addedPair->body2->getID() ? make_pair(addedPair->body1->getID(), addedPair->body2->getID()) :
+                                                                make_pair(addedPair->body2->getID(), addedPair->body1->getID());
     assert(indexPair.first != indexPair.second);
     
-    // Add the pair to the overlapping pairs of the current step
-    currentStepOverlappingPairs.insert(indexPair);
-    
-    // Remove the pair from the set of overlapping pairs in the last step
-    // if the pair of bodies were already overlapping (used to compute the 
-    // set of pair that were overlapping in the last step but are not overlapping
-    // in the current one anymore
-    lastStepOverlappingPairs.erase(indexPair);
-    
     // Add the pair into the set of overlapping pairs (if not there yet)
-	OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(body1, body2, memoryPoolContacts);
+    OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, memoryPoolContacts);
     pair<map<pair<luint, luint>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
 	
 	// If the overlapping pair was already in the set of overlapping pair
@@ -177,4 +182,17 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(Body* body1, Body* body
 		newPair->OverlappingPair::~OverlappingPair();
 		memoryPoolOverlappingPairs.freeObject(newPair);
 	}
+}
+
+// Allow the broadphase to notify the collision detection about a removed overlapping pair
+void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
+
+    // Construct the pair of body index
+    pair<luint, luint> indexPair = removedPair->body1->getID() < removedPair->body2->getID() ? make_pair(removedPair->body1->getID(), removedPair->body2->getID()) :
+                                                                make_pair(removedPair->body2->getID(), removedPair->body1->getID());
+
+    // Remove the overlapping pair from the memory pool
+    overlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
+    memoryPoolOverlappingPairs.freeObject(overlappingPairs[indexPair]);
+    overlappingPairs.erase(indexPair);
 }

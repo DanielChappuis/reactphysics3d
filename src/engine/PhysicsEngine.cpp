@@ -32,10 +32,11 @@ using namespace std;
 
 // Constructor
 PhysicsEngine::PhysicsEngine(PhysicsWorld* world, decimal timeStep = DEFAULT_TIMESTEP)
-              : world(world), timer(timeStep), collisionDetection(world), constraintSolver(world),
+              : world(world), collisionDetection(world), timer(timeStep), constraintSolver(world),
                 isDeactivationActive(DEACTIVATION_ENABLED) {
     assert(world);
     assert(timeStep > 0.0);
+    world->setCollisionDetection(&collisionDetection);
 }
 
 // Destructor
@@ -70,6 +71,9 @@ void PhysicsEngine::update() {
         // Update the timer
         timer.nextStep();
 
+        // Reset the movement boolean variable of each body to false
+        resetBodiesMovementVariable();
+
         // Update the position and orientation of each body
         updateAllBodiesMotion();
 
@@ -77,9 +81,6 @@ void PhysicsEngine::update() {
         if (existCollision) {
            constraintSolver.cleanup();
         }
-
-        // Clear the added and removed bodies from last update() method call
-        world->clearAddedAndRemovedBodies();
     }
 
     // Compute and set the interpolation factor to all the bodies
@@ -103,7 +104,7 @@ void PhysicsEngine::updateAllBodiesMotion() {
     Vector3 angularVelocityErrorCorrection;
     
     // For each body of thephysics world
-    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
+    for (set<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = *it;
         assert(rigidBody);
@@ -183,7 +184,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
     assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor to all bodies
-    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
+    for (set<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);
@@ -196,7 +197,7 @@ void PhysicsEngine::setInterpolationFactorToAllBodies() {
 void PhysicsEngine::applyGravity() {
 
     // For each body of the physics world
-    for (vector<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
+    for (set<RigidBody*>::iterator it=world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
         assert(rigidBody);

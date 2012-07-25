@@ -28,7 +28,8 @@
 
 // Libraries
 #include <vector>
-#include "../../body/RigidBody.h"
+#include "../../body/Body.h"
+#include "PairManager.h"
 
 // Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -51,16 +52,39 @@ class CollisionDetection;
 */
 class BroadPhaseAlgorithm {
     protected :
-        CollisionDetection& collisionDetection;  // Reference to the collision detection object
+        PairManager pairManager;                        // Pair manager that contains the active pairs of bodies
+        CollisionDetection& collisionDetection;         // Reference to the collision detection object
         
     public :
         BroadPhaseAlgorithm(CollisionDetection& collisionDetection);    // Constructor
         virtual ~BroadPhaseAlgorithm();                                 // Destructor
+        
+        // TODO : DELETE THIS METHOD
+        uint getNbOverlappingPairs() const;
+        
+        virtual void addObject(Body* body, const AABB& aabb)=0;         // Notify the broad-phase about a new object in the world
+        virtual void removeObject(Body* body)=0;                        // Notify the broad-phase about an object that has been removed from the world
+        virtual void updateObject(Body* body, const AABB& aabb)=0;      // Notify the broad-phase that the AABB of an object has changed
 
-        virtual void computePossibleCollisionPairs()=0;                     // Compute the possible collision pairs of bodies
-        virtual void notifyAddedBodies(std::vector<RigidBody*> bodies)=0;   // Notify the broad-phase algorithm about new bodies in the physics world
-        virtual void notifyRemovedBodies(std::vector<RigidBody*> bodies)=0; // Notify the broad-phase algorithm about removed bodies in the physics world
+        BroadPhasePair* beginOverlappingPairsPointer() const;                                                       // Return a pointer to the first active pair (used to iterate over the active pairs)
+        BroadPhasePair* endOverlappingPairsPointer() const;                                                         // Return a pointer to the last active pair (used to iterate over the active pairs)
 };
+
+// TODO : DELETE THIS METHOD
+inline uint BroadPhaseAlgorithm::getNbOverlappingPairs() const {
+    return pairManager.getNbOverlappingPairs();
+}
+
+
+// Return a pointer to the first active pair (used to iterate over the overlapping pairs)
+inline BroadPhasePair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
+    return pairManager.beginOverlappingPairsPointer();
+}                                                           
+
+// Return a pointer to the last active pair (used to iterate over the overlapping pairs)
+inline BroadPhasePair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
+   return pairManager.endOverlappingPairsPointer(); 
+}   
 
 } // End of reactphysics3d namespace
 

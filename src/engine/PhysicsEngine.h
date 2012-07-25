@@ -50,11 +50,13 @@ class PhysicsEngine {
         CollisionDetection collisionDetection;          // Collision detection
         ConstraintSolver constraintSolver;              // Constraint solver
         bool isDeactivationActive;                      // True if the deactivation (sleeping) of inactive bodies is enabled
+
         void updateAllBodiesMotion();                                                                                                            // Compute the motion of all bodies and update their positions and orientations
         void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
                                                 const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection);    // Update the position and orientation of a body
         void setInterpolationFactorToAllBodies();                                                                                                // Compute and set the interpolation factor to all bodies
         void applyGravity();                                                                                                                     // Apply the gravity force to all bodies
+        void resetBodiesMovementVariable();             // Reset the boolean movement variable of each body
 
 public :
         PhysicsEngine(PhysicsWorld* world, decimal timeStep);    // Constructor
@@ -89,6 +91,16 @@ inline void PhysicsEngine::setIsErrorCorrectionActive(bool isErrorCorrectionActi
     constraintSolver.setIsErrorCorrectionActive(isErrorCorrectionActive);
 }
 
+// Reset the boolean movement variable of each body
+inline void PhysicsEngine::resetBodiesMovementVariable() {
+
+    // For each rigid body
+    for (std::set<RigidBody*>::iterator it = world->getRigidBodiesBeginIterator(); it != world->getRigidBodiesEndIterator(); it++) {
+
+        // Set the hasMoved variable to false
+        (*it)->setHasMoved(false);
+    }
+}
 
 }
 

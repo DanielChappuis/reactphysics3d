@@ -41,31 +41,3 @@ NoBroadPhaseAlgorithm::NoBroadPhaseAlgorithm(CollisionDetection& collisionDetect
 NoBroadPhaseAlgorithm::~NoBroadPhaseAlgorithm() {
 
 }
-
-// Compute the possible collision pairs of bodies. This broad-phase algorithm
-// doesn't do anything
-
-void NoBroadPhaseAlgorithm::computePossibleCollisionPairs() {
-    // For each pair of bodies
-    for (vector<Body*>::iterator it1 = bodies.begin(); it1 != bodies.end(); it1++) {
-        for (vector<Body*>::iterator it2 = it1+1; it2 != bodies.end(); it2++) {
-            collisionDetection.broadPhaseNotifyOverlappingPair(*it1, *it2);
-        }
-    }
-}
-
-// Notify the broad-phase algorithm about new bodies in the physics world
-void NoBroadPhaseAlgorithm::notifyAddedBodies(vector<Body*> addedBodies) {
-    // Add the new bodies
-    for (vector<Body*>::iterator it = addedBodies.begin(); it < addedBodies.end(); it++) {
-        bodies.push_back(*it);
-    }
-}   
-
-// Notify the broad-phase algorithm about removed bodies in the physics world
-void NoBroadPhaseAlgorithm::notifyRemovedBodies(vector<Body*> removedBodies) {
-    // Remove the bodies to be removed
-    for (vector<Body*>::iterator it = removedBodies.begin(); it < removedBodies.end(); it++) {
-        bodies.erase(std::find(bodies.begin(), bodies.end(), *it));
-    }
-} 

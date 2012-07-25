@@ -32,7 +32,7 @@ using namespace reactphysics3d;
 
 // Constructor
 Body::Body(const Transform& transform, Collider* collider, decimal mass, long unsigned int id)
-     : collider(collider), mass(mass), transform(transform), isActive(true), id(id) {
+    : collider(collider), mass(mass), transform(transform), isActive(true), id(id), hasMoved(false) {
     assert(mass > 0.0);
     assert(collider);
 

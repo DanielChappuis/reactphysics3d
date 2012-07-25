@@ -327,7 +327,7 @@ bool Simplex::computeClosestPoint(Vector3& v) {
 
 // Backup the closest point
 void Simplex::backupClosestPointInSimplex(Vector3& v) {
-    decimal minDistSquare = DECIMAL_MAX;
+    decimal minDistSquare = DECIMAL_LARGEST;
     Bits bit;
 
     for (bit = allBits; bit != 0x0; bit--) {

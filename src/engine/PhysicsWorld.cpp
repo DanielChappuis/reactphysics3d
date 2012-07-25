@@ -35,7 +35,6 @@ using namespace std;
 // Constructor
 PhysicsWorld::PhysicsWorld(const Vector3& gravity)
              : gravity(gravity), isGravityOn(true), currentBodyID(0), memoryPoolRigidBodies(NB_MAX_BODIES) {
-
 }
 
 // Destructor
@@ -46,22 +45,46 @@ PhysicsWorld::~PhysicsWorld() {
 // Create a rigid body into the physics world
 RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider) {
     
+    // Compute the body ID
+    luint bodyID;
+    if (!freeRigidBodyIDs.empty()) {
+        bodyID = freeRigidBodyIDs.back();
+        freeRigidBodyIDs.pop_back();
+    }
+    else {
+        bodyID = currentBodyID;
+        currentBodyID++;
+    }
+
     // Create the rigid body
-    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collider, currentBodyID);
+    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collider, bodyID);
     
-    currentBodyID++;
-    
-    // Add the rigid body to the physics world and return it
-    addRigidBody(rigidBody);
+    // Add the rigid body to the physics world
+    bodies.insert(rigidBody);
+    rigidBodies.insert(rigidBody);
+
+    // Add the rigid body to the collision detection
+    collisionDetection->addBody(rigidBody);
+
+    // Return the pointer to the rigid body
     return rigidBody;
 }       
 
 // Destroy a rigid body
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
-    removeRigidBody(rigidBody);
+
+    // Remove the body from the collision detection
+    collisionDetection->removeBody(rigidBody);
+
+    // Add the body ID to the list of free IDs
+    freeRigidBodyIDs.push_back(rigidBody->getID());
 	
     // Call the constructor of the rigid body
     rigidBody->RigidBody::~RigidBody();
+
+    // Remove the rigid body from the list of rigid bodies
+    bodies.erase(rigidBody);                                    // TOOD : Maybe use a set to make this faster
+    rigidBodies.erase(rigidBody);                               // TOOD : Maybe use a set to make this faster
 
     // Free the object from the memory pool
     memoryPoolRigidBodies.freeObject(rigidBody);
