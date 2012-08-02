@@ -51,13 +51,13 @@ namespace reactphysics3d {
 class PhysicsWorld {
     protected :
         CollisionDetection* collisionDetection;         // Reference to the collision detection
-        std::set<Body*> bodies;                      // All the bodies (rigid and soft) of the physics world
-        std::set<RigidBody*> rigidBodies;            // All the rigid bodies of the physics world
+        std::set<Body*> bodies;                         // All the bodies (rigid and soft) of the physics world
+        std::set<RigidBody*> rigidBodies;               // All the rigid bodies of the physics world
         std::vector<luint> freeRigidBodyIDs;            // List of free ID for rigid bodies
         std::vector<Constraint*> constraints;           // List that contains all the current constraints
         Vector3 gravity;                                // Gravity vector of the world
         bool isGravityOn;                               // True if the gravity force is on
-        luint currentBodyID;                            // Current body ID
+        bodyindex currentBodyID;                        // Current body ID
         MemoryPool<RigidBody> memoryPoolRigidBodies;    // Memory pool for rigid bodies memory allocation
         
     public :

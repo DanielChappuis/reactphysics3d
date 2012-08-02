@@ -44,7 +44,6 @@ struct BroadPhasePair {
         Body* body2;                // Pointer to the second body
 };
 
-// TODO : Change and use uint instead of luint here
 
 /*  --------------------------------------------------------------------
     Class PairManager :
@@ -56,42 +55,42 @@ struct BroadPhasePair {
 */
 class PairManager {
     private :
-        luint nbElementsHashTable;                                              // Number of elements in the hash table
+        bodyindex nbElementsHashTable;                                          // Number of elements in the hash table
         uint hashMask;                                                          // Hash mask for the hash function
-        luint nbOverlappingPairs;                                               // Number of overlapping pairs
-        luint* hashTable;                                                       // Hash table that contains the offset of the first pair of the list of
+        bodyindex nbOverlappingPairs;                                           // Number of overlapping pairs
+        bodyindex* hashTable;                                                   // Hash table that contains the offset of the first pair of the list of
                                                                                 // pairs with the same hash value in the "overlappingPairs" array
-        luint* offsetNextPair;                                                      // Array that contains for each offset, the offset of the next pair with
+        bodyindex* offsetNextPair;                                              // Array that contains for each offset, the offset of the next pair with
                                                                                 // the same hash value
                                                                                 // for a given same hash value
         BroadPhasePair* overlappingPairs;                                       // Array that contains the currently active pairs
-        static const luint INVALID_OFFSET = 0xffffffff;                         // Invalid ID
+        static bodyindex INVALID_INDEX;                                         // Invalid ID
         CollisionDetection& collisionDetection;                                 // Reference to the collision detection
         
         void sortBodiesUsingID(Body*& body1, Body*& body2) const;               // Sort the bodies according to their IDs (smallest ID first)
-        void sortIDs(luint& id1, luint& id2) const;                             // Sort the IDs (smallest ID first)
-        bool isDifferentPair(const BroadPhasePair& pair1, luint pair2ID1,
-                             luint pair2ID2) const;                             // Return true if pair1 and pair2 are the same
+        void sortIDs(bodyindex& id1, bodyindex& id2) const;                     // Sort the IDs (smallest ID first)
+        bool isDifferentPair(const BroadPhasePair& pair1, bodyindex pair2ID1,
+                             bodyindex pair2ID2) const;                         // Return true if pair1 and pair2 are the same
         uint computeHashBodies(uint id1, uint id2) const;                       // Compute the hash value of two bodies using their IDs
         int computeHash32Bits(int key) const;                                   // This method returns an hash value for a 32 bits key
         luint computeNextPowerOfTwo(luint number) const;                        // Return the next power of two
         void reallocatePairs();                                                 // Reallocate memory for more pairs
         void shrinkMemory();                                                    // Shrink the allocated memory
-        luint computePairOffset(const BroadPhasePair* pair) const;              // Compute the offset of a given pair
-        BroadPhasePair* lookForAPair(luint id1, luint id2,
+        bodyindex computePairOffset(const BroadPhasePair* pair) const;              // Compute the offset of a given pair
+        BroadPhasePair* lookForAPair(bodyindex id1, bodyindex id2,
                                      luint hashValue) const;                    // Look for a pair in the set of overlapping pairs
-        BroadPhasePair* findPairWithHashValue(luint id1, luint id2,
+        BroadPhasePair* findPairWithHashValue(bodyindex id1, bodyindex id2,
                                               luint hashValue) const;           // Find a pair given two body IDs and an hash value
-        void removePairWithHashValue(luint id1, luint id2, luint hashValue,
-                                     luint indexPair);                          // Remove a pair from the set of active pair
+        void removePairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue,
+                                     bodyindex indexPair);                      // Remove a pair from the set of active pair
     public :
         PairManager(CollisionDetection& collisionDetection);                    // Constructor
         ~PairManager();                                                         // Destructor
         
-        uint getNbOverlappingPairs() const;                                          // Return the number of active pairs
+        bodyindex getNbOverlappingPairs() const;                                // Return the number of active pairs
         BroadPhasePair* addPair(Body* body1, Body* body2);                                                          // Add a pair of bodies in the pair manager
-        bool removePair(luint id1, luint id2);                                                                      // Remove a pair of bodies from the pair manager
-        BroadPhasePair* findPair(luint id1, luint id2) const;                                                       // Find a pair given two body IDs
+        bool removePair(bodyindex id1, bodyindex id2);                                                                      // Remove a pair of bodies from the pair manager
+        BroadPhasePair* findPair(bodyindex id1, bodyindex id2) const;                                                       // Find a pair given two body IDs
         BroadPhasePair* beginOverlappingPairsPointer() const;                                                            // Return a pointer to the first overlapping pair (used to iterate over the active pairs)
         BroadPhasePair* endOverlappingPairsPointer() const;                                                              // Return a pointer to the last overlapping pair (used to iterate over the active pairs)
         void registerAddedOverlappingPairCallback(void (CollisionDetection::*callbackFunction) (const BroadPhasePair* addedActivePair));     // Register a callback function (using a function pointer) that will be called when a new overlapping pair is added in the pair manager
@@ -101,7 +100,7 @@ class PairManager {
 };
 
 // Return the number of overlapping pairs
-inline uint PairManager::getNbOverlappingPairs() const {
+inline bodyindex PairManager::getNbOverlappingPairs() const {
     return nbOverlappingPairs;
 }                                         
 
@@ -111,7 +110,7 @@ inline uint PairManager::computeHashBodies(uint id1, uint id2) const {
 }  
 
 // Return true if pair1 and pair2 are the same
-inline bool PairManager::isDifferentPair(const BroadPhasePair& pair1, luint pair2ID1, luint pair2ID2) const {
+inline bool PairManager::isDifferentPair(const BroadPhasePair& pair1, bodyindex pair2ID1, bodyindex pair2ID2) const {
     return (pair2ID1 != pair1.body1->getID() || pair2ID2 != pair1.body2->getID());
 }
 
@@ -140,9 +139,9 @@ inline void PairManager::sortBodiesUsingID(Body*& body1, Body*& body2) const {
 } 
 
 // Sort the IDs (smallest ID first)
-inline void PairManager::sortIDs(luint& id1, luint& id2) const {
+inline void PairManager::sortIDs(bodyindex &id1, bodyindex &id2) const {
     if (id1 > id2) {
-        luint temp = id2;
+        bodyindex temp = id2;
         id2 = id1;
         id1 = temp;
     }
@@ -162,7 +161,7 @@ inline int PairManager::computeHash32Bits(int key) const {
 }
 
 // Find a pair given two body IDs
-inline BroadPhasePair* PairManager::findPair(luint id1, luint id2) const {
+inline BroadPhasePair* PairManager::findPair(bodyindex id1, bodyindex id2) const {
     
     // Check if the hash table has been allocated yet
     if (!hashTable) return 0;
@@ -180,7 +179,7 @@ inline BroadPhasePair* PairManager::findPair(luint id1, luint id2) const {
 // Find a pair given two body IDs and an hash value
 // This internal version is used to avoid computing multiple times in the 
 // caller method
-inline BroadPhasePair* PairManager::findPairWithHashValue(luint id1, luint id2, luint hashValue) const {
+inline BroadPhasePair* PairManager::findPairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue) const {
     
     // Check if the hash table has been allocated yet
     if (!hashTable) return 0;
@@ -193,7 +192,7 @@ inline BroadPhasePair* PairManager::findPairWithHashValue(luint id1, luint id2, 
 inline void PairManager::shrinkMemory() {
     
     // Check if the allocated memory can be reduced
-    const luint correctNbElementsHashTable = computeNextPowerOfTwo(nbOverlappingPairs);
+    const bodyindex correctNbElementsHashTable = computeNextPowerOfTwo(nbOverlappingPairs);
     if (nbElementsHashTable == correctNbElementsHashTable) return;
     
     // Reduce the allocated memory
@@ -203,8 +202,8 @@ inline void PairManager::shrinkMemory() {
 }
 
 // Compute the offset of a given pair in the array of overlapping pairs
-inline luint PairManager::computePairOffset(const BroadPhasePair* pair) const {
-    return ((luint)((size_t(pair) - size_t(overlappingPairs))) / sizeof(BroadPhasePair));
+inline bodyindex PairManager::computePairOffset(const BroadPhasePair* pair) const {
+    return ((bodyindex)((size_t(pair) - size_t(overlappingPairs))) / sizeof(BroadPhasePair));
 }
 
 // Return a pointer to the first overlapping pair (used to iterate over the overlapping pairs) or

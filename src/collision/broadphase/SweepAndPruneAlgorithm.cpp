@@ -33,6 +33,9 @@
 using namespace reactphysics3d;
 using namespace std;
 
+// Initialization of static variables
+bodyindex SweepAndPruneAlgorithm::INVALID_INDEX = std::numeric_limits<reactphysics3d::bodyindex>::max();
+
 // Constructor of AABBInt
 AABBInt::AABBInt(const AABB& aabb) {
     for (int axis=0; axis<3; axis++) {
@@ -63,7 +66,7 @@ SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 // Notify the broad-phase about a new object in the world
 // This method adds the AABB of the object ion to broad-phase
 void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
-    luint boxIndex;
+    bodyindex boxIndex;
     
     // If the index of the first free box is valid (means that
     // there is a bucket in the middle of the array that doesn't
@@ -86,7 +89,7 @@ void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
     // at the end-points array in all three axis
     const luint nbSentinels = 2;
     const luint indexLimitEndPoint = 2 * nbBoxes + nbSentinels - 1;
-    for (int axis=0; axis<3; axis++) {
+    for (uint axis=0; axis<3; axis++) {
         EndPoint* maxLimitEndPoint = &endPoints[axis][indexLimitEndPoint];
         assert(endPoints[axis][0].boxID == INVALID_INDEX && endPoints[axis][0].isMin == true);
         assert(maxLimitEndPoint->boxID == INVALID_INDEX && maxLimitEndPoint->isMin == false);
@@ -109,7 +112,7 @@ void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
     }
     
     // Add the body pointer to box index mapping
-    mapBodyToBoxIndex.insert(pair<Body*, luint>(body, boxIndex));
+    mapBodyToBoxIndex.insert(pair<Body*, bodyindex>(body, boxIndex));
     
     nbBoxes++;
 
@@ -131,7 +134,7 @@ void SweepAndPruneAlgorithm::removeObject(Body* body) {
     updateObject(body, aabb);
 
     // Get the corresponding box
-    luint boxIndex = mapBodyToBoxIndex[body];
+    bodyindex boxIndex = mapBodyToBoxIndex[body];
     BoxAABB* box = &boxes[boxIndex];
 
     // Add the box index into the list of free indices
@@ -148,7 +151,7 @@ void SweepAndPruneAlgorithm::updateObject(Body* body, const AABB& aabb) {
     AABBInt aabbInt(aabb);
     
     // Get the corresponding box
-    luint boxIndex = mapBodyToBoxIndex[body];
+    bodyindex boxIndex = mapBodyToBoxIndex[body];
     BoxAABB* box = &boxes[boxIndex];
         
     // Current axis

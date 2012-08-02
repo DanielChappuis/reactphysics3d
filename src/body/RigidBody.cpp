@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider, long unsigned id)
+ RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider, bodyindex id)
            : Body(transform, collider, mass, id), inertiaTensorLocal(inertiaTensorLocal),
              inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
 

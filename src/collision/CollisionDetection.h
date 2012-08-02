@@ -59,9 +59,9 @@ class PhysicsWorld;
 class CollisionDetection {
     private :
         PhysicsWorld* world;                                                            // Pointer to the physics world        
-        std::map<std::pair<luint, luint>, OverlappingPair*>  overlappingPairs;          // Broad-phase overlapping pairs of bodies 
-        std::set<std::pair<luint, luint> > currentStepOverlappingPairs;                 // Overlapping pairs of bodies at the current collision detection step
-        std::set<std::pair<luint, luint> > lastStepOverlappingPairs;                    // Overlapping pairs of bodies at the last collision detection step
+        std::map<std::pair<bodyindex, bodyindex>, OverlappingPair*>  overlappingPairs;  // Broad-phase overlapping pairs of bodies
+        std::set<std::pair<bodyindex, bodyindex> > currentStepOverlappingPairs;         // Overlapping pairs of bodies at the current collision detection step
+        std::set<std::pair<bodyindex, bodyindex> > lastStepOverlappingPairs;            // Overlapping pairs of bodies at the last collision detection step
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                                       // Broad-phase algorithm
         GJKAlgorithm narrowPhaseGJKAlgorithm;                                           // Narrow-phase GJK algorithm
         SphereVsSphereAlgorithm narrowPhaseSphereVsSphereAlgorithm;                     // Narrow-phase Sphere vs Sphere algorithm
@@ -80,7 +80,7 @@ class CollisionDetection {
         
         void addBody(Body* body);                                                       // Add a body to the collision detection
         void removeBody(Body* body);                                                    // Remove a body from the collision detection
-        OverlappingPair* getOverlappingPair(luint body1ID, luint body2ID);              // Return an overlapping pair or null     
+        OverlappingPair* getOverlappingPair(bodyindex body1ID, bodyindex body2ID);      // Return an overlapping pair or null
         bool computeCollisionDetection();                                               // Compute the collision detection
         void broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* pair);          // Allow the broadphase to notify the collision detection about a new overlapping pair
         void broadPhaseNotifyRemovedOverlappingPair(const BroadPhasePair* pair);        // Allow the broadphase to notify the collision detection about a removed overlapping pair
@@ -88,8 +88,8 @@ class CollisionDetection {
 
 // Return an overlapping pair of bodies according to the given bodies ID
 // The method returns null if the pair of bodies is not overlapping    
-inline OverlappingPair* CollisionDetection::getOverlappingPair(luint body1ID, luint body2ID) {
-    std::pair<luint, luint> pair = (body1ID < body2ID) ? std::make_pair(body1ID, body2ID) : std::make_pair(body2ID, body1ID);
+inline OverlappingPair* CollisionDetection::getOverlappingPair(bodyindex body1ID, bodyindex body2ID) {
+    std::pair<bodyindex, bodyindex> pair = (body1ID < body2ID) ? std::make_pair(body1ID, body2ID) : std::make_pair(body2ID, body1ID);
     if (overlappingPairs.count(pair) == 1) {
         return overlappingPairs[pair];
     }

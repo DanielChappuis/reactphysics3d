@@ -42,15 +42,15 @@ struct EndPoint {
     public:
         
         // TODO : Use uint here
-        luint boxID;                // ID of the AABB box corresponding to this end-point
+        bodyindex boxID;            // ID of the AABB box corresponding to this end-point
         bool isMin;                 // True if the end-point is a minimum end-point of a box
         uint value;                 // Value (one dimension coordinate) of the end-point
         
-        void setValues(luint boxID, bool isMin, uint value);    // Set the values of the endpoint
+        void setValues(bodyindex boxID, bool isMin, uint value);    // Set the values of the endpoint
 };
 
 // Set the values of the endpoint
-inline void EndPoint::setValues(luint boxID, bool isMin, uint value) {
+inline void EndPoint::setValues(bodyindex boxID, bool isMin, uint value) {
     this->boxID = boxID;
     this->isMin = isMin;
     this->value = value;
@@ -60,8 +60,8 @@ inline void EndPoint::setValues(luint boxID, bool isMin, uint value) {
 // Sweep-And-Prune algorithm
 struct BoxAABB {
     public:
-        luint min[3];           // Index of the three minimum end-points of the AABB over the axis X, Y and Z
-        luint max[3];           // Index of the three maximum end-points of the AABB over the axis X, Y and Z
+        bodyindex min[3];       // Index of the three minimum end-points of the AABB over the axis X, Y and Z
+        bodyindex max[3];       // Index of the three maximum end-points of the AABB over the axis X, Y and Z
         Body* body;             // Body that corresponds to the owner of the AABB
 };
 
@@ -75,12 +75,6 @@ struct AABBInt {
         AABBInt(const AABB& aabb);      // Constructor
 };
 
-// TODO : Use uint instead of luint here
-
-// TODO : Rename the methods and variable to my way
-
-// TODO : Try to replace the Body* pointer by the body ID everywhere in order that
-//        this class can be used in a more generic way
 
 /*  --------------------------------------------------------------------
     Class SweepAndPruneAlgorithm :
@@ -93,21 +87,21 @@ struct AABBInt {
 class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
     
     protected :
-        static const luint INVALID_INDEX = ULONG_MAX;                   // Invalid array index
+        static bodyindex INVALID_INDEX;                                 // Invalid array index
         
         BoxAABB* boxes;                                                 // Array that contains all the AABB boxes of the broad-phase
         EndPoint* endPoints[3];                                         // Array of end-points on the three axis
-        luint nbBoxes;                                                  // Number of AABB boxes in the broad-phase
-        luint nbMaxBoxes;                                               // Maximum number of boxes in the boxes array
-        std::vector<luint> freeBoxIndices;                              // Indices that are not used by any boxes
-        std::map<Body*, luint> mapBodyToBoxIndex;                       // Map a body pointer to its box index
+        bodyindex nbBoxes;                                              // Number of AABB boxes in the broad-phase
+        bodyindex nbMaxBoxes;                                           // Maximum number of boxes in the boxes array
+        std::vector<bodyindex> freeBoxIndices;                          // Indices that are not used by any boxes
+        std::map<Body*, bodyindex> mapBodyToBoxIndex;                   // Map a body pointer to its box index
         
         void resizeArrays();                                            // Resize the boxes and end-points arrays when it's full
         void addPair(Body* body1, Body* body2);                         // Add an overlapping pair of AABBS
         bool testIntersect1DSortedAABBs(const BoxAABB& box1, const AABBInt& box2,
-                            const EndPoint* const baseEndPoint, luint axis) const;      // Check for 1D box intersection
+                            const EndPoint* const baseEndPoint, uint axis) const;      // Check for 1D box intersection
         bool testIntersect2D(const BoxAABB& box1, const BoxAABB& box2,
-                            luint axis1, luint axis2) const;                            // Check for 2D box intersection
+                            luint axis1, uint axis2) const;                            // Check for 2D box intersection
         
     public :
         SweepAndPruneAlgorithm(CollisionDetection& collisionDetection);   // Constructor
@@ -138,7 +132,7 @@ inline uint encodeFloatIntoInteger(float number) {
 // given axis. Therefore, only one test is necessary here. We know that the
 // minimum of box1 cannot be larger that the maximum of box2 on the axis.
 inline bool SweepAndPruneAlgorithm::testIntersect1DSortedAABBs(const BoxAABB& box1, const AABBInt& box2,
-                                                           const EndPoint* const endPointsArray, luint axis) const {
+                                                           const EndPoint* const endPointsArray, uint axis) const {
     return !(endPointsArray[box1.max[axis]].value < box2.min[axis]);
 }    
 
@@ -146,7 +140,7 @@ inline bool SweepAndPruneAlgorithm::testIntersect1DSortedAABBs(const BoxAABB& bo
 // that two boxes already overlap on one axis and when want to test
 // if they also overlap on the two others axis.
 inline bool SweepAndPruneAlgorithm::testIntersect2D(const BoxAABB& box1, const BoxAABB& box2,
-                                                    luint axis1, luint axis2) const {
+                                                    luint axis1, uint axis2) const {
     return !(box2.max[axis1] < box1.min[axis1] || box1.max[axis1] < box2.min[axis1] ||
              box2.max[axis2] < box1.min[axis2] || box1.max[axis2] < box2.min[axis2]);
 }          

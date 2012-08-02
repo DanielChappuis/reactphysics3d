@@ -55,14 +55,14 @@ class Body {
         bool isMotionEnabled;           // True if the body is able to move
         bool isCollisionEnabled;        // True if the body can collide with others bodies
         AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
-        luint id;                       // ID of the body
+        bodyindex id;                   // ID of the body
         bool hasMoved;                  // True if the body has moved during the last frame
 
     public :
-        Body(const Transform& transform, Collider* collider, decimal mass, long unsigned int id);       // Constructor
-        virtual ~Body();                                                                                // Destructor
+        Body(const Transform& transform, Collider* collider, decimal mass, bodyindex id);       // Constructor
+        virtual ~Body();                                                                        // Destructor
 
-        luint getID() const;                                    // Return the id of the body
+        bodyindex getID() const;                                // Return the id of the body
         bool getHasMoved() const;                               // Return true if the body has moved during the last frame
         void setHasMoved(bool hasMoved);                        // Set the hasMoved variable (true if the body has moved during the last frame)
         Collider* getCollider() const;                          // Return the collision collider
@@ -91,7 +91,7 @@ class Body {
 };
 
 // Return the id of the body
-inline luint Body::getID() const {
+inline bodyindex Body::getID() const {
     return id;
 }
 

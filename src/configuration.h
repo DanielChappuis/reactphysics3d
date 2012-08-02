@@ -40,6 +40,9 @@
     #define LINUX_OS
 #endif
 
+// Namespace reactphysics3d
+namespace reactphysics3d {
+
 // Type definitions
 typedef unsigned int uint;
 typedef long unsigned int luint;
@@ -75,5 +78,6 @@ const uint DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;                         
 const bool ERROR_CORRECTION_PROJECTION_ENABLED = true;                             // True if the error correction projection (first order world) is active in the constraint solver
 const reactphysics3d::decimal PENETRATION_DEPTH_THRESHOLD_ERROR_CORRECTION = 0.20; // Contacts with penetration depth (in meters) larger that this use error correction with projection
 
+}
 
 #endif

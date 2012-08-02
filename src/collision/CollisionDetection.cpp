@@ -58,7 +58,7 @@ CollisionDetection::CollisionDetection(PhysicsWorld* world)
 // Destructor
 CollisionDetection::~CollisionDetection() {
     // Delete the remaining overlapping pairs
-    for (map<std::pair<luint, luint>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
+    for (map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
         // Delete the overlapping pair
         (*it).second->OverlappingPair::~OverlappingPair();
 		memoryPoolOverlappingPairs.freeObject((*it).second);
@@ -117,7 +117,7 @@ void CollisionDetection::computeBroadPhase() {
 // Compute the narrow-phase collision detection
 bool CollisionDetection::computeNarrowPhase() {
     bool collisionExists = false;
-    map<std::pair<luint, luint>, OverlappingPair*>::iterator it;
+    map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it;
     
     // For each possible collision pair of bodies
     for (it = overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
@@ -168,13 +168,13 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(const BroadPhasePa
     std::cout << "New overlapping pair : id0=" << addedPair->body1->getID() << ", id=" << addedPair->body2->getID() << std::endl;
     
     // Construct the pair of body index
-    pair<luint, luint> indexPair = addedPair->body1->getID() < addedPair->body2->getID() ? make_pair(addedPair->body1->getID(), addedPair->body2->getID()) :
+    pair<bodyindex, bodyindex> indexPair = addedPair->body1->getID() < addedPair->body2->getID() ? make_pair(addedPair->body1->getID(), addedPair->body2->getID()) :
                                                                 make_pair(addedPair->body2->getID(), addedPair->body1->getID());
     assert(indexPair.first != indexPair.second);
     
     // Add the pair into the set of overlapping pairs (if not there yet)
     OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, memoryPoolContacts);
-    pair<map<pair<luint, luint>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
+    pair<map<pair<bodyindex, bodyindex>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
 	
 	// If the overlapping pair was already in the set of overlapping pair
 	if (!check.second) {
@@ -188,7 +188,7 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(const BroadPhasePa
 void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
 
     // Construct the pair of body index
-    pair<luint, luint> indexPair = removedPair->body1->getID() < removedPair->body2->getID() ? make_pair(removedPair->body1->getID(), removedPair->body2->getID()) :
+    pair<bodyindex, bodyindex> indexPair = removedPair->body1->getID() < removedPair->body2->getID() ? make_pair(removedPair->body1->getID(), removedPair->body2->getID()) :
                                                                 make_pair(removedPair->body2->getID(), removedPair->body1->getID());
 
     // Remove the overlapping pair from the memory pool

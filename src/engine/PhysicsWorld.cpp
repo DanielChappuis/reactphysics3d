@@ -46,7 +46,7 @@ PhysicsWorld::~PhysicsWorld() {
 RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider) {
     
     // Compute the body ID
-    luint bodyID;
+    bodyindex bodyID;
     if (!freeRigidBodyIDs.empty()) {
         bodyID = freeRigidBodyIDs.back();
         freeRigidBodyIDs.pop_back();

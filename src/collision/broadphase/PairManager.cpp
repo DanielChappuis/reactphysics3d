@@ -30,6 +30,9 @@
 
 using namespace reactphysics3d;
 
+// Initialization of static variables
+bodyindex PairManager::INVALID_INDEX = std::numeric_limits<reactphysics3d::bodyindex>::max();
+
 // Constructor of PairManager
 PairManager::PairManager(CollisionDetection& collisionDetection) : collisionDetection(collisionDetection) {
     hashTable = 0;
@@ -59,8 +62,8 @@ BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
     sortBodiesUsingID(body1, body2);
     
     // Get the bodies IDs
-    luint id1 = body1->getID();
-    luint id2 = body2->getID();
+    bodyindex id1 = body1->getID();
+    bodyindex id2 = body2->getID();
     
     // Compute the hash value of the two bodies
     uint hashValue = computeHashBodies(id1, id2) & hashMask;
@@ -107,7 +110,7 @@ BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
 
 // Remove a pair of bodies from the pair manager. This method returns
 // true if the pair has been found and removed.
-bool PairManager::removePair(luint id1, luint id2) {
+bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     
     // Sort the bodies IDs
     sortIDs(id1, id2);
@@ -139,15 +142,15 @@ bool PairManager::removePair(luint id1, luint id2) {
 }
 
 // Internal method to remove a pair from the set of overlapping pair
-void PairManager::removePairWithHashValue(luint id1, luint id2, luint hashValue, luint indexPair) {
+void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue, bodyindex indexPair) {
     
     // Get the initial offset of the pairs with
     // the corresponding hash value
-    luint offset = hashTable[hashValue];
-    assert(offset != INVALID_OFFSET);
+    bodyindex offset = hashTable[hashValue];
+    assert(offset != INVALID_INDEX);
     
     // Look for the pair in the set of overlapping pairs
-    luint previousPair = INVALID_OFFSET;
+    bodyindex previousPair = INVALID_INDEX;
     while(offset != indexPair) {
         previousPair = offset;
         offset = offsetNextPair[offset];
@@ -155,7 +158,7 @@ void PairManager::removePairWithHashValue(luint id1, luint id2, luint hashValue,
   
     // If the pair was the first one with this hash
     // value in the hash table
-    if (previousPair == INVALID_OFFSET) {
+    if (previousPair == INVALID_INDEX) {
         // Replace the pair to remove in the
         // hash table by the next one
         hashTable[hashValue] = offsetNextPair[indexPair];
@@ -167,7 +170,7 @@ void PairManager::removePairWithHashValue(luint id1, luint id2, luint hashValue,
         offsetNextPair[previousPair] = offsetNextPair[indexPair];
     }
     
-    const luint indexLastPair = nbOverlappingPairs - 1;
+    const bodyindex indexLastPair = nbOverlappingPairs - 1;
     
     // If the pair to remove is the last one in the list
     if (indexPair == indexLastPair) {
@@ -185,19 +188,19 @@ void PairManager::removePairWithHashValue(luint id1, luint id2, luint hashValue,
         const uint lastPairHashValue = computeHashBodies(lastPair->body1->getID(), lastPair->body2->getID()) & hashMask;
         
         // Compute the initial offset of the last pair
-        luint offset = hashTable[lastPairHashValue];
-        assert(offset != INVALID_OFFSET);
+        bodyindex offset = hashTable[lastPairHashValue];
+        assert(offset != INVALID_INDEX);
         
         // Go through the pairs with the same hash value
         // and find the offset of the last pair
-        luint previous = INVALID_OFFSET;
+        bodyindex previous = INVALID_INDEX;
         while(offset != indexLastPair) {
            previous = offset;
            offset = offsetNextPair[offset];
         }
         
         // If the last pair is not the first one with this hash value
-        if (previous != INVALID_OFFSET) {
+        if (previous != INVALID_INDEX) {
             
             // Remove the offset of the last pair in the "nextOffset" array
             assert(offsetNextPair[previous] == indexLastPair);
@@ -220,16 +223,16 @@ void PairManager::removePairWithHashValue(luint id1, luint id2, luint hashValue,
 }                                
 
 // Look for a pair in the set of overlapping pairs
-BroadPhasePair* PairManager::lookForAPair(luint id1, luint id2, luint hashValue) const {
+BroadPhasePair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValue) const {
     
     // Look for the pair in the set of overlapping pairs
-    luint offset = hashTable[hashValue];
-    while (offset != INVALID_OFFSET && isDifferentPair(overlappingPairs[offset], id1, id2)) {
+    bodyindex offset = hashTable[hashValue];
+    while (offset != INVALID_INDEX && isDifferentPair(overlappingPairs[offset], id1, id2)) {
         offset = offsetNextPair[offset];
     }
     
     // If the pair has not been found in the overlapping pairs
-    if (offset == INVALID_OFFSET) {
+    if (offset == INVALID_INDEX) {
         // Return null
         return 0;
     }
@@ -246,18 +249,18 @@ void PairManager::reallocatePairs() {
     
     // Reallocate the hash table and initialize it
     free(hashTable);
-    hashTable = (luint*) malloc(nbElementsHashTable * sizeof(luint));
+    hashTable = (bodyindex*) malloc(nbElementsHashTable * sizeof(bodyindex));
     assert(hashTable);
-    for (luint i=0; i<nbElementsHashTable; i++) {
-        hashTable[i] = INVALID_OFFSET;
+    for (bodyindex i=0; i<nbElementsHashTable; i++) {
+        hashTable[i] = INVALID_INDEX;
     }
     
     // Reallocate the overlapping pairs
     BroadPhasePair* newOverlappingPairs = (BroadPhasePair*) malloc(nbElementsHashTable * sizeof(BroadPhasePair));
-    luint* newNextOffset = (luint*) malloc(nbElementsHashTable * sizeof(luint));
+    bodyindex* newOffsetNextPair = (bodyindex*) malloc(nbElementsHashTable * sizeof(bodyindex));
     
     assert(newOverlappingPairs);
-    assert(newNextOffset);
+    assert(newOffsetNextPair);
     
     // If there is already some overlapping pairs
     if (nbOverlappingPairs) {
@@ -266,9 +269,9 @@ void PairManager::reallocatePairs() {
     }
     
     // Recompute the hash table with the new hash values
-    for (luint i=0; i<nbOverlappingPairs; i++) {
+    for (bodyindex i=0; i<nbOverlappingPairs; i++) {
         const uint newHashValue = computeHashBodies(overlappingPairs[i].body1->getID(), overlappingPairs[i].body2->getID()) & hashMask;
-        newNextOffset[i] = hashTable[newHashValue];
+        newOffsetNextPair[i] = hashTable[newHashValue];
         hashTable[newHashValue] = i;
     }
     
@@ -278,6 +281,6 @@ void PairManager::reallocatePairs() {
     
     // Replace by the new data
     overlappingPairs = newOverlappingPairs;
-    offsetNextPair = newNextOffset;
+    offsetNextPair = newOffsetNextPair;
 }                                
 

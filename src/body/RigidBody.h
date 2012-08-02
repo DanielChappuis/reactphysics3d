@@ -47,7 +47,7 @@ class RigidBody : public Body {
         Vector3 linearVelocity;                 // Linear velocity of the body
         Vector3 angularVelocity;                // Angular velocity of the body
         Vector3 externalForce;                  // Current external force on the body
-        Vector3 externalTorque;                 // Current external torque on the body
+        Vector3 externalTorque;                 // Current external torque on the body
         Matrix3x3 inertiaTensorLocal;           // Local inertia tensor of the body (in body coordinates)
         Matrix3x3 inertiaTensorLocalInverse;    // Inverse of the inertia tensor of the body (in body coordinates)
         decimal massInverse;                     // Inverse of the mass of the body
@@ -55,7 +55,7 @@ class RigidBody : public Body {
 
     public :
         RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
-                  Collider* collider, long unsigned int id);                                          // Constructor                                                                                                         // Copy-constructor
+                  Collider* collider, bodyindex id);                                            // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                                   // Destructor
 
         Vector3 getLinearVelocity() const;                                     // Return the linear velocity
@@ -65,8 +65,8 @@ class RigidBody : public Body {
         void setMassInverse(decimal massInverse);                              // Set the inverse of the mass
         Vector3 getExternalForce() const;                                      // Return the current external force of the body
         void setExternalForce(const Vector3& force);                           // Set the current external force on the body
-        Vector3 getExternalTorque() const;                                     // Return the current external torque of the body
-        void setExternalTorque(const Vector3& torque);                         // Set the current external torque of the body
+        Vector3 getExternalTorque() const;                                     // Return the current external torque of the body
+        void setExternalTorque(const Vector3& torque);                         // Set the current external torque of the body
         decimal getMassInverse() const;                                        // Return the inverse of the mass of the body
         Matrix3x3 getInertiaTensorLocal() const;                               // Return the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);       // Set the local inertia tensor of the body (in body coordinates)
@@ -112,12 +112,12 @@ inline void RigidBody::setExternalForce(const Vector3& force) {
     this->externalForce = force;
 }
 
-// Return the current external torque on the body
+// Return the current external torque on the body
 inline Vector3 RigidBody::getExternalTorque() const {
     return externalTorque;
 }
 
- // Set the current external torque on the body
+ // Set the current external torque on the body
 inline void RigidBody::setExternalTorque(const Vector3& torque) {
     this->externalTorque = torque;
 }
