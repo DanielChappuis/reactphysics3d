@@ -53,8 +53,8 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();                                // Destructor
         
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);       // Set the current overlapping pair of bodies
-        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
-                                   const Collider* collider2, const Transform& transform2,
+        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
+                                   const CollisionShape* collisionShape2, const Transform& transform2,
                                    ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
 };
 

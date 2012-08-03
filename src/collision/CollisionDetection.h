@@ -71,8 +71,8 @@ class CollisionDetection {
         
         void computeBroadPhase();                                                       // Compute the broad-phase collision detection
         bool computeNarrowPhase();                                                      // Compute the narrow-phase collision detection
-        NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(Collider* collider1,
-                                                         Collider* collider2);          // Select the narrow phase algorithm to use given two colliders
+        NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1,
+                                                         CollisionShape* collisionShape2);          // Select the narrow phase algorithm to use given two collision shapes
    
     public :
         CollisionDetection(PhysicsWorld* physicsWorld);                                 // Constructor
@@ -96,11 +96,11 @@ inline OverlappingPair* CollisionDetection::getOverlappingPair(bodyindex body1ID
     return 0;
 }
 
-// Select the narrow-phase collision algorithm to use given two colliders
-inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(Collider* collider1, Collider* collider2) {
+// Select the narrow-phase collision algorithm to use given two collision shapes
+inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1, CollisionShape* collisionShape2) {
     
     // Sphere vs Sphere algorithm
-    if (collider1->getType() == SPHERE && collider2->getType() == SPHERE) {
+    if (collisionShape1->getType() == SPHERE && collisionShape2->getType() == SPHERE) {
         return narrowPhaseSphereVsSphereAlgorithm;
     }
     else {   // GJK algorithm

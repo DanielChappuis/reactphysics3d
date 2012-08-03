@@ -24,9 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "BoxCollider.h"
-#include "../configuration.h"
-#include <vector>
+#include "SphereShape.h"
+#include "../../configuration.h"
 #include <cassert>
 
 #if defined(VISUAL_DEBUG)
@@ -46,74 +45,23 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-BoxCollider::BoxCollider(const Vector3& extent) : Collider(BOX), extent(extent) {
+SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), radius(radius) {
 
 }
 
 // Destructor
-BoxCollider::~BoxCollider() {
+SphereShape::~SphereShape() {
 
-}
-
-// Return the local inertia tensor of the collider
-void BoxCollider::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal factor = (1.0 / 3.0) * mass;
-    decimal xSquare = extent.getX() * extent.getX();
-    decimal ySquare = extent.getY() * extent.getY();
-    decimal zSquare = extent.getZ() * extent.getZ();
-    tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
-                        0.0, factor * (xSquare + zSquare), 0.0,
-                        0.0, 0.0, factor * (xSquare + ySquare));
 }
 
 #ifdef VISUAL_DEBUG
-// Draw the Box (only for testing purpose)
-void BoxCollider::draw() const {
-    decimal e1 = extent.getX();
-    decimal e2 = extent.getY();
-    decimal e3 = extent.getZ();
+// Draw the sphere (only for testing purpose)
+void SphereShape::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
-    // Draw the Box
-    glBegin(GL_LINES);
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, -e2, e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(e1, e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(-e1, -e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-        glVertex3f(-e1, e2, e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-    glEnd();
+    // Draw the sphere
+    glutWireSphere(radius, 50, 50);
 }
 #endif

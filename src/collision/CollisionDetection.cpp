@@ -29,7 +29,7 @@
 #include "broadphase/SweepAndPruneAlgorithm.h"
 #include "broadphase/NoBroadPhaseAlgorithm.h"
 #include "../body/Body.h"
-#include "../colliders/BoxCollider.h"
+#include "../collision/shapes/BoxShape.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include <cassert>
@@ -129,15 +129,15 @@ bool CollisionDetection::computeNarrowPhase() {
         // Update the contact cache of the overlapping pair
         (*it).second->update();
         
-        // Select the narrow phase algorithm to use according to the two colliders
-        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollider(), body2->getCollider());
+        // Select the narrow phase algorithm to use according to the two collision shapes
+        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollisionShape(), body2->getCollisionShape());
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm.setCurrentOverlappingPair((*it).second);
         
         // Use the narrow-phase collision detection algorithm to check if there really is a collision
-        if (narrowPhaseAlgorithm.testCollision(body1->getCollider(), body1->getTransform(),
-                                               body2->getCollider(), body2->getTransform(), contactInfo)) {
+        if (narrowPhaseAlgorithm.testCollision(body1->getCollisionShape(), body1->getTransform(),
+                                               body2->getCollisionShape(), body2->getTransform(), contactInfo)) {
             assert(contactInfo);
             collisionExists = true;
 

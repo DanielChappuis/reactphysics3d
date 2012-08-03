@@ -29,7 +29,7 @@
 // Libraries
 #include <cassert>
 #include "Body.h"
-#include "../colliders/Collider.h"
+#include "../collision/shapes/CollisionShape.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
@@ -55,7 +55,7 @@ class RigidBody : public Body {
 
     public :
         RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
-                  Collider* collider, bodyindex id);                                            // Constructor                                                                                                         // Copy-constructor
+                  CollisionShape* collisionShape, bodyindex id);                                // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                                   // Destructor
 
         Vector3 getLinearVelocity() const;                                     // Return the linear velocity

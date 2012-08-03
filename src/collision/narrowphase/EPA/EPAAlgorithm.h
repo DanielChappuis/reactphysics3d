@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../GJK/Simplex.h"
-#include "../../../colliders/Collider.h"
+#include "../../shapes/CollisionShape.h"
 #include "../../ContactInfo.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
@@ -85,8 +85,8 @@ class EPAAlgorithm {
         EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);          // Constructor
         ~EPAAlgorithm();                                                        // Destructor
 
-        bool computePenetrationDepthAndContactPoints(Simplex simplex, const Collider* collider1, const Transform& transform1,
-                                                     const Collider* collider2, const Transform& transform2,
+        bool computePenetrationDepthAndContactPoints(Simplex simplex, const CollisionShape* collisionShape1, const Transform& transform1,
+                                                     const CollisionShape* collisionShape2, const Transform& transform2,
                                                      Vector3& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
 };
 

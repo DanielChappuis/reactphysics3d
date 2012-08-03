@@ -24,9 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include <complex>
-#include "../configuration.h"
-#include "ConeCollider.h"
+#include "CylinderShape.h"
+#include "../../configuration.h"
 
 #if defined(VISUAL_DEBUG)
 	#if defined(APPLE_OS)
@@ -44,46 +43,40 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConeCollider::ConeCollider(decimal radius, decimal height) : Collider(CONE), radius(radius), halfHeight(height/2.0) {
-    assert(radius > 0.0);
-    assert(halfHeight > 0.0);
-    
-    // Compute the sine of the semi-angle at the apex point
-    sinTheta = radius / (sqrt(radius * radius + height * height));
+CylinderShape::CylinderShape(decimal radius, decimal height)
+                 : CollisionShape(CYLINDER), radius(radius), halfHeight(height/2.0) {
+
 }
 
 // Destructor
-ConeCollider::~ConeCollider() {
+CylinderShape::~CylinderShape() {
 
 }
 
 // Return a local support point in a given direction
-inline Vector3 ConeCollider::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
+Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
     assert(margin >= 0.0);
 
-    const Vector3& v = direction;
-    decimal sinThetaTimesLengthV = sinTheta * v.length();
-    Vector3 supportPoint;
+    Vector3 supportPoint(0.0, 0.0, 0.0);
+    decimal uDotv = direction.getY();
+    Vector3 w(direction.getX(), 0.0, direction.getZ());
+    decimal lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
 
-    if (v.getY() >= sinThetaTimesLengthV) {
-        supportPoint = Vector3(0.0, halfHeight, 0.0);
+    if (lengthW != 0.0) {
+        if (uDotv < 0.0) supportPoint.setY(-halfHeight);
+        else supportPoint.setY(halfHeight);
+        supportPoint += (radius / lengthW) * w;
     }
     else {
-        decimal projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
-        if (projectedLength > MACHINE_EPSILON) {
-            decimal d = radius / projectedLength;
-            supportPoint = Vector3(v.getX() * d, -halfHeight, v.getZ() * d);
-        }
-        else {
-            supportPoint = Vector3(radius, -halfHeight, 0.0);
-        }
+         if (uDotv < 0.0) supportPoint.setY(-halfHeight);
+         else supportPoint.setY(halfHeight);
     }
 
     // Add the margin to the support point
     if (margin != 0.0) {
-        Vector3 unitVec(0.0, -1.0, 0.0);
-        if (v.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-            unitVec = v.getUnit();
+        Vector3 unitVec(0.0, 1.0, 0.0);
+        if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
+            unitVec = direction.getUnit();
         }
         supportPoint += unitVec * margin;
     }
@@ -93,12 +86,12 @@ inline Vector3 ConeCollider::getLocalSupportPoint(const Vector3& direction, deci
 
 #ifdef VISUAL_DEBUG
 // Draw the cone (only for debuging purpose)
-void ConeCollider::draw() const {
+void CylinderShape::draw() const {
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);
 
     // Draw the sphere
-    glutWireCone(radius, 2.0 * halfHeight, 50, 50);
+    glutWireSphere(radius, 50, 50);
 }
 #endif

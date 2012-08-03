@@ -30,8 +30,8 @@
 #include <stdexcept>
 #include <cassert>
 #include "../mathematics/Transform.h"
-#include "../colliders/AABB.h"
-#include "../colliders/Collider.h"
+#include "../collision/shapes/AABB.h"
+#include "../collision/shapes/CollisionShape.h"
 #include "../configuration.h"
 
 // Namespace reactphysics3d
@@ -46,7 +46,7 @@ namespace reactphysics3d {
 */
 class Body {
     protected :
-        Collider* collider;             // Collider of the body
+        CollisionShape* collisionShape; // Collision shape of the body
         decimal mass;                   // Mass of the body
         Transform transform;            // Position and orientation of the body
         Transform oldTransform;         // Last position and orientation of the body
@@ -59,14 +59,14 @@ class Body {
         bool hasMoved;                  // True if the body has moved during the last frame
 
     public :
-        Body(const Transform& transform, Collider* collider, decimal mass, bodyindex id);       // Constructor
-        virtual ~Body();                                                                        // Destructor
+        Body(const Transform& transform, CollisionShape* collisionShape, decimal mass, bodyindex id);     // Constructor
+        virtual ~Body();                                                                            // Destructor
 
         bodyindex getID() const;                                // Return the id of the body
         bool getHasMoved() const;                               // Return true if the body has moved during the last frame
         void setHasMoved(bool hasMoved);                        // Set the hasMoved variable (true if the body has moved during the last frame)
-        Collider* getCollider() const;                          // Return the collision collider
-        void setCollider(Collider* collider);                   // Set the collision collider
+        CollisionShape* getCollisionShape() const;              // Return the collision shape
+        void setCollisionShape(CollisionShape* collisionShape); // Set the collision shape
         decimal getMass() const;                                // Return the mass of the body
         void setMass(decimal mass);                             // Set the mass of the body
         bool getIsActive() const;                               // Return true if the body is active
@@ -105,16 +105,16 @@ inline void Body::setHasMoved(bool hasMoved) {
     this->hasMoved = hasMoved;
 }
 
-// Return the collider
-inline Collider* Body::getCollider() const {
-    assert(collider);
-    return collider;
+// Return the collision shape
+inline CollisionShape *Body::getCollisionShape() const {
+    assert(collisionShape);
+    return collisionShape;
 }
 
-// Set the collider
-inline void Body::setCollider(Collider* collider) {
-    assert(collider);
-    this->collider = collider;
+// Set the collision shape
+inline void Body::setCollisionShape(CollisionShape *collisionShape) {
+    assert(collisionShape);
+    this->collisionShape = collisionShape;
 }
 
 // Method that return the mass of the body
@@ -201,7 +201,7 @@ inline void Body::updateAABB() {
     // TODO : An AABB should not be updated every frame but only if the body has moved
     
     // Update the AABB
-    aabb->update(transform, collider->getLocalExtents(OBJECT_MARGIN));
+    aabb->update(transform, collisionShape->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Smaller than operator

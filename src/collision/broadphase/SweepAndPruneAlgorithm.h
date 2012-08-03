@@ -28,7 +28,7 @@
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
-#include "../../colliders/AABB.h"
+#include "../../collision/shapes/AABB.h"
 #include <map>
 #include <vector>
 

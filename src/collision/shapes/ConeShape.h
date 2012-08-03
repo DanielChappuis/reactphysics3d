@@ -23,33 +23,35 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CYLINDER_COLLIDER_H
-#define CYLINDER_COLLIDER_H
+#ifndef CONE_SHAPE_H
+#define CONE_SHAPE_H
 
 // Libraries
-#include "Collider.h"
-#include "../mathematics/mathematics.h"
-
+#include "CollisionShape.h"
+#include "../../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class CylinderCollider :
-        This class represents a cylinder collision collider around the Y axis
-        and centered at the origin. The cylinder is defined by its height
-        and the radius of its base. The "transform" of the corresponding
-        rigid body gives an orientation and a position to the cylinder.
+    Class ConeShape :
+        This class represents a cone collision shape centered at the
+        origin and alligned with the Y axis. The cone is defined
+        by its height and by the radius of its base. The center of the
+        cone is at the half of the height. The "transform" of the
+        corresponding rigid body gives an orientation and a position
+        to the cone.
     -------------------------------------------------------------------
 */
-class CylinderCollider : public Collider {
+class ConeShape : public CollisionShape {
     private :
         decimal radius;              // Radius of the base
         decimal halfHeight;          // Half height of the cone
-
+        decimal sinTheta;            // sine of the semi angle at the apex point
+        
     public :
-        CylinderCollider(decimal radius, decimal height);      // Constructor
-        virtual ~CylinderCollider();                           // Destructor
+        ConeShape(decimal radius, decimal height);      // Constructor
+        virtual ~ConeShape();                           // Destructor
 
         decimal getRadius() const;                                                                   // Return the radius
         void setRadius(decimal radius);                                                              // Set the radius
@@ -57,7 +59,8 @@ class CylinderCollider : public Collider {
         void setHeight(decimal height);                                                              // Set the height
         virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;    // Return a support point in a given direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;                                   // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;               // Return the local inertia tensor of the collider
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;               // Return the local inertia tensor of the collision shape
+
 
 #ifdef VISUAL_DEBUG
         virtual void draw() const;                              // Draw the sphere (only for testing purpose)
@@ -65,38 +68,43 @@ class CylinderCollider : public Collider {
 };
 
 // Return the radius
-inline decimal CylinderCollider::getRadius() const {
+inline decimal ConeShape::getRadius() const {
     return radius;
 }
 
 // Set the radius
-inline void CylinderCollider::setRadius(decimal radius) {
+inline void ConeShape::setRadius(decimal radius) {
     this->radius = radius;
+
+    // Update sine of the semi-angle at the apex point
+    sinTheta = radius / (sqrt(radius * radius + 4 * halfHeight * halfHeight));
 }
 
 // Return the height
-inline decimal CylinderCollider::getHeight() const {
-    return halfHeight * 2.0;
+inline decimal ConeShape::getHeight() const {
+    return 2.0 * halfHeight;
 }
 
 // Set the height
-inline void CylinderCollider::setHeight(decimal height) {
+inline void ConeShape::setHeight(decimal height) {
     this->halfHeight = height / 2.0;
+
+    // Update the sine of the semi-angle at the apex point
+    sinTheta = radius / (sqrt(radius * radius + height * height));
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3 CylinderCollider::getLocalExtents(decimal margin) const {
+inline Vector3 ConeShape::getLocalExtents(decimal margin) const {
     return Vector3(radius + margin, halfHeight + margin, radius + margin);
 }
 
-// Return the local inertia tensor of the cylinder
-inline void CylinderCollider::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal height = 2.0 * halfHeight;
-    decimal diag = (1.0 / 12.0) * mass * (3 * radius * radius + height * height);
-    tensor.setAllValues(diag, 0.0, 0.0, 0.0, 0.5 * mass * radius * radius, 0.0, 0.0, 0.0, diag);
+// Return the local inertia tensor of the collision shape
+inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+    decimal rSquare = radius * radius;
+    decimal diagXZ = 0.15 * mass * (rSquare + halfHeight);
+    tensor.setAllValues(diagXZ, 0.0, 0.0, 0.0, 0.3 * mass * rSquare, 0.0, 0.0, 0.0, diagXZ);
 }
 
 }; // End of the ReactPhysics3D namespace
 
 #endif
-

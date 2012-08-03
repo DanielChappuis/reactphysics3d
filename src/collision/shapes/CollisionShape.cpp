@@ -24,17 +24,17 @@
 ********************************************************************************/
 
 // Libraries
-#include "Collider.h"
+#include "CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Collider::Collider(ColliderType type) : type(type) {
+CollisionShape::CollisionShape(CollisionShapeType type) : type(type) {
     
 }
 
 // Destructor
-Collider::~Collider() {
+CollisionShape::~CollisionShape() {
 
 }

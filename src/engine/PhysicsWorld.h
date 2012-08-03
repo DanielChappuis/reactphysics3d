@@ -65,7 +65,7 @@ class PhysicsWorld {
         virtual ~PhysicsWorld();                   // Destructor
 
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
-                                   const Matrix3x3& inertiaTensorLocal, Collider* collider);  // Create a rigid body into the physics world
+                                   const Matrix3x3& inertiaTensorLocal, CollisionShape* collisionShape);  // Create a rigid body into the physics world
         void destroyRigidBody(RigidBody* rigidBody);                                    // Destroy a rigid body
         Vector3 getGravity() const;                                                     // Return the gravity vector of the world
         bool getIsGravityOn() const;                                                    // Return if the gravity is on

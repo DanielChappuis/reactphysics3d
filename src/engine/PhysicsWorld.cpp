@@ -43,7 +43,7 @@ PhysicsWorld::~PhysicsWorld() {
 }
 
 // Create a rigid body into the physics world
-RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider) {
+RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, CollisionShape* collisionShape) {
     
     // Compute the body ID
     bodyindex bodyID;
@@ -57,7 +57,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mas
     }
 
     // Create the rigid body
-    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collider, bodyID);
+    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
     
     // Add the rigid body to the physics world
     bodies.insert(rigidBody);

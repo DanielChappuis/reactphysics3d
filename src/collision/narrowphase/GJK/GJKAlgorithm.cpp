@@ -60,8 +60,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 // algorithm on the enlarged object to obtain a simplex polytope that contains the
 // origin, they we give that simplex polytope to the EPA algorithm which will compute
 // the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& transform1,
-                                 const Collider* collider2,  const Transform& transform2,
+bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
+                                 const CollisionShape* collisionShape2,  const Transform& transform2,
 		                         ContactInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
@@ -95,8 +95,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     do {
               
         // Compute the support points for original objects (without margins) A and B
-        suppA = collider1->getLocalSupportPoint(-v);
-        suppB = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * v);
+        suppA = collisionShape1->getLocalSupportPoint(-v);
+        suppB = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -235,7 +235,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     // enlarged objects to compute a simplex polytope that contains the origin. Then, we give that simplex
     // polytope to the EPA algorithm to compute the correct penetration depth and contact points between
     // the enlarged objects.
-    return computePenetrationDepthForEnlargedObjects(collider1, transform1, collider2, transform2, contactInfo, v);
+    return computePenetrationDepthForEnlargedObjects(collisionShape1, transform1, collisionShape2, transform2, contactInfo, v);
 }
 
 // This method runs the GJK algorithm on the two enlarged objects (with margin)
@@ -243,8 +243,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 // assumed to intersect in the original objects (without margin). Therefore such
 // a polytope must exist. Then, we give that polytope to the EPA algorithm to
 // compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* const collider1, const Transform& transform1,
-                                                             const Collider* const collider2, const Transform& transform2,
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShape* const collisionShape1, const Transform& transform1,
+                                                             const CollisionShape* const collisionShape2, const Transform& transform2,
                                                              ContactInfo*& contactInfo, Vector3& v) {
     Simplex simplex;
     Vector3 suppA;
@@ -262,8 +262,8 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
     
     do {
         // Compute the support points for the enlarged object A and B
-        suppA = collider1->getLocalSupportPoint(-v, OBJECT_MARGIN);
-        suppB = body2ToBody1 * collider2->getLocalSupportPoint(rotateToBody2 * v, OBJECT_MARGIN);
+        suppA = collisionShape1->getLocalSupportPoint(-v, OBJECT_MARGIN);
+        suppB = body2ToBody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 * v, OBJECT_MARGIN);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -299,5 +299,5 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
 
     // Give the simplex computed with GJK algorithm to the EPA algorithm which will compute the correct
     // penetration depth and contact points between the two enlarged objects
-    return algoEPA.computePenetrationDepthAndContactPoints(simplex, collider1, transform1, collider2, transform2, v, contactInfo);
+    return algoEPA.computePenetrationDepthAndContactPoints(simplex, collisionShape1, transform1, collisionShape2, transform2, v, contactInfo);
 }

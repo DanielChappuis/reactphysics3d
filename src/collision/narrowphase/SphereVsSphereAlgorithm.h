@@ -38,7 +38,7 @@ namespace reactphysics3d {
 /*  -------------------------------------------------------------------
     Class SphereVsSphereAlgorithm :
         This class is used to compute the narrow-phase collision detection
-        between two sphere colliders.
+        between two sphere collision shapes.
     -------------------------------------------------------------------
 */
 class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
@@ -48,8 +48,8 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);       // Constructor
         virtual ~SphereVsSphereAlgorithm();                                             // Destructor
 
-        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
-                                   const Collider* collider2, const Transform& transform2,
+        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
+                                   const CollisionShape* collisionShape2, const Transform& transform2,
                                    ContactInfo*& contactInfo);  // Return true and compute a contact info if the two bounding volume collide
 };
 
