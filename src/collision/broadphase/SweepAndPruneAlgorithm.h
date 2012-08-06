@@ -112,8 +112,12 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         virtual void updateObject(Body* body, const AABB& aabb);      // Notify the broad-phase that the AABB of an object has changed
 };
 
-// TODO : ADD Documentation for this method
-// Encode a floating value into a integer value
+// Encode a floating value into a integer value in order to
+// work with integer comparison in the Sweep-And-Prune algorithm
+// because it is faster. The main issue when encoding floating
+// number into integer is to keep to sorting order. This is a
+// problem for negative float number. This article describes
+// how to solve this issue : http://www.stereopsis.com/radix.html
 inline uint encodeFloatIntoInteger(float number) {
     uint intNumber = (uint&) number;
     

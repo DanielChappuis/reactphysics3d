@@ -56,6 +56,9 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mas
         currentBodyID++;
     }
 
+    // Largest index cannot be used (it is used for invalid index)
+    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
+
     // Create the rigid body
     RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
     

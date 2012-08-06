@@ -115,7 +115,6 @@ inline bool PairManager::isDifferentPair(const BroadPhasePair& pair1, bodyindex 
 }
 
 // Return the next power of two of a 32bits integer using a SWAR algorithm
-// TODO : Add documentation
 inline luint PairManager::computeNextPowerOfTwo(luint number) const {
     number |= (number >> 1);
     number |= (number >> 2);
@@ -149,7 +148,8 @@ inline void PairManager::sortIDs(bodyindex &id1, bodyindex &id2) const {
 
 // This method returns an hash value for a 32 bits key
 // using Thomas Wang's hash technique.
-// TODO : Add documentation here
+// This hash function can be found at :
+// http://www.concentric.net/~ttwang/tech/inthash.htm
 inline int PairManager::computeHash32Bits(int key) const {
     key += ~(key << 15);
     key ^=  (key >> 10);
