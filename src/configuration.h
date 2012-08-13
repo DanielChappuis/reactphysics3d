@@ -70,7 +70,6 @@ const reactphysics3d::decimal PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Dist
 const int NB_MAX_BODIES = 100000;             // Maximum number of bodies
 const int NB_MAX_CONTACTS = 100000;           // Maximum number of contacts (for memory pool allocation)
 const int NB_MAX_CONSTRAINTS = 100000;        // Maximum number of constraints
-const int NB_MAX_COLLISION_PAIRS = 10000;     // Maximum number of collision pairs of bodies (for memory pool allocation)
 
 // Constraint solver constants
 const uint DEFAULT_LCP_ITERATIONS = 15;                                            // Number of iterations when solving a LCP problem

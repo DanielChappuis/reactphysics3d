@@ -34,7 +34,7 @@ using namespace std;
 
 // Constructor
 PhysicsWorld::PhysicsWorld(const Vector3& gravity)
-             : gravity(gravity), isGravityOn(true), currentBodyID(0), memoryPoolRigidBodies(NB_MAX_BODIES) {
+             : gravity(gravity), isGravityOn(true), currentBodyID(0) {
 }
 
 // Destructor

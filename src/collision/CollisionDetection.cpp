@@ -46,8 +46,7 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(PhysicsWorld* world)
-                   : world(world), memoryPoolContacts(NB_MAX_CONTACTS), memoryPoolOverlappingPairs(NB_MAX_COLLISION_PAIRS),
-                     narrowPhaseGJKAlgorithm(memoryPoolContactInfos), memoryPoolContactInfos(NB_MAX_CONTACTS),
+                   : world(world), narrowPhaseGJKAlgorithm(memoryPoolContactInfos),
                      narrowPhaseSphereVsSphereAlgorithm(memoryPoolContactInfos) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
@@ -86,7 +85,7 @@ bool CollisionDetection::computeCollisionDetection() {
     double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
     double stopTime = timeValueStop.tv_sec * 1000000.0 + (timeValueStop.tv_usec);
     double deltaTime = stopTime - startTime;
-    printf("Broadphase time : %f micro sec \n", deltaTime);
+    //printf("Broadphase time : %f micro sec \n", deltaTime);
     
     // Compute the narrow-phase collision detection
     bool collisionExists = computeNarrowPhase();
@@ -108,10 +107,10 @@ void CollisionDetection::computeBroadPhase() {
             broadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
         }
     }  
-    
+
     // TODO : DELETE THIS
-    std::cout << "Nb overlapping pairs : " <<  overlappingPairs.size() << std::endl;
-    std::cout << "Nb active pairs in pair manager : " << broadPhaseAlgorithm->getNbOverlappingPairs() << std::endl;
+    //std::cout << "Nb overlapping pairs : " <<  overlappingPairs.size() << std::endl;
+    //std::cout << "Nb active pairs in pair manager : " << broadPhaseAlgorithm->getNbOverlappingPairs() << std::endl;
 }
 
 // Compute the narrow-phase collision detection
@@ -165,8 +164,7 @@ bool CollisionDetection::computeNarrowPhase() {
 // Allow the broadphase to notify the collision detection about an overlapping pair
 // This method is called by a broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
-    std::cout << "New overlapping pair : id0=" << addedPair->body1->getID() << ", id=" << addedPair->body2->getID() << std::endl;
-    
+
     // Construct the pair of body index
     pair<bodyindex, bodyindex> indexPair = addedPair->body1->getID() < addedPair->body2->getID() ? make_pair(addedPair->body1->getID(), addedPair->body2->getID()) :
                                                                 make_pair(addedPair->body2->getID(), addedPair->body1->getID());

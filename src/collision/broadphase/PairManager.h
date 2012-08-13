@@ -76,7 +76,7 @@ class PairManager {
         luint computeNextPowerOfTwo(luint number) const;                        // Return the next power of two
         void reallocatePairs();                                                 // Reallocate memory for more pairs
         void shrinkMemory();                                                    // Shrink the allocated memory
-        bodyindex computePairOffset(const BroadPhasePair* pair) const;              // Compute the offset of a given pair
+        bodyindex computePairOffset(const BroadPhasePair* pair) const;          // Compute the offset of a given pair
         BroadPhasePair* lookForAPair(bodyindex id1, bodyindex id2,
                                      luint hashValue) const;                    // Look for a pair in the set of overlapping pairs
         BroadPhasePair* findPairWithHashValue(bodyindex id1, bodyindex id2,
