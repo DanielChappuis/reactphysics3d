@@ -31,7 +31,7 @@
 #include <set>
 #include <algorithm>
 #include "../mathematics/mathematics.h"
-#include "../body/Body.h"
+#include "../body/CollisionBody.h"
 #include "../collision/CollisionDetection.h"
 #include "../constraint/Constraint.h"
 #include "../constraint/Contact.h"
@@ -40,7 +40,6 @@
 // Namespace reactphysics3d
 namespace reactphysics3d {
     
-
 /*  -------------------------------------------------------------------
     Class PhysicsWorld :
         This class represents the world of the
@@ -51,7 +50,7 @@ namespace reactphysics3d {
 class PhysicsWorld {
     protected :
         CollisionDetection* collisionDetection;         // Reference to the collision detection
-        std::set<Body*> bodies;                         // All the bodies (rigid and soft) of the physics world
+        std::set<CollisionBody*> bodies;                // All the bodies (rigid and soft) of the physics world
         std::set<RigidBody*> rigidBodies;               // All the rigid bodies of the physics world
         std::vector<luint> freeRigidBodyIDs;            // List of free ID for rigid bodies
         std::vector<Constraint*> constraints;           // List that contains all the current constraints
@@ -77,8 +76,8 @@ class PhysicsWorld {
         void removeAllConstraints();                                                    // Remove all constraints and delete them (free their memory)
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();               // Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();                 // Return a end iterator on the constraint list
-        std::set<Body*>::iterator getBodiesBeginIterator();                             // Return an iterator to the beginning of the bodies of the physics world
-        std::set<Body*>::iterator getBodiesEndIterator();                               // Return an iterator to the end of the bodies of the physics world
+        std::set<CollisionBody*>::iterator getBodiesBeginIterator();                             // Return an iterator to the beginning of the bodies of the physics world
+        std::set<CollisionBody*>::iterator getBodiesEndIterator();                               // Return an iterator to the end of the bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();                   // Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();                     // Return an iterator to the end of the rigid bodies of the physics world
 };
@@ -131,12 +130,12 @@ inline std::vector<Constraint*>::iterator PhysicsWorld::getConstraintsEndIterato
 }
 
 // Return an iterator to the beginning of the bodies of the physics world
-inline std::set<Body*>::iterator PhysicsWorld::getBodiesBeginIterator() {
+inline std::set<CollisionBody*>::iterator PhysicsWorld::getBodiesBeginIterator() {
     return bodies.begin();
 }
 
 // Return an iterator to the end of the bodies of the physics world
-inline std::set<Body*>::iterator PhysicsWorld::getBodiesEndIterator() {
+inline std::set<CollisionBody*>::iterator PhysicsWorld::getBodiesEndIterator() {
     return bodies.end();
 }
 

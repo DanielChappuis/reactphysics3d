@@ -58,6 +58,8 @@ void PhysicsEngine::update() {
 
     // While the time accumulator is not empty
     while(timer.isPossibleToTakeStep()) {
+
+        std::cout << "Update ..." << std::endl;
         existCollision = false;
 		
         // Compute the collision detection

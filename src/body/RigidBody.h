@@ -28,8 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "Body.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "CollisionBody.h"
 #include "../mathematics/mathematics.h"
 
 // Namespace reactphysics3d
@@ -39,11 +38,16 @@ namespace reactphysics3d {
     Class RigidBody :
         This class represents a rigid body of the physics
         engine. A rigid body is a non-deformable body that
-        has a constant mass.
+        has a constant mass. This class inherits from the
+        CollisionBody class.
     -------------------------------------------------------------------
 */
-class RigidBody : public Body {
+class RigidBody : public CollisionBody {
+
     protected :
+
+        // TODO : Remove the mass variable (duplicate with inverseMass)
+        decimal mass;                           // Mass of the body
         Vector3 linearVelocity;                 // Linear velocity of the body
         Vector3 angularVelocity;                // Angular velocity of the body
         Vector3 externalForce;                  // Current external force on the body
@@ -58,6 +62,8 @@ class RigidBody : public Body {
                   CollisionShape* collisionShape, bodyindex id);                                // Constructor                                                                                                         // Copy-constructor
         virtual ~RigidBody();                                                                   // Destructor
 
+        decimal getMass() const;                                                // Return the mass of the body
+        void setMass(decimal mass);                                             // Set the mass of the body
         Vector3 getLinearVelocity() const;                                     // Return the linear velocity
         void setLinearVelocity(const Vector3& linearVelocity);                 // Set the linear velocity of the body
         Vector3 getAngularVelocity() const;                                    // Return the angular velocity
@@ -77,6 +83,16 @@ class RigidBody : public Body {
         decimal getRestitution() const;                                        // Get the restitution coefficient
         void setRestitution(decimal restitution) throw(std::invalid_argument); // Set the restitution coefficient
 };
+
+// Method that return the mass of the body
+inline decimal RigidBody::getMass() const {
+    return mass;
+};
+
+// Method that set the mass of the body
+inline void RigidBody::setMass(decimal mass) {
+    this->mass = mass;
+}
 
 // Return the linear velocity
 inline Vector3 RigidBody::getLinearVelocity() const {

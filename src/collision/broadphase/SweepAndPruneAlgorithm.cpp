@@ -65,7 +65,7 @@ SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 
 // Notify the broad-phase about a new object in the world
 // This method adds the AABB of the object ion to broad-phase
-void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
+void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     bodyindex boxIndex;
     
     // If the index of the first free box is valid (means that
@@ -112,7 +112,7 @@ void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
     }
     
     // Add the body pointer to box index mapping
-    mapBodyToBoxIndex.insert(pair<Body*, bodyindex>(body, boxIndex));
+    mapBodyToBoxIndex.insert(pair<CollisionBody*, bodyindex>(body, boxIndex));
     
     nbBoxes++;
 
@@ -124,7 +124,7 @@ void SweepAndPruneAlgorithm::addObject(Body* body, const AABB& aabb) {
 } 
 
 // Notify the broad-phase about a object that has been removed from the world
-void SweepAndPruneAlgorithm::removeObject(Body* body) {
+void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
 
     // Call the update method with an AABB that is very far away
     // in order to remove all overlapping pairs from the pair manager
@@ -145,7 +145,7 @@ void SweepAndPruneAlgorithm::removeObject(Body* body) {
 } 
         
 // Notify the broad-phase that the AABB of an object has changed
-void SweepAndPruneAlgorithm::updateObject(Body* body, const AABB& aabb) {
+void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
     
     // Compute the AABB with integer coordinates
     AABBInt aabbInt(aabb);

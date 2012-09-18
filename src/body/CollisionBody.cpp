@@ -1,3 +1,4 @@
+
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2010-2012 Daniel Chappuis                                       *
@@ -23,23 +24,32 @@
 *                                                                               *
 ********************************************************************************/
 
-// Libraries
-#include "Constraint.h"
+ // Libraries
+#include "CollisionBody.h"
 
-// We want ot use the ReactPhysics3D namespace
+// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints, bool active, ConstraintType type)
-           :body1(body1), body2(body2), active(active), nbConstraints(nbConstraints), type(type) {
-    
-    // Initialize the cached lambda values
-    for (int i=0; i<nbConstraints; i++) {
-        cachedLambdas.push_back(0.0);
-    }
+CollisionBody::CollisionBody(const Transform& transform, CollisionShape *collisionShape, bodyindex id)
+    : Body(id), collisionShape(collisionShape), transform(transform), isActive(true), hasMoved(false) {
+
+    assert(collisionShape);
+
+    isMotionEnabled = true;
+    isCollisionEnabled = true;
+    interpolationFactor = 0.0;
+
+    // Initialize the old transform
+    oldTransform = transform;
+
+    // Create the AABB for broad-phase collision detection
+    aabb = new AABB(transform, collisionShape->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Destructor
-Constraint::~Constraint() {
+CollisionBody::~CollisionBody() {
 
+    // Delete the AABB
+    delete aabb;
 }

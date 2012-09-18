@@ -56,7 +56,7 @@ PairManager::~PairManager() {
 // that pair. If the pair to add does not already exist in the set of 
 // overlapping pairs, it will be created and if it already exists, we only
 // return a pointer to that pair.
-BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
+BroadPhasePair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
 
     // Sort the bodies to have the body with smallest ID first
     sortBodiesUsingID(body1, body2);

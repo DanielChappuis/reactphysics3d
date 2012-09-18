@@ -62,6 +62,7 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class Contact : public Constraint {
+
     protected :
         const Vector3 normal;                   // Normal vector of the contact (From body1 toward body2) in world space
         decimal penetrationDepth;               // Penetration depth
@@ -75,7 +76,7 @@ class Contact : public Constraint {
         void computeFrictionVectors();                  // Compute the two friction vectors that span the tangential friction plane
 
     public :
-        Contact(Body* const body1, Body* const body2, const ContactInfo* contactInfo); // Constructor
+        Contact(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo); // Constructor
         virtual ~Contact();                             // Destructor
 
         Vector3 getNormal() const;                                                     // Return the normal vector of the contact

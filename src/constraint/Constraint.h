@@ -27,7 +27,7 @@
 #define CONSTRAINT_H
 
 // Libraries
-#include "../body/Body.h"
+#include "../body/RigidBody.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -46,19 +46,19 @@ enum ConstraintType {CONTACT};
 */
 class Constraint {
     protected :
-        Body* const body1;                      // Pointer to the first body of the constraint
-        Body* const body2;                      // Pointer to the second body of the constraint
+        RigidBody* const body1;                 // Pointer to the first body of the constraint
+        RigidBody* const body2;                 // Pointer to the second body of the constraint
         bool active;                            // True if the constraint is active
         uint nbConstraints;                     // Number mathematical constraints associated with this Constraint
         const ConstraintType type;              // Type of the constraint
         std::vector<decimal> cachedLambdas;     // Cached lambda values of each mathematical constraint for more precise initializaton of LCP solver
 
     public :
-        Constraint(Body* const body1, Body* const body2, uint nbConstraints,
+        Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints,
                    bool active, ConstraintType type);                           // Constructor                                                                                                   // Constructor
         virtual ~Constraint();                                                  // Destructor
-        Body* const getBody1() const;                                           // Return the reference to the body 1
-        Body* const getBody2() const;                                           // Return the reference to the body 2                                                                        // Evaluate the constraint
+        RigidBody* const getBody1() const;                                  // Return the reference to the body 1
+        RigidBody* const getBody2() const;                                  // Return the reference to the body 2                                                                        // Evaluate the constraint
         bool isActive() const;                                                  // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
         ConstraintType getType() const;                                         // Return the type of the constraint                 
         virtual void computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;               // Compute the jacobian matrix for all mathematical constraints
@@ -71,12 +71,12 @@ class Constraint {
 };
 
 // Return the reference to the body 1
-inline Body* const Constraint::getBody1() const {
+inline RigidBody* const Constraint::getBody1() const {
     return body1;
 }
 
 // Return the reference to the body 2
-inline Body* const Constraint::getBody2() const {
+inline RigidBody* const Constraint::getBody2() const {
     return body2;
 }
 

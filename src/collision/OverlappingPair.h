@@ -43,17 +43,17 @@ namespace reactphysics3d {
 */
 class OverlappingPair {
     private:
-        Body* const body1;                      // Pointer to the first body of the contact
-        Body* const body2;                      // Pointer to the second body of the contact
+        CollisionBody* const body1;             // Pointer to the first body of the contact
+        CollisionBody* const body2;             // Pointer to the second body of the contact
         PersistentContactCache contactsCache;   // Persistent contact cache
         Vector3 cachedSeparatingAxis;           // Cached previous separating axis
         
     public:
-        OverlappingPair(Body* body1, Body* body2, MemoryPool<Contact>& memoryPoolContacts);     // Constructor
+        OverlappingPair(CollisionBody* body1, CollisionBody* body2, MemoryPool<Contact>& memoryPoolContacts);     // Constructor
         ~OverlappingPair();                                                                     // Destructor
         
-        Body* const getBody1() const;                           // Return the pointer to first body
-        Body* const getBody2() const;                           // Return the pointer to second body
+        CollisionBody* const getBody1() const;                           // Return the pointer to first body
+        CollisionBody* const getBody2() const;                           // Return the pointer to second body
         void addContact(Contact* contact);                      // Add a contact to the contact cache
         void update();                                          // Update the contact cache
         Vector3 getCachedSeparatingAxis() const;                // Return the cached separating axis
@@ -63,12 +63,12 @@ class OverlappingPair {
 };
 
 // Return the pointer to first body
-inline Body* const OverlappingPair::getBody1() const {
+inline CollisionBody* const OverlappingPair::getBody1() const {
     return body1;
 }          
 
 // Return the pointer to second body
-inline Body* const OverlappingPair::getBody2() const {
+inline CollisionBody* const OverlappingPair::getBody2() const {
     return body2;
 }                
 

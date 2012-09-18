@@ -65,8 +65,8 @@ class MemoryPool {
 
         static const uint NB_OBJECTS_FIRST_BLOCK;   // Number of objects allocated in the first block
         void* pBlocks;                              // Pointer to the first allocated memory block
-        struct MemoryUnit* pAllocatedUnits;         // Pointer to the first allocated memory unit
-        struct MemoryUnit* pFreeUnits;              // Pointer to the first free memory unit
+        MemoryUnit* pAllocatedUnits;                // Pointer to the first allocated memory unit
+        MemoryUnit* pFreeUnits;                     // Pointer to the first free memory unit
         uint currentNbObjects;                      // Current number of objects in the pool
         uint capacity;                              // Current maximum number of objects that can be allocated in the pool
         uint nbObjectsNextBlock;                    // Number of objects to allocate in the next block
@@ -110,8 +110,8 @@ MemoryPool<T>::~MemoryPool() {
     assert(currentNbObjects == 0);
     
     // Release all the allocated memory blocks
-    struct MemoryBlock* currentBlock = (struct MemoryBlock*) pBlocks;
-    while(currentBlock != 0) {
+    MemoryBlock* currentBlock = (MemoryBlock*) pBlocks;
+    while(currentBlock) {
         MemoryBlock* tempBlock = currentBlock->pNext;
         free(currentBlock);
         currentBlock = tempBlock;
@@ -134,7 +134,7 @@ void* MemoryPool<T>::allocateObject() {
     assert(currentNbObjects < capacity);
     assert(pFreeUnits);
     
-    struct MemoryUnit* currentUnit = pFreeUnits;
+    MemoryUnit* currentUnit = pFreeUnits;
     pFreeUnits = currentUnit->pNext;
     if (pFreeUnits) {
         pFreeUnits->pPrevious = 0;
@@ -149,7 +149,7 @@ void* MemoryPool<T>::allocateObject() {
     currentNbObjects++;
 
     // Return a pointer to the allocated memory unit
-    return (void*)((char*)currentUnit + sizeof(struct MemoryUnit));
+    return (void*)((char*)currentUnit + sizeof(MemoryUnit));
 }
 
 // Tell the pool that an object does not need to be stored in the pool anymore
@@ -163,7 +163,7 @@ void MemoryPool<T>::freeObject(void* pObjectToFree) {
     // The pointer location must be inside the memory block
     //assert(pBlocks<pObjectToFree && pObjectToFree<(void*)((char*)pBlocks + memorySize));
 
-    struct MemoryUnit* currentUnit = (struct MemoryUnit*)((char*)pObjectToFree - sizeof(struct MemoryUnit));
+    MemoryUnit* currentUnit = (MemoryUnit*)((char*)pObjectToFree - sizeof(MemoryUnit));
     pAllocatedUnits = currentUnit->pNext;
     if (pAllocatedUnits) {
         pAllocatedUnits->pPrevious = 0;
@@ -185,9 +185,9 @@ template<class T>
 void MemoryPool<T>::allocateMemory() {
 
     // Compute the size of the new
-    size_t sizeBlock = nbObjectsNextBlock * (sizeof(struct MemoryUnit) + sizeof(T));
+    size_t sizeBlock = nbObjectsNextBlock * (sizeof(MemoryUnit) + sizeof(T));
 
-    struct MemoryBlock* tempBlocks = (struct MemoryBlock*) pBlocks;
+    MemoryBlock* tempBlocks = (MemoryBlock*) pBlocks;
 
     // Allocate a new memory block
     pBlocks = malloc(sizeBlock);
@@ -195,14 +195,14 @@ void MemoryPool<T>::allocateMemory() {
     // Check that the allocation didn't fail
     if (!pBlocks) throw std::bad_alloc();
 
-    struct MemoryBlock* block = (struct MemoryBlock*) pBlocks;
+    MemoryBlock* block = (MemoryBlock*) pBlocks;
     block->pNext = tempBlocks;
 
     // For each allocated memory unit in the new block
     for (uint i=0; i<nbObjectsNextBlock; i++) {
 
         // Get the adress of a memory unit
-        struct MemoryUnit* currentUnit = (struct MemoryUnit*)( (char*)pBlocks + i * (sizeof(T) + sizeof(struct MemoryUnit)) );
+        MemoryUnit* currentUnit = (MemoryUnit*)( (char*)pBlocks + i * (sizeof(T) + sizeof(MemoryUnit)) );
 
         currentUnit->pPrevious = 0;
         currentUnit->pNext = pFreeUnits;

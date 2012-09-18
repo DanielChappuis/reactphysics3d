@@ -27,7 +27,7 @@
 #define COLLISION_DETECTION_H
 
 // Libraries
-#include "../body/Body.h"
+#include "../body/CollisionBody.h"
 #include "OverlappingPair.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "../memory/MemoryPool.h"
@@ -57,6 +57,7 @@ class PhysicsWorld;
     -------------------------------------------------------------------
 */
 class CollisionDetection {
+
     private :
         PhysicsWorld* world;                                                            // Pointer to the physics world        
         std::map<std::pair<bodyindex, bodyindex>, OverlappingPair*>  overlappingPairs;  // Broad-phase overlapping pairs of bodies
@@ -78,8 +79,8 @@ class CollisionDetection {
         CollisionDetection(PhysicsWorld* physicsWorld);                                 // Constructor
         ~CollisionDetection();                                                          // Destructor
         
-        void addBody(Body* body);                                                       // Add a body to the collision detection
-        void removeBody(Body* body);                                                    // Remove a body from the collision detection
+        void addBody(CollisionBody* body);                                                       // Add a body to the collision detection
+        void removeBody(CollisionBody* body);                                                    // Remove a body from the collision detection
         OverlappingPair* getOverlappingPair(bodyindex body1ID, bodyindex body2ID);      // Return an overlapping pair or null
         bool computeCollisionDetection();                                               // Compute the collision detection
         void broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* pair);          // Allow the broadphase to notify the collision detection about a new overlapping pair
@@ -109,14 +110,14 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(Coll
 }  
 
 // Add a body to the collision detection
-inline void CollisionDetection::addBody(Body* body) {
+inline void CollisionDetection::addBody(CollisionBody* body) {
     
     // Add the body to the broad-phase
     broadPhaseAlgorithm->addObject(body, *(body->getAABB()));
 }  
 
 // Remove a body from the collision detection
-inline void CollisionDetection::removeBody(Body* body) {
+inline void CollisionDetection::removeBody(CollisionBody* body) {
     
     // Remove the body from the broad-phase
     broadPhaseAlgorithm->removeObject(body);

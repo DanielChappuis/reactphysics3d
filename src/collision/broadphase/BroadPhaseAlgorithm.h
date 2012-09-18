@@ -28,7 +28,7 @@
 
 // Libraries
 #include <vector>
-#include "../../body/Body.h"
+#include "../../body/CollisionBody.h"
 #include "PairManager.h"
 
 // Namespace ReactPhysics3D
@@ -62,9 +62,9 @@ class BroadPhaseAlgorithm {
         // TODO : DELETE THIS METHOD
         uint getNbOverlappingPairs() const;
         
-        virtual void addObject(Body* body, const AABB& aabb)=0;         // Notify the broad-phase about a new object in the world
-        virtual void removeObject(Body* body)=0;                        // Notify the broad-phase about an object that has been removed from the world
-        virtual void updateObject(Body* body, const AABB& aabb)=0;      // Notify the broad-phase that the AABB of an object has changed
+        virtual void addObject(CollisionBody* body, const AABB& aabb)=0;         // Notify the broad-phase about a new object in the world
+        virtual void removeObject(CollisionBody* body)=0;                        // Notify the broad-phase about an object that has been removed from the world
+        virtual void updateObject(CollisionBody* body, const AABB& aabb)=0;      // Notify the broad-phase that the AABB of an object has changed
 
         BroadPhasePair* beginOverlappingPairsPointer() const;                                                       // Return a pointer to the first active pair (used to iterate over the active pairs)
         BroadPhasePair* endOverlappingPairsPointer() const;                                                         // Return a pointer to the last active pair (used to iterate over the active pairs)

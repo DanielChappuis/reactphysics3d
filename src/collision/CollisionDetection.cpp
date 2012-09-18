@@ -98,7 +98,7 @@ bool CollisionDetection::computeCollisionDetection() {
 void CollisionDetection::computeBroadPhase() {
 
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
-    for (set<Body*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (set<CollisionBody*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
 
         // If the body has moved
         if ((*it)->getHasMoved()) {
@@ -122,8 +122,8 @@ bool CollisionDetection::computeNarrowPhase() {
     for (it = overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
         ContactInfo* contactInfo = NULL;
 
-        Body* const body1 = (*it).second->getBody1();
-        Body* const body2 = (*it).second->getBody2();
+        CollisionBody* const body1 = (*it).second->getBody1();
+        CollisionBody* const body2 = (*it).second->getBody2();
         
         // Update the contact cache of the overlapping pair
         (*it).second->update();
@@ -140,8 +140,11 @@ bool CollisionDetection::computeNarrowPhase() {
             assert(contactInfo);
             collisionExists = true;
 
+            RigidBody* const rigidBody1 = dynamic_cast<RigidBody* const>(body1);
+            RigidBody* const rigidBody2 = dynamic_cast<RigidBody* const>(body2);
+
             // Create a new contact
-            Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
+            Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
             
             // Delete and remove the contact info from the memory pool
             contactInfo->ContactInfo::~ContactInfo();

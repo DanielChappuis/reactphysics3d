@@ -27,7 +27,7 @@
 #define PAIR_MANAGER_H
 
 // Libraries
-#include "../../body/Body.h"
+#include "../../body/CollisionBody.h"
 
 
 // Namespace ReactPhysics3D
@@ -40,8 +40,8 @@ class CollisionDetection;
 // during the broad-phase collision detection
 struct BroadPhasePair {
     public:
-        Body* body1;                // Pointer to the first body
-        Body* body2;                // Pointer to the second body
+        CollisionBody* body1;                // Pointer to the first body
+        CollisionBody* body2;                // Pointer to the second body
 };
 
 
@@ -67,8 +67,8 @@ class PairManager {
         static bodyindex INVALID_INDEX;                                         // Invalid ID
         CollisionDetection& collisionDetection;                                 // Reference to the collision detection
         
-        void sortBodiesUsingID(Body*& body1, Body*& body2) const;               // Sort the bodies according to their IDs (smallest ID first)
-        void sortIDs(bodyindex& id1, bodyindex& id2) const;                     // Sort the IDs (smallest ID first)
+        void sortBodiesUsingID(CollisionBody*& body1, CollisionBody*& body2) const; // Sort the bodies according to their IDs (smallest ID first)
+        void sortIDs(bodyindex& id1, bodyindex& id2) const;                         // Sort the IDs (smallest ID first)
         bool isDifferentPair(const BroadPhasePair& pair1, bodyindex pair2ID1,
                              bodyindex pair2ID2) const;                         // Return true if pair1 and pair2 are the same
         uint computeHashBodies(uint id1, uint id2) const;                       // Compute the hash value of two bodies using their IDs
@@ -88,7 +88,7 @@ class PairManager {
         ~PairManager();                                                         // Destructor
         
         bodyindex getNbOverlappingPairs() const;                                // Return the number of active pairs
-        BroadPhasePair* addPair(Body* body1, Body* body2);                                                          // Add a pair of bodies in the pair manager
+        BroadPhasePair* addPair(CollisionBody* body1, CollisionBody* body2);                                                          // Add a pair of bodies in the pair manager
         bool removePair(bodyindex id1, bodyindex id2);                                                                      // Remove a pair of bodies from the pair manager
         BroadPhasePair* findPair(bodyindex id1, bodyindex id2) const;                                                       // Find a pair given two body IDs
         BroadPhasePair* beginOverlappingPairsPointer() const;                                                            // Return a pointer to the first overlapping pair (used to iterate over the active pairs)
@@ -125,13 +125,13 @@ inline luint PairManager::computeNextPowerOfTwo(luint number) const {
 }        
 
 // Sort the bodies according to their IDs (smallest ID first)
-inline void PairManager::sortBodiesUsingID(Body*& body1, Body*& body2) const {
+inline void PairManager::sortBodiesUsingID(CollisionBody*& body1, CollisionBody*& body2) const {
     
     // If the ID of body1 is larger than the ID of body 2
     if (body1->getID() > body2->getID()) {
         
         // Swap the two bodies pointers
-        Body* temp = body2;
+        CollisionBody* temp = body2;
         body2 = body1;
         body1 = temp;
     }
