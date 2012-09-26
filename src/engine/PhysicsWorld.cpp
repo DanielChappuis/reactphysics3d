@@ -40,6 +40,12 @@ PhysicsWorld::PhysicsWorld(const Vector3& gravity)
 // Destructor
 PhysicsWorld::~PhysicsWorld() {
 
+    // Delete the remaining overlapping pairs
+    for (map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
+        // Delete the overlapping pair
+        (*it).second->OverlappingPair::~OverlappingPair();
+        memoryPoolOverlappingPairs.freeObject((*it).second);
+    }
 }
 
 // Create a rigid body into the physics world
@@ -117,4 +123,57 @@ void PhysicsWorld::removeAllContactConstraints() {
 void PhysicsWorld::removeAllConstraints() {
     constraints.clear();
 }
+
+// Notify the world about a new broad-phase overlapping pair
+void PhysicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
+
+    // Get the pair of body index
+    std::pair<bodyindex, bodyindex> indexPair = addedPair->getBodiesIndexPair();
+
+    // Add the pair into the set of overlapping pairs (if not there yet)
+    OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, memoryPoolContacts);
+    std::pair<map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
+    assert(check.second);
+}
+
+// Notify the world about a removed broad-phase overlapping pair
+void PhysicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
+
+    // Get the pair of body index
+    std::pair<bodyindex, bodyindex> indexPair = removedPair->getBodiesIndexPair();
+
+    // Remove the overlapping pair from the memory pool
+    overlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
+    memoryPoolOverlappingPairs.freeObject(overlappingPairs[indexPair]);
+    overlappingPairs.erase(indexPair);
+}
+
+// Notify the world about a new narrow-phase contact
+void PhysicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const ContactInfo* contactInfo) {
+
+    RigidBody* const rigidBody1 = dynamic_cast<RigidBody* const>(broadPhasePair->body1);
+    RigidBody* const rigidBody2 = dynamic_cast<RigidBody* const>(broadPhasePair->body2);
+
+    assert(rigidBody1);
+    assert(rigidBody2);
+
+    // Create a new contact
+    Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
+    assert(contact);
+
+    // Get the corresponding overlapping pair
+    pair<bodyindex, bodyindex> indexPair = broadPhasePair->getBodiesIndexPair();
+    OverlappingPair* overlappingPair = overlappingPairs[indexPair];
+    assert(overlappingPair);
+
+    // Add the contact to the contact cache of the corresponding overlapping pair
+    overlappingPair->addContact(contact);
+
+    // Add all the contacts in the contact cache of the two bodies
+    // to the set of constraints in the physics world
+    for (uint i=0; i<overlappingPair->getNbContacts(); i++) {
+        addConstraint(overlappingPair->getContact(i));
+    }
+}
+
 

@@ -28,7 +28,6 @@
 #include "Simplex.h"
 #include "../../../constraint/Contact.h"
 #include "../../../configuration.h"
-#include "../../OverlappingPair.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
@@ -87,7 +86,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1, const Tr
     Simplex simplex;
 
     // Get the previous point V (last cached separating axis)
-	Vector3 v = currentOverlappingPair->getCachedSeparatingAxis();
+    Vector3 v = currentOverlappingPair->previousSeparatingAxis;
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -107,7 +106,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1, const Tr
         if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            currentOverlappingPair->setCachedSeparatingAxis(v);
+            currentOverlappingPair->previousSeparatingAxis = v;
             
             // No intersection, we return false
             return false;

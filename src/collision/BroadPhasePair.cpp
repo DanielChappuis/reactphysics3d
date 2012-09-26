@@ -23,51 +23,18 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef NARROW_PHASE_ALGORITHM_H
-#define NARROW_PHASE_ALGORITHM_H
-
 // Libraries
-#include "../../body/Body.h"
-#include "../ContactInfo.h"
-#include "../broadphase/PairManager.h"
-#include "../../memory/MemoryPool.h"
-#include "../BroadPhasePair.h"
+#include "BroadPhasePair.h"
 
+using namespace reactphysics3d;
 
-// Namespace ReactPhysics3D
-namespace reactphysics3d {
-    
+ // Constructor
+BroadPhasePair::BroadPhasePair(CollisionBody* body1, CollisionBody* body2)
+    : body1(body1), body2(body2), previousSeparatingAxis(Vector3(1,1,1)) {
 
-/*  -------------------------------------------------------------------
-    Class NarrowPhaseAlgorithm :
-        This class is an abstract class that represents an algorithm
-        used to perform the narrow-phase of a collision detection. The
-        goal of the narrow phase algorithm is to compute contact
-        informations of a collision between two bodies.
-    -------------------------------------------------------------------
-*/
-class NarrowPhaseAlgorithm {
-    protected :
-        MemoryPool<ContactInfo>& memoryPoolContactInfos;        // Reference to the memory pool for contact infos
-        BroadPhasePair* currentOverlappingPair;                 // Overlapping pair of the bodies currently tested for collision
-        
-    public :
-        NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);      // Constructor
-        virtual ~NarrowPhaseAlgorithm();                                // Destructor
-        
-        void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);          // Set the current overlapping pair of bodies
-        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
-                                   const CollisionShape* collisionShape2, const Transform& transform2,
-                                   ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
-};
+}
 
-// Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(BroadPhasePair *overlappingPair) {
-    currentOverlappingPair = overlappingPair;
-}      
+// Destructor
+BroadPhasePair::~BroadPhasePair() {
 
-} // End of reactphysics3d namespace
-
-#endif
-
-
+}

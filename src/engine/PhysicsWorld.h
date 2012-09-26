@@ -32,6 +32,7 @@
 #include <algorithm>
 #include "../mathematics/mathematics.h"
 #include "../body/CollisionBody.h"
+#include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
 #include "../constraint/Constraint.h"
 #include "../constraint/Contact.h"
@@ -54,11 +55,19 @@ class PhysicsWorld {
         std::set<RigidBody*> rigidBodies;               // All the rigid bodies of the physics world
         std::vector<luint> freeRigidBodyIDs;            // List of free ID for rigid bodies
         std::vector<Constraint*> constraints;           // List that contains all the current constraints
+        std::map<std::pair<bodyindex, bodyindex>, OverlappingPair*>  overlappingPairs;  // Broad-phase overlapping pairs of bodies
         Vector3 gravity;                                // Gravity vector of the world
         bool isGravityOn;                               // True if the gravity force is on
         bodyindex currentBodyID;                        // Current body ID
-        MemoryPool<RigidBody> memoryPoolRigidBodies;    // Memory pool for rigid bodies memory allocation
-        
+        MemoryPool<RigidBody> memoryPoolRigidBodies;            // Memory pool for rigid bodies memory allocation
+        MemoryPool<OverlappingPair> memoryPoolOverlappingPairs; // Memory pool for the overlapping pairs
+        MemoryPool<Contact> memoryPoolContacts;                 // Memory pool for the contacts
+
+        void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);          // Notify the world about a new broad-phase overlapping pair
+        void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);        // Notify the world about a removed broad-phase overlapping pair
+        void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);                // Notify the world about a new narrow-phase contact
+        void updateOverlappingPair(const BroadPhasePair* pair);             // Update the overlapping pair
+
     public :
         PhysicsWorld(const Vector3& gravity);      // Constructor
         virtual ~PhysicsWorld();                   // Destructor
@@ -80,7 +89,24 @@ class PhysicsWorld {
         std::set<CollisionBody*>::iterator getBodiesEndIterator();                               // Return an iterator to the end of the bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();                   // Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();                     // Return an iterator to the end of the rigid bodies of the physics world
+
+        // Friends
+        friend class CollisionDetection;
 };
+
+// Update the overlapping pair
+inline void PhysicsWorld::updateOverlappingPair(const BroadPhasePair* pair) {
+
+    // Get the pair of body index
+    std::pair<bodyindex, bodyindex> indexPair = pair->getBodiesIndexPair();
+
+    // Get the corresponding overlapping pair
+    OverlappingPair* overlappingPair = overlappingPairs[indexPair];
+
+    // Update the contact cache of the overlapping pair
+    overlappingPair->update();
+}
+
 
 // Add a constraint into the physics world
 inline void PhysicsWorld::addConstraint(Constraint* constraint) {

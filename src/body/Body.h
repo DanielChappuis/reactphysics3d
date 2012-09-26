@@ -56,7 +56,7 @@ class Body {
         bool operator<(const Body& body2) const;                // Smaller than operator
         bool operator>(const Body& body2) const;                // Larger than operator
         bool operator==(const Body& body2) const;               // Equal operator
-        bool operator!=(const Body& body2) const;               // Equal operator
+        bool operator!=(const Body& body2) const;               // Not equal operator
 };
 
 // Return the id of the body
@@ -79,7 +79,7 @@ inline bool Body::operator==(const Body& body2) const {
     return (id == body2.id);
 }
         
-// Equal operator
+// Not equal operator
 inline bool Body::operator!=(const Body& body2) const {
     return (id != body2.id);
 }               

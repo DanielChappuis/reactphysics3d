@@ -66,8 +66,8 @@ class BroadPhaseAlgorithm {
         virtual void removeObject(CollisionBody* body)=0;                        // Notify the broad-phase about an object that has been removed from the world
         virtual void updateObject(CollisionBody* body, const AABB& aabb)=0;      // Notify the broad-phase that the AABB of an object has changed
 
-        BroadPhasePair* beginOverlappingPairsPointer() const;                                                       // Return a pointer to the first active pair (used to iterate over the active pairs)
-        BroadPhasePair* endOverlappingPairsPointer() const;                                                         // Return a pointer to the last active pair (used to iterate over the active pairs)
+        BodyPair* beginOverlappingPairsPointer() const;                                                       // Return a pointer to the first active pair (used to iterate over the active pairs)
+        BodyPair* endOverlappingPairsPointer() const;                                                         // Return a pointer to the last active pair (used to iterate over the active pairs)
 };
 
 // TODO : DELETE THIS METHOD
@@ -77,12 +77,12 @@ inline uint BroadPhaseAlgorithm::getNbOverlappingPairs() const {
 
 
 // Return a pointer to the first active pair (used to iterate over the overlapping pairs)
-inline BroadPhasePair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
+inline BodyPair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
     return pairManager.beginOverlappingPairsPointer();
 }                                                           
 
 // Return a pointer to the last active pair (used to iterate over the overlapping pairs)
-inline BroadPhasePair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
+inline BodyPair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
    return pairManager.endOverlappingPairsPointer(); 
 }   
 
