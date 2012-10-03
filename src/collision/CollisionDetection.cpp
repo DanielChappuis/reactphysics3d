@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "../engine/PhysicsWorld.h"
+#include "../engine/CollisionWorld.h"
 #include "broadphase/SweepAndPruneAlgorithm.h"
 #include "broadphase/NoBroadPhaseAlgorithm.h"
 #include "../body/Body.h"
@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(PhysicsWorld* world)
+CollisionDetection::CollisionDetection(CollisionWorld* world)
                    : world(world), narrowPhaseGJKAlgorithm(memoryPoolContactInfos),
                      narrowPhaseSphereVsSphereAlgorithm(memoryPoolContactInfos) {
 
@@ -56,12 +56,6 @@ CollisionDetection::CollisionDetection(PhysicsWorld* world)
 
 // Destructor
 CollisionDetection::~CollisionDetection() {
-    // Delete the remaining overlapping pairs
-    for (map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
-        // Delete the overlapping pair
-        (*it).second->OverlappingPair::~OverlappingPair();
-		memoryPoolOverlappingPairs.freeObject((*it).second);
-    }
     
     // Delete the broad-phase algorithm
     delete broadPhaseAlgorithm;
@@ -69,9 +63,7 @@ CollisionDetection::~CollisionDetection() {
 
 // Compute the collision detection
 bool CollisionDetection::computeCollisionDetection() {
-	
-    world->removeAllContactConstraints();
-    
+	    
     // TODO : Remove this code
     timeval timeValueStart;
     timeval timeValueStop;
@@ -98,7 +90,7 @@ bool CollisionDetection::computeCollisionDetection() {
 void CollisionDetection::computeBroadPhase() {
 
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
-    for (set<Body*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (set<CollisionBody*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
 
         // If the body has moved
         if ((*it)->getHasMoved()) {
@@ -107,32 +99,31 @@ void CollisionDetection::computeBroadPhase() {
             broadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
         }
     }  
-
-    // TODO : DELETE THIS
-    //std::cout << "Nb overlapping pairs : " <<  overlappingPairs.size() << std::endl;
-    //std::cout << "Nb active pairs in pair manager : " << broadPhaseAlgorithm->getNbOverlappingPairs() << std::endl;
 }
 
 // Compute the narrow-phase collision detection
 bool CollisionDetection::computeNarrowPhase() {
     bool collisionExists = false;
-    map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it;
+    map<bodyindexpair, BroadPhasePair*>::iterator it;
     
     // For each possible collision pair of bodies
     for (it = overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
-        ContactInfo* contactInfo = NULL;
+        ContactInfo* contactInfo = 0;
 
-        Body* const body1 = (*it).second->getBody1();
-        Body* const body2 = (*it).second->getBody2();
+        BroadPhasePair* pair = (*it).second;
+        assert(pair);
+
+        CollisionBody* const body1 = pair->body1;
+        CollisionBody* const body2 = pair->body2;
         
         // Update the contact cache of the overlapping pair
-        (*it).second->update();
+        world->updateOverlappingPair(pair);
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollisionShape(), body2->getCollisionShape());
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
-        narrowPhaseAlgorithm.setCurrentOverlappingPair((*it).second);
+        narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
         
         // Use the narrow-phase collision detection algorithm to check if there really is a collision
         if (narrowPhaseAlgorithm.testCollision(body1->getCollisionShape(), body1->getTransform(),
@@ -140,21 +131,12 @@ bool CollisionDetection::computeNarrowPhase() {
             assert(contactInfo);
             collisionExists = true;
 
-            // Create a new contact
-            Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(body1, body2, contactInfo);
-            
+            // Notify the world about the new narrow-phase contact
+            world->notifyNewContact(pair, contactInfo);
+
             // Delete and remove the contact info from the memory pool
             contactInfo->ContactInfo::~ContactInfo();
             memoryPoolContactInfos.freeObject(contactInfo);
-            
-            // Add the contact to the contact cache of the corresponding overlapping pair
-            (*it).second->addContact(contact);
-            
-            // Add all the contacts in the contact cache of the two bodies
-            // to the set of constraints in the physics world
-            for (uint i=0; i<(*it).second->getNbContacts(); i++) {
-                world->addConstraint((*it).second->getContact(i));
-            }
         }
     }
     
@@ -163,34 +145,37 @@ bool CollisionDetection::computeNarrowPhase() {
 
 // Allow the broadphase to notify the collision detection about an overlapping pair
 // This method is called by a broad-phase collision detection algorithm
-void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
+void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPair) {
 
-    // Construct the pair of body index
-    pair<bodyindex, bodyindex> indexPair = addedPair->body1->getID() < addedPair->body2->getID() ? make_pair(addedPair->body1->getID(), addedPair->body2->getID()) :
-                                                                make_pair(addedPair->body2->getID(), addedPair->body1->getID());
-    assert(indexPair.first != indexPair.second);
+    // Get the pair of body index
+    bodyindexpair indexPair = addedPair->getBodiesIndexPair();
+
+    // Create the corresponding broad-phase pair object
+    BroadPhasePair* broadPhasePair = new (memoryPoolOverlappingPairs.allocateObject()) BroadPhasePair(addedPair->body1, addedPair->body2);
     
     // Add the pair into the set of overlapping pairs (if not there yet)
-    OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, memoryPoolContacts);
-    pair<map<pair<bodyindex, bodyindex>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
-	
-	// If the overlapping pair was already in the set of overlapping pair
-	if (!check.second) {
-		// Delete the new pair
-		newPair->OverlappingPair::~OverlappingPair();
-		memoryPoolOverlappingPairs.freeObject(newPair);
-	}
+    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, broadPhasePair));
+    assert(check.second);
+
+    // Notify the world about the new broad-phase overlapping pair
+    world->notifyAddedOverlappingPair(broadPhasePair);
 }
 
 // Allow the broadphase to notify the collision detection about a removed overlapping pair
-void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
+void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* removedPair) {
 
-    // Construct the pair of body index
-    pair<bodyindex, bodyindex> indexPair = removedPair->body1->getID() < removedPair->body2->getID() ? make_pair(removedPair->body1->getID(), removedPair->body2->getID()) :
-                                                                make_pair(removedPair->body2->getID(), removedPair->body1->getID());
+    // Get the pair of body index
+    bodyindexpair indexPair = removedPair->getBodiesIndexPair();
+
+    // Get the broad-phase pair
+    BroadPhasePair* broadPhasePair = overlappingPairs[indexPair];
+    assert(broadPhasePair);
+
+    // Notify the world about the removed broad-phase pair
+    world->notifyRemovedOverlappingPair(broadPhasePair);
 
     // Remove the overlapping pair from the memory pool
-    overlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
-    memoryPoolOverlappingPairs.freeObject(overlappingPairs[indexPair]);
+    broadPhasePair->BroadPhasePair::~BroadPhasePair();
+    memoryPoolOverlappingPairs.freeObject(broadPhasePair);
     overlappingPairs.erase(indexPair);
 }

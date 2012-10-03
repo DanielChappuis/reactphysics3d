@@ -29,6 +29,7 @@
 // Libraries
 #include <limits>
 #include <cfloat>
+#include <utility>
 #include "decimal.h"
 
 // Windows platform
@@ -47,6 +48,7 @@ namespace reactphysics3d {
 typedef unsigned int uint;
 typedef long unsigned int luint;
 typedef short unsigned int bodyindex;  // TODO : Replace whenever possible using the bodyindex type
+typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
 // Mathematical constants
 const reactphysics3d::decimal DECIMAL_SMALLEST = - std::numeric_limits<reactphysics3d::decimal>::max();                // Minimun decimal value

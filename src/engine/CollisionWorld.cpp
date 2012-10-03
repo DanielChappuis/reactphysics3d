@@ -24,8 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "PhysicsWorld.h"
-#include "PhysicsEngine.h"
+#include "CollisionWorld.h"
 #include <algorithm>
 
 // Namespaces
@@ -33,88 +32,93 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-PhysicsWorld::PhysicsWorld(const Vector3& gravity)
-             : gravity(gravity), isGravityOn(true), currentBodyID(0) {
+CollisionWorld::CollisionWorld() : collisionDetection(this), currentBodyID(0) {
 }
 
 // Destructor
-PhysicsWorld::~PhysicsWorld() {
+CollisionWorld::~CollisionWorld() {
 
 }
 
-// Create a rigid body into the physics world
-RigidBody* PhysicsWorld::createRigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, CollisionShape* collisionShape) {
-    
+// Notify the world about a new broad-phase overlapping pair
+void CollisionWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
+
+    // TODO : Implement this method
+}
+
+// Notify the world about a removed broad-phase overlapping pair
+void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
+
+    // TODO : Implement this method
+}
+
+// Notify the world about a new narrow-phase contact
+void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const ContactInfo* contactInfo) {
+
+    // TODO : Implement this method
+}
+
+// Update the overlapping pair
+inline void CollisionWorld::updateOverlappingPair(const BroadPhasePair* pair) {
+
+}
+
+// Create a collision body and add it to the world
+CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform, CollisionShape* collisionShape) {
+
+    // Get the next available body ID
+    bodyindex bodyID = computeNextAvailableBodyID();
+
+    // Largest index cannot be used (it is used for invalid index)
+    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
+
+    // Create the collision body
+    CollisionBody* collisionBody = new (memoryPoolCollisionBodies.allocateObject()) CollisionBody(transform, collisionShape, bodyID);
+
+    // Add the collision body to the world
+    bodies.insert(collisionBody);
+
+    // Add the collision body to the collision detection
+    collisionDetection.addBody(collisionBody);
+
+    // Return the pointer to the rigid body
+    return collisionBody;
+}
+
+// Destroy a collision body
+void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
+
+    // Remove the body from the collision detection
+    collisionDetection.removeBody(collisionBody);
+
+    // Add the body ID to the list of free IDs
+    freeBodiesIDs.push_back(collisionBody->getID());
+
+    // Call the constructor of the collision body
+    collisionBody->CollisionBody::~CollisionBody();
+
+    // Remove the collision body from the list of bodies
+    bodies.erase(collisionBody);                                // TOOD : Maybe use a set to make this faster
+
+    // Free the object from the memory pool
+    memoryPoolCollisionBodies.freeObject(collisionBody);
+}
+
+// Return the next available body ID
+bodyindex CollisionWorld::computeNextAvailableBodyID() {
+
     // Compute the body ID
     bodyindex bodyID;
-    if (!freeRigidBodyIDs.empty()) {
-        bodyID = freeRigidBodyIDs.back();
-        freeRigidBodyIDs.pop_back();
+    if (!freeBodiesIDs.empty()) {
+        bodyID = freeBodiesIDs.back();
+        freeBodiesIDs.pop_back();
     }
     else {
         bodyID = currentBodyID;
         currentBodyID++;
     }
 
-    // Largest index cannot be used (it is used for invalid index)
-    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
-
-    // Create the rigid body
-    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
-    
-    // Add the rigid body to the physics world
-    bodies.insert(rigidBody);
-    rigidBodies.insert(rigidBody);
-
-    // Add the rigid body to the collision detection
-    collisionDetection->addBody(rigidBody);
-
-    // Return the pointer to the rigid body
-    return rigidBody;
-}       
-
-// Destroy a rigid body
-void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
-
-    // Remove the body from the collision detection
-    collisionDetection->removeBody(rigidBody);
-
-    // Add the body ID to the list of free IDs
-    freeRigidBodyIDs.push_back(rigidBody->getID());
-	
-    // Call the constructor of the rigid body
-    rigidBody->RigidBody::~RigidBody();
-
-    // Remove the rigid body from the list of rigid bodies
-    bodies.erase(rigidBody);                                    // TOOD : Maybe use a set to make this faster
-    rigidBodies.erase(rigidBody);                               // TOOD : Maybe use a set to make this faster
-
-    // Free the object from the memory pool
-    memoryPoolRigidBodies.freeObject(rigidBody);
-}  
-
-// Remove all collision contacts constraints
-// TODO : This method should be in the collision detection class
-void PhysicsWorld::removeAllContactConstraints() {
-    // For all constraints
-    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
-
-        // Try a downcasting
-        Contact* contact = dynamic_cast<Contact*>(*it);
-
-        // If the constraint is a contact
-        if (contact) {
-            // Remove it from the constraints of the physics world
-            it = constraints.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
+    return bodyID;
 }
 
-// Remove all constraints in the physics world
-void PhysicsWorld::removeAllConstraints() {
-    constraints.clear();
-}
 

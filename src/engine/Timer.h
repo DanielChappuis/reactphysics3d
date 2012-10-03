@@ -126,6 +126,7 @@ inline void Timer::start() {
 
 // Stop the timer
 inline void Timer::stop() {
+    std::cout << "Timer stop" << std::endl;
     isRunning = false;
 }
 

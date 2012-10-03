@@ -56,7 +56,7 @@ PairManager::~PairManager() {
 // that pair. If the pair to add does not already exist in the set of 
 // overlapping pairs, it will be created and if it already exists, we only
 // return a pointer to that pair.
-BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
+BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
 
     // Sort the bodies to have the body with smallest ID first
     sortBodiesUsingID(body1, body2);
@@ -69,7 +69,7 @@ BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
     uint hashValue = computeHashBodies(id1, id2) & hashMask;
     
     // Try to find the pair in the current overlapping pairs.
-    BroadPhasePair* pair = findPairWithHashValue(id1, id2, hashValue);
+    BodyPair* pair = findPairWithHashValue(id1, id2, hashValue);
 
     // If the pair is already in the set of overlapping pairs
     if (pair) {
@@ -93,7 +93,7 @@ BroadPhasePair* PairManager::addPair(Body* body1, Body* body2) {
     }
     
     // Create the new overlapping pair
-    BroadPhasePair* newPair = &overlappingPairs[nbOverlappingPairs];
+    BodyPair* newPair = &overlappingPairs[nbOverlappingPairs];
     newPair->body1 = body1;
     newPair->body2 = body2;
     
@@ -119,7 +119,7 @@ bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     const uint hashValue = computeHashBodies(id1, id2) & hashMask;
     
     // Find the pair to remove
-    const BroadPhasePair* pair = findPairWithHashValue(id1, id2, hashValue);
+    BodyPair* pair = findPairWithHashValue(id1, id2, hashValue);
     
     // If we have not found the pair
     if (!pair) {
@@ -184,7 +184,7 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
         // now free because of the pair we want to remove
         
         // Get the last pair
-        const BroadPhasePair* lastPair = &overlappingPairs[indexLastPair];
+        const BodyPair* lastPair = &overlappingPairs[indexLastPair];
         const uint lastPairHashValue = computeHashBodies(lastPair->body1->getID(), lastPair->body2->getID()) & hashMask;
         
         // Compute the initial offset of the last pair
@@ -223,7 +223,7 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
 }                                
 
 // Look for a pair in the set of overlapping pairs
-BroadPhasePair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValue) const {
+BodyPair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValue) const {
     
     // Look for the pair in the set of overlapping pairs
     bodyindex offset = hashTable[hashValue];
@@ -256,7 +256,7 @@ void PairManager::reallocatePairs() {
     }
     
     // Reallocate the overlapping pairs
-    BroadPhasePair* newOverlappingPairs = (BroadPhasePair*) malloc(nbElementsHashTable * sizeof(BroadPhasePair));
+    BodyPair* newOverlappingPairs = (BodyPair*) malloc(nbElementsHashTable * sizeof(BodyPair));
     bodyindex* newOffsetNextPair = (bodyindex*) malloc(nbElementsHashTable * sizeof(bodyindex));
     
     assert(newOverlappingPairs);
@@ -264,8 +264,8 @@ void PairManager::reallocatePairs() {
     
     // If there is already some overlapping pairs
     if (nbOverlappingPairs) {
-        // Copy the pairs to the new place
-        memcpy(newOverlappingPairs, overlappingPairs, nbOverlappingPairs * sizeof(BroadPhasePair));
+        // Copy the pairs to the new location
+        memcpy(newOverlappingPairs, overlappingPairs, nbOverlappingPairs * sizeof(BodyPair));
     }
     
     // Recompute the hash table with the new hash values

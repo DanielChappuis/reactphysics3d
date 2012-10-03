@@ -62,7 +62,7 @@ struct BoxAABB {
     public:
         bodyindex min[3];       // Index of the three minimum end-points of the AABB over the axis X, Y and Z
         bodyindex max[3];       // Index of the three maximum end-points of the AABB over the axis X, Y and Z
-        Body* body;             // Body that corresponds to the owner of the AABB
+        CollisionBody* body;    // Body that corresponds to the owner of the AABB
 };
 
 // Structure AABBInt
@@ -94,10 +94,10 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         bodyindex nbBoxes;                                              // Number of AABB boxes in the broad-phase
         bodyindex nbMaxBoxes;                                           // Maximum number of boxes in the boxes array
         std::vector<bodyindex> freeBoxIndices;                          // Indices that are not used by any boxes
-        std::map<Body*, bodyindex> mapBodyToBoxIndex;                   // Map a body pointer to its box index
+        std::map<CollisionBody*, bodyindex> mapBodyToBoxIndex;          // Map a body pointer to its box index
         
         void resizeArrays();                                            // Resize the boxes and end-points arrays when it's full
-        void addPair(Body* body1, Body* body2);                         // Add an overlapping pair of AABBS
+        void addPair(CollisionBody* body1, CollisionBody* body2);       // Add an overlapping pair of AABBS
         bool testIntersect1DSortedAABBs(const BoxAABB& box1, const AABBInt& box2,
                             const EndPoint* const baseEndPoint, uint axis) const;      // Check for 1D box intersection
         bool testIntersect2D(const BoxAABB& box1, const BoxAABB& box2,
@@ -107,9 +107,9 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         SweepAndPruneAlgorithm(CollisionDetection& collisionDetection);   // Constructor
         virtual ~SweepAndPruneAlgorithm();                                // Destructor
 
-        virtual void addObject(Body* body, const AABB& aabb);         // Notify the broad-phase about a new object in the world
-        virtual void removeObject(Body* body);                        // Notify the broad-phase about a object that has been removed from the world
-        virtual void updateObject(Body* body, const AABB& aabb);      // Notify the broad-phase that the AABB of an object has changed
+        virtual void addObject(CollisionBody* body, const AABB& aabb);         // Notify the broad-phase about a new object in the world
+        virtual void removeObject(CollisionBody* body);                        // Notify the broad-phase about a object that has been removed from the world
+        virtual void updateObject(CollisionBody* body, const AABB& aabb);      // Notify the broad-phase that the AABB of an object has changed
 };
 
 // Encode a floating value into a integer value in order to

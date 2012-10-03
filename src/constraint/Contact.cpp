@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-Contact::Contact(Body* const body1, Body* const body2, const ContactInfo* contactInfo)
+Contact::Contact(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo)
         : Constraint(body1, body2, 3, true, CONTACT), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
           localPointOnBody1(contactInfo->localPoint1), localPointOnBody2(contactInfo->localPoint2),
           worldPointOnBody1(body1->getTransform() * contactInfo->localPoint1), worldPointOnBody2(body2->getTransform() * contactInfo->localPoint2) {

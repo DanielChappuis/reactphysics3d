@@ -31,25 +31,11 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(const Transform& transform, CollisionShape *collisionShape, decimal mass, bodyindex id)
-    : collisionShape(collisionShape), mass(mass), transform(transform), isActive(true), id(id), hasMoved(false) {
-    assert(mass > 0.0);
-    assert(collisionShape);
+Body::Body(bodyindex id) : id(id) {
 
-    isMotionEnabled = true;
-    isCollisionEnabled = true;
-    interpolationFactor = 0.0;
-
-    // Initialize the old transform
-    oldTransform = transform;
-
-    // Create the AABB for broad-phase collision detection
-    aabb = new AABB(transform, collisionShape->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Destructor
 Body::~Body() {
 
-    // Delete the AABB
-    delete aabb;
 }

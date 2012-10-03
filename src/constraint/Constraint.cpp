@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active, ConstraintType type)
+Constraint::Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints, bool active, ConstraintType type)
            :body1(body1), body2(body2), active(active), nbConstraints(nbConstraints), type(type) {
     
     // Initialize the cached lambda values
