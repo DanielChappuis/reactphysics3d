@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "../engine/PhysicsWorld.h"
+#include "../engine/CollisionWorld.h"
 #include "broadphase/SweepAndPruneAlgorithm.h"
 #include "broadphase/NoBroadPhaseAlgorithm.h"
 #include "../body/Body.h"
@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(PhysicsWorld* world)
+CollisionDetection::CollisionDetection(CollisionWorld* world)
                    : world(world), narrowPhaseGJKAlgorithm(memoryPoolContactInfos),
                      narrowPhaseSphereVsSphereAlgorithm(memoryPoolContactInfos) {
 
@@ -63,9 +63,7 @@ CollisionDetection::~CollisionDetection() {
 
 // Compute the collision detection
 bool CollisionDetection::computeCollisionDetection() {
-	
-    world->removeAllContactConstraints();
-    
+	    
     // TODO : Remove this code
     timeval timeValueStart;
     timeval timeValueStop;

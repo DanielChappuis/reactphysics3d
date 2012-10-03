@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConstraintSolver.h"
+#include "DynamicsWorld.h"
 #include "../body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -32,8 +33,8 @@ using namespace std;
 
 
 // Constructor
-ConstraintSolver::ConstraintSolver(PhysicsWorld* world)
-                 :physicsWorld(world), nbConstraints(0), nbIterationsLCP(DEFAULT_LCP_ITERATIONS),
+ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
+                 :world(world), nbConstraints(0), nbIterationsLCP(DEFAULT_LCP_ITERATIONS),
                   nbIterationsLCPErrorCorrection(DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION),
                   isErrorCorrectionActive(false) {
 
@@ -53,7 +54,7 @@ void ConstraintSolver::initialize() {
 
     // For each constraint
     vector<Constraint*>::iterator it;
-    for (it = physicsWorld->getConstraintsBeginIterator(); it != physicsWorld->getConstraintsEndIterator(); ++it) {
+    for (it = world->getConstraintsBeginIterator(); it != world->getConstraintsEndIterator(); ++it) {
         constraint = *it;
 
         // If the constraint is active

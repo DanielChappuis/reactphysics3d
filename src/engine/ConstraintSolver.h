@@ -29,12 +29,14 @@
 // Libraries
 #include "../configuration.h"
 #include "../constraint/Constraint.h"
-#include "PhysicsWorld.h"
 #include <map>
 #include <set>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class DynamicsWorld;
     
     
 /*  -------------------------------------------------------------------
@@ -64,7 +66,7 @@ namespace reactphysics3d {
 */
 class ConstraintSolver {
     private:
-        PhysicsWorld* physicsWorld;                     // Reference to the physics world
+        DynamicsWorld* world;                           // Reference to the world
         std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
         bool isErrorCorrectionActive;                   // True if error correction (with world order) is active
         uint nbIterationsLCP;                           // Number of iterations of the LCP solver
@@ -125,7 +127,7 @@ class ConstraintSolver {
         void solveLCPErrorCorrection();                 // Solve the LCP problem for error correction projection
     
    public:
-        ConstraintSolver(PhysicsWorld* world);                         // Constructor
+        ConstraintSolver(DynamicsWorld* world);                         // Constructor
         virtual ~ConstraintSolver();                                   // Destructor
         void solve(decimal dt);                                         // Solve the current LCP problem
         bool isConstrainedBody(Body* body) const;                      // Return true if the body is in at least one constraint

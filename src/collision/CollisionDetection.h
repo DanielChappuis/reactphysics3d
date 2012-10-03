@@ -46,7 +46,7 @@ namespace reactphysics3d {
 
 // Declarations
 class BroadPhaseAlgorithm;
-class PhysicsWorld;
+class CollisionWorld;
 
 /*  -------------------------------------------------------------------
     Class CollisionDetection :
@@ -59,7 +59,7 @@ class PhysicsWorld;
 class CollisionDetection {
 
     private :
-        PhysicsWorld* world;                                                            // Pointer to the physics world        
+        CollisionWorld* world;                                                            // Pointer to the physics world        
         std::map<bodyindexpair, BroadPhasePair*> overlappingPairs;                                     // Broad-phase overlapping pairs of bodies
         BroadPhaseAlgorithm* broadPhaseAlgorithm;                                       // Broad-phase algorithm
         GJKAlgorithm narrowPhaseGJKAlgorithm;                                           // Narrow-phase GJK algorithm
@@ -73,7 +73,7 @@ class CollisionDetection {
                                                          CollisionShape* collisionShape2);          // Select the narrow phase algorithm to use given two collision shapes
    
     public :
-        CollisionDetection(PhysicsWorld* physicsWorld);                                 // Constructor
+        CollisionDetection(CollisionWorld* world);                                 // Constructor
         ~CollisionDetection();                                                          // Destructor
         
         void addBody(CollisionBody* body);                                                       // Add a body to the collision detection

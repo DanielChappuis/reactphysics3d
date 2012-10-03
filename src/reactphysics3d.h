@@ -37,9 +37,10 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
+#include "body/CollisionBody.h"
 #include "body/RigidBody.h"
-#include "engine/PhysicsWorld.h"
-#include "engine/PhysicsEngine.h"
+#include "engine/DynamicsWorld.h"
+#include "engine/CollisionWorld.h"
 #include "collision/shapes/CollisionShape.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
