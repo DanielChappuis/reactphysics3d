@@ -33,25 +33,25 @@ using namespace reactphysics3d;
 
 // Constructor of the class
 Quaternion::Quaternion()
-           :x(0.0), y(0.0), z(0.0), w(0.0) {
+           :mX(0.0), mY(0.0), mZ(0.0), mW(0.0) {
 
 }
 
 // Constructor with arguments
 Quaternion::Quaternion(decimal x, decimal y, decimal z, decimal w)
-           :x(x), y(y), z(z), w(w) {
+           :mX(x), mY(y), mZ(z), mW(w) {
 
 }
 
 // Constructor with the component w and the vector v=(x y z)
 Quaternion::Quaternion(decimal w, const Vector3& v)
-           :x(v.getX()), y(v.getY()), z(v.getZ()), w(w) {
+           :mX(v.getX()), mY(v.getY()), mZ(v.getZ()), mW(w) {
 
 }
 
 // Copy-constructor
 Quaternion::Quaternion(const Quaternion& quaternion)
-           :x(quaternion.x), y(quaternion.y), z(quaternion.z), w(quaternion.w) {
+           :mX(quaternion.mX), mY(quaternion.mY), mZ(quaternion.mZ), mW(quaternion.mW) {
 
 }
 
@@ -78,20 +78,20 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
                 s = 0.5 / r;
                 
                 // Compute the quaternion
-                x = (array[2][0] + array[0][2])*s;
-                y = (array[1][2] + array[2][1])*s;
-                z = 0.5*r;
-                w = (array[1][0] - array[0][1])*s;
+                mX = (array[2][0] + array[0][2])*s;
+                mY = (array[1][2] + array[2][1])*s;
+                mZ = 0.5*r;
+                mW = (array[1][0] - array[0][1])*s;
             }
             else {
                 r = sqrt(array[1][1] - array[2][2] - array[0][0] + 1.0);
                 s = 0.5 / r;
 
                 // Compute the quaternion
-                x = (array[0][1] + array[1][0])*s;
-                y = 0.5 * r;
-                z = (array[1][2] + array[2][1])*s;
-                w = (array[0][2] - array[2][0])*s;
+                mX = (array[0][1] + array[1][0])*s;
+                mY = 0.5 * r;
+                mZ = (array[1][2] + array[2][1])*s;
+                mW = (array[0][2] - array[2][0])*s;
             }
         }
         else if (array[2][2] > array[0][0]) {
@@ -99,20 +99,20 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
             s = 0.5 / r;
 
             // Compute the quaternion
-            x = (array[2][0] + array[0][2])*s;
-            y = (array[1][2] + array[2][1])*s;
-            z = 0.5 * r;
-            w = (array[1][0] - array[0][1])*s;
+            mX = (array[2][0] + array[0][2])*s;
+            mY = (array[1][2] + array[2][1])*s;
+            mZ = 0.5 * r;
+            mW = (array[1][0] - array[0][1])*s;
         }
         else {
             r = sqrt(array[0][0] - array[1][1] - array[2][2] + 1.0);
             s = 0.5 / r;
 
             // Compute the quaternion
-            x = 0.5 * r;
-            y = (array[0][1] + array[1][0])*s;
-            z = (array[2][0] - array[0][2])*s;
-            w = (array[2][1] - array[1][2])*s;
+            mX = 0.5 * r;
+            mY = (array[0][1] + array[1][0])*s;
+            mZ = (array[2][0] - array[0][2])*s;
+            mW = (array[2][1] - array[1][2])*s;
         }
     }
     else {
@@ -120,10 +120,10 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
         s = 0.5/r;
 
         // Compute the quaternion
-        x = (array[2][1]-array[1][2])*s;
-        y = (array[0][2]-array[2][0])*s;
-        z = (array[1][0]-array[0][1])*s;
-        w = 0.5 * r;
+        mX = (array[2][1]-array[1][2])*s;
+        mY = (array[0][2]-array[2][0])*s;
+        mZ = (array[1][0]-array[0][1])*s;
+        mW = 0.5 * r;
     }
 }
 
@@ -148,10 +148,10 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     }
 
     // Compute the roation angle
-    angle = acos(quaternion.w) * 2.0;
+    angle = acos(quaternion.mW) * 2.0;
 
     // Compute the 3D rotation axis
-    Vector3 rotationAxis(quaternion.x, quaternion.y, quaternion.z);
+    Vector3 rotationAxis(quaternion.mX, quaternion.mY, quaternion.mZ);
 
     // Normalize the rotation axis
     rotationAxis = rotationAxis.getUnit();
@@ -163,7 +163,7 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
 // Return the orientation matrix corresponding to this quaternion
 Matrix3x3 Quaternion::getMatrix() const {
 
-    decimal nQ = x*x + y*y + z*z + w*w;
+    decimal nQ = mX*mX + mY*mY + mZ*mZ + mW*mW;
     decimal s = 0.0;
 
     if (nQ > 0.0) {
@@ -171,18 +171,18 @@ Matrix3x3 Quaternion::getMatrix() const {
     }
 
     // Computations used for optimization (less multiplications)
-    decimal xs = x*s;
-    decimal ys = y*s;
-    decimal zs = z*s;
-    decimal wxs = w*xs;
-    decimal wys = w*ys;
-    decimal wzs = w*zs;
-    decimal xxs = x*xs;
-    decimal xys = x*ys;
-    decimal xzs = x*zs;
-    decimal yys = y*ys;
-    decimal yzs = y*zs;
-    decimal zzs = z*zs;
+    decimal xs = mX*s;
+    decimal ys = mY*s;
+    decimal zs = mZ*s;
+    decimal wxs = mW*xs;
+    decimal wys = mW*ys;
+    decimal wzs = mW*zs;
+    decimal xxs = mX*xs;
+    decimal xys = mX*ys;
+    decimal xzs = mX*zs;
+    decimal yys = mY*ys;
+    decimal yzs = mY*zs;
+    decimal zzs = mZ*zs;
 
     // Create the matrix corresponding to the quaternion
     return Matrix3x3(1.0-yys-zzs, xys-wzs, xzs + wys,
@@ -192,7 +192,8 @@ Matrix3x3 Quaternion::getMatrix() const {
 
 // Compute the spherical linear interpolation between two quaternions.
 // The t argument has to be such that 0 <= t <= 1. This method is static.
-Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, decimal t) {
+Quaternion Quaternion::slerp(const Quaternion& quaternion1,
+                             const Quaternion& quaternion2, decimal t) {
     assert(t >= 0.0 && t <= 1.0);
 
     decimal invert = 1.0;
@@ -206,7 +207,8 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1, const Quaternion& qu
 			invert = -1.0;
     }
 
-    // Because of precision, if cos(theta) is nearly 1, therefore theta is nearly 0 and we can write
+    // Because of precision, if cos(theta) is nearly 1,
+    // therefore theta is nearly 0 and we can write
     // sin((1-t)*theta) as (1-t) and sin(t*theta) as t
     const decimal epsilon = 0.00001;
     if(1-cosineTheta < epsilon) {

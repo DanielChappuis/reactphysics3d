@@ -32,8 +32,8 @@ using namespace std;
 
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), timer(timeStep), gravity(gravity), isGravityOn(true), constraintSolver(this),
-                isDeactivationActive(DEACTIVATION_ENABLED) {
+              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true), mConstraintSolver(this),
+                mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
 
@@ -41,10 +41,10 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
 DynamicsWorld::~DynamicsWorld() {
 
     // Delete the remaining overlapping pairs
-    for (map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it=overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
+    for (map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it=mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
         // Delete the overlapping pair
         (*it).second->OverlappingPair::~OverlappingPair();
-        memoryPoolOverlappingPairs.freeObject((*it).second);
+        mMemoryPoolOverlappingPairs.freeObject((*it).second);
     }
 }
 
@@ -52,31 +52,31 @@ DynamicsWorld::~DynamicsWorld() {
 void DynamicsWorld::update() {
     bool existCollision = false;
 
-    assert(timer.getIsRunning());
+    assert(mTimer.getIsRunning());
     
     // Compute the time since the last update() call and update the timer
-    timer.update();
+    mTimer.update();
 
     // Apply the gravity force to all bodies
     applyGravity();
 
     // While the time accumulator is not empty
-    while(timer.isPossibleToTakeStep()) {
+    while(mTimer.isPossibleToTakeStep()) {
 
         existCollision = false;
 
         removeAllContactConstraints();
 		
         // Compute the collision detection
-        if (collisionDetection.computeCollisionDetection()) {
+        if (mCollisionDetection.computeCollisionDetection()) {
             existCollision = true;
 
             // Solve constraints
-            constraintSolver.solve(timer.getTimeStep());
+            mConstraintSolver.solve(mTimer.getTimeStep());
         }
 
         // Update the timer
-        timer.nextStep();
+        mTimer.nextStep();
 
         // Reset the movement boolean variable of each body to false
         resetBodiesMovementVariable();
@@ -86,7 +86,7 @@ void DynamicsWorld::update() {
 
         // Cleanup of the constraint solver
         if (existCollision) {
-           constraintSolver.cleanup();
+           mConstraintSolver.cleanup();
         }
     }
 
@@ -104,7 +104,7 @@ void DynamicsWorld::update() {
 // This method uses the semi-implicit Euler method to update the position and
 // orientation of the body
 void DynamicsWorld::updateAllBodiesMotion() {
-    decimal dt = timer.getTimeStep();
+    decimal dt = mTimer.getTimeStep();
     Vector3 newLinearVelocity;
     Vector3 newAngularVelocity;
     Vector3 linearVelocityErrorCorrection;
@@ -124,13 +124,13 @@ void DynamicsWorld::updateAllBodiesMotion() {
             angularVelocityErrorCorrection.setAllValues(0.0, 0.0, 0.0);
 
             // If it's a constrained body
-            if (constraintSolver.isConstrainedBody(*it)) {
+            if (mConstraintSolver.isConstrainedBody(*it)) {
                 // Get the constrained linear and angular velocities from the constraint solver
-                newLinearVelocity = constraintSolver.getConstrainedLinearVelocityOfBody(*it);
-                newAngularVelocity = constraintSolver.getConstrainedAngularVelocityOfBody(*it);
+                newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(*it);
+                newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(*it);
                 
-                linearVelocityErrorCorrection = constraintSolver.getErrorConstrainedLinearVelocityOfBody(rigidBody);
-                angularVelocityErrorCorrection = constraintSolver.getErrorConstrainedAngularVelocityOfBody(rigidBody);
+                linearVelocityErrorCorrection = mConstraintSolver.getErrorConstrainedLinearVelocityOfBody(rigidBody);
+                angularVelocityErrorCorrection = mConstraintSolver.getErrorConstrainedAngularVelocityOfBody(rigidBody);
             }
 
             // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
@@ -157,7 +157,7 @@ void DynamicsWorld::updateAllBodiesMotion() {
 // orientation of the body
 void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
                                                        const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection) {
-    decimal dt = timer.getTimeStep();
+    decimal dt = mTimer.getTimeStep();
 
     assert(rigidBody);
 
@@ -187,7 +187,7 @@ void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody, con
 void DynamicsWorld::setInterpolationFactorToAllBodies() {
     
     // Compute the interpolation factor
-    decimal factor = timer.computeInterpolationFactor();
+    decimal factor = mTimer.computeInterpolationFactor();
     assert(factor >= 0.0 && factor <= 1.0);
 
     // Set the factor to all bodies
@@ -210,9 +210,9 @@ void DynamicsWorld::applyGravity() {
         assert(rigidBody);
    
         // If the gravity force is on
-        if(isGravityOn) {
+        if(mIsGravityOn) {
             // Apply the current gravity force to the body
-            rigidBody->setExternalForce(rigidBody->getMass() * gravity);
+            rigidBody->setExternalForce(rigidBody->getMass() * mGravity);
         }
     }
 }
@@ -229,14 +229,14 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the rigid body
-    RigidBody* rigidBody = new (memoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
+    RigidBody* rigidBody = new (mMemoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
 
     // Add the rigid body to the physics world
-    bodies.insert(rigidBody);
-    rigidBodies.insert(rigidBody);
+    mBodies.insert(rigidBody);
+    mRigidBodies.insert(rigidBody);
 
     // Add the rigid body to the collision detection
-    collisionDetection.addBody(rigidBody);
+    mCollisionDetection.addBody(rigidBody);
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -246,27 +246,27 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Remove the body from the collision detection
-    collisionDetection.removeBody(rigidBody);
+    mCollisionDetection.removeBody(rigidBody);
 
     // Add the body ID to the list of free IDs
-    freeBodiesIDs.push_back(rigidBody->getID());
+    mFreeBodiesIDs.push_back(rigidBody->getID());
 
     // Call the constructor of the rigid body
     rigidBody->RigidBody::~RigidBody();
 
     // Remove the rigid body from the list of rigid bodies
-    bodies.erase(rigidBody);                                    // TOOD : Maybe use a set to make this faster
-    rigidBodies.erase(rigidBody);                               // TOOD : Maybe use a set to make this faster
+    mBodies.erase(rigidBody);                                    // TOOD : Maybe use a set to make this faster
+    mRigidBodies.erase(rigidBody);                               // TOOD : Maybe use a set to make this faster
 
     // Free the object from the memory pool
-    memoryPoolRigidBodies.freeObject(rigidBody);
+    mMemoryPoolRigidBodies.freeObject(rigidBody);
 }
 
 // Remove all collision contacts constraints
 // TODO : This method should be in the collision detection class
 void DynamicsWorld::removeAllContactConstraints() {
     // For all constraints
-    for (vector<Constraint*>::iterator it = constraints.begin(); it != constraints.end(); ) {
+    for (vector<Constraint*>::iterator it = mConstraints.begin(); it != mConstraints.end(); ) {
 
         // Try a downcasting
         Contact* contact = dynamic_cast<Contact*>(*it);
@@ -274,7 +274,7 @@ void DynamicsWorld::removeAllContactConstraints() {
         // If the constraint is a contact
         if (contact) {
             // Remove it from the constraints of the physics world
-            it = constraints.erase(it);
+            it = mConstraints.erase(it);
         }
         else {
             ++it;
@@ -284,7 +284,7 @@ void DynamicsWorld::removeAllContactConstraints() {
 
 // Remove all constraints in the physics world
 void DynamicsWorld::removeAllConstraints() {
-    constraints.clear();
+    mConstraints.clear();
 }
 
 // Notify the world about a new broad-phase overlapping pair
@@ -294,8 +294,8 @@ void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) 
     std::pair<bodyindex, bodyindex> indexPair = addedPair->getBodiesIndexPair();
 
     // Add the pair into the set of overlapping pairs (if not there yet)
-    OverlappingPair* newPair = new (memoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, memoryPoolContacts);
-    std::pair<map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, newPair));
+    OverlappingPair* newPair = new (mMemoryPoolOverlappingPairs.allocateObject()) OverlappingPair(addedPair->body1, addedPair->body2, mMemoryPoolContacts);
+    std::pair<map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator, bool> check = mOverlappingPairs.insert(make_pair(indexPair, newPair));
     assert(check.second);
 }
 
@@ -306,9 +306,9 @@ void DynamicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPa
     std::pair<bodyindex, bodyindex> indexPair = removedPair->getBodiesIndexPair();
 
     // Remove the overlapping pair from the memory pool
-    overlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
-    memoryPoolOverlappingPairs.freeObject(overlappingPairs[indexPair]);
-    overlappingPairs.erase(indexPair);
+    mOverlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
+    mMemoryPoolOverlappingPairs.freeObject(mOverlappingPairs[indexPair]);
+    mOverlappingPairs.erase(indexPair);
 }
 
 // Notify the world about a new narrow-phase contact
@@ -321,12 +321,12 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     assert(rigidBody2);
 
     // Create a new contact
-    Contact* contact = new (memoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
+    Contact* contact = new (mMemoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
     assert(contact);
 
     // Get the corresponding overlapping pair
     pair<bodyindex, bodyindex> indexPair = broadPhasePair->getBodiesIndexPair();
-    OverlappingPair* overlappingPair = overlappingPairs[indexPair];
+    OverlappingPair* overlappingPair = mOverlappingPairs[indexPair];
     assert(overlappingPair);
 
     // Add the contact to the contact cache of the corresponding overlapping pair

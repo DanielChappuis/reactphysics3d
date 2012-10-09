@@ -44,44 +44,69 @@ namespace reactphysics3d {
 class Body {
 
     protected :
-        bodyindex id;                   // ID of the body
+
+        // -------------------- Attributes -------------------- //
+
+        // ID of the body
+        bodyindex mID;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        Body(const Body& body);
+
+        // Private assignment operator
+        Body& operator=(const Body& body);
 
     public :
-        Body(bodyindex id);     // Constructor
-        virtual ~Body();                                                                            // Destructor
 
-        bodyindex getID() const;                                // Return the id of the body
+        // -------------------- Methods -------------------- //
 
-        // Operators
-        bool operator<(const Body& body2) const;                // Smaller than operator
-        bool operator>(const Body& body2) const;                // Larger than operator
-        bool operator==(const Body& body2) const;               // Equal operator
-        bool operator!=(const Body& body2) const;               // Not equal operator
+        // Constructor
+        Body(bodyindex id);
+
+        // Destructor
+        virtual ~Body();
+
+        // Return the id of the body
+        bodyindex getID() const;
+
+        // Smaller than operator
+        bool operator<(const Body& body2) const;
+
+        // Larger than operator
+        bool operator>(const Body& body2) const;
+
+        // Equal operator
+        bool operator==(const Body& body2) const;
+
+        // Not equal operator
+        bool operator!=(const Body& body2) const;
 };
 
 // Return the id of the body
 inline bodyindex Body::getID() const {
-    return id;
+    return mID;
 }
 
 // Smaller than operator
 inline bool Body::operator<(const Body& body2) const {
-    return (id < body2.id);
+    return (mID < body2.mID);
 } 
 
 // Larger than operator
 inline bool Body::operator>(const Body& body2) const {
-    return (id > body2.id);
+    return (mID > body2.mID);
 } 
 
 // Equal operator
 inline bool Body::operator==(const Body& body2) const {
-    return (id == body2.id);
+    return (mID == body2.mID);
 }
         
 // Not equal operator
 inline bool Body::operator!=(const Body& body2) const {
-    return (id != body2.id);
+    return (mID != body2.mID);
 }               
 
 }

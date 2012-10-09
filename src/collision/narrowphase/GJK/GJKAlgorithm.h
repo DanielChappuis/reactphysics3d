@@ -58,20 +58,45 @@ const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
     -------------------------------------------------------------------
 */
 class GJKAlgorithm : public NarrowPhaseAlgorithm {
-    private :
-        EPAAlgorithm algoEPA;             // EPA Algorithm
 
-        bool computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1, const Transform& transform1,
-                                                       const CollisionShape* collisionShape2, const Transform& transform2,
-                                                       ContactInfo*& contactInfo, Vector3& v);             // Compute the penetration depth for enlarged objects
+    private :
+
+        // -------------------- Attributes -------------------- //
+
+        // EPA Algorithm
+        EPAAlgorithm mAlgoEPA;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        GJKAlgorithm(const GJKAlgorithm& algorithm);
+
+        // Private assignment operator
+        GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
+
+        // Compute the penetration depth for enlarged objects
+        bool computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1,
+                                                       const Transform& transform1,
+                                                       const CollisionShape* collisionShape2,
+                                                       const Transform& transform2,
+                                                       ContactInfo*& contactInfo, Vector3& v);
 
     public :
-        GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);  // Constructor
-        ~GJKAlgorithm();                                                // Destructor
 
-        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
-                                   const CollisionShape* collisionShape2,  const Transform& transform2,
-                                   ContactInfo*& contactInfo);                      // Return true and compute a contact info if the two bounding volume collide
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+
+        // Destructor
+        ~GJKAlgorithm();
+
+        // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const CollisionShape* collisionShape1,
+                                   const Transform& transform1,
+                                   const CollisionShape* collisionShape2,
+                                   const Transform& transform2,
+                                   ContactInfo*& contactInfo);
 };
 
 } // End of the ReactPhysics3D namespace

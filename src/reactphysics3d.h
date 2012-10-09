@@ -51,6 +51,4 @@
 // Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
 
-// TODO : Use using namespace std in every possible cpp files to increase readability
-
 #endif

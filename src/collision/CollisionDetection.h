@@ -59,39 +59,84 @@ class CollisionWorld;
 class CollisionDetection {
 
     private :
-        CollisionWorld* world;                                                            // Pointer to the physics world        
-        std::map<bodyindexpair, BroadPhasePair*> overlappingPairs;                                     // Broad-phase overlapping pairs of bodies
-        BroadPhaseAlgorithm* broadPhaseAlgorithm;                                       // Broad-phase algorithm
-        GJKAlgorithm narrowPhaseGJKAlgorithm;                                           // Narrow-phase GJK algorithm
-        SphereVsSphereAlgorithm narrowPhaseSphereVsSphereAlgorithm;                     // Narrow-phase Sphere vs Sphere algorithm
-        MemoryPool<ContactInfo> memoryPoolContactInfos;                                 // Memory pool for the contact info
-        MemoryPool<BroadPhasePair> memoryPoolOverlappingPairs;                          // Memory pool for the overlapping pairs
 
-        void computeBroadPhase();                                                       // Compute the broad-phase collision detection
-        bool computeNarrowPhase();                                                      // Compute the narrow-phase collision detection
+        // -------------------- Attributes -------------------- //
+
+        // Pointer to the physics world
+        CollisionWorld* mWorld;
+
+        // Broad-phase overlapping pairs
+        std::map<bodyindexpair, BroadPhasePair*> mOverlappingPairs;
+
+        // Broad-phase algorithm
+        BroadPhaseAlgorithm* mBroadPhaseAlgorithm;
+
+        // Narrow-phase GJK algorithm
+        GJKAlgorithm mNarrowPhaseGJKAlgorithm;
+
+        // Narrow-phase Sphere vs Sphere algorithm
+        SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
+
+        // Memory pool for contactinfo
+        MemoryPool<ContactInfo> mMemoryPoolContactInfos;
+
+        // Memory pool for broad-phase pairs
+        MemoryPool<BroadPhasePair> mMemoryPoolBroadPhasePairs;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        CollisionDetection(const CollisionDetection& collisionDetection);
+
+        // Private assignment operator
+        CollisionDetection& operator=(const CollisionDetection& collisionDetection);
+
+        // Compute the broad-phase collision detection
+        void computeBroadPhase();
+
+        // Compute the narrow-phase collision detection
+        bool computeNarrowPhase();
+
+        // Select the narrow phase algorithm to use given two collision shapes
         NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1,
-                                                         CollisionShape* collisionShape2);          // Select the narrow phase algorithm to use given two collision shapes
+                                                         CollisionShape* collisionShape2);
    
     public :
-        CollisionDetection(CollisionWorld* world);                                 // Constructor
-        ~CollisionDetection();                                                          // Destructor
-        
-        void addBody(CollisionBody* body);                                                       // Add a body to the collision detection
-        void removeBody(CollisionBody* body);                                                    // Remove a body from the collision detection
-        bool computeCollisionDetection();                                               // Compute the collision detection
-        void broadPhaseNotifyAddedOverlappingPair(BodyPair* pair);          // Allow the broadphase to notify the collision detection about a new overlapping pair
-        void broadPhaseNotifyRemovedOverlappingPair(BodyPair* pair);        // Allow the broadphase to notify the collision detection about a removed overlapping pair
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        CollisionDetection(CollisionWorld* world);
+
+        // Destructor
+        ~CollisionDetection();
+
+        // Add a body to the collision detection
+        void addBody(CollisionBody* body);
+
+        // Remove a body from the collision detection
+        void removeBody(CollisionBody* body);
+
+        // Compute the collision detection
+        bool computeCollisionDetection();
+
+        // Allow the broadphase to notify the collision detection about a new overlapping pair
+        void broadPhaseNotifyAddedOverlappingPair(BodyPair* pair);
+
+        // Allow the broadphase to notify the collision detection about a removed overlapping pair
+        void broadPhaseNotifyRemovedOverlappingPair(BodyPair* pair);
 };
 
 // Select the narrow-phase collision algorithm to use given two collision shapes
-inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1, CollisionShape* collisionShape2) {
+inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
+                             CollisionShape* collisionShape1, CollisionShape* collisionShape2) {
     
     // Sphere vs Sphere algorithm
     if (collisionShape1->getType() == SPHERE && collisionShape2->getType() == SPHERE) {
-        return narrowPhaseSphereVsSphereAlgorithm;
+        return mNarrowPhaseSphereVsSphereAlgorithm;
     }
     else {   // GJK algorithm
-        return narrowPhaseGJKAlgorithm; 
+        return mNarrowPhaseGJKAlgorithm;
     }
 }  
 
@@ -99,14 +144,14 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(Coll
 inline void CollisionDetection::addBody(CollisionBody* body) {
     
     // Add the body to the broad-phase
-    broadPhaseAlgorithm->addObject(body, *(body->getAABB()));
+    mBroadPhaseAlgorithm->addObject(body, *(body->getAABB()));
 }  
 
 // Remove a body from the collision detection
 inline void CollisionDetection::removeBody(CollisionBody* body) {
     
     // Remove the body from the broad-phase
-    broadPhaseAlgorithm->removeObject(body);
+    mBroadPhaseAlgorithm->removeObject(body);
 }                                                    
 
 } // End of the ReactPhysics3D namespace

@@ -46,55 +46,86 @@ const unsigned int MAX_TRIANGLES = 200;     // Maximum number of triangles
     -------------------------------------------------------------------
 */
 class TrianglesStore {
+
     private:
-        TriangleEPA triangles[MAX_TRIANGLES];       // Triangles
-        int nbTriangles;                            // Number of triangles
+
+        // -------------------- Attributes -------------------- //
+
+        // Triangles
+        TriangleEPA mTriangles[MAX_TRIANGLES];
+
+        // Number of triangles
+        int mNbTriangles;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        TrianglesStore(const TrianglesStore& triangleStore);
+
+        // Private assignment operator
+        TrianglesStore& operator=(const TrianglesStore& triangleStore);
         
     public:
-        TrianglesStore();                           // Constructor
-        ~TrianglesStore();                          // Destructor
 
-        void clear();                               // Clear all the storage
-        int getNbTriangles() const;                 // Return the number of triangles
-        void setNbTriangles(int backup);            // Set the number of triangles
-        TriangleEPA& last();                        // Return the last triangle
+        // -------------------- Methods -------------------- //
 
-        TriangleEPA* newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2);  // Create a new triangle
+        // Constructor
+        TrianglesStore();
 
-        TriangleEPA& operator[](int i);     // Access operator
+        // Destructor
+        ~TrianglesStore();
+
+        // Clear all the storage
+        void clear();
+
+        // Return the number of triangles
+        int getNbTriangles() const;
+
+        // Set the number of triangles
+        void setNbTriangles(int backup);
+
+        // Return the last triangle
+        TriangleEPA& last();
+
+        // Create a new triangle
+        TriangleEPA* newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2);
+
+        // Access operator
+        TriangleEPA& operator[](int i);
 };
 
 // Clear all the storage
 inline void TrianglesStore::clear() {
-    nbTriangles = 0;
+    mNbTriangles = 0;
 }
 
 // Return the number of triangles
 inline int TrianglesStore::getNbTriangles() const {
-    return nbTriangles;
+    return mNbTriangles;
 }
 
 
 inline void TrianglesStore::setNbTriangles(int backup) {
-    nbTriangles = backup;
+    mNbTriangles = backup;
 }
 
 // Return the last triangle
 inline TriangleEPA& TrianglesStore::last() {
-    assert(nbTriangles > 0);
-    return triangles[nbTriangles - 1];
+    assert(mNbTriangles > 0);
+    return mTriangles[mNbTriangles - 1];
 }
 
 // Create a new triangle
-inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2) {
+inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices,
+                                                uint v0,uint v1, uint v2) {
     TriangleEPA* newTriangle = 0;
 
     // If we have not reached the maximum number of triangles
-    if (nbTriangles != MAX_TRIANGLES) {
-        newTriangle = &triangles[nbTriangles++];
+    if (mNbTriangles != MAX_TRIANGLES) {
+        newTriangle = &mTriangles[mNbTriangles++];
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
-            nbTriangles--;
+            mNbTriangles--;
             newTriangle = 0;
         }
     }
@@ -105,7 +136,7 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices, uint v0
 
 // Access operator
 inline TriangleEPA& TrianglesStore::operator[](int i) {
-    return triangles[i];
+    return mTriangles[i];
 }
 
 }   // End of ReactPhysics3D namespace

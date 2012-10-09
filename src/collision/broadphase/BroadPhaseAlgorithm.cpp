@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
-                    :pairManager(collisionDetection), collisionDetection(collisionDetection) {
+                    :mPairManager(collisionDetection), mCollisionDetection(collisionDetection) {
 
 }
 

@@ -44,7 +44,7 @@ using namespace reactphysics3d;
 
 // Constructor
 CylinderShape::CylinderShape(decimal radius, decimal height)
-                 : CollisionShape(CYLINDER), radius(radius), halfHeight(height/2.0) {
+                 : CollisionShape(CYLINDER), mRadius(radius), mHalfHeight(height/2.0) {
 
 }
 
@@ -63,13 +63,13 @@ Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal ma
     decimal lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
 
     if (lengthW != 0.0) {
-        if (uDotv < 0.0) supportPoint.setY(-halfHeight);
-        else supportPoint.setY(halfHeight);
-        supportPoint += (radius / lengthW) * w;
+        if (uDotv < 0.0) supportPoint.setY(-mHalfHeight);
+        else supportPoint.setY(mHalfHeight);
+        supportPoint += (mRadius / lengthW) * w;
     }
     else {
-         if (uDotv < 0.0) supportPoint.setY(-halfHeight);
-         else supportPoint.setY(halfHeight);
+         if (uDotv < 0.0) supportPoint.setY(-mHalfHeight);
+         else supportPoint.setY(mHalfHeight);
     }
 
     // Add the margin to the support point
@@ -92,6 +92,6 @@ void CylinderShape::draw() const {
     glColor3f(1.0, 0.0, 0.0);
 
     // Draw the sphere
-    glutWireSphere(radius, 50, 50);
+    glutWireSphere(mRadius, 50, 50);
 }
 #endif

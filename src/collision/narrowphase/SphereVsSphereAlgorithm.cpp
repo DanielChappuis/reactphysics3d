@@ -41,8 +41,11 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
-                                            const CollisionShape* collisionShape2, const Transform& transform2, ContactInfo*& contactInfo) {
+bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape1,
+                                            const Transform& transform1,
+                                            const CollisionShape* collisionShape2,
+                                            const Transform& transform2,
+                                            ContactInfo*& contactInfo) {
     
     // Get the sphere collision shapes
     const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(collisionShape1);
@@ -59,13 +62,16 @@ bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape
     if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
         Vector3 centerSphere2InBody1LocalSpace = transform1.inverse() * transform2.getPosition();
         Vector3 centerSphere1InBody2LocalSpace = transform2.inverse() * transform1.getPosition();
-        Vector3 intersectionOnBody1 = sphereShape1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
-        Vector3 intersectionOnBody2 = sphereShape2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
+        Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
+                                      centerSphere2InBody1LocalSpace.getUnit();
+        Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
+                                      centerSphere1InBody2LocalSpace.getUnit();
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(vectorBetweenCenters.getUnit(), penetrationDepth,
-                                                                                intersectionOnBody1, intersectionOnBody2);
+        contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(
+                           vectorBetweenCenters.getUnit(), penetrationDepth,
+                           intersectionOnBody1, intersectionOnBody2);
     
         return true;
     }

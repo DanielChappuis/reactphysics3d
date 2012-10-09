@@ -42,65 +42,106 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class OverlappingPair {
+
     private:
-        CollisionBody* const body1;             // Pointer to the first body of the contact
-        CollisionBody* const body2;             // Pointer to the second body of the contact
-        PersistentContactCache contactsCache;   // Persistent contact cache
-        Vector3 cachedSeparatingAxis;           // Cached previous separating axis
+
+        // -------------------- Attributes -------------------- //
+
+        // Pointer to the first body of the contact
+        CollisionBody* const mBody1;
+
+        // Pointer to the second body of the contact
+        CollisionBody* const mBody2;
+
+        // Persistent contact cache
+        PersistentContactCache mContactsCache;
+
+        // Cached previous separating axis
+        Vector3 mCachedSeparatingAxis;
         
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        OverlappingPair(const OverlappingPair& pair);
+
+        // Private assignment operator
+        OverlappingPair& operator=(const OverlappingPair& pair);
+
     public:
-        OverlappingPair(CollisionBody* body1, CollisionBody* body2, MemoryPool<Contact>& memoryPoolContacts);     // Constructor
-        ~OverlappingPair();                                                                     // Destructor
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        OverlappingPair(CollisionBody* body1, CollisionBody* body2,
+                        MemoryPool<Contact>& memoryPoolContacts);
+
+        // Destructor
+        ~OverlappingPair();
         
-        CollisionBody* const getBody1() const;                           // Return the pointer to first body
-        CollisionBody* const getBody2() const;                           // Return the pointer to second body
-        void addContact(Contact* contact);                      // Add a contact to the contact cache
-        void update();                                          // Update the contact cache
-        Vector3 getCachedSeparatingAxis() const;                // Return the cached separating axis
-        void setCachedSeparatingAxis(const Vector3& axis);      // Set the cached separating axis
-        uint getNbContacts() const;                             // Return the number of contacts in the cache
-        Contact* getContact(uint index) const;                  // Return a contact of the cache                           
+        // Return the pointer to first body
+        CollisionBody* const getBody1() const;
+
+        // Return the pointer to second body
+        CollisionBody* const getBody2() const;
+
+        // Add a contact to the contact cache
+        void addContact(Contact* contact);
+
+        // Update the contact cache
+        void update();
+
+        // Return the cached separating axis
+        Vector3 getCachedSeparatingAxis() const;
+
+        // Set the cached separating axis
+        void setCachedSeparatingAxis(const Vector3& axis);
+
+        // Return the number of contacts in the cache
+        uint getNbContacts() const;
+
+        // Return a contact of the cache
+        Contact* getContact(uint index) const;
 };
 
 // Return the pointer to first body
 inline CollisionBody* const OverlappingPair::getBody1() const {
-    return body1;
+    return mBody1;
 }          
 
 // Return the pointer to second body
 inline CollisionBody* const OverlappingPair::getBody2() const {
-    return body2;
+    return mBody2;
 }                
 
 // Add a contact to the contact cache
 inline void OverlappingPair::addContact(Contact* contact) {
-    contactsCache.addContact(contact);
+    mContactsCache.addContact(contact);
 }  
 
 // Update the contact cache
 inline void OverlappingPair::update() {
-    contactsCache.update(body1->getTransform(), body2->getTransform());
+    mContactsCache.update(mBody1->getTransform(), mBody2->getTransform());
 }                                
 
 // Return the cached separating axis
 inline Vector3 OverlappingPair::getCachedSeparatingAxis() const {
-    return cachedSeparatingAxis;
+    return mCachedSeparatingAxis;
 } 
 
 // Set the cached separating axis
 inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
-    cachedSeparatingAxis = axis;
+    mCachedSeparatingAxis = axis;
 }              
 
 
 // Return the number of contacts in the cache
 inline uint OverlappingPair::getNbContacts() const {
-    return contactsCache.getNbContacts();
+    return mContactsCache.getNbContacts();
 }
 
 // Return a contact of the cache    
 inline Contact* OverlappingPair::getContact(uint index) const {
-    return contactsCache.getContact(index);
+    return mContactsCache.getContact(index);
 }         
 
 } // End of the ReactPhysics3D namespace

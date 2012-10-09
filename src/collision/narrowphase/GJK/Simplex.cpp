@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Simplex::Simplex() : bitsCurrentSimplex(0x0), allBits(0x0) {
+Simplex::Simplex() : mBitsCurrentSimplex(0x0), mAllBits(0x0) {
 
 }
 
@@ -47,22 +47,22 @@ Simplex::~Simplex() {
 void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Vector3& suppPointB) {
     assert(!isFull());
 
-    lastFound = 0;
-    lastFoundBit = 0x1;
+    mLastFound = 0;
+    mLastFoundBit = 0x1;
 
     // Look for the bit corresponding to one of the four point that is not in
     // the current simplex
-    while (overlap(bitsCurrentSimplex, lastFoundBit)) {
-        lastFound++;
-        lastFoundBit <<= 1;
+    while (overlap(mBitsCurrentSimplex, mLastFoundBit)) {
+        mLastFound++;
+        mLastFoundBit <<= 1;
     }
 
-    assert(lastFound >= 0 && lastFound < 4);
+    assert(mLastFound >= 0 && mLastFound < 4);
 
     // Add the point into the simplex
-    points[lastFound] = point;
-    pointsLengthSquare[lastFound] = point.dot(point);
-    allBits = bitsCurrentSimplex | lastFoundBit;
+    mPoints[mLastFound] = point;
+    mPointsLengthSquare[mLastFound] = point.dot(point);
+    mAllBits = mBitsCurrentSimplex | mLastFoundBit;
 
     // Update the cached values
     updateCache();
@@ -71,8 +71,8 @@ void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Ve
     computeDeterminants();
     
     // Add the support points of objects A and B
-    suppPointsA[lastFound] = suppPointA;
-    suppPointsB[lastFound] = suppPointB;
+    mSuppPointsA[mLastFound] = suppPointA;
+    mSuppPointsB[mLastFound] = suppPointB;
 }
 
 // Return true if the point is in the simplex
@@ -83,7 +83,7 @@ bool Simplex::isPointInSimplex(const Vector3& point) const {
     // For each four possible points in the simplex
     for (i=0, bit = 0x1; i<4; i++, bit <<= 1) {
         // Check if the current point is in the simplex
-        if (overlap(allBits, bit) && point == points[i]) return true;
+        if (overlap(mAllBits, bit) && point == mPoints[i]) return true;
     }
 
     return false;
@@ -97,20 +97,23 @@ void Simplex::updateCache() {
     // For each of the four possible points of the simplex
     for (i=0, bit = 0x1; i<4; i++, bit <<= 1) {
         // If the current points is in the simplex
-        if (overlap(bitsCurrentSimplex, bit)) {
+        if (overlap(mBitsCurrentSimplex, bit)) {
             
             // Compute the distance between two points in the possible simplex set
-            diffLength[i][lastFound] = points[i] - points[lastFound];
-            diffLength[lastFound][i] = -diffLength[i][lastFound];
+            mDiffLength[i][mLastFound] = mPoints[i] - mPoints[mLastFound];
+            mDiffLength[mLastFound][i] = -mDiffLength[i][mLastFound];
 
-            // Compute the squared length of the vector distances from points in the possible simplex set
-            normSquare[i][lastFound] = normSquare[lastFound][i] = diffLength[i][lastFound].dot(diffLength[i][lastFound]);
+            // Compute the squared length of the vector
+            // distances from points in the possible simplex set
+            mNormSquare[i][mLastFound] = mNormSquare[mLastFound][i] =
+                                         mDiffLength[i][mLastFound].dot(mDiffLength[i][mLastFound]);
         }
     }
 }
 
 // Return the points of the simplex
-unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vector3* points) const {
+unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB,
+                                 Vector3* points) const {
     unsigned int nbVertices = 0;
     int i;
     Bits bit;
@@ -118,11 +121,11 @@ unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vec
     // For each four point in the possible simplex
     for (i=0, bit=0x1; i<4; i++, bit <<=1) {
         // If the current point is in the simplex
-        if (overlap(bitsCurrentSimplex, bit)) {
+        if (overlap(mBitsCurrentSimplex, bit)) {
             // Store the points
-            suppPointsA[nbVertices] = this->suppPointsA[nbVertices];
-            suppPointsB[nbVertices] = this->suppPointsB[nbVertices];
-            points[nbVertices] = this->points[nbVertices];
+            suppPointsA[nbVertices] = this->mSuppPointsA[nbVertices];
+            suppPointsB[nbVertices] = this->mSuppPointsB[nbVertices];
+            points[nbVertices] = this->mPoints[nbVertices];
 
             nbVertices++;
         }
@@ -134,7 +137,7 @@ unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB, Vec
 
 // Compute the cached determinant values
 void Simplex::computeDeterminants() {
-    det[lastFoundBit][lastFound] = 1.0;
+    mDet[mLastFoundBit][mLastFound] = 1.0;
 
     // If the current simplex is not empty
     if (!isEmpty()) {
@@ -145,59 +148,72 @@ void Simplex::computeDeterminants() {
         for (i=0, bitI = 0x1; i<4; i++, bitI <<= 1) {
 
             // If the current point is in the simplex
-            if (overlap(bitsCurrentSimplex, bitI)) {
-                Bits bit2 = bitI | lastFoundBit;
+            if (overlap(mBitsCurrentSimplex, bitI)) {
+                Bits bit2 = bitI | mLastFoundBit;
 
-                det[bit2][i] = diffLength[lastFound][i].dot(points[lastFound]);
-                det[bit2][lastFound] = diffLength[i][lastFound].dot(points[i]);
+                mDet[bit2][i] = mDiffLength[mLastFound][i].dot(mPoints[mLastFound]);
+                mDet[bit2][mLastFound] = mDiffLength[i][mLastFound].dot(mPoints[i]);
       
 
                 int j;
                 Bits bitJ;
 
                 for (j=0, bitJ = 0x1; j<i; j++, bitJ <<= 1) {
-                    if (overlap(bitsCurrentSimplex, bitJ)) {
+                    if (overlap(mBitsCurrentSimplex, bitJ)) {
                         int k;
                         Bits bit3 = bitJ | bit2;
 
-                        k = normSquare[i][j] < normSquare[lastFound][j] ? i : lastFound;
-                        det[bit3][j] = det[bit2][i] * diffLength[k][j].dot(points[i]) +
-                                       det[bit2][lastFound] * diffLength[k][j].dot(points[lastFound]);
+                        k = mNormSquare[i][j] < mNormSquare[mLastFound][j] ? i : mLastFound;
+                        mDet[bit3][j] = mDet[bit2][i] * mDiffLength[k][j].dot(mPoints[i]) +
+                                       mDet[bit2][mLastFound] *
+                                       mDiffLength[k][j].dot(mPoints[mLastFound]);
 
-                        k = normSquare[j][i] < normSquare[lastFound][i] ? j : lastFound;
-                        det[bit3][i] = det[bitJ | lastFoundBit][j] * diffLength[k][i].dot(points[j]) +
-                                       det[bitJ | lastFoundBit][lastFound] * diffLength[k][i].dot(points[lastFound]);
+                        k = mNormSquare[j][i] < mNormSquare[mLastFound][i] ? j : mLastFound;
+                        mDet[bit3][i] = mDet[bitJ | mLastFoundBit][j] *
+                                        mDiffLength[k][i].dot(mPoints[j]) +
+                                        mDet[bitJ | mLastFoundBit][mLastFound] *
+                                        mDiffLength[k][i].dot(mPoints[mLastFound]);
 
-                        k = normSquare[i][lastFound] < normSquare[j][lastFound] ? i : j;
-                        det[bit3][lastFound] = det[bitJ | bitI][j] * diffLength[k][lastFound].dot(points[j]) +
-                                               det[bitJ | bitI][i] * diffLength[k][lastFound].dot(points[i]);
+                        k = mNormSquare[i][mLastFound] < mNormSquare[j][mLastFound] ? i : j;
+                        mDet[bit3][mLastFound] = mDet[bitJ | bitI][j] *
+                                                 mDiffLength[k][mLastFound].dot(mPoints[j]) +
+                                                 mDet[bitJ | bitI][i] *
+                                                 mDiffLength[k][mLastFound].dot(mPoints[i]);
                     }
                 }
             }
         }
 
-        if (allBits == 0xf) {
+        if (mAllBits == 0xf) {
             int k;
 
-            k = normSquare[1][0] < normSquare[2][0] ? (normSquare[1][0] < normSquare[3][0] ? 1 : 3) : (normSquare[2][0] < normSquare[3][0] ? 2 : 3);
-            det[0xf][0] = det[0xe][1] * diffLength[k][0].dot(points[1]) +
-                        det[0xe][2] * diffLength[k][0].dot(points[2]) +
-                        det[0xe][3] * diffLength[k][0].dot(points[3]);
+            k = mNormSquare[1][0] < mNormSquare[2][0] ?
+                                   (mNormSquare[1][0] < mNormSquare[3][0] ? 1 : 3) :
+                                   (mNormSquare[2][0] < mNormSquare[3][0] ? 2 : 3);
+            mDet[0xf][0] = mDet[0xe][1] * mDiffLength[k][0].dot(mPoints[1]) +
+                        mDet[0xe][2] * mDiffLength[k][0].dot(mPoints[2]) +
+                        mDet[0xe][3] * mDiffLength[k][0].dot(mPoints[3]);
 
-            k = normSquare[0][1] < normSquare[2][1] ? (normSquare[0][1] < normSquare[3][1] ? 0 : 3) : (normSquare[2][1] < normSquare[3][1] ? 2 : 3);
-            det[0xf][1] = det[0xd][0] * diffLength[k][1].dot(points[0]) +
-                        det[0xd][2] * diffLength[k][1].dot(points[2]) +
-                        det[0xd][3] * diffLength[k][1].dot(points[3]);
+            k = mNormSquare[0][1] < mNormSquare[2][1] ?
+                                   (mNormSquare[0][1] < mNormSquare[3][1] ? 0 : 3) :
+                                   (mNormSquare[2][1] < mNormSquare[3][1] ? 2 : 3);
+            mDet[0xf][1] = mDet[0xd][0] * mDiffLength[k][1].dot(mPoints[0]) +
+                        mDet[0xd][2] * mDiffLength[k][1].dot(mPoints[2]) +
+                        mDet[0xd][3] * mDiffLength[k][1].dot(mPoints[3]);
 
-            k = normSquare[0][2] < normSquare[1][2] ? (normSquare[0][2] < normSquare[3][2] ? 0 : 3) : (normSquare[1][2] < normSquare[3][2] ? 1 : 3);
-            det[0xf][2] = det[0xb][0] * diffLength[k][2].dot(points[0]) +
-                        det[0xb][1] * diffLength[k][2].dot(points[1]) +
-                        det[0xb][3] * diffLength[k][2].dot(points[3]);
+            k = mNormSquare[0][2] < mNormSquare[1][2] ?
+                                   (mNormSquare[0][2] < mNormSquare[3][2] ? 0 : 3) :
+                                   (mNormSquare[1][2] < mNormSquare[3][2] ? 1 : 3);
+            mDet[0xf][2] = mDet[0xb][0] * mDiffLength[k][2].dot(mPoints[0]) +
+                        mDet[0xb][1] * mDiffLength[k][2].dot(mPoints[1]) +
+                        mDet[0xb][3] * mDiffLength[k][2].dot(mPoints[3]);
 
-            k = normSquare[0][3] < normSquare[1][3] ? (normSquare[0][3] < normSquare[2][3] ? 0 : 2) : (normSquare[1][3] < normSquare[2][3] ? 1 : 2);
-            det[0xf][3] = det[0x7][0] * diffLength[k][3].dot(points[0]) +
-                        det[0x7][1] * diffLength[k][3].dot(points[1]) +
-                        det[0x7][2] * diffLength[k][3].dot(points[2]);
+            k = mNormSquare[0][3] < mNormSquare[1][3] ?
+                                   (mNormSquare[0][3] < mNormSquare[2][3] ? 0 : 2) :
+                                   (mNormSquare[1][3] < mNormSquare[2][3] ? 1 : 2);
+            mDet[0xf][3] = mDet[0x7][0] * mDiffLength[k][3].dot(mPoints[0]) +
+                        mDet[0x7][1] * mDiffLength[k][3].dot(mPoints[1]) +
+                        mDet[0x7][2] * mDiffLength[k][3].dot(mPoints[2]);
         }
     }
 }
@@ -211,7 +227,7 @@ bool Simplex::isProperSubset(Bits subset) const {
 
     // For each four point of the possible simplex set
     for (i=0, bit=0x1; i<4; i++, bit <<=1) {
-        if (overlap(subset, bit) && det[subset][i] <= 0.0) {
+        if (overlap(subset, bit) && mDet[subset][i] <= 0.0) {
             return false;
         }
     }
@@ -228,8 +244,8 @@ bool Simplex::isAffinelyDependent() const {
 
     // For each four point of the possible simplex set
     for (i=0, bit=0x1; i<4; i++, bit <<= 1) {
-        if (overlap(allBits, bit)) {
-            sum += det[allBits][i];
+        if (overlap(mAllBits, bit)) {
+            sum += mDet[mAllBits][i];
         }
     }
 
@@ -246,18 +262,18 @@ bool Simplex::isValidSubset(Bits subset) const {
 
     // For each four point in the possible simplex set
     for (i=0, bit=0x1; i<4; i++, bit <<= 1) {
-        if (overlap(allBits, bit)) {
+        if (overlap(mAllBits, bit)) {
             // If the current point is in the subset
             if (overlap(subset, bit)) {
                 // If one delta(X)_i is smaller or equal to zero
-                if (det[subset][i] <= 0.0) {
+                if (mDet[subset][i] <= 0.0) {
                     // The subset is not valid
                     return false;
                 }
             }
             // If the point is not in the subset and the value delta(X U {y_j})_j
             // is bigger than zero
-            else if (det[subset | bit][i] > 0.0) {
+            else if (mDet[subset | bit][i] > 0.0) {
                 // The subset is not valid
                 return false;
             }
@@ -282,10 +298,10 @@ void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     // For each four points in the possible simplex set
     for (i=0, bit=0x1; i<4; i++, bit <<= 1) {
         // If the current point is part of the simplex
-        if (overlap(bitsCurrentSimplex, bit)) {
-            deltaX += det[bitsCurrentSimplex][i];
-            pA += det[bitsCurrentSimplex][i] * suppPointsA[i];
-            pB += det[bitsCurrentSimplex][i] * suppPointsB[i];
+        if (overlap(mBitsCurrentSimplex, bit)) {
+            deltaX += mDet[mBitsCurrentSimplex][i];
+            pA += mDet[mBitsCurrentSimplex][i] * mSuppPointsA[i];
+            pB += mDet[mBitsCurrentSimplex][i] * mSuppPointsB[i];
         }
     }
 
@@ -303,21 +319,21 @@ bool Simplex::computeClosestPoint(Vector3& v) {
     Bits subset;
 
     // For each possible simplex set
-    for (subset=bitsCurrentSimplex; subset != 0x0; subset--) {
+    for (subset=mBitsCurrentSimplex; subset != 0x0; subset--) {
         // If the simplex is a subset of the current simplex and is valid for the Johnson's
         // algorithm test
-        if (isSubset(subset, bitsCurrentSimplex) && isValidSubset(subset | lastFoundBit)) {
-           bitsCurrentSimplex = subset | lastFoundBit;              // Add the last added point to the current simplex
-           v = computeClosestPointForSubset(bitsCurrentSimplex);    // Compute the closest point in the simplex
+        if (isSubset(subset, mBitsCurrentSimplex) && isValidSubset(subset | mLastFoundBit)) {
+           mBitsCurrentSimplex = subset | mLastFoundBit;              // Add the last added point to the current simplex
+           v = computeClosestPointForSubset(mBitsCurrentSimplex);    // Compute the closest point in the simplex
            return true;
         }
     }
 
     // If the simplex that contains only the last added point is valid for the Johnson's algorithm test
-    if (isValidSubset(lastFoundBit)) {
-        bitsCurrentSimplex = lastFoundBit;                  // Set the current simplex to the set that contains only the last added point
-        maxLengthSquare = pointsLengthSquare[lastFound];    // Update the maximum square length
-        v = points[lastFound];                              // The closest point of the simplex "v" is the last added point
+    if (isValidSubset(mLastFoundBit)) {
+        mBitsCurrentSimplex = mLastFoundBit;                  // Set the current simplex to the set that contains only the last added point
+        mMaxLengthSquare = mPointsLengthSquare[mLastFound];    // Update the maximum square length
+        v = mPoints[mLastFound];                              // The closest point of the simplex "v" is the last added point
         return true;
     }
 
@@ -330,13 +346,13 @@ void Simplex::backupClosestPointInSimplex(Vector3& v) {
     decimal minDistSquare = DECIMAL_LARGEST;
     Bits bit;
 
-    for (bit = allBits; bit != 0x0; bit--) {
-        if (isSubset(bit, allBits) && isProperSubset(bit)) {
+    for (bit = mAllBits; bit != 0x0; bit--) {
+        if (isSubset(bit, mAllBits) && isProperSubset(bit)) {
             Vector3 u = computeClosestPointForSubset(bit);
             decimal distSquare = u.dot(u);
             if (distSquare < minDistSquare) {
                 minDistSquare = distSquare;
-                bitsCurrentSimplex = bit;
+                mBitsCurrentSimplex = bit;
                 v = u;
             }
         }
@@ -347,7 +363,7 @@ void Simplex::backupClosestPointInSimplex(Vector3& v) {
 // represented by the bits "subset"
 Vector3 Simplex::computeClosestPointForSubset(Bits subset) {
     Vector3 v(0.0, 0.0, 0.0);      // Closet point v = sum(lambda_i * points[i])
-    maxLengthSquare = 0.0;
+    mMaxLengthSquare = 0.0;
     decimal deltaX = 0.0;            // deltaX = sum of all det[subset][i]
     int i;
     Bits bit;
@@ -357,14 +373,14 @@ Vector3 Simplex::computeClosestPointForSubset(Bits subset) {
         // If the current point is in the subset
         if (overlap(subset, bit)) {
             // deltaX = sum of all det[subset][i]
-            deltaX += det[subset][i];
+            deltaX += mDet[subset][i];
 
-            if (maxLengthSquare < pointsLengthSquare[i]) {
-                maxLengthSquare = pointsLengthSquare[i];
+            if (mMaxLengthSquare < mPointsLengthSquare[i]) {
+                mMaxLengthSquare = mPointsLengthSquare[i];
             }
 
             // Closest point v = sum(lambda_i * points[i])
-            v += det[subset][i] * points[i];
+            v += mDet[subset][i] * mPoints[i];
         }
     }
 

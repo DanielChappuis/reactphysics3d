@@ -34,22 +34,23 @@ using namespace reactphysics3d;
 bodyindex PairManager::INVALID_INDEX = std::numeric_limits<reactphysics3d::bodyindex>::max();
 
 // Constructor of PairManager
-PairManager::PairManager(CollisionDetection& collisionDetection) : collisionDetection(collisionDetection) {
-    hashTable = 0;
-    overlappingPairs = 0;
-    offsetNextPair = 0;
-    nbOverlappingPairs = 0;
-    hashMask = 0;
-    nbElementsHashTable = 0;
+PairManager::PairManager(CollisionDetection& collisionDetection)
+            : mCollisionDetection(collisionDetection) {
+    mHashTable = 0;
+    mOverlappingPairs = 0;
+    mOffsetNextPair = 0;
+    mNbOverlappingPairs = 0;
+    mHashMask = 0;
+    mNbElementsHashTable = 0;
 }
 
 // Destructor of PairManager
 PairManager::~PairManager() {
     
     // Release the allocated memory
-    free(offsetNextPair);
-    free(overlappingPairs);
-    free(hashTable);
+    free(mOffsetNextPair);
+    free(mOverlappingPairs);
+    free(mHashTable);
 }
 
 // Add a pair of bodies in the pair manager and returns a pointer to
@@ -66,7 +67,7 @@ BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
     bodyindex id2 = body2->getID();
     
     // Compute the hash value of the two bodies
-    uint hashValue = computeHashBodies(id1, id2) & hashMask;
+    uint hashValue = computeHashBodies(id1, id2) & mHashMask;
     
     // Try to find the pair in the current overlapping pairs.
     BodyPair* pair = findPairWithHashValue(id1, id2, hashValue);
@@ -78,31 +79,31 @@ BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
     }
     
     // If we need to allocate more pairs in the set of overlapping pairs
-    if (nbOverlappingPairs >= nbElementsHashTable) {
+    if (mNbOverlappingPairs >= mNbElementsHashTable) {
         // Increase the size of the hash table (always a power of two)
-        nbElementsHashTable = computeNextPowerOfTwo(nbOverlappingPairs + 1);
+        mNbElementsHashTable = computeNextPowerOfTwo(mNbOverlappingPairs + 1);
         
         // Compute the new hash mask with the new hash size
-        hashMask = nbElementsHashTable - 1;
+        mHashMask = mNbElementsHashTable - 1;
         
         // Reallocate more pairs
         reallocatePairs();
         
         // Compute the new hash value (using the new hash size and hash mask)
-        hashValue = computeHashBodies(id1, id2) & hashMask;
+        hashValue = computeHashBodies(id1, id2) & mHashMask;
     }
     
     // Create the new overlapping pair
-    BodyPair* newPair = &overlappingPairs[nbOverlappingPairs];
+    BodyPair* newPair = &mOverlappingPairs[mNbOverlappingPairs];
     newPair->body1 = body1;
     newPair->body2 = body2;
     
     // Put the new pair as the initial pair with this hash value
-    offsetNextPair[nbOverlappingPairs] = hashTable[hashValue];
-    hashTable[hashValue] = nbOverlappingPairs++;
+    mOffsetNextPair[mNbOverlappingPairs] = mHashTable[hashValue];
+    mHashTable[hashValue] = mNbOverlappingPairs++;
     
     // Notify the collision detection about this new overlapping pair
-    collisionDetection.broadPhaseNotifyAddedOverlappingPair(newPair);
+    mCollisionDetection.broadPhaseNotifyAddedOverlappingPair(newPair);
     
     // Return a pointer to the new created pair
     return newPair;
@@ -116,7 +117,7 @@ bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     sortIDs(id1, id2);
     
     // Compute the hash value of the pair to remove
-    const uint hashValue = computeHashBodies(id1, id2) & hashMask;
+    const uint hashValue = computeHashBodies(id1, id2) & mHashMask;
     
     // Find the pair to remove
     BodyPair* pair = findPairWithHashValue(id1, id2, hashValue);
@@ -130,7 +131,7 @@ bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     assert(pair->body2->getID() == id2);
     
     // Notify the collision detection about this removed overlapping pair
-    collisionDetection.broadPhaseNotifyRemovedOverlappingPair(pair);
+    mCollisionDetection.broadPhaseNotifyRemovedOverlappingPair(pair);
     
     // Remove the pair from the set of overlapping pairs
     removePairWithHashValue(id1, id2, hashValue, computePairOffset(pair));
@@ -142,18 +143,19 @@ bool PairManager::removePair(bodyindex id1, bodyindex id2) {
 }
 
 // Internal method to remove a pair from the set of overlapping pair
-void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue, bodyindex indexPair) {
+void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue,
+                                          bodyindex indexPair) {
     
     // Get the initial offset of the pairs with
     // the corresponding hash value
-    bodyindex offset = hashTable[hashValue];
+    bodyindex offset = mHashTable[hashValue];
     assert(offset != INVALID_INDEX);
     
     // Look for the pair in the set of overlapping pairs
     bodyindex previousPair = INVALID_INDEX;
     while(offset != indexPair) {
         previousPair = offset;
-        offset = offsetNextPair[offset];
+        offset = mOffsetNextPair[offset];
     }
   
     // If the pair was the first one with this hash
@@ -161,22 +163,22 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
     if (previousPair == INVALID_INDEX) {
         // Replace the pair to remove in the
         // hash table by the next one
-        hashTable[hashValue] = offsetNextPair[indexPair];
+        mHashTable[hashValue] = mOffsetNextPair[indexPair];
     }
     else {  // If the pair was not the first one
         // Replace the pair to remove in the
         // hash table by the next one
-        assert(offsetNextPair[previousPair] == indexPair);
-        offsetNextPair[previousPair] = offsetNextPair[indexPair];
+        assert(mOffsetNextPair[previousPair] == indexPair);
+        mOffsetNextPair[previousPair] = mOffsetNextPair[indexPair];
     }
     
-    const bodyindex indexLastPair = nbOverlappingPairs - 1;
+    const bodyindex indexLastPair = mNbOverlappingPairs - 1;
     
     // If the pair to remove is the last one in the list
     if (indexPair == indexLastPair) {
         
         // We simply decrease the number of overlapping pairs
-        nbOverlappingPairs--;
+        mNbOverlappingPairs--;
     }
     else {  // If the pair to remove is in the middle of the list
         
@@ -184,11 +186,12 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
         // now free because of the pair we want to remove
         
         // Get the last pair
-        const BodyPair* lastPair = &overlappingPairs[indexLastPair];
-        const uint lastPairHashValue = computeHashBodies(lastPair->body1->getID(), lastPair->body2->getID()) & hashMask;
+        const BodyPair* lastPair = &mOverlappingPairs[indexLastPair];
+        const uint lastPairHashValue = computeHashBodies(lastPair->body1->getID(),
+                                                         lastPair->body2->getID()) & mHashMask;
         
         // Compute the initial offset of the last pair
-        bodyindex offset = hashTable[lastPairHashValue];
+        bodyindex offset = mHashTable[lastPairHashValue];
         assert(offset != INVALID_INDEX);
         
         // Go through the pairs with the same hash value
@@ -196,29 +199,29 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
         bodyindex previous = INVALID_INDEX;
         while(offset != indexLastPair) {
            previous = offset;
-           offset = offsetNextPair[offset];
+           offset = mOffsetNextPair[offset];
         }
         
         // If the last pair is not the first one with this hash value
         if (previous != INVALID_INDEX) {
             
             // Remove the offset of the last pair in the "nextOffset" array
-            assert(offsetNextPair[previous] == indexLastPair);
-            offsetNextPair[previous] = offsetNextPair[indexLastPair];
+            assert(mOffsetNextPair[previous] == indexLastPair);
+            mOffsetNextPair[previous] = mOffsetNextPair[indexLastPair];
         }
         else {  // If the last pair is the first offset with this hash value
             
             // Remove the offset of the last pair in the "nextOffset" array
-            hashTable[lastPairHashValue] = offsetNextPair[indexLastPair];
+            mHashTable[lastPairHashValue] = mOffsetNextPair[indexLastPair];
         }
         
         // Replace the pair to remove by the last pair in
         // the overlapping pairs array
-        overlappingPairs[indexPair] = overlappingPairs[indexLastPair];
-        offsetNextPair[indexPair] = hashTable[lastPairHashValue];
-        hashTable[lastPairHashValue] = indexPair;
+        mOverlappingPairs[indexPair] = mOverlappingPairs[indexLastPair];
+        mOffsetNextPair[indexPair] = mHashTable[lastPairHashValue];
+        mHashTable[lastPairHashValue] = indexPair;
         
-        nbOverlappingPairs--;
+        mNbOverlappingPairs--;
     }
 }                                
 
@@ -226,9 +229,9 @@ void PairManager::removePairWithHashValue(bodyindex id1, bodyindex id2, luint ha
 BodyPair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValue) const {
     
     // Look for the pair in the set of overlapping pairs
-    bodyindex offset = hashTable[hashValue];
-    while (offset != INVALID_INDEX && isDifferentPair(overlappingPairs[offset], id1, id2)) {
-        offset = offsetNextPair[offset];
+    bodyindex offset = mHashTable[hashValue];
+    while (offset != INVALID_INDEX && isDifferentPair(mOverlappingPairs[offset], id1, id2)) {
+        offset = mOffsetNextPair[offset];
     }
     
     // If the pair has not been found in the overlapping pairs
@@ -237,50 +240,51 @@ BodyPair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValu
         return 0;
     }
     
-    assert(offset < nbOverlappingPairs);
+    assert(offset < mNbOverlappingPairs);
     
     // The pair has been found in the set of overlapping pairs, then
     // we return a pointer to it
-    return &overlappingPairs[offset];
+    return &mOverlappingPairs[offset];
 }
 
 // Reallocate more pairs
 void PairManager::reallocatePairs() {
     
     // Reallocate the hash table and initialize it
-    free(hashTable);
-    hashTable = (bodyindex*) malloc(nbElementsHashTable * sizeof(bodyindex));
-    assert(hashTable);
-    for (bodyindex i=0; i<nbElementsHashTable; i++) {
-        hashTable[i] = INVALID_INDEX;
+    free(mHashTable);
+    mHashTable = (bodyindex*) malloc(mNbElementsHashTable * sizeof(bodyindex));
+    assert(mHashTable);
+    for (bodyindex i=0; i<mNbElementsHashTable; i++) {
+        mHashTable[i] = INVALID_INDEX;
     }
     
     // Reallocate the overlapping pairs
-    BodyPair* newOverlappingPairs = (BodyPair*) malloc(nbElementsHashTable * sizeof(BodyPair));
-    bodyindex* newOffsetNextPair = (bodyindex*) malloc(nbElementsHashTable * sizeof(bodyindex));
+    BodyPair* newOverlappingPairs = (BodyPair*) malloc(mNbElementsHashTable * sizeof(BodyPair));
+    bodyindex* newOffsetNextPair = (bodyindex*) malloc(mNbElementsHashTable * sizeof(bodyindex));
     
     assert(newOverlappingPairs);
     assert(newOffsetNextPair);
     
     // If there is already some overlapping pairs
-    if (nbOverlappingPairs) {
+    if (mNbOverlappingPairs) {
         // Copy the pairs to the new location
-        memcpy(newOverlappingPairs, overlappingPairs, nbOverlappingPairs * sizeof(BodyPair));
+        memcpy(newOverlappingPairs, mOverlappingPairs, mNbOverlappingPairs * sizeof(BodyPair));
     }
     
     // Recompute the hash table with the new hash values
-    for (bodyindex i=0; i<nbOverlappingPairs; i++) {
-        const uint newHashValue = computeHashBodies(overlappingPairs[i].body1->getID(), overlappingPairs[i].body2->getID()) & hashMask;
-        newOffsetNextPair[i] = hashTable[newHashValue];
-        hashTable[newHashValue] = i;
+    for (bodyindex i=0; i<mNbOverlappingPairs; i++) {
+        const uint newHashValue = computeHashBodies(mOverlappingPairs[i].body1->getID(),
+                                                   mOverlappingPairs[i].body2->getID()) & mHashMask;
+        newOffsetNextPair[i] = mHashTable[newHashValue];
+        mHashTable[newHashValue] = i;
     }
     
     // Delete the old pairs
-    free(offsetNextPair);
-    free(overlappingPairs);
+    free(mOffsetNextPair);
+    free(mOverlappingPairs);
     
     // Replace by the new data
-    overlappingPairs = newOverlappingPairs;
-    offsetNextPair = newOffsetNextPair;
+    mOverlappingPairs = newOverlappingPairs;
+    mOffsetNextPair = newOffsetNextPair;
 }                                
 

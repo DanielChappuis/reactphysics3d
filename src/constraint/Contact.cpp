@@ -31,15 +31,18 @@ using namespace std;
 
 // Constructor
 Contact::Contact(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo)
-        : Constraint(body1, body2, 3, true, CONTACT), normal(contactInfo->normal), penetrationDepth(contactInfo->penetrationDepth),
-          localPointOnBody1(contactInfo->localPoint1), localPointOnBody2(contactInfo->localPoint2),
-          worldPointOnBody1(body1->getTransform() * contactInfo->localPoint1), worldPointOnBody2(body2->getTransform() * contactInfo->localPoint2) {
-    assert(penetrationDepth > 0.0);
+        : Constraint(body1, body2, 3, true, CONTACT), mNormal(contactInfo->normal),
+          mPenetrationDepth(contactInfo->penetrationDepth),
+          mLocalPointOnBody1(contactInfo->localPoint1),
+          mLocalPointOnBody2(contactInfo->localPoint2),
+          mWorldPointOnBody1(body1->getTransform() * contactInfo->localPoint1),
+          mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2) {
+    assert(mPenetrationDepth > 0.0);
     
     // Compute the auxiliary lower and upper bounds
     // TODO : Now mC is only the mass of the first body but it is probably wrong
     // TODO : Now g is 9.81 but we should use the true gravity value of the physics world.
-    mu_mc_g = FRICTION_COEFFICIENT * body1->getMass() * 9.81;
+    mMu_mc_g = FRICTION_COEFFICIENT * body1->getMass() * 9.81;
 
     // Compute the friction vectors that span the tangential friction plane
     computeFrictionVectors();
@@ -56,30 +59,30 @@ Contact::~Contact() {
 // of the contact. The argument "noConstraint", is the row were the method have
 // to start to fill in the J_sp matrix.
 void Contact::computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const {
-    assert(body1);
-    assert(body2);
+    assert(mBody1);
+    assert(mBody2);
 
-    Vector3 body1Position = body1->getTransform().getPosition();
-    Vector3 body2Position = body2->getTransform().getPosition();
+    Vector3 body1Position = mBody1->getTransform().getPosition();
+    Vector3 body2Position = mBody2->getTransform().getPosition();
     int currentIndex = noConstraint;                        // Current constraint index
 
-    Vector3 r1 = worldPointOnBody1 - body1Position;
-    Vector3 r2 = worldPointOnBody2 - body2Position;
-    Vector3 r1CrossN = r1.cross(normal);
-    Vector3 r2CrossN = r2.cross(normal);
+    Vector3 r1 = mWorldPointOnBody1 - body1Position;
+    Vector3 r2 = mWorldPointOnBody2 - body2Position;
+    Vector3 r1CrossN = r1.cross(mNormal);
+    Vector3 r2CrossN = r2.cross(mNormal);
 
     // Compute the jacobian matrix for the body 1 for the contact constraint
-    J_sp[currentIndex][0] = -normal.getX();
-    J_sp[currentIndex][1] = -normal.getY();
-    J_sp[currentIndex][2] = -normal.getZ();
+    J_sp[currentIndex][0] = -mNormal.getX();
+    J_sp[currentIndex][1] = -mNormal.getY();
+    J_sp[currentIndex][2] = -mNormal.getZ();
     J_sp[currentIndex][3] = -r1CrossN.getX();
     J_sp[currentIndex][4] = -r1CrossN.getY();
     J_sp[currentIndex][5] = -r1CrossN.getZ();
 
     // Compute the jacobian matrix for the body 2 for the contact constraint
-    J_sp[currentIndex][6] = normal.getX();
-    J_sp[currentIndex][7] = normal.getY();
-    J_sp[currentIndex][8] = normal.getZ();
+    J_sp[currentIndex][6] = mNormal.getX();
+    J_sp[currentIndex][7] = mNormal.getY();
+    J_sp[currentIndex][8] = mNormal.getZ();
     J_sp[currentIndex][9] = r2CrossN.getX();
     J_sp[currentIndex][10] = r2CrossN.getY();
     J_sp[currentIndex][11] = r2CrossN.getZ();
@@ -87,21 +90,21 @@ void Contact::computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS]
     currentIndex++;
 
     // Compute the jacobian matrix for the body 1 for the first friction constraint
-    Vector3 r1CrossU1 = r1.cross(frictionVectors[0]);
-    Vector3 r2CrossU1 = r2.cross(frictionVectors[0]);
-    Vector3 r1CrossU2 = r1.cross(frictionVectors[1]);
-    Vector3 r2CrossU2 = r2.cross(frictionVectors[1]);
-    J_sp[currentIndex][0] = -frictionVectors[0].getX();
-    J_sp[currentIndex][1] = -frictionVectors[0].getY();
-    J_sp[currentIndex][2] = -frictionVectors[0].getZ();
+    Vector3 r1CrossU1 = r1.cross(mFrictionVectors[0]);
+    Vector3 r2CrossU1 = r2.cross(mFrictionVectors[0]);
+    Vector3 r1CrossU2 = r1.cross(mFrictionVectors[1]);
+    Vector3 r2CrossU2 = r2.cross(mFrictionVectors[1]);
+    J_sp[currentIndex][0] = -mFrictionVectors[0].getX();
+    J_sp[currentIndex][1] = -mFrictionVectors[0].getY();
+    J_sp[currentIndex][2] = -mFrictionVectors[0].getZ();
     J_sp[currentIndex][3] = -r1CrossU1.getX();
     J_sp[currentIndex][4] = -r1CrossU1.getY();
     J_sp[currentIndex][5] = -r1CrossU1.getZ();
 
     // Compute the jacobian matrix for the body 2 for the first friction constraint
-    J_sp[currentIndex][6] = frictionVectors[0].getX();
-    J_sp[currentIndex][7] = frictionVectors[0].getY();
-    J_sp[currentIndex][8] = frictionVectors[0].getZ();
+    J_sp[currentIndex][6] = mFrictionVectors[0].getX();
+    J_sp[currentIndex][7] = mFrictionVectors[0].getY();
+    J_sp[currentIndex][8] = mFrictionVectors[0].getZ();
     J_sp[currentIndex][9] = r2CrossU1.getX();
     J_sp[currentIndex][10] = r2CrossU1.getY();
     J_sp[currentIndex][11] = r2CrossU1.getZ();
@@ -109,17 +112,17 @@ void Contact::computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS]
     currentIndex++;
 
     // Compute the jacobian matrix for the body 1 for the second friction constraint
-    J_sp[currentIndex][0] = -frictionVectors[1].getX();
-    J_sp[currentIndex][1] = -frictionVectors[1].getY();
-    J_sp[currentIndex][2] = -frictionVectors[1].getZ();
+    J_sp[currentIndex][0] = -mFrictionVectors[1].getX();
+    J_sp[currentIndex][1] = -mFrictionVectors[1].getY();
+    J_sp[currentIndex][2] = -mFrictionVectors[1].getZ();
     J_sp[currentIndex][3] = -r1CrossU2.getX();
     J_sp[currentIndex][4] = -r1CrossU2.getY();
     J_sp[currentIndex][5] = -r1CrossU2.getZ();
 
     // Compute the jacobian matrix for the body 2 for the second friction constraint
-    J_sp[currentIndex][6] = frictionVectors[1].getX();
-    J_sp[currentIndex][7] = frictionVectors[1].getY();
-    J_sp[currentIndex][8] = frictionVectors[1].getZ();
+    J_sp[currentIndex][6] = mFrictionVectors[1].getX();
+    J_sp[currentIndex][7] = mFrictionVectors[1].getY();
+    J_sp[currentIndex][8] = mFrictionVectors[1].getZ();
     J_sp[currentIndex][9] = r2CrossU2.getX();
     J_sp[currentIndex][10] = r2CrossU2.getY();
     J_sp[currentIndex][11] = r2CrossU2.getZ();
@@ -129,42 +132,42 @@ void Contact::computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS]
 // argument "lowerBounds" is the lowerbounds values vector of the constraint solver and
 // this methods has to fill in this vector starting from the row "noConstraint"
 void Contact::computeLowerBound(int noConstraint, decimal lowerBounds[NB_MAX_CONSTRAINTS]) const {
-    assert(noConstraint >= 0 && noConstraint + nbConstraints <= NB_MAX_CONSTRAINTS);
+    assert(noConstraint >= 0 && noConstraint + mNbConstraints <= NB_MAX_CONSTRAINTS);
 
-    lowerBounds[noConstraint] = 0.0;                // Lower bound for the contact constraint
-    lowerBounds[noConstraint + 1] = -mu_mc_g;       // Lower bound for the first friction constraint
-    lowerBounds[noConstraint + 2] = -mu_mc_g;       // Lower bound for the second friction constraint
+    lowerBounds[noConstraint] = 0.0;            // Lower bound for the contact constraint
+    lowerBounds[noConstraint + 1] = -mMu_mc_g;  // Lower bound for the first friction constraint
+    lowerBounds[noConstraint + 2] = -mMu_mc_g;  // Lower bound for the second friction constraint
 }
 
 // Compute the upperbounds values for all the mathematical constraints. The
 // argument "upperBounds" is the upperbounds values vector of the constraint solver and
 // this methods has to fill in this vector starting from the row "noConstraint"
 void Contact::computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CONSTRAINTS]) const {
-    assert(noConstraint >= 0 && noConstraint + nbConstraints <= NB_MAX_CONSTRAINTS);
+    assert(noConstraint >= 0 && noConstraint + mNbConstraints <= NB_MAX_CONSTRAINTS);
 
-    upperBounds[noConstraint] = DECIMAL_INFINITY;    // Upper bound for the contact constraint
-    upperBounds[noConstraint + 1] = mu_mc_g;       // Upper bound for the first friction constraint
-    upperBounds[noConstraint + 2] = mu_mc_g;       // Upper bound for the second friction constraint
+    upperBounds[noConstraint] = DECIMAL_INFINITY; // Upper bound for the contact constraint
+    upperBounds[noConstraint + 1] = mMu_mc_g;     // Upper bound for the first friction constraint
+    upperBounds[noConstraint + 2] = mMu_mc_g;     // Upper bound for the second friction constraint
 }
 
 // Compute the error values for all the mathematical constraints. The argument
 // "errorValues" is the error values vector of the constraint solver and this
 // method has to fill in this vector starting from the row "noConstraint"
 void Contact::computeErrorValue(int noConstraint, decimal errorValues[]) const {
-    assert(body1);
-    assert(body2);
+    assert(mBody1);
+    assert(mBody2);
 
 	// TODO : Do we need this casting anymore ?
-    RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
-    RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
+    RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(mBody1);
+    RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(mBody2);
 
-    assert(noConstraint >= 0 && noConstraint + nbConstraints <= NB_MAX_CONSTRAINTS);
+    assert(noConstraint >= 0 && noConstraint + mNbConstraints <= NB_MAX_CONSTRAINTS);
 
     // Compute the error value for the contact constraint
     Vector3 velocity1 = rigidBody1->getLinearVelocity();
     Vector3 velocity2 = rigidBody2->getLinearVelocity();
     decimal restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
-    decimal errorValue = restitutionCoeff * (normal.dot(velocity1) - normal.dot(velocity2));
+    decimal errorValue = restitutionCoeff * (mNormal.dot(velocity1) - mNormal.dot(velocity2));
     
     // Assign the error value to the vector of error values
     errorValues[noConstraint] = errorValue;    // Error value for contact constraint

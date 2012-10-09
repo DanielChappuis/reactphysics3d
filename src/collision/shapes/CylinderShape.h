@@ -43,57 +43,92 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class CylinderShape : public CollisionShape {
+
     private :
-        decimal radius;              // Radius of the base
-        decimal halfHeight;          // Half height of the cone
+
+        // -------------------- Attributes -------------------- //
+
+        // Radius of the base
+        decimal mRadius;
+
+        // Half height of the cone
+        decimal mHalfHeight;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        CylinderShape(const CylinderShape& shape);
+
+        // Private assignment operator
+        CylinderShape& operator=(const CylinderShape& shape);
 
     public :
-        CylinderShape(decimal radius, decimal height);      // Constructor
-        virtual ~CylinderShape();                           // Destructor
 
-        decimal getRadius() const;                                                                   // Return the radius
-        void setRadius(decimal radius);                                                              // Set the radius
-        decimal getHeight() const;                                                                   // Return the height
-        void setHeight(decimal height);                                                              // Set the height
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;    // Return a support point in a given direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;                                   // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;               // Return the local inertia tensor of the collision shape
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        CylinderShape(decimal radius, decimal height);
+
+        // Destructor
+        virtual ~CylinderShape();
+
+        // Return the radius
+        decimal getRadius() const;
+
+        // Set the radius
+        void setRadius(decimal mRadius);
+
+        // Return the height
+        decimal getHeight() const;
+
+        // Set the height
+        void setHeight(decimal height);
+
+        // Return a support point in a given direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;
+
+        // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
+
+        // Return the local inertia tensor of the collision shape
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
 #ifdef VISUAL_DEBUG
-        virtual void draw() const;                              // Draw the sphere (only for testing purpose)
+        // Draw the sphere (only for testing purpose)
+        virtual void draw() const;
 #endif
 };
 
 // Return the radius
 inline decimal CylinderShape::getRadius() const {
-    return radius;
+    return mRadius;
 }
 
 // Set the radius
 inline void CylinderShape::setRadius(decimal radius) {
-    this->radius = radius;
+    this->mRadius = radius;
 }
 
 // Return the height
 inline decimal CylinderShape::getHeight() const {
-    return halfHeight * 2.0;
+    return mHalfHeight * 2.0;
 }
 
 // Set the height
 inline void CylinderShape::setHeight(decimal height) {
-    this->halfHeight = height / 2.0;
+    this->mHalfHeight = height / 2.0;
 }
 
 // Return the local extents in x,y and z direction
 inline Vector3 CylinderShape::getLocalExtents(decimal margin) const {
-    return Vector3(radius + margin, halfHeight + margin, radius + margin);
+    return Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
 }
 
 // Return the local inertia tensor of the cylinder
 inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal height = 2.0 * halfHeight;
-    decimal diag = (1.0 / 12.0) * mass * (3 * radius * radius + height * height);
-    tensor.setAllValues(diag, 0.0, 0.0, 0.0, 0.5 * mass * radius * radius, 0.0, 0.0, 0.0, diag);
+    decimal height = 2.0 * mHalfHeight;
+    decimal diag = (1.0 / 12.0) * mass * (3 * mRadius * mRadius + height * height);
+    tensor.setAllValues(diag, 0.0, 0.0, 0.0, 0.5 * mass * mRadius * mRadius, 0.0, 0.0, 0.0, diag);
 }
 
 }; // End of the ReactPhysics3D namespace

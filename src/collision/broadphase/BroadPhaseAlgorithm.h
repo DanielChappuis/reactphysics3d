@@ -51,39 +51,68 @@ class CollisionDetection;
     --------------------------------------------------------------------
 */
 class BroadPhaseAlgorithm {
+
     protected :
-        PairManager pairManager;                        // Pair manager that contains the active pairs of bodies
-        CollisionDetection& collisionDetection;         // Reference to the collision detection object
+
+        // -------------------- Attributes -------------------- //
+
+        // Pair manager containing the overlapping pairs
+        PairManager mPairManager;
+
+        // Reference to the collision detection object
+        CollisionDetection& mCollisionDetection;
         
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm);
+
+        // Private assignment operator
+        BroadPhaseAlgorithm& operator=(const BroadPhaseAlgorithm& algorithm);
+
     public :
-        BroadPhaseAlgorithm(CollisionDetection& collisionDetection);    // Constructor
-        virtual ~BroadPhaseAlgorithm();                                 // Destructor
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        BroadPhaseAlgorithm(CollisionDetection& collisionDetection);
+
+        // Destructor
+        virtual ~BroadPhaseAlgorithm();
         
         // TODO : DELETE THIS METHOD
         uint getNbOverlappingPairs() const;
         
-        virtual void addObject(CollisionBody* body, const AABB& aabb)=0;         // Notify the broad-phase about a new object in the world
-        virtual void removeObject(CollisionBody* body)=0;                        // Notify the broad-phase about an object that has been removed from the world
-        virtual void updateObject(CollisionBody* body, const AABB& aabb)=0;      // Notify the broad-phase that the AABB of an object has changed
+        // Notify the broad-phase about a new object in the world
+        virtual void addObject(CollisionBody* body, const AABB& aabb)=0;
 
-        BodyPair* beginOverlappingPairsPointer() const;                                                       // Return a pointer to the first active pair (used to iterate over the active pairs)
-        BodyPair* endOverlappingPairsPointer() const;                                                         // Return a pointer to the last active pair (used to iterate over the active pairs)
+        // Notify the broad-phase about an object that has been removed from the world
+        virtual void removeObject(CollisionBody* body)=0;
+
+        // Notify the broad-phase that the AABB of an object has changed
+        virtual void updateObject(CollisionBody* body, const AABB& aabb)=0;
+
+        // Return a pointer to the first active pair (used to iterate over the active pairs)
+        BodyPair* beginOverlappingPairsPointer() const;
+
+        // Return a pointer to the last active pair (used to iterate over the active pairs)
+        BodyPair* endOverlappingPairsPointer() const;
 };
 
 // TODO : DELETE THIS METHOD
 inline uint BroadPhaseAlgorithm::getNbOverlappingPairs() const {
-    return pairManager.getNbOverlappingPairs();
+    return mPairManager.getNbOverlappingPairs();
 }
 
 
 // Return a pointer to the first active pair (used to iterate over the overlapping pairs)
 inline BodyPair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
-    return pairManager.beginOverlappingPairsPointer();
+    return mPairManager.beginOverlappingPairsPointer();
 }                                                           
 
 // Return a pointer to the last active pair (used to iterate over the overlapping pairs)
 inline BodyPair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
-   return pairManager.endOverlappingPairsPointer(); 
+   return mPairManager.endOverlappingPairsPointer();
 }   
 
 } // End of reactphysics3d namespace

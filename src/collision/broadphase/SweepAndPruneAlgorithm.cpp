@@ -47,20 +47,20 @@ AABBInt::AABBInt(const AABB& aabb) {
 // Constructor
 SweepAndPruneAlgorithm::SweepAndPruneAlgorithm(CollisionDetection& collisionDetection)
              :BroadPhaseAlgorithm(collisionDetection) {
-    boxes = 0;
-    endPoints[0] = 0;
-    endPoints[1] = 0;
-    endPoints[2] = 0;
-    nbBoxes = 0;
-    nbMaxBoxes = 0;
+    mBoxes = 0;
+    mEndPoints[0] = 0;
+    mEndPoints[1] = 0;
+    mEndPoints[2] = 0;
+    mNbBoxes = 0;
+    mNbMaxBoxes = 0;
 }
 
 // Destructor
 SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
-    delete[] boxes;
-    delete[] endPoints[0];
-    delete[] endPoints[1];
-    delete[] endPoints[2];
+    delete[] mBoxes;
+    delete[] mEndPoints[0];
+    delete[] mEndPoints[1];
+    delete[] mEndPoints[2];
 }
 
 // Notify the broad-phase about a new object in the world
@@ -71,50 +71,50 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     // If the index of the first free box is valid (means that
     // there is a bucket in the middle of the array that doesn't
     // contain a box anymore because it has been removed)
-    if (!freeBoxIndices.empty()) {
-        boxIndex = freeBoxIndices.back();
-        freeBoxIndices.pop_back();
+    if (!mFreeBoxIndices.empty()) {
+        boxIndex = mFreeBoxIndices.back();
+        mFreeBoxIndices.pop_back();
     }
     else {
         // If the array boxes and end-points arrays are full
-        if (nbBoxes == nbMaxBoxes) {
+        if (mNbBoxes == mNbMaxBoxes) {
             // Resize the arrays to make them larger
             resizeArrays();
         }
         
-        boxIndex = nbBoxes;
+        boxIndex = mNbBoxes;
     }
     
     // Move the maximum limit end-point two elements further
     // at the end-points array in all three axis
     const luint nbSentinels = 2;
-    const luint indexLimitEndPoint = 2 * nbBoxes + nbSentinels - 1;
+    const luint indexLimitEndPoint = 2 * mNbBoxes + nbSentinels - 1;
     for (uint axis=0; axis<3; axis++) {
-        EndPoint* maxLimitEndPoint = &endPoints[axis][indexLimitEndPoint];
-        assert(endPoints[axis][0].boxID == INVALID_INDEX && endPoints[axis][0].isMin == true);
+        EndPoint* maxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint];
+        assert(mEndPoints[axis][0].boxID == INVALID_INDEX && mEndPoints[axis][0].isMin == true);
         assert(maxLimitEndPoint->boxID == INVALID_INDEX && maxLimitEndPoint->isMin == false);
-        EndPoint* newMaxLimitEndPoint = &endPoints[axis][indexLimitEndPoint + 2];
+        EndPoint* newMaxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint + 2];
         newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin, maxLimitEndPoint->value);
     }
     
     // Create a new box
-    BoxAABB* box = &boxes[boxIndex];
+    BoxAABB* box = &mBoxes[boxIndex];
     box->body = body;
     const uint minEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 2.0);
     const uint maxEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 1.0);
     for (uint axis=0; axis<3; axis++) {
         box->min[axis] = indexLimitEndPoint;
         box->max[axis] = indexLimitEndPoint + 1;
-        EndPoint* minimumEndPoint = &endPoints[axis][box->min[axis]];
+        EndPoint* minimumEndPoint = &mEndPoints[axis][box->min[axis]];
         minimumEndPoint->setValues(body->getID(), true, minEndPointValue);
-        EndPoint* maximumEndPoint = &endPoints[axis][box->max[axis]];
+        EndPoint* maximumEndPoint = &mEndPoints[axis][box->max[axis]];
         maximumEndPoint->setValues(body->getID(), false, maxEndPointValue);
     }
     
     // Add the body pointer to box index mapping
-    mapBodyToBoxIndex.insert(pair<CollisionBody*, bodyindex>(body, boxIndex));
+    mMapBodyToBoxIndex.insert(pair<CollisionBody*, bodyindex>(body, boxIndex));
     
-    nbBoxes++;
+    mNbBoxes++;
 
     // Call the update method to put the end-points of the new AABB at the
     // correct position in the array. This will also create the overlapping
@@ -134,14 +134,14 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
     updateObject(body, aabb);
 
     // Get the corresponding box
-    bodyindex boxIndex = mapBodyToBoxIndex[body];
-    BoxAABB* box = &boxes[boxIndex];
+    bodyindex boxIndex = mMapBodyToBoxIndex[body];
+    BoxAABB* box = &mBoxes[boxIndex];
 
     // Add the box index into the list of free indices
-    freeBoxIndices.push_back(boxIndex);
+    mFreeBoxIndices.push_back(boxIndex);
 
-    mapBodyToBoxIndex.erase(body);
-    nbBoxes--;
+    mMapBodyToBoxIndex.erase(body);
+    mNbBoxes--;
 } 
         
 // Notify the broad-phase that the AABB of an object has changed
@@ -151,8 +151,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
     AABBInt aabbInt(aabb);
     
     // Get the corresponding box
-    bodyindex boxIndex = mapBodyToBoxIndex[body];
-    BoxAABB* box = &boxes[boxIndex];
+    bodyindex boxIndex = mMapBodyToBoxIndex[body];
+    BoxAABB* box = &mBoxes[boxIndex];
         
     // Current axis
     for (uint axis=0; axis<3; axis++) {
@@ -162,7 +162,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
         const uint otherAxis2 = (1 << otherAxis1) & 3;
         
         // Get the starting end-point of the current axis
-        EndPoint* startEndPointsCurrentAxis = endPoints[axis];
+        EndPoint* startEndPointsCurrentAxis = mEndPoints[axis];
         
         // -------- Update the minimum end-point ------------//
         
@@ -184,7 +184,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             const luint savedEndPointIndex = indexEndPoint;
             
             while ((--currentMinEndPoint)->value > limit) {
-                BoxAABB* id1 = &boxes[currentMinEndPoint->boxID];
+                BoxAABB* id1 = &mBoxes[currentMinEndPoint->boxID];
                 const bool isMin = currentMinEndPoint->isMin;
                 
                 // If it's a maximum end-point
@@ -198,7 +198,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                             testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis, axis)) {
                             
                             // Add an overlapping pair to the pair manager
-                            pairManager.addPair(body, id1->body);
+                            mPairManager.addPair(body, id1->body);
                         }
                     }
                     
@@ -214,10 +214,10 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // Update the current minimum endpoint that we are moving
             if (savedEndPointIndex != indexEndPoint) {
                 if (savedEndPoint.isMin) {
-                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
                 }
                 else {
-                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
                 }
 
                 startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
@@ -235,7 +235,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // For each end-point between the current position of the minimum
             // end-point and the new position of the minimum end-point
             while ((++currentMinEndPoint)->value < limit) {
-                BoxAABB* id1 = &boxes[currentMinEndPoint->boxID];
+                BoxAABB* id1 = &mBoxes[currentMinEndPoint->boxID];
                 const bool isMin = currentMinEndPoint->isMin;
                 
                 // If it's a maximum end-point
@@ -247,7 +247,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                         if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2)) {
                             
                             // Remove the pair from the pair manager
-                            pairManager.removePair(body->getID(), id1->body->getID());
+                            mPairManager.removePair(body->getID(), id1->body->getID());
                         }
                     }
                     
@@ -263,10 +263,10 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // Update the current minimum endpoint that we are moving
             if (savedEndPointIndex != indexEndPoint) {
                 if (savedEndPoint.isMin) {
-                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
                 }
                 else {
-                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
                 }
 
                 startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
@@ -295,7 +295,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             while ((++currentMaxEndPoint)->value < limit) {
                 
                 // Get the next end-point
-                BoxAABB* id1 = &boxes[currentMaxEndPoint->boxID];
+                BoxAABB* id1 = &mBoxes[currentMaxEndPoint->boxID];
                 const bool isMin = currentMaxEndPoint->isMin;
                 
                 // If it's a maximum end-point
@@ -309,7 +309,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                             testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis,axis)) {
                             
                             // Add an overlapping pair to the pair manager
-                            pairManager.addPair(body, id1->body);
+                            mPairManager.addPair(body, id1->body);
                         }
                     }
                     
@@ -325,10 +325,10 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // Update the current minimum endpoint that we are moving
             if (savedEndPointIndex != indexEndPoint) {
                 if (savedEndPoint.isMin) {
-                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
                 }
                 else {
-                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
                 }
 
                 startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
@@ -344,7 +344,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // For each end-point between the current position of the maximum
             // end-point and the new position of the maximum end-point
             while ((--currentMaxEndPoint)->value > limit) {
-                BoxAABB* id1 = &boxes[currentMaxEndPoint->boxID];
+                BoxAABB* id1 = &mBoxes[currentMaxEndPoint->boxID];
                 const bool isMin = currentMaxEndPoint->isMin;
                 
                 // If it's a minimum end-point
@@ -356,7 +356,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                         if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2)) {
                             
                             // Remove the pair from the pair manager
-                            pairManager.removePair(body->getID(), id1->body->getID());
+                            mPairManager.removePair(body->getID(), id1->body->getID());
                         }
                     }
                     
@@ -372,10 +372,10 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             // Update the current minimum endpoint that we are moving
             if (savedEndPointIndex != indexEndPoint) {
                 if (savedEndPoint.isMin) {
-                    boxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].min[axis] = indexEndPoint;
                 }
                 else {
-                    boxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
+                    mBoxes[savedEndPoint.boxID].max[axis] = indexEndPoint;
                 }
 
                 startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
@@ -389,8 +389,8 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     
     // New number of boxes in the array
     const luint nbSentinels = 2;
-    const luint newNbMaxBoxes = nbMaxBoxes ? 2 * nbMaxBoxes : 100;
-    const luint nbEndPoints = nbBoxes * 2 + nbSentinels;
+    const luint newNbMaxBoxes = mNbMaxBoxes ? 2 * mNbMaxBoxes : 100;
+    const luint nbEndPoints = mNbBoxes * 2 + nbSentinels;
     const luint newNbEndPoints = newNbMaxBoxes * 2 + nbSentinels;
     
     // Allocate memory for the new boxes and end-points arrays
@@ -405,14 +405,14 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     assert(newEndPointsZArray);
     
     // If the arrays were not empty before
-    if (nbBoxes > 0) {
+    if (mNbBoxes > 0) {
         
         // Copy the data in the old arrays into the new one
-        memcpy(newBoxesArray, boxes, sizeof(BoxAABB) * nbBoxes);
+        memcpy(newBoxesArray, mBoxes, sizeof(BoxAABB) * mNbBoxes);
         size_t nbBytesNewEndPoints = sizeof(EndPoint) * nbEndPoints;
-        memcpy(newEndPointsXArray, endPoints[0], nbBytesNewEndPoints);
-        memcpy(newEndPointsYArray, endPoints[1], nbBytesNewEndPoints);
-        memcpy(newEndPointsZArray, endPoints[2], nbBytesNewEndPoints);
+        memcpy(newEndPointsXArray, mEndPoints[0], nbBytesNewEndPoints);
+        memcpy(newEndPointsYArray, mEndPoints[1], nbBytesNewEndPoints);
+        memcpy(newEndPointsZArray, mEndPoints[2], nbBytesNewEndPoints);
     }
     else {   // If the arrays were empty
         
@@ -428,16 +428,16 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     }
 
     // Delete the old arrays
-    delete[] boxes;
-    delete[] endPoints[0];
-    delete[] endPoints[1];
-    delete[] endPoints[2];
+    delete[] mBoxes;
+    delete[] mEndPoints[0];
+    delete[] mEndPoints[1];
+    delete[] mEndPoints[2];
     
     // Assign the pointer to the new arrays
-    boxes = newBoxesArray;
-    endPoints[0] = newEndPointsXArray;
-    endPoints[1] = newEndPointsYArray;
-    endPoints[2] = newEndPointsZArray;
+    mBoxes = newBoxesArray;
+    mEndPoints[0] = newEndPointsXArray;
+    mEndPoints[1] = newEndPointsYArray;
+    mEndPoints[2] = newEndPointsZArray;
     
-    nbMaxBoxes = newNbMaxBoxes;
+    mNbMaxBoxes = newNbMaxBoxes;
 }

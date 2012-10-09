@@ -38,28 +38,49 @@ namespace reactphysics3d {
 struct BroadPhasePair {
 
     public:
-        CollisionBody* body1;                // Pointer to the first body
-        CollisionBody* body2;                // Pointer to the second body
-        Vector3 previousSeparatingAxis;      // Previous cached separating axis
 
-        BroadPhasePair(CollisionBody* body1, CollisionBody* body2);     // Constructor
-        ~BroadPhasePair();                                              // Destructor
+        // -------------------- Attributes -------------------- //
 
-        bodyindexpair getBodiesIndexPair() const;     // Return the pair of bodies index
+        // Pointer to the first body
+        CollisionBody* body1;
 
-        // Operators
-        bool operator<(const BroadPhasePair& broadPhasePair2) const;    // Smaller than operator
-        bool operator>(const BroadPhasePair& broadPhasePair2) const;    // Larger than operator
-        bool operator==(const BroadPhasePair& broadPhasePair2) const;   // Equal operator
-        bool operator!=(const BroadPhasePair& broadPhasePair2) const;   // Not equal operator
+        // Pointer to the second body
+        CollisionBody* body2;
+
+        // Previous cached separating axis
+        Vector3 previousSeparatingAxis;
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        BroadPhasePair(CollisionBody* body1, CollisionBody* body2);
+
+        // Destructor
+        ~BroadPhasePair();
+
+        // Return the pair of bodies index
+        bodyindexpair getBodiesIndexPair() const;
+
+        // Smaller than operator
+        bool operator<(const BroadPhasePair& broadPhasePair2) const;
+
+        // Larger than operator
+        bool operator>(const BroadPhasePair& broadPhasePair2) const;
+
+        // Equal operator
+        bool operator==(const BroadPhasePair& broadPhasePair2) const;
+
+        // Not equal operator
+        bool operator!=(const BroadPhasePair& broadPhasePair2) const;
 };
 
 // Return the pair of bodies index
 inline bodyindexpair BroadPhasePair::getBodiesIndexPair() const {
 
     // Construct the pair of body index
-   bodyindexpair indexPair = body1->getID() < body2->getID() ? std::make_pair(body1->getID(), body2->getID()) :
-                                                            std::make_pair(body2->getID(), body1->getID());
+   bodyindexpair indexPair = body1->getID() < body2->getID() ?
+                                 std::make_pair(body1->getID(), body2->getID()) :
+                                 std::make_pair(body2->getID(), body1->getID());
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }

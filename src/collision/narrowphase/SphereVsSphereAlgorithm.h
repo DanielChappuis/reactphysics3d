@@ -42,15 +42,33 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
+
     protected :
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm);
+
+        // Private assignment operator
+        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm);
         
     public :
-        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);       // Constructor
-        virtual ~SphereVsSphereAlgorithm();                                             // Destructor
 
-        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
-                                   const CollisionShape* collisionShape2, const Transform& transform2,
-                                   ContactInfo*& contactInfo);  // Return true and compute a contact info if the two bounding volume collide
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+
+        // Destructor
+        virtual ~SphereVsSphereAlgorithm();
+
+        // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const CollisionShape* collisionShape1,
+                                   const Transform& transform1,
+                                   const CollisionShape* collisionShape2,
+                                   const Transform& transform2,
+                                   ContactInfo*& contactInfo);
 };
 
 } // End of reactphysics3d namespace

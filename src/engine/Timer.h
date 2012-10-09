@@ -51,60 +51,102 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class Timer {
+
     private :
-        double timeStep;                  // Timestep dt of the physics engine (timestep > 0.0)
-        long double time;                 // Current time of the physics engine
-        long double lastUpdateTime;       // Last time the timer has been updated
-        long double deltaTime;            // Time difference between the two last timer update() calls
-        double accumulator;               // Used to fix the time step and avoid strange time effects
-        bool isRunning;                   // True if the timer is running
+
+        // -------------------- Attributes -------------------- //
+
+        // Timestep dt of the physics engine (timestep > 0.0)
+        double mTimeStep;
+
+        // Current time of the physics engine
+        long double mTime;
+
+        // Last time the timer has been updated
+        long double mLastUpdateTime;
+
+        // Time difference between the two last timer update() calls
+        long double mDeltaTime;
+
+        // Used to fix the time step and avoid strange time effects
+        double mAccumulator;
+
+        // True if the timer is running
+        bool mIsRunning;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        Timer(const Timer& timer);
+
+        // Private assignment operator
+        Timer& operator=(const Timer& timer);
 
     public :
-        Timer(double timeStep);                                                 // Constructor
-        virtual ~Timer();                                                       // Destructor
 
-        double getTimeStep() const;                                             // Return the timestep of the physics engine
-        void setTimeStep(double timeStep) throw(std::invalid_argument);         // Set the timestep of the physics engine
-        long double getTime() const;                                            // Return the current time
-        void start();                                                           // Start the timer
-        void stop();                                                            // Stop the timer
-        bool getIsRunning() const;                                              // Return true if the timer is running
-        bool isPossibleToTakeStep() const;                                      // True if it's possible to take a new step
-        void update();                                                          // Compute the time since the last update() call and add it to the accumulator
-        void nextStep();                                                        // Take a new step => update the timer by adding the timeStep value to the current time
-        double computeInterpolationFactor();                                    // Compute the interpolation factor
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        Timer(double timeStep);
+
+        // Destructor
+        virtual ~Timer();
+
+        // Return the timestep of the physics engine
+        double getTimeStep() const;
+
+        // Set the timestep of the physics engine
+        void setTimeStep(double timeStep);
+
+        // Return the current time
+        long double getTime() const;
+
+        // Start the timer
+        void start();
+
+        // Stop the timer
+        void stop();
+
+        // Return true if the timer is running
+        bool getIsRunning() const;
+
+        // True if it's possible to take a new step
+        bool isPossibleToTakeStep() const;
+
+        // Compute the time since the last update() call and add it to the accumulator
+        void update();
+
+        // Take a new step => update the timer by adding the timeStep value to the current time
+        void nextStep();
+
+        // Compute the interpolation factor
+        double computeInterpolationFactor();
 };
 
 // Return the timestep of the physics engine
 inline double Timer::getTimeStep() const {
-    return timeStep;
+    return mTimeStep;
 }
 
 // Set the timestep of the physics engine
-inline void Timer::setTimeStep(double timeStep) throw(std::invalid_argument) {
-    // Check if the timestep is different from zero
-    if (timeStep != 0.0) {
-        this->timeStep = timeStep;
-    }
-    else {
-        // We throw an exception
-        throw std::invalid_argument("Exception in Timer : the timestep has to be different from zero");
-    }
+inline void Timer::setTimeStep(double timeStep) {
+    assert(timeStep > 0.0f);
+    mTimeStep = timeStep;
 }
 
 // Return the current time
 inline long double Timer::getTime() const {
-    return time;
+    return mTime;
 }
 
 // Return if the timer is running
 inline bool Timer::getIsRunning() const {
-    return isRunning;
+    return mIsRunning;
 }
 
 // Start the timer
 inline void Timer::start() {
-    if (!isRunning) {
+    if (!mIsRunning) {
         
 #if defined(WINDOWS_OS)
         LARGE_INTEGER ticksPerSecond;
@@ -116,39 +158,39 @@ inline void Timer::start() {
         // Initialize the lastUpdateTime with the current time in seconds
         timeval timeValue;
         gettimeofday(&timeValue, NULL);
-        lastUpdateTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
+        mLastUpdateTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
 #endif
         
-        accumulator = 0.0;
-        isRunning = true;
+        mAccumulator = 0.0;
+        mIsRunning = true;
     }
 }
 
 // Stop the timer
 inline void Timer::stop() {
     std::cout << "Timer stop" << std::endl;
-    isRunning = false;
+    mIsRunning = false;
 }
 
 // True if it's possible to take a new step
 inline bool Timer::isPossibleToTakeStep() const {
-    return (accumulator >= timeStep);
+    return (mAccumulator >= mTimeStep);
 }
 
 // Take a new step => update the timer by adding the timeStep value to the current time
 inline void Timer::nextStep() {
-    assert(isRunning);
+    assert(mIsRunning);
 
     // Update the current time of the physics engine
-    time += timeStep;
+    mTime += mTimeStep;
 
     // Update the accumulator value
-    accumulator -= timeStep;
+    mAccumulator -= mTimeStep;
 }
 
 // Compute the interpolation factor
 inline double Timer::computeInterpolationFactor() {
-    return (accumulator / timeStep);
+    return (mAccumulator / mTimeStep);
 }
 
 // Compute the time since the last update() call and add it to the accumulator
@@ -169,13 +211,13 @@ inline void Timer::update() {
 #endif
     
     // Compute the delta display time between two display frames
-    deltaTime = currentTime - lastUpdateTime;
+    mDeltaTime = currentTime - mLastUpdateTime;
 
     // Update the current display time
-    lastUpdateTime = currentTime;
+    mLastUpdateTime = currentTime;
 
     // Update the accumulator value
-    accumulator += deltaTime;
+    mAccumulator += mDeltaTime;
 }
 
 } // End of the ReactPhysics3D namespace

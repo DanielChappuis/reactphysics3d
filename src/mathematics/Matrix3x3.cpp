@@ -52,6 +52,25 @@ Matrix3x3::~Matrix3x3() {
 
 }
 
+// Copy-constructor
+Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
+    setAllValues(matrix.mArray[0][0], matrix.mArray[0][1], matrix.mArray[0][2],
+                 matrix.mArray[1][0], matrix.mArray[1][1], matrix.mArray[1][2],
+                 matrix.mArray[2][0], matrix.mArray[2][1], matrix.mArray[2][2]);
+}
+
+// Assignment operator
+Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix) {
+
+    // Check for self-assignment
+    if (&matrix != this) {
+        setAllValues(matrix.mArray[0][0], matrix.mArray[0][1], matrix.mArray[0][2],
+                     matrix.mArray[1][0], matrix.mArray[1][1], matrix.mArray[1][2],
+                     matrix.mArray[2][0], matrix.mArray[2][1], matrix.mArray[2][2]);
+    }
+    return *this;
+}
+
 // Return the inverse matrix
 Matrix3x3 Matrix3x3::getInverse() const {
     // Compute the determinant of the matrix
@@ -63,9 +82,9 @@ Matrix3x3 Matrix3x3::getInverse() const {
     Matrix3x3 tempMatrix;
 
     // Compute the inverse of the matrix
-    tempMatrix.setAllValues((array[1][1]*array[2][2]-array[2][1]*array[1][2]), -(array[1][0]*array[2][2]-array[2][0]*array[1][2]), (array[1][0]*array[2][1]-array[2][0]*array[1][1]),
-                            -(array[0][1]*array[2][2]-array[2][1]*array[0][2]), (array[0][0]*array[2][2]-array[2][0]*array[0][2]), -(array[0][0]*array[2][1]-array[2][0]*array[0][1]),
-                            (array[0][1]*array[1][2]-array[0][2]*array[1][1]), -(array[0][0]*array[1][2]-array[1][0]*array[0][2]), (array[0][0]*array[1][1]-array[0][1]*array[1][0]));
+    tempMatrix.setAllValues((mArray[1][1]*mArray[2][2]-mArray[2][1]*mArray[1][2]), -(mArray[1][0]*mArray[2][2]-mArray[2][0]*mArray[1][2]), (mArray[1][0]*mArray[2][1]-mArray[2][0]*mArray[1][1]),
+                            -(mArray[0][1]*mArray[2][2]-mArray[2][1]*mArray[0][2]), (mArray[0][0]*mArray[2][2]-mArray[2][0]*mArray[0][2]), -(mArray[0][0]*mArray[2][1]-mArray[2][0]*mArray[0][1]),
+                            (mArray[0][1]*mArray[1][2]-mArray[0][2]*mArray[1][1]), -(mArray[0][0]*mArray[1][2]-mArray[1][0]*mArray[0][2]), (mArray[0][0]*mArray[1][1]-mArray[0][1]*mArray[1][0]));
 
     // Return the inverse matrix
     return (invDeterminant * tempMatrix.getTranspose());

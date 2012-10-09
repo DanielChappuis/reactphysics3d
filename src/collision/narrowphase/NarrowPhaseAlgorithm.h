@@ -47,23 +47,49 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class NarrowPhaseAlgorithm {
+
     protected :
-        MemoryPool<ContactInfo>& memoryPoolContactInfos;        // Reference to the memory pool for contact infos
-        BroadPhasePair* currentOverlappingPair;                 // Overlapping pair of the bodies currently tested for collision
+
+        // -------------------- Attributes -------------------- //
+
+        // Reference to the memory pool
+        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+
+        // Overlapping pair of the bodies currently tested for collision
+        BroadPhasePair* mCurrentOverlappingPair;
         
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm);
+
+        // Private assignment operator
+        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm);
+
     public :
-        NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);      // Constructor
-        virtual ~NarrowPhaseAlgorithm();                                // Destructor
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);
+
+        // Destructor
+        virtual ~NarrowPhaseAlgorithm();
         
-        void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);          // Set the current overlapping pair of bodies
-        virtual bool testCollision(const CollisionShape* collisionShape1, const Transform& transform1,
-                                   const CollisionShape* collisionShape2, const Transform& transform2,
-                                   ContactInfo*& contactInfo)=0;  // Return true and compute a contact info if the two bounding volume collide
+        // Set the current overlapping pair of bodies
+        void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);
+
+        // Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const CollisionShape* collisionShape1,
+                                   const Transform& transform1,
+                                   const CollisionShape* collisionShape2,
+                                   const Transform& transform2,
+                                   ContactInfo*& contactInfo)=0;
 };
 
 // Set the current overlapping pair of bodies
 inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(BroadPhasePair *overlappingPair) {
-    currentOverlappingPair = overlappingPair;
+    mCurrentOverlappingPair = overlappingPair;
 }      
 
 } // End of reactphysics3d namespace

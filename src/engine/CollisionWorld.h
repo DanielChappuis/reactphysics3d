@@ -51,41 +51,86 @@ namespace reactphysics3d {
 class CollisionWorld {
 
     protected :
-        CollisionDetection collisionDetection;                                          // Reference to the collision detection
-        std::set<CollisionBody*> bodies;                                                // All the bodies (rigid and soft) of the physics world
-        std::map<std::pair<bodyindex, bodyindex>, OverlappingPair*>  overlappingPairs;  // Broad-phase overlapping pairs of bodies
-        bodyindex currentBodyID;                                                        // Current body ID
-        MemoryPool<CollisionBody> memoryPoolCollisionBodies;                            // Memory pool for rigid bodies memory allocation
-        std::vector<luint> freeBodiesIDs;                                               // List of free ID for rigid bodies
 
-        virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);                   // Notify the world about a new broad-phase overlapping pair
-        virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);               // Notify the world about a removed broad-phase overlapping pair
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);  // Notify the world about a new narrow-phase contact
-        virtual void updateOverlappingPair(const BroadPhasePair* pair);                             // Update the overlapping pair
-        bodyindex computeNextAvailableBodyID();                                                     // Return the next available body ID
+        // -------------------- Attributes -------------------- //
 
+        // Reference to the collision detection
+        CollisionDetection mCollisionDetection;
+
+        // All the bodies (rigid and soft) of the world
+        std::set<CollisionBody*> mBodies;
+
+        // Broad-phase overlapping pairs of bodies
+        std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
+
+        // Current body ID
+        bodyindex mCurrentBodyID;
+
+        // Memory pool
+        MemoryPool<CollisionBody> mMemoryPoolCollisionBodies;
+
+        // List of free ID for rigid bodies
+        std::vector<luint> mFreeBodiesIDs;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        CollisionWorld(const CollisionWorld& world);
+
+        // Private assignment operator
+        CollisionWorld& operator=(const CollisionWorld& world);
+
+        // Notify the world about a new broad-phase overlapping pair
+        virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
+
+        // Notify the world about a removed broad-phase overlapping pair
+        virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
+
+        // Notify the world about a new narrow-phase contact
+        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
+
+        // Update the overlapping pair
+        virtual void updateOverlappingPair(const BroadPhasePair* pair);
+
+        // Return the next available body ID
+        bodyindex computeNextAvailableBodyID();
 
     public :
-        CollisionWorld();                                               // Constructor
-        virtual ~CollisionWorld();                                      // Destructor
-        std::set<CollisionBody*>::iterator getBodiesBeginIterator();    // Return an iterator to the beginning of the bodies of the physics world
-        std::set<CollisionBody*>::iterator getBodiesEndIterator();      // Return an iterator to the end of the bodies of the physics world
-        CollisionBody* createCollisionBody(const Transform& transform,
-                                           CollisionShape* collisionShape);     // Create a collision body
-        void destroyCollisionBody(CollisionBody* collisionBody);                // Destroy a collision body
 
-        // Friends
+        // ----- Methods ----- //
+
+        // Constructor
+        CollisionWorld();
+
+        // Destructor
+        virtual ~CollisionWorld();
+
+        // Return an iterator to the beginning of the bodies of the physics world
+        std::set<CollisionBody*>::iterator getBodiesBeginIterator();
+
+        // Return an iterator to the end of the bodies of the physics world
+        std::set<CollisionBody*>::iterator getBodiesEndIterator();
+
+        // Create a collision body
+        CollisionBody* createCollisionBody(const Transform& transform,
+                                           CollisionShape* collisionShape);
+
+        // Destroy a collision body
+        void destroyCollisionBody(CollisionBody* collisionBody);
+
+        // ----- Friends ----- //
+
         friend class CollisionDetection;
 };
 
 // Return an iterator to the beginning of the bodies of the physics world
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator() {
-    return bodies.begin();
+    return mBodies.begin();
 }
 
 // Return an iterator to the end of the bodies of the physics world
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
-    return bodies.end();
+    return mBodies.end();
 }
 
 }   // End of the ReactPhysics3D namespace

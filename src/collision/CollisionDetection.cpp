@@ -46,19 +46,19 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world)
-                   : world(world), narrowPhaseGJKAlgorithm(memoryPoolContactInfos),
-                     narrowPhaseSphereVsSphereAlgorithm(memoryPoolContactInfos) {
+                   : mWorld(world), mNarrowPhaseGJKAlgorithm(mMemoryPoolContactInfos),
+                     mNarrowPhaseSphereVsSphereAlgorithm(mMemoryPoolContactInfos) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
-    broadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
-    assert(broadPhaseAlgorithm);
+    mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
+    assert(mBroadPhaseAlgorithm);
 }
 
 // Destructor
 CollisionDetection::~CollisionDetection() {
     
     // Delete the broad-phase algorithm
-    delete broadPhaseAlgorithm;
+    delete mBroadPhaseAlgorithm;
 }
 
 // Compute the collision detection
@@ -90,13 +90,13 @@ bool CollisionDetection::computeCollisionDetection() {
 void CollisionDetection::computeBroadPhase() {
 
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
-    for (set<CollisionBody*>::iterator it = world->getBodiesBeginIterator(); it != world->getBodiesEndIterator(); it++) {
+    for (set<CollisionBody*>::iterator it = mWorld->getBodiesBeginIterator(); it != mWorld->getBodiesEndIterator(); it++) {
 
         // If the body has moved
         if ((*it)->getHasMoved()) {
 
             // Notify the broad-phase that the body has moved
-            broadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
+            mBroadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
         }
     }  
 }
@@ -107,7 +107,7 @@ bool CollisionDetection::computeNarrowPhase() {
     map<bodyindexpair, BroadPhasePair*>::iterator it;
     
     // For each possible collision pair of bodies
-    for (it = overlappingPairs.begin(); it != overlappingPairs.end(); it++) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
         ContactInfo* contactInfo = 0;
 
         BroadPhasePair* pair = (*it).second;
@@ -117,7 +117,7 @@ bool CollisionDetection::computeNarrowPhase() {
         CollisionBody* const body2 = pair->body2;
         
         // Update the contact cache of the overlapping pair
-        world->updateOverlappingPair(pair);
+        mWorld->updateOverlappingPair(pair);
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollisionShape(), body2->getCollisionShape());
@@ -132,11 +132,11 @@ bool CollisionDetection::computeNarrowPhase() {
             collisionExists = true;
 
             // Notify the world about the new narrow-phase contact
-            world->notifyNewContact(pair, contactInfo);
+            mWorld->notifyNewContact(pair, contactInfo);
 
             // Delete and remove the contact info from the memory pool
             contactInfo->ContactInfo::~ContactInfo();
-            memoryPoolContactInfos.freeObject(contactInfo);
+            mMemoryPoolContactInfos.freeObject(contactInfo);
         }
     }
     
@@ -151,14 +151,14 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPai
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Create the corresponding broad-phase pair object
-    BroadPhasePair* broadPhasePair = new (memoryPoolOverlappingPairs.allocateObject()) BroadPhasePair(addedPair->body1, addedPair->body2);
+    BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject()) BroadPhasePair(addedPair->body1, addedPair->body2);
     
     // Add the pair into the set of overlapping pairs (if not there yet)
-    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = overlappingPairs.insert(make_pair(indexPair, broadPhasePair));
+    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = mOverlappingPairs.insert(make_pair(indexPair, broadPhasePair));
     assert(check.second);
 
     // Notify the world about the new broad-phase overlapping pair
-    world->notifyAddedOverlappingPair(broadPhasePair);
+    mWorld->notifyAddedOverlappingPair(broadPhasePair);
 }
 
 // Allow the broadphase to notify the collision detection about a removed overlapping pair
@@ -168,14 +168,14 @@ void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* remove
     bodyindexpair indexPair = removedPair->getBodiesIndexPair();
 
     // Get the broad-phase pair
-    BroadPhasePair* broadPhasePair = overlappingPairs[indexPair];
+    BroadPhasePair* broadPhasePair = mOverlappingPairs[indexPair];
     assert(broadPhasePair);
 
     // Notify the world about the removed broad-phase pair
-    world->notifyRemovedOverlappingPair(broadPhasePair);
+    mWorld->notifyRemovedOverlappingPair(broadPhasePair);
 
     // Remove the overlapping pair from the memory pool
     broadPhasePair->BroadPhasePair::~BroadPhasePair();
-    memoryPoolOverlappingPairs.freeObject(broadPhasePair);
-    overlappingPairs.erase(indexPair);
+    mMemoryPoolBroadPhasePairs.freeObject(broadPhasePair);
+    mOverlappingPairs.erase(indexPair);
 }

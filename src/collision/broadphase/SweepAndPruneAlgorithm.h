@@ -39,40 +39,43 @@ namespace reactphysics3d {
 // EndPoint structure that represent an end-point of an AABB
 // on one of the three x,y or z axis
 struct EndPoint {
+
     public:
         
-        // TODO : Use uint here
         bodyindex boxID;            // ID of the AABB box corresponding to this end-point
         bool isMin;                 // True if the end-point is a minimum end-point of a box
         uint value;                 // Value (one dimension coordinate) of the end-point
         
-        void setValues(bodyindex boxID, bool isMin, uint value);    // Set the values of the endpoint
-};
-
-// Set the values of the endpoint
-inline void EndPoint::setValues(bodyindex boxID, bool isMin, uint value) {
-    this->boxID = boxID;
-    this->isMin = isMin;
-    this->value = value;
-}                
+        // Set the values of the endpoint
+        void setValues(bodyindex boxID, bool isMin, uint value) {
+            this->boxID = boxID;
+            this->isMin = isMin;
+            this->value = value;
+        }
+};            
 
 // Structure BoxAABB that represents an AABB in the
 // Sweep-And-Prune algorithm
 struct BoxAABB {
+
     public:
-        bodyindex min[3];       // Index of the three minimum end-points of the AABB over the axis X, Y and Z
-        bodyindex max[3];       // Index of the three maximum end-points of the AABB over the axis X, Y and Z
+
+        bodyindex min[3];       // Index of the 3 minimum end-points of the AABB over the x,y,z axis
+        bodyindex max[3];       // Index of the 3 maximum end-points of the AABB over the x,y,z axis
         CollisionBody* body;    // Body that corresponds to the owner of the AABB
 };
 
 // Structure AABBInt
 // Axis-Aligned Bounding box with integer coordinates
 struct AABBInt {
+
     public:
+
         uint min[3];            // Minimum values on the three axis
         uint max[3];            // Maximum values on the three axis
         
-        AABBInt(const AABB& aabb);      // Constructor
+        // Constructor
+        AABBInt(const AABB& aabb);
 };
 
 
@@ -87,29 +90,70 @@ struct AABBInt {
 class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
     
     protected :
-        static bodyindex INVALID_INDEX;                                 // Invalid array index
+
+        // -------------------- Attributes -------------------- //
+
+        // Invalid array index
+        static bodyindex INVALID_INDEX;
+
+        // Array that contains all the AABB boxes of the broad-phase
+        BoxAABB* mBoxes;
+
+        // Array of end-points on the three axis
+        EndPoint* mEndPoints[3];
+
+        // Number of AABB boxes in the broad-phase
+        bodyindex mNbBoxes;
+
+        // Max number of boxes in the boxes array
+        bodyindex mNbMaxBoxes;
+
+        // Indices that are not used by any boxes
+        std::vector<bodyindex> mFreeBoxIndices;
+
+        // Map a body pointer to a box index
+        std::map<CollisionBody*,bodyindex> mMapBodyToBoxIndex;
         
-        BoxAABB* boxes;                                                 // Array that contains all the AABB boxes of the broad-phase
-        EndPoint* endPoints[3];                                         // Array of end-points on the three axis
-        bodyindex nbBoxes;                                              // Number of AABB boxes in the broad-phase
-        bodyindex nbMaxBoxes;                                           // Maximum number of boxes in the boxes array
-        std::vector<bodyindex> freeBoxIndices;                          // Indices that are not used by any boxes
-        std::map<CollisionBody*, bodyindex> mapBodyToBoxIndex;          // Map a body pointer to its box index
-        
-        void resizeArrays();                                            // Resize the boxes and end-points arrays when it's full
-        void addPair(CollisionBody* body1, CollisionBody* body2);       // Add an overlapping pair of AABBS
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        SweepAndPruneAlgorithm(const SweepAndPruneAlgorithm& algorithm);
+
+        // Private assignment operator
+        SweepAndPruneAlgorithm& operator=(const SweepAndPruneAlgorithm& algorithm);
+
+        // Resize the boxes and end-points arrays when it's full
+        void resizeArrays();
+
+        // Add an overlapping pair of AABBS
+        void addPair(CollisionBody* body1, CollisionBody* body2);
+
+        // Check for 1D box intersection
         bool testIntersect1DSortedAABBs(const BoxAABB& box1, const AABBInt& box2,
-                            const EndPoint* const baseEndPoint, uint axis) const;      // Check for 1D box intersection
+                                        const EndPoint* const baseEndPoint, uint axis) const;
+
+        // Check for 2D box intersection
         bool testIntersect2D(const BoxAABB& box1, const BoxAABB& box2,
-                            luint axis1, uint axis2) const;                            // Check for 2D box intersection
+                             luint axis1, uint axis2) const;
         
     public :
-        SweepAndPruneAlgorithm(CollisionDetection& collisionDetection);   // Constructor
-        virtual ~SweepAndPruneAlgorithm();                                // Destructor
 
-        virtual void addObject(CollisionBody* body, const AABB& aabb);         // Notify the broad-phase about a new object in the world
-        virtual void removeObject(CollisionBody* body);                        // Notify the broad-phase about a object that has been removed from the world
-        virtual void updateObject(CollisionBody* body, const AABB& aabb);      // Notify the broad-phase that the AABB of an object has changed
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        SweepAndPruneAlgorithm(CollisionDetection& mCollisionDetection);
+
+        // Destructor
+        virtual ~SweepAndPruneAlgorithm();
+
+        // Notify the broad-phase about a new object in the world
+        virtual void addObject(CollisionBody* body, const AABB& aabb);
+
+        // Notify the broad-phase about a object that has been removed from the world
+        virtual void removeObject(CollisionBody* body);
+
+        // Notify the broad-phase that the AABB of an object has changed
+        virtual void updateObject(CollisionBody* body, const AABB& aabb);
 };
 
 // Encode a floating value into a integer value in order to
@@ -135,8 +179,10 @@ inline uint encodeFloatIntoInteger(float number) {
 // Check for 1D box intersection between two boxes that are sorted on the 
 // given axis. Therefore, only one test is necessary here. We know that the
 // minimum of box1 cannot be larger that the maximum of box2 on the axis.
-inline bool SweepAndPruneAlgorithm::testIntersect1DSortedAABBs(const BoxAABB& box1, const AABBInt& box2,
-                                                           const EndPoint* const endPointsArray, uint axis) const {
+inline bool SweepAndPruneAlgorithm::testIntersect1DSortedAABBs(const BoxAABB& box1,
+                                                               const AABBInt& box2,
+                                                               const EndPoint* const endPointsArray,
+                                                               uint axis) const {
     return !(endPointsArray[box1.max[axis]].value < box2.min[axis]);
 }    
 

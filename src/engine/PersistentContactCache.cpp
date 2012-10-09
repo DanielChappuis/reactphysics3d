@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 PersistentContactCache::PersistentContactCache(Body* const body1, Body* const body2, MemoryPool<Contact>& memoryPoolContacts)
-                       : body1(body1), body2(body2), nbContacts(0), memoryPoolContacts(memoryPoolContacts) {
+                       : mBody1(body1), mBody2(body2), mNbContacts(0), mMemoryPoolContacts(memoryPoolContacts) {
     
 }
 
@@ -42,23 +42,23 @@ PersistentContactCache::~PersistentContactCache() {
 // Add a contact in the cache
 void PersistentContactCache::addContact(Contact* contact) {
 
-    int indexNewContact = nbContacts;
+    int indexNewContact = mNbContacts;
 	
 	// For contact already in the cache
-	for (uint i=0; i<nbContacts; i++) {
+	for (uint i=0; i<mNbContacts; i++) {
 		// Check if the new point point does not correspond to a same contact point
 		// already in the cache. If it's the case, we do not add the new contact
-		if (isApproxEqual(contact->getLocalPointOnBody1(), contacts[i]->getLocalPointOnBody1())) {
+		if (isApproxEqual(contact->getLocalPointOnBody1(), mContacts[i]->getLocalPointOnBody1())) {
 			// Delete the new contact
 			contact->Contact::~Contact();
-			memoryPoolContacts.freeObject(contact);
+			mMemoryPoolContacts.freeObject(contact);
 			
 			return;
 		}
 	}
     
     // If the contact cache is full
-    if (nbContacts == MAX_CONTACTS_IN_CACHE) {
+    if (mNbContacts == MAX_CONTACTS_IN_CACHE) {
         int indexMaxPenetration = getIndexOfDeepestPenetration(contact);
         int indexToRemove = getIndexToRemove(indexMaxPenetration, contact->getLocalPointOnBody1());
         removeContact(indexToRemove);
@@ -66,26 +66,26 @@ void PersistentContactCache::addContact(Contact* contact) {
     }
 
     // Add the new contact in the cache
-    contacts[indexNewContact] = contact;
-    nbContacts++;
+    mContacts[indexNewContact] = contact;
+    mNbContacts++;
 }
 
 // Remove a contact from the cache
 void PersistentContactCache::removeContact(int index) {
-    assert(index >= 0 && index < nbContacts);
-    assert(nbContacts > 0);
+    assert(index >= 0 && index < mNbContacts);
+    assert(mNbContacts > 0);
 	
 	// Call the destructor explicitly and tell the memory pool that
 	// the corresponding memory block is now free
-	contacts[index]->Contact::~Contact();
-	memoryPoolContacts.freeObject(contacts[index]);
+	mContacts[index]->Contact::~Contact();
+	mMemoryPoolContacts.freeObject(mContacts[index]);
 	
     // If we don't remove the last index
-    if (index < nbContacts - 1) {
-        contacts[index] = contacts[nbContacts - 1];
+    if (index < mNbContacts - 1) {
+        mContacts[index] = mContacts[mNbContacts - 1];
     }
 
-    nbContacts--;
+    mNbContacts--;
 }
 
 // Update the contact cache
@@ -95,27 +95,27 @@ void PersistentContactCache::removeContact(int index) {
 // the contacts with a too large distance between the contact points in the plane orthogonal to the
 // contact normal
 void PersistentContactCache::update(const Transform& transform1, const Transform& transform2) {
-    if (nbContacts == 0) return;
+    if (mNbContacts == 0) return;
 
     // Update the world coordinates and penetration depth of the contacts in the cache
-    for (int i=0; i<nbContacts; i++) {
-        contacts[i]->setWorldPointOnBody1(transform1 * contacts[i]->getLocalPointOnBody1());
-        contacts[i]->setWorldPointOnBody2(transform2 * contacts[i]->getLocalPointOnBody2());
-        contacts[i]->setPenetrationDepth((contacts[i]->getWorldPointOnBody1() - contacts[i]->getWorldPointOnBody2()).dot(contacts[i]->getNormal()));
+    for (int i=0; i<mNbContacts; i++) {
+        mContacts[i]->setWorldPointOnBody1(transform1 * mContacts[i]->getLocalPointOnBody1());
+        mContacts[i]->setWorldPointOnBody2(transform2 * mContacts[i]->getLocalPointOnBody2());
+        mContacts[i]->setPenetrationDepth((mContacts[i]->getWorldPointOnBody1() - mContacts[i]->getWorldPointOnBody2()).dot(mContacts[i]->getNormal()));
     }
 
     // Remove the contacts that don't represent very well the persistent contact
-    for (int i=nbContacts-1; i>=0; i--) {
-        assert(i>= 0 && i < nbContacts);
+    for (int i=mNbContacts-1; i>=0; i--) {
+        assert(i>= 0 && i < mNbContacts);
         
         // Remove the contacts with a negative penetration depth (meaning that the bodies are not penetrating anymore)
-        if (contacts[i]->getPenetrationDepth() <= 0.0) {
+        if (mContacts[i]->getPenetrationDepth() <= 0.0) {
             removeContact(i);
         }
         else {
             // Compute the distance of the two contact points in the place orthogonal to the contact normal
-            Vector3 projOfPoint1 = contacts[i]->getWorldPointOnBody1() - contacts[i]->getNormal() * contacts[i]->getPenetrationDepth();
-            Vector3 projDifference = contacts[i]->getWorldPointOnBody2() - projOfPoint1;
+            Vector3 projOfPoint1 = mContacts[i]->getWorldPointOnBody1() - mContacts[i]->getNormal() * mContacts[i]->getPenetrationDepth();
+            Vector3 projDifference = mContacts[i]->getWorldPointOnBody2() - projOfPoint1;
 
             // If the orthogonal distance is larger than the valid distance threshold, we remove the contact
             if (projDifference.lengthSquare() > PERSISTENT_CONTACT_DIST_THRESHOLD * PERSISTENT_CONTACT_DIST_THRESHOLD) {
@@ -129,15 +129,15 @@ void PersistentContactCache::update(const Transform& transform1, const Transform
 // corresponding contact will be kept in the cache. The method returns -1 is
 // the new contact is the deepest.
 int PersistentContactCache::getIndexOfDeepestPenetration(Contact* newContact) const {
-    assert(nbContacts == MAX_CONTACTS_IN_CACHE);
+    assert(mNbContacts == MAX_CONTACTS_IN_CACHE);
     int indexMaxPenetrationDepth = -1;
     decimal maxPenetrationDepth = newContact->getPenetrationDepth();
 
     // For each contact in the cache
-    for (uint i=0; i<nbContacts; i++) {
+    for (uint i=0; i<mNbContacts; i++) {
         // If the current contact has a larger penetration depth
-        if (contacts[i]->getPenetrationDepth() > maxPenetrationDepth) {
-            maxPenetrationDepth = contacts[i]->getPenetrationDepth();
+        if (mContacts[i]->getPenetrationDepth() > maxPenetrationDepth) {
+            maxPenetrationDepth = mContacts[i]->getPenetrationDepth();
             indexMaxPenetrationDepth = i;
         }
     }
@@ -151,7 +151,7 @@ int PersistentContactCache::getIndexOfDeepestPenetration(Contact* newContact) co
 // the different area and we want to keep the contacts with the largest area. The new point is also
 // kept.
 int PersistentContactCache::getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const {
-    assert(nbContacts == MAX_CONTACTS_IN_CACHE);
+    assert(mNbContacts == MAX_CONTACTS_IN_CACHE);
     decimal area0 = 0.0;       // Area with contact 1,2,3 and newPoint
     decimal area1 = 0.0;       // Area with contact 0,2,3 and newPoint
     decimal area2 = 0.0;       // Area with contact 0,1,3 and newPoint
@@ -159,29 +159,29 @@ int PersistentContactCache::getIndexToRemove(int indexMaxPenetration, const Vect
 
     if (indexMaxPenetration != 0) {
         // Compute the area
-        Vector3 vector1 = newPoint - contacts[1]->getLocalPointOnBody1();
-        Vector3 vector2 = contacts[3]->getLocalPointOnBody1() - contacts[2]->getLocalPointOnBody1();
+        Vector3 vector1 = newPoint - mContacts[1]->getLocalPointOnBody1();
+        Vector3 vector2 = mContacts[3]->getLocalPointOnBody1() - mContacts[2]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area0 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 1) {
         // Compute the area
-        Vector3 vector1 = newPoint - contacts[0]->getLocalPointOnBody1();
-        Vector3 vector2 = contacts[3]->getLocalPointOnBody1() - contacts[2]->getLocalPointOnBody1();
+        Vector3 vector1 = newPoint - mContacts[0]->getLocalPointOnBody1();
+        Vector3 vector2 = mContacts[3]->getLocalPointOnBody1() - mContacts[2]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area1 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 2) {
         // Compute the area
-        Vector3 vector1 = newPoint - contacts[0]->getLocalPointOnBody1();
-        Vector3 vector2 = contacts[3]->getLocalPointOnBody1() - contacts[1]->getLocalPointOnBody1();
+        Vector3 vector1 = newPoint - mContacts[0]->getLocalPointOnBody1();
+        Vector3 vector2 = mContacts[3]->getLocalPointOnBody1() - mContacts[1]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area2 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 3) {
         // Compute the area
-        Vector3 vector1 = newPoint - contacts[0]->getLocalPointOnBody1();
-        Vector3 vector2 = contacts[2]->getLocalPointOnBody1() - contacts[1]->getLocalPointOnBody1();
+        Vector3 vector1 = newPoint - mContacts[0]->getLocalPointOnBody1();
+        Vector3 vector2 = mContacts[2]->getLocalPointOnBody1() - mContacts[1]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area3 = crossProduct.lengthSquare();
     }
@@ -216,12 +216,12 @@ int PersistentContactCache::getMaxArea(decimal area0, decimal area1, decimal are
 
 // Clear the cache
 void PersistentContactCache::clear() {
-    for (uint i=0; i<nbContacts; i++) {
+    for (uint i=0; i<mNbContacts; i++) {
 		
 		// Call the destructor explicitly and tell the memory pool that
 		// the corresponding memory block is now free
-		contacts[i]->Contact::~Contact();
-		memoryPoolContacts.freeObject(contacts[i]);
+		mContacts[i]->Contact::~Contact();
+		mMemoryPoolContacts.freeObject(mContacts[i]);
     }
-    nbContacts = 0;
+    mNbContacts = 0;
 }

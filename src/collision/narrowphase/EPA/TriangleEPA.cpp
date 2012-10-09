@@ -39,10 +39,10 @@ TriangleEPA::TriangleEPA() {
 
 // Constructor
 TriangleEPA::TriangleEPA(uint indexVertex1, uint indexVertex2, uint indexVertex3)
-            : isObsolete(false) {
-    indicesVertices[0] = indexVertex1;
-    indicesVertices[1] = indexVertex2;
-    indicesVertices[2] = indexVertex3;
+            : mIsObsolete(false) {
+    mIndicesVertices[0] = indexVertex1;
+    mIndicesVertices[1] = indexVertex2;
+    mIndicesVertices[2] = indexVertex3;
 }
 
 // Destructor
@@ -52,10 +52,10 @@ TriangleEPA::~TriangleEPA() {
 
 // Compute the point v closest to the origin of this triangle
 bool TriangleEPA::computeClosestPoint(const Vector3* vertices) {
-    const Vector3& p0 = vertices[indicesVertices[0]];
+    const Vector3& p0 = vertices[mIndicesVertices[0]];
 
-    Vector3 v1 = vertices[indicesVertices[1]] - p0;
-    Vector3 v2 = vertices[indicesVertices[2]] - p0;
+    Vector3 v1 = vertices[mIndicesVertices[1]] - p0;
+    Vector3 v2 = vertices[mIndicesVertices[2]] - p0;
     decimal v1Dotv1 = v1.dot(v1);
     decimal v1Dotv2 = v1.dot(v2);
     decimal v2Dotv2 = v2.dot(v2);
@@ -63,19 +63,19 @@ bool TriangleEPA::computeClosestPoint(const Vector3* vertices) {
     decimal p0Dotv2 = p0.dot(v2);
 
     // Compute determinant
-    det = v1Dotv1 * v2Dotv2 - v1Dotv2 * v1Dotv2;
+    mDet = v1Dotv1 * v2Dotv2 - v1Dotv2 * v1Dotv2;
 
     // Compute lambda values
-    lambda1 = p0Dotv2 * v1Dotv2 - p0Dotv1 * v2Dotv2;
-    lambda2 = p0Dotv1 * v1Dotv2 - p0Dotv2 * v1Dotv1;
+    mLambda1 = p0Dotv2 * v1Dotv2 - p0Dotv1 * v2Dotv2;
+    mLambda2 = p0Dotv1 * v1Dotv2 - p0Dotv2 * v1Dotv1;
 
     // If the determinant is positive
-    if (det > 0.0) {
+    if (mDet > 0.0) {
         // Compute the closest point v
-        closestPoint = p0 + 1.0 / det * (lambda1 * v1 + lambda2 * v2);
+        mClosestPoint = p0 + 1.0 / mDet * (mLambda1 * v1 + mLambda2 * v2);
 
         // Compute the square distance of closest point to the origin
-        distSquare = closestPoint.dot(closestPoint);
+        mDistSquare = mClosestPoint.dot(mClosestPoint);
 
         return true;
     }
@@ -91,8 +91,8 @@ bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
                        edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
 
     if (isPossible) {
-        edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
-        edge1.getOwnerTriangle()->adjacentEdges[edge1.getIndex()] = edge0;
+        edge0.getOwnerTriangle()->mAdjacentEdges[edge0.getIndex()] = edge1;
+        edge1.getOwnerTriangle()->mAdjacentEdges[edge1.getIndex()] = edge0;
     }
 
     return isPossible;
@@ -107,7 +107,7 @@ void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
            edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
 
     // Link
-    edge0.getOwnerTriangle()->adjacentEdges[edge0.getIndex()] = edge1;
+    edge0.getOwnerTriangle()->mAdjacentEdges[edge0.getIndex()] = edge1;
 }
 
 // Execute the recursive silhouette algorithm from this triangle face
@@ -128,9 +128,9 @@ bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex
 
     // Execute recursively the silhouette algorithm for the adjacent edges of neighboring
     // triangles of the current triangle
-    bool result = adjacentEdges[0].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
-                  adjacentEdges[1].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
-                  adjacentEdges[2].computeSilhouette(vertices, indexNewVertex, triangleStore);
+    bool result = mAdjacentEdges[0].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
+                  mAdjacentEdges[1].computeSilhouette(vertices, indexNewVertex, triangleStore) &&
+                  mAdjacentEdges[2].computeSilhouette(vertices, indexNewVertex, triangleStore);
 
     if (result) {
         int i,j;

@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), radius(radius) {
+SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), mRadius(radius) {
 
 }
 
@@ -62,6 +62,6 @@ void SphereShape::draw() const {
     glColor3f(1.0, 0.0, 0.0);
 
     // Draw the sphere
-    glutWireSphere(radius, 50, 50);
+    glutWireSphere(mRadius, 50, 50);
 }
 #endif

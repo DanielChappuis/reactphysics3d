@@ -72,35 +72,67 @@ class TriangleComparison {
     -------------------------------------------------------------------
 */
 class EPAAlgorithm {
+
     private:
-        MemoryPool<ContactInfo>& memoryPoolContactInfos; // Reference to the memory pool for contact infos
-        TriangleComparison triangleComparison;           // Triangle comparison operator
+
+        // -------------------- Attributes -------------------- //
+
+        // Reference to the memory pool
+        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+
+        // Triangle comparison operator
+        TriangleComparison mTriangleComparison;
         
-        void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
-                              uint& nbTriangles, decimal upperBoundSquarePenDepth);      // Add a triangle face in the candidate triangle heap
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        EPAAlgorithm(const EPAAlgorithm& algorithm);
+
+        // Private assignment operator
+        EPAAlgorithm& operator=(const EPAAlgorithm& algorithm);
+
+        // Add a triangle face in the candidate triangle heap
+        void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap, uint& nbTriangles,
+                              decimal upperBoundSquarePenDepth);
+
+        // Decide if the origin is in the tetrahedron
         int isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
-                                  const Vector3& p3, const Vector3& p4) const;        // Decide if the origin is in the tetrahedron
+                                  const Vector3& p3, const Vector3& p4) const;
 
     public:
-        EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);          // Constructor
-        ~EPAAlgorithm();                                                        // Destructor
 
-        bool computePenetrationDepthAndContactPoints(Simplex simplex, const CollisionShape* collisionShape1, const Transform& transform1,
-                                                     const CollisionShape* collisionShape2, const Transform& transform2,
-                                                     Vector3& v, ContactInfo*& contactInfo);                         // Compute the penetration depth with EPA algorithm
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+
+        // Destructor
+        ~EPAAlgorithm();
+
+        // Compute the penetration depth with EPA algorithm
+        bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
+                                                     const CollisionShape* collisionShape1,
+                                                     const Transform& transform1,
+                                                     const CollisionShape* collisionShape2,
+                                                     const Transform& transform2,
+                                                     Vector3& v, ContactInfo*& contactInfo);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm
 inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap,
                                            uint& nbTriangles, decimal upperBoundSquarePenDepth) {
     
-    // If the closest point of the affine hull of triangle points is internal to the triangle and
-    // if the distance of the closest point from the origin is at most the penetration depth upper bound
-    if (triangle->isClosestPointInternalToTriangle() && triangle->getDistSquare() <= upperBoundSquarePenDepth) {
+    // If the closest point of the affine hull of triangle
+    // points is internal to the triangle and if the distance
+    // of the closest point from the origin is at most the
+    // penetration depth upper bound
+    if (triangle->isClosestPointInternalToTriangle() &&
+        triangle->getDistSquare() <= upperBoundSquarePenDepth) {
+
         // Add the triangle face to the list of candidates
         heap[nbTriangles] = triangle;
         nbTriangles++;
-        std::push_heap(&heap[0], &heap[nbTriangles], triangleComparison);
+        std::push_heap(&heap[0], &heap[nbTriangles], mTriangleComparison);
     }
 }
 

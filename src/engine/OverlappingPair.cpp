@@ -30,8 +30,10 @@ using namespace reactphysics3d;
 
 
 // Constructor
-OverlappingPair::OverlappingPair(CollisionBody* body1, CollisionBody* body2, MemoryPool<Contact>& memoryPoolContacts)
-                : body1(body1), body2(body2), contactsCache(body1, body2, memoryPoolContacts), cachedSeparatingAxis(1.0, 1.0, 1.0) {
+OverlappingPair::OverlappingPair(CollisionBody* body1, CollisionBody* body2,
+                                 MemoryPool<Contact>& memoryPoolContacts)
+                : mBody1(body1), mBody2(body2), mContactsCache(body1, body2, memoryPoolContacts),
+                  mCachedSeparatingAxis(1.0, 1.0, 1.0) {
     
 }   
 

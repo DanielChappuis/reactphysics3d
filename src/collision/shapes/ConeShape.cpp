@@ -44,12 +44,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConeShape::ConeShape(decimal radius, decimal height) : CollisionShape(CONE), radius(radius), halfHeight(height/2.0) {
+ConeShape::ConeShape(decimal radius, decimal height)
+          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height/2.0) {
     assert(radius > 0.0);
-    assert(halfHeight > 0.0);
+    assert(mHalfHeight > 0.0);
     
     // Compute the sine of the semi-angle at the apex point
-    sinTheta = radius / (sqrt(radius * radius + height * height));
+    mSinTheta = radius / (sqrt(radius * radius + height * height));
 }
 
 // Destructor
@@ -62,20 +63,20 @@ inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, decimal
     assert(margin >= 0.0);
 
     const Vector3& v = direction;
-    decimal sinThetaTimesLengthV = sinTheta * v.length();
+    decimal sinThetaTimesLengthV = mSinTheta * v.length();
     Vector3 supportPoint;
 
     if (v.getY() >= sinThetaTimesLengthV) {
-        supportPoint = Vector3(0.0, halfHeight, 0.0);
+        supportPoint = Vector3(0.0, mHalfHeight, 0.0);
     }
     else {
         decimal projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
         if (projectedLength > MACHINE_EPSILON) {
-            decimal d = radius / projectedLength;
-            supportPoint = Vector3(v.getX() * d, -halfHeight, v.getZ() * d);
+            decimal d = mRadius / projectedLength;
+            supportPoint = Vector3(v.getX() * d, -mHalfHeight, v.getZ() * d);
         }
         else {
-            supportPoint = Vector3(radius, -halfHeight, 0.0);
+            supportPoint = Vector3(mRadius, -mHalfHeight, 0.0);
         }
     }
 
@@ -99,6 +100,6 @@ void ConeShape::draw() const {
     glColor3f(1.0, 0.0, 0.0);
 
     // Draw the sphere
-    glutWireCone(radius, 2.0 * halfHeight, 50, 50);
+    glutWireCone(mRadius, 2.0 * mHalfHeight, 50, 50);
 }
 #endif

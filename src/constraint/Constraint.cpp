@@ -30,12 +30,14 @@
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints, bool active, ConstraintType type)
-           :body1(body1), body2(body2), active(active), nbConstraints(nbConstraints), type(type) {
+Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
+                       uint nbConstraints, bool active, ConstraintType type)
+           :mBody1(body1), mBody2(body2), mActive(active),
+            mNbConstraints(nbConstraints), mType(type) {
     
     // Initialize the cached lambda values
     for (int i=0; i<nbConstraints; i++) {
-        cachedLambdas.push_back(0.0);
+        mCachedLambdas.push_back(0.0);
     }
 }
 

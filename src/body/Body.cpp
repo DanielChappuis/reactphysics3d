@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(bodyindex id) : id(id) {
+Body::Body(bodyindex id) : mID(id) {
 
 }
 

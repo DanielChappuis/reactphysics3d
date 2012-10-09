@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-TrianglesStore::TrianglesStore() : nbTriangles(0) {
+TrianglesStore::TrianglesStore() : mNbTriangles(0) {
     
 }
 

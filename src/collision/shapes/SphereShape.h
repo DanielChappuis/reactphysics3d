@@ -40,32 +40,61 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class SphereShape : public CollisionShape {
+
     private :
-        decimal radius;              // Radius of the sphere
+
+        // -------------------- Attributes -------------------- //
+
+        // Radius of the sphere
+        decimal mRadius;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        SphereShape(const SphereShape& shape);
+
+        // Private assignment operator
+        SphereShape& operator=(const SphereShape& shape);
 
     public :
-        SphereShape(decimal radius);                 // Constructor
-        virtual ~SphereShape();                     // Destructor
 
-        decimal getRadius() const;                                                                  // Return the radius of the sphere
-        void setRadius(decimal radius);                                                             // Set the radius of the sphere
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;   // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;                                  // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;              // Return the local inertia tensor of the collision shape
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        SphereShape(decimal radius);
+
+        // Destructor
+        virtual ~SphereShape();
+
+        // Return the radius of the sphere
+        decimal getRadius() const;
+
+        // Set the radius of the sphere
+        void setRadius(decimal radius);
+
+        // Return a local support point in a given direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;
+
+        // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
+
+        // Return the local inertia tensor of the collision shape
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
 #ifdef VISUAL_DEBUG
-            virtual void draw() const;                              // Draw the sphere (only for testing purpose)
+        // Draw the sphere (only for testing purpose)
+        virtual void draw() const;
 #endif
 };
 
 // Get the radius of the sphere
 inline decimal SphereShape::getRadius() const {
-    return radius;
+    return mRadius;
 }
 
 // Set the radius of the sphere
 inline void SphereShape::setRadius(decimal radius) {
-    this->radius = radius;
+    mRadius = radius;
 }
 
 // Return a local support point in a given direction
@@ -76,23 +105,23 @@ inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, decim
     // If the direction vector is not the zero vector
     if (length > 0.0) {
         // Return the support point of the sphere in the given direction
-        return (radius + margin) * direction.getUnit();
+        return (mRadius + margin) * direction.getUnit();
     }
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return Vector3(0, radius + margin, 0);
+    return Vector3(0, mRadius + margin, 0);
 }
 
 // Return the local extents of the collision shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
 inline Vector3 SphereShape::getLocalExtents(decimal margin) const {
-    return Vector3(radius + margin, radius + margin, radius + margin);
+    return Vector3(mRadius + margin, mRadius + margin, mRadius + margin);
 }
 
 // Return the local inertia tensor of the sphere
 inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal diag = 0.4 * mass * radius * radius;
+    decimal diag = 0.4 * mass * mRadius * mRadius;
     tensor.setAllValues(diag, 0.0, 0.0, 0.0, diag, 0.0, 0.0, 0.0, diag);
 }
 

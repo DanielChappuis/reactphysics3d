@@ -49,21 +49,46 @@ class Body;
 class CollisionShape {
         
     protected :
-        CollisionShapeType type;              // Type of the collision shape
-        
-    public :
-        CollisionShape(CollisionShapeType type);    // Constructor
-        virtual ~CollisionShape();            // Destructor
 
-        CollisionShapeType getType() const;                                                             // Return the type of the collision shapes
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const=0;     // Return a local support point in a given direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;                                    // Return the local extents in x,y and z direction
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;                // Return the local inertia tensor of the collision shapes
+        // -------------------- Attributes -------------------- //
+
+        // Type of the collision shape
+        CollisionShapeType mType;
+        
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        CollisionShape(const CollisionShape& shape);
+
+        // Private assignment operator
+        CollisionShape& operator=(const CollisionShape& shape);
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        CollisionShape(CollisionShapeType type);
+
+        // Destructor
+        virtual ~CollisionShape();
+
+        // Return the type of the collision shapes
+        CollisionShapeType getType() const;
+
+        // Return a local support point in a given direction
+        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const=0;
+
+        // Return the local extents in x,y and z direction
+        virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;
+
+        // Return the local inertia tensor of the collision shapes
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
 };
 
 // Return the type of the collision shape
 inline CollisionShapeType CollisionShape::getType() const {
-    return type;
+    return mType;
 }                                                                  
 
 }

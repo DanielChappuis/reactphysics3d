@@ -41,58 +41,105 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 class Transform {
+
     private :
-        Vector3 position;               // Position
-        Quaternion orientation;         // Orientation
+
+        // -------------------- Attributes -------------------- //
+
+        // Position
+        Vector3 mPosition;
+
+        // Orientation
+        Quaternion mOrientation;
 
     public :
-        Transform();                                                           // Constructor
-        Transform(const Vector3& position, const Matrix3x3& orientation);      // Constructor
-        Transform(const Vector3& position, const Quaternion& orientation);     // Constructor
-        ~Transform();                                                          // Destructor
 
-        const Vector3& getPosition() const;                                     // Return the origin of the transform
-        void setPosition(const Vector3& position);                              // Set the origin of the transform
-        const Quaternion& getOrientation() const;                               // Return the orientation quaternion
-        void setOrientation(const Quaternion& orientation);                     // Set the rotation quaternion
-        void setToIdentity();                                                   // Set the transform to the identity transform
-        void setFromOpenGL(decimal* openglMatrix);                              // Set the transform from an OpenGL transform matrix
-        void getOpenGLMatrix(decimal* openglMatrix) const;                      // Get the OpenGL matrix of the transform
-        Transform inverse() const;                                              // Return the inverse of the transform
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        Transform();
+
+        // Constructor
+        Transform(const Vector3& position, const Matrix3x3& orientation);
+
+        // Constructor
+        Transform(const Vector3& position, const Quaternion& orientation);
+
+        // Destructor
+        ~Transform();
+
+        // Copy-constructor
+        Transform(const Transform& transform);
+
+        // Return the origin of the transform
+        const Vector3& getPosition() const;
+
+        // Set the origin of the transform
+        void setPosition(const Vector3& position);
+
+        // Return the orientation quaternion
+        const Quaternion& getOrientation() const;
+
+        // Set the rotation quaternion
+        void setOrientation(const Quaternion& orientation);
+
+        // Set the transform to the identity transform
+        void setToIdentity();
+
+        // Set the transform from an OpenGL transform matrix
+        void setFromOpenGL(decimal* openglMatrix);
+
+        // Get the OpenGL matrix of the transform
+        void getOpenGLMatrix(decimal* openglMatrix) const;
+
+        // Return the inverse of the transform
+        Transform inverse() const;
+
+        // Return an interpolated transform
         static Transform interpolateTransforms(const Transform& oldTransform,
                                                const Transform& newTransform,
-                                               decimal interpolationFactor);    // Return an interpolated transform
+                                               decimal interpolationFactor);
 
-        Vector3 operator*(const Vector3& vector) const;                         // Return the transformed vector
-        Transform operator*(const Transform& transform2) const;                 // Operator of multiplication of a transform with another one
-        bool operator==(const Transform& transform2) const;                     // Return true if the two transforms are equal
-        bool operator!=(const Transform& transform2) const;                     // Return true if the two transforms are different
+        // Return the transformed vector
+        Vector3 operator*(const Vector3& vector) const;
+
+        // Operator of multiplication of a transform with another one
+        Transform operator*(const Transform& transform2) const;
+
+        // Return true if the two transforms are equal
+        bool operator==(const Transform& transform2) const;
+
+        // Return true if the two transforms are different
+        bool operator!=(const Transform& transform2) const;
+
+        // Assignment operator
+        Transform& operator=(const Transform& transform);
 };
 
 // Return the position of the transform
 inline const Vector3& Transform::getPosition() const {
-    return position;
+    return mPosition;
 }
 
 // Set the origin of the transform
 inline void Transform::setPosition(const Vector3& position) {
-    this->position = position;
+    mPosition = position;
 }
 
 // Return the rotation matrix
 inline const Quaternion& Transform::getOrientation() const {
-    return orientation;
+    return mOrientation;
 }
 
 // Set the rotation matrix of the transform
 inline void Transform::setOrientation(const Quaternion& orientation) {
-    this->orientation = orientation;
+    mOrientation = orientation;
 }
 
 // Set the transform to the identity transform
 inline void Transform::setToIdentity() {
-    position = Vector3(0.0, 0.0, 0.0);
-    orientation = Quaternion::identity();
+    mPosition = Vector3(0.0, 0.0, 0.0);
+    mOrientation = Quaternion::identity();
 }                                           
 
 // Set the transform from an OpenGL transform matrix
@@ -100,52 +147,74 @@ inline void Transform::setFromOpenGL(decimal* openglMatrix) {
     Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],
                      openglMatrix[1], openglMatrix[5], openglMatrix[9],
                      openglMatrix[2], openglMatrix[6], openglMatrix[10]);
-    orientation = Quaternion(matrix);
-    position.setAllValues(openglMatrix[12], openglMatrix[13], openglMatrix[14]);
+    mOrientation = Quaternion(matrix);
+    mPosition.setAllValues(openglMatrix[12], openglMatrix[13], openglMatrix[14]);
 }
 
 // Get the OpenGL matrix of the transform
 inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
-    const Matrix3x3& matrix = orientation.getMatrix();
-    openglMatrix[0] = matrix.getValue(0, 0); openglMatrix[1] = matrix.getValue(1, 0); openglMatrix[2] = matrix.getValue(2, 0); openglMatrix[3] = 0.0;
-    openglMatrix[4] = matrix.getValue(0, 1); openglMatrix[5] = matrix.getValue(1, 1); openglMatrix[6] = matrix.getValue(2, 1); openglMatrix[7] = 0.0;
-    openglMatrix[8] = matrix.getValue(0, 2); openglMatrix[9] = matrix.getValue(1, 2); openglMatrix[10] = matrix.getValue(2, 2); openglMatrix[11] = 0.0;
-    openglMatrix[12] = position.getX(); openglMatrix[13] = position.getY(); openglMatrix[14] = position.getZ(); openglMatrix[15] = 1.0;
+    const Matrix3x3& matrix = mOrientation.getMatrix();
+    openglMatrix[0] = matrix.getValue(0, 0); openglMatrix[1] = matrix.getValue(1, 0);
+    openglMatrix[2] = matrix.getValue(2, 0); openglMatrix[3] = 0.0;
+    openglMatrix[4] = matrix.getValue(0, 1); openglMatrix[5] = matrix.getValue(1, 1);
+    openglMatrix[6] = matrix.getValue(2, 1); openglMatrix[7] = 0.0;
+    openglMatrix[8] = matrix.getValue(0, 2); openglMatrix[9] = matrix.getValue(1, 2);
+    openglMatrix[10] = matrix.getValue(2, 2); openglMatrix[11] = 0.0;
+    openglMatrix[12] = mPosition.getX(); openglMatrix[13] = mPosition.getY();
+    openglMatrix[14] = mPosition.getZ(); openglMatrix[15] = 1.0;
 }
 
 // Return the inverse of the transform
 inline Transform Transform::inverse() const {
-    const Quaternion& invQuaternion = orientation.getInverse();
+    const Quaternion& invQuaternion = mOrientation.getInverse();
     Matrix3x3 invMatrix = invQuaternion.getMatrix();
-    return Transform(invMatrix * (-position), invQuaternion);
+    return Transform(invMatrix * (-mPosition), invQuaternion);
 }
 
 // Return an interpolated transform
-inline Transform Transform::interpolateTransforms(const Transform& oldTransform, const Transform& newTransform, decimal interpolationFactor) {
-    Vector3 interPosition = oldTransform.position * (1.0 - interpolationFactor) + newTransform.position * interpolationFactor;
-    Quaternion interOrientation = Quaternion::slerp(oldTransform.orientation, newTransform.orientation, interpolationFactor);
+inline Transform Transform::interpolateTransforms(const Transform& oldTransform,
+                                                  const Transform& newTransform,
+                                                  decimal interpolationFactor) {
+
+    Vector3 interPosition = oldTransform.mPosition * (1.0 - interpolationFactor) +
+                            newTransform.mPosition * interpolationFactor;
+
+    Quaternion interOrientation = Quaternion::slerp(oldTransform.mOrientation,
+                                                    newTransform.mOrientation,
+                                                    interpolationFactor);
+
     return Transform(interPosition, interOrientation);
 }
 
 // Return the transformed vector
 inline Vector3 Transform::operator*(const Vector3& vector) const {
-    return (orientation.getMatrix() * vector) + position;
+    return (mOrientation.getMatrix() * vector) + mPosition;
 }
 
 // Operator of multiplication of a transform with another one
 inline Transform Transform::operator*(const Transform& transform2) const {
-    return Transform(position + orientation.getMatrix() * transform2.position, orientation * transform2.orientation);
+    return Transform(mPosition + mOrientation.getMatrix() * transform2.mPosition,
+                     mOrientation * transform2.mOrientation);
 }
 
 // Return true if the two transforms are equal
 inline bool Transform::operator==(const Transform& transform2) const {
-    return (position == transform2.position) && (orientation == transform2.orientation);
+    return (mPosition == transform2.mPosition) && (mOrientation == transform2.mOrientation);
 }    
 
 // Return true if the two transforms are different
 inline bool Transform::operator!=(const Transform& transform2) const {
     return !(*this == transform2);
-}                    
+}
+
+// Assignment operator
+inline Transform& Transform::operator=(const Transform& transform) {
+    if (&transform != this) {
+        mPosition = transform.mPosition;
+        mOrientation = transform.mOrientation;
+    }
+    return *this;
+}
 
 } // End of the ReactPhysics3D namespace
 

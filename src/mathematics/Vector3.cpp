@@ -34,23 +34,23 @@ using namespace reactphysics3d;
 
 // Constructor of the class Vector3D
 Vector3::Vector3() {
-    values[0] = 0.0;
-    values[1] = 0.0;
-    values[2] = 0.0;
+    mValues[0] = 0.0;
+    mValues[1] = 0.0;
+    mValues[2] = 0.0;
 }
 
 // Constructor with arguments
 Vector3::Vector3(decimal x, decimal y, decimal z) {
-    values[0] = x;
-    values[1] = y;
-    values[2] = z;
+    mValues[0] = x;
+    mValues[1] = y;
+    mValues[2] = z;
 }
 
 // Copy-constructor
 Vector3::Vector3(const Vector3& vector) {
-    values[0] = vector.values[0];
-    values[1] = vector.values[1];
-    values[2] = vector.values[2];
+    mValues[0] = vector.mValues[0];
+    mValues[1] = vector.mValues[1];
+    mValues[2] = vector.mValues[2];
 }
 
 // Destructor
@@ -66,7 +66,7 @@ Vector3 Vector3::getUnit() const {
 
     // Compute and return the unit vector
     decimal lengthInv = 1.0 / lengthVector;
-    return Vector3(values[0] * lengthInv, values[1] * lengthInv, values[2] * lengthInv);
+    return Vector3(mValues[0] * lengthInv, mValues[1] * lengthInv, mValues[2] * lengthInv);
 }
 
 // Return two unit orthogonal vectors of the current vector
@@ -75,20 +75,23 @@ Vector3 Vector3::getOneOrthogonalVector() const {
 
     // Compute a first orthogonal vector
     Vector3 vector1;
-    if (!approxEqual(values[0], 0.0)) {   // If x != 0
-        vector1.setY(values[0]);
-        vector1.setZ((-2*values[0]*values[1]*values[2] + 2*values[0]*values[2])/(2*(values[2]*values[2] + values[0]*values[0])));
-        vector1.setX((-values[0]*values[1]-values[2]*vector1.getZ())/values[0]);
+    if (!approxEqual(mValues[0], 0.0)) {   // If x != 0
+        vector1.setY(mValues[0]);
+        vector1.setZ((-2*mValues[0]*mValues[1]*mValues[2] +
+                      2*mValues[0]*mValues[2])/(2*(mValues[2]*mValues[2] + mValues[0]*mValues[0])));
+        vector1.setX((-mValues[0]*mValues[1]-mValues[2]*vector1.getZ())/mValues[0]);
     }
-    else if (!approxEqual(values[1], 0.0)) { // If y != 0
-        vector1.setZ(values[1]);
-        vector1.setX((-2*values[0]*values[1]*values[2] + 2*values[0]*values[1])/(2*(values[1]*values[1] + values[0]*values[0])));
-        vector1.setY((-values[2]*values[1]-values[0]*vector1.getX())/values[1]);
+    else if (!approxEqual(mValues[1], 0.0)) { // If y != 0
+        vector1.setZ(mValues[1]);
+        vector1.setX((-2*mValues[0]*mValues[1]*mValues[2] +
+                      2*mValues[0]*mValues[1])/(2*(mValues[1]*mValues[1] + mValues[0]*mValues[0])));
+        vector1.setY((-mValues[2]*mValues[1]-mValues[0]*vector1.getX())/mValues[1]);
     }
-    else if (!approxEqual(values[2], 0.0)) { // If z != 0
-        vector1.setX(values[2]);
-        vector1.setY((-2*values[0]*values[1]*values[2] + 2*values[1]*values[2])/(2*(values[2]*values[2] + values[1]*values[1])));
-        vector1.setZ((-values[0]*values[2]-values[1]*vector1.getY())/values[2]);
+    else if (!approxEqual(mValues[2], 0.0)) { // If z != 0
+        vector1.setX(mValues[2]);
+        vector1.setY((-2*mValues[0]*mValues[1]*mValues[2] +
+                      2*mValues[1]*mValues[2])/(2*(mValues[2]*mValues[2] + mValues[1]*mValues[1])));
+        vector1.setZ((-mValues[0]*mValues[2]-mValues[1]*vector1.getY())/mValues[2]);
     }
 
     //assert(vector1.isUnit());

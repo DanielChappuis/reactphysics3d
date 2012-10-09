@@ -32,7 +32,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionWorld::CollisionWorld() : collisionDetection(this), currentBodyID(0) {
+CollisionWorld::CollisionWorld() : mCollisionDetection(this), mCurrentBodyID(0) {
 }
 
 // Destructor
@@ -53,7 +53,8 @@ void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedP
 }
 
 // Notify the world about a new narrow-phase contact
-void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const ContactInfo* contactInfo) {
+void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
+                                      const ContactInfo* contactInfo) {
 
     // TODO : Implement this method
 }
@@ -64,7 +65,8 @@ inline void CollisionWorld::updateOverlappingPair(const BroadPhasePair* pair) {
 }
 
 // Create a collision body and add it to the world
-CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform, CollisionShape* collisionShape) {
+CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
+                                                   CollisionShape* collisionShape) {
 
     // Get the next available body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -73,13 +75,14 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform, C
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the collision body
-    CollisionBody* collisionBody = new (memoryPoolCollisionBodies.allocateObject()) CollisionBody(transform, collisionShape, bodyID);
+    CollisionBody* collisionBody = new (mMemoryPoolCollisionBodies.allocateObject())
+                                        CollisionBody(transform, collisionShape, bodyID);
 
     // Add the collision body to the world
-    bodies.insert(collisionBody);
+    mBodies.insert(collisionBody);
 
     // Add the collision body to the collision detection
-    collisionDetection.addBody(collisionBody);
+    mCollisionDetection.addBody(collisionBody);
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -89,19 +92,19 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform, C
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     // Remove the body from the collision detection
-    collisionDetection.removeBody(collisionBody);
+    mCollisionDetection.removeBody(collisionBody);
 
     // Add the body ID to the list of free IDs
-    freeBodiesIDs.push_back(collisionBody->getID());
+    mFreeBodiesIDs.push_back(collisionBody->getID());
 
     // Call the constructor of the collision body
     collisionBody->CollisionBody::~CollisionBody();
 
     // Remove the collision body from the list of bodies
-    bodies.erase(collisionBody);                                // TOOD : Maybe use a set to make this faster
+    mBodies.erase(collisionBody);           // TOOD : Maybe use a set to make this faster
 
     // Free the object from the memory pool
-    memoryPoolCollisionBodies.freeObject(collisionBody);
+    mMemoryPoolCollisionBodies.freeObject(collisionBody);
 }
 
 // Return the next available body ID
@@ -109,13 +112,13 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
 
     // Compute the body ID
     bodyindex bodyID;
-    if (!freeBodiesIDs.empty()) {
-        bodyID = freeBodiesIDs.back();
-        freeBodiesIDs.pop_back();
+    if (!mFreeBodiesIDs.empty()) {
+        bodyID = mFreeBodiesIDs.back();
+        mFreeBodiesIDs.pop_back();
     }
     else {
-        bodyID = currentBodyID;
-        currentBodyID++;
+        bodyID = mCurrentBodyID;
+        mCurrentBodyID++;
     }
 
     return bodyID;

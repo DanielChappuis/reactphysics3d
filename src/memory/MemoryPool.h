@@ -50,6 +50,7 @@ namespace reactphysics3d {
 */
 template<class T>
 class MemoryPool {
+
     private:
 
         // MemoryUnit represents a unit of memory
@@ -63,23 +64,62 @@ class MemoryPool {
             struct MemoryBlock* pNext;              // Pointer to the next memory block
         };
 
+        // -------------------- Constants -------------------- //
+
         static const uint NB_OBJECTS_FIRST_BLOCK;   // Number of objects allocated in the first block
-        void* pBlocks;                              // Pointer to the first allocated memory block
-        MemoryUnit* pAllocatedUnits;                // Pointer to the first allocated memory unit
-        MemoryUnit* pFreeUnits;                     // Pointer to the first free memory unit
-        uint currentNbObjects;                      // Current number of objects in the pool
-        uint capacity;                              // Current maximum number of objects that can be allocated in the pool
-        uint nbObjectsNextBlock;                    // Number of objects to allocate in the next block
-        void allocateMemory();                      // Allocate more memory (more blocks) when needed
+
+        // -------------------- Attributes -------------------- //
+
+        // Pointer to the first allocated memory block
+        void* mPBlocks;
+
+        // Pointer to the first allocated memory unit
+        MemoryUnit* mPAllocatedUnits;
+
+        // Pointer to the first free memory unit
+        MemoryUnit* mPFreeUnits;
+
+        // Current number of objects in the pool
+        uint mCurrentNbObjects;
+
+        // Current maximum number of objects that can be allocated in the pool
+        uint mCapacity;
+
+        // Number of objects to allocate in the next block
+        uint mNbObjectsNextBlock;
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        MemoryPool(const MemoryPool& body);
+
+        // Private assignment operator
+        MemoryPool& operator=(const MemoryPool& timer);
+
+        // Allocate more memory (more blocks) when needed
+        void allocateMemory();
 
     public:
-        MemoryPool(uint capacity = 0) throw(std::bad_alloc);    // Constructor
-        ~MemoryPool();                                          // Destructor
 
-        uint getCapacity() const;               // Return the current maximum number of objects allowed in the pool
-        uint getCurrentNbObjects() const;       // Return the current number of objects in the pool
-        void* allocateObject();                 // Return a pointer to an memory allocated location to store a new object
-        void freeObject(void* pObjectToFree);   // Tell the pool that an object doesn't need to be store in the pool anymore
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        MemoryPool(uint capacity = 0) throw(std::bad_alloc);
+
+        // Destructor
+        ~MemoryPool();
+
+        // Return the current maximum number of objects allowed in the pool
+        uint getCapacity() const;
+
+        // Return the current number of objects in the pool
+        uint getCurrentNbObjects() const;
+
+        // Return a pointer to an memory allocated location to store a new object
+        void* allocateObject();
+
+        // Tell the pool that an object doesn't need to be store in the pool anymore
+        void freeObject(void* pObjectToFree);
 };
 
 // static member definition
@@ -90,11 +130,11 @@ template<class T> const uint MemoryPool<T>::NB_OBJECTS_FIRST_BLOCK = 100;
 // a given number of object of the template type T
 template<class T>
 MemoryPool<T>::MemoryPool(uint capacity) throw(std::bad_alloc)
-              : currentNbObjects(0), capacity(capacity) {
-    pBlocks = 0;
-    pAllocatedUnits = 0;
-    pFreeUnits = 0;
-    nbObjectsNextBlock = (capacity == 0) ? NB_OBJECTS_FIRST_BLOCK : capacity;
+              : mCurrentNbObjects(0), mCapacity(capacity) {
+    mPBlocks = 0;
+    mPAllocatedUnits = 0;
+    mPFreeUnits = 0;
+    mNbObjectsNextBlock = (capacity == 0) ? NB_OBJECTS_FIRST_BLOCK : capacity;
 
     // Allocate the first memory block if the capacity is
     // different from zero
@@ -107,10 +147,10 @@ template<class T>
 MemoryPool<T>::~MemoryPool() {
     
     // Check if we have a memory leak
-    assert(currentNbObjects == 0);
+    assert(mCurrentNbObjects == 0);
     
     // Release all the allocated memory blocks
-    MemoryBlock* currentBlock = (MemoryBlock*) pBlocks;
+    MemoryBlock* currentBlock = (MemoryBlock*) mPBlocks;
     while(currentBlock) {
         MemoryBlock* tempBlock = currentBlock->pNext;
         free(currentBlock);
@@ -125,28 +165,28 @@ template<class T>
 void* MemoryPool<T>::allocateObject() {
 
     // If there is not enough allocated memory in the pool
-    if (currentNbObjects == capacity) {
+    if (mCurrentNbObjects == mCapacity) {
 
         // Allocate a new memory block
         allocateMemory();
     }
 
-    assert(currentNbObjects < capacity);
-    assert(pFreeUnits);
+    assert(mCurrentNbObjects < mCapacity);
+    assert(mPFreeUnits);
     
-    MemoryUnit* currentUnit = pFreeUnits;
-    pFreeUnits = currentUnit->pNext;
-    if (pFreeUnits) {
-        pFreeUnits->pPrevious = 0;
+    MemoryUnit* currentUnit = mPFreeUnits;
+    mPFreeUnits = currentUnit->pNext;
+    if (mPFreeUnits) {
+        mPFreeUnits->pPrevious = 0;
     }
 
-    currentUnit->pNext = pAllocatedUnits;
-    if (pAllocatedUnits) {
-        pAllocatedUnits->pPrevious = currentUnit;
+    currentUnit->pNext = mPAllocatedUnits;
+    if (mPAllocatedUnits) {
+        mPAllocatedUnits->pPrevious = currentUnit;
     }
-    pAllocatedUnits = currentUnit;
+    mPAllocatedUnits = currentUnit;
     
-    currentNbObjects++;
+    mCurrentNbObjects++;
 
     // Return a pointer to the allocated memory unit
     return (void*)((char*)currentUnit + sizeof(MemoryUnit));
@@ -164,18 +204,18 @@ void MemoryPool<T>::freeObject(void* pObjectToFree) {
     //assert(pBlocks<pObjectToFree && pObjectToFree<(void*)((char*)pBlocks + memorySize));
 
     MemoryUnit* currentUnit = (MemoryUnit*)((char*)pObjectToFree - sizeof(MemoryUnit));
-    pAllocatedUnits = currentUnit->pNext;
-    if (pAllocatedUnits) {
-        pAllocatedUnits->pPrevious = 0;
+    mPAllocatedUnits = currentUnit->pNext;
+    if (mPAllocatedUnits) {
+        mPAllocatedUnits->pPrevious = 0;
     }
 
-    currentUnit->pNext = pFreeUnits;
-    if (pFreeUnits) {
-        pFreeUnits->pPrevious = currentUnit;
+    currentUnit->pNext = mPFreeUnits;
+    if (mPFreeUnits) {
+        mPFreeUnits->pPrevious = currentUnit;
     }
-    pFreeUnits = currentUnit;
+    mPFreeUnits = currentUnit;
     
-    currentNbObjects--;
+    mCurrentNbObjects--;
 }
 
 // Allocate more memory. This method is called when there are no
@@ -185,54 +225,55 @@ template<class T>
 void MemoryPool<T>::allocateMemory() {
 
     // Compute the size of the new
-    size_t sizeBlock = nbObjectsNextBlock * (sizeof(MemoryUnit) + sizeof(T));
+    size_t sizeBlock = mNbObjectsNextBlock * (sizeof(MemoryUnit) + sizeof(T));
 
-    MemoryBlock* tempBlocks = (MemoryBlock*) pBlocks;
+    MemoryBlock* tempBlocks = (MemoryBlock*) mPBlocks;
 
     // Allocate a new memory block
-    pBlocks = malloc(sizeBlock);
+    mPBlocks = malloc(sizeBlock);
 
     // Check that the allocation didn't fail
-    if (!pBlocks) throw std::bad_alloc();
+    if (!mPBlocks) throw std::bad_alloc();
 
-    MemoryBlock* block = (MemoryBlock*) pBlocks;
+    MemoryBlock* block = (MemoryBlock*) mPBlocks;
     block->pNext = tempBlocks;
 
     // For each allocated memory unit in the new block
-    for (uint i=0; i<nbObjectsNextBlock; i++) {
+    for (uint i=0; i<mNbObjectsNextBlock; i++) {
 
         // Get the adress of a memory unit
-        MemoryUnit* currentUnit = (MemoryUnit*)( (char*)pBlocks + i * (sizeof(T) + sizeof(MemoryUnit)) );
+        MemoryUnit* currentUnit = (MemoryUnit*)( (char*)mPBlocks + i *
+                                                 (sizeof(T) + sizeof(MemoryUnit)) );
 
         currentUnit->pPrevious = 0;
-        currentUnit->pNext = pFreeUnits;
+        currentUnit->pNext = mPFreeUnits;
 
-        if (pFreeUnits) {
-            pFreeUnits->pPrevious = currentUnit;
+        if (mPFreeUnits) {
+            mPFreeUnits->pPrevious = currentUnit;
         }
 
-        pFreeUnits = currentUnit;
+        mPFreeUnits = currentUnit;
     }
 
     // Update the current capacity of the memory pool
-    capacity += nbObjectsNextBlock;
+    mCapacity += mNbObjectsNextBlock;
 
     // The next block will be two times the size of the last
     // allocated memory block
-    nbObjectsNextBlock *= 2;
+    mNbObjectsNextBlock *= 2;
 }
 
 
 // Return the maximum number of objects allowed in the pool
 template<class T>
 uint MemoryPool<T>::getCapacity() const {
-    return capacity;
+    return mCapacity;
 }
 
 // Return the current number of objects in the pool
 template<class T>
 uint MemoryPool<T>::getCurrentNbObjects() const {
-    return currentNbObjects;
+    return mCurrentNbObjects;
 }      
 
 }

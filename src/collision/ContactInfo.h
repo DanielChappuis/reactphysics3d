@@ -42,14 +42,38 @@ namespace reactphysics3d {
     -------------------------------------------------------------------
 */
 struct ContactInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        // Private copy-constructor
+        ContactInfo(const ContactInfo& contactInfo);
+
+        // Private assignment operator
+        ContactInfo& operator=(const ContactInfo& contactInfo);
+
     public:
-        const Vector3 normal;           // Normal vector the the collision contact in world space
-        const decimal penetrationDepth; // Penetration depth of the contact
-        const Vector3 localPoint1;      // Contact point of body 1 in local space of body 1
-        const Vector3 localPoint2;      // Contact point of body 2 in local space of body 2
-        
+
+        // -------------------- Attributes -------------------- //
+
+        // Normal vector the the collision contact in world space
+        const Vector3 normal;
+
+        // Penetration depth of the contact
+        const decimal penetrationDepth;
+
+        // Contact point of body 1 in local space of body 1
+        const Vector3 localPoint1;
+
+        // Contact point of body 2 in local space of body 2
+        const Vector3 localPoint2;
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
         ContactInfo(const Vector3& normal, decimal penetrationDepth,
-                    const Vector3& localPoint1, const Vector3& localPoint2);    // Constructor
+                    const Vector3& localPoint1, const Vector3& localPoint2);
 };
 
 } // End of the ReactPhysics3D namespace
