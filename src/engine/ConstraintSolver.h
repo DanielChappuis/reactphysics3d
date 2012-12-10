@@ -37,6 +37,51 @@ namespace reactphysics3d {
 
 // Declarations
 class DynamicsWorld;
+
+// Structure ContactPointConstraint
+// Internal structure for a contact point constraint
+struct ContactPointConstraint {
+
+    decimal penetrationImpulse;             // Accumulated normal impulse
+    decimal friction1Impulse;               // Accumulated impulse in the 1st friction direction
+    decimal friction2Impulse;               // Accumulated impulse in the 2nd friction direction
+    Vector3 normal;                         // Normal vector of the contact
+    Vector3 frictionVector1;                // First friction vector in the tangent plane
+    Vector3 frictionVector2;                // Second friction vector in the tangent plane
+    Vector3 oldFrictionVector1;             // Old first friction vector in the tangent plane
+    Vector3 oldFrictionVector2;             // Old second friction vector in the tangent plane
+    Vector3 r1;                             // Vector from the body 1 center to the contact point
+    Vector3 r2;                             // Vector from the body 2 center to the contact point
+    Vector3 r1CrossT1;                      // Cross product of r1 with 1st friction vector
+    Vector3 r1CrossT2;                      // Cross product of r1 with 2nd friction vector
+    Vector3 r2CrossT1;                      // Cross product of r2 with 1st friction vector
+    Vector3 r2CrossT2;                      // Cross product of r2 with 2nd friction vector
+    Vector3 r1CrossN;                       // Cross product of r1 with the contact normal
+    Vector3 r2CrossN;                       // Cross product of r2 with the contact normal
+    decimal penetrationDepth;               // Penetration depth
+    decimal restitutionBias;                // Velocity restitution bias
+    decimal inversePenetrationMass;         // Inverse of the matrix K for the penenetration
+    decimal inverseFriction1Mass;           // Inverse of the matrix K for the 1st friction
+    decimal inverseFriction2Mass;           // Inverse of the matrix K for the 2nd friction
+};
+
+// Structure ContactConstraint
+struct ContactConstraint {
+
+    // TODO : Use a constant for the number of contact points
+
+    uint indexBody1;                        // Index of body 1 in the constraint solver
+    uint indexBody2;                        // Index of body 2 in the constraint solver
+    decimal massInverseBody1;               // Inverse of the mass of body 1
+    decimal massInverseBody2;               // Inverse of the mass of body 2
+    Matrix3x3 inverseInertiaTensorBody1;    // Inverse inertia tensor of body 1
+    Matrix3x3 inverseInertiaTensorBody2;    // Inverse inertia tensor of body 2
+    bool isBody1Moving;                     // True if the body 1 is allowed to move
+    bool isBody2Moving;                     // True if the body 2 is allowed to move
+    ContactPointConstraint contacts[4];     // Contact point constraints
+    uint nbContacts;                        // Number of contact points
+    decimal restitutionFactor;              // Mix of the restitution factor for two bodies
+};
     
     
 /*  -------------------------------------------------------------------
@@ -69,18 +114,15 @@ class ConstraintSolver {
         DynamicsWorld* world;                           // Reference to the world
         std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
         bool isErrorCorrectionActive;                   // True if error correction (with world order) is active
-        uint nbIterationsLCP;                           // Number of iterations of the LCP solver
+        uint nbIterations;                           // Number of iterations of the LCP solver
         uint nbIterationsLCPErrorCorrection;            // Number of iterations of the LCP solver for error correction
         uint nbConstraints;                             // Total number of constraints (with the auxiliary constraints)
         uint nbConstraintsError;                        // Number of constraints for error correction projection (only contact constraints)
         uint nbBodies;                                  // Current number of bodies in the physics world
-        std::set<Body*> constraintBodies;               // Bodies that are implied in some constraint
-        std::map<Body*, uint> bodyNumberMapping;        // Map a body pointer with its index number
-        Body* bodyMapping[NB_MAX_CONSTRAINTS][2];       // 2-dimensional array that contains the mapping of body reference
+        RigidBody* bodyMapping[NB_MAX_CONSTRAINTS][2];       // 2-dimensional array that contains the mapping of body reference
                                                         // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
                                                         // the pointer to the body that correspond to the 1x6 J_ij matrix in the
                                                         // J_sp matrix. An integer body index refers to its index in the "bodies" std::vector
-        Body* bodyMappingError[NB_MAX_CONSTRAINTS][2];  // Same as bodyMapping but for error correction projection
         decimal J_sp[NB_MAX_CONSTRAINTS][2*6];          // 2-dimensional array that correspond to the sparse representation of the jacobian matrix of all constraints
                                                         // This array contains for each constraint two 1x6 Jacobian matrices (one for each body of the constraint)
                                                         // a 1x6 matrix
@@ -112,88 +154,67 @@ class ConstraintSolver {
         decimal VconstraintError[6*NB_MAX_BODIES];      // Same kind of vector as V1 but contains the final constraint velocities
         decimal Fext[6*NB_MAX_BODIES];                  // Array that contains for each body the 6x1 vector that contains external forces and torques
                                                         // Each cell contains a 6x1 vector with external force and torque.
+
+        // Contact constraints
+        ContactConstraint* mContactConstraints;
+
+        // Constrained bodies
+        std::set<RigidBody*> mConstraintBodies;
+
+        // Map body to index
+        std::map<RigidBody*, uint> mMapBodyToIndex;
+
+
         void initialize();                              // Initialize the constraint solver before each solving
         void fillInMatrices(decimal dt);                // Fill in all the matrices needed to solve the LCP problem
         void computeVectorB(decimal dt);                // Compute the vector b
-        void computeVectorBError(decimal dt);           // Compute the vector b for error correction projection
         void computeMatrixB_sp();                       // Compute the matrix B_sp
-        void computeMatrixB_spErrorCorrection();        // Compute the matrix B_spError for error correction projection
         void computeVectorVconstraint(decimal dt);      // Compute the vector V2
-        void computeVectorVconstraintError(decimal dt); // Same as computeVectorVconstraint() but for error correction projection
         void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
         void computeVectorA();                          // Compute the vector a used in the solve() method
-        void computeVectorAError();                     // Same as computeVectorA() but for error correction projection
         void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
-        void solveLCPErrorCorrection();                 // Solve the LCP problem for error correction projection
     
    public:
         ConstraintSolver(DynamicsWorld* world);                         // Constructor
         virtual ~ConstraintSolver();                                   // Destructor
         void solve(decimal dt);                                         // Solve the current LCP problem
-        bool isConstrainedBody(Body* body) const;                      // Return true if the body is in at least one constraint
-        Vector3 getConstrainedLinearVelocityOfBody(Body* body);        // Return the constrained linear velocity of a body after solving the LCP problem
-        Vector3 getConstrainedAngularVelocityOfBody(Body* body);       // Return the constrained angular velocity of a body after solving the LCP problem
-        Vector3 getErrorConstrainedLinearVelocityOfBody(Body* body);   // Return the constrained linear velocity of a body after solving the LCP problem for error correction
-        Vector3 getErrorConstrainedAngularVelocityOfBody(Body* body);  // Return the constrained angular velocity of a body after solving the LCP problem for error correction
+        bool isConstrainedBody(RigidBody* body) const;                 // Return true if the body is in at least one constraint
+        Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);        // Return the constrained linear velocity of a body after solving the LCP problem
+        Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);       // Return the constrained angular velocity of a body after solving the LCP problem
         void cleanup();                                                 // Cleanup of the constraint solver
         void setNbLCPIterations(uint nbIterations);                     // Set the number of iterations of the LCP solver
-        void setIsErrorCorrectionActive(bool isErrorCorrectionActive);  // Set the isErrorCorrectionActive value
 };
 
 // Return true if the body is in at least one constraint
-inline bool ConstraintSolver::isConstrainedBody(Body* body) const {
-    if(constraintBodies.find(body) != constraintBodies.end()) {
-        return true;
-    }
-    return false;
+inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
+    return mConstraintBodies.count(body) == 1;
 }
 
 // Return the constrained linear velocity of a body after solving the LCP problem
-inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(Body* body) {
+inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * bodyNumberMapping[body];
+    uint indexBodyArray = 6 * mMapBodyToIndex[body];
     return Vector3(Vconstraint[indexBodyArray], Vconstraint[indexBodyArray + 1], Vconstraint[indexBodyArray + 2]);
 }
 
 // Return the constrained angular velocity of a body after solving the LCP problem
-inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(Body* body) {
+inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * bodyNumberMapping[body];
+    uint indexBodyArray = 6 * mMapBodyToIndex[body];
     return Vector3(Vconstraint[indexBodyArray + 3], Vconstraint[indexBodyArray + 4], Vconstraint[indexBodyArray + 5]);
 }
 
-// Return the constrained linear velocity of a body after solving the LCP problem for error correction
-inline Vector3 ConstraintSolver::getErrorConstrainedLinearVelocityOfBody(Body* body) {
-    //assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * bodyNumberMapping[body];
-    return Vector3(VconstraintError[indexBodyArray], VconstraintError[indexBodyArray + 1], VconstraintError[indexBodyArray + 2]);
-}  
-
-// Return the constrained angular velocity of a body after solving the LCP problem for error correction
-inline Vector3 ConstraintSolver::getErrorConstrainedAngularVelocityOfBody(Body* body) {
-    //assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * bodyNumberMapping[body];
-    return Vector3(VconstraintError[indexBodyArray + 3], VconstraintError[indexBodyArray + 4], VconstraintError[indexBodyArray + 5]);
-} 
-
 // Cleanup of the constraint solver
 inline void ConstraintSolver::cleanup() {
-    bodyNumberMapping.clear();
-    constraintBodies.clear();
+    mMapBodyToIndex.clear();
+    mConstraintBodies.clear();
     activeConstraints.clear();
 }
 
 // Set the number of iterations of the LCP solver
 inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
-    nbIterationsLCP = nbIterations;
+    nbIterations = nbIterations;
 }         
-
-
-// Set the isErrorCorrectionActive value
-inline void ConstraintSolver::setIsErrorCorrectionActive(bool isErrorCorrectionActive) {
-    this->isErrorCorrectionActive = isErrorCorrectionActive;
-}
-
 
 // Solve the current LCP problem
 inline void ConstraintSolver::solve(decimal dt) {
@@ -206,30 +227,18 @@ inline void ConstraintSolver::solve(decimal dt) {
 
     // Compute the vector b
     computeVectorB(dt);
-    if (isErrorCorrectionActive) {
-        computeVectorBError(dt);
-    }
 
     // Compute the matrix B
     computeMatrixB_sp();
-    if (isErrorCorrectionActive) {
-        computeMatrixB_spErrorCorrection();
-    }
 
     // Solve the LCP problem (computation of lambda)
     solveLCP();
-    if (isErrorCorrectionActive) {
-        solveLCPErrorCorrection();
-    }
 
     // Cache the lambda values in order to use them in the next step
     cacheLambda();
     
     // Compute the vector Vconstraint
     computeVectorVconstraint(dt);
-    if (isErrorCorrectionActive) {
-        computeVectorVconstraintError(dt);
-    }
 }
 
 } // End of ReactPhysics3D namespace

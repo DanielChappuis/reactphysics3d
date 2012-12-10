@@ -62,7 +62,10 @@ class DynamicsWorld : public CollisionWorld {
         // All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
-        // List that contains all the current constraints
+        // All the contact constraints
+        std::vector<Contact*> mContactConstraints;
+
+        // All the constraints (except contact constraints)
         std::vector<Constraint*> mConstraints;
 
         // Gravity vector of the world
@@ -93,9 +96,7 @@ class DynamicsWorld : public CollisionWorld {
 
         // Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity,
-                                                const Vector3& newAngVelocity,
-                                                const Vector3& linearVelocityErrorCorrection,
-                                                const Vector3& angularVelocityErrorCorrection);
+                                                const Vector3& newAngVelocity);
 
         // Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
@@ -166,17 +167,23 @@ public :
         // Remove a constraint
         void removeConstraint(Constraint* constraint);
 
-        // Remove all collision contacts constraints
-        void removeAllContactConstraints();
-
         // Remove all constraints and delete them (free their memory)
         void removeAllConstraints();
+
+        // Return the number of contact constraints in the world
+        uint getNbContactConstraints() const;
 
         // Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();
 
         // Return a end iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();
+
+        // Return a start iterator on the contact constraint list
+        std::vector<Contact*>::iterator getContactConstraintsBeginIterator();
+
+        // Return a end iterator on the contact constraint list
+        std::vector<Contact*>::iterator getContactConstraintsEndIterator();
 
         // Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -201,11 +208,6 @@ inline void DynamicsWorld::stop() {
 inline void DynamicsWorld::setNbLCPIterations(uint nbIterations) {
     mConstraintSolver.setNbLCPIterations(nbIterations);
 }   
-
-// Set the isErrorCorrectionActive value
-inline void DynamicsWorld::setIsErrorCorrectionActive(bool isErrorCorrectionActive) {
-    mConstraintSolver.setIsErrorCorrectionActive(isErrorCorrectionActive);
-}
 
 // Reset the boolean movement variable of each body
 inline void DynamicsWorld::resetBodiesMovementVariable() {
@@ -275,6 +277,11 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
     return mRigidBodies.end();
 }
 
+// Return the number of contact constraints in the world
+inline uint DynamicsWorld::getNbContactConstraints() const {
+    return mContactConstraints.size();
+}
+
 // Return a start iterator on the constraint list
 inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIterator() {
     return mConstraints.begin();
@@ -283,6 +290,16 @@ inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIter
 // Return a end iterator on the constraint list
 inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsEndIterator() {
     return mConstraints.end();
+}
+
+// Return a start iterator on the contact constraint list
+inline std::vector<Contact*>::iterator DynamicsWorld::getContactConstraintsBeginIterator() {
+    return mContactConstraints.begin();
+}
+
+// Return a end iterator on the contact constraint list
+inline std::vector<Contact*>::iterator DynamicsWorld::getContactConstraintsEndIterator() {
+    return mContactConstraints.end();
 }
 
 }

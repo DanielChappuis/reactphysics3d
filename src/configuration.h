@@ -79,8 +79,8 @@ const reactphysics3d::decimal OBJECT_MARGIN = 0.04;
 // Friction coefficient
 const reactphysics3d::decimal FRICTION_COEFFICIENT = 0.4;
 
-// Distance threshold for two contact points for a valid persistent contact
-const reactphysics3d::decimal PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;
+// Distance threshold for two contact points for a valid persistent contact (in meters)
+const reactphysics3d::decimal PERSISTENT_CONTACT_DIST_THRESHOLD = 0.03;
 
 // Maximum number of bodies
 const int NB_MAX_BODIES = 100000;

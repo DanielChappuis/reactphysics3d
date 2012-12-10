@@ -41,19 +41,22 @@ PersistentContactCache::~PersistentContactCache() {
 
 // Add a contact in the cache
 void PersistentContactCache::addContact(Contact* contact) {
-
-    int indexNewContact = mNbContacts;
 	
 	// For contact already in the cache
 	for (uint i=0; i<mNbContacts; i++) {
+
 		// Check if the new point point does not correspond to a same contact point
-		// already in the cache. If it's the case, we do not add the new contact
-		if (isApproxEqual(contact->getLocalPointOnBody1(), mContacts[i]->getLocalPointOnBody1())) {
-			// Delete the new contact
-			contact->Contact::~Contact();
-			mMemoryPoolContacts.freeObject(contact);
-			
-			return;
+        // already in the cache.
+        decimal distance = (mContacts[i]->getWorldPointOnBody1() - contact->getWorldPointOnBody1()).lengthSquare();
+        if (distance <= PERSISTENT_CONTACT_DIST_THRESHOLD*PERSISTENT_CONTACT_DIST_THRESHOLD) {
+
+            // Delete the new contact
+            contact->Contact::~Contact();
+            mMemoryPoolContacts.freeObject(contact);
+            //removeContact(i);
+
+            return;
+            //break;
 		}
 	}
     
@@ -62,11 +65,10 @@ void PersistentContactCache::addContact(Contact* contact) {
         int indexMaxPenetration = getIndexOfDeepestPenetration(contact);
         int indexToRemove = getIndexToRemove(indexMaxPenetration, contact->getLocalPointOnBody1());
         removeContact(indexToRemove);
-        indexNewContact = indexToRemove;
     }
 
     // Add the new contact in the cache
-    mContacts[indexNewContact] = contact;
+    mContacts[mNbContacts] = contact;
     mNbContacts++;
 }
 
@@ -104,21 +106,28 @@ void PersistentContactCache::update(const Transform& transform1, const Transform
         mContacts[i]->setPenetrationDepth((mContacts[i]->getWorldPointOnBody1() - mContacts[i]->getWorldPointOnBody2()).dot(mContacts[i]->getNormal()));
     }
 
+    const decimal squarePersistentContactThreshold = PERSISTENT_CONTACT_DIST_THRESHOLD *
+                                                     PERSISTENT_CONTACT_DIST_THRESHOLD;
+
     // Remove the contacts that don't represent very well the persistent contact
     for (int i=mNbContacts-1; i>=0; i--) {
         assert(i>= 0 && i < mNbContacts);
+
+        // Compute the distance between contact points in the normal direction
+        decimal distanceNormal = -mContacts[i]->getPenetrationDepth();
         
-        // Remove the contacts with a negative penetration depth (meaning that the bodies are not penetrating anymore)
-        if (mContacts[i]->getPenetrationDepth() <= 0.0) {
+        // If the contacts points are too far from each other in the normal direction
+        if (distanceNormal > squarePersistentContactThreshold) {
             removeContact(i);
         }
         else {
-            // Compute the distance of the two contact points in the place orthogonal to the contact normal
-            Vector3 projOfPoint1 = mContacts[i]->getWorldPointOnBody1() - mContacts[i]->getNormal() * mContacts[i]->getPenetrationDepth();
+            // Compute the distance of the two contact points in the plane orthogonal to the contact normal
+            Vector3 projOfPoint1 = mContacts[i]->getWorldPointOnBody1() +
+                                   mContacts[i]->getNormal() * distanceNormal;
             Vector3 projDifference = mContacts[i]->getWorldPointOnBody2() - projOfPoint1;
 
             // If the orthogonal distance is larger than the valid distance threshold, we remove the contact
-            if (projDifference.lengthSquare() > PERSISTENT_CONTACT_DIST_THRESHOLD * PERSISTENT_CONTACT_DIST_THRESHOLD) {
+            if (projDifference.lengthSquare() > squarePersistentContactThreshold) {
                 removeContact(i);
             }
         }
