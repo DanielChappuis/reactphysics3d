@@ -105,6 +105,7 @@ inline int EdgeEPA::getIndex() const {
 inline EdgeEPA& EdgeEPA::operator=(const EdgeEPA& edge) {
     mOwnerTriangle = edge.mOwnerTriangle;
     mIndex = edge.mIndex;
+    return *this;
 }
 
 // Return the index of the next counter-clockwise edge of the ownver triangle
