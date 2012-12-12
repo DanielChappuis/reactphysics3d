@@ -49,45 +49,53 @@ void ConstraintSolver::initialize() {
     nbConstraints = 0;
 
     // TOOD : Use better allocation here
-    mContactConstraints = new ContactConstraint[world->getNbContactConstraints()];
+    mContactConstraints = new ContactConstraint[world->getNbContactManifolds()];
 
     uint nbContactConstraints = 0;
 
-    // For each constraint
-    vector<Contact*>::iterator it;
-    for (it = world->getContactConstraintsBeginIterator(); it != world->getContactConstraintsEndIterator(); ++it) {
-        Contact* contact = *it;
+    // For each contact manifold of the world
+    vector<ContactManifold>::iterator it;
+    for (it = world->getContactManifoldsBeginIterator(); it != world->getContactManifoldsEndIterator(); ++it) {
+        ContactManifold contactManifold = *it;
 
-        // If the constraint is active
-        if (contact->isActive()) {
+        // For each contact point of the contact manifold
+        for (uint c=0; c<contactManifold.nbContacts; c++) {
 
-            RigidBody* body1 = contact->getBody1();
-            RigidBody* body2 = contact->getBody2();
+            // Get a contact point
+            Contact* contact = contactManifold.contacts[c];
 
-            activeConstraints.push_back(contact);
+            // If the constraint is active
+            if (contact->isActive()) {
 
-            // Add the two bodies of the constraint in the constraintBodies list
-            mConstraintBodies.insert(body1);
-            mConstraintBodies.insert(body2);
+                RigidBody* body1 = contact->getBody1();
+                RigidBody* body2 = contact->getBody2();
 
-            // Fill in the body number maping
-            mMapBodyToIndex.insert(make_pair(body1, mMapBodyToIndex.size()));
-            mMapBodyToIndex.insert(make_pair(body2, mMapBodyToIndex.size()));
+                activeConstraints.push_back(contact);
 
-            // Update the size of the jacobian matrix
-            nbConstraints += contact->getNbConstraints();
-            
-            ContactConstraint constraint = mContactConstraints[nbContactConstraints];
-            constraint.indexBody1 = mMapBodyToIndex[body1];
-            constraint.indexBody2 = mMapBodyToIndex[body2];
-            constraint.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
-            constraint.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
-            constraint.isBody1Moving = body1->getIsMotionEnabled();
-            constraint.isBody2Moving = body2->getIsMotionEnabled();
-            constraint.massInverseBody1 = body1->getMassInverse();
-            constraint.massInverseBody2 = body2->getMassInverse();
+                // Add the two bodies of the constraint in the constraintBodies list
+                mConstraintBodies.insert(body1);
+                mConstraintBodies.insert(body2);
 
-            nbContactConstraints++;
+                // Fill in the body number maping
+                mMapBodyToIndex.insert(make_pair(body1, mMapBodyToIndex.size()));
+                mMapBodyToIndex.insert(make_pair(body2, mMapBodyToIndex.size()));
+
+                // Update the size of the jacobian matrix
+                nbConstraints += contact->getNbConstraints();
+
+                ContactConstraint constraint = mContactConstraints[nbContactConstraints];
+                constraint.indexBody1 = mMapBodyToIndex[body1];
+                constraint.indexBody2 = mMapBodyToIndex[body2];
+                constraint.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
+                constraint.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
+                constraint.isBody1Moving = body1->getIsMotionEnabled();
+                constraint.isBody2Moving = body2->getIsMotionEnabled();
+                constraint.massInverseBody1 = body1->getMassInverse();
+                constraint.massInverseBody2 = body2->getMassInverse();
+
+                nbContactConstraints++;
+            }
+
         }
     }
 

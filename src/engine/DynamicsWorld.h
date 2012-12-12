@@ -28,6 +28,7 @@
 
 // Libraries
 #include "CollisionWorld.h"
+#include "ContactManifold.h"
 #include "../collision/CollisionDetection.h"
 #include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
@@ -63,7 +64,7 @@ class DynamicsWorld : public CollisionWorld {
         std::set<RigidBody*> mRigidBodies;
 
         // All the contact constraints
-        std::vector<Contact*> mContactConstraints;
+        std::vector<ContactManifold> mContactManifolds;
 
         // All the constraints (except contact constraints)
         std::vector<Constraint*> mConstraints;
@@ -171,7 +172,7 @@ public :
         void removeAllConstraints();
 
         // Return the number of contact constraints in the world
-        uint getNbContactConstraints() const;
+        uint getNbContactManifolds() const;
 
         // Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();
@@ -179,11 +180,11 @@ public :
         // Return a end iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();
 
-        // Return a start iterator on the contact constraint list
-        std::vector<Contact*>::iterator getContactConstraintsBeginIterator();
+        // Return a start iterator on the contact manifolds list
+        std::vector<ContactManifold>::iterator getContactManifoldsBeginIterator();
 
-        // Return a end iterator on the contact constraint list
-        std::vector<Contact*>::iterator getContactConstraintsEndIterator();
+        // Return a end iterator on the contact manifolds list
+        std::vector<ContactManifold>::iterator getContactManifoldsEndIterator();
 
         // Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -277,9 +278,9 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
     return mRigidBodies.end();
 }
 
-// Return the number of contact constraints in the world
-inline uint DynamicsWorld::getNbContactConstraints() const {
-    return mContactConstraints.size();
+// Return the number of contact manifolds in the world
+inline uint DynamicsWorld::getNbContactManifolds() const {
+    return mContactManifolds.size();
 }
 
 // Return a start iterator on the constraint list
@@ -292,14 +293,14 @@ inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsEndIterat
     return mConstraints.end();
 }
 
-// Return a start iterator on the contact constraint list
-inline std::vector<Contact*>::iterator DynamicsWorld::getContactConstraintsBeginIterator() {
-    return mContactConstraints.begin();
+// Return a start iterator on the contact manifolds list
+inline std::vector<ContactManifold>::iterator DynamicsWorld::getContactManifoldsBeginIterator() {
+    return mContactManifolds.begin();
 }
 
-// Return a end iterator on the contact constraint list
-inline std::vector<Contact*>::iterator DynamicsWorld::getContactConstraintsEndIterator() {
-    return mContactConstraints.end();
+// Return a end iterator on the contact manifolds list
+inline std::vector<ContactManifold>::iterator DynamicsWorld::getContactManifoldsEndIterator() {
+    return mContactManifolds.end();
 }
 
 }

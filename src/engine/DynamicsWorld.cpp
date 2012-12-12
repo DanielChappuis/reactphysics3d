@@ -50,7 +50,6 @@ DynamicsWorld::~DynamicsWorld() {
 
 // Update the physics simulation
 void DynamicsWorld::update() {
-    bool existCollision = false;
 
     assert(mTimer.getIsRunning());
     
@@ -63,16 +62,16 @@ void DynamicsWorld::update() {
     // While the time accumulator is not empty
     while(mTimer.isPossibleToTakeStep()) {
 
-        existCollision = false;
-
-        // Remove all contact constraints
-        mContactConstraints.clear();
+        // Remove all contact manifolds
+        mContactManifolds.clear();
 		
         // Compute the collision detection
-        if (mCollisionDetection.computeCollisionDetection()) {
-            existCollision = true;
+        mCollisionDetection.computeCollisionDetection();
 
-            // Solve constraints
+        // If there are constraints or contacts
+        if (!mConstraints.empty() || !mContactManifolds.empty()) {
+
+            // Solve the constraints and contacts
             mConstraintSolver.solve(mTimer.getTimeStep());
         }
 
@@ -86,9 +85,7 @@ void DynamicsWorld::update() {
         updateAllBodiesMotion();
 
         // Cleanup of the constraint solver
-        if (existCollision) {
-           mConstraintSolver.cleanup();
-        }
+        mConstraintSolver.cleanup();
     }
 
     // Compute and set the interpolation factor to all the bodies
@@ -302,9 +299,17 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     // Add the contact to the contact cache of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
+    // Create a contact manifold with the contact points of the two bodies
+    ContactManifold contactManifold;
+    contactManifold.nbContacts = 0;
+
     // Add all the contacts in the contact cache of the two bodies
     // to the set of constraints in the physics world
     for (uint i=0; i<overlappingPair->getNbContacts(); i++) {
-        mContactConstraints.push_back(overlappingPair->getContact(i));
+        contactManifold.contacts[i] = overlappingPair->getContact(i);
+        contactManifold.nbContacts++;
     }
+
+    // Add the contact manifold to the world
+    mContactManifolds.push_back(contactManifold);
 }
