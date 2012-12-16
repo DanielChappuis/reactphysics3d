@@ -150,6 +150,22 @@ class Contact : public Constraint {
         // Compute the error values for all the mathematical constraints
         virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const;
 
+        void computeErrorPenetration(decimal& error);
+
+        void computeJacobianPenetration(decimal J_spBody1[6], decimal J_spBody2[6]);
+
+        void computeJacobianFriction1(decimal J_spBody1[6], decimal J_spBody2[6]);
+
+        void computeJacobianFriction2(decimal J_spBody1[6], decimal J_spBody2[6]);
+
+        void computeLowerBoundPenetration(decimal& lowerBound);
+        void computeLowerBoundFriction1(decimal& lowerBound);
+        void computeLowerBoundFriction2(decimal& lowerBound);
+
+        void computeUpperBoundPenetration(decimal& upperBound);
+        void computeUpperBoundFriction1(decimal& upperBound);
+        void computeUpperBoundFriction2(decimal& upperBound);
+
         // Return the penetration depth
         decimal getPenetrationDepth() const;
 

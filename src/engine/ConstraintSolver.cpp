@@ -34,7 +34,7 @@ using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
-                 :world(world), nbConstraints(0), nbIterations(10) {
+                 :world(world), nbConstraints(0), mNbIterations(10), mContactConstraints(0) {
 
 }
 
@@ -51,12 +51,37 @@ void ConstraintSolver::initialize() {
     // TOOD : Use better allocation here
     mContactConstraints = new ContactConstraint[world->getNbContactManifolds()];
 
-    uint nbContactConstraints = 0;
+    mNbContactConstraints = 0;
 
     // For each contact manifold of the world
     vector<ContactManifold>::iterator it;
     for (it = world->getContactManifoldsBeginIterator(); it != world->getContactManifoldsEndIterator(); ++it) {
         ContactManifold contactManifold = *it;
+
+        ContactConstraint& constraint = mContactConstraints[mNbContactConstraints];
+
+        assert(contactManifold.nbContacts > 0);
+
+        RigidBody* body1 = contactManifold.contacts[0]->getBody1();
+        RigidBody* body2 = contactManifold.contacts[0]->getBody2();
+
+        // Fill in the body number maping
+        mMapBodyToIndex.insert(make_pair(body1, mMapBodyToIndex.size()));
+        mMapBodyToIndex.insert(make_pair(body2, mMapBodyToIndex.size()));
+
+        // Add the two bodies of the constraint in the constraintBodies list
+        mConstraintBodies.insert(body1);
+        mConstraintBodies.insert(body2);
+
+        constraint.indexBody1 = mMapBodyToIndex[body1];
+        constraint.indexBody2 = mMapBodyToIndex[body2];
+        constraint.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
+        constraint.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
+        constraint.isBody1Moving = body1->getIsMotionEnabled();
+        constraint.isBody2Moving = body2->getIsMotionEnabled();
+        constraint.massInverseBody1 = body1->getMassInverse();
+        constraint.massInverseBody2 = body2->getMassInverse();
+        constraint.nbContacts = contactManifold.nbContacts;
 
         // For each contact point of the contact manifold
         for (uint c=0; c<contactManifold.nbContacts; c++) {
@@ -64,94 +89,87 @@ void ConstraintSolver::initialize() {
             // Get a contact point
             Contact* contact = contactManifold.contacts[c];
 
-            // If the constraint is active
-            if (contact->isActive()) {
-
-                RigidBody* body1 = contact->getBody1();
-                RigidBody* body2 = contact->getBody2();
-
-                activeConstraints.push_back(contact);
-
-                // Add the two bodies of the constraint in the constraintBodies list
-                mConstraintBodies.insert(body1);
-                mConstraintBodies.insert(body2);
-
-                // Fill in the body number maping
-                mMapBodyToIndex.insert(make_pair(body1, mMapBodyToIndex.size()));
-                mMapBodyToIndex.insert(make_pair(body2, mMapBodyToIndex.size()));
-
-                // Update the size of the jacobian matrix
-                nbConstraints += contact->getNbConstraints();
-
-                ContactConstraint constraint = mContactConstraints[nbContactConstraints];
-                constraint.indexBody1 = mMapBodyToIndex[body1];
-                constraint.indexBody2 = mMapBodyToIndex[body2];
-                constraint.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
-                constraint.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
-                constraint.isBody1Moving = body1->getIsMotionEnabled();
-                constraint.isBody2Moving = body2->getIsMotionEnabled();
-                constraint.massInverseBody1 = body1->getMassInverse();
-                constraint.massInverseBody2 = body2->getMassInverse();
-
-                nbContactConstraints++;
-            }
-
+            constraint.contacts[c].contact = contact;
         }
+
+        mNbContactConstraints++;
     }
 
     // Compute the number of bodies that are part of some active constraint
-    nbBodies = mMapBodyToIndex.size();
+    nbBodies = mConstraintBodies.size();
 
-    assert(nbConstraints > 0 && nbConstraints <= NB_MAX_CONSTRAINTS);
-    assert(nbBodies > 0 && nbBodies <= NB_MAX_BODIES);
+    assert(mMapBodyToIndex.size() == nbBodies);
 }
 
 // Fill in all the matrices needed to solve the LCP problem
 // Notice that all the active constraints should have been evaluated first
 void ConstraintSolver::fillInMatrices(decimal dt) {
-    Constraint* constraint;
     decimal oneOverDt = 1.0 / dt;
-
-    // For each active constraint
-    int noConstraint = 0;
     
-    for (int c=0; c<activeConstraints.size(); c++) {
+    // For each contact constraint
+    for (uint c=0; c<mNbContactConstraints; c++) {
+
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        // For each contact point constraint
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+            Contact* realContact = contact.contact;
         
-        constraint = activeConstraints.at(c);
+            // Fill in the J_sp matrix
+            realContact->computeJacobianPenetration(contact.J_spBody1Penetration, contact.J_spBody2Penetration);
+            realContact->computeJacobianFriction1(contact.J_spBody1Friction1, contact.J_spBody2Friction1);
+            realContact->computeJacobianFriction2(contact.J_spBody1Friction2, contact.J_spBody2Friction2);
 
-        // Fill in the J_sp matrix
-        constraint->computeJacobian(noConstraint, J_sp);
+            // Fill in the body mapping matrix
+            //for(int i=0; i<realContact->getNbConstraints(); i++) {
+            //    bodyMapping[noConstraint+i][0] = constraint->getBody1();
+            //    bodyMapping[noConstraint+i][1] = constraint->getBody2();
+            //}
 
-        // Fill in the body mapping matrix
-        for(int i=0; i<constraint->getNbConstraints(); i++) {
-            bodyMapping[noConstraint+i][0] = constraint->getBody1();
-            bodyMapping[noConstraint+i][1] = constraint->getBody2();
-        }
+            // Fill in the limit vectors for the constraint
+            realContact->computeLowerBoundPenetration(contact.lowerBoundPenetration);
+            realContact->computeLowerBoundFriction1(contact.lowerBoundFriction1);
+            realContact->computeLowerBoundFriction2(contact.lowerBoundFriction2);
+            realContact->computeUpperBoundPenetration(contact.upperBoundPenetration);
+            realContact->computeUpperBoundFriction1(contact.upperBoundFriction1);
+            realContact->computeUpperBoundFriction2(contact.upperBoundFriction2);
 
-        // Fill in the limit vectors for the constraint
-        constraint->computeLowerBound(noConstraint, lowerBounds);
-        constraint->computeUpperBound(noConstraint, upperBounds);
+            // Fill in the error vector
+            realContact->computeErrorPenetration(contact.errorPenetration);
+            contact.errorFriction1 = 0.0;
+            contact.errorFriction2 = 0.0;
 
-        // Fill in the error vector
-        constraint->computeErrorValue(noConstraint, errorValues);
+            // Get the cached lambda values of the constraint
+            contact.penetrationImpulse = realContact->getCachedLambda(0);
+            contact.friction1Impulse = realContact->getCachedLambda(1);
+            contact.friction2Impulse = realContact->getCachedLambda(2);
+            //for (int i=0; i<constraint->getNbConstraints(); i++) {
+            //    lambdaInit[noConstraint + i] = constraint->getCachedLambda(i);
+           // }
 
-        // Get the cached lambda values of the constraint
-        for (int i=0; i<constraint->getNbConstraints(); i++) {
-            lambdaInit[noConstraint + i] = constraint->getCachedLambda(i);
-        }
-
-        // If the constraint is a contact
-        if (constraint->getType() == CONTACT) {
-            Contact* contact = dynamic_cast<Contact*>(constraint);
-
-            // Add the Baumgarte error correction term for contacts
+            contact.errorPenetration = 0.0;
             decimal slop = 0.005;
-            if (contact->getPenetrationDepth() > slop) {
-                errorValues[noConstraint] += 0.2 * oneOverDt * std::max(double(contact->getPenetrationDepth() - slop), 0.0);
+            if (realContact->getPenetrationDepth() > slop) {
+                 contact.errorPenetration += 0.2 * oneOverDt * std::max(double(realContact->getPenetrationDepth() - slop), 0.0);
             }
+            contact.errorFriction1 = 0.0;
+            contact.errorFriction2 = 0.0;
+
+            /*
+            // If the constraint is a contact
+            if (constraint->getType() == CONTACT) {
+                Contact* contact = dynamic_cast<Contact*>(constraint);
+
+                // Add the Baumgarte error correction term for contacts
+               decimal slop = 0.005;
+                if (contact->getPenetrationDepth() > slop) {
+                    errorValues[noConstraint] += 0.2 * oneOverDt * std::max(double(contact->getPenetrationDepth() - slop), 0.0);
+                }
+            }
+            */
         }
-        
-        noConstraint += constraint->getNbConstraints();
     }
 
     // For each current body that is implied in some constraint
@@ -212,45 +230,126 @@ void ConstraintSolver::computeVectorB(decimal dt) {
     uint indexBody1, indexBody2;
     decimal oneOverDT = 1.0 / dt;
 
-    for (uint c = 0; c<nbConstraints; c++) {
-        
-        // b = errorValues * oneOverDT;
-        b[c] = errorValues[c] * oneOverDT;
-		
-        // Substract 1.0/dt*J*V to the vector b
-        indexBody1 = mMapBodyToIndex[bodyMapping[c][0]];
-        indexBody2 = mMapBodyToIndex[bodyMapping[c][1]];
-        decimal multiplication = 0.0;
-        int body1ArrayIndex = 6 * indexBody1;
-        int body2ArrayIndex = 6 * indexBody2;
-        for (uint i=0; i<6; i++) {
-                multiplication += J_sp[c][i] * V1[body1ArrayIndex + i];
-                multiplication += J_sp[c][6 + i] * V1[body2ArrayIndex + i];
-        }
-        b[c] -= multiplication * oneOverDT ;
+    for (uint c = 0; c<mNbContactConstraints; c++) {
 
-        // Substract J*M^-1*F_ext to the vector b
-        decimal value1 = 0.0;
-        decimal value2 = 0.0;
-        decimal sum1, sum2;
-        value1 += J_sp[c][0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
-                          J_sp[c][1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
-                          J_sp[c][2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
-        value2 += J_sp[c][6] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
-                           J_sp[c][7] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
-                           J_sp[c][8] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
-        for (uint i=0; i<3; i++) {
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        // For each contact point
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            // ---------- Penetration ---------- //
+        
+            // b = errorValues * oneOverDT;
+            contact.b_Penetration = contact.errorPenetration * oneOverDT;
+		
+            // Substract 1.0/dt*J*V to the vector b
+            indexBody1 = constraint.indexBody1;
+            indexBody2 = constraint.indexBody2;
+            decimal multiplication = 0.0;
+            int body1ArrayIndex = 6 * indexBody1;
+            int body2ArrayIndex = 6 * indexBody2;
+            for (uint i=0; i<6; i++) {
+                multiplication += contact.J_spBody1Penetration[i] * V1[body1ArrayIndex + i];
+                multiplication += contact.J_spBody2Penetration[i] * V1[body2ArrayIndex + i];
+            }
+            contact.b_Penetration -= multiplication * oneOverDT ;
+
+            // Substract J*M^-1*F_ext to the vector b
+            decimal value1 = 0.0;
+            decimal value2 = 0.0;
+            decimal sum1, sum2;
+            value1 += contact.J_spBody1Penetration[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
+                    contact.J_spBody1Penetration[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
+                    contact.J_spBody1Penetration[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
+            value2 += contact.J_spBody2Penetration[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
+                      contact.J_spBody2Penetration[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
+                      contact.J_spBody2Penetration[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
+            for (uint i=0; i<3; i++) {
                 sum1 = 0.0;
                 sum2 = 0.0;
                 for (uint j=0; j<3; j++) {
-                        sum1 += J_sp[c][3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
-                        sum2 += J_sp[c][9 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
+                    sum1 += contact.J_spBody1Penetration[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
+                    sum2 += contact.J_spBody2Penetration[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
                 }
                 value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
                 value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
-        }
+            }
 
-        b[c] -= value1 + value2;	
+            contact.b_Penetration -= value1 + value2;
+
+             // ---------- Friction 1 ---------- //
+
+            // b = errorValues * oneOverDT;
+            contact.b_Friction1 = contact.errorFriction1 * oneOverDT;
+
+            // Substract 1.0/dt*J*V to the vector b
+            multiplication = 0.0;
+            for (uint i=0; i<6; i++) {
+                multiplication += contact.J_spBody1Friction1[i] * V1[body1ArrayIndex + i];
+                multiplication += contact.J_spBody2Friction1[i] * V1[body2ArrayIndex + i];
+            }
+            contact.b_Friction1 -= multiplication * oneOverDT ;
+
+            // Substract J*M^-1*F_ext to the vector b
+            value1 = 0.0;
+            value2 = 0.0;
+            value1 += contact.J_spBody1Friction1[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
+                    contact.J_spBody1Friction1[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
+                    contact.J_spBody1Friction1[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
+            value2 += contact.J_spBody2Friction1[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
+                      contact.J_spBody2Friction1[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
+                      contact.J_spBody2Friction1[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
+            for (uint i=0; i<3; i++) {
+                sum1 = 0.0;
+                sum2 = 0.0;
+                for (uint j=0; j<3; j++) {
+                    sum1 += contact.J_spBody1Friction1[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
+                    sum2 += contact.J_spBody2Friction1[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
+                }
+                value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
+                value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
+            }
+
+            contact.b_Friction1 -= value1 + value2;
+
+
+             // ---------- Friction 2 ---------- //
+
+            // b = errorValues * oneOverDT;
+            contact.b_Friction2 = contact.errorFriction2 * oneOverDT;
+
+            // Substract 1.0/dt*J*V to the vector b
+            multiplication = 0.0;
+            for (uint i=0; i<6; i++) {
+                multiplication += contact.J_spBody1Friction2[i] * V1[body1ArrayIndex + i];
+                multiplication += contact.J_spBody2Friction2[i] * V1[body2ArrayIndex + i];
+            }
+            contact.b_Friction2 -= multiplication * oneOverDT ;
+
+            // Substract J*M^-1*F_ext to the vector b
+            value1 = 0.0;
+            value2 = 0.0;
+            value1 += contact.J_spBody1Friction2[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
+                    contact.J_spBody1Friction2[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
+                    contact.J_spBody1Friction2[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
+            value2 += contact.J_spBody2Friction2[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
+                      contact.J_spBody2Friction2[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
+                      contact.J_spBody2Friction2[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
+            for (uint i=0; i<3; i++) {
+                sum1 = 0.0;
+                sum2 = 0.0;
+                for (uint j=0; j<3; j++) {
+                    sum1 += contact.J_spBody1Friction2[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
+                    sum2 += contact.J_spBody2Friction2[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
+                }
+                value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
+                value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
+            }
+
+            contact.b_Friction2 -= value1 + value2;
+        }
     }
 }
 
@@ -259,24 +358,68 @@ void ConstraintSolver::computeMatrixB_sp() {
 	uint indexConstraintArray, indexBody1, indexBody2;
 	
     // For each constraint
-    for (uint c = 0; c<nbConstraints; c++) {
+    for (uint m = 0; m<mNbContactConstraints; m++) {
 
-        indexConstraintArray = 6 * c;
-        indexBody1 = mMapBodyToIndex[bodyMapping[c][0]];
-        indexBody2 = mMapBodyToIndex[bodyMapping[c][1]];
-        B_sp[0][indexConstraintArray] = Minv_sp_mass_diag[indexBody1] * J_sp[c][0];
-        B_sp[0][indexConstraintArray + 1] = Minv_sp_mass_diag[indexBody1] * J_sp[c][1];
-        B_sp[0][indexConstraintArray + 2] = Minv_sp_mass_diag[indexBody1] * J_sp[c][2];
-        B_sp[1][indexConstraintArray] = Minv_sp_mass_diag[indexBody2] * J_sp[c][6];
-        B_sp[1][indexConstraintArray + 1] = Minv_sp_mass_diag[indexBody2] * J_sp[c][7];
-        B_sp[1][indexConstraintArray + 2] = Minv_sp_mass_diag[indexBody2] * J_sp[c][8];
+        ContactConstraint& constraint = mContactConstraints[m];
 
-        for (uint i=0; i<3; i++) {
-            B_sp[0][indexConstraintArray + 3 + i] = 0.0;
-            B_sp[1][indexConstraintArray + 3 + i] = 0.0;
-            for (uint j=0; j<3; j++) {
-                    B_sp[0][indexConstraintArray + 3 + i] += Minv_sp_inertia[indexBody1].getValue(i, j) * J_sp[c][3 + j];
-                    B_sp[1][indexConstraintArray + 3 + i] += Minv_sp_inertia[indexBody2].getValue(i, j) * J_sp[c][9 + j];
+        for (uint c=0; c<constraint.nbContacts; c++) {
+
+            ContactPointConstraint& contact = constraint.contacts[c];
+
+            // ---------- Penetration ---------- //
+
+            indexBody1 = constraint.indexBody1;
+            indexBody2 = constraint.indexBody2;
+            contact.B_spBody1Penetration[0] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Penetration[0];
+            contact.B_spBody1Penetration[1] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Penetration[1];
+            contact.B_spBody1Penetration[2] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Penetration[2];
+            contact.B_spBody2Penetration[0] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Penetration[0];
+            contact.B_spBody2Penetration[1] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Penetration[1];
+            contact.B_spBody2Penetration[2] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Penetration[2];
+
+            for (uint i=0; i<3; i++) {
+                contact.B_spBody1Penetration[3 + i] = 0.0;
+                contact.B_spBody2Penetration[3 + i] = 0.0;
+                for (uint j=0; j<3; j++) {
+                    contact.B_spBody1Penetration[3 + i] += Minv_sp_inertia[indexBody1].getValue(i, j) * contact.J_spBody1Penetration[3 + j];
+                    contact.B_spBody2Penetration[3 + i] += Minv_sp_inertia[indexBody2].getValue(i, j) * contact.J_spBody2Penetration[3 + j];
+                }
+            }
+
+            // ---------- Friction 1 ---------- //
+
+            contact.B_spBody1Friction1[0] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction1[0];
+            contact.B_spBody1Friction1[1] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction1[1];
+            contact.B_spBody1Friction1[2] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction1[2];
+            contact.B_spBody2Friction1[0] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction1[0];
+            contact.B_spBody2Friction1[1] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction1[1];
+            contact.B_spBody2Friction1[2] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction1[2];
+
+            for (uint i=0; i<3; i++) {
+                contact.B_spBody1Friction1[3 + i] = 0.0;
+                contact.B_spBody2Friction1[3 + i] = 0.0;
+                for (uint j=0; j<3; j++) {
+                    contact.B_spBody1Friction1[3 + i] += Minv_sp_inertia[indexBody1].getValue(i, j) * contact.J_spBody1Friction1[3 + j];
+                    contact.B_spBody2Friction1[3 + i] += Minv_sp_inertia[indexBody2].getValue(i, j) * contact.J_spBody2Friction1[3 + j];
+                }
+            }
+
+            // ---------- Friction 2 ---------- //
+
+            contact.B_spBody1Friction2[0] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction2[0];
+            contact.B_spBody1Friction2[1] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction2[1];
+            contact.B_spBody1Friction2[2] = Minv_sp_mass_diag[indexBody1] * contact.J_spBody1Friction2[2];
+            contact.B_spBody2Friction2[0] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction2[0];
+            contact.B_spBody2Friction2[1] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction2[1];
+            contact.B_spBody2Friction2[2] = Minv_sp_mass_diag[indexBody2] * contact.J_spBody2Friction2[2];
+
+            for (uint i=0; i<3; i++) {
+                contact.B_spBody1Friction2[3 + i] = 0.0;
+                contact.B_spBody2Friction2[3 + i] = 0.0;
+                for (uint j=0; j<3; j++) {
+                    contact.B_spBody1Friction2[3 + i] += Minv_sp_inertia[indexBody1].getValue(i, j) * contact.J_spBody1Friction2[3 + j];
+                    contact.B_spBody2Friction2[3 + i] += Minv_sp_inertia[indexBody2].getValue(i, j) * contact.J_spBody2Friction2[3 + j];
+                }
             }
         }
     }
@@ -289,18 +432,41 @@ void ConstraintSolver::computeMatrixB_sp() {
 // Note that M^-1 * J^T = B.
 // This method is called after that the LCP solver has computed lambda
 void ConstraintSolver::computeVectorVconstraint(decimal dt) {
-    uint indexBody1Array, indexBody2Array, indexConstraintArray;
+    uint indexBody1Array, indexBody2Array;
 	uint j;
 	
     // Compute dt * (M^-1 * J^T * lambda
-    for (uint i=0; i<nbConstraints; i++) {
-        indexBody1Array = 6 * mMapBodyToIndex[bodyMapping[i][0]];
-        indexBody2Array = 6 * mMapBodyToIndex[bodyMapping[i][1]];
-		indexConstraintArray = 6 * i;
-		for (j=0; j<6; j++) {
-			Vconstraint[indexBody1Array + j] += B_sp[0][indexConstraintArray + j] * lambda[i] * dt;
-			Vconstraint[indexBody2Array + j] += B_sp[1][indexConstraintArray + j] * lambda[i] * dt;
-		}
+    for (uint c=0; c<mNbContactConstraints; c++) {
+
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            // ---------- Penetration ---------- //
+
+            indexBody1Array = 6 * constraint.indexBody1;
+            indexBody2Array = 6 * constraint.indexBody2;
+            for (j=0; j<6; j++) {
+                Vconstraint[indexBody1Array + j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse * dt;
+                Vconstraint[indexBody2Array + j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse * dt;
+            }
+
+            // ---------- Friction 1 ---------- //
+
+            for (j=0; j<6; j++) {
+                Vconstraint[indexBody1Array + j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse * dt;
+                Vconstraint[indexBody2Array + j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse * dt;
+            }
+
+            // ---------- Friction 2 ---------- //
+
+            for (j=0; j<6; j++) {
+                Vconstraint[indexBody1Array + j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse * dt;
+                Vconstraint[indexBody2Array + j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse * dt;
+            }
+        }
     }
 }
 
@@ -308,47 +474,113 @@ void ConstraintSolver::computeVectorVconstraint(decimal dt) {
 // This method outputs the result in the lambda vector
 void ConstraintSolver::solveLCP() {
 
-    for (uint i=0; i<nbConstraints; i++) {
-            lambda[i] = lambdaInit[i];
-    }
+   // for (uint i=0; i<nbConstraints; i++) {
+   //         lambda[i] = lambdaInit[i];
+   // }
 
     uint indexBody1Array, indexBody2Array;
     decimal deltaLambda;
     decimal lambdaTemp;
-    uint i, iter;
+    uint iter;
 
     // Compute the vector a
     computeVectorA();
 
     // For each constraint
-    for (i=0; i<nbConstraints; i++) {
-        uint indexConstraintArray = 6 * i;
-        d[i] = 0.0;
-        for (uint j=0; j<6; j++) {
-                d[i] += J_sp[i][j] * B_sp[0][indexConstraintArray + j] + J_sp[i][6 + j] * B_sp[1][indexConstraintArray + j];
+    // For each constraint
+    for (uint c=0; c<mNbContactConstraints; c++) {
+
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            // --------- Penetration --------- //
+
+            contact.d_Penetration = 0.0;
+            for (uint j=0; j<6; j++) {
+                contact.d_Penetration += contact.J_spBody1Penetration[j] * contact.B_spBody1Penetration[j]
+                                         + contact.J_spBody2Penetration[j] * contact.B_spBody2Penetration[j];
+            }
+
+            // --------- Friction 1 --------- //
+
+            contact.d_Friction1 = 0.0;
+            for (uint j=0; j<6; j++) {
+                contact.d_Friction1 += contact.J_spBody1Friction1[j] * contact.B_spBody1Friction1[j]
+                                         + contact.J_spBody2Friction1[j] * contact.B_spBody2Friction1[j];
+            }
+
+            // --------- Friction 2 --------- //
+
+            contact.d_Friction2 = 0.0;
+            for (uint j=0; j<6; j++) {
+                contact.d_Friction2 += contact.J_spBody1Friction2[j] * contact.B_spBody1Friction2[j]
+                                         + contact.J_spBody2Friction2[j] * contact.B_spBody2Friction2[j];
+            }
         }
     }
 
     // For each iteration
-    for(iter=0; iter<nbIterations; iter++) {
+    for(iter=0; iter<mNbIterations; iter++) {
 
         // For each constraint
-        for (i=0; i<nbConstraints; i++) {
+        for (uint c=0; c<mNbContactConstraints; c++) {
 
-            indexBody1Array = 6 * mMapBodyToIndex[bodyMapping[i][0]];
-            indexBody2Array = 6 * mMapBodyToIndex[bodyMapping[i][1]];
-            uint indexConstraintArray = 6 * i;
-            deltaLambda = b[i];
-            for (uint j=0; j<6; j++) {
-                    deltaLambda -= (J_sp[i][j] * a[indexBody1Array + j] + J_sp[i][6 + j] * a[indexBody2Array + j]);
-            }
-            deltaLambda /= d[i];
-            lambdaTemp = lambda[i];
-            lambda[i] = std::max(lowerBounds[i], std::min(lambda[i] + deltaLambda, upperBounds[i]));
-            deltaLambda = lambda[i] - lambdaTemp;
-            for (uint j=0; j<6; j++) {
-                    a[indexBody1Array + j] += B_sp[0][indexConstraintArray + j] * deltaLambda;
-                    a[indexBody2Array + j] += B_sp[1][indexConstraintArray + j] * deltaLambda;
+            ContactConstraint& constraint = mContactConstraints[c];
+
+            for (uint i=0; i<constraint.nbContacts; i++) {
+
+                ContactPointConstraint& contact = constraint.contacts[i];
+
+                indexBody1Array = 6 * constraint.indexBody1;
+                indexBody2Array = 6 * constraint.indexBody2;
+
+                // --------- Penetration --------- //
+
+                deltaLambda = contact.b_Penetration;
+                for (uint j=0; j<6; j++) {
+                    deltaLambda -= (contact.J_spBody1Penetration[j] * a[indexBody1Array + j] + contact.J_spBody2Penetration[j] * a[indexBody2Array + j]);
+                }
+                deltaLambda /= contact.d_Penetration;
+                lambdaTemp = contact.penetrationImpulse;
+                contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
+                deltaLambda = contact.penetrationImpulse - lambdaTemp;
+                for (uint j=0; j<6; j++) {
+                    a[indexBody1Array + j] += contact.B_spBody1Penetration[j] * deltaLambda;
+                    a[indexBody2Array + j] += contact.B_spBody2Penetration[j] * deltaLambda;
+                }
+
+                // --------- Friction 1 --------- //
+
+                deltaLambda = contact.b_Friction1;
+                for (uint j=0; j<6; j++) {
+                    deltaLambda -= (contact.J_spBody1Friction1[j] * a[indexBody1Array + j] + contact.J_spBody2Friction1[j] * a[indexBody2Array + j]);
+                }
+                deltaLambda /= contact.d_Friction1;
+                lambdaTemp = contact.friction1Impulse;
+                contact.friction1Impulse = std::max(contact.lowerBoundFriction1, std::min(contact.friction1Impulse + deltaLambda, contact.upperBoundFriction1));
+                deltaLambda = contact.friction1Impulse - lambdaTemp;
+                for (uint j=0; j<6; j++) {
+                    a[indexBody1Array + j] += contact.B_spBody1Friction1[j] * deltaLambda;
+                    a[indexBody2Array + j] += contact.B_spBody2Friction1[j] * deltaLambda;
+                }
+
+                // --------- Friction 2 --------- //
+
+                deltaLambda = contact.b_Friction2;
+                for (uint j=0; j<6; j++) {
+                    deltaLambda -= (contact.J_spBody1Friction2[j] * a[indexBody1Array + j] + contact.J_spBody2Friction2[j] * a[indexBody2Array + j]);
+                }
+                deltaLambda /= contact.d_Friction2;
+                lambdaTemp = contact.friction2Impulse;
+                contact.friction2Impulse = std::max(contact.lowerBoundFriction2, std::min(contact.friction2Impulse + deltaLambda, contact.upperBoundFriction2));
+                deltaLambda = contact.friction2Impulse - lambdaTemp;
+                for (uint j=0; j<6; j++) {
+                    a[indexBody1Array + j] += contact.B_spBody1Friction2[j] * deltaLambda;
+                    a[indexBody2Array + j] += contact.B_spBody2Friction2[j] * deltaLambda;
+                }
             }
         }
     }
@@ -365,14 +597,39 @@ void ConstraintSolver::computeVectorA() {
        a[i] = 0.0;
     }
 
-    for(i=0; i<nbConstraints; i++) {
-        indexBody1Array = 6 * mMapBodyToIndex[bodyMapping[i][0]];
-        indexBody2Array = 6 * mMapBodyToIndex[bodyMapping[i][1]];
-		uint indexConstraintArray = 6 * i;
-		for (uint j=0; j<6; j++) {
-			a[indexBody1Array + j] += B_sp[0][indexConstraintArray + j] * lambda[i];
-			a[indexBody2Array + j] += B_sp[1][indexConstraintArray + j] * lambda[i];
-		}
+    // For each constraint
+    for (uint c=0; c<mNbContactConstraints; c++) {
+
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            indexBody1Array = 6 * constraint.indexBody1;
+            indexBody2Array = 6 * constraint.indexBody2;
+
+            // --------- Penetration --------- //
+
+            for (uint j=0; j<6; j++) {
+                a[indexBody1Array + j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse;
+                a[indexBody2Array + j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse;
+            }
+
+            // --------- Friction 1 --------- //
+
+            for (uint j=0; j<6; j++) {
+                a[indexBody1Array + j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse;
+                a[indexBody2Array + j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse;
+            }
+
+            // --------- Friction 2 --------- //
+
+            for (uint j=0; j<6; j++) {
+                a[indexBody1Array + j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse;
+                a[indexBody2Array + j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse;
+            }
+        }
     }
 }
 
@@ -380,16 +637,18 @@ void ConstraintSolver::computeVectorA() {
 // to initialize the lambda vector
 void ConstraintSolver::cacheLambda() {
     
-    // For each active constraint
-    int noConstraint = 0;
-    for (int c=0; c<activeConstraints.size(); c++) {
+    // For each constraint
+    for (uint c=0; c<mNbContactConstraints; c++) {
 
-        // For each constraint of the contact
-        for (int i=0; i<activeConstraints[c]->getNbConstraints(); i++) {
-            // Get the lambda value that have just been computed
-            activeConstraints[c]->setCachedLambda(i, lambda[noConstraint + i]);
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            contact.contact->setCachedLambda(0, contact.penetrationImpulse);
+            contact.contact->setCachedLambda(1, contact.friction1Impulse);
+            contact.contact->setCachedLambda(2, contact.friction2Impulse);
         }
-
-        noConstraint += activeConstraints[c]->getNbConstraints();
     }
 }

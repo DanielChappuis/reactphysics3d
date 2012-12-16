@@ -27,6 +27,7 @@
 #define CONSTRAINT_SOLVER_H
 
 // Libraries
+#include "../constraint/Contact.h"
 #include "../configuration.h"
 #include "../constraint/Constraint.h"
 #include <map>
@@ -63,6 +64,34 @@ struct ContactPointConstraint {
     decimal inversePenetrationMass;         // Inverse of the matrix K for the penenetration
     decimal inverseFriction1Mass;           // Inverse of the matrix K for the 1st friction
     decimal inverseFriction2Mass;           // Inverse of the matrix K for the 2nd friction
+    decimal J_spBody1Penetration[6];
+    decimal J_spBody2Penetration[6];
+    decimal J_spBody1Friction1[6];
+    decimal J_spBody2Friction1[6];
+    decimal J_spBody1Friction2[6];
+    decimal J_spBody2Friction2[6];
+    decimal lowerBoundPenetration;
+    decimal upperBoundPenetration;
+    decimal lowerBoundFriction1;
+    decimal upperBoundFriction1;
+    decimal lowerBoundFriction2;
+    decimal upperBoundFriction2;
+    decimal errorPenetration;
+    decimal errorFriction1;
+    decimal errorFriction2;
+    Contact* contact;                       // TODO : REMOVE THIS
+    decimal b_Penetration;
+    decimal b_Friction1;
+    decimal b_Friction2;
+    decimal B_spBody1Penetration[6];
+    decimal B_spBody2Penetration[6];
+    decimal B_spBody1Friction1[6];
+    decimal B_spBody2Friction1[6];
+    decimal B_spBody1Friction2[6];
+    decimal B_spBody2Friction2[6];
+    decimal d_Penetration;
+    decimal d_Friction1;
+    decimal d_Friction2;
 };
 
 // Structure ContactConstraint
@@ -114,7 +143,7 @@ class ConstraintSolver {
         DynamicsWorld* world;                           // Reference to the world
         std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
         bool isErrorCorrectionActive;                   // True if error correction (with world order) is active
-        uint nbIterations;                           // Number of iterations of the LCP solver
+        uint mNbIterations;                           // Number of iterations of the LCP solver
         uint nbIterationsLCPErrorCorrection;            // Number of iterations of the LCP solver for error correction
         uint nbConstraints;                             // Total number of constraints (with the auxiliary constraints)
         uint nbConstraintsError;                        // Number of constraints for error correction projection (only contact constraints)
@@ -158,6 +187,9 @@ class ConstraintSolver {
         // Contact constraints
         ContactConstraint* mContactConstraints;
 
+        // Number of contact constraints
+        uint mNbContactConstraints;
+
         // Constrained bodies
         std::set<RigidBody*> mConstraintBodies;
 
@@ -182,7 +214,7 @@ class ConstraintSolver {
         Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);        // Return the constrained linear velocity of a body after solving the LCP problem
         Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);       // Return the constrained angular velocity of a body after solving the LCP problem
         void cleanup();                                                 // Cleanup of the constraint solver
-        void setNbLCPIterations(uint nbIterations);                     // Set the number of iterations of the LCP solver
+        void setNbLCPIterations(uint mNbIterations);                     // Set the number of iterations of the LCP solver
 };
 
 // Return true if the body is in at least one constraint
@@ -209,11 +241,16 @@ inline void ConstraintSolver::cleanup() {
     mMapBodyToIndex.clear();
     mConstraintBodies.clear();
     activeConstraints.clear();
+
+    if (mContactConstraints != 0) {
+        delete[] mContactConstraints;
+        mContactConstraints = 0;
+    }
 }
 
 // Set the number of iterations of the LCP solver
 inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
-    nbIterations = nbIterations;
+    mNbIterations = nbIterations;
 }         
 
 // Solve the current LCP problem

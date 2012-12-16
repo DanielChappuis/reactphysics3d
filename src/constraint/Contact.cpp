@@ -53,6 +53,112 @@ Contact::~Contact() {
 
 }
 
+void Contact::computeJacobianPenetration(decimal J_spBody1[6], decimal J_spBody2[6]) {
+
+    Vector3 body1Position = mBody1->getTransform().getPosition();
+    Vector3 body2Position = mBody2->getTransform().getPosition();
+
+    Vector3 r1 = mWorldPointOnBody1 - body1Position;
+    Vector3 r2 = mWorldPointOnBody2 - body2Position;
+    Vector3 r1CrossN = r1.cross(mNormal);
+    Vector3 r2CrossN = r2.cross(mNormal);
+
+    // Compute the jacobian matrix for the body 1 for the contact constraint
+    J_spBody1[0] = -mNormal.getX();
+    J_spBody1[1] = -mNormal.getY();
+    J_spBody1[2] = -mNormal.getZ();
+    J_spBody1[3] = -r1CrossN.getX();
+    J_spBody1[4] = -r1CrossN.getY();
+    J_spBody1[5] = -r1CrossN.getZ();
+
+    // Compute the jacobian matrix for the body 2 for the contact constraint
+    J_spBody2[0] = mNormal.getX();
+    J_spBody2[1] = mNormal.getY();
+    J_spBody2[2] = mNormal.getZ();
+    J_spBody2[3] = r2CrossN.getX();
+    J_spBody2[4] = r2CrossN.getY();
+    J_spBody2[5] = r2CrossN.getZ();
+}
+
+void Contact::computeJacobianFriction1(decimal J_spBody1[6], decimal J_spBody2[6]) {
+
+    Vector3 body1Position = mBody1->getTransform().getPosition();
+    Vector3 body2Position = mBody2->getTransform().getPosition();
+
+    Vector3 r1 = mWorldPointOnBody1 - body1Position;
+    Vector3 r2 = mWorldPointOnBody2 - body2Position;
+
+    // Compute the jacobian matrix for the body 1 for the first friction constraint
+    Vector3 r1CrossU1 = r1.cross(mFrictionVectors[0]);
+    Vector3 r2CrossU1 = r2.cross(mFrictionVectors[0]);
+    J_spBody1[0] = -mFrictionVectors[0].getX();
+    J_spBody1[1] = -mFrictionVectors[0].getY();
+    J_spBody1[2] = -mFrictionVectors[0].getZ();
+    J_spBody1[3] = -r1CrossU1.getX();
+    J_spBody1[4] = -r1CrossU1.getY();
+    J_spBody1[5] = -r1CrossU1.getZ();
+
+    // Compute the jacobian matrix for the body 2 for the first friction constraint
+    J_spBody2[0] = mFrictionVectors[0].getX();
+    J_spBody2[1] = mFrictionVectors[0].getY();
+    J_spBody2[2] = mFrictionVectors[0].getZ();
+    J_spBody2[3] = r2CrossU1.getX();
+    J_spBody2[4] = r2CrossU1.getY();
+    J_spBody2[5] = r2CrossU1.getZ();
+}
+
+void Contact::computeJacobianFriction2(decimal J_spBody1[6], decimal J_spBody2[6]) {
+
+    Vector3 body1Position = mBody1->getTransform().getPosition();
+    Vector3 body2Position = mBody2->getTransform().getPosition();
+
+    Vector3 r1 = mWorldPointOnBody1 - body1Position;
+    Vector3 r2 = mWorldPointOnBody2 - body2Position;
+
+    Vector3 r1CrossU2 = r1.cross(mFrictionVectors[1]);
+    Vector3 r2CrossU2 = r2.cross(mFrictionVectors[1]);
+
+    // Compute the jacobian matrix for the body 1 for the second friction constraint
+    J_spBody1[0] = -mFrictionVectors[1].getX();
+    J_spBody1[1] = -mFrictionVectors[1].getY();
+    J_spBody1[2] = -mFrictionVectors[1].getZ();
+    J_spBody1[3] = -r1CrossU2.getX();
+    J_spBody1[4] = -r1CrossU2.getY();
+    J_spBody1[5] = -r1CrossU2.getZ();
+
+    // Compute the jacobian matrix for the body 2 for the second friction constraint
+    J_spBody2[0] = mFrictionVectors[1].getX();
+    J_spBody2[1] = mFrictionVectors[1].getY();
+    J_spBody2[2] = mFrictionVectors[1].getZ();
+    J_spBody2[3] = r2CrossU2.getX();
+    J_spBody2[4] = r2CrossU2.getY();
+    J_spBody2[5] = r2CrossU2.getZ();
+}
+
+void Contact::computeLowerBoundPenetration(decimal& lowerBound) {
+    lowerBound = 0.0;
+}
+
+void Contact::computeLowerBoundFriction1(decimal& lowerBound) {
+    lowerBound = -mMu_mc_g;
+}
+
+void Contact::computeLowerBoundFriction2(decimal& lowerBound) {
+    lowerBound = -mMu_mc_g;
+}
+
+void Contact::computeUpperBoundPenetration(decimal& upperBound) {
+    upperBound = DECIMAL_INFINITY;
+}
+
+void Contact::computeUpperBoundFriction1(decimal& upperBound) {
+    upperBound = mMu_mc_g;
+}
+
+void Contact::computeUpperBoundFriction2(decimal& upperBound) {
+    upperBound = mMu_mc_g;
+}
+
 // This method computes the jacobian matrix for all mathematical constraints
 // The argument "J_sp" is the jacobian matrix of the constraint solver. This method
 // fill in this matrix with all the jacobian matrix of the mathematical constraint
@@ -148,6 +254,18 @@ void Contact::computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CON
     upperBounds[noConstraint] = DECIMAL_INFINITY; // Upper bound for the contact constraint
     upperBounds[noConstraint + 1] = mMu_mc_g;     // Upper bound for the first friction constraint
     upperBounds[noConstraint + 2] = mMu_mc_g;     // Upper bound for the second friction constraint
+}
+
+void Contact::computeErrorPenetration(decimal& error) {
+    // TODO : Do we need this casting anymore ?
+    RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(mBody1);
+    RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(mBody2);
+
+    // Compute the error value for the contact constraint
+    Vector3 velocity1 = rigidBody1->getLinearVelocity();
+    Vector3 velocity2 = rigidBody2->getLinearVelocity();
+    decimal restitutionCoeff = rigidBody1->getRestitution() * rigidBody2->getRestitution();
+    error = restitutionCoeff * (mNormal.dot(velocity1) - mNormal.dot(velocity2));
 }
 
 // Compute the error values for all the mathematical constraints. The argument
