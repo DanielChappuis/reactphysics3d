@@ -34,7 +34,7 @@ using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
-    :world(world), nbConstraints(0), mNbIterations(100), mContactConstraints(0), Vconstraint(0), Wconstraint(0) {
+    :world(world), nbConstraints(0), mNbIterations(10), mContactConstraints(0), Vconstraint(0), Wconstraint(0), V1(0), W1(0) {
 
 }
 
@@ -100,6 +100,8 @@ void ConstraintSolver::initialize() {
 
     Vconstraint = new Vector3[nbBodies];
     Wconstraint = new Vector3[nbBodies];
+    V1 = new Vector3[nbBodies];
+    W1 = new Vector3[nbBodies];
 
     assert(mMapBodyToIndex.size() == nbBodies);
 }
@@ -120,15 +122,9 @@ void ConstraintSolver::initializeBodies() {
         assert(rigidBody);
 
         // Compute the vector V1 with initial velocities values
-        Vector3 linearVelocity = rigidBody->getLinearVelocity();
-        Vector3 angularVelocity = rigidBody->getAngularVelocity();
         int bodyIndexArray = 6 * bodyNumber;
-        V1[bodyIndexArray] = linearVelocity[0];
-        V1[bodyIndexArray + 1] = linearVelocity[1];
-        V1[bodyIndexArray + 2] = linearVelocity[2];
-        V1[bodyIndexArray + 3] = angularVelocity[0];
-        V1[bodyIndexArray + 4] = angularVelocity[1];
-        V1[bodyIndexArray + 5] = angularVelocity[2];
+        V1[bodyNumber] = rigidBody->getLinearVelocity();
+        W1[bodyNumber] = rigidBody->getAngularVelocity();
 
         // Compute the vector Vconstraint with final constraint velocities
         Vconstraint[bodyNumber] = Vector3(0, 0, 0);
@@ -226,9 +222,12 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
             decimal multiplication = 0.0;
             int body1ArrayIndex = 6 * indexBody1;
             int body2ArrayIndex = 6 * indexBody2;
-            for (uint i=0; i<6; i++) {
-                multiplication += contact.J_spBody1Penetration[i] * V1[body1ArrayIndex + i];
-                multiplication += contact.J_spBody2Penetration[i] * V1[body2ArrayIndex + i];
+            for (uint i=0; i<3; i++) {
+                multiplication += contact.J_spBody1Penetration[i] * V1[indexBody1][i];
+                multiplication += contact.J_spBody1Penetration[i + 3] * W1[indexBody1][i];
+
+                multiplication += contact.J_spBody2Penetration[i] * V1[indexBody2][i];
+                multiplication += contact.J_spBody2Penetration[i + 3] * W1[indexBody2][i];
             }
             contact.b_Penetration -= multiplication * oneOverDT ;
 
@@ -262,9 +261,12 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
 
             // Substract 1.0/dt*J*V to the vector b
             multiplication = 0.0;
-            for (uint i=0; i<6; i++) {
-                multiplication += contact.J_spBody1Friction1[i] * V1[body1ArrayIndex + i];
-                multiplication += contact.J_spBody2Friction1[i] * V1[body2ArrayIndex + i];
+            for (uint i=0; i<3; i++) {
+                multiplication += contact.J_spBody1Friction1[i] * V1[indexBody1][i];
+                multiplication += contact.J_spBody1Friction1[i + 3] * W1[indexBody1][i];
+
+                multiplication += contact.J_spBody2Friction1[i] * V1[indexBody2][i];
+                multiplication += contact.J_spBody2Friction1[i + 3] * W1[indexBody2][i];
             }
             contact.b_Friction1 -= multiplication * oneOverDT ;
 
@@ -298,9 +300,12 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
 
             // Substract 1.0/dt*J*V to the vector b
             multiplication = 0.0;
-            for (uint i=0; i<6; i++) {
-                multiplication += contact.J_spBody1Friction2[i] * V1[body1ArrayIndex + i];
-                multiplication += contact.J_spBody2Friction2[i] * V1[body2ArrayIndex + i];
+            for (uint i=0; i<3; i++) {
+                multiplication += contact.J_spBody1Friction2[i] * V1[indexBody1][i];
+                multiplication += contact.J_spBody1Friction2[i + 3] * W1[indexBody1][i];
+
+                multiplication += contact.J_spBody2Friction2[i] * V1[indexBody2][i];
+                multiplication += contact.J_spBody2Friction2[i + 3] * W1[indexBody2][i];
             }
             contact.b_Friction2 -= multiplication * oneOverDT ;
 

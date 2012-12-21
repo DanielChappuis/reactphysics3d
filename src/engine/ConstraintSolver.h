@@ -177,8 +177,8 @@ class ConstraintSolver {
         Matrix3x3 Minv_sp_inertia[NB_MAX_BODIES];       // 3x3 world inertia tensor matrix I for each body (from the Minv_sp matrix)
         decimal Minv_sp_mass_diag[NB_MAX_BODIES];       // Array that contains for each body the inverse of its mass
                                                         // This is an array of size nbBodies that contains in each cell a 6x6 matrix
-        decimal V1[6*NB_MAX_BODIES];                    // Array that contains for each body the 6x1 vector that contains linear and angular velocities
-                                                        // Each cell contains a 6x1 vector with linear and angular velocities
+        Vector3* V1;                    // Array that contains for each body the 6x1 vector that contains linear and angular velocities
+        Vector3* W1;
         Vector3* Vconstraint;                           // Same kind of vector as V1 but contains the final constraint velocities
         Vector3* Wconstraint;
         decimal VconstraintError[6*NB_MAX_BODIES];      // Same kind of vector as V1 but contains the final constraint velocities
@@ -254,6 +254,14 @@ inline void ConstraintSolver::cleanup() {
     if (Wconstraint != 0) {
         delete[] Wconstraint;
         Wconstraint = 0;
+    }
+    if (V1 != 0) {
+        delete[] V1;
+        V1 = 0;
+    }
+    if (W1 != 0) {
+        delete[] W1;
+        W1 = 0;
     }
 }
 
