@@ -179,7 +179,8 @@ class ConstraintSolver {
                                                         // This is an array of size nbBodies that contains in each cell a 6x6 matrix
         decimal V1[6*NB_MAX_BODIES];                    // Array that contains for each body the 6x1 vector that contains linear and angular velocities
                                                         // Each cell contains a 6x1 vector with linear and angular velocities
-        decimal Vconstraint[6*NB_MAX_BODIES];           // Same kind of vector as V1 but contains the final constraint velocities
+        Vector3* Vconstraint;                           // Same kind of vector as V1 but contains the final constraint velocities
+        Vector3* Wconstraint;
         decimal VconstraintError[6*NB_MAX_BODIES];      // Same kind of vector as V1 but contains the final constraint velocities
         decimal Fext[6*NB_MAX_BODIES];                  // Array that contains for each body the 6x1 vector that contains external forces and torques
                                                         // Each cell contains a 6x1 vector with external force and torque.
@@ -225,15 +226,15 @@ inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
 // Return the constrained linear velocity of a body after solving the LCP problem
 inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * mMapBodyToIndex[body];
-    return Vector3(Vconstraint[indexBodyArray], Vconstraint[indexBodyArray + 1], Vconstraint[indexBodyArray + 2]);
+    uint indexBodyArray = mMapBodyToIndex[body];
+    return Vconstraint[indexBodyArray];
 }
 
 // Return the constrained angular velocity of a body after solving the LCP problem
 inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = 6 * mMapBodyToIndex[body];
-    return Vector3(Vconstraint[indexBodyArray + 3], Vconstraint[indexBodyArray + 4], Vconstraint[indexBodyArray + 5]);
+    uint indexBodyArray = mMapBodyToIndex[body];
+    return Wconstraint[indexBodyArray];
 }
 
 // Cleanup of the constraint solver
@@ -245,6 +246,14 @@ inline void ConstraintSolver::cleanup() {
     if (mContactConstraints != 0) {
         delete[] mContactConstraints;
         mContactConstraints = 0;
+    }
+    if (Vconstraint != 0) {
+        delete[] Vconstraint;
+        Vconstraint = 0;
+    }
+    if (Wconstraint != 0) {
+        delete[] Wconstraint;
+        Wconstraint = 0;
     }
 }
 

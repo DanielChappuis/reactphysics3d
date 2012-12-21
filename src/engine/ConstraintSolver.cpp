@@ -34,7 +34,7 @@ using namespace std;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
-                 :world(world), nbConstraints(0), mNbIterations(10), mContactConstraints(0) {
+    :world(world), nbConstraints(0), mNbIterations(100), mContactConstraints(0), Vconstraint(0), Wconstraint(0) {
 
 }
 
@@ -98,6 +98,9 @@ void ConstraintSolver::initialize() {
     // Compute the number of bodies that are part of some active constraint
     nbBodies = mConstraintBodies.size();
 
+    Vconstraint = new Vector3[nbBodies];
+    Wconstraint = new Vector3[nbBodies];
+
     assert(mMapBodyToIndex.size() == nbBodies);
 }
 
@@ -128,12 +131,8 @@ void ConstraintSolver::initializeBodies() {
         V1[bodyIndexArray + 5] = angularVelocity[2];
 
         // Compute the vector Vconstraint with final constraint velocities
-        Vconstraint[bodyIndexArray] = 0.0;
-        Vconstraint[bodyIndexArray + 1] = 0.0;
-        Vconstraint[bodyIndexArray + 2] = 0.0;
-        Vconstraint[bodyIndexArray + 3] = 0.0;
-        Vconstraint[bodyIndexArray + 4] = 0.0;
-        Vconstraint[bodyIndexArray + 5] = 0.0;
+        Vconstraint[bodyNumber] = Vector3(0, 0, 0);
+        Wconstraint[bodyNumber] = Vector3(0, 0, 0);
 
         // Compute the vector with forces and torques values
         Vector3 externalForce = rigidBody->getExternalForce();
@@ -425,25 +424,34 @@ void ConstraintSolver::computeVectorVconstraint(decimal dt) {
 
             // ---------- Penetration ---------- //
 
-            indexBody1Array = 6 * constraint.indexBody1;
-            indexBody2Array = 6 * constraint.indexBody2;
-            for (j=0; j<6; j++) {
-                Vconstraint[indexBody1Array + j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse * dt;
-                Vconstraint[indexBody2Array + j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse * dt;
+            indexBody1Array = constraint.indexBody1;
+            indexBody2Array = constraint.indexBody2;
+            for (j=0; j<3; j++) {
+                Vconstraint[indexBody1Array][j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse * dt;
+                Wconstraint[indexBody1Array][j] += contact.B_spBody1Penetration[j + 3] * contact.penetrationImpulse * dt;
+
+                Vconstraint[indexBody2Array][j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse * dt;
+                Wconstraint[indexBody2Array][j] += contact.B_spBody2Penetration[j + 3] * contact.penetrationImpulse * dt;
             }
 
             // ---------- Friction 1 ---------- //
 
-            for (j=0; j<6; j++) {
-                Vconstraint[indexBody1Array + j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse * dt;
-                Vconstraint[indexBody2Array + j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse * dt;
+            for (j=0; j<3; j++) {
+                Vconstraint[indexBody1Array][j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse * dt;
+                Wconstraint[indexBody1Array][j] += contact.B_spBody1Friction1[j + 3] * contact.friction1Impulse * dt;
+
+                Vconstraint[indexBody2Array][j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse * dt;
+                Wconstraint[indexBody2Array][j] += contact.B_spBody2Friction1[j + 3] * contact.friction1Impulse * dt;
             }
 
             // ---------- Friction 2 ---------- //
 
-            for (j=0; j<6; j++) {
-                Vconstraint[indexBody1Array + j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse * dt;
-                Vconstraint[indexBody2Array + j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse * dt;
+            for (j=0; j<3; j++) {
+                Vconstraint[indexBody1Array][j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse * dt;
+                Wconstraint[indexBody1Array][j] += contact.B_spBody1Friction2[j + 3] * contact.friction2Impulse * dt;
+
+                Vconstraint[indexBody2Array][j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse * dt;
+                Wconstraint[indexBody2Array][j] += contact.B_spBody2Friction2[j + 3] * contact.friction2Impulse * dt;
             }
         }
     }
