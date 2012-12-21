@@ -198,8 +198,8 @@ class ConstraintSolver {
 
 
         void initialize();                              // Initialize the constraint solver before each solving
-        void fillInMatrices(decimal dt);                // Fill in all the matrices needed to solve the LCP problem
-        void computeVectorB(decimal dt);                // Compute the vector b
+        void initializeBodies();                        // Initialize bodies velocities
+        void initializeContactConstraints(decimal dt);                // Fill in all the matrices needed to solve the LCP problem
         void computeMatrixB_sp();                       // Compute the matrix B_sp
         void computeVectorVconstraint(decimal dt);      // Compute the vector V2
         void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
@@ -259,11 +259,10 @@ inline void ConstraintSolver::solve(decimal dt) {
     // Initialize the solver
     initialize();
 
-    // Fill-in all the matrices needed to solve the LCP problem
-    fillInMatrices(dt);
+    initializeBodies();
 
-    // Compute the vector b
-    computeVectorB(dt);
+    // Fill-in all the matrices needed to solve the LCP problem
+    initializeContactConstraints(dt);
 
     // Compute the matrix B
     computeMatrixB_sp();

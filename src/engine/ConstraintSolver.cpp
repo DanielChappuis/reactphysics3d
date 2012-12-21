@@ -101,15 +101,74 @@ void ConstraintSolver::initialize() {
     assert(mMapBodyToIndex.size() == nbBodies);
 }
 
+// Initialize bodies velocities
+void ConstraintSolver::initializeBodies() {
+
+    // For each current body that is implied in some constraint
+    RigidBody* rigidBody;
+    RigidBody* body;
+    uint b=0;
+    for (set<RigidBody*>::iterator it = mConstraintBodies.begin(); it != mConstraintBodies.end(); ++it, b++) {
+        body = *it;
+        uint bodyNumber = mMapBodyToIndex[body];
+
+        // TODO : Use polymorphism and remove this downcasting
+        rigidBody = dynamic_cast<RigidBody*>(body);
+        assert(rigidBody);
+
+        // Compute the vector V1 with initial velocities values
+        Vector3 linearVelocity = rigidBody->getLinearVelocity();
+        Vector3 angularVelocity = rigidBody->getAngularVelocity();
+        int bodyIndexArray = 6 * bodyNumber;
+        V1[bodyIndexArray] = linearVelocity[0];
+        V1[bodyIndexArray + 1] = linearVelocity[1];
+        V1[bodyIndexArray + 2] = linearVelocity[2];
+        V1[bodyIndexArray + 3] = angularVelocity[0];
+        V1[bodyIndexArray + 4] = angularVelocity[1];
+        V1[bodyIndexArray + 5] = angularVelocity[2];
+
+        // Compute the vector Vconstraint with final constraint velocities
+        Vconstraint[bodyIndexArray] = 0.0;
+        Vconstraint[bodyIndexArray + 1] = 0.0;
+        Vconstraint[bodyIndexArray + 2] = 0.0;
+        Vconstraint[bodyIndexArray + 3] = 0.0;
+        Vconstraint[bodyIndexArray + 4] = 0.0;
+        Vconstraint[bodyIndexArray + 5] = 0.0;
+
+        // Compute the vector with forces and torques values
+        Vector3 externalForce = rigidBody->getExternalForce();
+        Vector3 externalTorque = rigidBody->getExternalTorque();
+        Fext[bodyIndexArray] = externalForce[0];
+        Fext[bodyIndexArray + 1] = externalForce[1];
+        Fext[bodyIndexArray + 2] = externalForce[2];
+        Fext[bodyIndexArray + 3] = externalTorque[0];
+        Fext[bodyIndexArray + 4] = externalTorque[1];
+        Fext[bodyIndexArray + 5] = externalTorque[2];
+
+        // Initialize the mass and inertia tensor matrices
+        Minv_sp_inertia[bodyNumber].setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        Minv_sp_mass_diag[bodyNumber] = 0.0;
+
+        // If the motion of the rigid body is enabled
+        if (rigidBody->getIsMotionEnabled()) {
+            Minv_sp_inertia[bodyNumber] = rigidBody->getInertiaTensorInverseWorld();
+            Minv_sp_mass_diag[bodyNumber] = rigidBody->getMassInverse();
+        }
+    }
+}
+
 // Fill in all the matrices needed to solve the LCP problem
 // Notice that all the active constraints should have been evaluated first
-void ConstraintSolver::fillInMatrices(decimal dt) {
-    decimal oneOverDt = 1.0 / dt;
+void ConstraintSolver::initializeContactConstraints(decimal dt) {
+    decimal oneOverDT = 1.0 / dt;
     
     // For each contact constraint
     for (uint c=0; c<mNbContactConstraints; c++) {
 
         ContactConstraint& constraint = mContactConstraints[c];
+
+        uint indexBody1 = constraint.indexBody1;
+        uint indexBody2 = constraint.indexBody2;
 
         // For each contact point constraint
         for (uint i=0; i<constraint.nbContacts; i++) {
@@ -152,98 +211,16 @@ void ConstraintSolver::fillInMatrices(decimal dt) {
             contact.errorPenetration = 0.0;
             decimal slop = 0.005;
             if (realContact->getPenetrationDepth() > slop) {
-                 contact.errorPenetration += 0.2 * oneOverDt * std::max(double(realContact->getPenetrationDepth() - slop), 0.0);
+                 contact.errorPenetration += 0.2 * oneOverDT * std::max(double(realContact->getPenetrationDepth() - slop), 0.0);
             }
             contact.errorFriction1 = 0.0;
             contact.errorFriction2 = 0.0;
 
-            /*
-            // If the constraint is a contact
-            if (constraint->getType() == CONTACT) {
-                Contact* contact = dynamic_cast<Contact*>(constraint);
-
-                // Add the Baumgarte error correction term for contacts
-               decimal slop = 0.005;
-                if (contact->getPenetrationDepth() > slop) {
-                    errorValues[noConstraint] += 0.2 * oneOverDt * std::max(double(contact->getPenetrationDepth() - slop), 0.0);
-                }
-            }
-            */
-        }
-    }
-
-    // For each current body that is implied in some constraint
-    RigidBody* rigidBody;
-    RigidBody* body;
-    uint b=0;
-    for (set<RigidBody*>::iterator it = mConstraintBodies.begin(); it != mConstraintBodies.end(); ++it, b++) {
-        body = *it;
-        uint bodyNumber = mMapBodyToIndex[body];
-        
-        // TODO : Use polymorphism and remove this downcasting
-        rigidBody = dynamic_cast<RigidBody*>(body);
-        assert(rigidBody);
-
-        // Compute the vector V1 with initial velocities values
-        Vector3 linearVelocity = rigidBody->getLinearVelocity();
-        Vector3 angularVelocity = rigidBody->getAngularVelocity();
-        int bodyIndexArray = 6 * bodyNumber;
-        V1[bodyIndexArray] = linearVelocity[0];
-        V1[bodyIndexArray + 1] = linearVelocity[1];
-        V1[bodyIndexArray + 2] = linearVelocity[2];
-        V1[bodyIndexArray + 3] = angularVelocity[0];
-        V1[bodyIndexArray + 4] = angularVelocity[1];
-        V1[bodyIndexArray + 5] = angularVelocity[2];
-
-        // Compute the vector Vconstraint with final constraint velocities
-        Vconstraint[bodyIndexArray] = 0.0;
-        Vconstraint[bodyIndexArray + 1] = 0.0;
-        Vconstraint[bodyIndexArray + 2] = 0.0;
-        Vconstraint[bodyIndexArray + 3] = 0.0;
-        Vconstraint[bodyIndexArray + 4] = 0.0;
-        Vconstraint[bodyIndexArray + 5] = 0.0;
-        
-        // Compute the vector with forces and torques values
-        Vector3 externalForce = rigidBody->getExternalForce();
-        Vector3 externalTorque = rigidBody->getExternalTorque();
-        Fext[bodyIndexArray] = externalForce[0];
-        Fext[bodyIndexArray + 1] = externalForce[1];
-        Fext[bodyIndexArray + 2] = externalForce[2];
-        Fext[bodyIndexArray + 3] = externalTorque[0];
-        Fext[bodyIndexArray + 4] = externalTorque[1];
-        Fext[bodyIndexArray + 5] = externalTorque[2];
-		
-        // Initialize the mass and inertia tensor matrices
-        Minv_sp_inertia[bodyNumber].setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        Minv_sp_mass_diag[bodyNumber] = 0.0;
-
-        // If the motion of the rigid body is enabled
-        if (rigidBody->getIsMotionEnabled()) {
-            Minv_sp_inertia[bodyNumber] = rigidBody->getInertiaTensorInverseWorld();
-            Minv_sp_mass_diag[bodyNumber] = rigidBody->getMassInverse();
-        }
-    }
-}
-
-// Compute the vector b
-void ConstraintSolver::computeVectorB(decimal dt) {
-    uint indexBody1, indexBody2;
-    decimal oneOverDT = 1.0 / dt;
-
-    for (uint c = 0; c<mNbContactConstraints; c++) {
-
-        ContactConstraint& constraint = mContactConstraints[c];
-
-        // For each contact point
-        for (uint i=0; i<constraint.nbContacts; i++) {
-
-            ContactPointConstraint& contact = constraint.contacts[i];
-
             // ---------- Penetration ---------- //
-        
+
             // b = errorValues * oneOverDT;
             contact.b_Penetration = contact.errorPenetration * oneOverDT;
-		
+
             // Substract 1.0/dt*J*V to the vector b
             indexBody1 = constraint.indexBody1;
             indexBody2 = constraint.indexBody2;
@@ -351,6 +328,8 @@ void ConstraintSolver::computeVectorB(decimal dt) {
             contact.b_Friction2 -= value1 + value2;
         }
     }
+
+
 }
 
 // Compute the matrix B_sp
