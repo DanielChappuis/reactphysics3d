@@ -89,7 +89,6 @@ struct ContactPointConstraint {
     decimal B_spBody2Friction1[6];
     decimal B_spBody1Friction2[6];
     decimal B_spBody2Friction2[6];
-    decimal d_Penetration;
     decimal d_Friction1;
     decimal d_Friction2;
 };

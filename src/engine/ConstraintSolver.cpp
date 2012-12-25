@@ -73,6 +73,9 @@ void ConstraintSolver::initialize() {
         mConstraintBodies.insert(body1);
         mConstraintBodies.insert(body2);
 
+        Vector3 x1 = body1->getTransform().getPosition();
+        Vector3 x2 = body2->getTransform().getPosition();
+
         constraint.indexBody1 = mMapBodyToIndex[body1];
         constraint.indexBody2 = mMapBodyToIndex[body2];
         constraint.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
@@ -86,10 +89,18 @@ void ConstraintSolver::initialize() {
         // For each contact point of the contact manifold
         for (uint c=0; c<contactManifold.nbContacts; c++) {
 
+            ContactPointConstraint& contactPointConstraint = constraint.contacts[c];
+
             // Get a contact point
             Contact* contact = contactManifold.contacts[c];
 
-            constraint.contacts[c].contact = contact;
+            Vector3 p1 = contact->getWorldPointOnBody1();
+            Vector3 p2 = contact->getWorldPointOnBody2();
+
+            contactPointConstraint.contact = contact;
+            contactPointConstraint.normal = contact->getNormal();
+            contactPointConstraint.r1 = p1 - x1;
+            contactPointConstraint.r2 = p2 - x2;
         }
 
         mNbContactConstraints++;
@@ -165,11 +176,30 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
         uint indexBody1 = constraint.indexBody1;
         uint indexBody2 = constraint.indexBody2;
 
+        Matrix3x3& I1 = constraint.inverseInertiaTensorBody1;
+        Matrix3x3& I2 = constraint.inverseInertiaTensorBody2;
+
         // For each contact point constraint
         for (uint i=0; i<constraint.nbContacts; i++) {
 
             ContactPointConstraint& contact = constraint.contacts[i];
             Contact* realContact = contact.contact;
+
+            contact.r1CrossN = contact.r1.cross(contact.normal);
+            contact.r1CrossT1 = contact.r1.cross(contact.frictionVector1);
+            contact.r1CrossT2 = contact.r1.cross(contact.frictionVector2);
+            contact.r2CrossT1 = contact.r2.cross(contact.frictionVector1);
+            contact.r2CrossT2 = contact.r2.cross(contact.frictionVector2);
+
+            contact.inversePenetrationMass = 0.0;
+            if (constraint.isBody1Moving) {
+                contact.inversePenetrationMass += constraint.massInverseBody1 +
+                        ((I1 * contact.r1CrossN).cross(contact.r1)).dot(contact.normal);
+            }
+            if (constraint.isBody2Moving) {
+                contact.inversePenetrationMass += constraint.massInverseBody2 +
+                        ((I2 * contact.r2CrossN).cross(contact.r2)).dot(contact.normal);
+            }
         
             // Fill in the J_sp matrix
             realContact->computeJacobianPenetration(contact.J_spBody1Penetration, contact.J_spBody2Penetration);
@@ -488,14 +518,6 @@ void ConstraintSolver::solveLCP() {
 
             ContactPointConstraint& contact = constraint.contacts[i];
 
-            // --------- Penetration --------- //
-
-            contact.d_Penetration = 0.0;
-            for (uint j=0; j<6; j++) {
-                contact.d_Penetration += contact.J_spBody1Penetration[j] * contact.B_spBody1Penetration[j]
-                                         + contact.J_spBody2Penetration[j] * contact.B_spBody2Penetration[j];
-            }
-
             // --------- Friction 1 --------- //
 
             contact.d_Friction1 = 0.0;
@@ -535,7 +557,7 @@ void ConstraintSolver::solveLCP() {
                 for (uint j=0; j<6; j++) {
                     deltaLambda -= (contact.J_spBody1Penetration[j] * a[indexBody1Array + j] + contact.J_spBody2Penetration[j] * a[indexBody2Array + j]);
                 }
-                deltaLambda /= contact.d_Penetration;
+                deltaLambda /= contact.inversePenetrationMass;
                 lambdaTemp = contact.penetrationImpulse;
                 contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
                 deltaLambda = contact.penetrationImpulse - lambdaTemp;
