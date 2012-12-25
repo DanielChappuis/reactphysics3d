@@ -182,11 +182,11 @@ inline void Contact::computeFrictionVectors() {
     mFrictionVectors.clear();
 
     // Compute the first orthogonal vector
-    Vector3 vector1 = mNormal.getOneOrthogonalVector();
+    Vector3 vector1 = mNormal.getOneOrthogonalVector().getUnit();
     mFrictionVectors.push_back(vector1);
 
     // Compute the second orthogonal vector using the cross product
-    mFrictionVectors.push_back(mNormal.cross(vector1));
+    mFrictionVectors.push_back(mNormal.cross(vector1).getUnit());
 }
 
 // Return the normal vector of the contact
