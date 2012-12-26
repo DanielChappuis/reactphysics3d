@@ -101,6 +101,8 @@ void ConstraintSolver::initialize() {
             contactPointConstraint.normal = contact->getNormal();
             contactPointConstraint.r1 = p1 - x1;
             contactPointConstraint.r2 = p2 - x2;
+            contactPointConstraint.frictionVector1 = contact->getFrictionVector1();
+            contactPointConstraint.frictionVector2 = contact->getFrictionVector2();
         }
 
         mNbContactConstraints++;
@@ -199,6 +201,18 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
             if (constraint.isBody2Moving) {
                 contact.inversePenetrationMass += constraint.massInverseBody2 +
                         ((I2 * contact.r2CrossN).cross(contact.r2)).dot(contact.normal);
+            }
+
+            // Compute the inverse mass matrix K for the friction constraints
+            contact.inverseFriction1Mass = 0.0;
+            contact.inverseFriction2Mass = 0.0;
+            if (constraint.isBody1Moving) {
+                contact.inverseFriction1Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT1).cross(contact.r1)).dot(contact.frictionVector1);
+                contact.inverseFriction2Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT2).cross(contact.r1)).dot(contact.frictionVector2);
+            }
+            if (constraint.isBody2Moving) {
+                contact.inverseFriction1Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT1).cross(contact.r2)).dot(contact.frictionVector1);
+                contact.inverseFriction2Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT2).cross(contact.r2)).dot(contact.frictionVector2);
             }
         
             // Fill in the J_sp matrix
@@ -567,6 +581,9 @@ void ConstraintSolver::solveLCP() {
                 }
 
                 // --------- Friction 1 --------- //
+
+                //std::cout << "contact.b_Friction1 : " << contact.b_Friction1 << std::endl;
+                //std::cout << "contact.inverseFriction1Mass : " << contact.inverseFriction1Mass << std::endl;
 
                 deltaLambda = contact.b_Friction1;
                 for (uint j=0; j<6; j++) {
