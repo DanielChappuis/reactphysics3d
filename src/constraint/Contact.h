@@ -135,6 +135,12 @@ class Contact : public Constraint {
         // Set the contact world point on body 2
         void setWorldPointOnBody2(const Vector3& worldPoint);
 
+        // Get the first friction vector
+        Vector3 getFrictionVector1() const;
+
+        // Get the second friction vector
+        Vector3 getFrictionVector2() const;
+
         // Compute the jacobian matrix for all mathematical constraints
         virtual void computeJacobian(int noConstraint,
                                      decimal J_SP[NB_MAX_CONSTRAINTS][2*6]) const;
@@ -227,6 +233,16 @@ inline void Contact::setWorldPointOnBody1(const Vector3& worldPoint) {
 // Set the contact world point on body 2
 inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
     mWorldPointOnBody2 = worldPoint;
+}
+
+// Get the first friction vector
+inline Vector3 Contact::getFrictionVector1() const {
+    return mFrictionVectors[0];
+}
+
+// Get the second friction vector
+inline Vector3 Contact::getFrictionVector2() const {
+    return mFrictionVectors[1];
 }
 
 // Return the penetration depth of the contact
