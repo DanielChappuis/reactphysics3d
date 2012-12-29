@@ -572,52 +572,64 @@ void ConstraintSolver::solveLCP() {
 
                 ContactPointConstraint& contact = constraint.contacts[i];
 
-                indexBody1Array = 6 * constraint.indexBody1;
-                indexBody2Array = 6 * constraint.indexBody2;
+                indexBody1Array = constraint.indexBody1;
+                indexBody2Array = constraint.indexBody2;
 
                 // --------- Penetration --------- //
 
                 deltaLambda = contact.b_Penetration;
-                for (uint j=0; j<6; j++) {
-                    deltaLambda -= (contact.J_spBody1Penetration[j] * a[indexBody1Array + j] + contact.J_spBody2Penetration[j] * a[indexBody2Array + j]);
+                for (uint j=0; j<3; j++) {
+                    deltaLambda -= (contact.J_spBody1Penetration[j] * aLinear[indexBody1Array][j] + contact.J_spBody2Penetration[j] * aLinear[indexBody2Array][j]);
+                    deltaLambda -= (contact.J_spBody1Penetration[j + 3] * aAngular[indexBody1Array][j] + contact.J_spBody2Penetration[j + 3] * aAngular[indexBody2Array][j]);
                 }
                 deltaLambda /= contact.inversePenetrationMass;
                 lambdaTemp = contact.penetrationImpulse;
                 contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
                 deltaLambda = contact.penetrationImpulse - lambdaTemp;
-                for (uint j=0; j<6; j++) {
-                    a[indexBody1Array + j] += contact.B_spBody1Penetration[j] * deltaLambda;
-                    a[indexBody2Array + j] += contact.B_spBody2Penetration[j] * deltaLambda;
+                for (uint j=0; j<3; j++) {
+                    aLinear[indexBody1Array][j] += contact.B_spBody1Penetration[j] * deltaLambda;
+                    aAngular[indexBody1Array][j] += contact.B_spBody1Penetration[j + 3] * deltaLambda;
+
+                    aLinear[indexBody2Array][j] += contact.B_spBody2Penetration[j] * deltaLambda;
+                    aAngular[indexBody2Array][j] += contact.B_spBody2Penetration[j + 3] * deltaLambda;
                 }
 
                 // --------- Friction 1 --------- //
 
                 deltaLambda = contact.b_Friction1;
-                for (uint j=0; j<6; j++) {
-                    deltaLambda -= (contact.J_spBody1Friction1[j] * a[indexBody1Array + j] + contact.J_spBody2Friction1[j] * a[indexBody2Array + j]);
+                for (uint j=0; j<3; j++) {
+                    deltaLambda -= (contact.J_spBody1Friction1[j] * aLinear[indexBody1Array][j] + contact.J_spBody2Friction1[j] * aLinear[indexBody2Array][j]);
+                    deltaLambda -= (contact.J_spBody1Friction1[j + 3] * aAngular[indexBody1Array][j] + contact.J_spBody2Friction1[j + 3] * aAngular[indexBody2Array][j]);
                 }
                 deltaLambda /= contact.inverseFriction1Mass;
                 lambdaTemp = contact.friction1Impulse;
                 contact.friction1Impulse = std::max(contact.lowerBoundFriction1, std::min(contact.friction1Impulse + deltaLambda, contact.upperBoundFriction1));
                 deltaLambda = contact.friction1Impulse - lambdaTemp;
-                for (uint j=0; j<6; j++) {
-                    a[indexBody1Array + j] += contact.B_spBody1Friction1[j] * deltaLambda;
-                    a[indexBody2Array + j] += contact.B_spBody2Friction1[j] * deltaLambda;
+                for (uint j=0; j<3; j++) {
+                    aLinear[indexBody1Array][j] += contact.B_spBody1Friction1[j] * deltaLambda;
+                    aAngular[indexBody1Array][j] += contact.B_spBody1Friction1[j + 3] * deltaLambda;
+
+                    aLinear[indexBody2Array][j] += contact.B_spBody2Friction1[j] * deltaLambda;
+                    aAngular[indexBody2Array][j] += contact.B_spBody2Friction1[j + 3] * deltaLambda;
                 }
 
                 // --------- Friction 2 --------- //
 
                 deltaLambda = contact.b_Friction2;
-                for (uint j=0; j<6; j++) {
-                    deltaLambda -= (contact.J_spBody1Friction2[j] * a[indexBody1Array + j] + contact.J_spBody2Friction2[j] * a[indexBody2Array + j]);
+                for (uint j=0; j<3; j++) {
+                    deltaLambda -= (contact.J_spBody1Friction2[j] * aLinear[indexBody1Array][j] + contact.J_spBody2Friction2[j] * aLinear[indexBody2Array][j]);
+                    deltaLambda -= (contact.J_spBody1Friction2[j + 3] * aAngular[indexBody1Array][j] + contact.J_spBody2Friction2[j + 3] * aAngular[indexBody2Array][j]);
                 }
                 deltaLambda /= contact.inverseFriction2Mass;
                 lambdaTemp = contact.friction2Impulse;
                 contact.friction2Impulse = std::max(contact.lowerBoundFriction2, std::min(contact.friction2Impulse + deltaLambda, contact.upperBoundFriction2));
                 deltaLambda = contact.friction2Impulse - lambdaTemp;
-                for (uint j=0; j<6; j++) {
-                    a[indexBody1Array + j] += contact.B_spBody1Friction2[j] * deltaLambda;
-                    a[indexBody2Array + j] += contact.B_spBody2Friction2[j] * deltaLambda;
+                for (uint j=0; j<3; j++) {
+                    aLinear[indexBody1Array][j] += contact.B_spBody1Friction2[j] * deltaLambda;
+                    aAngular[indexBody1Array][j] += contact.B_spBody1Friction2[j + 3] * deltaLambda;
+
+                    aLinear[indexBody2Array][j] += contact.B_spBody2Friction2[j] * deltaLambda;
+                    aAngular[indexBody2Array][j] += contact.B_spBody2Friction2[j + 3] * deltaLambda;
                 }
             }
         }
@@ -631,8 +643,9 @@ void ConstraintSolver::computeVectorA() {
     uint indexBody1Array, indexBody2Array;
     
     // Init the vector a with zero values
-    for (i=0; i<6*nbBodies; i++) {
-       a[i] = 0.0;
+    for (i=0; i<nbBodies; i++) {
+        aLinear[i] = Vector3(0, 0, 0);
+        aAngular[i] = Vector3(0, 0, 0);
     }
 
     // For each constraint
@@ -644,28 +657,37 @@ void ConstraintSolver::computeVectorA() {
 
             ContactPointConstraint& contact = constraint.contacts[i];
 
-            indexBody1Array = 6 * constraint.indexBody1;
-            indexBody2Array = 6 * constraint.indexBody2;
+            indexBody1Array = constraint.indexBody1;
+            indexBody2Array = constraint.indexBody2;
 
             // --------- Penetration --------- //
 
-            for (uint j=0; j<6; j++) {
-                a[indexBody1Array + j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse;
-                a[indexBody2Array + j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse;
+            for (uint j=0; j<3; j++) {
+                aLinear[indexBody1Array][j] += contact.B_spBody1Penetration[j] * contact.penetrationImpulse;
+                aAngular[indexBody1Array][j] += contact.B_spBody1Penetration[j + 3] * contact.penetrationImpulse;
+
+                aLinear[indexBody2Array][j] += contact.B_spBody2Penetration[j] * contact.penetrationImpulse;
+                aAngular[indexBody2Array][j] += contact.B_spBody2Penetration[j + 3] * contact.penetrationImpulse;
             }
 
             // --------- Friction 1 --------- //
 
-            for (uint j=0; j<6; j++) {
-                a[indexBody1Array + j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse;
-                a[indexBody2Array + j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse;
+            for (uint j=0; j<3; j++) {
+                aLinear[indexBody1Array][j] += contact.B_spBody1Friction1[j] * contact.friction1Impulse;
+                aAngular[indexBody1Array][j] += contact.B_spBody1Friction1[j + 3] * contact.friction1Impulse;
+
+                aLinear[indexBody2Array][j] += contact.B_spBody2Friction1[j] * contact.friction1Impulse;
+                aAngular[indexBody2Array][j] += contact.B_spBody2Friction1[j + 3] * contact.friction1Impulse;
             }
 
             // --------- Friction 2 --------- //
 
-            for (uint j=0; j<6; j++) {
-                a[indexBody1Array + j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse;
-                a[indexBody2Array + j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse;
+            for (uint j=0; j<3; j++) {
+                aLinear[indexBody1Array][j] += contact.B_spBody1Friction2[j] * contact.friction2Impulse;
+                aAngular[indexBody1Array][j] += contact.B_spBody1Friction2[j + 3] * contact.friction2Impulse;
+
+                aLinear[indexBody2Array][j] += contact.B_spBody2Friction2[j] * contact.friction2Impulse;
+                aAngular[indexBody2Array][j] += contact.B_spBody2Friction2[j + 3] * contact.friction2Impulse;
             }
         }
     }

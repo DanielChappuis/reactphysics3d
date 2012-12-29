@@ -160,7 +160,8 @@ class ConstraintSolver {
         decimal b[NB_MAX_CONSTRAINTS];                  // Vector "b" of the LCP problem
         decimal bError[NB_MAX_CONSTRAINTS];             // Vector "b" of the LCP problem for error correction projection
         decimal d[NB_MAX_CONSTRAINTS];                  // Vector "d"
-        decimal a[6*NB_MAX_BODIES];                     // Vector "a"
+        Vector3 aLinear[NB_MAX_BODIES];                     // Vector "a"
+        Vector3 aAngular[NB_MAX_BODIES];
         decimal aError[6*NB_MAX_BODIES];                // Vector "a" for error correction projection
         decimal penetrationDepths[NB_MAX_CONSTRAINTS];  // Array of penetration depths for error correction projection
         decimal lambda[NB_MAX_CONSTRAINTS];             // Lambda vector of the LCP problem
