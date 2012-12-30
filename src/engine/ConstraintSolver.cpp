@@ -142,16 +142,6 @@ void ConstraintSolver::initializeBodies() {
         Vconstraint[bodyNumber] = Vector3(0, 0, 0);
         Wconstraint[bodyNumber] = Vector3(0, 0, 0);
 
-        // Compute the vector with forces and torques values
-        Vector3 externalForce = rigidBody->getExternalForce();
-        Vector3 externalTorque = rigidBody->getExternalTorque();
-        Fext[bodyIndexArray] = externalForce[0];
-        Fext[bodyIndexArray + 1] = externalForce[1];
-        Fext[bodyIndexArray + 2] = externalForce[2];
-        Fext[bodyIndexArray + 3] = externalTorque[0];
-        Fext[bodyIndexArray + 4] = externalTorque[1];
-        Fext[bodyIndexArray + 5] = externalTorque[2];
-
         // Initialize the mass and inertia tensor matrices
         Minv_sp_inertia[bodyNumber].setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         Minv_sp_mass_diag[bodyNumber] = 0.0;
@@ -259,120 +249,13 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
             // b = errorValues * oneOverDT;
             contact.b_Penetration = contact.errorPenetration * oneOverDT;
 
-            // Substract 1.0/dt*J*V to the vector b
-            indexBody1 = constraint.indexBody1;
-            indexBody2 = constraint.indexBody2;
-            decimal multiplication = 0.0;
-            int body1ArrayIndex = 6 * indexBody1;
-            int body2ArrayIndex = 6 * indexBody2;
-            for (uint i=0; i<3; i++) {
-                multiplication += contact.J_spBody1Penetration[i] * V1[indexBody1][i];
-                multiplication += contact.J_spBody1Penetration[i + 3] * W1[indexBody1][i];
-
-                multiplication += contact.J_spBody2Penetration[i] * V1[indexBody2][i];
-                multiplication += contact.J_spBody2Penetration[i + 3] * W1[indexBody2][i];
-            }
-            contact.b_Penetration -= multiplication * oneOverDT ;
-
-            // Substract J*M^-1*F_ext to the vector b
-            decimal value1 = 0.0;
-            decimal value2 = 0.0;
-            decimal sum1, sum2;
-            value1 += contact.J_spBody1Penetration[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
-                    contact.J_spBody1Penetration[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
-                    contact.J_spBody1Penetration[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
-            value2 += contact.J_spBody2Penetration[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
-                      contact.J_spBody2Penetration[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
-                      contact.J_spBody2Penetration[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
-            for (uint i=0; i<3; i++) {
-                sum1 = 0.0;
-                sum2 = 0.0;
-                for (uint j=0; j<3; j++) {
-                    sum1 += contact.J_spBody1Penetration[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
-                    sum2 += contact.J_spBody2Penetration[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
-                }
-                value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
-                value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
-            }
-
-            contact.b_Penetration -= value1 + value2;
-
              // ---------- Friction 1 ---------- //
 
-            // b = errorValues * oneOverDT;
             contact.b_Friction1 = contact.errorFriction1 * oneOverDT;
-
-            // Substract 1.0/dt*J*V to the vector b
-            multiplication = 0.0;
-            for (uint i=0; i<3; i++) {
-                multiplication += contact.J_spBody1Friction1[i] * V1[indexBody1][i];
-                multiplication += contact.J_spBody1Friction1[i + 3] * W1[indexBody1][i];
-
-                multiplication += contact.J_spBody2Friction1[i] * V1[indexBody2][i];
-                multiplication += contact.J_spBody2Friction1[i + 3] * W1[indexBody2][i];
-            }
-            contact.b_Friction1 -= multiplication * oneOverDT ;
-
-            // Substract J*M^-1*F_ext to the vector b
-            value1 = 0.0;
-            value2 = 0.0;
-            value1 += contact.J_spBody1Friction1[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
-                    contact.J_spBody1Friction1[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
-                    contact.J_spBody1Friction1[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
-            value2 += contact.J_spBody2Friction1[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
-                      contact.J_spBody2Friction1[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
-                      contact.J_spBody2Friction1[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
-            for (uint i=0; i<3; i++) {
-                sum1 = 0.0;
-                sum2 = 0.0;
-                for (uint j=0; j<3; j++) {
-                    sum1 += contact.J_spBody1Friction1[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
-                    sum2 += contact.J_spBody2Friction1[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
-                }
-                value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
-                value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
-            }
-
-            contact.b_Friction1 -= value1 + value2;
-
 
              // ---------- Friction 2 ---------- //
 
-            // b = errorValues * oneOverDT;
             contact.b_Friction2 = contact.errorFriction2 * oneOverDT;
-
-            // Substract 1.0/dt*J*V to the vector b
-            multiplication = 0.0;
-            for (uint i=0; i<3; i++) {
-                multiplication += contact.J_spBody1Friction2[i] * V1[indexBody1][i];
-                multiplication += contact.J_spBody1Friction2[i + 3] * W1[indexBody1][i];
-
-                multiplication += contact.J_spBody2Friction2[i] * V1[indexBody2][i];
-                multiplication += contact.J_spBody2Friction2[i + 3] * W1[indexBody2][i];
-            }
-            contact.b_Friction2 -= multiplication * oneOverDT ;
-
-            // Substract J*M^-1*F_ext to the vector b
-            value1 = 0.0;
-            value2 = 0.0;
-            value1 += contact.J_spBody1Friction2[0] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex] +
-                    contact.J_spBody1Friction2[1] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 1] +
-                    contact.J_spBody1Friction2[2] * Minv_sp_mass_diag[indexBody1] * Fext[body1ArrayIndex + 2];
-            value2 += contact.J_spBody2Friction2[0] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex] +
-                      contact.J_spBody2Friction2[1] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 1] +
-                      contact.J_spBody2Friction2[2] * Minv_sp_mass_diag[indexBody2] * Fext[body2ArrayIndex + 2];
-            for (uint i=0; i<3; i++) {
-                sum1 = 0.0;
-                sum2 = 0.0;
-                for (uint j=0; j<3; j++) {
-                    sum1 += contact.J_spBody1Friction2[3 + j] * Minv_sp_inertia[indexBody1].getValue(j, i);
-                    sum2 += contact.J_spBody2Friction2[3 + j] * Minv_sp_inertia[indexBody2].getValue(j, i);
-                }
-                value1 += sum1 * Fext[body1ArrayIndex + 3 + i];
-                value2 += sum2 * Fext[body2ArrayIndex + 3 + i];
-            }
-
-            contact.b_Friction2 -= value1 + value2;
         }
     }
 
@@ -546,7 +429,7 @@ void ConstraintSolver::computeVectorVconstraint(decimal dt) {
 
 // Solve a LCP problem using the Projected-Gauss-Seidel algorithm
 // This method outputs the result in the lambda vector
-void ConstraintSolver::solveLCP() {
+void ConstraintSolver::solveLCP(decimal dt) {
 
    // for (uint i=0; i<nbConstraints; i++) {
    //         lambda[i] = lambdaInit[i];
@@ -558,7 +441,7 @@ void ConstraintSolver::solveLCP() {
     uint iter;
 
     // Compute the vector a
-    computeVectorA();
+    computeVectorA(dt);
 
     // For each iteration
     for(iter=0; iter<mNbIterations; iter++) {
@@ -638,14 +521,18 @@ void ConstraintSolver::solveLCP() {
 
 // Compute the vector a used in the solve() method
 // Note that a = B * lambda
-void ConstraintSolver::computeVectorA() {
+void ConstraintSolver::computeVectorA(decimal dt) {
     uint i;
     uint indexBody1Array, indexBody2Array;
+    decimal oneOverDt = 1.0 / dt;
     
     // Init the vector a with zero values
-    for (i=0; i<nbBodies; i++) {
-        aLinear[i] = Vector3(0, 0, 0);
-        aAngular[i] = Vector3(0, 0, 0);
+    for (set<RigidBody*>::iterator it = mConstraintBodies.begin(); it != mConstraintBodies.end(); ++it) {
+        RigidBody* rigidBody = *it;
+        uint bodyNumber = mMapBodyToIndex[rigidBody];
+
+        aLinear[bodyNumber] = oneOverDt * V1[bodyNumber] + rigidBody->getMassInverse() * rigidBody->getExternalForce();
+        aAngular[bodyNumber] = oneOverDt * W1[bodyNumber] + rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
     }
 
     // For each constraint

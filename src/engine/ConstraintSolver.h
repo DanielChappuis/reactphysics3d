@@ -180,8 +180,6 @@ class ConstraintSolver {
         Vector3* Vconstraint;                           // Same kind of vector as V1 but contains the final constraint velocities
         Vector3* Wconstraint;
         decimal VconstraintError[6*NB_MAX_BODIES];      // Same kind of vector as V1 but contains the final constraint velocities
-        decimal Fext[6*NB_MAX_BODIES];                  // Array that contains for each body the 6x1 vector that contains external forces and torques
-                                                        // Each cell contains a 6x1 vector with external force and torque.
 
         // Contact constraints
         ContactConstraint* mContactConstraints;
@@ -202,8 +200,8 @@ class ConstraintSolver {
         void computeMatrixB_sp();                       // Compute the matrix B_sp
         void computeVectorVconstraint(decimal dt);      // Compute the vector V2
         void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
-        void computeVectorA();                          // Compute the vector a used in the solve() method
-        void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
+        void computeVectorA(decimal dt);                          // Compute the vector a used in the solve() method
+        void solveLCP(decimal dt);                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
     
    public:
         ConstraintSolver(DynamicsWorld* world);                         // Constructor
@@ -283,7 +281,7 @@ inline void ConstraintSolver::solve(decimal dt) {
     computeMatrixB_sp();
 
     // Solve the LCP problem (computation of lambda)
-    solveLCP();
+    solveLCP(dt);
 
     // Cache the lambda values in order to use them in the next step
     cacheLambda();
