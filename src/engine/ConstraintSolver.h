@@ -77,12 +77,8 @@ struct ContactPointConstraint {
     decimal lowerBoundFriction2;
     decimal upperBoundFriction2;
     decimal errorPenetration;
-    decimal errorFriction1;
-    decimal errorFriction2;
     Contact* contact;                       // TODO : REMOVE THIS
     decimal b_Penetration;
-    decimal b_Friction1;
-    decimal b_Friction2;
     decimal B_spBody1Penetration[6];
     decimal B_spBody2Penetration[6];
     decimal B_spBody1Friction1[6];
@@ -160,8 +156,6 @@ class ConstraintSolver {
         decimal b[NB_MAX_CONSTRAINTS];                  // Vector "b" of the LCP problem
         decimal bError[NB_MAX_CONSTRAINTS];             // Vector "b" of the LCP problem for error correction projection
         decimal d[NB_MAX_CONSTRAINTS];                  // Vector "d"
-        Vector3 aLinear[NB_MAX_BODIES];                     // Vector "a"
-        Vector3 aAngular[NB_MAX_BODIES];
         decimal aError[6*NB_MAX_BODIES];                // Vector "a" for error correction projection
         decimal penetrationDepths[NB_MAX_CONSTRAINTS];  // Array of penetration depths for error correction projection
         decimal lambda[NB_MAX_CONSTRAINTS];             // Lambda vector of the LCP problem
@@ -175,11 +169,9 @@ class ConstraintSolver {
         Matrix3x3 Minv_sp_inertia[NB_MAX_BODIES];       // 3x3 world inertia tensor matrix I for each body (from the Minv_sp matrix)
         decimal Minv_sp_mass_diag[NB_MAX_BODIES];       // Array that contains for each body the inverse of its mass
                                                         // This is an array of size nbBodies that contains in each cell a 6x6 matrix
-        Vector3* V1;                    // Array that contains for each body the 6x1 vector that contains linear and angular velocities
-        Vector3* W1;
-        Vector3* Vconstraint;                           // Same kind of vector as V1 but contains the final constraint velocities
-        Vector3* Wconstraint;
-        decimal VconstraintError[6*NB_MAX_BODIES];      // Same kind of vector as V1 but contains the final constraint velocities
+        Vector3* mLinearVelocities;                     // Array of constrained linear velocities
+        Vector3* mAngularVelocities;                    // Array of constrained angular velocities
+        decimal mTimeStep;                              // Current time step
 
         // Contact constraints
         ContactConstraint* mContactConstraints;
@@ -198,10 +190,9 @@ class ConstraintSolver {
         void initializeBodies();                        // Initialize bodies velocities
         void initializeContactConstraints(decimal dt);                // Fill in all the matrices needed to solve the LCP problem
         void computeMatrixB_sp();                       // Compute the matrix B_sp
-        void computeVectorVconstraint(decimal dt);      // Compute the vector V2
         void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
-        void computeVectorA(decimal dt);                          // Compute the vector a used in the solve() method
-        void solveLCP(decimal dt);                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
+        void warmStart();                          // Compute the vector a used in the solve() method
+        void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
     
    public:
         ConstraintSolver(DynamicsWorld* world);                         // Constructor
@@ -223,14 +214,14 @@ inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
 inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
     uint indexBodyArray = mMapBodyToIndex[body];
-    return Vconstraint[indexBodyArray];
+    return mLinearVelocities[indexBodyArray];
 }
 
 // Return the constrained angular velocity of a body after solving the LCP problem
 inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
     assert(isConstrainedBody(body));
     uint indexBodyArray = mMapBodyToIndex[body];
-    return Wconstraint[indexBodyArray];
+    return mAngularVelocities[indexBodyArray];
 }
 
 // Cleanup of the constraint solver
@@ -243,51 +234,19 @@ inline void ConstraintSolver::cleanup() {
         delete[] mContactConstraints;
         mContactConstraints = 0;
     }
-    if (Vconstraint != 0) {
-        delete[] Vconstraint;
-        Vconstraint = 0;
+    if (mLinearVelocities != 0) {
+        delete[] mLinearVelocities;
+        mLinearVelocities = 0;
     }
-    if (Wconstraint != 0) {
-        delete[] Wconstraint;
-        Wconstraint = 0;
-    }
-    if (V1 != 0) {
-        delete[] V1;
-        V1 = 0;
-    }
-    if (W1 != 0) {
-        delete[] W1;
-        W1 = 0;
+    if (mAngularVelocities != 0) {
+        delete[] mAngularVelocities;
+        mAngularVelocities = 0;
     }
 }
 
 // Set the number of iterations of the LCP solver
 inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
     mNbIterations = nbIterations;
-}         
-
-// Solve the current LCP problem
-inline void ConstraintSolver::solve(decimal dt) {
-    
-    // Initialize the solver
-    initialize();
-
-    initializeBodies();
-
-    // Fill-in all the matrices needed to solve the LCP problem
-    initializeContactConstraints(dt);
-
-    // Compute the matrix B
-    computeMatrixB_sp();
-
-    // Solve the LCP problem (computation of lambda)
-    solveLCP(dt);
-
-    // Cache the lambda values in order to use them in the next step
-    cacheLambda();
-    
-    // Compute the vector Vconstraint
-    computeVectorVconstraint(dt);
 }
 
 } // End of ReactPhysics3D namespace

@@ -123,15 +123,16 @@ void DynamicsWorld::updateAllBodiesMotion() {
                 newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(*it);
                 newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(*it);
             }
+            else {
+                // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
+                // external forces and torques.
+                newLinearVelocity += dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
+                newAngularVelocity += dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
 
-            // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
-            // external forces and torques.
-            newLinearVelocity += dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
-            newAngularVelocity += dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
-
-            // Add the velocity V1 to the new velocity
-            newLinearVelocity += rigidBody->getLinearVelocity();
-            newAngularVelocity += rigidBody->getAngularVelocity();
+                // Add the velocity V1 to the new velocity
+                newLinearVelocity += rigidBody->getLinearVelocity();
+                newAngularVelocity += rigidBody->getAngularVelocity();
+            }
             
             // Update the position and the orientation of the body according to the new velocity
             updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity);
