@@ -175,6 +175,7 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
             Contact* realContact = contact.contact;
 
             contact.r1CrossN = contact.r1.cross(contact.normal);
+            contact.r2CrossN = contact.r2.cross(contact.normal);
             contact.r1CrossT1 = contact.r1.cross(contact.frictionVector1);
             contact.r1CrossT2 = contact.r1.cross(contact.frictionVector2);
             contact.r2CrossT1 = contact.r2.cross(contact.frictionVector1);
@@ -426,63 +427,68 @@ void ConstraintSolver::solveLCP() {
                 // Compute the Lagrange multiplier
                 deltaLambda = - (Jv + b);
 
-                /*
-                deltaLambda = 0.0;
-                for (uint j=0; j<3; j++) {
-                    deltaLambda -= (contact.J_spBody1Penetration[j] * mLinearVelocities[indexBody1Array][j] + contact.J_spBody2Penetration[j] * mLinearVelocities[indexBody2Array][j]);
-                    deltaLambda -= (contact.J_spBody1Penetration[j + 3] * mAngularVelocities[indexBody1Array][j] + contact.J_spBody2Penetration[j + 3] * mAngularVelocities[indexBody2Array][j]);
-                }
-                */
                 //deltaLambda -= contact.b_Penetration;
                 deltaLambda /= contact.inversePenetrationMass;
                 lambdaTemp = contact.penetrationImpulse;
                 contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
                 deltaLambda = contact.penetrationImpulse - lambdaTemp;
-                for (uint j=0; j<3; j++) {
-                    mLinearVelocities[indexBody1Array][j] += contact.B_spBody1Penetration[j] * deltaLambda;
-                    mAngularVelocities[indexBody1Array][j] += contact.B_spBody1Penetration[j + 3] * deltaLambda;
 
-                    mLinearVelocities[indexBody2Array][j] += contact.B_spBody2Penetration[j] * deltaLambda;
-                    mAngularVelocities[indexBody2Array][j] += contact.B_spBody2Penetration[j + 3] * deltaLambda;
-                }
+                // Compute the impulse P=J^T * lambda
+                const Vector3 linearImpulseBody1 = -contact.normal * deltaLambda;
+                const Vector3 angularImpulseBody1 = -contact.r1CrossN * deltaLambda;
+                const Vector3 linearImpulseBody2 = contact.normal * deltaLambda;
+                const Vector3 angularImpulseBody2 = contact.r2CrossN * deltaLambda;
+                const Impulse impulsePenetration(linearImpulseBody1, angularImpulseBody1,
+                                                 linearImpulseBody2, angularImpulseBody2);
+
+                // Apply the impulse to the bodies of the constraint
+                applyImpulse(impulsePenetration, constraint);
 
                 // --------- Friction 1 --------- //
 
-                deltaLambda = 0.0;
-                for (uint j=0; j<3; j++) {
-                    deltaLambda -= (contact.J_spBody1Friction1[j] * mLinearVelocities[indexBody1Array][j] + contact.J_spBody2Friction1[j] * mLinearVelocities[indexBody2Array][j]);
-                    deltaLambda -= (contact.J_spBody1Friction1[j + 3] * mAngularVelocities[indexBody1Array][j] + contact.J_spBody2Friction1[j + 3] * mAngularVelocities[indexBody2Array][j]);
-                }
+                // Compute J*v
+                deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
+                Jv = deltaV.dot(contact.frictionVector1);
+
+                deltaLambda = -Jv;
                 deltaLambda /= contact.inverseFriction1Mass;
                 lambdaTemp = contact.friction1Impulse;
                 contact.friction1Impulse = std::max(contact.lowerBoundFriction1, std::min(contact.friction1Impulse + deltaLambda, contact.upperBoundFriction1));
                 deltaLambda = contact.friction1Impulse - lambdaTemp;
-                for (uint j=0; j<3; j++) {
-                    mLinearVelocities[indexBody1Array][j] += contact.B_spBody1Friction1[j] * deltaLambda;
-                    mAngularVelocities[indexBody1Array][j] += contact.B_spBody1Friction1[j + 3] * deltaLambda;
 
-                    mLinearVelocities[indexBody2Array][j] += contact.B_spBody2Friction1[j] * deltaLambda;
-                    mAngularVelocities[indexBody2Array][j] += contact.B_spBody2Friction1[j + 3] * deltaLambda;
-                }
+                // Compute the impulse P=J^T * lambda
+                Vector3 linearImpulseBody1Friction1 = -contact.frictionVector1 * deltaLambda;
+                Vector3 angularImpulseBody1Friction1 = -contact.r1CrossT1 * deltaLambda;
+                Vector3 linearImpulseBody2Friction1 = contact.frictionVector1 * deltaLambda;
+                Vector3 angularImpulseBody2Friction1 = contact.r2CrossT1 * deltaLambda;
+                Impulse impulseFriction1(linearImpulseBody1Friction1, angularImpulseBody1Friction1,
+                                         linearImpulseBody2Friction1, angularImpulseBody2Friction1);
+
+                // Apply the impulses to the bodies of the constraint
+                applyImpulse(impulseFriction1, constraint);
 
                 // --------- Friction 2 --------- //
 
-                deltaLambda = 0.0;
-                for (uint j=0; j<3; j++) {
-                    deltaLambda -= (contact.J_spBody1Friction2[j] * mLinearVelocities[indexBody1Array][j] + contact.J_spBody2Friction2[j] * mLinearVelocities[indexBody2Array][j]);
-                    deltaLambda -= (contact.J_spBody1Friction2[j + 3] * mAngularVelocities[indexBody1Array][j] + contact.J_spBody2Friction2[j + 3] * mAngularVelocities[indexBody2Array][j]);
-                }
+                // Compute J*v
+                deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
+                Jv = deltaV.dot(contact.frictionVector2);
+
+                deltaLambda = -Jv;
                 deltaLambda /= contact.inverseFriction2Mass;
                 lambdaTemp = contact.friction2Impulse;
                 contact.friction2Impulse = std::max(contact.lowerBoundFriction2, std::min(contact.friction2Impulse + deltaLambda, contact.upperBoundFriction2));
                 deltaLambda = contact.friction2Impulse - lambdaTemp;
-                for (uint j=0; j<3; j++) {
-                    mLinearVelocities[indexBody1Array][j] += contact.B_spBody1Friction2[j] * deltaLambda;
-                    mAngularVelocities[indexBody1Array][j] += contact.B_spBody1Friction2[j + 3] * deltaLambda;
 
-                    mLinearVelocities[indexBody2Array][j] += contact.B_spBody2Friction2[j] * deltaLambda;
-                    mAngularVelocities[indexBody2Array][j] += contact.B_spBody2Friction2[j + 3] * deltaLambda;
-                }
+                // Compute the impulse P=J^T * lambda
+                Vector3 linearImpulseBody1Friction2 = -contact.frictionVector2 * deltaLambda;
+                Vector3 angularImpulseBody1Friction2 = -contact.r1CrossT2 * deltaLambda;
+                Vector3 linearImpulseBody2Friction2 = contact.frictionVector2 * deltaLambda;
+                Vector3 angularImpulseBody2Friction2 = contact.r2CrossT2 * deltaLambda;
+                Impulse impulseFriction2(linearImpulseBody1Friction2, angularImpulseBody1Friction2,
+                                         linearImpulseBody2Friction2, angularImpulseBody2Friction2);
+
+                // Apply the impulses to the bodies of the constraint
+                applyImpulse(impulseFriction2, constraint);
             }
         }
     }

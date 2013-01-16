@@ -43,14 +43,14 @@ class DynamicsWorld;
 struct Impulse {
 
     public:
-        Vector3& linearImpulseBody1;
-        Vector3& linearImpulseBody2;
-        Vector3& angularImpulseBody1;
-        Vector3& angularImpulseBody2;
+        const Vector3& linearImpulseBody1;
+        const Vector3& linearImpulseBody2;
+        const Vector3& angularImpulseBody1;
+        const Vector3& angularImpulseBody2;
 
         // Constructor
-        Impulse(Vector3& linearImpulseBody1, Vector3& angularImpulseBody1,
-                Vector3& linearImpulseBody2, Vector3& angularImpulseBody2)
+        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
+                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
             : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
               linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
 
