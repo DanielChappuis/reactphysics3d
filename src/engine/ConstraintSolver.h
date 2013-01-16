@@ -39,6 +39,24 @@ namespace reactphysics3d {
 // Declarations
 class DynamicsWorld;
 
+// Structure Impulse
+struct Impulse {
+
+    public:
+        Vector3& linearImpulseBody1;
+        Vector3& linearImpulseBody2;
+        Vector3& angularImpulseBody1;
+        Vector3& angularImpulseBody2;
+
+        // Constructor
+        Impulse(Vector3& linearImpulseBody1, Vector3& angularImpulseBody1,
+                Vector3& linearImpulseBody2, Vector3& angularImpulseBody2)
+            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
+              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
+
+        }
+};
+
 // Structure ContactPointConstraint
 // Internal structure for a contact point constraint
 struct ContactPointConstraint {
@@ -137,9 +155,7 @@ class ConstraintSolver {
         std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
         bool isErrorCorrectionActive;                   // True if error correction (with world order) is active
         uint mNbIterations;                           // Number of iterations of the LCP solver
-        uint nbIterationsLCPErrorCorrection;            // Number of iterations of the LCP solver for error correction
         uint nbConstraints;                             // Total number of constraints (with the auxiliary constraints)
-        uint nbConstraintsError;                        // Number of constraints for error correction projection (only contact constraints)
         uint nbBodies;                                  // Current number of bodies in the physics world
         RigidBody* bodyMapping[NB_MAX_CONSTRAINTS][2];       // 2-dimensional array that contains the mapping of body reference
                                                         // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
@@ -151,21 +167,8 @@ class ConstraintSolver {
         decimal B_sp[2][6*NB_MAX_CONSTRAINTS];          // 2-dimensional array that correspond to a useful matrix in sparse representation
                                                         // This array contains for each constraint two 6x1 matrices (one for each body of the constraint)
                                                         // a 6x1 matrix
-        decimal J_spError[NB_MAX_CONSTRAINTS][2*6];     // Same as J_sp for error correction projection (only contact constraints)
-        decimal B_spError[2][6*NB_MAX_CONSTRAINTS];     // Same as B_sp for error correction projection (only contact constraints)
         decimal b[NB_MAX_CONSTRAINTS];                  // Vector "b" of the LCP problem
-        decimal bError[NB_MAX_CONSTRAINTS];             // Vector "b" of the LCP problem for error correction projection
         decimal d[NB_MAX_CONSTRAINTS];                  // Vector "d"
-        decimal aError[6*NB_MAX_BODIES];                // Vector "a" for error correction projection
-        decimal penetrationDepths[NB_MAX_CONSTRAINTS];  // Array of penetration depths for error correction projection
-        decimal lambda[NB_MAX_CONSTRAINTS];             // Lambda vector of the LCP problem
-        decimal lambdaError[NB_MAX_CONSTRAINTS];        // Lambda vector of the LCP problem for error correction projections
-        decimal lambdaInit[NB_MAX_CONSTRAINTS];         // Lambda init vector for the LCP solver
-        decimal errorValues[NB_MAX_CONSTRAINTS];        // Error vector of all constraints
-        decimal lowerBounds[NB_MAX_CONSTRAINTS];        // Vector that contains the low limits for the variables of the LCP problem
-        decimal upperBounds[NB_MAX_CONSTRAINTS];        // Vector that contains the high limits for the variables of the LCP problem
-        decimal lowerBoundsError[NB_MAX_CONSTRAINTS];   // Same as "lowerBounds" but for error correction projections
-        decimal upperBoundsError[NB_MAX_CONSTRAINTS];   // Same as "upperBounds" but for error correction projections
         Matrix3x3 Minv_sp_inertia[NB_MAX_BODIES];       // 3x3 world inertia tensor matrix I for each body (from the Minv_sp matrix)
         decimal Minv_sp_mass_diag[NB_MAX_BODIES];       // Array that contains for each body the inverse of its mass
                                                         // This is an array of size nbBodies that contains in each cell a 6x6 matrix
@@ -193,7 +196,13 @@ class ConstraintSolver {
         void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
         void warmStart();                          // Compute the vector a used in the solve() method
         void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
-    
+
+        // Apply an impulse to the two bodies of a constraint
+        void applyImpulse(const Impulse& impulse, const ContactConstraint& constraint);
+
+        // Compute the collision restitution factor from the restitution factor of each body
+        decimal computeMixRestitutionFactor(const RigidBody *body1, const RigidBody *body2) const;
+
    public:
         ConstraintSolver(DynamicsWorld* world);                         // Constructor
         virtual ~ConstraintSolver();                                   // Destructor
@@ -247,6 +256,16 @@ inline void ConstraintSolver::cleanup() {
 // Set the number of iterations of the LCP solver
 inline void ConstraintSolver::setNbLCPIterations(uint nbIterations) {
     mNbIterations = nbIterations;
+}
+
+// Compute the collision restitution factor from the restitution factor of each body
+inline decimal ConstraintSolver::computeMixRestitutionFactor(const RigidBody* body1,
+                                                             const RigidBody* body2) const {
+    decimal restitution1 = body1->getRestitution();
+    decimal restitution2 = body2->getRestitution();
+
+    // Return the largest restitution factor
+    return (restitution1 > restitution2) ? restitution1 : restitution2;
 }
 
 } // End of ReactPhysics3D namespace

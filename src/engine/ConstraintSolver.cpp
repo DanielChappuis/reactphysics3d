@@ -86,6 +86,7 @@ void ConstraintSolver::initialize() {
         constraint.massInverseBody1 = body1->getMassInverse();
         constraint.massInverseBody2 = body2->getMassInverse();
         constraint.nbContacts = contactManifold.nbContacts;
+        constraint.restitutionFactor = computeMixRestitutionFactor(body1, body2);
 
         // For each contact point of the contact manifold
         for (uint c=0; c<contactManifold.nbContacts; c++) {
@@ -104,6 +105,7 @@ void ConstraintSolver::initialize() {
             contactPointConstraint.r2 = p2 - x2;
             contactPointConstraint.frictionVector1 = contact->getFrictionVector1();
             contactPointConstraint.frictionVector2 = contact->getFrictionVector2();
+            contactPointConstraint.penetrationDepth = contact->getPenetrationDepth();
         }
 
         mNbContactConstraints++;
@@ -198,6 +200,24 @@ void ConstraintSolver::initializeContactConstraints(decimal dt) {
             if (constraint.isBody2Moving) {
                 contact.inverseFriction1Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT1).cross(contact.r2)).dot(contact.frictionVector1);
                 contact.inverseFriction2Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT2).cross(contact.r2)).dot(contact.frictionVector2);
+            }
+
+            const Vector3& v1 = mLinearVelocities[constraint.indexBody1];
+            const Vector3& w1 = mAngularVelocities[constraint.indexBody1];
+            const Vector3& v2 = mLinearVelocities[constraint.indexBody2];
+            const Vector3& w2 = mAngularVelocities[constraint.indexBody2];
+
+            // Compute the restitution velocity bias "b". We compute this here instead
+            // of inside the solve() method because we need to use the velocity difference
+            // at the beginning of the contact. Note that if it is a resting contact (normal velocity
+            // under a given threshold), we don't add a restitution velocity bias
+            contact.restitutionBias = 0.0;
+            Vector3 deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
+            decimal deltaVDotN = deltaV.dot(contact.normal);
+            // TODO : Use a constant here
+            decimal elasticLinearVelocityThreshold = 0.3;
+            if (deltaVDotN < -elasticLinearVelocityThreshold) {
+                contact.restitutionBias = constraint.restitutionFactor * deltaVDotN;
             }
 
             // Fill in the J_sp matrix
@@ -382,14 +402,38 @@ void ConstraintSolver::solveLCP() {
                 indexBody1Array = constraint.indexBody1;
                 indexBody2Array = constraint.indexBody2;
 
+                const Vector3& v1 = mLinearVelocities[constraint.indexBody1];
+                const Vector3& w1 = mAngularVelocities[constraint.indexBody1];
+                const Vector3& v2 = mLinearVelocities[constraint.indexBody2];
+                const Vector3& w2 = mAngularVelocities[constraint.indexBody2];
+
                 // --------- Penetration --------- //
 
+                // Compute J*v
+                Vector3 deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
+                decimal deltaVDotN = deltaV.dot(contact.normal);
+                decimal Jv = deltaVDotN;
+
+                // Compute the bias "b" of the constraint
+                decimal beta = 0.2;
+                // TODO : Use a constant for the slop
+                decimal slop = 0.005;
+                decimal biasPenetrationDepth = 0.0;
+                if (contact.penetrationDepth > slop) biasPenetrationDepth = -(beta/mTimeStep) *
+                        max(0.0f, float(contact.penetrationDepth - slop));
+                decimal b = biasPenetrationDepth + contact.restitutionBias;
+
+                // Compute the Lagrange multiplier
+                deltaLambda = - (Jv + b);
+
+                /*
                 deltaLambda = 0.0;
                 for (uint j=0; j<3; j++) {
                     deltaLambda -= (contact.J_spBody1Penetration[j] * mLinearVelocities[indexBody1Array][j] + contact.J_spBody2Penetration[j] * mLinearVelocities[indexBody2Array][j]);
                     deltaLambda -= (contact.J_spBody1Penetration[j + 3] * mAngularVelocities[indexBody1Array][j] + contact.J_spBody2Penetration[j + 3] * mAngularVelocities[indexBody2Array][j]);
                 }
-                deltaLambda -= contact.b_Penetration;
+                */
+                //deltaLambda -= contact.b_Penetration;
                 deltaLambda /= contact.inversePenetrationMass;
                 lambdaTemp = contact.penetrationImpulse;
                 contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
@@ -537,3 +581,23 @@ void ConstraintSolver::solve(decimal dt) {
     // Cache the lambda values in order to use them in the next step
     cacheLambda();
 }
+
+// Apply an impulse to the two bodies of a constraint
+void ConstraintSolver::applyImpulse(const Impulse& impulse, const ContactConstraint& constraint) {
+
+    // Update the velocities of the bodies by applying the impulse P
+    if (constraint.isBody1Moving) {
+        mLinearVelocities[constraint.indexBody1] += constraint.massInverseBody1 *
+                                                    impulse.linearImpulseBody1;
+        mAngularVelocities[constraint.indexBody1] += constraint.inverseInertiaTensorBody1 *
+                                                     impulse.angularImpulseBody1;
+    }
+    if (constraint.isBody2Moving) {
+        mLinearVelocities[constraint.indexBody2] += constraint.massInverseBody2 *
+                                                    impulse.linearImpulseBody2;
+        mAngularVelocities[constraint.indexBody2] += constraint.inverseInertiaTensorBody2 *
+                                                     impulse.angularImpulseBody2;
+    }
+}
+
+
