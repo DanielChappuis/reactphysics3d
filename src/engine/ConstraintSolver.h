@@ -82,27 +82,13 @@ struct ContactPointConstraint {
     decimal inversePenetrationMass;         // Inverse of the matrix K for the penenetration
     decimal inverseFriction1Mass;           // Inverse of the matrix K for the 1st friction
     decimal inverseFriction2Mass;           // Inverse of the matrix K for the 2nd friction
-    decimal J_spBody1Penetration[6];
-    decimal J_spBody2Penetration[6];
-    decimal J_spBody1Friction1[6];
-    decimal J_spBody2Friction1[6];
-    decimal J_spBody1Friction2[6];
-    decimal J_spBody2Friction2[6];
     decimal lowerBoundPenetration;
     decimal upperBoundPenetration;
     decimal lowerBoundFriction1;
     decimal upperBoundFriction1;
     decimal lowerBoundFriction2;
     decimal upperBoundFriction2;
-    decimal errorPenetration;
     Contact* contact;                       // TODO : REMOVE THIS
-    decimal b_Penetration;
-    decimal B_spBody1Penetration[6];
-    decimal B_spBody2Penetration[6];
-    decimal B_spBody1Friction1[6];
-    decimal B_spBody2Friction1[6];
-    decimal B_spBody1Friction2[6];
-    decimal B_spBody2Friction2[6];
 };
 
 // Structure ContactConstraint
@@ -123,7 +109,7 @@ struct ContactConstraint {
     decimal restitutionFactor;              // Mix of the restitution factor for two bodies
 };
     
-    
+// TODO : Rewrite this coment to use the Sequential Impulse technique
 /*  -------------------------------------------------------------------
     Class ConstrainSolver :
         This class represents the constraint solver. The constraint solver
@@ -150,7 +136,11 @@ struct ContactConstraint {
     -------------------------------------------------------------------
 */
 class ConstraintSolver {
+
     private:
+
+        // -------------------- Attributes -------------------- //
+
         DynamicsWorld* world;                           // Reference to the world
         std::vector<Constraint*> activeConstraints;     // Current active constraints in the physics world
         bool isErrorCorrectionActive;                   // True if error correction (with world order) is active
@@ -159,19 +149,6 @@ class ConstraintSolver {
         uint nbBodies;                                  // Current number of bodies in the physics world
         RigidBody* bodyMapping[NB_MAX_CONSTRAINTS][2];       // 2-dimensional array that contains the mapping of body reference
                                                         // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
-                                                        // the pointer to the body that correspond to the 1x6 J_ij matrix in the
-                                                        // J_sp matrix. An integer body index refers to its index in the "bodies" std::vector
-        decimal J_sp[NB_MAX_CONSTRAINTS][2*6];          // 2-dimensional array that correspond to the sparse representation of the jacobian matrix of all constraints
-                                                        // This array contains for each constraint two 1x6 Jacobian matrices (one for each body of the constraint)
-                                                        // a 1x6 matrix
-        decimal B_sp[2][6*NB_MAX_CONSTRAINTS];          // 2-dimensional array that correspond to a useful matrix in sparse representation
-                                                        // This array contains for each constraint two 6x1 matrices (one for each body of the constraint)
-                                                        // a 6x1 matrix
-        decimal b[NB_MAX_CONSTRAINTS];                  // Vector "b" of the LCP problem
-        decimal d[NB_MAX_CONSTRAINTS];                  // Vector "d"
-        Matrix3x3 Minv_sp_inertia[NB_MAX_BODIES];       // 3x3 world inertia tensor matrix I for each body (from the Minv_sp matrix)
-        decimal Minv_sp_mass_diag[NB_MAX_BODIES];       // Array that contains for each body the inverse of its mass
-                                                        // This is an array of size nbBodies that contains in each cell a 6x6 matrix
         Vector3* mLinearVelocities;                     // Array of constrained linear velocities
         Vector3* mAngularVelocities;                    // Array of constrained angular velocities
         decimal mTimeStep;                              // Current time step
@@ -188,14 +165,26 @@ class ConstraintSolver {
         // Map body to index
         std::map<RigidBody*, uint> mMapBodyToIndex;
 
+        // -------------------- Methods -------------------- //
 
-        void initialize();                              // Initialize the constraint solver before each solving
-        void initializeBodies();                        // Initialize bodies velocities
-        void initializeContactConstraints(decimal dt);                // Fill in all the matrices needed to solve the LCP problem
-        void computeMatrixB_sp();                       // Compute the matrix B_sp
-        void cacheLambda();                             // Cache the lambda values in order to reuse them in the next step to initialize the lambda vector
-        void warmStart();                          // Compute the vector a used in the solve() method
-        void solveLCP();                                // Solve a LCP problem using Projected-Gauss-Seidel algorithm
+        // Initialize the constraint solver
+        void initialize();
+
+        // Initialize the constrained bodies
+        void initializeBodies();
+
+        // Initialize the contact constraints before solving the system
+        void initializeContactConstraints();
+
+        // Store the computed impulses to use them to
+        // warm start the solver at the next iteration
+        void storeImpulses();
+
+        // Warm start the solver
+        void warmStart();
+
+        // Solve the contact constraints by applying sequential impulses
+        void solveContactConstraints();
 
         // Apply an impulse to the two bodies of a constraint
         void applyImpulse(const Impulse& impulse, const ContactConstraint& constraint);
@@ -204,14 +193,32 @@ class ConstraintSolver {
         decimal computeMixRestitutionFactor(const RigidBody *body1, const RigidBody *body2) const;
 
    public:
-        ConstraintSolver(DynamicsWorld* world);                         // Constructor
-        virtual ~ConstraintSolver();                                   // Destructor
-        void solve(decimal dt);                                         // Solve the current LCP problem
-        bool isConstrainedBody(RigidBody* body) const;                 // Return true if the body is in at least one constraint
-        Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);        // Return the constrained linear velocity of a body after solving the LCP problem
-        Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);       // Return the constrained angular velocity of a body after solving the LCP problem
-        void cleanup();                                                 // Cleanup of the constraint solver
-        void setNbLCPIterations(uint mNbIterations);                     // Set the number of iterations of the LCP solver
+
+        // -------------------- Methods -------------------- //
+
+        // Constructor
+        ConstraintSolver(DynamicsWorld* world);
+
+        // Destructor
+        virtual ~ConstraintSolver();
+
+        // Solve the constraints
+        void solve(decimal timeStep);
+
+        // Return true if the body is in at least one constraint
+        bool isConstrainedBody(RigidBody* body) const;
+
+        // Return the constrained linear velocity of a body after solving the constraints
+        Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);
+
+        // Return the constrained angular velocity of a body after solving the constraints
+        Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);
+
+        // Clean up the constraint solver
+        void cleanup();
+
+        // Set the number of iterations of the LCP solver
+        void setNbLCPIterations(uint mNbIterations);
 };
 
 // Return true if the body is in at least one constraint
@@ -219,21 +226,21 @@ inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
     return mConstraintBodies.count(body) == 1;
 }
 
-// Return the constrained linear velocity of a body after solving the LCP problem
+// Return the constrained linear velocity of a body after solving the constraints
 inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
     uint indexBodyArray = mMapBodyToIndex[body];
     return mLinearVelocities[indexBodyArray];
 }
 
-// Return the constrained angular velocity of a body after solving the LCP problem
+// Return the constrained angular velocity of a body after solving the constraints
 inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
     assert(isConstrainedBody(body));
     uint indexBodyArray = mMapBodyToIndex[body];
     return mAngularVelocities[indexBodyArray];
 }
 
-// Cleanup of the constraint solver
+// Clean up the constraint solver
 inline void ConstraintSolver::cleanup() {
     mMapBodyToIndex.clear();
     mConstraintBodies.clear();
