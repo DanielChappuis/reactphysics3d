@@ -82,12 +82,7 @@ struct ContactPointConstraint {
     decimal inversePenetrationMass;         // Inverse of the matrix K for the penenetration
     decimal inverseFriction1Mass;           // Inverse of the matrix K for the 1st friction
     decimal inverseFriction2Mass;           // Inverse of the matrix K for the 2nd friction
-    decimal lowerBoundPenetration;
-    decimal upperBoundPenetration;
-    decimal lowerBoundFriction1;
-    decimal upperBoundFriction1;
-    decimal lowerBoundFriction2;
-    decimal upperBoundFriction2;
+    bool isRestingContact;                  // True if the contact was existing last time step
     Contact* contact;                       // TODO : REMOVE THIS
 };
 
@@ -165,6 +160,9 @@ class ConstraintSolver {
         // Map body to index
         std::map<RigidBody*, uint> mMapBodyToIndex;
 
+        // True if the warm starting of the solver is active
+        bool mIsWarmStartingActive;
+
         // -------------------- Methods -------------------- //
 
         // Initialize the constraint solver
@@ -191,6 +189,11 @@ class ConstraintSolver {
 
         // Compute the collision restitution factor from the restitution factor of each body
         decimal computeMixRestitutionFactor(const RigidBody *body1, const RigidBody *body2) const;
+
+        // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
+        // The two vectors have to be such that : t1 x t2 = contactNormal
+        void computeFrictionVectors(const Vector3& deltaVelocity,
+                                    ContactPointConstraint& contact) const;
 
    public:
 

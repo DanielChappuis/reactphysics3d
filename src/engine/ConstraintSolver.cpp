@@ -35,7 +35,7 @@ using namespace std;
 // Constructor
 ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
     :world(world), nbConstraints(0), mNbIterations(10), mContactConstraints(0),
-     mLinearVelocities(0), mAngularVelocities(0) {
+      mLinearVelocities(0), mAngularVelocities(0), mIsWarmStartingActive(false) {
 
 }
 
@@ -103,9 +103,11 @@ void ConstraintSolver::initialize() {
             contactPointConstraint.normal = contact->getNormal();
             contactPointConstraint.r1 = p1 - x1;
             contactPointConstraint.r2 = p2 - x2;
-            contactPointConstraint.frictionVector1 = contact->getFrictionVector1();
-            contactPointConstraint.frictionVector2 = contact->getFrictionVector2();
             contactPointConstraint.penetrationDepth = contact->getPenetrationDepth();
+            contactPointConstraint.isRestingContact = contact->getIsRestingContact();
+            contact->setIsRestingContact(true);
+            contactPointConstraint.oldFrictionVector1 = contact->getFrictionVector1();
+            contactPointConstraint.oldFrictionVector2 = contact->getFrictionVector2();
         }
 
         mNbContactConstraints++;
@@ -154,6 +156,15 @@ void ConstraintSolver::initializeContactConstraints() {
             ContactPointConstraint& contact = constraint.contacts[i];
             Contact* realContact = contact.contact;
 
+            const Vector3& v1 = mLinearVelocities[constraint.indexBody1];
+            const Vector3& w1 = mAngularVelocities[constraint.indexBody1];
+            const Vector3& v2 = mLinearVelocities[constraint.indexBody2];
+            const Vector3& w2 = mAngularVelocities[constraint.indexBody2];
+            Vector3 deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
+
+            // Compute the friction vectors
+            computeFrictionVectors(deltaV, contact);
+
             contact.r1CrossN = contact.r1.cross(contact.normal);
             contact.r2CrossN = contact.r2.cross(contact.normal);
             contact.r1CrossT1 = contact.r1.cross(contact.frictionVector1);
@@ -161,53 +172,41 @@ void ConstraintSolver::initializeContactConstraints() {
             contact.r2CrossT1 = contact.r2.cross(contact.frictionVector1);
             contact.r2CrossT2 = contact.r2.cross(contact.frictionVector2);
 
-            contact.inversePenetrationMass = 0.0;
+            decimal massPenetration = 0.0;
             if (constraint.isBody1Moving) {
-                contact.inversePenetrationMass += constraint.massInverseBody1 +
+                massPenetration += constraint.massInverseBody1 +
                         ((I1 * contact.r1CrossN).cross(contact.r1)).dot(contact.normal);
             }
             if (constraint.isBody2Moving) {
-                contact.inversePenetrationMass += constraint.massInverseBody2 +
+                massPenetration += constraint.massInverseBody2 +
                         ((I2 * contact.r2CrossN).cross(contact.r2)).dot(contact.normal);
             }
+            massPenetration > 0.0 ? contact.inversePenetrationMass = 1.0 / massPenetration : 0.0;
 
             // Compute the inverse mass matrix K for the friction constraints
-            contact.inverseFriction1Mass = 0.0;
-            contact.inverseFriction2Mass = 0.0;
+            decimal friction1Mass = 0.0;
+            decimal friction2Mass = 0.0;
             if (constraint.isBody1Moving) {
-                contact.inverseFriction1Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT1).cross(contact.r1)).dot(contact.frictionVector1);
-                contact.inverseFriction2Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT2).cross(contact.r1)).dot(contact.frictionVector2);
+                friction1Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT1).cross(contact.r1)).dot(contact.frictionVector1);
+                friction2Mass += constraint.massInverseBody1 + ((I1 * contact.r1CrossT2).cross(contact.r1)).dot(contact.frictionVector2);
             }
             if (constraint.isBody2Moving) {
-                contact.inverseFriction1Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT1).cross(contact.r2)).dot(contact.frictionVector1);
-                contact.inverseFriction2Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT2).cross(contact.r2)).dot(contact.frictionVector2);
+                friction1Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT1).cross(contact.r2)).dot(contact.frictionVector1);
+                friction2Mass += constraint.massInverseBody2 + ((I2 * contact.r2CrossT2).cross(contact.r2)).dot(contact.frictionVector2);
             }
-
-            const Vector3& v1 = mLinearVelocities[constraint.indexBody1];
-            const Vector3& w1 = mAngularVelocities[constraint.indexBody1];
-            const Vector3& v2 = mLinearVelocities[constraint.indexBody2];
-            const Vector3& w2 = mAngularVelocities[constraint.indexBody2];
+            friction1Mass > 0.0 ? contact.inverseFriction1Mass = 1.0 / friction1Mass : 0.0;
+            friction2Mass > 0.0 ? contact.inverseFriction2Mass = 1.0 / friction2Mass : 0.0;
 
             // Compute the restitution velocity bias "b". We compute this here instead
             // of inside the solve() method because we need to use the velocity difference
             // at the beginning of the contact. Note that if it is a resting contact (normal velocity
             // under a given threshold), we don't add a restitution velocity bias
             contact.restitutionBias = 0.0;
-            Vector3 deltaV = v2 + w2.cross(contact.r2) - v1 - w1.cross(contact.r1);
             decimal deltaVDotN = deltaV.dot(contact.normal);
             // TODO : Use a constant here
-            decimal elasticLinearVelocityThreshold = 0.3;
-            if (deltaVDotN < -elasticLinearVelocityThreshold) {
+            if (!contact.isRestingContact) {
                 contact.restitutionBias = constraint.restitutionFactor * deltaVDotN;
             }
-
-            // Fill in the limit vectors for the constraint
-            realContact->computeLowerBoundPenetration(contact.lowerBoundPenetration);
-            realContact->computeLowerBoundFriction1(contact.lowerBoundFriction1);
-            realContact->computeLowerBoundFriction2(contact.lowerBoundFriction2);
-            realContact->computeUpperBoundPenetration(contact.upperBoundPenetration);
-            realContact->computeUpperBoundFriction1(contact.upperBoundFriction1);
-            realContact->computeUpperBoundFriction2(contact.upperBoundFriction2);
 
             // Get the cached lambda values of the constraint
             contact.penetrationImpulse = realContact->getCachedLambda(0);
@@ -232,44 +231,60 @@ void ConstraintSolver::warmStart() {
 
             ContactPointConstraint& contact = constraint.contacts[i];
 
-            // --------- Penetration --------- //
+            // If it is not a new contact (this contact was already existing at last time step)
+            if (contact.isRestingContact) {
 
-            // Compute the impulse P=J^T * lambda
-            const Vector3 linearImpulseBody1 = -contact.normal * contact.penetrationImpulse;
-            const Vector3 angularImpulseBody1 = -contact.r1CrossN * contact.penetrationImpulse;
-            const Vector3 linearImpulseBody2 = contact.normal * contact.penetrationImpulse;
-            const Vector3 angularImpulseBody2 = contact.r2CrossN * contact.penetrationImpulse;
-            const Impulse impulsePenetration(linearImpulseBody1, angularImpulseBody1,
-                                             linearImpulseBody2, angularImpulseBody2);
+                // --------- Penetration --------- //
 
-            // Apply the impulse to the bodies of the constraint
-            applyImpulse(impulsePenetration, constraint);
+                // Compute the impulse P=J^T * lambda
+                const Vector3 linearImpulseBody1 = -contact.normal * contact.penetrationImpulse;
+                const Vector3 angularImpulseBody1 = -contact.r1CrossN * contact.penetrationImpulse;
+                const Vector3 linearImpulseBody2 = contact.normal * contact.penetrationImpulse;
+                const Vector3 angularImpulseBody2 = contact.r2CrossN * contact.penetrationImpulse;
+                const Impulse impulsePenetration(linearImpulseBody1, angularImpulseBody1,
+                                                 linearImpulseBody2, angularImpulseBody2);
 
-            // --------- Friction 1 --------- //
+                // Apply the impulse to the bodies of the constraint
+                applyImpulse(impulsePenetration, constraint);
 
-            // Compute the impulse P=J^T * lambda
-            Vector3 linearImpulseBody1Friction1 = -contact.frictionVector1 * contact.friction1Impulse;
-            Vector3 angularImpulseBody1Friction1 = -contact.r1CrossT1 * contact.friction1Impulse;
-            Vector3 linearImpulseBody2Friction1 = contact.frictionVector1 * contact.friction1Impulse;
-            Vector3 angularImpulseBody2Friction1 = contact.r2CrossT1 * contact.friction1Impulse;
-            Impulse impulseFriction1(linearImpulseBody1Friction1, angularImpulseBody1Friction1,
-                                     linearImpulseBody2Friction1, angularImpulseBody2Friction1);
+                // --------- Friction 1 --------- //
 
-            // Apply the impulses to the bodies of the constraint
-            applyImpulse(impulseFriction1, constraint);
+                Vector3 oldFrictionImpulse = contact.friction1Impulse * contact.oldFrictionVector1 +
+                                             contact.friction2Impulse * contact.oldFrictionVector2;
+                contact.friction1Impulse = oldFrictionImpulse.dot(contact.frictionVector1);
+                contact.friction2Impulse = oldFrictionImpulse.dot(contact.frictionVector2);
 
-            // --------- Friction 2 --------- //
+                // Compute the impulse P=J^T * lambda
+                Vector3 linearImpulseBody1Friction1 = -contact.frictionVector1 * contact.friction1Impulse;
+                Vector3 angularImpulseBody1Friction1 = -contact.r1CrossT1 * contact.friction1Impulse;
+                Vector3 linearImpulseBody2Friction1 = contact.frictionVector1 * contact.friction1Impulse;
+                Vector3 angularImpulseBody2Friction1 = contact.r2CrossT1 * contact.friction1Impulse;
+                Impulse impulseFriction1(linearImpulseBody1Friction1, angularImpulseBody1Friction1,
+                                         linearImpulseBody2Friction1, angularImpulseBody2Friction1);
 
-            // Compute the impulse P=J^T * lambda
-            Vector3 linearImpulseBody1Friction2 = -contact.frictionVector2 * contact.friction2Impulse;
-            Vector3 angularImpulseBody1Friction2 = -contact.r1CrossT2 * contact.friction2Impulse;
-            Vector3 linearImpulseBody2Friction2 = contact.frictionVector2 * contact.friction2Impulse;
-            Vector3 angularImpulseBody2Friction2 = contact.r2CrossT2 * contact.friction2Impulse;
-            Impulse impulseFriction2(linearImpulseBody1Friction2, angularImpulseBody1Friction2,
-                                     linearImpulseBody2Friction2, angularImpulseBody2Friction2);
+                // Apply the impulses to the bodies of the constraint
+                applyImpulse(impulseFriction1, constraint);
 
-            // Apply the impulses to the bodies of the constraint
-            applyImpulse(impulseFriction2, constraint);
+                // --------- Friction 2 --------- //
+
+                // Compute the impulse P=J^T * lambda
+                Vector3 linearImpulseBody1Friction2 = -contact.frictionVector2 * contact.friction2Impulse;
+                Vector3 angularImpulseBody1Friction2 = -contact.r1CrossT2 * contact.friction2Impulse;
+                Vector3 linearImpulseBody2Friction2 = contact.frictionVector2 * contact.friction2Impulse;
+                Vector3 angularImpulseBody2Friction2 = contact.r2CrossT2 * contact.friction2Impulse;
+                Impulse impulseFriction2(linearImpulseBody1Friction2, angularImpulseBody1Friction2,
+                                         linearImpulseBody2Friction2, angularImpulseBody2Friction2);
+
+                // Apply the impulses to the bodies of the constraint
+                applyImpulse(impulseFriction2, constraint);
+            }
+            else {  // If it is a new contact
+
+                // Initialize the accumulated impulses to zero
+                contact.penetrationImpulse = 0.0;
+                contact.friction1Impulse = 0.0;
+                contact.friction2Impulse = 0.0;
+            }
         }
     }
 }
@@ -280,9 +295,6 @@ void ConstraintSolver::solveContactConstraints() {
     decimal deltaLambda;
     decimal lambdaTemp;
     uint iter;
-
-    // Compute the vector a
-    warmStart();
 
     // For each iteration
     for(iter=0; iter<mNbIterations; iter++) {
@@ -321,9 +333,9 @@ void ConstraintSolver::solveContactConstraints() {
                 deltaLambda = - (Jv + b);
 
                 //deltaLambda -= contact.b_Penetration;
-                deltaLambda /= contact.inversePenetrationMass;
+                deltaLambda *= contact.inversePenetrationMass;
                 lambdaTemp = contact.penetrationImpulse;
-                contact.penetrationImpulse = std::max(contact.lowerBoundPenetration, std::min(contact.penetrationImpulse + deltaLambda, contact.upperBoundPenetration));
+                contact.penetrationImpulse = std::max(contact.penetrationImpulse + deltaLambda, 0.0f);
                 deltaLambda = contact.penetrationImpulse - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda
@@ -344,9 +356,10 @@ void ConstraintSolver::solveContactConstraints() {
                 Jv = deltaV.dot(contact.frictionVector1);
 
                 deltaLambda = -Jv;
-                deltaLambda /= contact.inverseFriction1Mass;
+                deltaLambda *= contact.inverseFriction1Mass;
+                decimal frictionLimit = 0.3 * contact.penetrationImpulse;   // TODO : Use constant here
                 lambdaTemp = contact.friction1Impulse;
-                contact.friction1Impulse = std::max(contact.lowerBoundFriction1, std::min(contact.friction1Impulse + deltaLambda, contact.upperBoundFriction1));
+                contact.friction1Impulse = std::max(-frictionLimit, std::min(contact.friction1Impulse + deltaLambda, frictionLimit));
                 deltaLambda = contact.friction1Impulse - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda
@@ -367,9 +380,10 @@ void ConstraintSolver::solveContactConstraints() {
                 Jv = deltaV.dot(contact.frictionVector2);
 
                 deltaLambda = -Jv;
-                deltaLambda /= contact.inverseFriction2Mass;
+                deltaLambda *= contact.inverseFriction2Mass;
+                frictionLimit = 0.3 * contact.penetrationImpulse;   // TODO : Use constant here
                 lambdaTemp = contact.friction2Impulse;
-                contact.friction2Impulse = std::max(contact.lowerBoundFriction2, std::min(contact.friction2Impulse + deltaLambda, contact.upperBoundFriction2));
+                contact.friction2Impulse = std::max(-frictionLimit, std::min(contact.friction2Impulse + deltaLambda, frictionLimit));
                 deltaLambda = contact.friction2Impulse - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda
@@ -387,26 +401,6 @@ void ConstraintSolver::solveContactConstraints() {
     }
 }
 
-// Store the computed impulses to use them to
-// warm start the solver at the next iteration
-void ConstraintSolver::storeImpulses() {
-    
-    // For each constraint
-    for (uint c=0; c<mNbContactConstraints; c++) {
-
-        ContactConstraint& constraint = mContactConstraints[c];
-
-        for (uint i=0; i<constraint.nbContacts; i++) {
-
-            ContactPointConstraint& contact = constraint.contacts[i];
-
-            contact.contact->setCachedLambda(0, contact.penetrationImpulse);
-            contact.contact->setCachedLambda(1, contact.friction1Impulse);
-            contact.contact->setCachedLambda(2, contact.friction2Impulse);
-        }
-    }
-}
-
 // Solve the constraints
 void ConstraintSolver::solve(decimal timeStep) {
 
@@ -420,11 +414,39 @@ void ConstraintSolver::solve(decimal timeStep) {
     // Fill-in all the matrices needed to solve the LCP problem
     initializeContactConstraints();
 
+    // Warm start the solver
+    if (mIsWarmStartingActive) {
+        warmStart();
+    }
+
     // Solve the contact constraints
     solveContactConstraints();
 
     // Cache the lambda values in order to use them in the next step
     storeImpulses();
+}
+
+// Store the computed impulses to use them to
+// warm start the solver at the next iteration
+void ConstraintSolver::storeImpulses() {
+
+    // For each constraint
+    for (uint c=0; c<mNbContactConstraints; c++) {
+
+        ContactConstraint& constraint = mContactConstraints[c];
+
+        for (uint i=0; i<constraint.nbContacts; i++) {
+
+            ContactPointConstraint& contact = constraint.contacts[i];
+
+            contact.contact->setCachedLambda(0, contact.penetrationImpulse);
+            contact.contact->setCachedLambda(1, contact.friction1Impulse);
+            contact.contact->setCachedLambda(2, contact.friction2Impulse);
+
+            contact.contact->setFrictionVector1(contact.frictionVector1);
+            contact.contact->setFrictionVector2(contact.frictionVector2);
+        }
+    }
 }
 
 // Apply an impulse to the two bodies of a constraint
@@ -445,4 +467,36 @@ void ConstraintSolver::applyImpulse(const Impulse& impulse, const ContactConstra
     }
 }
 
+// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
+// The two vectors have to be such that : t1 x t2 = contactNormal
+void ConstraintSolver::computeFrictionVectors(const Vector3& deltaVelocity,
+                                              ContactPointConstraint& contact) const {
 
+    // Update the old friction vectors
+    //contact.oldFrictionVector1 = contact.frictionVector1;
+    //contact.oldFrictionVector2 = contact.frictionVector2;
+
+    assert(contact.normal.length() > 0.0);
+
+    // Compute the velocity difference vector in the tangential plane
+    Vector3 normalVelocity = deltaVelocity.dot(contact.normal) * contact.normal;
+    Vector3 tangentVelocity = deltaVelocity - normalVelocity;
+
+    // If the velocty difference in the tangential plane is not zero
+    decimal lengthTangenVelocity = tangentVelocity.length();
+    if (lengthTangenVelocity > 0.0) {
+
+        // Compute the first friction vector in the direction of the tangent
+        // velocity difference
+        contact.frictionVector1 = tangentVelocity / lengthTangenVelocity;
+    }
+    else {
+
+        // Get any orthogonal vector to the normal as the first friction vector
+        contact.frictionVector1 = contact.normal.getOneUnitOrthogonalVector();
+    }
+
+    // The second friction vector is computed by the cross product of the firs
+    // friction vector and the contact normal
+    contact.frictionVector2 = contact.normal.cross(contact.frictionVector1).getUnit();
+}

@@ -95,6 +95,9 @@ class Vector3 {
         // Return the corresponding unit vector
         Vector3 getUnit() const;
 
+        // Return one unit orthogonal vector of the current vector
+        Vector3 getOneUnitOrthogonalVector() const;
+
         // Return true if the vector is unit and false otherwise
         bool isUnit() const;
 
@@ -153,6 +156,7 @@ class Vector3 {
         friend Vector3 operator-(const Vector3& vector);
         friend Vector3 operator*(const Vector3& vector, decimal number);
         friend Vector3 operator*(decimal number, const Vector3& vector);
+        friend Vector3 operator/(const Vector3& vector, decimal number);
 };
 
 // Get the x component of the vector
@@ -311,6 +315,11 @@ inline Vector3 operator-(const Vector3& vector) {
 // Overloaded operator for multiplication with a number
 inline Vector3 operator*(const Vector3& vector, decimal number) {
     return Vector3(number * vector.mValues[0], number * vector.mValues[1], number * vector.mValues[2]);
+}
+
+// Overloaded operator for division by a number
+inline Vector3 operator/(const Vector3& vector, decimal number) {
+    return Vector3(vector.mValues[0] / number, vector.mValues[1] / number, vector.mValues[2] / number);
 }
 
 // Overloaded operator for multiplication with a number

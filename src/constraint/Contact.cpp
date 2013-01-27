@@ -36,7 +36,8 @@ Contact::Contact(RigidBody* const body1, RigidBody* const body2, const ContactIn
           mLocalPointOnBody1(contactInfo->localPoint1),
           mLocalPointOnBody2(contactInfo->localPoint2),
           mWorldPointOnBody1(body1->getTransform() * contactInfo->localPoint1),
-          mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2) {
+          mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2),
+          mIsRestingContact(false) {
     assert(mPenetrationDepth > 0.0);
     
     // Compute the auxiliary lower and upper bounds

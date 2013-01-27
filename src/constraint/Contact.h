@@ -85,6 +85,9 @@ class Contact : public Constraint {
         // Contact point on body 2 in world space
         Vector3 mWorldPointOnBody2;
 
+        // True if the contact is a resting contact (exists for more than one time step)
+        bool mIsRestingContact;
+
         // Two orthogonal vectors that span the tangential friction plane
         std::vector<Vector3> mFrictionVectors;
 
@@ -135,11 +138,23 @@ class Contact : public Constraint {
         // Set the contact world point on body 2
         void setWorldPointOnBody2(const Vector3& worldPoint);
 
+        // Return true if the contact is a resting contact
+        bool getIsRestingContact() const;
+
+        // Set the mIsRestingContact variable
+        void setIsRestingContact(bool isRestingContact);
+
         // Get the first friction vector
         Vector3 getFrictionVector1() const;
 
+        // Set the first friction vector
+        void setFrictionVector1(const Vector3& frictionVector1);
+
         // Get the second friction vector
         Vector3 getFrictionVector2() const;
+
+        // Set the second friction vector
+        void setFrictionVector2(const Vector3& frictionVector2);
 
         // Compute the jacobian matrix for all mathematical constraints
         virtual void computeJacobian(int noConstraint,
@@ -187,12 +202,8 @@ inline void Contact::computeFrictionVectors() {
     // Delete the current friction vectors
     mFrictionVectors.clear();
 
-    // Compute the first orthogonal vector
-    Vector3 vector1 = mNormal.getOneOrthogonalVector().getUnit();
-    mFrictionVectors.push_back(vector1);
-
-    // Compute the second orthogonal vector using the cross product
-    mFrictionVectors.push_back(mNormal.cross(vector1).getUnit());
+    mFrictionVectors.push_back(Vector3(0, 0, 0));
+    mFrictionVectors.push_back(Vector3(0, 0, 0));
 }
 
 // Return the normal vector of the contact
@@ -235,14 +246,34 @@ inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
     mWorldPointOnBody2 = worldPoint;
 }
 
+// Return true if the contact is a resting contact
+inline bool Contact::getIsRestingContact() const {
+    return mIsRestingContact;
+}
+
+// Set the mIsRestingContact variable
+inline void Contact::setIsRestingContact(bool isRestingContact) {
+    mIsRestingContact = isRestingContact;
+}
+
 // Get the first friction vector
 inline Vector3 Contact::getFrictionVector1() const {
     return mFrictionVectors[0];
 }
 
+// Set the first friction vector
+inline void Contact::setFrictionVector1(const Vector3& frictionVector1) {
+    mFrictionVectors[0] = frictionVector1;
+}
+
 // Get the second friction vector
 inline Vector3 Contact::getFrictionVector2() const {
     return mFrictionVectors[1];
+}
+
+// Set the second friction vector
+inline void Contact::setFrictionVector2(const Vector3& frictionVector2) {
+    mFrictionVectors[1] = frictionVector2;
 }
 
 // Return the penetration depth of the contact
