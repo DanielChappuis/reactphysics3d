@@ -64,6 +64,7 @@ struct ContactPointConstraint {
     decimal penetrationImpulse;             // Accumulated normal impulse
     decimal friction1Impulse;               // Accumulated impulse in the 1st friction direction
     decimal friction2Impulse;               // Accumulated impulse in the 2nd friction direction
+    decimal penetrationSplitImpulse;        // Accumulated split impulse for penetration correction
     Vector3 normal;                         // Normal vector of the contact
     Vector3 frictionVector1;                // First friction vector in the tangent plane
     Vector3 frictionVector2;                // Second friction vector in the tangent plane
@@ -146,6 +147,13 @@ class ConstraintSolver {
                                                         // in the J_sp and B_sp matrices. For instance the cell bodyMapping[i][j] contains
         Vector3* mLinearVelocities;                     // Array of constrained linear velocities
         Vector3* mAngularVelocities;                    // Array of constrained angular velocities
+
+        // Split linear velocities for the position contact solver (split impulse)
+        Vector3* mSplitLinearVelocities;
+
+        // Split angular velocities for the position contact solver (split impulse)
+        Vector3* mSplitAngularVelocities;
+
         decimal mTimeStep;                              // Current time step
 
         // Contact constraints
@@ -162,6 +170,9 @@ class ConstraintSolver {
 
         // True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
+
+        // True if the split impulse position correction is active
+        bool mIsSplitImpulseActive;
 
         // -------------------- Methods -------------------- //
 
@@ -186,6 +197,9 @@ class ConstraintSolver {
 
         // Apply an impulse to the two bodies of a constraint
         void applyImpulse(const Impulse& impulse, const ContactConstraint& constraint);
+
+        // Apply an impulse to the two bodies of a constraint
+        void applySplitImpulse(const Impulse& impulse, const ContactConstraint& constraint);
 
         // Compute the collision restitution factor from the restitution factor of each body
         decimal computeMixRestitutionFactor(const RigidBody *body1, const RigidBody *body2) const;
@@ -214,8 +228,14 @@ class ConstraintSolver {
         // Return the constrained linear velocity of a body after solving the constraints
         Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);
 
+        // Return the split linear velocity
+        Vector3 getSplitLinearVelocityOfBody(RigidBody* body);
+
         // Return the constrained angular velocity of a body after solving the constraints
         Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);
+
+        // Return the split angular velocity
+        Vector3 getSplitAngularVelocityOfBody(RigidBody* body);
 
         // Clean up the constraint solver
         void cleanup();
@@ -232,15 +252,29 @@ inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
 // Return the constrained linear velocity of a body after solving the constraints
 inline Vector3 ConstraintSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = mMapBodyToIndex[body];
-    return mLinearVelocities[indexBodyArray];
+    uint indexBody = mMapBodyToIndex[body];
+    return mLinearVelocities[indexBody];
+}
+
+// Return the split linear velocity
+inline Vector3 ConstraintSolver::getSplitLinearVelocityOfBody(RigidBody* body) {
+    assert(isConstrainedBody(body));
+    uint indexBody = mMapBodyToIndex[body];
+    return mSplitLinearVelocities[indexBody];
 }
 
 // Return the constrained angular velocity of a body after solving the constraints
 inline Vector3 ConstraintSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
     assert(isConstrainedBody(body));
-    uint indexBodyArray = mMapBodyToIndex[body];
-    return mAngularVelocities[indexBodyArray];
+    uint indexBody = mMapBodyToIndex[body];
+    return mAngularVelocities[indexBody];
+}
+
+// Return the split angular velocity
+inline Vector3 ConstraintSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
+    assert(isConstrainedBody(body));
+    uint indexBody = mMapBodyToIndex[body];
+    return mSplitAngularVelocities[indexBody];
 }
 
 // Clean up the constraint solver

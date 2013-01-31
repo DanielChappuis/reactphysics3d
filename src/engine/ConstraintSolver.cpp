@@ -31,11 +31,11 @@
 using namespace reactphysics3d;
 using namespace std;
 
-
 // Constructor
 ConstraintSolver::ConstraintSolver(DynamicsWorld* world)
     :world(world), nbConstraints(0), mNbIterations(10), mContactConstraints(0),
-      mLinearVelocities(0), mAngularVelocities(0), mIsWarmStartingActive(false) {
+      mLinearVelocities(0), mAngularVelocities(0), mIsWarmStartingActive(true),
+      mIsSplitImpulseActive(true) {
 
 }
 
@@ -118,6 +118,8 @@ void ConstraintSolver::initialize() {
 
     mLinearVelocities = new Vector3[nbBodies];
     mAngularVelocities = new Vector3[nbBodies];
+    mSplitLinearVelocities = new Vector3[nbBodies];
+    mSplitAngularVelocities = new Vector3[nbBodies];
 
     assert(mMapBodyToIndex.size() == nbBodies);
 }
@@ -136,6 +138,8 @@ void ConstraintSolver::initializeBodies() {
 
         mLinearVelocities[bodyNumber] = rigidBody->getLinearVelocity() + mTimeStep * rigidBody->getMassInverse() * rigidBody->getExternalForce();
         mAngularVelocities[bodyNumber] = rigidBody->getAngularVelocity() + mTimeStep * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+        mSplitLinearVelocities[bodyNumber] = Vector3(0, 0, 0);
+        mSplitAngularVelocities[bodyNumber] = Vector3(0, 0, 0);
     }
 }
 
@@ -204,7 +208,7 @@ void ConstraintSolver::initializeContactConstraints() {
             contact.restitutionBias = 0.0;
             decimal deltaVDotN = deltaV.dot(contact.normal);
             // TODO : Use a constant here
-            if (!contact.isRestingContact) {
+            if (deltaVDotN < 1.0f) {
                 contact.restitutionBias = constraint.restitutionFactor * deltaVDotN;
             }
 
@@ -212,6 +216,9 @@ void ConstraintSolver::initializeContactConstraints() {
             contact.penetrationImpulse = realContact->getCachedLambda(0);
             contact.friction1Impulse = realContact->getCachedLambda(1);
             contact.friction2Impulse = realContact->getCachedLambda(2);
+
+            // Initialize the split impulses to zero
+            contact.penetrationSplitImpulse = 0.0;
         }
     }
 }
@@ -323,17 +330,19 @@ void ConstraintSolver::solveContactConstraints() {
                 // Compute the bias "b" of the constraint
                 decimal beta = 0.2;
                 // TODO : Use a constant for the slop
-                decimal slop = 0.005;
+                decimal slop = 0.01;
                 decimal biasPenetrationDepth = 0.0;
                 if (contact.penetrationDepth > slop) biasPenetrationDepth = -(beta/mTimeStep) *
                         max(0.0f, float(contact.penetrationDepth - slop));
                 decimal b = biasPenetrationDepth + contact.restitutionBias;
 
                 // Compute the Lagrange multiplier
-                deltaLambda = - (Jv + b);
-
-                //deltaLambda -= contact.b_Penetration;
-                deltaLambda *= contact.inversePenetrationMass;
+                if (mIsSplitImpulseActive) {
+                    deltaLambda = - (Jv + contact.restitutionBias) * contact.inversePenetrationMass;
+                }
+                else {
+                    deltaLambda = - (Jv + b) * contact.inversePenetrationMass;
+                }
                 lambdaTemp = contact.penetrationImpulse;
                 contact.penetrationImpulse = std::max(contact.penetrationImpulse + deltaLambda, 0.0f);
                 deltaLambda = contact.penetrationImpulse - lambdaTemp;
@@ -348,6 +357,32 @@ void ConstraintSolver::solveContactConstraints() {
 
                 // Apply the impulse to the bodies of the constraint
                 applyImpulse(impulsePenetration, constraint);
+
+                // If the split impulse position correction is active
+                if (mIsSplitImpulseActive) {
+
+                    // Split impulse (position correction)
+                    const Vector3& v1Split = mSplitLinearVelocities[constraint.indexBody1];
+                    const Vector3& w1Split = mSplitAngularVelocities[constraint.indexBody1];
+                    const Vector3& v2Split = mSplitLinearVelocities[constraint.indexBody2];
+                    const Vector3& w2Split = mSplitAngularVelocities[constraint.indexBody2];
+                    Vector3 deltaVSplit = v2Split + w2Split.cross(contact.r2) - v1Split - w1Split.cross(contact.r1);
+                    decimal JvSplit = deltaVSplit.dot(contact.normal);
+                    decimal deltaLambdaSplit = - (JvSplit + biasPenetrationDepth) * contact.inversePenetrationMass;
+                    decimal lambdaTempSplit = contact.penetrationSplitImpulse;
+                    contact.penetrationSplitImpulse = std::max(contact.penetrationSplitImpulse + deltaLambdaSplit, 0.0f);
+                    deltaLambda = contact.penetrationSplitImpulse - lambdaTempSplit;
+
+                    // Compute the impulse P=J^T * lambda
+                    linearImpulseBody1 = -contact.normal * deltaLambdaSplit;
+                    angularImpulseBody1 = -contact.r1CrossN * deltaLambdaSplit;
+                    linearImpulseBody2 = contact.normal * deltaLambdaSplit;
+                    angularImpulseBody2 = contact.r2CrossN * deltaLambdaSplit;
+                    const Impulse splitImpulsePenetration(linearImpulseBody1, angularImpulseBody1,
+                                                          linearImpulseBody2, angularImpulseBody2);
+
+                    applySplitImpulse(splitImpulsePenetration, constraint);
+                }
 
                 // --------- Friction 1 --------- //
 
@@ -463,6 +498,24 @@ void ConstraintSolver::applyImpulse(const Impulse& impulse, const ContactConstra
         mLinearVelocities[constraint.indexBody2] += constraint.massInverseBody2 *
                                                     impulse.linearImpulseBody2;
         mAngularVelocities[constraint.indexBody2] += constraint.inverseInertiaTensorBody2 *
+                                                     impulse.angularImpulseBody2;
+    }
+}
+
+// Apply an impulse to the two bodies of a constraint
+void ConstraintSolver::applySplitImpulse(const Impulse& impulse, const ContactConstraint& constraint) {
+
+    // Update the velocities of the bodies by applying the impulse P
+    if (constraint.isBody1Moving) {
+        mSplitLinearVelocities[constraint.indexBody1] += constraint.massInverseBody1 *
+                                                    impulse.linearImpulseBody1;
+        mSplitAngularVelocities[constraint.indexBody1] += constraint.inverseInertiaTensorBody1 *
+                                                     impulse.angularImpulseBody1;
+    }
+    if (constraint.isBody2Moving) {
+        mSplitLinearVelocities[constraint.indexBody2] += constraint.massInverseBody2 *
+                                                    impulse.linearImpulseBody2;
+        mSplitAngularVelocities[constraint.indexBody2] += constraint.inverseInertiaTensorBody2 *
                                                      impulse.angularImpulseBody2;
     }
 }

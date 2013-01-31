@@ -96,8 +96,8 @@ class DynamicsWorld : public CollisionWorld {
         void updateAllBodiesMotion();
 
         // Update the position and orientation of a body
-        void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity,
-                                                const Vector3& newAngVelocity);
+        void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
+                                                Vector3 newAngVelocity);
 
         // Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();

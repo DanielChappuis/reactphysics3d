@@ -120,8 +120,8 @@ void DynamicsWorld::updateAllBodiesMotion() {
             // If it's a constrained body
             if (mConstraintSolver.isConstrainedBody(*it)) {
                 // Get the constrained linear and angular velocities from the constraint solver
-                newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(*it);
-                newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(*it);
+                newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(rigidBody);
+                newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(rigidBody);
             }
             else {
                 // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
@@ -147,8 +147,8 @@ void DynamicsWorld::updateAllBodiesMotion() {
 // Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
 // orientation of the body
 void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody,
-                                                       const Vector3& newLinVelocity,
-                                                       const Vector3& newAngVelocity) {
+                                                       Vector3 newLinVelocity,
+                                                       Vector3 newAngVelocity) {
     decimal dt = mTimer.getTimeStep();
 
     assert(rigidBody);
@@ -159,6 +159,12 @@ void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody,
     // Update the linear and angular velocity of the body
     rigidBody->setLinearVelocity(newLinVelocity);
     rigidBody->setAngularVelocity(newAngVelocity);
+
+    // Split velocity (only used to update the position)
+    if (mConstraintSolver.isConstrainedBody(rigidBody)) {
+        newLinVelocity += mConstraintSolver.getSplitLinearVelocityOfBody(rigidBody);
+        newAngVelocity += mConstraintSolver.getSplitAngularVelocityOfBody(rigidBody);
+    }
     
     // Get current position and orientation of the body
     const Vector3& currentPosition = rigidBody->getTransform().getPosition();
