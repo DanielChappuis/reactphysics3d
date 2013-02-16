@@ -139,8 +139,15 @@ public :
         // Update the physics simulation
         void update();
 
-        // Set the number of iterations of the LCP solver
-        void setNbLCPIterations(uint nbIterations);
+        // Set the number of iterations of the constraint solver
+        void setNbIterationsSolver(uint nbIterations);
+
+        // Activate or Deactivate the split impulses for contacts
+        void setIsSplitImpulseActive(bool isActive);
+
+        // Activate or deactivate the solving of friction constraints at the center of
+        // the contact manifold instead of solving them at each contact point
+        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         // Set the isErrorCorrectionActive value
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
@@ -205,10 +212,21 @@ inline void DynamicsWorld::stop() {
     mTimer.stop();
 }                
 
-// Set the number of iterations of the LCP solver
-inline void DynamicsWorld::setNbLCPIterations(uint nbIterations) {
-    mConstraintSolver.setNbLCPIterations(nbIterations);
-}   
+// Set the number of iterations of the constraint solver
+inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
+    mConstraintSolver.setNbIterationsSolver(nbIterations);
+}
+
+// Activate or Deactivate the split impulses for contacts
+inline void DynamicsWorld::setIsSplitImpulseActive(bool isActive) {
+    mConstraintSolver.setIsSplitImpulseActive(isActive);
+}
+
+// Activate or deactivate the solving of friction constraints at the center of
+// the contact manifold instead of solving them at each contact point
+inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
+    mConstraintSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
+}
 
 // Reset the boolean movement variable of each body
 inline void DynamicsWorld::resetBodiesMovementVariable() {

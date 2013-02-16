@@ -28,6 +28,7 @@
 
 // Libraries
 #include <cmath>
+#include <cassert>
 #include "mathematics_functions.h"
 #include "../decimal.h"
 
@@ -113,6 +114,9 @@ class Vector3 {
         // Cross product of two vectors
         Vector3 cross(const Vector3& vector) const;
 
+        // Normalize the vector
+        void normalize();
+
         // Return the corresponding absolute value vector
         Vector3 getAbsoluteVector() const;
 
@@ -139,6 +143,9 @@ class Vector3 {
 
         // Overloaded operator for multiplication with a number with assignment
         Vector3& operator*=(decimal number);
+
+        // Overloaded operator for division by a number with assignment
+        Vector3& operator/=(decimal number);
 
         // Overloaded operator for value access
         decimal& operator[] (int index);
@@ -221,6 +228,15 @@ inline Vector3 Vector3::cross(const Vector3& vector) const {
                    mValues[0] * vector.mValues[1] - mValues[1] * vector.mValues[0]);
 }
 
+// Normalize the vector
+inline void Vector3::normalize() {
+    decimal l = length();
+    assert(l != 0.0);
+    mValues[0] /= l;
+    mValues[1] /= l;
+    mValues[2] /= l;
+}
+
 // Return the corresponding absolute value vector
 inline Vector3 Vector3::getAbsoluteVector() const {
     return Vector3(std::abs(mValues[0]), std::abs(mValues[1]), std::abs(mValues[2]));
@@ -284,6 +300,14 @@ inline Vector3& Vector3::operator*=(decimal number) {
     mValues[0] *= number;
     mValues[1] *= number;
     mValues[2] *= number;
+    return *this;
+}
+
+// Overloaded operator for division by a number with assignment
+inline Vector3& Vector3::operator/=(decimal number) {
+    mValues[0] /= number;
+    mValues[1] /= number;
+    mValues[2] /= number;
     return *this;
 }
 

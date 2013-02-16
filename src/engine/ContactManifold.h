@@ -44,10 +44,26 @@ struct ContactManifold {
         // Number of contacts in the manifold
         uint nbContacts;
 
+        // First friction vector of the contact manifold
+        Vector3 frictionVector1;
+
+        // Second friction vector of the contact manifold
+        Vector3 frictionVector2;
+
+        // First friction constraint accumulated impulse
+        decimal friction1Impulse;
+
+        // Second friction constraint accumulated impulse
+        decimal friction2Impulse;
+
+        // Twist friction constraint accumulated impulse
+        decimal frictionTwistImpulse;
+
         // -------------------- Methods -------------------- //
 
         // Constructor
-        ContactManifold() : nbContacts(0) { }
+        ContactManifold() : nbContacts(0), friction1Impulse(0.0), friction2Impulse(0.0),
+                            frictionTwistImpulse(0.0) {}
 };
 
 }

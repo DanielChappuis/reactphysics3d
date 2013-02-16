@@ -26,7 +26,6 @@
 // Libraries
 #include "Vector3.h"
 #include <iostream>
-#include <cassert>
 #include <vector>
 
 // Namespaces
