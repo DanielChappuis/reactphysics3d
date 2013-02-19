@@ -32,7 +32,7 @@ using namespace std;
 
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true), mConstraintSolver(this),
+              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true), mContactSolver(*this),
                 mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
@@ -68,11 +68,11 @@ void DynamicsWorld::update() {
         // Compute the collision detection
         mCollisionDetection.computeCollisionDetection();
 
-        // If there are constraints or contacts
-        if (!mConstraints.empty() || !mContactManifolds.empty()) {
+        // If there are contacts
+        if (!mContactManifolds.empty()) {
 
-            // Solve the constraints and contacts
-            mConstraintSolver.solve(mTimer.getTimeStep());
+            // Solve the contacts
+            mContactSolver.solve(mTimer.getTimeStep());
         }
 
         // Update the timer
@@ -84,8 +84,8 @@ void DynamicsWorld::update() {
         // Update the position and orientation of each body
         updateAllBodiesMotion();
 
-        // Cleanup of the constraint solver
-        mConstraintSolver.cleanup();
+        // Cleanup of the contact solver
+        mContactSolver.cleanup();
     }
 
     // Compute and set the interpolation factor to all the bodies
@@ -118,10 +118,10 @@ void DynamicsWorld::updateAllBodiesMotion() {
             newAngularVelocity.setAllValues(0.0, 0.0, 0.0);
 
             // If it's a constrained body
-            if (mConstraintSolver.isConstrainedBody(*it)) {
+            if (mContactSolver.isConstrainedBody(*it)) {
                 // Get the constrained linear and angular velocities from the constraint solver
-                newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(rigidBody);
-                newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(rigidBody);
+                newLinearVelocity = mContactSolver.getConstrainedLinearVelocityOfBody(rigidBody);
+                newAngularVelocity = mContactSolver.getConstrainedAngularVelocityOfBody(rigidBody);
             }
             else {
                 // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
@@ -161,9 +161,9 @@ void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody,
     rigidBody->setAngularVelocity(newAngVelocity);
 
     // Split velocity (only used to update the position)
-    if (mConstraintSolver.isConstrainedBody(rigidBody)) {
-        newLinVelocity += mConstraintSolver.getSplitLinearVelocityOfBody(rigidBody);
-        newAngVelocity += mConstraintSolver.getSplitAngularVelocityOfBody(rigidBody);
+    if (mContactSolver.isConstrainedBody(rigidBody)) {
+        newLinVelocity += mContactSolver.getSplitLinearVelocityOfBody(rigidBody);
+        newAngVelocity += mContactSolver.getSplitAngularVelocityOfBody(rigidBody);
     }
     
     // Get current position and orientation of the body

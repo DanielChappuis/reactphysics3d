@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConeShape::ConeShape(decimal radius, decimal height)
-          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height/2.0) {
+          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height / decimal(2.0)) {
     assert(radius > 0.0);
     assert(mHalfHeight > 0.0);
     

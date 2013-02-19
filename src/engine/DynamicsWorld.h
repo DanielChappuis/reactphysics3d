@@ -30,7 +30,7 @@
 #include "CollisionWorld.h"
 #include "ContactManifold.h"
 #include "../collision/CollisionDetection.h"
-#include "ConstraintSolver.h"
+#include "ContactSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
 #include "../configuration.h"
@@ -54,8 +54,8 @@ class DynamicsWorld : public CollisionWorld {
         // Timer of the physics engine
         Timer mTimer;
 
-        // Constraint solver
-        ConstraintSolver mConstraintSolver;
+        // Contact solver
+        ContactSolver mContactSolver;
 
         // True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
@@ -214,18 +214,18 @@ inline void DynamicsWorld::stop() {
 
 // Set the number of iterations of the constraint solver
 inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
-    mConstraintSolver.setNbIterationsSolver(nbIterations);
+    mContactSolver.setNbIterationsSolver(nbIterations);
 }
 
 // Activate or Deactivate the split impulses for contacts
 inline void DynamicsWorld::setIsSplitImpulseActive(bool isActive) {
-    mConstraintSolver.setIsSplitImpulseActive(isActive);
+    mContactSolver.setIsSplitImpulseActive(isActive);
 }
 
 // Activate or deactivate the solving of friction constraints at the center of
 // the contact manifold instead of solving them at each contact point
 inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mConstraintSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
+    mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Reset the boolean movement variable of each body

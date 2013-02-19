@@ -37,7 +37,7 @@
 namespace reactphysics3d {
 
 // Constants
-const decimal REL_ERROR = 1.0e-3;
+const decimal REL_ERROR = decimal(1.0e-3);
 const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
 
 /*  -------------------------------------------------------------------

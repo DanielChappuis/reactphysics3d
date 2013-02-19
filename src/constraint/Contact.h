@@ -53,12 +53,9 @@ namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
     Class Contact :
-        This class represents a collision contact between two bodies in
-        the physics engine. The contact class inherits from the
-        Constraint class. Each Contact represent a contact between two bodies
-        and contains the two contact points on each body. The contact has 3
-        mathematical constraints (1 for the contact constraint, and 2
-        for the friction constraints).
+        This class represents a collision contact point between two
+        bodies in the physics engine. The contact class inherits from
+        the Constraint class.
     -------------------------------------------------------------------
 */
 class Contact : public Constraint {
@@ -90,8 +87,6 @@ class Contact : public Constraint {
 
         // Two orthogonal vectors that span the tangential friction plane
         std::vector<Vector3> mFrictionVectors;
-
-        decimal mMu_mc_g;
         
         // -------------------- Methods -------------------- //
 
@@ -100,9 +95,6 @@ class Contact : public Constraint {
 
         // Private assignment operator
         Contact& operator=(const Contact& contact);
-
-        // Compute the two friction vectors that span the tangential friction plane
-        void computeFrictionVectors();
 
     public :
 
@@ -156,37 +148,6 @@ class Contact : public Constraint {
         // Set the second friction vector
         void setFrictionVector2(const Vector3& frictionVector2);
 
-        // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeJacobian(int noConstraint,
-                                     decimal J_SP[NB_MAX_CONSTRAINTS][2*6]) const;
-
-        // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeLowerBound(int noConstraint,
-                                       decimal lowerBounds[NB_MAX_CONSTRAINTS]) const;
-
-        // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint,
-                                       decimal upperBounds[NB_MAX_CONSTRAINTS]) const;
-
-        // Compute the error values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const;
-
-        void computeErrorPenetration(decimal& error);
-
-        void computeJacobianPenetration(decimal J_spBody1[6], decimal J_spBody2[6]);
-
-        void computeJacobianFriction1(decimal J_spBody1[6], decimal J_spBody2[6]);
-
-        void computeJacobianFriction2(decimal J_spBody1[6], decimal J_spBody2[6]);
-
-        void computeLowerBoundPenetration(decimal& lowerBound);
-        void computeLowerBoundFriction1(decimal& lowerBound);
-        void computeLowerBoundFriction2(decimal& lowerBound);
-
-        void computeUpperBoundPenetration(decimal& upperBound);
-        void computeUpperBoundFriction1(decimal& upperBound);
-        void computeUpperBoundFriction2(decimal& upperBound);
-
         // Return the penetration depth
         decimal getPenetrationDepth() const;
 
@@ -195,16 +156,6 @@ class Contact : public Constraint {
            void draw() const;
         #endif
 };
-
-// Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
-// The two vectors have to be such that : v1 x v2 = contactNormal
-inline void Contact::computeFrictionVectors() {
-    // Delete the current friction vectors
-    mFrictionVectors.clear();
-
-    mFrictionVectors.push_back(Vector3(0, 0, 0));
-    mFrictionVectors.push_back(Vector3(0, 0, 0));
-}
 
 // Return the normal vector of the contact
 inline Vector3 Contact::getNormal() const {
@@ -289,6 +240,6 @@ inline void Contact::draw() const {
 }
 #endif 
 
-} // End of the ReactPhysics3D namespace
+}
 
 #endif

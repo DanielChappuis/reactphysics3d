@@ -77,6 +77,8 @@ class RigidBody : public CollisionBody {
         // Coefficient of restitution (between 0 and 1) where 1 is for a very bouncy body
         decimal mRestitution;
 
+        // Friction coefficient
+        decimal mFrictionCoefficient;
 
         // -------------------- Methods -------------------- //
 
@@ -153,6 +155,12 @@ class RigidBody : public CollisionBody {
 
         // Set the restitution coefficient
         void setRestitution(decimal restitution) throw(std::invalid_argument);
+
+        // Get the friction coefficient
+        decimal getFrictionCoefficient() const;
+
+        // Set the friction coefficient
+        void setFrictionCoefficient(decimal frictionCoefficient);
 };
 
 // Method that return the mass of the body
@@ -275,6 +283,16 @@ inline void RigidBody::setRestitution(decimal restitution) throw(std::invalid_ar
     else {
         throw std::invalid_argument("Error : the restitution coefficent must be between 0 and 1");
     }
+}
+
+// Get the friction coefficient
+inline decimal RigidBody::getFrictionCoefficient() const {
+    return mFrictionCoefficient;
+}
+
+// Set the friction coefficient
+inline void RigidBody::setFrictionCoefficient(decimal frictionCoefficient) {
+    mFrictionCoefficient = frictionCoefficient;
 }
 
 } // End of the ReactPhyscis3D namespace

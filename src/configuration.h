@@ -53,52 +53,40 @@ typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
 // ------------------- Constants ------------------- //
 
-const reactphysics3d::decimal DECIMAL_SMALLEST = - std::numeric_limits<decimal>::max();
+const decimal DECIMAL_SMALLEST = - std::numeric_limits<decimal>::max();
 
 // Maximum decimal value
-const reactphysics3d::decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
+const decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
 
 // Machine epsilon
-const reactphysics3d::decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
-
-// Infinity
-const reactphysics3d::decimal DECIMAL_INFINITY = std::numeric_limits<decimal>::infinity();
+const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 
 // Pi constant
-const reactphysics3d::decimal PI = 3.14159265;
+const decimal PI = decimal(3.14159265);
 
 // Default internal constant timestep in seconds
-const reactphysics3d::decimal DEFAULT_TIMESTEP = 1.0 / 60.0;
+const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
+
+// Default friction coefficient for a rigid body
+const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 
 // True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 
 // // Object margin for collision detection in cm (For GJK-EPA Algorithm)
-const reactphysics3d::decimal OBJECT_MARGIN = 0.04;
-
-// Friction coefficient
-const reactphysics3d::decimal FRICTION_COEFFICIENT = 0.4;
+const decimal OBJECT_MARGIN = decimal(0.04);
 
 // Distance threshold for two contact points for a valid persistent contact (in meters)
-const reactphysics3d::decimal PERSISTENT_CONTACT_DIST_THRESHOLD = 0.03;
-
-// Maximum number of bodies
-const int NB_MAX_BODIES = 100000;
-
-// Maximum number of constraints
-const int NB_MAX_CONSTRAINTS = 100000;
+const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 
 // Number of iterations when solving a LCP problem
-const uint DEFAULT_LCP_ITERATIONS = 15;
+const uint DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 
 // Number of iterations when solving a LCP problem for error correction
 const uint DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;
 
 // True if the error correction projection (first order world) is active in the constraint solver
 const bool ERROR_CORRECTION_PROJECTION_ENABLED = true;
-
-// Contacts with penetration depth (in meters) larger that this use error correction with projection
-const reactphysics3d::decimal PENETRATION_DEPTH_THRESHOLD_ERROR_CORRECTION = 0.20;
 
 }
 

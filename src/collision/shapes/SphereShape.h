@@ -121,8 +121,10 @@ inline Vector3 SphereShape::getLocalExtents(decimal margin) const {
 
 // Return the local inertia tensor of the sphere
 inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal diag = 0.4 * mass * mRadius * mRadius;
-    tensor.setAllValues(diag, 0.0, 0.0, 0.0, diag, 0.0, 0.0, 0.0, diag);
+    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
+    tensor.setAllValues(diag, 0.0, 0.0,
+                        0.0, diag, 0.0,
+                        0.0, 0.0, diag);
 }
 
 }; // End of the ReactPhysics3D namespace
