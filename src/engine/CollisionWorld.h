@@ -35,7 +35,7 @@
 #include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
 #include "../constraint/Constraint.h"
-#include "../constraint/Contact.h"
+#include "../constraint/ContactPoint.h"
 #include "../memory/MemoryPool.h"
 
 // Namespace reactphysics3d

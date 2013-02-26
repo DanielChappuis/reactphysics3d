@@ -26,7 +26,7 @@
 // Libraries
 #include "GJKAlgorithm.h"
 #include "Simplex.h"
-#include "../../../constraint/Contact.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../configuration.h"
 #include <algorithm>
 #include <cmath>

@@ -79,14 +79,10 @@ const decimal OBJECT_MARGIN = decimal(0.04);
 // Distance threshold for two contact points for a valid persistent contact (in meters)
 const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 
+const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
+
 // Number of iterations when solving a LCP problem
 const uint DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
-
-// Number of iterations when solving a LCP problem for error correction
-const uint DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;
-
-// True if the error correction projection (first order world) is active in the constraint solver
-const bool ERROR_CORRECTION_PROJECTION_ENABLED = true;
 
 }
 

@@ -305,7 +305,7 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     assert(rigidBody2);
 
     // Create a new contact
-    Contact* contact = new (mMemoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
+    ContactPoint* contact = new (mMemoryPoolContacts.allocateObject()) ContactPoint(rigidBody1, rigidBody2, contactInfo);
     assert(contact);
 
     // Get the corresponding overlapping pair
@@ -316,6 +316,8 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     // Add the contact to the contact cache of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
+    // TODO : Remove this
+    /*
     // Create a contact manifold with the contact points of the two bodies
     ContactManifold contactManifold;
     contactManifold.nbContacts = 0;
@@ -326,7 +328,8 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
         contactManifold.contacts[i] = overlappingPair->getContact(i);
         contactManifold.nbContacts++;
     }
+    */
 
     // Add the contact manifold to the world
-    mContactManifolds.push_back(contactManifold);
+    mContactManifolds.push_back(overlappingPair->getContactManifold());
 }

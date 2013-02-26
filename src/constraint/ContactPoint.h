@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_H
-#define CONTACT_H
+#ifndef CONTACT_POINT_H
+#define CONTACT_POINT_H
 
 // Libraries
 #include "Constraint.h"
@@ -52,13 +52,13 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class Contact :
+    Class ContactPoint :
         This class represents a collision contact point between two
-        bodies in the physics engine. The contact class inherits from
+        bodies in the physics engine. The ContactPoint class inherits from
         the Constraint class.
     -------------------------------------------------------------------
 */
-class Contact : public Constraint {
+class ContactPoint : public Constraint {
 
     protected :
 
@@ -91,20 +91,20 @@ class Contact : public Constraint {
         // -------------------- Methods -------------------- //
 
         // Private copy-constructor
-        Contact(const Contact& contact);
+        ContactPoint(const ContactPoint& contact);
 
         // Private assignment operator
-        Contact& operator=(const Contact& contact);
+        ContactPoint& operator=(const ContactPoint& contact);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         // Constructor
-        Contact(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
+        ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
 
         // Destructor
-        virtual ~Contact();
+        virtual ~ContactPoint();
 
         // Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -158,83 +158,83 @@ class Contact : public Constraint {
 };
 
 // Return the normal vector of the contact
-inline Vector3 Contact::getNormal() const {
+inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
 }
 
 // Set the penetration depth of the contact
-inline void Contact::setPenetrationDepth(decimal penetrationDepth) {
+inline void ContactPoint::setPenetrationDepth(decimal penetrationDepth) {
     this->mPenetrationDepth = penetrationDepth;
 }
 
 // Return the contact point on body 1
-inline Vector3 Contact::getLocalPointOnBody1() const {
+inline Vector3 ContactPoint::getLocalPointOnBody1() const {
     return mLocalPointOnBody1;
 }
 
 // Return the contact point on body 2
-inline Vector3 Contact::getLocalPointOnBody2() const {
+inline Vector3 ContactPoint::getLocalPointOnBody2() const {
     return mLocalPointOnBody2;
 }
 
 // Return the contact world point on body 1
-inline Vector3 Contact::getWorldPointOnBody1() const {
+inline Vector3 ContactPoint::getWorldPointOnBody1() const {
     return mWorldPointOnBody1;
 }
 
 // Return the contact world point on body 2
-inline Vector3 Contact::getWorldPointOnBody2() const {
+inline Vector3 ContactPoint::getWorldPointOnBody2() const {
     return mWorldPointOnBody2;
 }
 
 // Set the contact world point on body 1
-inline void Contact::setWorldPointOnBody1(const Vector3& worldPoint) {
+inline void ContactPoint::setWorldPointOnBody1(const Vector3& worldPoint) {
     mWorldPointOnBody1 = worldPoint;
 }
 
 // Set the contact world point on body 2
-inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
+inline void ContactPoint::setWorldPointOnBody2(const Vector3& worldPoint) {
     mWorldPointOnBody2 = worldPoint;
 }
 
 // Return true if the contact is a resting contact
-inline bool Contact::getIsRestingContact() const {
+inline bool ContactPoint::getIsRestingContact() const {
     return mIsRestingContact;
 }
 
 // Set the mIsRestingContact variable
-inline void Contact::setIsRestingContact(bool isRestingContact) {
+inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
 }
 
 // Get the first friction vector
-inline Vector3 Contact::getFrictionVector1() const {
+inline Vector3 ContactPoint::getFrictionVector1() const {
     return mFrictionVectors[0];
 }
 
 // Set the first friction vector
-inline void Contact::setFrictionVector1(const Vector3& frictionVector1) {
+inline void ContactPoint::setFrictionVector1(const Vector3& frictionVector1) {
     mFrictionVectors[0] = frictionVector1;
 }
 
 // Get the second friction vector
-inline Vector3 Contact::getFrictionVector2() const {
+inline Vector3 ContactPoint::getFrictionVector2() const {
     return mFrictionVectors[1];
 }
 
 // Set the second friction vector
-inline void Contact::setFrictionVector2(const Vector3& frictionVector2) {
+inline void ContactPoint::setFrictionVector2(const Vector3& frictionVector2) {
     mFrictionVectors[1] = frictionVector2;
 }
 
 // Return the penetration depth of the contact
-inline decimal Contact::getPenetrationDepth() const {
+inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
 
 #ifdef VISUAL_DEBUG
-inline void Contact::draw() const {
+inline void ContactPoint::draw() const {
     glColor3f(1.0, 0.0, 0.0);
     glutSolidSphere(0.3, 20, 20);
 }

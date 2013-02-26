@@ -101,7 +101,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     collisionBody->CollisionBody::~CollisionBody();
 
     // Remove the collision body from the list of bodies
-    mBodies.erase(collisionBody);           // TOOD : Maybe use a set to make this faster
+    mBodies.erase(collisionBody);           // TODO : Maybe use a set to make this faster
 
     // Free the object from the memory pool
     mMemoryPoolCollisionBodies.freeObject(collisionBody);
