@@ -37,10 +37,17 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(DynamicsWorld& world)
-    :mWorld(world), mNbIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS), mContactConstraints(0),
-      mLinearVelocities(0), mAngularVelocities(0), mIsWarmStartingActive(true),
-      mIsSplitImpulseActive(true), mIsSolveFrictionAtContactManifoldCenterActive(true) {
+ContactSolver::ContactSolver(DynamicsWorld& world, std::vector<Vector3>& constrainedLinearVelocities,
+                             std::vector<Vector3>& constrainedAngularVelocities,
+                             const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
+              :mWorld(world), mNbIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
+               mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL), mContactConstraints(NULL),
+               mConstrainedLinearVelocities(constrainedLinearVelocities),
+               mConstrainedAngularVelocities(constrainedAngularVelocities),
+               mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
+               mIsWarmStartingActive(true),
+               mIsSplitImpulseActive(true),
+               mIsSolveFrictionAtContactManifoldCenterActive(true) {
 
 }
 
@@ -72,10 +79,6 @@ void ContactSolver::initialize() {
         RigidBody* body1 = externalContactManifold.contacts[0]->getBody1();
         RigidBody* body2 = externalContactManifold.contacts[0]->getBody2();
 
-        // Fill in the body number maping
-        mMapBodyToIndex.insert(make_pair(body1, mMapBodyToIndex.size()));
-        mMapBodyToIndex.insert(make_pair(body2, mMapBodyToIndex.size()));
-
         // Add the two bodies of the constraint in the constraintBodies list
         mConstraintBodies.insert(body1);
         mConstraintBodies.insert(body2);
@@ -84,8 +87,8 @@ void ContactSolver::initialize() {
         Vector3 x1 = body1->getTransform().getPosition();
         Vector3 x2 = body2->getTransform().getPosition();
 
-        internalContactManifold.indexBody1 = mMapBodyToIndex[body1];
-        internalContactManifold.indexBody2 = mMapBodyToIndex[body2];
+        internalContactManifold.indexBody1 = mMapBodyToConstrainedVelocityIndex.find(body1)->second;
+        internalContactManifold.indexBody2 = mMapBodyToConstrainedVelocityIndex.find(body2)->second;
         internalContactManifold.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         internalContactManifold.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
         internalContactManifold.isBody1Moving = body1->getIsMotionEnabled();
@@ -165,17 +168,17 @@ void ContactSolver::initialize() {
         mNbContactConstraints++;
     }
 
-    // Compute the number of bodies that are part of some active constraint
-    uint nbBodies = mConstraintBodies.size();
-
-    // Allocated memory for velocities
+    // Allocated memory for split impulse velocities
     // TODO : Use better memory allocation here
-    mLinearVelocities = new Vector3[nbBodies];
-    mAngularVelocities = new Vector3[nbBodies];
-    mSplitLinearVelocities = new Vector3[nbBodies];
-    mSplitAngularVelocities = new Vector3[nbBodies];
+    mSplitLinearVelocities = new Vector3[mWorld.getNbRigidBodies()];
+    mSplitAngularVelocities = new Vector3[mWorld.getNbRigidBodies()];
+    assert(mSplitLinearVelocities != NULL);
+    assert(mSplitAngularVelocities != NULL);
 
-    assert(mMapBodyToIndex.size() == nbBodies);
+    assert(mConstraintBodies.size() > 0);
+    assert(mMapBodyToConstrainedVelocityIndex.size() >= mConstraintBodies.size());
+    assert(mConstrainedLinearVelocities.size() >= mConstraintBodies.size());
+    assert(mConstrainedAngularVelocities.size() >= mConstraintBodies.size());
 }
 
 // Initialize the constrained bodies
@@ -187,10 +190,8 @@ void ContactSolver::initializeBodies() {
         RigidBody* rigidBody = *it;
         assert(rigidBody);
 
-        uint bodyNumber = mMapBodyToIndex[rigidBody];
+        uint bodyNumber = mMapBodyToConstrainedVelocityIndex.find(rigidBody)->second;
 
-        mLinearVelocities[bodyNumber] = rigidBody->getLinearVelocity() + mTimeStep * rigidBody->getMassInverse() * rigidBody->getExternalForce();
-        mAngularVelocities[bodyNumber] = rigidBody->getAngularVelocity() + mTimeStep * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
         mSplitLinearVelocities[bodyNumber] = Vector3(0, 0, 0);
         mSplitAngularVelocities[bodyNumber] = Vector3(0, 0, 0);
     }
@@ -214,10 +215,10 @@ void ContactSolver::initializeContactConstraints() {
         }
 
         // Get the velocities of the bodies
-        const Vector3& v1 = mLinearVelocities[contactManifold.indexBody1];
-        const Vector3& w1 = mAngularVelocities[contactManifold.indexBody1];
-        const Vector3& v2 = mLinearVelocities[contactManifold.indexBody2];
-        const Vector3& w2 = mAngularVelocities[contactManifold.indexBody2];
+        const Vector3& v1 = mConstrainedLinearVelocities[contactManifold.indexBody1];
+        const Vector3& w1 = mConstrainedAngularVelocities[contactManifold.indexBody1];
+        const Vector3& v2 = mConstrainedLinearVelocities[contactManifold.indexBody2];
+        const Vector3& w2 = mConstrainedAngularVelocities[contactManifold.indexBody2];
 
         // For each contact point constraint
         for (uint i=0; i<contactManifold.nbContacts; i++) {
@@ -474,10 +475,10 @@ void ContactSolver::solveContactConstraints() {
 
             decimal sumPenetrationImpulse = 0.0;
 
-            const Vector3& v1 = mLinearVelocities[contactManifold.indexBody1];
-            const Vector3& w1 = mAngularVelocities[contactManifold.indexBody1];
-            const Vector3& v2 = mLinearVelocities[contactManifold.indexBody2];
-            const Vector3& w2 = mAngularVelocities[contactManifold.indexBody2];
+            const Vector3& v1 = mConstrainedLinearVelocities[contactManifold.indexBody1];
+            const Vector3& w1 = mConstrainedAngularVelocities[contactManifold.indexBody1];
+            const Vector3& v2 = mConstrainedLinearVelocities[contactManifold.indexBody2];
+            const Vector3& w2 = mConstrainedAngularVelocities[contactManifold.indexBody2];
 
             for (uint i=0; i<contactManifold.nbContacts; i++) {
 
@@ -721,15 +722,15 @@ void ContactSolver::applyImpulse(const Impulse& impulse, const ContactManifoldSo
 
     // Update the velocities of the bodies by applying the impulse P
     if (contactManifold.isBody1Moving) {
-        mLinearVelocities[contactManifold.indexBody1] += contactManifold.massInverseBody1 *
+        mConstrainedLinearVelocities[contactManifold.indexBody1] += contactManifold.massInverseBody1 *
                                                     impulse.linearImpulseBody1;
-        mAngularVelocities[contactManifold.indexBody1] += contactManifold.inverseInertiaTensorBody1 *
+        mConstrainedAngularVelocities[contactManifold.indexBody1] += contactManifold.inverseInertiaTensorBody1 *
                                                      impulse.angularImpulseBody1;
     }
     if (contactManifold.isBody2Moving) {
-        mLinearVelocities[contactManifold.indexBody2] += contactManifold.massInverseBody2 *
+        mConstrainedLinearVelocities[contactManifold.indexBody2] += contactManifold.massInverseBody2 *
                                                     impulse.linearImpulseBody2;
-        mAngularVelocities[contactManifold.indexBody2] += contactManifold.inverseInertiaTensorBody2 *
+        mConstrainedAngularVelocities[contactManifold.indexBody2] += contactManifold.inverseInertiaTensorBody2 *
                                                      impulse.angularImpulseBody2;
     }
 }
@@ -757,10 +758,6 @@ void ContactSolver::applySplitImpulse(const Impulse& impulse,
 // for a contact point constraint. The two vectors have to be such that : t1 x t2 = contactNormal.
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactPointSolver& contactPoint) const {
-
-    // Update the old friction vectors
-    //contact.oldFrictionVector1 = contact.frictionVector1;
-    //contact.oldFrictionVector2 = contact.frictionVector2;
 
     assert(contactPoint.normal.length() > 0.0);
 
@@ -819,19 +816,19 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 
 // Clean up the constraint solver
 void ContactSolver::cleanup() {
-    mMapBodyToIndex.clear();
+    //mMapBodyToIndex.clear();
     mConstraintBodies.clear();
 
-    if (mContactConstraints != 0) {
+    if (mContactConstraints != NULL) {
         delete[] mContactConstraints;
-        mContactConstraints = 0;
+        mContactConstraints = NULL;
     }
-    if (mLinearVelocities != 0) {
-        delete[] mLinearVelocities;
-        mLinearVelocities = 0;
+    if (mSplitLinearVelocities != NULL) {
+        delete[] mSplitLinearVelocities;
+        mSplitLinearVelocities = NULL;
     }
-    if (mAngularVelocities != 0) {
-        delete[] mAngularVelocities;
-        mAngularVelocities = 0;
+    if (mSplitAngularVelocities != NULL) {
+        delete[] mSplitAngularVelocities;
+        mSplitAngularVelocities = NULL;
     }
 }

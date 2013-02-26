@@ -62,7 +62,7 @@ struct Impulse {
     
 /*  -------------------------------------------------------------------
     Class ContactSolver :
-        This class represents the contacts solver that is used is solve rigid bodies contacts.
+        This class represents the contact solver that is used is solve rigid bodies contacts.
         The constraint solver is based on the "Sequential Impulse" technique described by
         Erin Catto in his GDC slides (http://code.google.com/p/box2d/downloads/list).
 
@@ -228,12 +228,6 @@ class ContactSolver {
         // Number of iterations of the constraints solver
         uint mNbIterations;
 
-        // Array of constrained linear velocities
-        Vector3* mLinearVelocities;
-
-        // Array of constrained angular velocities
-        Vector3* mAngularVelocities;
-
         // Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -252,8 +246,16 @@ class ContactSolver {
         // Constrained bodies
         std::set<RigidBody*> mConstraintBodies;
 
-        // Map body to index
-        std::map<RigidBody*, uint> mMapBodyToIndex;
+        // Pointer to the array of constrained linear velocities (state of the linear velocities
+        // after solving the constraints)
+        std::vector<Vector3>& mConstrainedLinearVelocities;
+
+        // Pointer to the array of constrained angular velocities (state of the angular velocities
+        // after solving the constraints)
+        std::vector<Vector3>& mConstrainedAngularVelocities;
+
+        // Reference to the map of rigid body to their index in the constrained velocities array
+        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
 
         // True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
@@ -327,7 +329,9 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         // Constructor
-        ContactSolver(DynamicsWorld& mWorld);
+        ContactSolver(DynamicsWorld& mWorld, std::vector<Vector3>& constrainedLinearVelocities,
+                      std::vector<Vector3>& constrainedAngularVelocities, const std::map<RigidBody*, uint>&
+                      mapBodyToVelocityIndex);
 
         // Destructor
         virtual ~ContactSolver();
@@ -369,31 +373,17 @@ inline bool ContactSolver::isConstrainedBody(RigidBody* body) const {
     return mConstraintBodies.count(body) == 1;
 }
 
-// Return the constrained linear velocity of a body after solving the constraints
-inline Vector3 ContactSolver::getConstrainedLinearVelocityOfBody(RigidBody* body) {
-    assert(isConstrainedBody(body));
-    uint indexBody = mMapBodyToIndex[body];
-    return mLinearVelocities[indexBody];
-}
-
 // Return the split linear velocity
 inline Vector3 ContactSolver::getSplitLinearVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
-    uint indexBody = mMapBodyToIndex[body];
+    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
     return mSplitLinearVelocities[indexBody];
-}
-
-// Return the constrained angular velocity of a body after solving the constraints
-inline Vector3 ContactSolver::getConstrainedAngularVelocityOfBody(RigidBody *body) {
-    assert(isConstrainedBody(body));
-    uint indexBody = mMapBodyToIndex[body];
-    return mAngularVelocities[indexBody];
 }
 
 // Return the split angular velocity
 inline Vector3 ContactSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
-    uint indexBody = mMapBodyToIndex[body];
+    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
     return mSplitAngularVelocities[indexBody];
 }
 
@@ -454,6 +444,6 @@ inline const Impulse ContactSolver::computeFriction2Impulse(decimal deltaLambda,
                    contactPoint.frictionVector2 * deltaLambda, contactPoint.r2CrossT2 * deltaLambda);
 }
 
-} // End of ReactPhysics3D namespace
+}
 
 #endif

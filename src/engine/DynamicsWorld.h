@@ -84,6 +84,17 @@ class DynamicsWorld : public CollisionWorld {
         // Memory pool for the contacts
         MemoryPool<Contact> mMemoryPoolContacts;
 
+        // Array of constrained linear velocities (state of the linear velocities
+        // after solving the constraints)
+        std::vector<Vector3> mConstrainedLinearVelocities;
+
+        // Array of constrained angular velocities (state of the angular velocities
+        // after solving the constraints)
+        std::vector<Vector3> mConstrainedAngularVelocities;
+
+        // Map body to their index in the constrained velocities array
+        std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
+
         // -------------------- Methods -------------------- //
 
         // Private copy-constructor
@@ -93,7 +104,7 @@ class DynamicsWorld : public CollisionWorld {
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
         // Compute the motion of all bodies and update their positions and orientations
-        void updateAllBodiesMotion();
+        void updateRigidBodiesPositionAndOrientation();
 
         // Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
@@ -101,6 +112,12 @@ class DynamicsWorld : public CollisionWorld {
 
         // Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
+
+        // Initialize the constrained velocities array at each step
+        void initConstrainedVelocitiesArray();
+
+        // Cleanup the constrained velocities array at each step
+        void cleanupConstrainedVelocitiesArray();
 
         // Apply the gravity force to all bodies
         void applyGravity();
@@ -168,6 +185,9 @@ public :
 
         // Set the isGravityOn attribute
         void setIsGratityOn(bool isGravityOn);
+
+        // Return the number of rigid bodies in the world
+        uint getNbRigidBodies() const;
 
         // Add a constraint
         void addConstraint(Constraint* constraint);
@@ -284,6 +304,11 @@ inline bool DynamicsWorld::getIsGravityOn() const {
 // Set the isGravityOn attribute
 inline void DynamicsWorld::setIsGratityOn(bool isGravityOn) {
     mIsGravityOn = isGravityOn;
+}
+
+// Return the number of rigid bodies in the world
+inline uint DynamicsWorld::getNbRigidBodies() const {
+    return mRigidBodies.size();
 }
 
 // Return an iterator to the beginning of the bodies of the physics world
