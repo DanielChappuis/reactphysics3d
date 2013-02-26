@@ -26,7 +26,6 @@
 // Libraries
 #include "Vector3.h"
 #include <iostream>
-#include <cassert>
 #include <vector>
 
 // Namespaces
@@ -96,4 +95,28 @@ Vector3 Vector3::getOneOrthogonalVector() const {
 
     //assert(vector1.isUnit());
     return vector1;
+}
+
+// Return one unit orthogonal vector of the current vector
+Vector3 Vector3::getOneUnitOrthogonalVector() const {
+    assert(!this->isZero());
+
+    decimal x = mValues[0];
+    decimal y = mValues[1];
+    decimal z = mValues[2];
+
+    // Get the minimum element of the vector
+    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
+    int minElement = vectorAbs.getMinAxis();
+
+    if (minElement == 0) {
+        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
+    }
+    else if (minElement == 1) {
+        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
+    }
+    else {
+        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
+    }
+
 }

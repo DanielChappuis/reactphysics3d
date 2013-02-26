@@ -118,12 +118,12 @@ inline void ConeShape::setRadius(decimal radius) {
 
 // Return the height
 inline decimal ConeShape::getHeight() const {
-    return 2.0 * mHalfHeight;
+    return decimal(2.0) * mHalfHeight;
 }
 
 // Set the height
 inline void ConeShape::setHeight(decimal height) {
-    mHalfHeight = height / 2.0;
+    mHalfHeight = height * decimal(0.5);
 
     // Update the sine of the semi-angle at the apex point
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
@@ -137,8 +137,10 @@ inline Vector3 ConeShape::getLocalExtents(decimal margin) const {
 // Return the local inertia tensor of the collision shape
 inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal rSquare = mRadius * mRadius;
-    decimal diagXZ = 0.15 * mass * (rSquare + mHalfHeight);
-    tensor.setAllValues(diagXZ, 0.0, 0.0, 0.0, 0.3 * mass * rSquare, 0.0, 0.0, 0.0, diagXZ);
+    decimal diagXZ = decimal(0.15) * mass * (rSquare + mHalfHeight);
+    tensor.setAllValues(diagXZ, 0.0, 0.0,
+                        0.0, decimal(0.3) * mass * rSquare,
+                        0.0, 0.0, 0.0, diagXZ);
 }
 
 }; // End of the ReactPhysics3D namespace

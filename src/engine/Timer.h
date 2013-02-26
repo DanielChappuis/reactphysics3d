@@ -153,7 +153,7 @@ inline void Timer::start() {
         LARGE_INTEGER ticks;
         QueryPerformanceFrequency(&ticksPerSecond);
         QueryPerformanceCounter(&ticks);
-        lastUpdateTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
+        mLastUpdateTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
 #else
         // Initialize the lastUpdateTime with the current time in seconds
         timeval timeValue;

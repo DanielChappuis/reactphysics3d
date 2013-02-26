@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_H
-#define CONTACT_H
+#ifndef CONTACT_POINT_H
+#define CONTACT_POINT_H
 
 // Libraries
 #include "Constraint.h"
@@ -52,16 +52,13 @@
 namespace reactphysics3d {
 
 /*  -------------------------------------------------------------------
-    Class Contact :
-        This class represents a collision contact between two bodies in
-        the physics engine. The contact class inherits from the
-        Constraint class. Each Contact represent a contact between two bodies
-        and contains the two contact points on each body. The contact has 3
-        mathematical constraints (1 for the contact constraint, and 2
-        for the friction constraints).
+    Class ContactPoint :
+        This class represents a collision contact point between two
+        bodies in the physics engine. The ContactPoint class inherits from
+        the Constraint class.
     -------------------------------------------------------------------
 */
-class Contact : public Constraint {
+class ContactPoint : public Constraint {
 
     protected :
 
@@ -85,31 +82,29 @@ class Contact : public Constraint {
         // Contact point on body 2 in world space
         Vector3 mWorldPointOnBody2;
 
+        // True if the contact is a resting contact (exists for more than one time step)
+        bool mIsRestingContact;
+
         // Two orthogonal vectors that span the tangential friction plane
         std::vector<Vector3> mFrictionVectors;
-
-        decimal mMu_mc_g;
         
         // -------------------- Methods -------------------- //
 
         // Private copy-constructor
-        Contact(const Contact& contact);
+        ContactPoint(const ContactPoint& contact);
 
         // Private assignment operator
-        Contact& operator=(const Contact& contact);
-
-        // Compute the two friction vectors that span the tangential friction plane
-        void computeFrictionVectors();
+        ContactPoint& operator=(const ContactPoint& contact);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         // Constructor
-        Contact(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
+        ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
 
         // Destructor
-        virtual ~Contact();
+        virtual ~ContactPoint();
 
         // Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -135,20 +130,23 @@ class Contact : public Constraint {
         // Set the contact world point on body 2
         void setWorldPointOnBody2(const Vector3& worldPoint);
 
-        // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeJacobian(int noConstraint,
-                                     decimal J_SP[NB_MAX_CONSTRAINTS][2*6]) const;
+        // Return true if the contact is a resting contact
+        bool getIsRestingContact() const;
 
-        // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeLowerBound(int noConstraint,
-                                       decimal lowerBounds[NB_MAX_CONSTRAINTS]) const;
+        // Set the mIsRestingContact variable
+        void setIsRestingContact(bool isRestingContact);
 
-        // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint,
-                                       decimal upperBounds[NB_MAX_CONSTRAINTS]) const;
+        // Get the first friction vector
+        Vector3 getFrictionVector1() const;
 
-        // Compute the error values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const;
+        // Set the first friction vector
+        void setFrictionVector1(const Vector3& frictionVector1);
+
+        // Get the second friction vector
+        Vector3 getFrictionVector2() const;
+
+        // Set the second friction vector
+        void setFrictionVector2(const Vector3& frictionVector2);
 
         // Return the penetration depth
         decimal getPenetrationDepth() const;
@@ -159,73 +157,89 @@ class Contact : public Constraint {
         #endif
 };
 
-// Compute the two unit orthogonal vectors "v1" and "v2" that span the tangential friction plane
-// The two vectors have to be such that : v1 x v2 = contactNormal
-inline void Contact::computeFrictionVectors() {
-    // Delete the current friction vectors
-    mFrictionVectors.clear();
-
-    // Compute the first orthogonal vector
-    Vector3 vector1 = mNormal.getOneOrthogonalVector();
-    mFrictionVectors.push_back(vector1);
-
-    // Compute the second orthogonal vector using the cross product
-    mFrictionVectors.push_back(mNormal.cross(vector1));
-}
-
 // Return the normal vector of the contact
-inline Vector3 Contact::getNormal() const {
+inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
 }
 
 // Set the penetration depth of the contact
-inline void Contact::setPenetrationDepth(decimal penetrationDepth) {
+inline void ContactPoint::setPenetrationDepth(decimal penetrationDepth) {
     this->mPenetrationDepth = penetrationDepth;
 }
 
 // Return the contact point on body 1
-inline Vector3 Contact::getLocalPointOnBody1() const {
+inline Vector3 ContactPoint::getLocalPointOnBody1() const {
     return mLocalPointOnBody1;
 }
 
 // Return the contact point on body 2
-inline Vector3 Contact::getLocalPointOnBody2() const {
+inline Vector3 ContactPoint::getLocalPointOnBody2() const {
     return mLocalPointOnBody2;
 }
 
 // Return the contact world point on body 1
-inline Vector3 Contact::getWorldPointOnBody1() const {
+inline Vector3 ContactPoint::getWorldPointOnBody1() const {
     return mWorldPointOnBody1;
 }
 
 // Return the contact world point on body 2
-inline Vector3 Contact::getWorldPointOnBody2() const {
+inline Vector3 ContactPoint::getWorldPointOnBody2() const {
     return mWorldPointOnBody2;
 }
 
 // Set the contact world point on body 1
-inline void Contact::setWorldPointOnBody1(const Vector3& worldPoint) {
+inline void ContactPoint::setWorldPointOnBody1(const Vector3& worldPoint) {
     mWorldPointOnBody1 = worldPoint;
 }
 
 // Set the contact world point on body 2
-inline void Contact::setWorldPointOnBody2(const Vector3& worldPoint) {
+inline void ContactPoint::setWorldPointOnBody2(const Vector3& worldPoint) {
     mWorldPointOnBody2 = worldPoint;
 }
 
+// Return true if the contact is a resting contact
+inline bool ContactPoint::getIsRestingContact() const {
+    return mIsRestingContact;
+}
+
+// Set the mIsRestingContact variable
+inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
+    mIsRestingContact = isRestingContact;
+}
+
+// Get the first friction vector
+inline Vector3 ContactPoint::getFrictionVector1() const {
+    return mFrictionVectors[0];
+}
+
+// Set the first friction vector
+inline void ContactPoint::setFrictionVector1(const Vector3& frictionVector1) {
+    mFrictionVectors[0] = frictionVector1;
+}
+
+// Get the second friction vector
+inline Vector3 ContactPoint::getFrictionVector2() const {
+    return mFrictionVectors[1];
+}
+
+// Set the second friction vector
+inline void ContactPoint::setFrictionVector2(const Vector3& frictionVector2) {
+    mFrictionVectors[1] = frictionVector2;
+}
+
 // Return the penetration depth of the contact
-inline decimal Contact::getPenetrationDepth() const {
+inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
 
 #ifdef VISUAL_DEBUG
-inline void Contact::draw() const {
+inline void ContactPoint::draw() const {
     glColor3f(1.0, 0.0, 0.0);
     glutSolidSphere(0.3, 20, 20);
 }
 #endif 
 
-} // End of the ReactPhysics3D namespace
+}
 
 #endif

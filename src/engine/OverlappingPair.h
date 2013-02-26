@@ -27,7 +27,7 @@
 #define	OVERLAPPING_PAIR_H
 
 // Libraries
-#include "PersistentContactCache.h"
+#include "ContactManifold.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -53,8 +53,8 @@ class OverlappingPair {
         // Pointer to the second body of the contact
         CollisionBody* const mBody2;
 
-        // Persistent contact cache
-        PersistentContactCache mContactsCache;
+        // Persistent contact manifold
+        ContactManifold mContactManifold;
 
         // Cached previous separating axis
         Vector3 mCachedSeparatingAxis;
@@ -73,7 +73,7 @@ class OverlappingPair {
 
         // Constructor
         OverlappingPair(CollisionBody* body1, CollisionBody* body2,
-                        MemoryPool<Contact>& memoryPoolContacts);
+                        MemoryPool<ContactPoint>& memoryPoolContacts);
 
         // Destructor
         ~OverlappingPair();
@@ -85,7 +85,7 @@ class OverlappingPair {
         CollisionBody* const getBody2() const;
 
         // Add a contact to the contact cache
-        void addContact(Contact* contact);
+        void addContact(ContactPoint* contact);
 
         // Update the contact cache
         void update();
@@ -99,8 +99,12 @@ class OverlappingPair {
         // Return the number of contacts in the cache
         uint getNbContacts() const;
 
+        // Return the contact manifold
+        ContactManifold* getContactManifold();
+
         // Return a contact of the cache
-        Contact* getContact(uint index) const;
+        // TODO : Maybe remove this method
+        ContactPoint* getContact(uint index) const;
 };
 
 // Return the pointer to first body
@@ -113,14 +117,14 @@ inline CollisionBody* const OverlappingPair::getBody2() const {
     return mBody2;
 }                
 
-// Add a contact to the contact cache
-inline void OverlappingPair::addContact(Contact* contact) {
-    mContactsCache.addContact(contact);
+// Add a contact to the contact manifold
+inline void OverlappingPair::addContact(ContactPoint* contact) {
+    mContactManifold.addContactPoint(contact);
 }  
 
-// Update the contact cache
+// Update the contact manifold
 inline void OverlappingPair::update() {
-    mContactsCache.update(mBody1->getTransform(), mBody2->getTransform());
+    mContactManifold.update(mBody1->getTransform(), mBody2->getTransform());
 }                                
 
 // Return the cached separating axis
@@ -136,12 +140,17 @@ inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
 
 // Return the number of contacts in the cache
 inline uint OverlappingPair::getNbContacts() const {
-    return mContactsCache.getNbContacts();
+    return mContactManifold.getNbContactPoints();
+}
+
+// Return the contact manifold
+inline ContactManifold* OverlappingPair::getContactManifold() {
+    return &mContactManifold;
 }
 
 // Return a contact of the cache    
-inline Contact* OverlappingPair::getContact(uint index) const {
-    return mContactsCache.getContact(index);
+inline ContactPoint* OverlappingPair::getContact(uint index) const {
+    return mContactManifold.getContactPoint(index);
 }         
 
 } // End of the ReactPhysics3D namespace

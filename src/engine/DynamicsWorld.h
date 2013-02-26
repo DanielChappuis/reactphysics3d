@@ -29,7 +29,7 @@
 // Libraries
 #include "CollisionWorld.h"
 #include "../collision/CollisionDetection.h"
-#include "ConstraintSolver.h"
+#include "ContactSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
 #include "../configuration.h"
@@ -53,8 +53,8 @@ class DynamicsWorld : public CollisionWorld {
         // Timer of the physics engine
         Timer mTimer;
 
-        // Constraint solver
-        ConstraintSolver mConstraintSolver;
+        // Contact solver
+        ContactSolver mContactSolver;
 
         // True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
@@ -62,7 +62,10 @@ class DynamicsWorld : public CollisionWorld {
         // All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
-        // List that contains all the current constraints
+        // All the contact constraints
+        std::vector<ContactManifold*> mContactManifolds;
+
+        // All the constraints (except contact constraints)
         std::vector<Constraint*> mConstraints;
 
         // Gravity vector of the world
@@ -78,7 +81,18 @@ class DynamicsWorld : public CollisionWorld {
         MemoryPool<RigidBody> mMemoryPoolRigidBodies;
 
         // Memory pool for the contacts
-        MemoryPool<Contact> mMemoryPoolContacts;
+        MemoryPool<ContactPoint> mMemoryPoolContacts;
+
+        // Array of constrained linear velocities (state of the linear velocities
+        // after solving the constraints)
+        std::vector<Vector3> mConstrainedLinearVelocities;
+
+        // Array of constrained angular velocities (state of the angular velocities
+        // after solving the constraints)
+        std::vector<Vector3> mConstrainedAngularVelocities;
+
+        // Map body to their index in the constrained velocities array
+        std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
 
         // -------------------- Methods -------------------- //
 
@@ -89,16 +103,20 @@ class DynamicsWorld : public CollisionWorld {
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
         // Compute the motion of all bodies and update their positions and orientations
-        void updateAllBodiesMotion();
+        void updateRigidBodiesPositionAndOrientation();
 
         // Update the position and orientation of a body
-        void updatePositionAndOrientationOfBody(RigidBody* body, const Vector3& newLinVelocity,
-                                                const Vector3& newAngVelocity,
-                                                const Vector3& linearVelocityErrorCorrection,
-                                                const Vector3& angularVelocityErrorCorrection);
+        void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
+                                                Vector3 newAngVelocity);
 
         // Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
+
+        // Initialize the constrained velocities array at each step
+        void initConstrainedVelocitiesArray();
+
+        // Cleanup the constrained velocities array at each step
+        void cleanupConstrainedVelocitiesArray();
 
         // Apply the gravity force to all bodies
         void applyGravity();
@@ -137,8 +155,15 @@ public :
         // Update the physics simulation
         void update();
 
-        // Set the number of iterations of the LCP solver
-        void setNbLCPIterations(uint nbIterations);
+        // Set the number of iterations of the constraint solver
+        void setNbIterationsSolver(uint nbIterations);
+
+        // Activate or Deactivate the split impulses for contacts
+        void setIsSplitImpulseActive(bool isActive);
+
+        // Activate or deactivate the solving of friction constraints at the center of
+        // the contact manifold instead of solving them at each contact point
+        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         // Set the isErrorCorrectionActive value
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
@@ -160,23 +185,32 @@ public :
         // Set the isGravityOn attribute
         void setIsGratityOn(bool isGravityOn);
 
+        // Return the number of rigid bodies in the world
+        uint getNbRigidBodies() const;
+
         // Add a constraint
         void addConstraint(Constraint* constraint);
 
         // Remove a constraint
         void removeConstraint(Constraint* constraint);
 
-        // Remove all collision contacts constraints
-        void removeAllContactConstraints();
-
         // Remove all constraints and delete them (free their memory)
         void removeAllConstraints();
+
+        // Return the number of contact constraints in the world
+        uint getNbContactManifolds() const;
 
         // Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();
 
         // Return a end iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();
+
+        // Return a start iterator on the contact manifolds list
+        std::vector<ContactManifold*>::iterator getContactManifoldsBeginIterator();
+
+        // Return a end iterator on the contact manifolds list
+        std::vector<ContactManifold*>::iterator getContactManifoldsEndIterator();
 
         // Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -197,14 +231,20 @@ inline void DynamicsWorld::stop() {
     mTimer.stop();
 }                
 
-// Set the number of iterations of the LCP solver
-inline void DynamicsWorld::setNbLCPIterations(uint nbIterations) {
-    mConstraintSolver.setNbLCPIterations(nbIterations);
-}   
+// Set the number of iterations of the constraint solver
+inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
+    mContactSolver.setNbIterationsSolver(nbIterations);
+}
 
-// Set the isErrorCorrectionActive value
-inline void DynamicsWorld::setIsErrorCorrectionActive(bool isErrorCorrectionActive) {
-    mConstraintSolver.setIsErrorCorrectionActive(isErrorCorrectionActive);
+// Activate or Deactivate the split impulses for contacts
+inline void DynamicsWorld::setIsSplitImpulseActive(bool isActive) {
+    mContactSolver.setIsSplitImpulseActive(isActive);
+}
+
+// Activate or deactivate the solving of friction constraints at the center of
+// the contact manifold instead of solving them at each contact point
+inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
+    mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Reset the boolean movement variable of each body
@@ -265,6 +305,11 @@ inline void DynamicsWorld::setIsGratityOn(bool isGravityOn) {
     mIsGravityOn = isGravityOn;
 }
 
+// Return the number of rigid bodies in the world
+inline uint DynamicsWorld::getNbRigidBodies() const {
+    return mRigidBodies.size();
+}
+
 // Return an iterator to the beginning of the bodies of the physics world
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator() {
     return mRigidBodies.begin();
@@ -275,6 +320,11 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
     return mRigidBodies.end();
 }
 
+// Return the number of contact manifolds in the world
+inline uint DynamicsWorld::getNbContactManifolds() const {
+    return mContactManifolds.size();
+}
+
 // Return a start iterator on the constraint list
 inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIterator() {
     return mConstraints.begin();
@@ -283,6 +333,16 @@ inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIter
 // Return a end iterator on the constraint list
 inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsEndIterator() {
     return mConstraints.end();
+}
+
+// Return a start iterator on the contact manifolds list
+inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsBeginIterator() {
+    return mContactManifolds.begin();
+}
+
+// Return a end iterator on the contact manifolds list
+inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsEndIterator() {
+    return mContactManifolds.end();
 }
 
 }

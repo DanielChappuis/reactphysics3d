@@ -26,13 +26,15 @@
 // Libraries
 #include "DynamicsWorld.h"
 
-// We want to use the ReactPhysics3D namespace
+// Namespaces
 using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true), mConstraintSolver(this),
+              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true),
+                mContactSolver(*this, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
+                               mMapBodyToConstrainedVelocityIndex),
                 mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
@@ -46,11 +48,13 @@ DynamicsWorld::~DynamicsWorld() {
         (*it).second->OverlappingPair::~OverlappingPair();
         mMemoryPoolOverlappingPairs.freeObject((*it).second);
     }
+
+    // Free the allocated memory for the constrained velocities
+    cleanupConstrainedVelocitiesArray();
 }
 
 // Update the physics simulation
 void DynamicsWorld::update() {
-    bool existCollision = false;
 
     assert(mTimer.getIsRunning());
     
@@ -63,16 +67,20 @@ void DynamicsWorld::update() {
     // While the time accumulator is not empty
     while(mTimer.isPossibleToTakeStep()) {
 
-        existCollision = false;
-
-        removeAllContactConstraints();
+        // Remove all contact manifolds
+        mContactManifolds.clear();
 		
         // Compute the collision detection
-        if (mCollisionDetection.computeCollisionDetection()) {
-            existCollision = true;
+        mCollisionDetection.computeCollisionDetection();
 
-            // Solve constraints
-            mConstraintSolver.solve(mTimer.getTimeStep());
+        // Initialize the constrained velocities
+        initConstrainedVelocitiesArray();
+
+        // If there are contacts
+        if (!mContactManifolds.empty()) {
+
+            // Solve the contacts
+            mContactSolver.solve(mTimer.getTimeStep());
         }
 
         // Update the timer
@@ -82,105 +90,66 @@ void DynamicsWorld::update() {
         resetBodiesMovementVariable();
 
         // Update the position and orientation of each body
-        updateAllBodiesMotion();
+        updateRigidBodiesPositionAndOrientation();
 
-        // Cleanup of the constraint solver
-        if (existCollision) {
-           mConstraintSolver.cleanup();
-        }
+        // Cleanup of the contact solver
+        mContactSolver.cleanup();
+
+        // Cleanup the constrained velocities
+        cleanupConstrainedVelocitiesArray();
     }
 
     // Compute and set the interpolation factor to all the bodies
     setInterpolationFactorToAllBodies();
 }
 
-// Compute the motion of all bodies and update their positions and orientations
-// First this method compute the vector V2 = V_constraint + V_forces + V1 where
-// V_constraint = dt * (M^-1 * J^T * lambda) and V_forces = dt * (M^-1 * F_ext)
-// V2 is the final velocity after the timestep and V1 is the velocity before the
-// timestep.
-// After having computed the velocity V2, this method will update the position
-// and orientation of each body.
-// This method uses the semi-implicit Euler method to update the position and
-// orientation of the body
-void DynamicsWorld::updateAllBodiesMotion() {
+// Update the position and orientation of the rigid bodies
+void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
     decimal dt = mTimer.getTimeStep();
-    Vector3 newLinearVelocity;
-    Vector3 newAngularVelocity;
-    Vector3 linearVelocityErrorCorrection;
-    Vector3 angularVelocityErrorCorrection;
     
-    // For each body of thephysics world
+    // For each rigid body of the world
     for (set<RigidBody*>::iterator it=getRigidBodiesBeginIterator(); it != getRigidBodiesEndIterator(); ++it) {
 
         RigidBody* rigidBody = *it;
         assert(rigidBody);
 
-        // If the body is able to move
+        // If the body is allowed to move
         if (rigidBody->getIsMotionEnabled()) {
-            newLinearVelocity.setAllValues(0.0, 0.0, 0.0);
-            newAngularVelocity.setAllValues(0.0, 0.0, 0.0);
-            linearVelocityErrorCorrection.setAllValues(0.0, 0.0, 0.0);
-            angularVelocityErrorCorrection.setAllValues(0.0, 0.0, 0.0);
 
-            // If it's a constrained body
-            if (mConstraintSolver.isConstrainedBody(*it)) {
-                // Get the constrained linear and angular velocities from the constraint solver
-                newLinearVelocity = mConstraintSolver.getConstrainedLinearVelocityOfBody(*it);
-                newAngularVelocity = mConstraintSolver.getConstrainedAngularVelocityOfBody(*it);
-                
-                linearVelocityErrorCorrection = mConstraintSolver.getErrorConstrainedLinearVelocityOfBody(rigidBody);
-                angularVelocityErrorCorrection = mConstraintSolver.getErrorConstrainedAngularVelocityOfBody(rigidBody);
+            // Update the old Transform of the body
+            rigidBody->updateOldTransform();
+
+            // Get the constrained velocity
+            uint indexArray = mMapBodyToConstrainedVelocityIndex[rigidBody];
+            Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
+            Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
+
+            // Update the linear and angular velocity of the body
+            rigidBody->setLinearVelocity(newLinVelocity);
+            rigidBody->setAngularVelocity(newAngVelocity);
+
+            // Add the split impulse velocity from Contact Solver (only used to update the position)
+            if (mContactSolver.isConstrainedBody(rigidBody)) {
+                newLinVelocity += mContactSolver.getSplitLinearVelocityOfBody(rigidBody);
+                newAngVelocity += mContactSolver.getSplitAngularVelocityOfBody(rigidBody);
             }
 
-            // Compute V_forces = dt * (M^-1 * F_ext) which is the velocity of the body due to the
-            // external forces and torques.
-            newLinearVelocity += dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
-            newAngularVelocity += dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+            // Get current position and orientation of the body
+            const Vector3& currentPosition = rigidBody->getTransform().getPosition();
+            const Quaternion& currentOrientation = rigidBody->getTransform().getOrientation();
 
-            // Add the velocity V1 to the new velocity
-            newLinearVelocity += rigidBody->getLinearVelocity();
-            newAngularVelocity += rigidBody->getAngularVelocity();
-            
-            // Update the position and the orientation of the body according to the new velocity
-            updatePositionAndOrientationOfBody(*it, newLinearVelocity, newAngularVelocity,
-                                               linearVelocityErrorCorrection, angularVelocityErrorCorrection);
+            // Compute the new position of the body
+            Vector3 newPosition = currentPosition + newLinVelocity * dt;
+            Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;
+
+            // Update the Transform of the body
+            Transform newTransform(newPosition, newOrientation.getUnit());
+            rigidBody->setTransform(newTransform);
 
             // Update the AABB of the rigid body
             rigidBody->updateAABB();
         }
     }
-}
-
-// Update the position and orientation of a body
-// Use the Semi-Implicit Euler (Sympletic Euler) method to compute the new position and the new
-// orientation of the body
-void DynamicsWorld::updatePositionAndOrientationOfBody(RigidBody* rigidBody, const Vector3& newLinVelocity, const Vector3& newAngVelocity,
-                                                       const Vector3& linearVelocityErrorCorrection, const Vector3& angularVelocityErrorCorrection) {
-    decimal dt = mTimer.getTimeStep();
-
-    assert(rigidBody);
-
-    // Update the old position and orientation of the body
-    rigidBody->updateOldTransform();
-
-    // Update the linear and angular velocity of the body
-    rigidBody->setLinearVelocity(newLinVelocity);
-    rigidBody->setAngularVelocity(newAngVelocity);
-    
-    // Get current position and orientation of the body
-    const Vector3& currentPosition = rigidBody->getTransform().getPosition();
-    const Quaternion& currentOrientation = rigidBody->getTransform().getOrientation();
-        
-    // Error correction projection
-    Vector3 correctedPosition = currentPosition + dt * linearVelocityErrorCorrection;
-    Quaternion correctedOrientation = currentOrientation + Quaternion(angularVelocityErrorCorrection.getX(), angularVelocityErrorCorrection.getY(), angularVelocityErrorCorrection.getZ(), 0) * currentOrientation * 0.5 * dt;
-    
-    Vector3 newPosition = correctedPosition + newLinVelocity * dt;
-    Quaternion newOrientation = correctedOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * correctedOrientation * 0.5 * dt;
-
-    Transform newTransform(newPosition, newOrientation.getUnit());
-    rigidBody->setTransform(newTransform);
 }
 
 // Compute and set the interpolation factor to all bodies
@@ -198,6 +167,41 @@ void DynamicsWorld::setInterpolationFactorToAllBodies() {
 
         rigidBody->setInterpolationFactor(factor);
     }
+}
+
+// Initialize the constrained velocities array at each step
+void DynamicsWorld::initConstrainedVelocitiesArray() {
+
+    // TODO : Use better memory allocation here
+    mConstrainedLinearVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
+    mConstrainedAngularVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
+
+    double dt = mTimer.getTimeStep();
+
+    // Fill in the mapping of rigid body to their index in the constrained
+    // velocities arrays
+    uint i = 0;
+    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+        RigidBody* rigidBody = *it;
+        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*, uint>(rigidBody, i));
+
+        // TODO : Move it somewhere else
+        mConstrainedLinearVelocities[i] = rigidBody->getLinearVelocity() + dt * rigidBody->getMassInverse() *rigidBody->getExternalForce();
+        mConstrainedAngularVelocities[i] = rigidBody->getAngularVelocity() + dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+
+        i++;
+    }
+}
+
+// Cleanup the constrained velocities array at each step
+void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
+
+    // Clear the constrained velocites
+    mConstrainedLinearVelocities.clear();
+    mConstrainedAngularVelocities.clear();
+
+    // Clear the rigid body to velocities array index mapping
+    mMapBodyToConstrainedVelocityIndex.clear();
 }
 
 // Apply the gravity force to all bodies of the physics world
@@ -262,26 +266,6 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     mMemoryPoolRigidBodies.freeObject(rigidBody);
 }
 
-// Remove all collision contacts constraints
-// TODO : This method should be in the collision detection class
-void DynamicsWorld::removeAllContactConstraints() {
-    // For all constraints
-    for (vector<Constraint*>::iterator it = mConstraints.begin(); it != mConstraints.end(); ) {
-
-        // Try a downcasting
-        Contact* contact = dynamic_cast<Contact*>(*it);
-
-        // If the constraint is a contact
-        if (contact) {
-            // Remove it from the constraints of the physics world
-            it = mConstraints.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
 // Remove all constraints in the physics world
 void DynamicsWorld::removeAllConstraints() {
     mConstraints.clear();
@@ -321,7 +305,7 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     assert(rigidBody2);
 
     // Create a new contact
-    Contact* contact = new (mMemoryPoolContacts.allocateObject()) Contact(rigidBody1, rigidBody2, contactInfo);
+    ContactPoint* contact = new (mMemoryPoolContacts.allocateObject()) ContactPoint(rigidBody1, rigidBody2, contactInfo);
     assert(contact);
 
     // Get the corresponding overlapping pair
@@ -332,9 +316,20 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair, const
     // Add the contact to the contact cache of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
+    // TODO : Remove this
+    /*
+    // Create a contact manifold with the contact points of the two bodies
+    ContactManifold contactManifold;
+    contactManifold.nbContacts = 0;
+
     // Add all the contacts in the contact cache of the two bodies
     // to the set of constraints in the physics world
     for (uint i=0; i<overlappingPair->getNbContacts(); i++) {
-        addConstraint(overlappingPair->getContact(i));
+        contactManifold.contacts[i] = overlappingPair->getContact(i);
+        contactManifold.nbContacts++;
     }
+    */
+
+    // Add the contact manifold to the world
+    mContactManifolds.push_back(overlappingPair->getContactManifold());
 }

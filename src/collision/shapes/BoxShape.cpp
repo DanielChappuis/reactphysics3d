@@ -57,7 +57,7 @@ BoxShape::~BoxShape() {
 
 // Return the local inertia tensor of the collision shape
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal factor = (1.0 / 3.0) * mass;
+    decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
     decimal xSquare = mExtent.getX() * mExtent.getX();
     decimal ySquare = mExtent.getY() * mExtent.getY();
     decimal zSquare = mExtent.getZ() * mExtent.getZ();

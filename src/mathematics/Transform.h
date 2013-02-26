@@ -176,7 +176,7 @@ inline Transform Transform::interpolateTransforms(const Transform& oldTransform,
                                                   const Transform& newTransform,
                                                   decimal interpolationFactor) {
 
-    Vector3 interPosition = oldTransform.mPosition * (1.0 - interpolationFactor) +
+    Vector3 interPosition = oldTransform.mPosition * (decimal(1.0) - interpolationFactor) +
                             newTransform.mPosition * interpolationFactor;
 
     Quaternion interOrientation = Quaternion::slerp(oldTransform.mOrientation,

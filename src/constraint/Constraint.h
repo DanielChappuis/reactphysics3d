@@ -100,21 +100,6 @@ class Constraint {
         // Return the type of the constraint
         ConstraintType getType() const;
 
-        // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeJacobian(int noConstraint,
-                                     decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;
-
-        // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeLowerBound(int noConstraint,
-                                       decimal lowerBounds[NB_MAX_CONSTRAINTS]) const=0;
-
-        // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint,
-                                       decimal upperBounds[NB_MAX_CONSTRAINTS]) const=0;
-
-        // Compute the error values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const=0;
-
         // Return the number of mathematical constraints
         unsigned int getNbConstraints() const;
 

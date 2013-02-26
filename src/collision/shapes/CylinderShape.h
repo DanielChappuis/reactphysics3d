@@ -116,7 +116,7 @@ inline decimal CylinderShape::getHeight() const {
 
 // Set the height
 inline void CylinderShape::setHeight(decimal height) {
-    this->mHalfHeight = height / 2.0;
+    mHalfHeight = height * decimal(0.5);
 }
 
 // Return the local extents in x,y and z direction
@@ -126,9 +126,11 @@ inline Vector3 CylinderShape::getLocalExtents(decimal margin) const {
 
 // Return the local inertia tensor of the cylinder
 inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal height = 2.0 * mHalfHeight;
-    decimal diag = (1.0 / 12.0) * mass * (3 * mRadius * mRadius + height * height);
-    tensor.setAllValues(diag, 0.0, 0.0, 0.0, 0.5 * mass * mRadius * mRadius, 0.0, 0.0, 0.0, diag);
+    decimal height = decimal(2.0) * mHalfHeight;
+    decimal diag = (decimal(1.0) / decimal(12.0)) * mass * (3 * mRadius * mRadius + height * height);
+    tensor.setAllValues(diag, 0.0, 0.0, 0.0,
+                        decimal(0.5) * mass * mRadius * mRadius, 0.0,
+                        0.0, 0.0, diag);
 }
 
 }; // End of the ReactPhysics3D namespace

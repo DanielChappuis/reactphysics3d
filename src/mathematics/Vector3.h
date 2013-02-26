@@ -28,6 +28,7 @@
 
 // Libraries
 #include <cmath>
+#include <cassert>
 #include "mathematics_functions.h"
 #include "../decimal.h"
 
@@ -95,6 +96,9 @@ class Vector3 {
         // Return the corresponding unit vector
         Vector3 getUnit() const;
 
+        // Return one unit orthogonal vector of the current vector
+        Vector3 getOneUnitOrthogonalVector() const;
+
         // Return true if the vector is unit and false otherwise
         bool isUnit() const;
 
@@ -109,6 +113,9 @@ class Vector3 {
 
         // Cross product of two vectors
         Vector3 cross(const Vector3& vector) const;
+
+        // Normalize the vector
+        void normalize();
 
         // Return the corresponding absolute value vector
         Vector3 getAbsoluteVector() const;
@@ -137,6 +144,9 @@ class Vector3 {
         // Overloaded operator for multiplication with a number with assignment
         Vector3& operator*=(decimal number);
 
+        // Overloaded operator for division by a number with assignment
+        Vector3& operator/=(decimal number);
+
         // Overloaded operator for value access
         decimal& operator[] (int index);
 
@@ -153,6 +163,7 @@ class Vector3 {
         friend Vector3 operator-(const Vector3& vector);
         friend Vector3 operator*(const Vector3& vector, decimal number);
         friend Vector3 operator*(decimal number, const Vector3& vector);
+        friend Vector3 operator/(const Vector3& vector, decimal number);
 };
 
 // Get the x component of the vector
@@ -215,6 +226,15 @@ inline Vector3 Vector3::cross(const Vector3& vector) const {
     return Vector3(mValues[1] * vector.mValues[2] - mValues[2] * vector.mValues[1],
                    mValues[2] * vector.mValues[0] - mValues[0] * vector.mValues[2],
                    mValues[0] * vector.mValues[1] - mValues[1] * vector.mValues[0]);
+}
+
+// Normalize the vector
+inline void Vector3::normalize() {
+    decimal l = length();
+    assert(l != 0.0);
+    mValues[0] /= l;
+    mValues[1] /= l;
+    mValues[2] /= l;
 }
 
 // Return the corresponding absolute value vector
@@ -283,6 +303,14 @@ inline Vector3& Vector3::operator*=(decimal number) {
     return *this;
 }
 
+// Overloaded operator for division by a number with assignment
+inline Vector3& Vector3::operator/=(decimal number) {
+    mValues[0] /= number;
+    mValues[1] /= number;
+    mValues[2] /= number;
+    return *this;
+}
+
 // Overloaded operator for value access
 inline decimal& Vector3::operator[] (int index) {
     return mValues[index];
@@ -311,6 +339,11 @@ inline Vector3 operator-(const Vector3& vector) {
 // Overloaded operator for multiplication with a number
 inline Vector3 operator*(const Vector3& vector, decimal number) {
     return Vector3(number * vector.mValues[0], number * vector.mValues[1], number * vector.mValues[2]);
+}
+
+// Overloaded operator for division by a number
+inline Vector3 operator/(const Vector3& vector, decimal number) {
+    return Vector3(vector.mValues[0] / number, vector.mValues[1] / number, vector.mValues[2] / number);
 }
 
 // Overloaded operator for multiplication with a number

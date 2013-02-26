@@ -24,82 +24,27 @@
 ********************************************************************************/
 
 // Libraries
-#include <complex>
-#include "../../configuration.h"
-#include "ConeShape.h"
-
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
+#include "ContactPoint.h"
 
 using namespace reactphysics3d;
+using namespace std;
 
 // Constructor
-ConeShape::ConeShape(decimal radius, decimal height)
-          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height / decimal(2.0)) {
-    assert(radius > 0.0);
-    assert(mHalfHeight > 0.0);
-    
-    // Compute the sine of the semi-angle at the apex point
-    mSinTheta = radius / (sqrt(radius * radius + height * height));
+ContactPoint::ContactPoint(RigidBody* const body1, RigidBody* const body2,
+                           const ContactInfo* contactInfo)
+             : Constraint(body1, body2, 3, true, CONTACT), mNormal(contactInfo->normal),
+               mPenetrationDepth(contactInfo->penetrationDepth),
+               mLocalPointOnBody1(contactInfo->localPoint1),
+               mLocalPointOnBody2(contactInfo->localPoint2),
+               mWorldPointOnBody1(body1->getTransform() * contactInfo->localPoint1),
+              mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2),
+              mIsRestingContact(false), mFrictionVectors(2, Vector3(0, 0, 0)) {
+
+    assert(mPenetrationDepth > 0.0);
+
 }
 
 // Destructor
-ConeShape::~ConeShape() {
+ContactPoint::~ContactPoint() {
 
 }
-
-// Return a local support point in a given direction
-inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
-    assert(margin >= 0.0);
-
-    const Vector3& v = direction;
-    decimal sinThetaTimesLengthV = mSinTheta * v.length();
-    Vector3 supportPoint;
-
-    if (v.getY() >= sinThetaTimesLengthV) {
-        supportPoint = Vector3(0.0, mHalfHeight, 0.0);
-    }
-    else {
-        decimal projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
-        if (projectedLength > MACHINE_EPSILON) {
-            decimal d = mRadius / projectedLength;
-            supportPoint = Vector3(v.getX() * d, -mHalfHeight, v.getZ() * d);
-        }
-        else {
-            supportPoint = Vector3(mRadius, -mHalfHeight, 0.0);
-        }
-    }
-
-    // Add the margin to the support point
-    if (margin != 0.0) {
-        Vector3 unitVec(0.0, -1.0, 0.0);
-        if (v.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-            unitVec = v.getUnit();
-        }
-        supportPoint += unitVec * margin;
-    }
-
-    return supportPoint;
-}
-
-#ifdef VISUAL_DEBUG
-// Draw the cone (only for debuging purpose)
-void ConeShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireCone(mRadius, 2.0 * mHalfHeight, 50, 50);
-}
-#endif
