@@ -288,7 +288,7 @@ inline Vector3 operator*(const Vector3& vector, decimal number) {
 
 // Overloaded operator for division by a number
 inline Vector3 operator/(const Vector3& vector, decimal number) {
-    assert(number > std::numeric_limits<decimal>::epsilon());
+    assert(number > MACHINE_EPSILON);
     return Vector3(vector.x / number, vector.y / number, vector.z / number);
 }
 

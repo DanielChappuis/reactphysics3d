@@ -848,7 +848,7 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 
     // If the velocty difference in the tangential plane is not zero
     decimal lengthTangenVelocity = tangentVelocity.length();
-    if (lengthTangenVelocity > 0.0) {
+    if (lengthTangenVelocity > MACHINE_EPSILON) {
 
         // Compute the first friction vector in the direction of the tangent
         // velocity difference
@@ -878,7 +878,7 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 
     // If the velocty difference in the tangential plane is not zero
     decimal lengthTangenVelocity = tangentVelocity.length();
-    if (lengthTangenVelocity > 0.0) {
+    if (lengthTangenVelocity > MACHINE_EPSILON) {
 
         // Compute the first friction vector in the direction of the tangent
         // velocity difference

@@ -55,7 +55,7 @@ Vector3::~Vector3() {
 Vector3 Vector3::getUnit() const {
     decimal lengthVector = length();
 
-    assert(lengthVector > std::numeric_limits<decimal>::epsilon());
+    assert(lengthVector > MACHINE_EPSILON);
 
     // Compute and return the unit vector
     decimal lengthInv = 1.0 / lengthVector;
@@ -65,7 +65,7 @@ Vector3 Vector3::getUnit() const {
 // Return one unit orthogonal vector of the current vector
 Vector3 Vector3::getOneUnitOrthogonalVector() const {
 
-    assert(length() > std::numeric_limits<decimal>::epsilon());
+    assert(length() > MACHINE_EPSILON);
 
     // Get the minimum element of the vector
     Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
