@@ -66,14 +66,14 @@ inline Vector3 ConeShape::getLocalSupportPoint(const Vector3& direction, decimal
     decimal sinThetaTimesLengthV = mSinTheta * v.length();
     Vector3 supportPoint;
 
-    if (v.getY() >= sinThetaTimesLengthV) {
+    if (v.y >= sinThetaTimesLengthV) {
         supportPoint = Vector3(0.0, mHalfHeight, 0.0);
     }
     else {
-        decimal projectedLength = sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
+        decimal projectedLength = sqrt(v.x * v.x + v.z * v.z);
         if (projectedLength > MACHINE_EPSILON) {
             decimal d = mRadius / projectedLength;
-            supportPoint = Vector3(v.getX() * d, -mHalfHeight, v.getZ() * d);
+            supportPoint = Vector3(v.x * d, -mHalfHeight, v.z * d);
         }
         else {
             supportPoint = Vector3(mRadius, -mHalfHeight, 0.0);

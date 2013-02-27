@@ -276,12 +276,12 @@ inline Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
 
 // Overloaded operator for multiplication with a vector
 inline Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector) {
-    return Vector3(matrix.mArray[0][0]*vector.getX() + matrix.mArray[0][1]*vector.getY() +
-                   matrix.mArray[0][2]*vector.getZ(),
-                   matrix.mArray[1][0]*vector.getX() + matrix.mArray[1][1]*vector.getY() +
-                   matrix.mArray[1][2]*vector.getZ(),
-                   matrix.mArray[2][0]*vector.getX() + matrix.mArray[2][1]*vector.getY() +
-                   matrix.mArray[2][2]*vector.getZ());
+    return Vector3(matrix.mArray[0][0]*vector.x + matrix.mArray[0][1]*vector.y +
+                   matrix.mArray[0][2]*vector.z,
+                   matrix.mArray[1][0]*vector.x + matrix.mArray[1][1]*vector.y +
+                   matrix.mArray[1][2]*vector.z,
+                   matrix.mArray[2][0]*vector.x + matrix.mArray[2][1]*vector.y +
+                   matrix.mArray[2][2]*vector.z);
 }
 
 // Overloaded operator for equality condition

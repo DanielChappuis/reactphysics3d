@@ -160,8 +160,8 @@ inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
     openglMatrix[6] = matrix.getValue(2, 1); openglMatrix[7] = 0.0;
     openglMatrix[8] = matrix.getValue(0, 2); openglMatrix[9] = matrix.getValue(1, 2);
     openglMatrix[10] = matrix.getValue(2, 2); openglMatrix[11] = 0.0;
-    openglMatrix[12] = mPosition.getX(); openglMatrix[13] = mPosition.getY();
-    openglMatrix[14] = mPosition.getZ(); openglMatrix[15] = 1.0;
+    openglMatrix[12] = mPosition.x; openglMatrix[13] = mPosition.y;
+    openglMatrix[14] = mPosition.z; openglMatrix[15] = 1.0;
 }
 
 // Return the inverse of the transform

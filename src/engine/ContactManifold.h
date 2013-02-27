@@ -228,16 +228,7 @@ inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpuls
 inline ContactPoint* ContactManifold::getContactPoint(uint index) const {
     assert(index >= 0 && index < mNbContactPoints);
     return mContactPoints[index];
-}  
-
-// Return true if two vectors are approximatively equal
-inline bool ContactManifold::isApproxEqual(const Vector3& vector1,
-                                                  const Vector3& vector2) const {
-    const decimal epsilon = decimal(0.1);
-    return (approxEqual(vector1.getX(), vector2.getX(), epsilon) &&
-            approxEqual(vector1.getY(), vector2.getY(), epsilon) &&
-            approxEqual(vector1.getZ(), vector2.getZ(), epsilon));
-}  
+}
 
 }
 #endif

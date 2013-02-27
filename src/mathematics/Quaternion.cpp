@@ -45,7 +45,7 @@ Quaternion::Quaternion(decimal x, decimal y, decimal z, decimal w)
 
 // Constructor with the component w and the vector v=(x y z)
 Quaternion::Quaternion(decimal w, const Vector3& v)
-           :mX(v.getX()), mY(v.getY()), mZ(v.getZ()), mW(w) {
+           :mX(v.x), mY(v.y), mZ(v.z), mW(w) {
 
 }
 
@@ -157,7 +157,7 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     rotationAxis = rotationAxis.getUnit();
 
     // Set the rotation axis values
-    axis.setAllValues(rotationAxis.getX(), rotationAxis.getY(), rotationAxis.getZ());
+    axis.setAllValues(rotationAxis.x, rotationAxis.y, rotationAxis.z);
 }
 
 // Return the orientation matrix corresponding to this quaternion

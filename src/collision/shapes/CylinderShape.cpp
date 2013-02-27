@@ -58,18 +58,18 @@ Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal ma
     assert(margin >= 0.0);
 
     Vector3 supportPoint(0.0, 0.0, 0.0);
-    decimal uDotv = direction.getY();
-    Vector3 w(direction.getX(), 0.0, direction.getZ());
-    decimal lengthW = sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
+    decimal uDotv = direction.y;
+    Vector3 w(direction.x, 0.0, direction.z);
+    decimal lengthW = sqrt(direction.x * direction.x + direction.z * direction.z);
 
     if (lengthW != 0.0) {
-        if (uDotv < 0.0) supportPoint.setY(-mHalfHeight);
-        else supportPoint.setY(mHalfHeight);
+        if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
+        else supportPoint.y = mHalfHeight;
         supportPoint += (mRadius / lengthW) * w;
     }
     else {
-         if (uDotv < 0.0) supportPoint.setY(-mHalfHeight);
-         else supportPoint.setY(mHalfHeight);
+         if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
+         else supportPoint.y = mHalfHeight;
     }
 
     // Add the margin to the support point

@@ -139,12 +139,12 @@ inline void AABB::setBodyPointer(Body* bodyPointer) {
 // Return true if the current AABB is overlapping with the AABB in argument
 // Two AABB overlap if they overlap in the three x, y and z axis at the same time
 inline bool AABB::testCollision(const AABB& aabb) const {
-    if (mMaxCoordinates.getX() < aabb.mMinCoordinates.getX() ||
-        aabb.mMaxCoordinates.getX() < mMinCoordinates.getX()) return false;
-    if (mMaxCoordinates.getY() < aabb.mMinCoordinates.getY() ||
-        aabb.mMaxCoordinates.getY() < mMinCoordinates.getY()) return false;
-    if (mMaxCoordinates.getZ() < aabb.mMinCoordinates.getZ() ||
-        aabb.mMaxCoordinates.getZ() < mMinCoordinates.getZ()) return false;
+    if (mMaxCoordinates.x < aabb.mMinCoordinates.x ||
+        aabb.mMaxCoordinates.x < mMinCoordinates.x) return false;
+    if (mMaxCoordinates.y < aabb.mMinCoordinates.y ||
+        aabb.mMaxCoordinates.y < mMinCoordinates.y) return false;
+    if (mMaxCoordinates.z < aabb.mMinCoordinates.z||
+        aabb.mMaxCoordinates.z < mMinCoordinates.z) return false;
     return true;
 }
 

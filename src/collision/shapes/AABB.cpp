@@ -74,41 +74,41 @@ void AABB::draw() const {
 
     // Draw the AABB
     glBegin(GL_LINES);
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
 
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMinCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMinCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMaxCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
 
-        glVertex3f(mMinCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
-        glVertex3f(mMaxCoordinates.getX(), mMinCoordinates.getY(), mMaxCoordinates.getZ());
+        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
+        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
 
     glEnd();
 }

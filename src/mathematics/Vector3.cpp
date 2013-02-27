@@ -32,24 +32,18 @@
 using namespace reactphysics3d;
 
 // Constructor of the class Vector3D
-Vector3::Vector3() {
-    mValues[0] = 0.0;
-    mValues[1] = 0.0;
-    mValues[2] = 0.0;
+Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+
 }
 
 // Constructor with arguments
-Vector3::Vector3(decimal x, decimal y, decimal z) {
-    mValues[0] = x;
-    mValues[1] = y;
-    mValues[2] = z;
+Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+
 }
 
 // Copy-constructor
-Vector3::Vector3(const Vector3& vector) {
-    mValues[0] = vector.mValues[0];
-    mValues[1] = vector.mValues[1];
-    mValues[2] = vector.mValues[2];
+Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+
 }
 
 // Destructor
@@ -61,49 +55,17 @@ Vector3::~Vector3() {
 Vector3 Vector3::getUnit() const {
     decimal lengthVector = length();
 
-    assert(lengthVector != 0.0);
+    assert(lengthVector > std::numeric_limits<decimal>::epsilon());
 
     // Compute and return the unit vector
     decimal lengthInv = 1.0 / lengthVector;
-    return Vector3(mValues[0] * lengthInv, mValues[1] * lengthInv, mValues[2] * lengthInv);
-}
-
-// Return two unit orthogonal vectors of the current vector
-Vector3 Vector3::getOneOrthogonalVector() const {
-    assert(!this->isZero());
-
-    // Compute a first orthogonal vector
-    Vector3 vector1;
-    if (!approxEqual(mValues[0], 0.0)) {   // If x != 0
-        vector1.setY(mValues[0]);
-        vector1.setZ((-2*mValues[0]*mValues[1]*mValues[2] +
-                      2*mValues[0]*mValues[2])/(2*(mValues[2]*mValues[2] + mValues[0]*mValues[0])));
-        vector1.setX((-mValues[0]*mValues[1]-mValues[2]*vector1.getZ())/mValues[0]);
-    }
-    else if (!approxEqual(mValues[1], 0.0)) { // If y != 0
-        vector1.setZ(mValues[1]);
-        vector1.setX((-2*mValues[0]*mValues[1]*mValues[2] +
-                      2*mValues[0]*mValues[1])/(2*(mValues[1]*mValues[1] + mValues[0]*mValues[0])));
-        vector1.setY((-mValues[2]*mValues[1]-mValues[0]*vector1.getX())/mValues[1]);
-    }
-    else if (!approxEqual(mValues[2], 0.0)) { // If z != 0
-        vector1.setX(mValues[2]);
-        vector1.setY((-2*mValues[0]*mValues[1]*mValues[2] +
-                      2*mValues[1]*mValues[2])/(2*(mValues[2]*mValues[2] + mValues[1]*mValues[1])));
-        vector1.setZ((-mValues[0]*mValues[2]-mValues[1]*vector1.getY())/mValues[2]);
-    }
-
-    //assert(vector1.isUnit());
-    return vector1;
+    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
 }
 
 // Return one unit orthogonal vector of the current vector
 Vector3 Vector3::getOneUnitOrthogonalVector() const {
-    assert(!this->isZero());
 
-    decimal x = mValues[0];
-    decimal y = mValues[1];
-    decimal z = mValues[2];
+    assert(length() > std::numeric_limits<decimal>::epsilon());
 
     // Get the minimum element of the vector
     Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));

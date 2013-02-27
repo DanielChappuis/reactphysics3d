@@ -58,9 +58,9 @@ BoxShape::~BoxShape() {
 // Return the local inertia tensor of the collision shape
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    decimal xSquare = mExtent.getX() * mExtent.getX();
-    decimal ySquare = mExtent.getY() * mExtent.getY();
-    decimal zSquare = mExtent.getZ() * mExtent.getZ();
+    decimal xSquare = mExtent.x * mExtent.x;
+    decimal ySquare = mExtent.y * mExtent.y;
+    decimal zSquare = mExtent.z * mExtent.z;
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));
@@ -69,9 +69,9 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 #ifdef VISUAL_DEBUG
 // Draw the Box (only for testing purpose)
 void BoxShape::draw() const {
-    decimal e1 = mExtent.getX();
-    decimal e2 = mExtent.getY();
-    decimal e3 = mExtent.getZ();
+    decimal e1 = mExtent.x;
+    decimal e2 = mExtent.y;
+    decimal e3 = mExtent.z;
 
     // Draw in red
     glColor3f(1.0, 0.0, 0.0);

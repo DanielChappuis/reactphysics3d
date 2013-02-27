@@ -140,7 +140,10 @@ void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
 
             // Compute the new position of the body
             Vector3 newPosition = currentPosition + newLinVelocity * dt;
-            Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0) * currentOrientation * 0.5 * dt;
+            Quaternion newOrientation = currentOrientation + Quaternion(newAngVelocity.x,
+                                                                        newAngVelocity.y,
+                                                                        newAngVelocity.z, 0) *
+                                                                    currentOrientation * 0.5 * dt;
 
             // Update the Transform of the body
             Transform newTransform(newPosition, newOrientation.getUnit());
