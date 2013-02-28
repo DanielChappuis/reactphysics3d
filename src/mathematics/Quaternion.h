@@ -41,16 +41,14 @@ namespace reactphysics3d {
         q = (x*i, y*j, z*k, w) to represent a quaternion.
     -------------------------------------------------------------------
 */
-class Quaternion {
+struct Quaternion {
 
-    private :
+    public :
 
         // -------------------- Attributes -------------------- //
 
         // Components of the quaternion
-        decimal mX, mY, mZ, mW;
-
-    public :
+        decimal x, y, z, w;
 
         // -------------------- Methods -------------------- //
 
@@ -58,10 +56,10 @@ class Quaternion {
         Quaternion();
 
         // Constructor with arguments
-        Quaternion(decimal x, decimal y, decimal z, decimal w);
+        Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW);
 
         // Constructor with the component w and the vector v=(x y z)
-        Quaternion(decimal w, const Vector3& v);
+        Quaternion(decimal newW, const Vector3& v);
 
         // Copy-constructor
         Quaternion(const Quaternion& quaternion);
@@ -71,30 +69,6 @@ class Quaternion {
 
         // Destructor
         ~Quaternion();
-
-        // Return the component x of the quaternion
-        decimal getX() const;
-
-        // Return the component y of the quaternion
-        decimal getY() const;
-
-        // Return the component z of the quaternion
-        decimal getZ() const;
-
-        // Return the component w of the quaternion
-        decimal getW() const;
-
-        // Set the value x
-        void setX(decimal x);
-
-        // Set the value y
-        void setY(decimal y);
-
-        // Set the value z
-        void setZ(decimal z);
-
-        // Set the value w
-        void setW(decimal w);
 
         // Return the vector v=(x y z) of the quaternion
         Vector3 vectorV() const;
@@ -146,55 +120,16 @@ class Quaternion {
         bool operator==(const Quaternion& quaternion) const;
 };
 
-// Get the value x (inline)
-inline decimal Quaternion::getX() const {
-    return mX;
-}
-
-// Get the value y (inline)
-inline decimal Quaternion::getY() const {
-    return mY;
-}
-
-// Get the value z (inline)
-inline decimal Quaternion::getZ() const {
-    return mZ;
-}
-
-// Get the value w (inline)
-inline decimal Quaternion::getW() const {
-    return mW;
-}
-
-// Set the value x (inline)
-inline void Quaternion::setX(decimal x) {
-    mX = x;
-}
-
-// Set the value y (inline)
-inline void Quaternion::setY(decimal y) {
-    mY = y;
-}
-
-// Set the value z (inline)
-inline void Quaternion::setZ(decimal z) {
-    mZ = z;
-}
-
-// Set the value w (inline)
-inline void Quaternion::setW(decimal w) {
-    mW = w;
-}
-
 // Return the vector v=(x y z) of the quaternion
 inline Vector3 Quaternion::vectorV() const {
+
     // Return the vector v
-    return Vector3(mX, mY, mZ);
+    return Vector3(x, y, z);
 }
 
 // Return the length of the quaternion (inline)
 inline decimal Quaternion::length() const {
-    return sqrt(mX*mX + mY*mY + mZ*mZ + mW*mW);
+    return sqrt(x*x + y*y + z*z + w*w);
 }
 
 // Return the unit quaternion
@@ -202,11 +137,11 @@ inline Quaternion Quaternion::getUnit() const {
     decimal lengthQuaternion = length();
 
     // Check if the length is not equal to zero
-    assert (lengthQuaternion != 0.0);
+    assert (lengthQuaternion > MACHINE_EPSILON);
 
     // Compute and return the unit quaternion
-    return Quaternion(mX/lengthQuaternion, mY/lengthQuaternion,
-                      mZ/lengthQuaternion, mW/lengthQuaternion);
+    return Quaternion(x / lengthQuaternion, y / lengthQuaternion,
+                      z / lengthQuaternion, w / lengthQuaternion);
 }
 
 // Return the identity quaternion
@@ -216,62 +151,62 @@ inline Quaternion Quaternion::identity() {
 
 // Return the conjugate of the quaternion (inline)
 inline Quaternion Quaternion::getConjugate() const {
-    return Quaternion(-mX, -mY, -mZ, mW);
+    return Quaternion(-x, -y, -z, w);
 }
 
 // Return the inverse of the quaternion (inline)
 inline Quaternion Quaternion::getInverse() const {
+
     decimal lengthQuaternion = length();
     lengthQuaternion = lengthQuaternion * lengthQuaternion;
 
-    assert (lengthQuaternion != 0.0);
+    assert (lengthQuaternion > MACHINE_EPSILON);
 
     // Compute and return the inverse quaternion
-    return Quaternion(-mX/lengthQuaternion, -mY/lengthQuaternion,
-                      -mZ/lengthQuaternion, mW/lengthQuaternion);
+    return Quaternion(-x / lengthQuaternion, -y / lengthQuaternion,
+                      -z / lengthQuaternion, w / lengthQuaternion);
 }
 
 // Scalar product between two quaternions
 inline decimal Quaternion::dot(const Quaternion& quaternion) const {
-    return (mX*quaternion.mX + mY*quaternion.mY + mZ*quaternion.mZ + mW*quaternion.mW);
+    return (x*quaternion.x + y*quaternion.y + z*quaternion.z + w*quaternion.w);
 }
 
 // Overloaded operator for the addition of two quaternions
 inline Quaternion Quaternion::operator+(const Quaternion& quaternion) const {
+
     // Return the result quaternion
-    return Quaternion(mX + quaternion.mX, mY + quaternion.mY,
-                      mZ + quaternion.mZ, mW + quaternion.mW);
+    return Quaternion(x + quaternion.x, y + quaternion.y, z + quaternion.z, w + quaternion.w);
 }
 
 // Overloaded operator for the substraction of two quaternions
 inline Quaternion Quaternion::operator-(const Quaternion& quaternion) const {
+
     // Return the result of the substraction
-    return Quaternion(mX-quaternion.mX, mY - quaternion.mY,
-                      mZ - quaternion.mZ, mW - quaternion.mW);
+    return Quaternion(x - quaternion.x, y - quaternion.y, z - quaternion.z, w - quaternion.w);
 }
 
 // Overloaded operator for the multiplication with a constant
 inline Quaternion Quaternion::operator*(decimal nb) const {
-    // Return the result
-    return Quaternion(nb*mX, nb*mY, nb*mZ, nb*mW);
+    return Quaternion(nb * x, nb * y, nb * z, nb * w);
 }
 
 // Overloaded operator for the multiplication of two quaternions
 inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
-    // Return the result of the multiplication
-    return Quaternion(mW*quaternion.mW - vectorV().dot(quaternion.vectorV()),
-                      mW*quaternion.vectorV()+quaternion.mW*vectorV() +
+    return Quaternion(w * quaternion.w - vectorV().dot(quaternion.vectorV()),
+                      w * quaternion.vectorV() + quaternion.w * vectorV() +
                       vectorV().cross(quaternion.vectorV()));
 }
 
 // Overloaded operator for the assignment
 inline Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
+
     // Check for self-assignment
     if (this != &quaternion) {
-        mX = quaternion.mX;
-        mY = quaternion.mY;
-        mZ = quaternion.mZ;
-        mW = quaternion.mW;
+        x = quaternion.x;
+        y = quaternion.y;
+        z = quaternion.z;
+        w = quaternion.w;
     }
 
     // Return this quaternion
@@ -280,10 +215,10 @@ inline Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
 
 // Overloaded operator for equality condition
 inline bool Quaternion::operator==(const Quaternion& quaternion) const {
-    return (mX == quaternion.mX && mY == quaternion.mY &&
-            mZ == quaternion.mZ && mW == quaternion.mW);
+    return (x == quaternion.x && y == quaternion.y &&
+            z == quaternion.z && w == quaternion.w);
 }
 
-} // End of the ReactPhysics3D namespace
+}
 
 #endif

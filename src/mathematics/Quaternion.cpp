@@ -32,26 +32,24 @@
 using namespace reactphysics3d;
 
 // Constructor of the class
-Quaternion::Quaternion()
-           :mX(0.0), mY(0.0), mZ(0.0), mW(0.0) {
+Quaternion::Quaternion() : x(0.0), y(0.0), z(0.0), w(0.0) {
 
 }
 
 // Constructor with arguments
-Quaternion::Quaternion(decimal x, decimal y, decimal z, decimal w)
-           :mX(x), mY(y), mZ(z), mW(w) {
+Quaternion::Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW)
+           :x(newX), y(newY), z(newZ), w(newW) {
 
 }
 
 // Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(decimal w, const Vector3& v)
-           :mX(v.x), mY(v.y), mZ(v.z), mW(w) {
+Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z), w(newW) {
 
 }
 
 // Copy-constructor
 Quaternion::Quaternion(const Quaternion& quaternion)
-           :mX(quaternion.mX), mY(quaternion.mY), mZ(quaternion.mZ), mW(quaternion.mW) {
+           :x(quaternion.x), y(quaternion.y), z(quaternion.z), w(quaternion.w) {
 
 }
 
@@ -78,20 +76,20 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
                 s = 0.5 / r;
                 
                 // Compute the quaternion
-                mX = (array[2][0] + array[0][2])*s;
-                mY = (array[1][2] + array[2][1])*s;
-                mZ = 0.5*r;
-                mW = (array[1][0] - array[0][1])*s;
+                x = (array[2][0] + array[0][2])*s;
+                y = (array[1][2] + array[2][1])*s;
+                z = 0.5*r;
+                w = (array[1][0] - array[0][1])*s;
             }
             else {
                 r = sqrt(array[1][1] - array[2][2] - array[0][0] + 1.0);
                 s = 0.5 / r;
 
                 // Compute the quaternion
-                mX = (array[0][1] + array[1][0])*s;
-                mY = 0.5 * r;
-                mZ = (array[1][2] + array[2][1])*s;
-                mW = (array[0][2] - array[2][0])*s;
+                x = (array[0][1] + array[1][0])*s;
+                y = 0.5 * r;
+                z = (array[1][2] + array[2][1])*s;
+                w = (array[0][2] - array[2][0])*s;
             }
         }
         else if (array[2][2] > array[0][0]) {
@@ -99,20 +97,20 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
             s = 0.5 / r;
 
             // Compute the quaternion
-            mX = (array[2][0] + array[0][2])*s;
-            mY = (array[1][2] + array[2][1])*s;
-            mZ = 0.5 * r;
-            mW = (array[1][0] - array[0][1])*s;
+            x = (array[2][0] + array[0][2])*s;
+            y = (array[1][2] + array[2][1])*s;
+            z = 0.5 * r;
+            w = (array[1][0] - array[0][1])*s;
         }
         else {
             r = sqrt(array[0][0] - array[1][1] - array[2][2] + 1.0);
             s = 0.5 / r;
 
             // Compute the quaternion
-            mX = 0.5 * r;
-            mY = (array[0][1] + array[1][0])*s;
-            mZ = (array[2][0] - array[0][2])*s;
-            mW = (array[2][1] - array[1][2])*s;
+            x = 0.5 * r;
+            y = (array[0][1] + array[1][0])*s;
+            z = (array[2][0] - array[0][2])*s;
+            w = (array[2][1] - array[1][2])*s;
         }
     }
     else {
@@ -120,10 +118,10 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
         s = 0.5/r;
 
         // Compute the quaternion
-        mX = (array[2][1]-array[1][2])*s;
-        mY = (array[0][2]-array[2][0])*s;
-        mZ = (array[1][0]-array[0][1])*s;
-        mW = 0.5 * r;
+        x = (array[2][1]-array[1][2])*s;
+        y = (array[0][2]-array[2][0])*s;
+        z = (array[1][0]-array[0][1])*s;
+        w = 0.5 * r;
     }
 }
 
@@ -148,10 +146,10 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     }
 
     // Compute the roation angle
-    angle = acos(quaternion.mW) * 2.0;
+    angle = acos(quaternion.w) * 2.0;
 
     // Compute the 3D rotation axis
-    Vector3 rotationAxis(quaternion.mX, quaternion.mY, quaternion.mZ);
+    Vector3 rotationAxis(quaternion.x, quaternion.y, quaternion.z);
 
     // Normalize the rotation axis
     rotationAxis = rotationAxis.getUnit();
@@ -163,7 +161,7 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
 // Return the orientation matrix corresponding to this quaternion
 Matrix3x3 Quaternion::getMatrix() const {
 
-    decimal nQ = mX*mX + mY*mY + mZ*mZ + mW*mW;
+    decimal nQ = x*x + y*y + z*z + w*w;
     decimal s = 0.0;
 
     if (nQ > 0.0) {
@@ -171,18 +169,18 @@ Matrix3x3 Quaternion::getMatrix() const {
     }
 
     // Computations used for optimization (less multiplications)
-    decimal xs = mX*s;
-    decimal ys = mY*s;
-    decimal zs = mZ*s;
-    decimal wxs = mW*xs;
-    decimal wys = mW*ys;
-    decimal wzs = mW*zs;
-    decimal xxs = mX*xs;
-    decimal xys = mX*ys;
-    decimal xzs = mX*zs;
-    decimal yys = mY*ys;
-    decimal yzs = mY*zs;
-    decimal zzs = mZ*zs;
+    decimal xs = x*s;
+    decimal ys = y*s;
+    decimal zs = z*s;
+    decimal wxs = w*xs;
+    decimal wys = w*ys;
+    decimal wzs = w*zs;
+    decimal xxs = x*xs;
+    decimal xys = x*ys;
+    decimal xzs = x*zs;
+    decimal yys = y*ys;
+    decimal yzs = y*zs;
+    decimal zzs = z*zs;
 
     // Create the matrix corresponding to the quaternion
     return Matrix3x3(1.0-yys-zzs, xys-wzs, xzs + wys,

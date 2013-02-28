@@ -73,21 +73,27 @@ Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix) {
 
 // Return the inverse matrix
 Matrix3x3 Matrix3x3::getInverse() const {
+
     // Compute the determinant of the matrix
     decimal determinant = getDeterminant();
 
     // Check if the determinant is equal to zero
-    assert(determinant != 0.0);
-    decimal invDeterminant = 1.0 / determinant;
-    Matrix3x3 tempMatrix;
+    assert(std::abs(determinant) > MACHINE_EPSILON);
 
-    // Compute the inverse of the matrix
-    tempMatrix.setAllValues((mArray[1][1]*mArray[2][2]-mArray[2][1]*mArray[1][2]), -(mArray[1][0]*mArray[2][2]-mArray[2][0]*mArray[1][2]), (mArray[1][0]*mArray[2][1]-mArray[2][0]*mArray[1][1]),
-                            -(mArray[0][1]*mArray[2][2]-mArray[2][1]*mArray[0][2]), (mArray[0][0]*mArray[2][2]-mArray[2][0]*mArray[0][2]), -(mArray[0][0]*mArray[2][1]-mArray[2][0]*mArray[0][1]),
-                            (mArray[0][1]*mArray[1][2]-mArray[0][2]*mArray[1][1]), -(mArray[0][0]*mArray[1][2]-mArray[1][0]*mArray[0][2]), (mArray[0][0]*mArray[1][1]-mArray[0][1]*mArray[1][0]));
+    decimal invDeterminant = decimal(1.0) / determinant;
+
+    Matrix3x3 tempMatrix((mArray[1][1]*mArray[2][2]-mArray[2][1]*mArray[1][2]),
+                         -(mArray[0][1]*mArray[2][2]-mArray[2][1]*mArray[0][2]),
+                         (mArray[0][1]*mArray[1][2]-mArray[0][2]*mArray[1][1]),
+                            -(mArray[1][0]*mArray[2][2]-mArray[2][0]*mArray[1][2]),
+                         (mArray[0][0]*mArray[2][2]-mArray[2][0]*mArray[0][2]),
+                         -(mArray[0][0]*mArray[1][2]-mArray[1][0]*mArray[0][2]),
+                            (mArray[1][0]*mArray[2][1]-mArray[2][0]*mArray[1][1]),
+                         -(mArray[0][0]*mArray[2][1]-mArray[2][0]*mArray[0][1]),
+                         (mArray[0][0]*mArray[1][1]-mArray[0][1]*mArray[1][0]));
 
     // Return the inverse matrix
-    return (invDeterminant * tempMatrix.getTranspose());
+    return (invDeterminant * tempMatrix);
 }
 
 
