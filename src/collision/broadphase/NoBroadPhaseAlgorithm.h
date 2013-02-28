@@ -82,9 +82,7 @@ class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
         
 // Notify the broad-phase about a new object in the world
 inline void NoBroadPhaseAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
-    
-    std::cout << "New body in broadphase with id=" << body->getID() << std::endl;
-    
+        
     // For each body that is already in the world
     for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
         

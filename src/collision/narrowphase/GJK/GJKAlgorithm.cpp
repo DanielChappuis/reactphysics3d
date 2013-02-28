@@ -117,6 +117,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 
         // If the objects intersect only in the margins
         if (simplex.isPointInSimplex(w) || distSquare - vDotw <= distSquare * REL_ERROR_SQUARE) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -148,6 +149,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 
         // If the simplex is affinely dependent
         if (simplex.isAffinelyDependent()) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -177,6 +179,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
         // Compute the point of the simplex closest to the origin
         // If the computation of the closest point fail
         if (!simplex.computeClosestPoint(v)) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -290,6 +293,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
 
         // If the enlarge objects do not intersect
         if (vDotw > 0.0) {
+
             // No intersection, we return false
             return false;
         }

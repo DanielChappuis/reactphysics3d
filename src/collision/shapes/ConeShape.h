@@ -143,6 +143,6 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
                         0.0, 0.0, 0.0, diagXZ);
 }
 
-}; // End of the ReactPhysics3D namespace
+}
 
 #endif

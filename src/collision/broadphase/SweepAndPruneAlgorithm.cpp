@@ -47,10 +47,10 @@ AABBInt::AABBInt(const AABB& aabb) {
 // Constructor
 SweepAndPruneAlgorithm::SweepAndPruneAlgorithm(CollisionDetection& collisionDetection)
              :BroadPhaseAlgorithm(collisionDetection) {
-    mBoxes = 0;
-    mEndPoints[0] = 0;
-    mEndPoints[1] = 0;
-    mEndPoints[2] = 0;
+    mBoxes = NULL;
+    mEndPoints[0] = NULL;
+    mEndPoints[1] = NULL;
+    mEndPoints[2] = NULL;
     mNbBoxes = 0;
     mNbMaxBoxes = 0;
 }
@@ -399,10 +399,10 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     EndPoint* newEndPointsYArray = new EndPoint[newNbEndPoints];
     EndPoint* newEndPointsZArray = new EndPoint[newNbEndPoints];
     
-    assert(newBoxesArray);
-    assert(newEndPointsXArray);
-    assert(newEndPointsYArray);
-    assert(newEndPointsZArray);
+    assert(newBoxesArray != NULL);
+    assert(newEndPointsXArray != NULL);
+    assert(newEndPointsYArray != NULL);
+    assert(newEndPointsZArray != NULL);
     
     // If the arrays were not empty before
     if (mNbBoxes > 0) {

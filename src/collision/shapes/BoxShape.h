@@ -112,10 +112,10 @@ inline Vector3 BoxShape::getLocalSupportPoint(const Vector3& direction, decimal 
     assert(margin >= 0.0);
     
     return Vector3(direction.x < 0.0 ? -mExtent.x - margin : mExtent.x + margin,
-                    direction.y < 0.0 ? -mExtent.y - margin : mExtent.y + margin,
-                    direction.z < 0.0 ? -mExtent.z - margin : mExtent.z + margin);
+                   direction.y < 0.0 ? -mExtent.y - margin : mExtent.y + margin,
+                   direction.z < 0.0 ? -mExtent.z - margin : mExtent.z + margin);
 }
 
-}; // End of the ReactPhysics3D namespace
+}
 
 #endif

@@ -70,6 +70,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                 TrianglesStore& triangleStore) {
     // If the edge has not already been visited
     if (!mOwnerTriangle->getIsObsolete()) {
+
         // If the triangle of this edge is not visible from the given point
         if (!mOwnerTriangle->isVisibleFromVertex(vertices, indexNewVertex)) {
             TriangleEPA* triangle = triangleStore.newTriangle(vertices, indexNewVertex,
@@ -77,7 +78,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                               getSourceVertexIndex());
 
             // If the triangle has been created
-            if (triangle) {
+            if (triangle != NULL) {
                 halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
@@ -85,6 +86,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
             return false;
         }
         else {
+
             // The current triangle is visible and therefore obsolete
             mOwnerTriangle->setIsObsolete(true);
 
@@ -101,7 +103,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getSourceVertexIndex());
 
                 // If the triangle has been created
-                if (triangle) {
+                if (triangle != NULL) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }
@@ -120,7 +122,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getTargetVertexIndex(),
                                                                   getSourceVertexIndex());
 
-                if (triangle) {
+                if (triangle != NULL) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }
