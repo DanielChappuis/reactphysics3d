@@ -62,7 +62,7 @@ Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal ma
     Vector3 w(direction.x, 0.0, direction.z);
     decimal lengthW = sqrt(direction.x * direction.x + direction.z * direction.z);
 
-    if (lengthW != 0.0) {
+    if (lengthW > MACHINE_EPSILON) {
         if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
         else supportPoint.y = mHalfHeight;
         supportPoint += (mRadius / lengthW) * w;

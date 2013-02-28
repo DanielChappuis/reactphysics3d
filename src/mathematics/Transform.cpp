@@ -30,27 +30,26 @@
 using namespace reactphysics3d;
 
 // Constructor
-Transform::Transform() {
-    mPosition = Vector3(0.0, 0.0, 0.0);
-    mOrientation = Quaternion::identity();
+Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
+
 }
 
 // Constructor
-Transform::Transform(const Vector3& position, const Matrix3x3& orientation) {
-    mPosition = position;
-    mOrientation = Quaternion(orientation);
+Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
+          : mPosition(position), mOrientation(Quaternion(orientation)) {
+
 }
 
 // Constructor
-Transform::Transform(const Vector3& position, const Quaternion& orientation) {
-    mPosition = position;
-    mOrientation = orientation;
+Transform::Transform(const Vector3& position, const Quaternion& orientation)
+          : mPosition(position), mOrientation(orientation) {
+
 }
 
 // Copy-constructor
-Transform::Transform(const Transform& transform) {
-    mPosition = transform.mPosition;
-    mOrientation = transform.mOrientation;
+Transform::Transform(const Transform& transform)
+          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
+
 }
 
 // Destructor
