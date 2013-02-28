@@ -219,8 +219,6 @@ public :
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
 };
 
-// --- Inline functions --- //
-
 // Start the physics simulation
 inline void DynamicsWorld::start() {
     mTimer.start();
@@ -283,7 +281,7 @@ inline void DynamicsWorld::addConstraint(Constraint* constraint) {
 inline void DynamicsWorld::removeConstraint(Constraint* constraint) {
     std::vector<Constraint*>::iterator it;
 
-    assert(constraint);
+    assert(constraint != NULL);
     it = std::find(mConstraints.begin(), mConstraints.end(), constraint);
     assert(*it == constraint);
     delete *it;

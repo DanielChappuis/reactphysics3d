@@ -133,7 +133,7 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
                         0.0, 0.0, diag);
 }
 
-}; // End of the ReactPhysics3D namespace
+}
 
 #endif
 

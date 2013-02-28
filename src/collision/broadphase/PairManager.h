@@ -260,7 +260,7 @@ inline int PairManager::computeHash32Bits(int key) const {
 inline BodyPair* PairManager::findPair(bodyindex id1, bodyindex id2) const {
     
     // Check if the hash table has been allocated yet
-    if (!mHashTable) return 0;
+    if (mHashTable == NULL) return NULL;
     
     // Sort the IDs
     sortIDs(id1, id2);
@@ -279,7 +279,7 @@ inline BodyPair* PairManager::findPairWithHashValue(bodyindex id1, bodyindex id2
                                                     luint hashValue) const {
     
     // Check if the hash table has been allocated yet
-    if (!mHashTable) return 0;
+    if (mHashTable == NULL) return NULL;
     
     // Look for the pair in the set of overlapping pairs
     return lookForAPair(id1, id2, hashValue);

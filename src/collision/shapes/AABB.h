@@ -158,6 +158,6 @@ inline void AABB::update(const Transform& newTransform, const Vector3& extents) 
     mMaxCoordinates = newTransform.getPosition() + worldExtents;
 }
 
-}; // End of the ReactPhysics3D namespace
+}
 
 #endif

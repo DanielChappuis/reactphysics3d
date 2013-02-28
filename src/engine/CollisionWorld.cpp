@@ -78,6 +78,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
     CollisionBody* collisionBody = new (mMemoryPoolCollisionBodies.allocateObject())
                                         CollisionBody(transform, collisionShape, bodyID);
 
+    assert(collisionBody != NULL);
+
     // Add the collision body to the world
     mBodies.insert(collisionBody);
 

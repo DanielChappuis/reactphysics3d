@@ -97,14 +97,10 @@ class OverlappingPair {
         void setCachedSeparatingAxis(const Vector3& axis);
 
         // Return the number of contacts in the cache
-        uint getNbContacts() const;
+        uint getNbContactPoints() const;
 
         // Return the contact manifold
         ContactManifold* getContactManifold();
-
-        // Return a contact of the cache
-        // TODO : Maybe remove this method
-        ContactPoint* getContact(uint index) const;
 };
 
 // Return the pointer to first body
@@ -120,26 +116,26 @@ inline CollisionBody* const OverlappingPair::getBody2() const {
 // Add a contact to the contact manifold
 inline void OverlappingPair::addContact(ContactPoint* contact) {
     mContactManifold.addContactPoint(contact);
-}  
+}
 
 // Update the contact manifold
 inline void OverlappingPair::update() {
     mContactManifold.update(mBody1->getTransform(), mBody2->getTransform());
-}                                
+}
 
 // Return the cached separating axis
 inline Vector3 OverlappingPair::getCachedSeparatingAxis() const {
     return mCachedSeparatingAxis;
-} 
+}
 
 // Set the cached separating axis
 inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
     mCachedSeparatingAxis = axis;
-}              
+}
 
 
-// Return the number of contacts in the cache
-inline uint OverlappingPair::getNbContacts() const {
+// Return the number of contact points in the contact manifold
+inline uint OverlappingPair::getNbContactPoints() const {
     return mContactManifold.getNbContactPoints();
 }
 
@@ -147,11 +143,6 @@ inline uint OverlappingPair::getNbContacts() const {
 inline ContactManifold* OverlappingPair::getContactManifold() {
     return &mContactManifold;
 }
-
-// Return a contact of the cache    
-inline ContactPoint* OverlappingPair::getContact(uint index) const {
-    return mContactManifold.getContactPoint(index);
-}         
 
 } // End of the ReactPhysics3D namespace
 

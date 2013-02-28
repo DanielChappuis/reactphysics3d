@@ -149,6 +149,7 @@ int ContactManifold::getIndexOfDeepestPenetration(ContactPoint* newContact) cons
 
     // For each contact in the cache
     for (uint i=0; i<mNbContactPoints; i++) {
+
         // If the current contact has a larger penetration depth
         if (mContactPoints[i]->getPenetrationDepth() > maxPenetrationDepth) {
             maxPenetrationDepth = mContactPoints[i]->getPenetrationDepth();

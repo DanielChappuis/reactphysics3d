@@ -120,8 +120,10 @@ unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB,
 
     // For each four point in the possible simplex
     for (i=0, bit=0x1; i<4; i++, bit <<=1) {
+
         // If the current point is in the simplex
         if (overlap(mBitsCurrentSimplex, bit)) {
+
             // Store the points
             suppPointsA[nbVertices] = this->mSuppPointsA[nbVertices];
             suppPointsB[nbVertices] = this->mSuppPointsB[nbVertices];

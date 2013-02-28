@@ -148,8 +148,6 @@ inline void Constraint::setCachedLambda(int index, decimal lambda) {
     mCachedLambdas[index] = lambda;
 }                                                   
 
-
-
-} // End of the ReactPhysics3D namespace
+}
 
 #endif

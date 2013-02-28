@@ -225,9 +225,9 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 TriangleEPA* face3 = triangleStore.newTriangle(points, 1, 3, 2);
 
                 // If the constructed tetrahedron is not correct
-                if (!(face0 && face1 && face2 && face3 && face0->getDistSquare() > 0.0 &&
-                      face1->getDistSquare() > 0.0 && face2->getDistSquare() > 0.0 &&
-                      face3->getDistSquare() > 0.0)) {
+                if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+                   && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
+                   && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
                     return false;
                 }
 
@@ -250,6 +250,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
             // If the tetrahedron contains a wrong vertex (the origin is not inside the tetrahedron)
             if (badVertex < 4) {
+
                 // Replace the wrong vertex with the point 5 (if it exists)
                 suppPointsA[badVertex-1] = suppPointsA[4];
                 suppPointsB[badVertex-1] = suppPointsB[4];
@@ -290,7 +291,8 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             TriangleEPA* face5 = triangleStore.newTriangle(points, 1, 0, 4);
 
             // If the polytope hasn't been correctly constructed
-            if (!(face0 && face1 && face2 && face3 && face4 && face5 &&
+            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+                  && (face4 != NULL) && (face5 != NULL) &&
                   face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0 &&
                   face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0 &&
                   face4->getDistSquare() > 0.0 && face5->getDistSquare() > 0.0)) {

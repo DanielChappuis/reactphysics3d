@@ -36,9 +36,9 @@ bodyindex PairManager::INVALID_INDEX = std::numeric_limits<reactphysics3d::bodyi
 // Constructor of PairManager
 PairManager::PairManager(CollisionDetection& collisionDetection)
             : mCollisionDetection(collisionDetection) {
-    mHashTable = 0;
-    mOverlappingPairs = 0;
-    mOffsetNextPair = 0;
+    mHashTable = NULL;
+    mOverlappingPairs = NULL;
+    mOffsetNextPair = NULL;
     mNbOverlappingPairs = 0;
     mHashMask = 0;
     mNbElementsHashTable = 0;
@@ -123,7 +123,7 @@ bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     BodyPair* pair = findPairWithHashValue(id1, id2, hashValue);
     
     // If we have not found the pair
-    if (!pair) {
+    if (pair == NULL) {
         return false;
     }
     
@@ -236,8 +236,7 @@ BodyPair* PairManager::lookForAPair(bodyindex id1, bodyindex id2, luint hashValu
     
     // If the pair has not been found in the overlapping pairs
     if (offset == INVALID_INDEX) {
-        // Return null
-        return 0;
+        return NULL;
     }
     
     assert(offset < mNbOverlappingPairs);
@@ -253,7 +252,7 @@ void PairManager::reallocatePairs() {
     // Reallocate the hash table and initialize it
     free(mHashTable);
     mHashTable = (bodyindex*) malloc(mNbElementsHashTable * sizeof(bodyindex));
-    assert(mHashTable);
+    assert(mHashTable != NULL);
     for (bodyindex i=0; i<mNbElementsHashTable; i++) {
         mHashTable[i] = INVALID_INDEX;
     }
@@ -262,8 +261,8 @@ void PairManager::reallocatePairs() {
     BodyPair* newOverlappingPairs = (BodyPair*) malloc(mNbElementsHashTable * sizeof(BodyPair));
     bodyindex* newOffsetNextPair = (bodyindex*) malloc(mNbElementsHashTable * sizeof(bodyindex));
     
-    assert(newOverlappingPairs);
-    assert(newOffsetNextPair);
+    assert(newOverlappingPairs != NULL);
+    assert(newOffsetNextPair != NULL);
     
     // If there is already some overlapping pairs
     if (mNbOverlappingPairs) {
@@ -286,5 +285,4 @@ void PairManager::reallocatePairs() {
     // Replace by the new data
     mOverlappingPairs = newOverlappingPairs;
     mOffsetNextPair = newOffsetNextPair;
-}                                
-
+}

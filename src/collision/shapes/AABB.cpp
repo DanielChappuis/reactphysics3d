@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-AABB::AABB() : mBodyPointer(0) {
+AABB::AABB() : mBodyPointer(NULL) {
     
 }
 
@@ -56,7 +56,7 @@ AABB::AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates, Body* m
 }
 
 // Constructor
-AABB::AABB(const Transform& transform, const Vector3& extents) : mBodyPointer(0) {
+AABB::AABB(const Transform& transform, const Vector3& extents) : mBodyPointer(NULL) {
     update(transform, extents);
 }
 

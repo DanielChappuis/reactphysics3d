@@ -76,7 +76,7 @@ struct ContactInfo {
                     const Vector3& localPoint1, const Vector3& localPoint2);
 };
 
-} // End of the ReactPhysics3D namespace
+}
 
 #endif
 

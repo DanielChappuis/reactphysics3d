@@ -131,9 +131,9 @@ template<class T> const uint MemoryPool<T>::NB_OBJECTS_FIRST_BLOCK = 100;
 template<class T>
 MemoryPool<T>::MemoryPool(uint capacity) throw(std::bad_alloc)
               : mCurrentNbObjects(0), mCapacity(capacity) {
-    mPBlocks = 0;
-    mPAllocatedUnits = 0;
-    mPFreeUnits = 0;
+    mPBlocks = NULL;
+    mPAllocatedUnits = NULL;
+    mPFreeUnits = NULL;
     mNbObjectsNextBlock = (capacity == 0) ? NB_OBJECTS_FIRST_BLOCK : capacity;
 
     // Allocate the first memory block if the capacity is
@@ -172,12 +172,12 @@ void* MemoryPool<T>::allocateObject() {
     }
 
     assert(mCurrentNbObjects < mCapacity);
-    assert(mPFreeUnits);
+    assert(mPFreeUnits != NULL);
     
     MemoryUnit* currentUnit = mPFreeUnits;
     mPFreeUnits = currentUnit->pNext;
     if (mPFreeUnits) {
-        mPFreeUnits->pPrevious = 0;
+        mPFreeUnits->pPrevious = NULL;
     }
 
     currentUnit->pNext = mPAllocatedUnits;
@@ -206,7 +206,7 @@ void MemoryPool<T>::freeObject(void* pObjectToFree) {
     MemoryUnit* currentUnit = (MemoryUnit*)((char*)pObjectToFree - sizeof(MemoryUnit));
     mPAllocatedUnits = currentUnit->pNext;
     if (mPAllocatedUnits) {
-        mPAllocatedUnits->pPrevious = 0;
+        mPAllocatedUnits->pPrevious = NULL;
     }
 
     currentUnit->pNext = mPFreeUnits;
@@ -232,8 +232,8 @@ void MemoryPool<T>::allocateMemory() {
     // Allocate a new memory block
     mPBlocks = malloc(sizeBlock);
 
-    // Check that the allocation didn't fail
-    if (!mPBlocks) throw std::bad_alloc();
+    // Check that the allocation did not fail
+    if (mPBlocks == NULL) throw std::bad_alloc();
 
     MemoryBlock* block = (MemoryBlock*) mPBlocks;
     block->pNext = tempBlocks;
@@ -245,7 +245,7 @@ void MemoryPool<T>::allocateMemory() {
         MemoryUnit* currentUnit = (MemoryUnit*)( (char*)mPBlocks + i *
                                                  (sizeof(T) + sizeof(MemoryUnit)) );
 
-        currentUnit->pPrevious = 0;
+        currentUnit->pPrevious = NULL;
         currentUnit->pNext = mPFreeUnits;
 
         if (mPFreeUnits) {
