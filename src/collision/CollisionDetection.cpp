@@ -51,7 +51,7 @@ CollisionDetection::CollisionDetection(CollisionWorld* world)
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
-    assert(mBroadPhaseAlgorithm);
+    assert(mBroadPhaseAlgorithm != NULL);
 }
 
 // Destructor
@@ -108,10 +108,10 @@ bool CollisionDetection::computeNarrowPhase() {
     
     // For each possible collision pair of bodies
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
-        ContactInfo* contactInfo = 0;
+        ContactInfo* contactInfo = NULL;
 
         BroadPhasePair* pair = (*it).second;
-        assert(pair);
+        assert(pair != NULL);
 
         CollisionBody* const body1 = pair->body1;
         CollisionBody* const body2 = pair->body2;
@@ -128,7 +128,7 @@ bool CollisionDetection::computeNarrowPhase() {
         // Use the narrow-phase collision detection algorithm to check if there really is a collision
         if (narrowPhaseAlgorithm.testCollision(body1->getCollisionShape(), body1->getTransform(),
                                                body2->getCollisionShape(), body2->getTransform(), contactInfo)) {
-            assert(contactInfo);
+            assert(contactInfo != NULL);
             collisionExists = true;
 
             // Notify the world about the new narrow-phase contact
@@ -152,7 +152,8 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPai
 
     // Create the corresponding broad-phase pair object
     BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject()) BroadPhasePair(addedPair->body1, addedPair->body2);
-    
+    assert(broadPhasePair != NULL);
+
     // Add the pair into the set of overlapping pairs (if not there yet)
     pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = mOverlappingPairs.insert(make_pair(indexPair, broadPhasePair));
     assert(check.second);
@@ -169,7 +170,7 @@ void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* remove
 
     // Get the broad-phase pair
     BroadPhasePair* broadPhasePair = mOverlappingPairs[indexPair];
-    assert(broadPhasePair);
+    assert(broadPhasePair != NULL);
 
     // Notify the world about the removed broad-phase pair
     mWorld->notifyRemovedOverlappingPair(broadPhasePair);
