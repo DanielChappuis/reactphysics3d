@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -94,7 +94,7 @@ class RigidBody : public CollisionBody {
 
         // Constructor
         RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
-                  CollisionShape* collisionShape, bodyindex id);                                                                                                                                         // Copy-constructor
+                  CollisionShape* collisionShape, bodyindex id);
 
         // Destructor
         virtual ~RigidBody();
@@ -295,6 +295,6 @@ inline void RigidBody::setFrictionCoefficient(decimal frictionCoefficient) {
     mFrictionCoefficient = frictionCoefficient;
 }
 
-} // End of the ReactPhyscis3D namespace
+}
 
  #endif

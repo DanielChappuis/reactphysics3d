@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Initialization of static variables
-bodyindex SweepAndPruneAlgorithm::INVALID_INDEX = std::numeric_limits<reactphysics3d::bodyindex>::max();
+bodyindex SweepAndPruneAlgorithm::INVALID_INDEX = std::numeric_limits<bodyindex>::max();
 
 // Constructor of AABBInt
 AABBInt::AABBInt(const AABB& aabb) {
@@ -94,7 +94,8 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
         assert(mEndPoints[axis][0].boxID == INVALID_INDEX && mEndPoints[axis][0].isMin == true);
         assert(maxLimitEndPoint->boxID == INVALID_INDEX && maxLimitEndPoint->isMin == false);
         EndPoint* newMaxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint + 2];
-        newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin, maxLimitEndPoint->value);
+        newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin,
+                                       maxLimitEndPoint->value);
     }
     
     // Create a new box

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -50,7 +50,8 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
 
 		// Check if the new point point does not correspond to a same contact point
         // already in the manifold.
-        decimal distance = (mContactPoints[i]->getWorldPointOnBody1() - contact->getWorldPointOnBody1()).lengthSquare();
+        decimal distance = (mContactPoints[i]->getWorldPointOnBody1() -
+                            contact->getWorldPointOnBody1()).lengthSquare();
         if (distance <= PERSISTENT_CONTACT_DIST_THRESHOLD*PERSISTENT_CONTACT_DIST_THRESHOLD) {
 
             // Delete the new contact

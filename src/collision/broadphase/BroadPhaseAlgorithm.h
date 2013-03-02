@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -80,9 +80,6 @@ class BroadPhaseAlgorithm {
         // Destructor
         virtual ~BroadPhaseAlgorithm();
         
-        // TODO : DELETE THIS METHOD
-        uint getNbOverlappingPairs() const;
-        
         // Notify the broad-phase about a new object in the world
         virtual void addObject(CollisionBody* body, const AABB& aabb)=0;
 
@@ -99,12 +96,6 @@ class BroadPhaseAlgorithm {
         BodyPair* endOverlappingPairsPointer() const;
 };
 
-// TODO : DELETE THIS METHOD
-inline uint BroadPhaseAlgorithm::getNbOverlappingPairs() const {
-    return mPairManager.getNbOverlappingPairs();
-}
-
-
 // Return a pointer to the first active pair (used to iterate over the overlapping pairs)
 inline BodyPair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
     return mPairManager.beginOverlappingPairsPointer();
@@ -115,7 +106,7 @@ inline BodyPair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
    return mPairManager.endOverlappingPairsPointer();
 }   
 
-} // End of reactphysics3d namespace
+}
 
 #endif
 

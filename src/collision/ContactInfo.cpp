@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,6 +32,7 @@ using namespace reactphysics3d;
 // Constructor
 ContactInfo::ContactInfo(const Vector3& normal, decimal penetrationDepth,
                          const Vector3& localPoint1, const Vector3& localPoint2)
-            : normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1), localPoint2(localPoint2) {
+            : normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1),
+              localPoint2(localPoint2) {
 
 }

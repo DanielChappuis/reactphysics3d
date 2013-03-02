@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -112,14 +112,17 @@ void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
 
 // Execute the recursive silhouette algorithm from this triangle face
 // The parameter "vertices" is an array that contains the vertices of the current polytope and the
-// parameter "indexNewVertex" is the index of the new vertex in this array. The goal of the silhouette algorithm is
-// to add the new vertex in the polytope by keeping it convex. Therefore, the triangle faces that are visible from the
-// new vertex must be removed from the polytope and we need to add triangle faces where each face contains the new vertex
-// and an edge of the silhouette. The silhouette is the connected set of edges that are part of the border between faces that
-// are seen and faces that are not seen from the new vertex. This method starts from the nearest face from the new vertex,
-// computes the silhouette and create the new faces from the new vertex in order that we always have a convex polytope. The
-// faces visible from the new vertex are set obselete and will not be considered as being a candidate face in the future.
-bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex, TrianglesStore& triangleStore) {
+// parameter "indexNewVertex" is the index of the new vertex in this array. The goal of the
+// silhouette algorithm is to add the new vertex in the polytope by keeping it convex. Therefore,
+// the triangle faces that are visible from the new vertex must be removed from the polytope and we
+// need to add triangle faces where each face contains the new vertex and an edge of the silhouette.
+// The silhouette is the connected set of edges that are part of the border between faces that
+// are seen and faces that are not seen from the new vertex. This method starts from the nearest
+// face from the new vertex, computes the silhouette and create the new faces from the new vertex in
+// order that we always have a convex polytope. The faces visible from the new vertex are set
+// obselete and will not be considered as being a candidate face in the future.
+bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
+                                    TrianglesStore& triangleStore) {
     
     uint first = triangleStore.getNbTriangles();
 
@@ -136,7 +139,8 @@ bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex
         int i,j;
 
         // For each triangle face that contains the new vertex and an edge of the silhouette
-        for (i=first, j=triangleStore.getNbTriangles()-1; i != triangleStore.getNbTriangles(); j = i++) {
+        for (i=first, j=triangleStore.getNbTriangles()-1;
+             i != triangleStore.getNbTriangles(); j = i++) {
             TriangleEPA* triangle = &triangleStore[i];
             halfLink(triangle->getAdjacentEdge(1), EdgeEPA(triangle, 1));
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -42,7 +42,9 @@ Matrix3x3::Matrix3x3(decimal value) {
 }
 
 // Constructor with arguments
-Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3, decimal c1, decimal c2, decimal c3) {
+Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3,
+                     decimal b1, decimal b2, decimal b3,
+                     decimal c1, decimal c2, decimal c3) {
     // Initialize the matrix with the values
     setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
 }
