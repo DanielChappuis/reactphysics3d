@@ -169,7 +169,7 @@ void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* remove
     bodyindexpair indexPair = removedPair->getBodiesIndexPair();
 
     // Get the broad-phase pair
-    BroadPhasePair* broadPhasePair = mOverlappingPairs[indexPair];
+    BroadPhasePair* broadPhasePair = mOverlappingPairs.find(indexPair)->second;
     assert(broadPhasePair != NULL);
 
     // Notify the world about the removed broad-phase pair

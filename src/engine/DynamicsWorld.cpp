@@ -122,7 +122,7 @@ void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
             rigidBody->updateOldTransform();
 
             // Get the constrained velocity
-            uint indexArray = mMapBodyToConstrainedVelocityIndex[rigidBody];
+            uint indexArray = mMapBodyToConstrainedVelocityIndex.find(rigidBody)->second;
             Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
             Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
 
@@ -297,6 +297,7 @@ void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) 
     assert(newPair != NULL);
     std::pair<map<bodyindexpair, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(indexPair, newPair));
+    assert(check.second);
 }
 
 // Notify the world about a removed broad-phase overlapping pair
@@ -306,7 +307,7 @@ void DynamicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPa
     std::pair<bodyindex, bodyindex> indexPair = removedPair->getBodiesIndexPair();
 
     // Remove the overlapping pair from the memory pool
-    mOverlappingPairs[indexPair]->OverlappingPair::~OverlappingPair();
+    mOverlappingPairs.find(indexPair)->second->OverlappingPair::~OverlappingPair();
     mMemoryPoolOverlappingPairs.freeObject(mOverlappingPairs[indexPair]);
     mOverlappingPairs.erase(indexPair);
 }
@@ -329,7 +330,7 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
 
     // Get the corresponding overlapping pair
     pair<bodyindex, bodyindex> indexPair = broadPhasePair->getBodiesIndexPair();
-    OverlappingPair* overlappingPair = mOverlappingPairs[indexPair];
+    OverlappingPair* overlappingPair = mOverlappingPairs.find(indexPair)->second;
     assert(overlappingPair != NULL);
 
     // Add the contact to the contact cache of the corresponding overlapping pair

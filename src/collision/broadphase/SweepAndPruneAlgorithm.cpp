@@ -135,7 +135,7 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
     updateObject(body, aabb);
 
     // Get the corresponding box
-    bodyindex boxIndex = mMapBodyToBoxIndex[body];
+    bodyindex boxIndex = mMapBodyToBoxIndex.find(body)->second;
     BoxAABB* box = &mBoxes[boxIndex];
 
     // Add the box index into the list of free indices
@@ -152,7 +152,7 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
     AABBInt aabbInt(aabb);
     
     // Get the corresponding box
-    bodyindex boxIndex = mMapBodyToBoxIndex[body];
+    bodyindex boxIndex = mMapBodyToBoxIndex.find(body)->second;
     BoxAABB* box = &mBoxes[boxIndex];
         
     // Current axis
