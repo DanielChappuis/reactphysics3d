@@ -158,24 +158,21 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             Vector3 v3 = rotationMat * v2;
 
             // Compute the support point in the direction of v1
-            suppPointsA[2] = collisionShape1->getLocalSupportPoint(v1, OBJECT_MARGIN);
-            suppPointsB[2] = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 *
-                                                                                  (-v1),
-                                                                                  OBJECT_MARGIN);
+            suppPointsA[2] = collisionShape1->getLocalSupportPointWithMargin(v1);
+            suppPointsB[2] = body2Tobody1 *
+                       collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v1));
             points[2] = suppPointsA[2] - suppPointsB[2];
 
             // Compute the support point in the direction of v2
-            suppPointsA[3] = collisionShape1->getLocalSupportPoint(v2, OBJECT_MARGIN);
-            suppPointsB[3] = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 *
-                                                                                  (-v2),
-                                                                                  OBJECT_MARGIN);
+            suppPointsA[3] = collisionShape1->getLocalSupportPointWithMargin(v2);
+            suppPointsB[3] = body2Tobody1 *
+                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v2));
             points[3] = suppPointsA[3] - suppPointsB[3];
 
             // Compute the support point in the direction of v3
-            suppPointsA[4] = collisionShape1->getLocalSupportPoint(v3, OBJECT_MARGIN);
-            suppPointsB[4] = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 *
-                                                                                  (-v3),
-                                                                                  OBJECT_MARGIN);
+            suppPointsA[4] = collisionShape1->getLocalSupportPointWithMargin(v3);
+            suppPointsB[4] = body2Tobody1 *
+                            collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v3));
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Now we have an hexahedron (two tetrahedron glued together). We can simply keep the
@@ -272,14 +269,13 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             Vector3 n = v1.cross(v2);
 
             // Compute the two new vertices to obtain a hexahedron
-            suppPointsA[3] = collisionShape1->getLocalSupportPoint(n, OBJECT_MARGIN);
-            suppPointsB[3] = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 *
-                                                                                  (-n),
-                                                                                  OBJECT_MARGIN);
+            suppPointsA[3] = collisionShape1->getLocalSupportPointWithMargin(n);
+            suppPointsB[3] = body2Tobody1 *
+                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-n));
             points[3] = suppPointsA[3] - suppPointsB[3];
-            suppPointsA[4] = collisionShape1->getLocalSupportPoint(-n, OBJECT_MARGIN);
-            suppPointsB[4] = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 * n,
-                                                                                  OBJECT_MARGIN);
+            suppPointsA[4] = collisionShape1->getLocalSupportPointWithMargin(-n);
+            suppPointsB[4] = body2Tobody1 *
+                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * n);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Construct the triangle faces
@@ -350,11 +346,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
             // Compute the support point of the Minkowski
             // difference (A-B) in the closest point direction
-            suppPointsA[nbVertices] = collisionShape1->getLocalSupportPoint(
-                                        triangle->getClosestPoint(), OBJECT_MARGIN);
-            suppPointsB[nbVertices] = body2Tobody1 * collisionShape2->getLocalSupportPoint(
-                                        rotateToBody2 * (-triangle->getClosestPoint()),
-                                        OBJECT_MARGIN);
+            suppPointsA[nbVertices] = collisionShape1->getLocalSupportPointWithMargin(
+                                        triangle->getClosestPoint());
+            suppPointsB[nbVertices] = body2Tobody1 *
+                               collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 *
+                                                                (-triangle->getClosestPoint()));
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;

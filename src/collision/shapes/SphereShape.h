@@ -72,14 +72,20 @@ class SphereShape : public CollisionShape {
         // Set the radius of the sphere
         void setRadius(decimal radius);
 
-        // Return a local support point in a given direction
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;
+        // Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
+
+        // Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         // Return the local extents in x,y and z direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;
 
         // Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+
+        // Return the margin distance around the shape
+        virtual decimal getMargin() const;
 
 #ifdef VISUAL_DEBUG
         // Draw the sphere (only for testing purpose)
@@ -97,20 +103,28 @@ inline void SphereShape::setRadius(decimal radius) {
     mRadius = radius;
 }
 
-// Return a local support point in a given direction
-inline Vector3 SphereShape::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
-    assert(margin >= 0.0);
-    decimal length = direction.length();
+// Return a local support point in a given direction with the object margin
+inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+
+    decimal margin = getMargin();
 
     // If the direction vector is not the zero vector
-    if (length > 0.0) {
+    if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
+
         // Return the support point of the sphere in the given direction
-        return (mRadius + margin) * direction.getUnit();
+        return margin * direction.getUnit();
     }
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return Vector3(0, mRadius + margin, 0);
+    return Vector3(0, margin, 0);
+}
+
+// Return a local support point in a given direction without the object margin
+inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+
+    // Return the center of the sphere (the radius is taken into account in the object margin)
+    return Vector3(0.0, 0.0, 0.0);
 }
 
 // Return the local extents of the collision shape (half-width) in x,y and z local direction
@@ -125,6 +139,11 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
     tensor.setAllValues(diag, 0.0, 0.0,
                         0.0, diag, 0.0,
                         0.0, 0.0, diag);
+}
+
+// Return the margin distance around the shape
+inline decimal SphereShape::getMargin() const {
+    return mRadius + OBJECT_MARGIN;
 }
 
 }

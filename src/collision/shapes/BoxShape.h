@@ -79,8 +79,14 @@ class BoxShape : public CollisionShape {
         // Return the local extents in x,y and z direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;
 
-        // Return a local support point in a given direction
-        virtual Vector3 getLocalSupportPoint(const Vector3& direction, decimal margin=0.0) const;
+        // Return the margin distance around the shape
+        virtual decimal getMargin() const;
+
+        // Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
+
+        // Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         // Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -104,16 +110,31 @@ inline void BoxShape::setExtent(const Vector3& extent) {
 // Return the local extents of the box (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
 inline Vector3 BoxShape::getLocalExtents(decimal margin) const {
-    return mExtent + Vector3(margin, margin, margin);
+    return mExtent + Vector3(getMargin(), getMargin(), getMargin());
 }
 
-// Return a local support point in a given direction
-inline Vector3 BoxShape::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
+// Return the margin distance around the shape
+inline decimal BoxShape::getMargin() const {
+    return OBJECT_MARGIN;
+}
+
+// Return a local support point in a given direction with the object margin
+inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+
+    decimal margin = getMargin();
     assert(margin >= 0.0);
     
     return Vector3(direction.x < 0.0 ? -mExtent.x - margin : mExtent.x + margin,
                    direction.y < 0.0 ? -mExtent.y - margin : mExtent.y + margin,
                    direction.z < 0.0 ? -mExtent.z - margin : mExtent.z + margin);
+}
+
+// Return a local support point in a given direction without the objec margin
+inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+
+    return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
+                   direction.y < 0.0 ? -mExtent.y : mExtent.y,
+                   direction.z < 0.0 ? -mExtent.z : mExtent.z);
 }
 
 }

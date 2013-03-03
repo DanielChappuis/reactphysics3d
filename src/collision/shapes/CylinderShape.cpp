@@ -53,9 +53,24 @@ CylinderShape::~CylinderShape() {
 
 }
 
-// Return a local support point in a given direction
-Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal margin) const {
-    assert(margin >= 0.0);
+// Return a local support point in a given direction with the object margin
+Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+
+    // Compute the support point without the margin
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+
+    // Add the margin to the support point
+    Vector3 unitVec(0.0, 1.0, 0.0);
+    if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
+        unitVec = direction.getUnit();
+    }
+    supportPoint += unitVec * getMargin();
+
+    return supportPoint;
+}
+
+// Return a local support point in a given direction without the object margin
+Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
@@ -70,15 +85,6 @@ Vector3 CylinderShape::getLocalSupportPoint(const Vector3& direction, decimal ma
     else {
          if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
          else supportPoint.y = mHalfHeight;
-    }
-
-    // Add the margin to the support point
-    if (margin != 0.0) {
-        Vector3 unitVec(0.0, 1.0, 0.0);
-        if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-            unitVec = direction.getUnit();
-        }
-        supportPoint += unitVec * margin;
     }
 
     return supportPoint;

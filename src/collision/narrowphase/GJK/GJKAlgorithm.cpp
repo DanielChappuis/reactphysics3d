@@ -81,7 +81,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
                               transform1.getOrientation().getMatrix();
 
     // Initialize the margin (sum of margins of both objects)
-    decimal margin = 2 * OBJECT_MARGIN;
+    decimal margin = collisionShape1->getMargin() + collisionShape2->getMargin();
     decimal marginSquare = margin * margin;
     assert(margin > 0.0);
 
@@ -97,8 +97,9 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
     do {
               
         // Compute the support points for original objects (without margins) A and B
-        suppA = collisionShape1->getLocalSupportPoint(-v);
-        suppB = body2Tobody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 * v);
+        suppA = collisionShape1->getLocalSupportPointWithoutMargin(-v);
+        suppB = body2Tobody1 *
+                     collisionShape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -125,8 +126,8 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -157,8 +158,8 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -187,8 +188,8 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -224,8 +225,8 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -282,9 +283,8 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
     
     do {
         // Compute the support points for the enlarged object A and B
-        suppA = collisionShape1->getLocalSupportPoint(-v, OBJECT_MARGIN);
-        suppB = body2ToBody1 * collisionShape2->getLocalSupportPoint(rotateToBody2 * v,
-                                                                     OBJECT_MARGIN);
+        suppA = collisionShape1->getLocalSupportPointWithMargin(-v);
+        suppB = body2ToBody1 * collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
