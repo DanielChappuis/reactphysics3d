@@ -32,65 +32,62 @@
 // Libraries
 #include <cassert>
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Constants
 const unsigned int MAX_TRIANGLES = 200;     // Maximum number of triangles
 
-
-/*  -------------------------------------------------------------------
-    Class TrianglesStore :
-        This class stores several triangles of the polytope in the EPA
-        algorithm.
-    -------------------------------------------------------------------
-*/
+// Class TriangleStore
+/**
+ * This class stores several triangles of the polytope in the EPA algorithm.
+ */
 class TrianglesStore {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Triangles
+        /// Triangles
         TriangleEPA mTriangles[MAX_TRIANGLES];
 
-        // Number of triangles
+        /// Number of triangles
         int mNbTriangles;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         TrianglesStore(const TrianglesStore& triangleStore);
 
-        // Private assignment operator
+        /// Private assignment operator
         TrianglesStore& operator=(const TrianglesStore& triangleStore);
         
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         TrianglesStore();
 
-        // Destructor
+        /// Destructor
         ~TrianglesStore();
 
-        // Clear all the storage
+        /// Clear all the storage
         void clear();
 
-        // Return the number of triangles
+        /// Return the number of triangles
         int getNbTriangles() const;
 
-        // Set the number of triangles
+        /// Set the number of triangles
         void setNbTriangles(int backup);
 
-        // Return the last triangle
+        /// Return the last triangle
         TriangleEPA& last();
 
-        // Create a new triangle
+        /// Create a new triangle
         TriangleEPA* newTriangle(const Vector3* vertices, uint v0, uint v1, uint v2);
 
-        // Access operator
+        /// Access operator
         TriangleEPA& operator[](int i);
 };
 

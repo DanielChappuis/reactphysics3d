@@ -31,76 +31,75 @@
 #include "../../mathematics/mathematics.h"
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class CylinderShape :
-        This class represents a cylinder collision shape around the Y axis
-        and centered at the origin. The cylinder is defined by its height
-        and the radius of its base. The "transform" of the corresponding
-        rigid body gives an orientation and a position to the cylinder.
-    -------------------------------------------------------------------
-*/
+// Class CylinderShape
+/**
+ * This class represents a cylinder collision shape around the Y axis
+ * and centered at the origin. The cylinder is defined by its height
+ * and the radius of its base. The "transform" of the corresponding
+ * rigid body gives an orientation and a position to the cylinder.
+ */
 class CylinderShape : public CollisionShape {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Radius of the base
+        /// Radius of the base
         decimal mRadius;
 
-        // Half height of the cone
+        /// Half height of the cone
         decimal mHalfHeight;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         CylinderShape(const CylinderShape& shape);
 
-        // Private assignment operator
+        /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         CylinderShape(decimal radius, decimal height);
 
-        // Destructor
+        /// Destructor
         virtual ~CylinderShape();
 
-        // Return the radius
+        /// Return the radius
         decimal getRadius() const;
 
-        // Set the radius
+        /// Set the radius
         void setRadius(decimal mRadius);
 
-        // Return the height
+        /// Return the height
         decimal getHeight() const;
 
-        // Set the height
+        /// Set the height
         void setHeight(decimal height);
 
-        // Return a local support point in a given direction with the object margin
+        /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
-        // Return a local support point in a given direction without the object margin
+        /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
-        // Return the local extents in x,y and z direction
+        /// Return the local extents in x,y and z direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;
 
-        // Return the local inertia tensor of the collision shape
+        /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        // Return the margin distance around the shape
+        /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
 #ifdef VISUAL_DEBUG
-        // Draw the sphere (only for testing purpose)
+        /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
 #endif
 };

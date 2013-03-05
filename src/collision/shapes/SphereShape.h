@@ -33,62 +33,61 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class SphereShape :
-        This class represents a sphere collision shape that is centered
-        at the origin and defined by its radius.
-    -------------------------------------------------------------------
-*/
+// Class SphereShape
+/**
+ * This class represents a sphere collision shape that is centered
+ * at the origin and defined by its radius.
+ */
 class SphereShape : public CollisionShape {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Radius of the sphere
+        /// Radius of the sphere
         decimal mRadius;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         SphereShape(const SphereShape& shape);
 
-        // Private assignment operator
+        /// Private assignment operator
         SphereShape& operator=(const SphereShape& shape);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         SphereShape(decimal radius);
 
-        // Destructor
+        /// Destructor
         virtual ~SphereShape();
 
-        // Return the radius of the sphere
+        /// Return the radius of the sphere
         decimal getRadius() const;
 
-        // Set the radius of the sphere
+        /// Set the radius of the sphere
         void setRadius(decimal radius);
 
-        // Return a local support point in a given direction with the object margin
+        /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
-        // Return a local support point in a given direction without the object margin
+        /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
-        // Return the local extents in x,y and z direction
+        /// Return the local extents in x,y and z direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;
 
-        // Return the local inertia tensor of the collision shape
+        /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        // Return the margin distance around the shape
+        /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
 #ifdef VISUAL_DEBUG
-        // Draw the sphere (only for testing purpose)
+        /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
 #endif
 };

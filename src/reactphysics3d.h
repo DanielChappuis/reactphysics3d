@@ -48,7 +48,7 @@
 #include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/AABB.h"
 
-// Alias to the ReactPhysics3D namespace
+/// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
 
 #endif

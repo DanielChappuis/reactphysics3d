@@ -31,23 +31,28 @@
 #include <utility>
 
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
     
 // Declaration
 class CollisionDetection;
 
-// struct BodyPair
-// This structure represents a pair of bodies
-// during the broad-phase collision detection
+// Structure BodyPair
+/**
+ * This structure represents a pair of bodies
+ * during the broad-phase collision detection.
+ */
 struct BodyPair {
 
     public:
 
-        CollisionBody* body1;                // Pointer to the first body
-        CollisionBody* body2;                // Pointer to the second body
+        /// Pointer to the first body
+        CollisionBody* body1;
 
-        // Return the pair of bodies index
+        /// Pointer to the second body
+        CollisionBody* body2;
+
+        /// Return the pair of bodies index
         bodyindexpair getBodiesIndexPair() const {
 
             // Construct the pair of body index
@@ -60,88 +65,87 @@ struct BodyPair {
         }
 };
 
-/*  --------------------------------------------------------------------
-    Class PairManager :
-        This class is a data-structure contains the pairs of bodies that
-        are overlapping during the broad-phase collision detection.
-        This class implements the pair manager described by Pierre Terdiman
-        in www.codercorner.com/SAP.pdf.
-    --------------------------------------------------------------------
-*/
+// Class PairManager
+/**
+ * This class is a data-structure contains the pairs of bodies that
+ * are overlapping during the broad-phase collision detection.
+ * This class implements the pair manager described by Pierre Terdiman
+ * in www.codercorner.com/SAP.pdf.
+ */
 class PairManager {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Number of elements in the hash table
+        /// Number of elements in the hash table
         bodyindex mNbElementsHashTable;
 
-        // Hash mask for the hash function
+        /// Hash mask for the hash function
         uint mHashMask;
 
-        // Number of overlapping pairs
+        /// Number of overlapping pairs
         bodyindex mNbOverlappingPairs;
 
-        // Hash table that contains the offset of the first pair of the list of
-        // pairs with the same hash value in the "overlappingPairs" array
+        /// Hash table that contains the offset of the first pair of the list of
+        /// pairs with the same hash value in the "overlappingPairs" array
         bodyindex* mHashTable;
 
-        // Array that contains for each offset, the offset of the next pair with
-        // the same hash value for a given same hash value
+        /// Array that contains for each offset, the offset of the next pair with
+        /// the same hash value for a given same hash value
         bodyindex* mOffsetNextPair;
 
-        // Array that contains the overlapping pairs
+        /// Array that contains the overlapping pairs
         BodyPair* mOverlappingPairs;
 
-        // Invalid ID
+        /// Invalid ID
         static bodyindex INVALID_INDEX;
 
-        // Reference to the collision detection
+        /// Reference to the collision detection
         CollisionDetection& mCollisionDetection;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         PairManager(const PairManager& pairManager);
 
-        // Private assignment operator
+        /// Private assignment operator
         PairManager& operator=(const PairManager& pairManager);
 
-        // Sort the bodies according to their IDs (smallest ID first)
+        /// Sort the bodies according to their IDs (smallest ID first)
         void sortBodiesUsingID(CollisionBody*& body1, CollisionBody*& body2) const;
 
-        // Sort the IDs (smallest ID first)
+        /// Sort the IDs (smallest ID first)
         void sortIDs(bodyindex& id1, bodyindex& id2) const;
 
-        // Return true if pair1 and pair2 are the same
+        /// Return true if pair1 and pair2 are the same
         bool isDifferentPair(const BodyPair& pair1, bodyindex pair2ID1, bodyindex pair2ID2) const;
 
-        // Compute the hash value of two bodies using their IDs
+        /// Compute the hash value of two bodies using their IDs
         uint computeHashBodies(uint id1, uint id2) const;
 
-        // This method returns an hash value for a 32 bits key
+        /// This method returns an hash value for a 32 bits key.
         int computeHash32Bits(int key) const;
 
-        // Return the next power of two
+        /// Return the next power of two
         luint computeNextPowerOfTwo(luint number) const;
 
-        // Reallocate memory for more pairs
+        /// Reallocate memory for more pairs
         void reallocatePairs();
 
-        // Shrink the allocated memory
+        /// Shrink the allocated memory
         void shrinkMemory();
 
-        // Compute the offset of a given pair
+        /// Compute the offset of a given pair
         bodyindex computePairOffset(const BodyPair* pair) const;
 
-        // Look for a pair in the set of overlapping pairs
+        /// Look for a pair in the set of overlapping pairs
         BodyPair* lookForAPair(bodyindex id1, bodyindex id2, luint hashValue) const;
 
-        // Find a pair given two body IDs and an hash value
+        /// Find a pair given two body IDs and an hash value.
         BodyPair* findPairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue) const;
 
-        // Remove a pair from the set of active pair
+        /// Remove a pair from the set of active pair
         void removePairWithHashValue(bodyindex id1, bodyindex id2, luint hashValue,
                                      bodyindex indexPair);
 
@@ -149,48 +153,48 @@ class PairManager {
 
         // ----- Methods ----- //
 
-        // Constructor
+        /// Constructor
         PairManager(CollisionDetection& collisionDetection);
 
-        // Destructor
+        /// Destructor
         ~PairManager();
         
-        // Return the number of active pairs
+        /// Return the number of active pairs
         bodyindex getNbOverlappingPairs() const;
 
-        // Add a pair of bodies in the pair manager
+        /// Add a pair of bodies in the pair manager and returns a pointer to that pair.
         BodyPair* addPair(CollisionBody* body1, CollisionBody* body2);
 
-        // Remove a pair of bodies from the pair manager
+        /// Remove a pair of bodies from the pair manager.
         bool removePair(bodyindex id1, bodyindex id2);
 
-        // Find a pair given two body IDs
+        /// Find a pair given two body IDs
         BodyPair* findPair(bodyindex id1, bodyindex id2) const;
 
-        // Return a pointer to the first overlapping pair (used to
-        // iterate over the active pairs)
+        /// Return a pointer to the first overlapping pair (used to
+        /// iterate over the active pairs).
         BodyPair* beginOverlappingPairsPointer() const;
 
-        // Return a pointer to the last overlapping pair (used to
-        // iterate over the active pairs)
+        /// Return a pointer to the last overlapping pair (used to
+        /// iterate over the active pairs).
         BodyPair* endOverlappingPairsPointer() const;
 
-        // Register a callback function (using a function pointer) that will be
-        // called when a new overlapping pair is added in the pair manager
+        /// Register a callback function (using a function pointer) that will be
+        /// called when a new overlapping pair is added in the pair manager.
         void registerAddedOverlappingPairCallback(void (CollisionDetection::*callbackFunction)
                                                   (const BodyPair* addedActivePair));
 
-        // Unregister the callback function that will be called
-        // when a new active pair is added in the pair manager
+        /// Unregister the callback function that will be called
+        /// when a new active pair is added in the pair manager
         void unregisterAddedOverlappingPairCallback();
 
-        // Register a callback function (using a function pointer)
-        // that will be called when an overlapping pair is removed from the pair manager
+        /// Register a callback function (using a function pointer)
+        /// that will be called when an overlapping pair is removed from the pair manager
         void registerRemovedOverlappingPairCallback(void (CollisionDetection::*callbackFunction)
                                                     (const BodyPair* removedActivePair));
 
-        // Unregister a callback function that will be called
-        // when a active pair is removed from the pair manager
+        /// Unregister a callback function that will be called
+        /// when a active pair is removed from the pair manager
         void unregisterRemovedOverlappingPairCallback();
 };
 
@@ -242,10 +246,10 @@ inline void PairManager::sortIDs(bodyindex &id1, bodyindex &id2) const {
     }
 }
 
-// This method returns an hash value for a 32 bits key
-// using Thomas Wang's hash technique.
-// This hash function can be found at :
-// http://www.concentric.net/~ttwang/tech/inthash.htm
+// This method returns an hash value for a 32 bits key.
+/// using Thomas Wang's hash technique.
+/// This hash function can be found at :
+/// http://www.concentric.net/~ttwang/tech/inthash.htm
 inline int PairManager::computeHash32Bits(int key) const {
     key += ~(key << 15);
     key ^=  (key >> 10);
@@ -272,9 +276,9 @@ inline BodyPair* PairManager::findPair(bodyindex id1, bodyindex id2) const {
     lookForAPair(id1, id2, hashValue);
 }
 
-// Find a pair given two body IDs and an hash value
-// This internal version is used to avoid computing multiple times in the 
-// caller method
+// Find a pair given two body IDs and an hash value.
+/// This internal version is used to avoid computing multiple times in the
+/// caller method
 inline BodyPair* PairManager::findPairWithHashValue(bodyindex id1, bodyindex id2,
                                                     luint hashValue) const {
     

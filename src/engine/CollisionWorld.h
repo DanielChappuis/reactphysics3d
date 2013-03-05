@@ -38,84 +38,83 @@
 #include "../constraint/ContactPoint.h"
 #include "../memory/MemoryPool.h"
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
-    
-/*  -------------------------------------------------------------------
-    Class CollisionWorld :
-        This class represent a world where it is possible to move bodies
-        by hand and to test collision between each other. In this kind of
-        world, the bodies movement is not computed using the laws of physics.
-    -------------------------------------------------------------------
-*/
+
+// Class CollisionWorld
+/**
+ * This class represent a world where it is possible to move bodies
+ * by hand and to test collision between each other. In this kind of
+ * world, the bodies movement is not computed using the laws of physics.
+ */
 class CollisionWorld {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Reference to the collision detection
+        /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
 
-        // All the bodies (rigid and soft) of the world
+        /// All the bodies (rigid and soft) of the world
         std::set<CollisionBody*> mBodies;
 
-        // Broad-phase overlapping pairs of bodies
+        /// Broad-phase overlapping pairs of bodies
         std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
 
-        // Current body ID
+        /// Current body ID
         bodyindex mCurrentBodyID;
 
-        // Memory pool
+        /// Memory pool
         MemoryPool<CollisionBody> mMemoryPoolCollisionBodies;
 
-        // List of free ID for rigid bodies
+        /// List of free ID for rigid bodies
         std::vector<luint> mFreeBodiesIDs;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         CollisionWorld(const CollisionWorld& world);
 
-        // Private assignment operator
+        /// Private assignment operator
         CollisionWorld& operator=(const CollisionWorld& world);
 
-        // Notify the world about a new broad-phase overlapping pair
+        /// Notify the world about a new broad-phase overlapping pair
         virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
 
-        // Notify the world about a removed broad-phase overlapping pair
+        /// Notify the world about a removed broad-phase overlapping pair
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
-        // Notify the world about a new narrow-phase contact
+        /// Notify the world about a new narrow-phase contact
         virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
 
-        // Update the overlapping pair
+        /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
 
-        // Return the next available body ID
+        /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
     public :
 
         // ----- Methods ----- //
 
-        // Constructor
+        /// Constructor
         CollisionWorld();
 
-        // Destructor
+        /// Destructor
         virtual ~CollisionWorld();
 
-        // Return an iterator to the beginning of the bodies of the physics world
+        /// Return an iterator to the beginning of the bodies of the physics world
         std::set<CollisionBody*>::iterator getBodiesBeginIterator();
 
-        // Return an iterator to the end of the bodies of the physics world
+        /// Return an iterator to the end of the bodies of the physics world
         std::set<CollisionBody*>::iterator getBodiesEndIterator();
 
-        // Create a collision body
+        /// Create a collision body
         CollisionBody* createCollisionBody(const Transform& transform,
                                            CollisionShape* collisionShape);
 
-        // Destroy a collision body
+        /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
         // ----- Friends ----- //

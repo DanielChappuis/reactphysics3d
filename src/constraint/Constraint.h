@@ -36,77 +36,76 @@ namespace reactphysics3d {
 // Enumeration for the type of a constraint
 enum ConstraintType {CONTACT};
 
-/*  -------------------------------------------------------------------
-    Class Constraint :
-        This abstract class represents a constraint in the physics engine.
-        A constraint can be a collision contact or a joint for
-        instance. Each constraint can be made of several "mathematical
-        constraints" needed to represent the main constraint.
-    -------------------------------------------------------------------
-*/
+// Class Constraint
+/**
+ * This abstract class represents a constraint in the physics engine.
+ * A constraint can be a collision contact or a joint for
+ * instance. Each constraint can be made of several "mathematical
+ * constraints" needed to represent the main constraint.
+ */
 class Constraint {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the first body of the constraint
+        /// Pointer to the first body of the constraint
         RigidBody* const mBody1;
 
-        // Pointer to the second body of the constraint
+        /// Pointer to the second body of the constraint
         RigidBody* const mBody2;
 
-        // True if the constraint is active
+        /// True if the constraint is active
         bool mActive;
 
-        // Number mathematical constraints associated with this Constraint
+        /// Number mathematical constraints associated with this Constraint
         uint mNbConstraints;
 
-        // Type of the constraint
+        /// Type of the constraint
         const ConstraintType mType;
 
-        // Cached lambda values of each mathematical constraint for
-        // more precise initializaton of LCP solver
+        /// Cached lambda values of each mathematical constraint for
+        /// more precise initializaton of LCP solver
         std::vector<decimal> mCachedLambdas;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         Constraint(const Constraint& constraint);
 
-        // Private assignment operator
+        /// Private assignment operator
         Constraint& operator=(const Constraint& constraint);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints,
                    bool active, ConstraintType type);
 
-        // Destructor
+        /// Destructor
         virtual ~Constraint();
 
-        // Return the reference to the body 1
+        /// Return the reference to the body 1
         RigidBody* const getBody1() const;
 
-        // Return the reference to the body 2
+        /// Return the reference to the body 2
         RigidBody* const getBody2() const;
 
-        // Return true if the constraint is active
+        /// Return true if the constraint is active
         bool isActive() const;
 
-        // Return the type of the constraint
+        /// Return the type of the constraint
         ConstraintType getType() const;
 
-        // Return the number of mathematical constraints
+        /// Return the number of mathematical constraints
         unsigned int getNbConstraints() const;
 
-        // Get one cached lambda value
+        /// Get one cached lambda value
         decimal getCachedLambda(int index) const;
 
-        // Set on cached lambda value
+        /// Set on cached lambda value
         void setCachedLambda(int index, decimal lambda);
 };
 

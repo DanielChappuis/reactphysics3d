@@ -29,84 +29,83 @@
 // Libraries
 #include "../../mathematics/mathematics.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declaration
 class Body;
     
-/*  -------------------------------------------------------------------
-    Class AABB :
-        This class represents a bounding volume of type "Axis Aligned
-        Bounding Box". It's a box where all the edges are always aligned
-        with the world coordinate system. The AABB is defined by the
-        minimum and maximum world coordinates of the three axis.
-    -------------------------------------------------------------------
-*/
+// Class AABB
+/**
+ * This class represents a bounding volume of type "Axis Aligned
+ * Bounding Box". It's a box where all the edges are always aligned
+ * with the world coordinate system. The AABB is defined by the
+ * minimum and maximum world coordinates of the three axis.
+ */
 class AABB {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Minimum world coordinates of the AABB on the x,y and z axis
+        /// Minimum world coordinates of the AABB on the x,y and z axis
         Vector3 mMinCoordinates;
 
-        // Maximum world coordinates of the AABB on the x,y and z axis
+        /// Maximum world coordinates of the AABB on the x,y and z axis
         Vector3 mMaxCoordinates;
 
-        // Pointer to the owner body (not the abstract class Body
-        // but its derivative which is instanciable)
+        /// Pointer to the owner body (not the abstract class Body
+        /// but its derivative which is instanciable)
         Body* mBodyPointer;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         AABB(const AABB& aabb);
 
-        // Private assignment operator
+        /// Private assignment operator
         AABB& operator=(const AABB& aabb);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         AABB();
 
-        // Constructor
+        /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates, Body* modyPointer);
 
-        // Constructor
+        /// Constructor
         AABB(const Transform& transform, const Vector3& extents);
 
-        // Destructor
+        /// Destructor
         virtual ~AABB();
 
-        // Return the center point
+        /// Return the center point
         Vector3 getCenter() const;
 
-        // Return the minimum coordinates of the AABB
+        /// Return the minimum coordinates of the AABB
         const Vector3& getMin() const;
 
-        // Return the maximum coordinates of the AABB
+        /// Return the maximum coordinates of the AABB
         const Vector3& getMax() const;
 
-        // Return a pointer to the owner body
+        /// Return a pointer to the owner body
         Body* getBodyPointer() const;
 
-        // Set the body pointer
+        /// Set the body pointer
         void setBodyPointer(Body* bodyPointer);
 
-        // Return true if the current AABB is overlapping is the AABB in argument
+        /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
 
-        // Update the oriented bounding box orientation
-        // according to a new orientation of the rigid body
+        /// Update the oriented bounding box orientation
+        /// according to a new orientation of the rigid body
         virtual void update(const Transform& newTransform, const Vector3& extents);
 
 #ifdef VISUAL_DEBUG
-       // Draw the AABB (only for testing purpose)
+       /// Draw the AABB (only for testing purpose)
        virtual void draw() const;
 #endif
 };
@@ -136,8 +135,8 @@ inline void AABB::setBodyPointer(Body* bodyPointer) {
     mBodyPointer = bodyPointer;
 }
 
-// Return true if the current AABB is overlapping with the AABB in argument
-// Two AABB overlap if they overlap in the three x, y and z axis at the same time
+// Return true if the current AABB is overlapping with the AABB in argument.
+/// Two AABBs overlap if they overlap in the three x, y and z axis at the same time
 inline bool AABB::testCollision(const AABB& aabb) const {
     if (mMaxCoordinates.x < aabb.mMinCoordinates.x ||
         aabb.mMaxCoordinates.x < mMinCoordinates.x) return false;

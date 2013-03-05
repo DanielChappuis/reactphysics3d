@@ -30,13 +30,13 @@
 #include "../configuration.h"
 #include "../decimal.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // ---------- Mathematics functions ---------- //
 
-// function to test if two real numbers are (almost) equal
-// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
+/// function to test if two real numbers are (almost) equal
+/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool approxEqual(decimal a, decimal b, decimal epsilon = 1.0e-10) {
     decimal difference = a - b;
     return (difference < epsilon && difference > -epsilon);

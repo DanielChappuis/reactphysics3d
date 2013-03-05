@@ -32,91 +32,90 @@
 #include "Matrix3x3.h"
 #include "../decimal.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class Quaternion :
-        This class represents a quaternion. We use the notation :
-        q = (x*i, y*j, z*k, w) to represent a quaternion.
-    -------------------------------------------------------------------
-*/
+// Class Quaternion
+/**
+ * This class represents a quaternion. We use the notation :
+ * q = (x*i, y*j, z*k, w) to represent a quaternion.
+ */
 struct Quaternion {
 
     public :
 
         // -------------------- Attributes -------------------- //
 
-        // Components of the quaternion
+        /// Components of the quaternion
         decimal x, y, z, w;
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         Quaternion();
 
-        // Constructor with arguments
+        /// Constructor with arguments
         Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW);
 
-        // Constructor with the component w and the vector v=(x y z)
+        /// Constructor with the component w and the vector v=(x y z)
         Quaternion(decimal newW, const Vector3& v);
 
-        // Copy-constructor
+        /// Copy-constructor
         Quaternion(const Quaternion& quaternion);
 
-        // Create a unit quaternion from a rotation matrix
+        /// Create a unit quaternion from a rotation matrix
         Quaternion(const Matrix3x3& matrix);
 
-        // Destructor
+        /// Destructor
         ~Quaternion();
 
-        // Return the vector v=(x y z) of the quaternion
+        /// Return the vector v=(x y z) of the quaternion
         Vector3 vectorV() const;
 
-        // Return the length of the quaternion
+        /// Return the length of the quaternion
         decimal length() const;
 
-        // Return the unit quaternion
+        /// Return the unit quaternion
         Quaternion getUnit() const;
 
-        // Return the conjugate quaternion
+        /// Return the conjugate quaternion
         Quaternion getConjugate() const;
 
-        // Return the inverse of the quaternion
+        /// Return the inverse of the quaternion
         Quaternion getInverse() const;
 
-        // Return the orientation matrix corresponding to this quaternion
+        /// Return the orientation matrix corresponding to this quaternion
         Matrix3x3 getMatrix() const;
 
-        // Return the identity quaternion
+        /// Return the identity quaternion
         static Quaternion identity();
 
-        // Dot product between two quaternions
+        /// Dot product between two quaternions
         decimal dot(const Quaternion& quaternion) const;
 
-        // Compute the rotation angle (in radians) and the axis
+        /// Compute the rotation angle (in radians) and the rotation axis
         void getRotationAngleAxis(decimal& angle, Vector3& axis) const;
 
-        // Compute the spherical linear interpolation between two quaternions
+        /// Compute the spherical linear interpolation between two quaternions
         static Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2,
                                 decimal t);
 
-        // Overloaded operator for the addition
+        /// Overloaded operator for the addition
         Quaternion operator+(const Quaternion& quaternion) const;
 
-        // Overloaded operator for the substraction
+        /// Overloaded operator for the substraction
         Quaternion operator-(const Quaternion& quaternion) const;
 
-        // Overloaded operator for the multiplication with a constant
+        /// Overloaded operator for the multiplication with a constant
         Quaternion operator*(decimal nb) const;
 
-        // Overloaded operator for the multiplication
+        /// Overloaded operator for the multiplication
         Quaternion operator*(const Quaternion& quaternion) const;
 
-        // Overloaded operator for assignment
+        /// Overloaded operator for assignment
         Quaternion& operator=(const Quaternion& quaternion);
 
-        // Overloaded operator for equality condition
+        /// Overloaded operator for equality condition
         bool operator==(const Quaternion& quaternion) const;
 };
 

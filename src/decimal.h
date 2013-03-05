@@ -26,7 +26,7 @@
 #ifndef DECIMAL_H
 #define	DECIMAL_H
 
-// ReactPhysiscs3D namespace
+/// ReactPhysiscs3D namespace
 namespace reactphysics3d {
 
 #if defined(DOUBLE_PRECISION_ENABLED)   // If we are compiling for double precision

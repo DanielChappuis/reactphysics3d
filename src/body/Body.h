@@ -31,56 +31,53 @@
 #include <cassert>
 #include "../configuration.h"
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
-
-/*  -------------------------------------------------------------------
-    Class Body :
-        This class is an abstract class to represent a body of the physics
-        engine.
-    -------------------------------------------------------------------
-*/
+// Class Body
+/**
+ * This class is an abstract class to represent a body of the physics engine.
+ */
 class Body {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // ID of the body
+        /// ID of the body
         bodyindex mID;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         Body(const Body& body);
 
-        // Private assignment operator
+        /// Private assignment operator
         Body& operator=(const Body& body);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         Body(bodyindex id);
 
-        // Destructor
+        /// Destructor
         virtual ~Body();
 
-        // Return the id of the body
+        /// Return the id of the body
         bodyindex getID() const;
 
-        // Smaller than operator
+        /// Smaller than operator
         bool operator<(const Body& body2) const;
 
-        // Larger than operator
+        /// Larger than operator
         bool operator>(const Body& body2) const;
 
-        // Equal operator
+        /// Equal operator
         bool operator==(const Body& body2) const;
 
-        // Not equal operator
+        /// Not equal operator
         bool operator!=(const Body& body2) const;
 };
 

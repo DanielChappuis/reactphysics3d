@@ -31,64 +31,63 @@
 #include "../../mathematics/Vector3.h"
 #include "../../mathematics/Matrix3x3.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
     
-// Enumeration
-enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER};    // Type of the collision shape
+/// Type of the collision shape
+enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER};
 
 // Declarations
 class Body;
 
-/*  -------------------------------------------------------------------
-    Class CollisionShape :
-        This abstract class represents the collision shape associated with a
-        body that is used during the narrow-phase collision detection.
-    -------------------------------------------------------------------
-*/
+// Class CollisionShape
+/**
+ * This abstract class represents the collision shape associated with a
+ * body that is used during the narrow-phase collision detection.
+ */
 class CollisionShape {
         
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Type of the collision shape
+        /// Type of the collision shape
         CollisionShapeType mType;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         CollisionShape(const CollisionShape& shape);
 
-        // Private assignment operator
+        /// Private assignment operator
         CollisionShape& operator=(const CollisionShape& shape);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         CollisionShape(CollisionShapeType type);
 
-        // Destructor
+        /// Destructor
         virtual ~CollisionShape();
 
-        // Return the type of the collision shapes
+        /// Return the type of the collision shapes
         CollisionShapeType getType() const;
 
-        // Return a local support point in a given direction with the object margin
+        /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const=0;
 
-        // Return a local support point in a given direction without the object margin
+        /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
 
-        // Return the local extents in x,y and z direction
+        /// Return the local extents in x,y and z direction
         virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;
 
-        // Return the margin distance around the shape
+        /// Return the margin distance around the shape
         virtual decimal getMargin() const=0;
 
-        // Return the local inertia tensor of the collision shapes
+        /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
 };
 

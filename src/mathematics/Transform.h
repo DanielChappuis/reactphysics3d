@@ -34,85 +34,84 @@
 // ReactPhysiscs3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class Transform :
-        This class represents a position and an orientation in 3D. It can
-        also be seen as representing a translation and a rotation
-    -------------------------------------------------------------------
-*/
+// Class Transform
+/**
+ * This class represents a position and an orientation in 3D. It can
+ * also be seen as representing a translation and a rotation.
+ */
 class Transform {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Position
+        /// Position
         Vector3 mPosition;
 
-        // Orientation
+        /// Orientation
         Quaternion mOrientation;
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         Transform();
 
-        // Constructor
+        /// Constructor
         Transform(const Vector3& position, const Matrix3x3& orientation);
 
-        // Constructor
+        /// Constructor
         Transform(const Vector3& position, const Quaternion& orientation);
 
-        // Destructor
+        /// Destructor
         ~Transform();
 
-        // Copy-constructor
+        /// Copy-constructor
         Transform(const Transform& transform);
 
-        // Return the origin of the transform
+        /// Return the origin of the transform
         const Vector3& getPosition() const;
 
-        // Set the origin of the transform
+        /// Set the origin of the transform
         void setPosition(const Vector3& position);
 
-        // Return the orientation quaternion
+        /// Return the orientation quaternion
         const Quaternion& getOrientation() const;
 
-        // Set the rotation quaternion
+        /// Set the rotation quaternion
         void setOrientation(const Quaternion& orientation);
 
-        // Set the transform to the identity transform
+        /// Set the transform to the identity transform
         void setToIdentity();
 
-        // Set the transform from an OpenGL transform matrix
+        /// Set the transform from an OpenGL transform matrix
         void setFromOpenGL(decimal* openglMatrix);
 
-        // Get the OpenGL matrix of the transform
+        /// Get the OpenGL matrix of the transform
         void getOpenGLMatrix(decimal* openglMatrix) const;
 
-        // Return the inverse of the transform
+        /// Return the inverse of the transform
         Transform inverse() const;
 
-        // Return an interpolated transform
+        /// Return an interpolated transform
         static Transform interpolateTransforms(const Transform& oldTransform,
                                                const Transform& newTransform,
                                                decimal interpolationFactor);
 
-        // Return the transformed vector
+        /// Return the transformed vector
         Vector3 operator*(const Vector3& vector) const;
 
-        // Operator of multiplication of a transform with another one
+        /// Operator of multiplication of a transform with another one
         Transform operator*(const Transform& transform2) const;
 
-        // Return true if the two transforms are equal
+        /// Return true if the two transforms are equal
         bool operator==(const Transform& transform2) const;
 
-        // Return true if the two transforms are different
+        /// Return true if the two transforms are different
         bool operator!=(const Transform& transform2) const;
 
-        // Assignment operator
+        /// Assignment operator
         Transform& operator=(const Transform& transform);
 };
 

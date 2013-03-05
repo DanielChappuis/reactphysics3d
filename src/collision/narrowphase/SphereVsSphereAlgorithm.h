@@ -32,38 +32,37 @@
 #include "NarrowPhaseAlgorithm.h"
 
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class SphereVsSphereAlgorithm :
-        This class is used to compute the narrow-phase collision detection
-        between two sphere collision shapes.
-    -------------------------------------------------------------------
-*/
+// Class SphereVsSphereAlgorithm
+/**
+ * This class is used to compute the narrow-phase collision detection
+ * between two sphere collision shapes.
+ */
 class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
 
     protected :
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm);
         
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
 
-        // Destructor
+        /// Destructor
         virtual ~SphereVsSphereAlgorithm();
 
-        // Return true and compute a contact info if the two bounding volume collide
+        /// Return true and compute a contact info if the two bounding volume collide
         virtual bool testCollision(const CollisionShape* collisionShape1,
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,

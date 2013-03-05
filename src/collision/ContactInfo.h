@@ -33,45 +33,44 @@
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Structure ContactInfo :
-       This structure contains informations about a collision contact
-       computed during the narrow-phase collision detection. Those
-       informations are use to compute the contact set for a contact
-       between two bodies.
-    -------------------------------------------------------------------
-*/
+// Structure ContactInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
 struct ContactInfo {
 
     private:
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         ContactInfo(const ContactInfo& contactInfo);
 
-        // Private assignment operator
+        /// Private assignment operator
         ContactInfo& operator=(const ContactInfo& contactInfo);
 
     public:
 
         // -------------------- Attributes -------------------- //
 
-        // Normal vector the the collision contact in world space
+        /// Normal vector the the collision contact in world space
         const Vector3 normal;
 
-        // Penetration depth of the contact
+        /// Penetration depth of the contact
         const decimal penetrationDepth;
 
-        // Contact point of body 1 in local space of body 1
+        /// Contact point of body 1 in local space of body 1
         const Vector3 localPoint1;
 
-        // Contact point of body 2 in local space of body 2
+        /// Contact point of body 2 in local space of body 2
         const Vector3 localPoint2;
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         ContactInfo(const Vector3& normal, decimal penetrationDepth,
                     const Vector3& localPoint1, const Vector3& localPoint2);
 };

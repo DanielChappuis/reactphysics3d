@@ -32,67 +32,66 @@
 #include "../../mathematics/mathematics.h"
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class BoxShape :
-        This class represents a 3D box shape. Those axis are unit length.
-        The three extents are half-widths of the box along the three
-        axis x, y, z local axis. The "transform" of the corresponding
-        rigid body gives an orientation and a position to the box.
-    -------------------------------------------------------------------
-*/
+// Class BoxShape
+/**
+ * This class represents a 3D box shape. Those axis are unit length.
+ * The three extents are half-widths of the box along the three
+ * axis x, y, z local axis. The "transform" of the corresponding
+ * rigid body gives an orientation and a position to the box.
+ */
 class BoxShape : public CollisionShape {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Extent sizes of the box in the x, y and z direction
+        /// Extent sizes of the box in the x, y and z direction
         Vector3 mExtent;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         BoxShape(const BoxShape& shape);
 
-        // Private assignment operator
+        /// Private assignment operator
         BoxShape& operator=(const BoxShape& shape);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         BoxShape(const Vector3& extent);
 
-        // Destructor
+        /// Destructor
         virtual ~BoxShape();
 
-        // Return the extents of the box
+        /// Return the extents of the box
         const Vector3& getExtent() const;
 
-        // Set the extents of the box
+        /// Set the extents of the box
         void setExtent(const Vector3& extent);
 
-        // Return the local extents in x,y and z direction
+        /// Return the local extents in x,y and z direction.
         virtual Vector3 getLocalExtents(decimal margin=0.0) const;
 
-        // Return the margin distance around the shape
+        /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
-        // Return a local support point in a given direction with the object margin
+        /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
-        // Return a local support point in a given direction without the object margin
+        /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
-        // Return the local inertia tensor of the collision shape
+        /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
 #ifdef VISUAL_DEBUG
-        // Draw the Box (only for testing purpose)
+        /// Draw the Box (only for testing purpose)
         virtual void draw() const;
 #endif
 };
@@ -107,8 +106,8 @@ inline void BoxShape::setExtent(const Vector3& extent) {
     this->mExtent = extent;
 }
 
-// Return the local extents of the box (half-width) in x,y and z local direction
-// This method is used to compute the AABB of the box
+// Return the local extents of the box (half-width) in x,y and z local direction.
+/// This method is used to compute the AABB of the box
 inline Vector3 BoxShape::getLocalExtents(decimal margin) const {
     return mExtent + Vector3(getMargin(), getMargin(), getMargin());
 }

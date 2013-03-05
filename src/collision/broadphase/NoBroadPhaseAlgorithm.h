@@ -32,50 +32,49 @@
 #include <set>
 #include <iostream>
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  --------------------------------------------------------------------
-    Class NoBroadPhaseAlgorithm :
-        This class implements a broad-phase algorithm that does nothing.
-        It should be use if we don't want to perform a broad-phase for
-        the collision detection.
-    --------------------------------------------------------------------
-*/
+// Class NoBroadPhaseAlgorithm
+/**
+ * This class implements a broad-phase algorithm that does nothing.
+ * It should be use if we don't want to perform a broad-phase for
+ * the collision detection.
+ */
 class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // All bodies of the world
+        /// All bodies of the world
         std::set<CollisionBody*> mBodies;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         NoBroadPhaseAlgorithm(const NoBroadPhaseAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         NoBroadPhaseAlgorithm& operator=(const NoBroadPhaseAlgorithm& algorithm);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection);
 
-        // Destructor
+        /// Destructor
         virtual ~NoBroadPhaseAlgorithm();
         
-        // Notify the broad-phase about a new object in the world
+        /// Notify the broad-phase about a new object in the world
         virtual void addObject(CollisionBody* body, const AABB& aabb);
 
-        // Notify the broad-phase about an object that has been removed from the world
+        /// Notify the broad-phase about an object that has been removed from the world
         virtual void removeObject(CollisionBody* body);
 
-        // Notify the broad-phase that the AABB of an object has changed
+        /// Notify the broad-phase that the AABB of an object has changed
         virtual void updateObject(CollisionBody* body, const AABB& aabb);
 };
 

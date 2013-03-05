@@ -47,16 +47,16 @@ GJKAlgorithm::~GJKAlgorithm() {
 
 }
 
-// Return true and compute a contact info if the two bounding volume collide.
-// This method implements the Hybrid Technique for computing the penetration depth by
-// running the GJK algorithm on original objects (without margin).
-// If the objects don't intersect, this method returns false. If they intersect
-// only in the margins, the method compute the penetration depth and contact points
-// (of enlarged objects). If the original objects (without margin) intersect, we
-// call the computePenetrationDepthForEnlargedObjects() method that run the GJK
-// algorithm on the enlarged object to obtain a simplex polytope that contains the
-// origin, they we give that simplex polytope to the EPA algorithm which will compute
-// the correct penetration depth and contact points between the enlarged objects.
+// Return true and compute a contact info if the two bounding volumes collide.
+/// This method implements the Hybrid Technique for computing the penetration depth by
+/// running the GJK algorithm on original objects (without margin).
+/// If the objects don't intersect, this method returns false. If they intersect
+/// only in the margins, the method compute the penetration depth and contact points
+/// (of enlarged objects). If the original objects (without margin) intersect, we
+/// call the computePenetrationDepthForEnlargedObjects() method that run the GJK
+/// algorithm on the enlarged object to obtain a simplex polytope that contains the
+/// origin, they we give that simplex polytope to the EPA algorithm which will compute
+/// the correct penetration depth and contact points between the enlarged objects.
 bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
                                  const Transform& transform1,
                                  const CollisionShape* collisionShape2,
@@ -254,11 +254,11 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
                                                      transform2, contactInfo, v);
 }
 
-// This method runs the GJK algorithm on the two enlarged objects (with margin)
-// to compute a simplex polytope that contains the origin. The two objects are
-// assumed to intersect in the original objects (without margin). Therefore such
-// a polytope must exist. Then, we give that polytope to the EPA algorithm to
-// compute the correct penetration depth and contact points of the enlarged objects.
+/// This method runs the GJK algorithm on the two enlarged objects (with margin)
+/// to compute a simplex polytope that contains the origin. The two objects are
+/// assumed to intersect in the original objects (without margin). Therefore such
+/// a polytope must exist. Then, we give that polytope to the EPA algorithm to
+/// compute the correct penetration depth and contact points of the enlarged objects.
 bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1,
                                                              const Transform& transform1,
                                                              const CollisionShape* collisionShape2,

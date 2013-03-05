@@ -48,111 +48,110 @@
     #endif
 #endif
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class ContactPoint :
-        This class represents a collision contact point between two
-        bodies in the physics engine. The ContactPoint class inherits from
-        the Constraint class.
-    -------------------------------------------------------------------
-*/
+// Class ContactPoint
+/**
+ * This class represents a collision contact point between two
+ * bodies in the physics engine. The ContactPoint class inherits from
+ * the Constraint class.
+ */
 class ContactPoint : public Constraint {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Normal vector of the contact (From body1 toward body2) in world space
+        /// Normal vector of the contact (From body1 toward body2) in world space
         const Vector3 mNormal;
 
-        // Penetration depth
+        /// Penetration depth
         decimal mPenetrationDepth;
 
-        // Contact point on body 1 in local space of body 1
+        /// Contact point on body 1 in local space of body 1
         const Vector3 mLocalPointOnBody1;
 
-        // Contact point on body 2 in local space of body 2
+        /// Contact point on body 2 in local space of body 2
         const Vector3 mLocalPointOnBody2;
 
-        // Contact point on body 1 in world space
+        /// Contact point on body 1 in world space
         Vector3 mWorldPointOnBody1;
 
-        // Contact point on body 2 in world space
+        /// Contact point on body 2 in world space
         Vector3 mWorldPointOnBody2;
 
-        // True if the contact is a resting contact (exists for more than one time step)
+        /// True if the contact is a resting contact (exists for more than one time step)
         bool mIsRestingContact;
 
-        // Two orthogonal vectors that span the tangential friction plane
+        /// Two orthogonal vectors that span the tangential friction plane
         std::vector<Vector3> mFrictionVectors;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         ContactPoint(const ContactPoint& contact);
 
-        // Private assignment operator
+        /// Private assignment operator
         ContactPoint& operator=(const ContactPoint& contact);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
 
-        // Destructor
+        /// Destructor
         virtual ~ContactPoint();
 
-        // Return the normal vector of the contact
+        /// Return the normal vector of the contact
         Vector3 getNormal() const;
 
-        // Set the penetration depth of the contact
+        /// Set the penetration depth of the contact
         void setPenetrationDepth(decimal penetrationDepth);
 
-        // Return the contact local point on body 1
+        /// Return the contact local point on body 1
         Vector3 getLocalPointOnBody1() const;
 
-        // Return the contact local point on body 2
+        /// Return the contact local point on body 2
         Vector3 getLocalPointOnBody2() const;
 
-        // Return the contact world point on body 1
+        /// Return the contact world point on body 1
         Vector3 getWorldPointOnBody1() const;
 
-        // Return the contact world point on body 2
+        /// Return the contact world point on body 2
         Vector3 getWorldPointOnBody2() const;
 
-        // Set the contact world point on body 1
+        /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
 
-        // Set the contact world point on body 2
+        /// Set the contact world point on body 2
         void setWorldPointOnBody2(const Vector3& worldPoint);
 
-        // Return true if the contact is a resting contact
+        /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
-        // Set the mIsRestingContact variable
+        /// Set the mIsRestingContact variable
         void setIsRestingContact(bool isRestingContact);
 
-        // Get the first friction vector
+        /// Get the first friction vector
         Vector3 getFrictionVector1() const;
 
-        // Set the first friction vector
+        /// Set the first friction vector
         void setFrictionVector1(const Vector3& frictionVector1);
 
-        // Get the second friction vector
+        /// Get the second friction vector
         Vector3 getFrictionVector2() const;
 
-        // Set the second friction vector
+        /// Set the second friction vector
         void setFrictionVector2(const Vector3& frictionVector2);
 
-        // Return the penetration depth
+        /// Return the penetration depth
         decimal getPenetrationDepth() const;
 
         #ifdef VISUAL_DEBUG
-            // Draw the contact (for debugging)
+            /// Draw the contact (for debugging)
            void draw() const;
         #endif
 };

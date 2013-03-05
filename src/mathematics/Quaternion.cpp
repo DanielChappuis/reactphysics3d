@@ -130,9 +130,9 @@ Quaternion::~Quaternion() {
 
 }
 
-// Compute the rotation angle (in radians) and the 3D rotation axis
-// This method is used to get the rotation angle (in radian) and the unit
-// rotation axis of an orientation quaternion.
+// Compute the rotation angle (in radians) and the rotation axis
+/// This method is used to get the rotation angle (in radian) and the unit
+/// rotation axis of an orientation quaternion.
 void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     Quaternion quaternion;
 
@@ -189,7 +189,7 @@ Matrix3x3 Quaternion::getMatrix() const {
 }
 
 // Compute the spherical linear interpolation between two quaternions.
-// The t argument has to be such that 0 <= t <= 1. This method is static.
+/// The t argument has to be such that 0 <= t <= 1. This method is static.
 Quaternion Quaternion::slerp(const Quaternion& quaternion1,
                              const Quaternion& quaternion2, decimal t) {
     assert(t >= 0.0 && t <= 1.0);
@@ -226,5 +226,3 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
     // Compute and return the interpolated quaternion
     return quaternion1 * coeff1 + quaternion2 * coeff2;
 }
-
-

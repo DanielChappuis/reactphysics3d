@@ -34,188 +34,187 @@
 #include "Timer.h"
 #include "../configuration.h"
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class DynamicsWorld :
-        This class represents a dynamics world. This class inherits from
-        the CollisionWorld class. In a dynamics world, bodies can collide
-        and their movements are simulated using the laws of physics.
-    -------------------------------------------------------------------
-*/
+// Class DynamicsWorld
+/**
+ * This class represents a dynamics world. This class inherits from
+ * the CollisionWorld class. In a dynamics world, bodies can collide
+ * and their movements are simulated using the laws of physics.
+ */
 class DynamicsWorld : public CollisionWorld {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Timer of the physics engine
+        /// Timer of the physics engine
         Timer mTimer;
 
-        // Contact solver
+        /// Contact solver
         ContactSolver mContactSolver;
 
-        // True if the deactivation (sleeping) of inactive bodies is enabled
+        /// True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
 
-        // All the rigid bodies of the physics world
+        /// All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
-        // All the contact constraints
+        /// All the contact constraints
         std::vector<ContactManifold*> mContactManifolds;
 
-        // All the constraints (except contact constraints)
+        /// All the constraints (except contact constraints)
         std::vector<Constraint*> mConstraints;
 
-        // Gravity vector of the world
+        /// Gravity vector of the world
         Vector3 mGravity;
 
-        // True if the gravity force is on
+        /// True if the gravity force is on
         bool mIsGravityOn;
 
-        // Memory pool for the overlapping pairs
+        /// Memory pool for the overlapping pairs
         MemoryPool<OverlappingPair> mMemoryPoolOverlappingPairs;
 
-        // Memory pool for rigid bodies memory allocation
+        /// Memory pool for rigid bodies memory allocation
         MemoryPool<RigidBody> mMemoryPoolRigidBodies;
 
-        // Memory pool for the contacts
+        /// Memory pool for the contacts
         MemoryPool<ContactPoint> mMemoryPoolContacts;
 
-        // Array of constrained linear velocities (state of the linear velocities
-        // after solving the constraints)
+        /// Array of constrained linear velocities (state of the linear velocities
+        /// after solving the constraints)
         std::vector<Vector3> mConstrainedLinearVelocities;
 
-        // Array of constrained angular velocities (state of the angular velocities
-        // after solving the constraints)
+        /// Array of constrained angular velocities (state of the angular velocities
+        /// after solving the constraints)
         std::vector<Vector3> mConstrainedAngularVelocities;
 
-        // Map body to their index in the constrained velocities array
+        /// Map body to their index in the constrained velocities array
         std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         DynamicsWorld(const DynamicsWorld& world);
 
-        // Private assignment operator
+        /// Private assignment operator
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
-        // Compute the motion of all bodies and update their positions and orientations
+        /// Compute the motion of all bodies and update their positions and orientations
         void updateRigidBodiesPositionAndOrientation();
 
-        // Update the position and orientation of a body
+        /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
                                                 Vector3 newAngVelocity);
 
-        // Compute and set the interpolation factor to all bodies
+        /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
 
-        // Initialize the constrained velocities array at each step
+        /// Initialize the constrained velocities array at each step
         void initConstrainedVelocitiesArray();
 
-        // Cleanup the constrained velocities array at each step
+        /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
 
-        // Apply the gravity force to all bodies
+        /// Apply the gravity force to all bodies
         void applyGravity();
 
-        // Reset the boolean movement variable of each body
+        /// Reset the boolean movement variable of each body
         void resetBodiesMovementVariable();
 
-        // Update the overlapping pair
+        /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
 
-        // Notify the world about a new broad-phase overlapping pair
+        /// Notify the world about a new broad-phase overlapping pair
         virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
 
-        // Notify the world about a removed broad-phase overlapping pair
+        /// Notify the world about a removed broad-phase overlapping pair
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
-        // Notify the world about a new narrow-phase contact
+        /// Notify the world about a new narrow-phase contact
         virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
 
 public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         DynamicsWorld(const Vector3& mGravity, decimal timeStep);
 
-        // Destructor
+        /// Destructor
         virtual ~DynamicsWorld();
 
-        // Start the physics simulation
+        /// Start the physics simulation
         void start();
 
-        // Stop the physics simulation
+        /// Stop the physics simulation
         void stop();
 
-        // Update the physics simulation
+        /// Update the physics simulation
         void update();
 
-        // Set the number of iterations of the constraint solver
+        /// Set the number of iterations of the constraint solver
         void setNbIterationsSolver(uint nbIterations);
 
-        // Activate or Deactivate the split impulses for contacts
+        /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
 
-        // Activate or deactivate the solving of friction constraints at the center of
-        // the contact manifold instead of solving them at each contact point
+        /// Activate or deactivate the solving of friction constraints at the center of
+        /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
-        // Set the isErrorCorrectionActive value
+        /// Set the isErrorCorrectionActive value
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
 
-        // Create a rigid body into the physics world
+        /// Create a rigid body into the physics world
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
                                    const Matrix3x3& inertiaTensorLocal,
                                    CollisionShape* collisionShape);
 
-        // Destroy a rigid body
+        /// Destroy a rigid body
         void destroyRigidBody(RigidBody* rigidBody);
 
-        // Return the gravity vector of the world
+        /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
-        // Return if the gravity is on
+        /// Return if the gravity is on
         bool getIsGravityOn() const;
 
-        // Set the isGravityOn attribute
+        /// Set the isGravityOn attribute
         void setIsGratityOn(bool isGravityOn);
 
-        // Return the number of rigid bodies in the world
+        /// Return the number of rigid bodies in the world
         uint getNbRigidBodies() const;
 
-        // Add a constraint
+        /// Add a constraint
         void addConstraint(Constraint* constraint);
 
-        // Remove a constraint
+        /// Remove a constraint
         void removeConstraint(Constraint* constraint);
 
-        // Remove all constraints and delete them (free their memory)
+        /// Remove all constraints and delete them (free their memory)
         void removeAllConstraints();
 
-        // Return the number of contact constraints in the world
+        /// Return the number of contact constraints in the world
         uint getNbContactManifolds() const;
 
-        // Return a start iterator on the constraint list
+        /// Return a start iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsBeginIterator();
 
-        // Return a end iterator on the constraint list
+        /// Return a end iterator on the constraint list
         std::vector<Constraint*>::iterator getConstraintsEndIterator();
 
-        // Return a start iterator on the contact manifolds list
+        /// Return a start iterator on the contact manifolds list
         std::vector<ContactManifold*>::iterator getContactManifoldsBeginIterator();
 
-        // Return a end iterator on the contact manifolds list
+        /// Return a end iterator on the contact manifolds list
         std::vector<ContactManifold*>::iterator getContactManifoldsEndIterator();
 
-        // Return an iterator to the beginning of the rigid bodies of the physics world
+        /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
 
-        // Return an iterator to the end of the rigid bodies of the physics world
+        /// Return an iterator to the end of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
 };
 

@@ -53,10 +53,10 @@ PairManager::~PairManager() {
     free(mHashTable);
 }
 
-// Add a pair of bodies in the pair manager and returns a pointer to
-// that pair. If the pair to add does not already exist in the set of 
-// overlapping pairs, it will be created and if it already exists, we only
-// return a pointer to that pair.
+// Add a pair of bodies in the pair manager and returns a pointer to that pair.
+/// If the pair to add does not already exist in the set of
+/// overlapping pairs, it will be created and if it already exists, we only
+/// return a pointer to that pair.
 BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
 
     // Sort the bodies to have the body with smallest ID first
@@ -109,8 +109,8 @@ BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
     return newPair;
 } 
 
-// Remove a pair of bodies from the pair manager. This method returns
-// true if the pair has been found and removed.
+// Remove a pair of bodies from the pair manager.
+/// This method returns true if the pair has been found and removed.
 bool PairManager::removePair(bodyindex id1, bodyindex id2) {
     
     // Sort the bodies IDs

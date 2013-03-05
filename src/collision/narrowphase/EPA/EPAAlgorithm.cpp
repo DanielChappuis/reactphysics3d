@@ -42,9 +42,9 @@ EPAAlgorithm::~EPAAlgorithm() {
     
 }
 
-// Decide if the origin is in the tetrahedron
-// Return 0 if the origin is in the tetrahedron and return the number (1,2,3 or 4) of
-// the vertex that is wrong if the origin is not in the tetrahedron
+// Decide if the origin is in the tetrahedron.
+/// Return 0 if the origin is in the tetrahedron and return the number (1,2,3 or 4) of
+/// the vertex that is wrong if the origin is not in the tetrahedron
 int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
                                         const Vector3& p3, const Vector3& p4) const {
 
@@ -76,12 +76,12 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
     return 0;
 }
 
-// Compute the penetration depth with the EPA algorithms
-// This method computes the penetration depth and contact points between two
-// enlarged objects (with margin) where the original objects (without margin)
-// intersect. An initial simplex that contains origin has been computed with
-// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
-// the correct penetration depth
+// Compute the penetration depth with the EPA algorithm.
+/// This method computes the penetration depth and contact points between two
+/// enlarged objects (with margin) where the original objects (without margin)
+/// intersect. An initial simplex that contains origin has been computed with
+/// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
+/// the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
                                                            const CollisionShape* collisionShape1,
                                                            const Transform& transform1,

@@ -31,115 +31,114 @@
 #include <cassert>
 #include "Vector3.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 
-/*  -------------------------------------------------------------------
-    Class Matrix3x3 :
-        This class represents a 3x3 matrix.
-    -------------------------------------------------------------------
-*/
+// Class Matrix3x3
+/**
+ * This class represents a 3x3 matrix.
+ */
 class Matrix3x3 {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Array with the values of the matrix
+        /// Array with the values of the matrix
         decimal mArray[3][3];
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         Matrix3x3();
 
-        // Constructor
+        /// Constructor
         Matrix3x3(decimal value);
 
-        // Constructor
+        /// Constructor
         Matrix3x3(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
                   decimal c1, decimal c2, decimal c3);
 
-        // Destructor
+        /// Destructor
         virtual ~Matrix3x3();
 
-        // Copy-constructor
+        /// Copy-constructor
         Matrix3x3(const Matrix3x3& matrix);
 
-        // Assignment operator
+        /// Assignment operator
         Matrix3x3& operator=(const Matrix3x3& matrix);
 
-        // Get a value in the matrix
+        /// Get a value in the matrix
         decimal getValue(int i, int j) const;
 
-        // Set a value in the matrix
+        /// Set a value in the matrix
         void setValue(int i, int j, decimal value);
 
-        // Set all the values in the matrix
+        /// Set all the values in the matrix
         void setAllValues(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
                   decimal c1, decimal c2, decimal c3);
 
-        // Return a column
+        /// Return a column
         Vector3 getColumn(int i) const;
 
-        // Return the transpose matrix
+        /// Return the transpose matrix
         Matrix3x3 getTranspose() const;
 
-        // Return the determinant of the matrix
+        /// Return the determinant of the matrix
         decimal getDeterminant() const;
 
-        // Return the trace of the matrix
+        /// Return the trace of the matrix
         decimal getTrace() const;
 
-        // Return the inverse matrix
+        /// Return the inverse matrix
         Matrix3x3 getInverse() const;
 
-        // Return the matrix with absolute values
+        /// Return the matrix with absolute values
         Matrix3x3 getAbsoluteMatrix() const;
 
-        // Set the matrix to the identity matrix
+        /// Set the matrix to the identity matrix
         void setToIdentity();
 
-        // Return the 3x3 identity matrix
+        /// Return the 3x3 identity matrix
         static Matrix3x3 identity();
 
-        // Overloaded operator for addition
+        /// Overloaded operator for addition
         friend Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2);
 
-        // Overloaded operator for substraction
+        /// Overloaded operator for substraction
         friend Matrix3x3 operator-(const Matrix3x3& matrix1, const Matrix3x3& matrix2);
 
-        // Overloaded operator for the negative of the matrix
+        /// Overloaded operator for the negative of the matrix
         friend Matrix3x3 operator-(const Matrix3x3& matrix);
 
-        // Overloaded operator for multiplication with a number
+        /// Overloaded operator for multiplication with a number
         friend Matrix3x3 operator*(decimal nb, const Matrix3x3& matrix);
 
-        // Overloaded operator for multiplication with a matrix
+        /// Overloaded operator for multiplication with a matrix
         friend Matrix3x3 operator*(const Matrix3x3& matrix, decimal nb);
 
-        // Overloaded operator for matrix multiplication
+        /// Overloaded operator for matrix multiplication
         friend Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2);
 
-        // Overloaded operator for multiplication with a vector
+        /// Overloaded operator for multiplication with a vector
         friend Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector);
 
-        // Overloaded operator for equality condition
+        /// Overloaded operator for equality condition
         bool operator==(const Matrix3x3& matrix) const;
 
-        // Overloaded operator for the is different condition
+        /// Overloaded operator for the is different condition
         bool operator!= (const Matrix3x3& matrix) const;
 
-        // Overloaded operator for addition with assignment
+        /// Overloaded operator for addition with assignment
         Matrix3x3& operator+=(const Matrix3x3& matrix);
 
-        // Overloaded operator for substraction with assignment
+        /// Overloaded operator for substraction with assignment
         Matrix3x3& operator-=(const Matrix3x3& matrix);
 
-        // Overloaded operator for multiplication with a number with assignment
+        /// Overloaded operator for multiplication with a number with assignment
         Matrix3x3& operator*=(decimal nb);
 };
 

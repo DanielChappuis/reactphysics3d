@@ -95,11 +95,11 @@ void ContactManifold::removeContactPoint(int index) {
 }
 
 // Update the contact manifold
-// First the world space coordinates of the current contacts in the manifold are recomputed from
-// the corresponding transforms of the bodies because they have moved. Then we remove the contacts
-// with a negative penetration depth (meaning that the bodies are not penetrating anymore) and also
-// the contacts with a too large distance between the contact points in the plane orthogonal to the
-// contact normal
+/// First the world space coordinates of the current contacts in the manifold are recomputed from
+/// the corresponding transforms of the bodies because they have moved. Then we remove the contacts
+/// with a negative penetration depth (meaning that the bodies are not penetrating anymore) and also
+/// the contacts with a too large distance between the contact points in the plane orthogonal to the
+/// contact normal.
 void ContactManifold::update(const Transform& transform1, const Transform& transform2) {
     if (mNbContactPoints == 0) return;
 
@@ -140,9 +140,9 @@ void ContactManifold::update(const Transform& transform1, const Transform& trans
     }    
 }
 
-// Return the index of the contact point with the larger penetration depth. This
-// corresponding contact will be kept in the cache. The method returns -1 is
-// the new contact is the deepest.
+// Return the index of the contact point with the larger penetration depth.
+/// This corresponding contact will be kept in the cache. The method returns -1 is
+/// the new contact is the deepest.
 int ContactManifold::getIndexOfDeepestPenetration(ContactPoint* newContact) const {
     assert(mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD);
     int indexMaxPenetrationDepth = -1;
@@ -162,14 +162,15 @@ int ContactManifold::getIndexOfDeepestPenetration(ContactPoint* newContact) cons
     return indexMaxPenetrationDepth;
 }
 
-// Return the index that will be removed. The index of the contact point with the larger penetration
-// depth is given as a parameter. This contact won't be removed. Given this contact, we compute
-// the different area and we want to keep the contacts with the largest area. The new point is also
-// kept. In order to compute the area of a quadrilateral, we use the formula :
-// Area = 0.5 * | AC x BD | where AC and BD form the diagonals of the quadrilateral. Note that
-// when we compute this area, we do not calculate it exactly but we
-// only estimate it because we do not compute the actual diagonals of the quadrialteral. Therefore,
-// this is only a guess that is faster to compute.
+// Return the index that will be removed.
+/// The index of the contact point with the larger penetration
+/// depth is given as a parameter. This contact won't be removed. Given this contact, we compute
+/// the different area and we want to keep the contacts with the largest area. The new point is also
+/// kept. In order to compute the area of a quadrilateral, we use the formula :
+/// Area = 0.5 * | AC x BD | where AC and BD form the diagonals of the quadrilateral. Note that
+/// when we compute this area, we do not calculate it exactly but we
+/// only estimate it because we do not compute the actual diagonals of the quadrialteral. Therefore,
+/// this is only a guess that is faster to compute.
 int ContactManifold::getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const {
 
     assert(mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD);

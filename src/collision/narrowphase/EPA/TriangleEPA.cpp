@@ -83,9 +83,9 @@ bool TriangleEPA::computeClosestPoint(const Vector3* vertices) {
     return false;
 }
 
-// Link an edge with another one (meaning that the current edge of a triangle will
-// be associated with the edge of another triangle in order that both triangles
-// are neighbour along both edges)
+/// Link an edge with another one. It means that the current edge of a triangle will
+/// be associated with the edge of another triangle in order that both triangles
+/// are neighbour along both edges).
 bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
     bool isPossible = (edge0.getSourceVertexIndex() == edge1.getTargetVertexIndex() &&
                        edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
@@ -98,10 +98,10 @@ bool reactphysics3d::link(const EdgeEPA& edge0, const EdgeEPA& edge1) {
     return isPossible;
 }
 
-// Make an half link of an edge with another one from another triangle. An half-link
-// between an edge "edge0" and an edge "edge1" represents the fact that "edge1" is an
-// adjacent edge of "edge0" but not the opposite. The opposite edge connection will
-// be made later.
+/// Make an half link of an edge with another one from another triangle. An half-link
+/// between an edge "edge0" and an edge "edge1" represents the fact that "edge1" is an
+/// adjacent edge of "edge0" but not the opposite. The opposite edge connection will
+/// be made later.
 void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
     assert(edge0.getSourceVertexIndex() == edge1.getTargetVertexIndex() &&
            edge0.getTargetVertexIndex() == edge1.getSourceVertexIndex());
@@ -110,17 +110,17 @@ void reactphysics3d::halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1) {
     edge0.getOwnerTriangle()->mAdjacentEdges[edge0.getIndex()] = edge1;
 }
 
-// Execute the recursive silhouette algorithm from this triangle face
-// The parameter "vertices" is an array that contains the vertices of the current polytope and the
-// parameter "indexNewVertex" is the index of the new vertex in this array. The goal of the
-// silhouette algorithm is to add the new vertex in the polytope by keeping it convex. Therefore,
-// the triangle faces that are visible from the new vertex must be removed from the polytope and we
-// need to add triangle faces where each face contains the new vertex and an edge of the silhouette.
-// The silhouette is the connected set of edges that are part of the border between faces that
-// are seen and faces that are not seen from the new vertex. This method starts from the nearest
-// face from the new vertex, computes the silhouette and create the new faces from the new vertex in
-// order that we always have a convex polytope. The faces visible from the new vertex are set
-// obselete and will not be considered as being a candidate face in the future.
+// Execute the recursive silhouette algorithm from this triangle face.
+/// The parameter "vertices" is an array that contains the vertices of the current polytope and the
+/// parameter "indexNewVertex" is the index of the new vertex in this array. The goal of the
+/// silhouette algorithm is to add the new vertex in the polytope by keeping it convex. Therefore,
+/// the triangle faces that are visible from the new vertex must be removed from the polytope and we
+/// need to add triangle faces where each face contains the new vertex and an edge of the silhouette.
+/// The silhouette is the connected set of edges that are part of the border between faces that
+/// are seen and faces that are not seen from the new vertex. This method starts from the nearest
+/// face from the new vertex, computes the silhouette and create the new faces from the new vertex in
+/// order that we always have a convex polytope. The faces visible from the new vertex are set
+/// obselete and will not be considered as being a candidate face in the future.
 bool TriangleEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                     TrianglesStore& triangleStore) {
     

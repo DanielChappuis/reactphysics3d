@@ -41,7 +41,7 @@
     #define LINUX_OS
 #endif
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
 // ------------------- Type definitions ------------------- //
@@ -53,35 +53,37 @@ typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
 // ------------------- Constants ------------------- //
 
+/// Smallest decimal value (negative)
 const decimal DECIMAL_SMALLEST = - std::numeric_limits<decimal>::max();
 
-// Maximum decimal value
+/// Maximum decimal value
 const decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
 
-// Machine epsilon
+/// Machine epsilon
 const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 
-// Pi constant
+/// Pi constant
 const decimal PI = decimal(3.14159265);
 
-// Default internal constant timestep in seconds
+/// Default internal constant timestep in seconds
 const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
 
-// Default friction coefficient for a rigid body
+/// Default friction coefficient for a rigid body
 const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 
-// True if the deactivation (sleeping) of inactive bodies is enabled
+/// True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 
-// // Object margin for collision detection in cm (For GJK-EPA Algorithm)
+///Object margin for collision detection in cm (For GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);
 
-// Distance threshold for two contact points for a valid persistent contact (in meters)
+/// Distance threshold for two contact points for a valid persistent contact (in meters)
 const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 
+/// Velocity threshold for contact velocity restitution
 const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
 
-// Number of iterations when solving a LCP problem
+/// Number of iterations when solving a LCP problem
 const uint DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 
 }

@@ -26,7 +26,6 @@
 // Libraries
 #include "Constraint.h"
 
-// We want ot use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor

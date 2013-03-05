@@ -41,63 +41,62 @@
 #include <iostream>     // TODO : Delete this
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declarations
 class BroadPhaseAlgorithm;
 class CollisionWorld;
 
-/*  -------------------------------------------------------------------
-    Class CollisionDetection :
-        This class computes the collision detection algorithms. We first
-        perform a broad-phase algorithm to know which pairs of bodies can
-        collide and then we run a narrow-phase algorithm to compute the
-        collision contacts between bodies.
-    -------------------------------------------------------------------
-*/
+// Class CollisionDetection
+/**
+ * This class computes the collision detection algorithms. We first
+ * perform a broad-phase algorithm to know which pairs of bodies can
+ * collide and then we run a narrow-phase algorithm to compute the
+ * collision contacts between bodies.
+ */
 class CollisionDetection {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the physics world
+        /// Pointer to the physics world
         CollisionWorld* mWorld;
 
-        // Broad-phase overlapping pairs
+        /// Broad-phase overlapping pairs
         std::map<bodyindexpair, BroadPhasePair*> mOverlappingPairs;
 
-        // Broad-phase algorithm
+        /// Broad-phase algorithm
         BroadPhaseAlgorithm* mBroadPhaseAlgorithm;
 
-        // Narrow-phase GJK algorithm
+        /// Narrow-phase GJK algorithm
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
-        // Narrow-phase Sphere vs Sphere algorithm
+        /// Narrow-phase Sphere vs Sphere algorithm
         SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
 
-        // Memory pool for contactinfo
+        /// Memory pool for contactinfo
         MemoryPool<ContactInfo> mMemoryPoolContactInfos;
 
-        // Memory pool for broad-phase pairs
+        /// Memory pool for broad-phase pairs
         MemoryPool<BroadPhasePair> mMemoryPoolBroadPhasePairs;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         CollisionDetection(const CollisionDetection& collisionDetection);
 
-        // Private assignment operator
+        /// Private assignment operator
         CollisionDetection& operator=(const CollisionDetection& collisionDetection);
 
-        // Compute the broad-phase collision detection
+        /// Compute the broad-phase collision detection
         void computeBroadPhase();
 
-        // Compute the narrow-phase collision detection
+        /// Compute the narrow-phase collision detection
         bool computeNarrowPhase();
 
-        // Select the narrow phase algorithm to use given two collision shapes
+        /// Select the narrow phase algorithm to use given two collision shapes
         NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1,
                                                          CollisionShape* collisionShape2);
    
@@ -105,25 +104,25 @@ class CollisionDetection {
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         CollisionDetection(CollisionWorld* world);
 
-        // Destructor
+        /// Destructor
         ~CollisionDetection();
 
-        // Add a body to the collision detection
+        /// Add a body to the collision detection
         void addBody(CollisionBody* body);
 
-        // Remove a body from the collision detection
+        /// Remove a body from the collision detection
         void removeBody(CollisionBody* body);
 
-        // Compute the collision detection
+        /// Compute the collision detection
         bool computeCollisionDetection();
 
-        // Allow the broadphase to notify the collision detection about a new overlapping pair
+        /// Allow the broadphase to notify the collision detection about a new overlapping pair.
         void broadPhaseNotifyAddedOverlappingPair(BodyPair* pair);
 
-        // Allow the broadphase to notify the collision detection about a removed overlapping pair
+        /// Allow the broadphase to notify the collision detection about a removed overlapping pair
         void broadPhaseNotifyRemovedOverlappingPair(BodyPair* pair);
 };
 

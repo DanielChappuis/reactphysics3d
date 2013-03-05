@@ -29,77 +29,76 @@
 // Libraries
 #include "ContactManifold.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class OverlappingPair :
-        This class represents a pair of two bodies that are overlapping
-        during the broad-phase collision detection. It is created when
-        the two bodies start to overlap and is destroy when they do not 
-        overlap anymore. This class contains the cache with all the
-        current contacts between the bodies.
-    -------------------------------------------------------------------
-*/
+// Class OverlappingPair
+/**
+ * This class represents a pair of two bodies that are overlapping
+ * during the broad-phase collision detection. It is created when
+ * the two bodies start to overlap and is destroyed when they do not
+ * overlap anymore. This class contains a contact manifold that
+ * store all the contact points between the two bodies.
+ */
 class OverlappingPair {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the first body of the contact
+        /// Pointer to the first body of the contact
         CollisionBody* const mBody1;
 
-        // Pointer to the second body of the contact
+        /// Pointer to the second body of the contact
         CollisionBody* const mBody2;
 
-        // Persistent contact manifold
+        /// Persistent contact manifold
         ContactManifold mContactManifold;
 
-        // Cached previous separating axis
+        /// Cached previous separating axis
         Vector3 mCachedSeparatingAxis;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         OverlappingPair(const OverlappingPair& pair);
 
-        // Private assignment operator
+        /// Private assignment operator
         OverlappingPair& operator=(const OverlappingPair& pair);
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         OverlappingPair(CollisionBody* body1, CollisionBody* body2,
                         MemoryPool<ContactPoint>& memoryPoolContacts);
 
-        // Destructor
+        /// Destructor
         ~OverlappingPair();
         
-        // Return the pointer to first body
+        /// Return the pointer to first body
         CollisionBody* const getBody1() const;
 
-        // Return the pointer to second body
+        /// Return the pointer to second body
         CollisionBody* const getBody2() const;
 
-        // Add a contact to the contact cache
+        /// Add a contact to the contact cache
         void addContact(ContactPoint* contact);
 
-        // Update the contact cache
+        /// Update the contact cache
         void update();
 
-        // Return the cached separating axis
+        /// Return the cached separating axis
         Vector3 getCachedSeparatingAxis() const;
 
-        // Set the cached separating axis
+        /// Set the cached separating axis
         void setCachedSeparatingAxis(const Vector3& axis);
 
-        // Return the number of contacts in the cache
+        /// Return the number of contacts in the cache
         uint getNbContactPoints() const;
 
-        // Return the contact manifold
+        /// Return the contact manifold
         ContactManifold* getContactManifold();
 };
 

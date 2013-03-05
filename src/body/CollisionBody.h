@@ -35,116 +35,114 @@
 #include "../collision/shapes/CollisionShape.h"
 #include "../configuration.h"
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
-
-/*  -------------------------------------------------------------------
-    Class CollisionBody :
-        This class represents a body that is able to collide with others
-        bodies. This class inherits from the Body class.
-    -------------------------------------------------------------------
-*/
+// Class CollisionBody
+/**
+ * This class represents a body that is able to collide with others
+ * bodies. This class inherits from the Body class.
+ */
 class CollisionBody : public Body {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Collision shape of the body
+        /// Collision shape of the body
         CollisionShape* mCollisionShape;
 
-        // Position and orientation of the body
+        /// Position and orientation of the body
         Transform mTransform;
 
-        // Last position and orientation of the body
+        /// Last position and orientation of the body
         Transform mOldTransform;
 
-        // Interpolation factor used for the state interpolation
+        /// Interpolation factor used for the state interpolation
         decimal mInterpolationFactor;
 
-        // True if the body is active (not sleeping)
+        /// True if the body is active (not sleeping)
         bool mIsActive;
 
-        // True if the body is able to move
+        /// True if the body is able to move
         bool mIsMotionEnabled;
 
-        // True if the body can collide with others bodies
+        /// True if the body can collide with others bodies
         bool mIsCollisionEnabled;
 
-        // AABB for Broad-Phase collision detection
+        /// AABB for Broad-Phase collision detection
         AABB* mAabb;
 
-        // True if the body has moved during the last frame
+        /// True if the body has moved during the last frame
         bool mHasMoved;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         CollisionBody(const CollisionBody& body);
 
-        // Private assignment operator
+        /// Private assignment operator
         CollisionBody& operator=(const CollisionBody& body);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         CollisionBody(const Transform& transform, CollisionShape* collisionShape, bodyindex id);
 
-        // Destructor
+        /// Destructor
         virtual ~CollisionBody();
 
-        // Return true if the body has moved during the last frame
+        /// Return true if the body has moved during the last frame
         bool getHasMoved() const;
 
-        // Set the hasMoved variable (true if the body has moved during the last frame)
+        /// Set the hasMoved variable (true if the body has moved during the last frame)
         void setHasMoved(bool hasMoved);
 
-        // Return the collision shape
+        /// Return the collision shape
         CollisionShape* getCollisionShape() const;
 
-        // Set the collision shape
+        /// Set the collision shape
         void setCollisionShape(CollisionShape* collisionShape);
 
-        // Return true for an active body
+        /// Return true for an active body
         bool getIsActive() const;
 
-        // Set the isActive variable
+        /// Set the isActive variable
         void setIsActive(bool isActive);
 
-        // Return the current position and orientation
+        /// Return the current position and orientation
         const Transform& getTransform() const;
 
-        // Set the current position and orientation
+        /// Set the current position and orientation
         void setTransform(const Transform& transform);
 
-        // Return the AAABB of the body
+        /// Return the AAABB of the body
         const AABB* getAABB() const;
 
-        // Return the interpolated transform for rendering
+        /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
 
-        // Set the interpolation factor of the body
+        /// Set the interpolation factor of the body
         void setInterpolationFactor(decimal factor);
 
-        // Return if the rigid body can move
+        /// Return if the rigid body can move
         bool getIsMotionEnabled() const;
 
-        // Set the value to true if the body can move
+        /// Set the value to true if the body can move
         void setIsMotionEnabled(bool isMotionEnabled);
 
-        // Return true if the body can collide with others bodies
+        /// Return true if the body can collide with others bodies
         bool getIsCollisionEnabled() const;
 
-        // Set the isCollisionEnabled value
+        /// Set the isCollisionEnabled value
         void setIsCollisionEnabled(bool isCollisionEnabled);
 
-        // Update the old transform with the current one
+        /// Update the old transform with the current one.
         void updateOldTransform();
 
-        // Update the Axis-Aligned Bounding Box coordinates
+        /// Update the Axis-Aligned Bounding Box coordinates
         void updateAABB();
 };
 
@@ -232,8 +230,8 @@ inline void CollisionBody::setIsCollisionEnabled(bool isCollisionEnabled) {
     mIsCollisionEnabled = isCollisionEnabled;
 }
 
-// Update the old transform with the current one
-// This is used to compute the interpolated position and orientation of the body
+// Update the old transform with the current one.
+/// This is used to compute the interpolated position and orientation of the body
 inline void CollisionBody::updateOldTransform() {
     mOldTransform = mTransform;
 }

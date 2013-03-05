@@ -37,88 +37,88 @@
 //        C++ cast operator like reinterpret_cast<>, ...
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class MemoryPool :
-        This class represents a memory pool that allows us to allocate
-        dynamic memory at the beginning of the application in order to
-        avoid memory fragmentation and also a large number of allocation
-        and deallocation.
-    -------------------------------------------------------------------
-*/
+// Class MemoryPool
+/**
+ * This class represents a memory pool. This memory pool allows us to allocate
+ * dynamic memory at the beginning of the application in order to
+ * avoid memory fragmentation and also a large number of allocation
+ * and deallocation.
+ */
 template<class T>
 class MemoryPool {
 
     private:
 
-        // MemoryUnit represents a unit of memory
+        /// MemoryUnit represents a unit of memory
         struct MemoryUnit {
             struct MemoryUnit* pNext;               // Pointer to the next memory unit
             struct MemoryUnit* pPrevious;           // Pointer to the previous memory unit
         };
 
-        // Memory block (that contains several memory units)
+        /// Memory block (that contains several memory units)
         struct MemoryBlock {
             struct MemoryBlock* pNext;              // Pointer to the next memory block
         };
 
         // -------------------- Constants -------------------- //
 
-        static const uint NB_OBJECTS_FIRST_BLOCK;   // Number of objects allocated in the first block
+        // Number of objects allocated in the first block
+        static const uint NB_OBJECTS_FIRST_BLOCK;
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the first allocated memory block
+        /// Pointer to the first allocated memory block
         void* mPBlocks;
 
-        // Pointer to the first allocated memory unit
+        /// Pointer to the first allocated memory unit
         MemoryUnit* mPAllocatedUnits;
 
-        // Pointer to the first free memory unit
+        /// Pointer to the first free memory unit
         MemoryUnit* mPFreeUnits;
 
-        // Current number of objects in the pool
+        /// Current number of objects in the pool
         uint mCurrentNbObjects;
 
-        // Current maximum number of objects that can be allocated in the pool
+        /// Current maximum number of objects that can be allocated in the pool
         uint mCapacity;
 
-        // Number of objects to allocate in the next block
+        /// Number of objects to allocate in the next block
         uint mNbObjectsNextBlock;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         MemoryPool(const MemoryPool& body);
 
-        // Private assignment operator
+        /// Private assignment operator
         MemoryPool& operator=(const MemoryPool& timer);
 
-        // Allocate more memory (more blocks) when needed
+        /// Allocate more memory (more blocks) when needed
         void allocateMemory();
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         MemoryPool(uint capacity = 0) throw(std::bad_alloc);
 
-        // Destructor
+        /// Destructor
         ~MemoryPool();
 
-        // Return the current maximum number of objects allowed in the pool
+        /// Return the current maximum number of objects allowed in the pool
         uint getCapacity() const;
 
-        // Return the current number of objects in the pool
+        /// Return the current number of objects in the pool
         uint getCurrentNbObjects() const;
 
-        // Return a pointer to an memory allocated location to store a new object
+        /// Return a pointer to an memory allocated location to store a new object
         void* allocateObject();
 
-        // Tell the pool that an object doesn't need to be store in the pool anymore
+        /// Tell the pool that an object doesn't need to be store in the pool anymore
         void freeObject(void* pObjectToFree);
 };
 
@@ -126,8 +126,8 @@ class MemoryPool {
 template<class T> const uint MemoryPool<T>::NB_OBJECTS_FIRST_BLOCK = 100;
 
 // Constructor
-// Allocate a large block of memory in order to contain
-// a given number of object of the template type T
+/// Allocate a large block of memory in order to contain
+/// a given number of object of the template type T
 template<class T>
 MemoryPool<T>::MemoryPool(uint capacity) throw(std::bad_alloc)
               : mCurrentNbObjects(0), mCapacity(capacity) {
@@ -142,7 +142,7 @@ MemoryPool<T>::MemoryPool(uint capacity) throw(std::bad_alloc)
 }
 
 // Destructor
-// Deallocate the blocks of memory that have been allocated previously
+/// Deallocate the blocks of memory that have been allocated previously
 template<class T>
 MemoryPool<T>::~MemoryPool() {
     
@@ -158,9 +158,9 @@ MemoryPool<T>::~MemoryPool() {
     }
 }
 
-// Return a pointer to a memory allocated location to store a new object
-// This method only allocates memory if needed and it returns a pointer
-// to a location in an allocated block of memory where a new object can be stored
+// Return a pointer to a memory allocated location to store a new object.
+/// This method only allocates memory if needed and it returns a pointer
+/// to a location in an allocated block of memory where a new object can be stored
 template<class T>
 void* MemoryPool<T>::allocateObject() {
 
@@ -193,10 +193,10 @@ void* MemoryPool<T>::allocateObject() {
 }
 
 // Tell the pool that an object does not need to be stored in the pool anymore
-// This method does not deallocate memory because it will be done only at the
-// end but it notifies the memory pool that an object that was stored in the pool
-// does not need to be stored anymore and therefore we can use the corresponding
-// location in the pool for another object
+/// This method does not deallocate memory because it will be done only at the
+/// end but it notifies the memory pool that an object that was stored in the pool
+/// does not need to be stored anymore and therefore we can use the corresponding
+/// location in the pool for another object
 template<class T>
 void MemoryPool<T>::freeObject(void* pObjectToFree) {
 
@@ -218,9 +218,10 @@ void MemoryPool<T>::freeObject(void* pObjectToFree) {
     mCurrentNbObjects--;
 }
 
-// Allocate more memory. This method is called when there are no
-// free memory units available anymore. Therefore, we need to allocate
-// a new memory block in order to be able to store several new memory units.
+// Allocate more memory (more blocks) when needed
+/// This method is called when there are no
+/// free memory units available anymore. Therefore, we need to allocate
+/// a new memory block in order to be able to store several new memory units.
 template<class T>
 void MemoryPool<T>::allocateMemory() {
 

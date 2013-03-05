@@ -32,7 +32,7 @@
 #include "EdgeEPA.h"
 #include <cassert>
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Prototypes
@@ -40,103 +40,101 @@ bool link(const EdgeEPA& edge0, const EdgeEPA& edge1);
 void halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1);
 
 
-/*  -------------------------------------------------------------------
-    Class TriangleEPA :
-        This class represents a triangle face of the current polytope in the EPA
-        algorithm.
-    -------------------------------------------------------------------
-*/
+// Class TriangleEPA
+/**
+ * This class represents a triangle face of the current polytope in the EPA algorithm.
+ */
 class TriangleEPA {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Indices of the vertices y_i of the triangle
+        /// Indices of the vertices y_i of the triangle
         uint mIndicesVertices[3];
 
-        // Three adjacent edges of the triangle (edges of other triangles)
+        /// Three adjacent edges of the triangle (edges of other triangles)
         EdgeEPA mAdjacentEdges[3];
 
-        // True if the triangle face is visible from the new support point
+        /// True if the triangle face is visible from the new support point
         bool mIsObsolete;
 
-        // Determinant
+        /// Determinant
         decimal mDet;
 
-        // Point v closest to the origin on the affine hull of the triangle
+        /// Point v closest to the origin on the affine hull of the triangle
         Vector3 mClosestPoint;
 
-        // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
+        /// Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
         decimal mLambda1;
 
-        // Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
+        /// Lambda1 value such that v = lambda0 * y_0 + lambda1 * y_1 + lambda2 * y_2
         decimal mLambda2;
 
-        // Square distance of the point closest point v to the origin
+        /// Square distance of the point closest point v to the origin
         decimal mDistSquare;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         TriangleEPA(const TriangleEPA& triangle);
 
-        // Private assignment operator
+        /// Private assignment operator
         TriangleEPA& operator=(const TriangleEPA& triangle);
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         TriangleEPA();
 
-        // Constructor
+        /// Constructor
         TriangleEPA(uint v1, uint v2, uint v3);
 
-        // Destructor
+        /// Destructor
         ~TriangleEPA();
 
-        // Return an adjacent edge of the triangle
+        /// Return an adjacent edge of the triangle
         EdgeEPA& getAdjacentEdge(int index);
 
-        // Set an adjacent edge of the triangle
+        /// Set an adjacent edge of the triangle
         void setAdjacentEdge(int index, EdgeEPA& edge);
 
-        // Return the square distance of the closest point to origin
+        /// Return the square distance of the closest point to origin
         decimal getDistSquare() const;
 
-        // Set the isObsolete value
+        /// Set the isObsolete value
         void setIsObsolete(bool isObsolete);
 
-        // Return true if the triangle face is obsolete
+        /// Return true if the triangle face is obsolete
         bool getIsObsolete() const;
 
-        // Return the point closest to the origin
+        /// Return the point closest to the origin
         const Vector3& getClosestPoint() const;
 
         // Return true if the closest point on affine hull is inside the triangle
         bool isClosestPointInternalToTriangle() const;
 
-        // Return true if the triangle is visible from a given vertex
+        /// Return true if the triangle is visible from a given vertex
         bool isVisibleFromVertex(const Vector3* vertices, uint index) const;
 
-        // Compute the point v closest to the origin of this triangle
+        /// Compute the point v closest to the origin of this triangle
         bool computeClosestPoint(const Vector3* vertices);
 
-        // Compute the point of an object closest to the origin
+        /// Compute the point of an object closest to the origin
         Vector3 computeClosestPointOfObject(const Vector3* supportPointsOfObject) const;
 
-        // Execute the recursive silhouette algorithm from this triangle face
+        /// Execute the recursive silhouette algorithm from this triangle face.
         bool computeSilhouette(const Vector3* vertices, uint index, TrianglesStore& triangleStore);
 
-        // Access operator
+        /// Access operator
         uint operator[](int i) const;
 
-        // Associate two edges
+        /// Associate two edges
         friend bool link(const EdgeEPA& edge0, const EdgeEPA& edge1);
 
-        // Make a half-link between two edges
+        /// Make a half-link between two edges
         friend void halfLink(const EdgeEPA& edge0, const EdgeEPA& edge1);
 };
 

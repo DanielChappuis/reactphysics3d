@@ -35,67 +35,75 @@
 #include "../../../memory/MemoryPool.h"
 #include <algorithm>
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Constants
-const unsigned int MAX_SUPPORT_POINTS = 100;    // Maximum number of support points of the polytope
-const unsigned int MAX_FACETS = 200;            // Maximum number of facets of the polytope
+// ---------- Constants ---------- //
+
+/// Maximum number of support points of the polytope
+const unsigned int MAX_SUPPORT_POINTS = 100;
+
+/// Maximum number of facets of the polytope
+const unsigned int MAX_FACETS = 200;
 
 
-// Class TriangleComparison that allow the comparison of two triangles in the heap
-// The comparison between two triangles is made using their square distance to the closest
-// point to the origin. The goal is that in the heap, the first triangle is the one with the
-// smallest square distance.
+// Class TriangleComparison
+/**
+ * This class allows the comparison of two triangles in the heap
+ * The comparison between two triangles is made using their square distance to the closest
+ * point to the origin. The goal is that in the heap, the first triangle is the one with the
+ * smallest square distance.
+ */
 class TriangleComparison {
+
     public:
-        // Comparison operator
+
+        /// Comparison operator
         bool operator()(const TriangleEPA* face1, const TriangleEPA* face2) {
             return (face1->getDistSquare() > face2->getDistSquare());
         }
 };
 
 
-/*  -------------------------------------------------------------------
-    Class EPAAlgorithm :
-        This class is the implementation of the Expanding Polytope Algorithm (EPA).
-        The EPA algorithm computes the penetration depth and contact points between
-        two enlarged objects (with margin) where the original objects (without margin)
-        intersect. The penetration depth of a pair of intersecting objects A and B is
-        the length of a point on the boundary of the Minkowski sum (A-B) closest to the
-        origin. The goal of the EPA algorithm is to start with an initial simplex polytope
-        that contains the origin and expend it in order to find the point on the boundary
-        of (A-B) that is closest to the origin. An initial simplex that contains origin
-        has been computed wit GJK algorithm. The EPA Algorithm will extend this simplex
-        polytope to find the correct penetration depth. The implementation of the EPA
-        algorithm is based on the book "Collision Detection in 3D Environments".
-    -------------------------------------------------------------------
-*/
+// Class EPAAlgorithm
+/**
+ * This class is the implementation of the Expanding Polytope Algorithm (EPA).
+ * The EPA algorithm computes the penetration depth and contact points between
+ * two enlarged objects (with margin) where the original objects (without margin)
+ * intersect. The penetration depth of a pair of intersecting objects A and B is
+ * the length of a point on the boundary of the Minkowski sum (A-B) closest to the
+ * origin. The goal of the EPA algorithm is to start with an initial simplex polytope
+ * that contains the origin and expend it in order to find the point on the boundary
+ * of (A-B) that is closest to the origin. An initial simplex that contains origin
+ * has been computed wit GJK algorithm. The EPA Algorithm will extend this simplex
+ * polytope to find the correct penetration depth. The implementation of the EPA
+ * algorithm is based on the book "Collision Detection in 3D Environments".
+ */
 class EPAAlgorithm {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Reference to the memory pool
+        /// Reference to the memory pool
         MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
 
-        // Triangle comparison operator
+        /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         EPAAlgorithm(const EPAAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         EPAAlgorithm& operator=(const EPAAlgorithm& algorithm);
 
-        // Add a triangle face in the candidate triangle heap
+        /// Add a triangle face in the candidate triangle heap
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap, uint& nbTriangles,
                               decimal upperBoundSquarePenDepth);
 
-        // Decide if the origin is in the tetrahedron
+        /// Decide if the origin is in the tetrahedron.
         int isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
                                   const Vector3& p3, const Vector3& p4) const;
 
@@ -103,13 +111,13 @@ class EPAAlgorithm {
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
 
-        // Destructor
+        /// Destructor
         ~EPAAlgorithm();
 
-        // Compute the penetration depth with EPA algorithm
+        /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
                                                      const CollisionShape* collisionShape1,
                                                      const Transform& transform1,

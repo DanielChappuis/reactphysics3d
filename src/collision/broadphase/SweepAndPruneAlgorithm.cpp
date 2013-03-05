@@ -64,7 +64,7 @@ SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 }
 
 // Notify the broad-phase about a new object in the world
-// This method adds the AABB of the object ion to broad-phase
+/// This method adds the AABB of the object ion to broad-phase
 void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     bodyindex boxIndex;
     

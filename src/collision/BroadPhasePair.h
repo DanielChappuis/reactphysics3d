@@ -29,48 +29,50 @@
 // Libraries
 #include "../body/CollisionBody.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// struct BroadPhasePair
-// This structure represents a pair of bodies
-// during the broad-phase collision detection
+// Structure BroadPhasePair
+/**
+ * This structure represents a pair of bodies
+ * during the broad-phase collision detection.
+ */
 struct BroadPhasePair {
 
     public:
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the first body
+        /// Pointer to the first body
         CollisionBody* body1;
 
-        // Pointer to the second body
+        /// Pointer to the second body
         CollisionBody* body2;
 
-        // Previous cached separating axis
+        /// Previous cached separating axis
         Vector3 previousSeparatingAxis;
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         BroadPhasePair(CollisionBody* body1, CollisionBody* body2);
 
-        // Destructor
+        /// Destructor
         ~BroadPhasePair();
 
-        // Return the pair of bodies index
+        /// Return the pair of bodies index
         bodyindexpair getBodiesIndexPair() const;
 
-        // Smaller than operator
+        /// Smaller than operator
         bool operator<(const BroadPhasePair& broadPhasePair2) const;
 
-        // Larger than operator
+        /// Larger than operator
         bool operator>(const BroadPhasePair& broadPhasePair2) const;
 
-        // Equal operator
+        /// Equal operator
         bool operator==(const BroadPhasePair& broadPhasePair2) const;
 
-        // Not equal operator
+        /// Not equal operator
         bool operator!=(const BroadPhasePair& broadPhasePair2) const;
 };
 

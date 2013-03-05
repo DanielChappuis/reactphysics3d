@@ -31,68 +31,67 @@
 #include "../../body/CollisionBody.h"
 #include "PairManager.h"
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 // Declarations
 class CollisionDetection;
-    
-/*  --------------------------------------------------------------------
-    Class BroadPhaseAlgorithm :
-        This class is an abstract class that represents an algorithm
-        used to perform the broad-phase of a collision detection. The
-        goal of the broad-phase algorithm is to compute the pair of bodies
-        that can collide. But it's important to understand that the
-        broad-phase doesn't compute only body pairs that can collide but
-        could also pairs of body that doesn't collide but are very close.
-        The goal of the broad-phase is to remove pairs of body that cannot
-        collide in order to avoid to much bodies to be tested in the
-        narrow-phase.
-    --------------------------------------------------------------------
-*/
+
+// Class BroadPhaseAlgorithm
+/**
+ * This class is an abstract class that represents an algorithm
+ * used to perform the broad-phase of a collision detection. The
+ * goal of the broad-phase algorithm is to compute the pair of bodies
+ * that can collide. But it's important to understand that the
+ * broad-phase doesn't compute only body pairs that can collide but
+ * could also pairs of body that doesn't collide but are very close.
+ * The goal of the broad-phase is to remove pairs of body that cannot
+ * collide in order to avoid to much bodies to be tested in the
+ * narrow-phase.
+ */
 class BroadPhaseAlgorithm {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Pair manager containing the overlapping pairs
+        /// Pair manager containing the overlapping pairs
         PairManager mPairManager;
 
-        // Reference to the collision detection object
+        /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         BroadPhaseAlgorithm& operator=(const BroadPhaseAlgorithm& algorithm);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         BroadPhaseAlgorithm(CollisionDetection& collisionDetection);
 
-        // Destructor
+        /// Destructor
         virtual ~BroadPhaseAlgorithm();
         
-        // Notify the broad-phase about a new object in the world
+        /// Notify the broad-phase about a new object in the world
         virtual void addObject(CollisionBody* body, const AABB& aabb)=0;
 
-        // Notify the broad-phase about an object that has been removed from the world
+        /// Notify the broad-phase about an object that has been removed from the world
         virtual void removeObject(CollisionBody* body)=0;
 
-        // Notify the broad-phase that the AABB of an object has changed
+        /// Notify the broad-phase that the AABB of an object has changed
         virtual void updateObject(CollisionBody* body, const AABB& aabb)=0;
 
-        // Return a pointer to the first active pair (used to iterate over the active pairs)
+        /// Return a pointer to the first active pair (used to iterate over the active pairs)
         BodyPair* beginOverlappingPairsPointer() const;
 
-        // Return a pointer to the last active pair (used to iterate over the active pairs)
+        /// Return a pointer to the last active pair (used to iterate over the active pairs)
         BodyPair* endOverlappingPairsPointer() const;
 };
 

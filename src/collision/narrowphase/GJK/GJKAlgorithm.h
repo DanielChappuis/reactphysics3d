@@ -33,48 +33,47 @@
 #include "../EPA/EPAAlgorithm.h"
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Constants
 const decimal REL_ERROR = decimal(1.0e-3);
 const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
 
-/*  -------------------------------------------------------------------
-    Class GJKAlgorithm :
-        This class implements a narrow-phase collision detection algorithm. This
-        algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
-        implementation is based on the implementation discussed in the book
-        "Collision Detection in 3D Environments".
-        This method implements the Hybrid Technique for calculating the
-        penetration depth. The two objects are enlarged with a small margin. If
-        the object intersection, the penetration depth is quickly computed using
-        GJK algorithm on the original objects (without margin). If the
-        original objects (without margin) intersect, we run again the GJK
-        algorithm on the enlarged objects (with margin) to compute simplex
-        polytope that contains the origin and give it to the EPA (Expanding
-        Polytope Algorithm) to compute the correct penetration depth between the
-        enlarged objects. 
-    -------------------------------------------------------------------
-*/
+// Class GJKAlgorithm
+/**
+ * This class implements a narrow-phase collision detection algorithm. This
+ * algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
+ * implementation is based on the implementation discussed in the book
+ * "Collision Detection in 3D Environments".
+ * This method implements the Hybrid Technique for calculating the
+ * penetration depth. The two objects are enlarged with a small margin. If
+ * the object intersection, the penetration depth is quickly computed using
+ * GJK algorithm on the original objects (without margin). If the
+ * original objects (without margin) intersect, we run again the GJK
+ * algorithm on the enlarged objects (with margin) to compute simplex
+ * polytope that contains the origin and give it to the EPA (Expanding
+ * Polytope Algorithm) to compute the correct penetration depth between the
+ * enlarged objects.
+ */
 class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // EPA Algorithm
+        /// EPA Algorithm
         EPAAlgorithm mAlgoEPA;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         GJKAlgorithm(const GJKAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
 
-        // Compute the penetration depth for enlarged objects
+        /// Compute the penetration depth for enlarged objects.
         bool computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1,
                                                        const Transform& transform1,
                                                        const CollisionShape* collisionShape2,
@@ -85,13 +84,13 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
 
-        // Destructor
+        /// Destructor
         ~GJKAlgorithm();
 
-        // Return true and compute a contact info if the two bounding volume collide
+        /// Return true and compute a contact info if the two bounding volumes collide.
         virtual bool testCollision(const CollisionShape* collisionShape1,
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,

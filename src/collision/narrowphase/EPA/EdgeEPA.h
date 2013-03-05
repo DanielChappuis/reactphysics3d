@@ -30,64 +30,62 @@
 // Libraries
 #include "../../../mathematics/mathematics.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Class declarations
 class TriangleEPA;
 class TrianglesStore;
 
-/*  -------------------------------------------------------------------
-    Class EdgeEPA :
-        This class represents an edge of the current polytope in the EPA
-        algorithm.
-    -------------------------------------------------------------------
-*/
+// Class EdgeEPA
+/**
+ * This class represents an edge of the current polytope in the EPA algorithm.
+ */
 class EdgeEPA {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the triangle that contains this edge
+        /// Pointer to the triangle that contains this edge
         TriangleEPA* mOwnerTriangle;
 
-        // Index of the edge in the triangle (between 0 and 2).
-        // The edge with index i connect triangle vertices i and (i+1 % 3)
+        /// Index of the edge in the triangle (between 0 and 2).
+        /// The edge with index i connect triangle vertices i and (i+1 % 3)
         int mIndex;
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         EdgeEPA();
 
-        // Constructor
+        /// Constructor
         EdgeEPA(TriangleEPA* ownerTriangle, int index);
 
-        // Copy-constructor
+        /// Copy-constructor
         EdgeEPA(const EdgeEPA& edge);
 
-        // Destructor
+        /// Destructor
         ~EdgeEPA();
 
-        // Return the pointer to the owner triangle
+        /// Return the pointer to the owner triangle
         TriangleEPA* getOwnerTriangle() const;
 
-        // Return the index of the edge in the triangle
+        /// Return the index of the edge in the triangle
         int getIndex() const;
 
-        // Return index of the source vertex of the edge
+        /// Return index of the source vertex of the edge
         uint getSourceVertexIndex() const;
 
-        // Return the index of the target vertex of the edge
+        /// Return the index of the target vertex of the edge
         uint getTargetVertexIndex() const;
 
-        // Execute the recursive silhouette algorithm from this edge
+        /// Execute the recursive silhouette algorithm from this edge
         bool computeSilhouette(const Vector3* vertices, uint index, TrianglesStore& triangleStore);
 
-        // Assignment operator
+        /// Assignment operator
         EdgeEPA& operator=(const EdgeEPA& edge);
 };
 

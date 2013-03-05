@@ -31,17 +31,16 @@
 #include "CollisionBody.h"
 #include "../mathematics/mathematics.h"
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class RigidBody :
-        This class represents a rigid body of the physics
-        engine. A rigid body is a non-deformable body that
-        has a constant mass. This class inherits from the
-        CollisionBody class.
-    -------------------------------------------------------------------
-*/
+// Class RigidBody
+/**
+ * This class represents a rigid body of the physics
+ * engine. A rigid body is a non-deformable body that
+ * has a constant mass. This class inherits from the
+ * CollisionBody class.
+  */
 class RigidBody : public CollisionBody {
 
     protected :
@@ -50,123 +49,123 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Attributes -------------------- //
 
-        // Mass of the body
+        /// Mass of the body
         decimal mMass;
 
-        // Linear velocity of the body
+        /// Linear velocity of the body
         Vector3 mLinearVelocity;
 
-        // Angular velocity of the body
+        /// Angular velocity of the body
         Vector3 mAngularVelocity;
 
-        // Current external force on the body
+        /// Current external force on the body
         Vector3 mExternalForce;
 
-        // Current external torque on the body
+        /// Current external torque on the body
         Vector3 mExternalTorque;
 
-        // Local inertia tensor of the body (in local-space)
+        /// Local inertia tensor of the body (in local-space)
         Matrix3x3 mInertiaTensorLocal;
 
-        // Inverse of the inertia tensor of the body
+        /// Inverse of the inertia tensor of the body
         Matrix3x3 mInertiaTensorLocalInverse;
 
-        // Inverse of the mass of the body
+        /// Inverse of the mass of the body
         decimal mMassInverse;
 
-        // Coefficient of restitution (between 0 and 1) where 1 is for a very bouncy body
+        /// Coefficient of restitution (between 0 and 1) where 1 is for a very bouncy body
         decimal mRestitution;
 
-        // Friction coefficient
+        /// Friction coefficient
         decimal mFrictionCoefficient;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         RigidBody(const RigidBody& body);
 
-        // Private assignment operator
+        /// Private assignment operator
         RigidBody& operator=(const RigidBody& body);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
                   CollisionShape* collisionShape, bodyindex id);
 
-        // Destructor
+        /// Destructor
         virtual ~RigidBody();
 
-        // Return the mass of the body
+        /// Return the mass of the body
         decimal getMass() const;
 
-        // Set the mass of the body
+        /// Set the mass of the body
         void setMass(decimal mass);
 
-        // Return the linear velocity
+        /// Return the linear velocity
         Vector3 getLinearVelocity() const;
 
-        // Set the linear velocity of the body
+        /// Set the linear velocity of the body
         void setLinearVelocity(const Vector3& linearVelocity);
 
-        // Return the angular velocity
+        /// Return the angular velocity
         Vector3 getAngularVelocity() const;
 
-        // Set the angular velocity
+        /// Set the angular velocity
         void setAngularVelocity(const Vector3& angularVelocity);
 
-        // Set the inverse of the mass
+        /// Set the inverse of the mass
         void setMassInverse(decimal massInverse);
 
-        // Return the current external force of the body
+        /// Return the current external force of the body
         Vector3 getExternalForce() const;
 
-        // Set the current external force on the body
+        /// Set the current external force on the body
         void setExternalForce(const Vector3& force);
 
-        // Return the current external torque of the body
+        /// Return the current external torque of the body
         Vector3 getExternalTorque() const;
 
-        // Set the current external torque of the body
+        /// Set the current external torque of the body
         void setExternalTorque(const Vector3& torque);
 
-        // Return the inverse of the mass of the body
+        /// Return the inverse of the mass of the body
         decimal getMassInverse() const;
 
-        // Return the local inertia tensor of the body (in body coordinates)
+        /// Return the local inertia tensor of the body (in body coordinates)
         Matrix3x3 getInertiaTensorLocal() const;
 
-        // Set the local inertia tensor of the body (in body coordinates)
+        /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
 
-        // Get the inverse of the inertia tensor
+        /// Get the inverse of the inertia tensor
         Matrix3x3 getInertiaTensorLocalInverse() const;
 
-        // Return the inertia tensor in world coordinates
+        /// Return the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorWorld() const;
 
-        // Return the inverse of the inertia tensor in world coordinates
+        /// Return the inverse of the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorInverseWorld() const;
         
-        // Get the restitution coefficient
+        /// Get the restitution coefficient
         decimal getRestitution() const;
 
-        // Set the restitution coefficient
+        /// Set the restitution coefficient
         void setRestitution(decimal restitution) throw(std::invalid_argument);
 
-        // Get the friction coefficient
+        /// Get the friction coefficient
         decimal getFrictionCoefficient() const;
 
-        // Set the friction coefficient
+        /// Set the friction coefficient
         void setFrictionCoefficient(decimal frictionCoefficient);
 };
 
 // Method that return the mass of the body
 inline decimal RigidBody::getMass() const {
     return mMass;
-};
+}
 
 // Method that set the mass of the body
 inline void RigidBody::setMass(decimal mass) {
@@ -232,12 +231,12 @@ inline void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal
     mInertiaTensorLocal = inertiaTensorLocal;
 }
 
-// Return the inertia tensor in world coordinates
-// The inertia tensor I_w in world coordinates is computed
-// with the local inertia tensor I_b in body coordinates
-// by I_w = R * I_b * R^T
-// where R is the rotation matrix (and R^T its transpose) of
-// the current orientation quaternion of the body
+// Return the inertia tensor in world coordinates.
+/// The inertia tensor I_w in world coordinates is computed
+/// with the local inertia tensor I_b in body coordinates
+/// by I_w = R * I_b * R^T
+/// where R is the rotation matrix (and R^T its transpose) of
+/// the current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
 
     // Compute and return the inertia tensor in world coordinates
@@ -245,12 +244,12 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
            mTransform.getOrientation().getMatrix().getTranspose();
 }
 
-// Return the inverse of the inertia tensor in world coordinates
-// The inertia tensor I_w in world coordinates is computed with the
-// local inverse inertia tensor I_b^-1 in body coordinates
-// by I_w = R * I_b^-1 * R^T
-// where R is the rotation matrix (and R^T its transpose) of the
-// current orientation quaternion of the body
+// Return the inverse of the inertia tensor in world coordinates.
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
     // Compute and return the inertia tensor in world coordinates

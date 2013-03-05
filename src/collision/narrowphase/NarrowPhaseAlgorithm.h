@@ -34,52 +34,50 @@
 #include "../BroadPhasePair.h"
 
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
     
-
-/*  -------------------------------------------------------------------
-    Class NarrowPhaseAlgorithm :
-        This class is an abstract class that represents an algorithm
-        used to perform the narrow-phase of a collision detection. The
-        goal of the narrow phase algorithm is to compute contact
-        informations of a collision between two bodies.
-    -------------------------------------------------------------------
-*/
+// Class NarrowPhaseAlgorithm
+/**
+ * This class is an abstract class that represents an algorithm
+ * used to perform the narrow-phase of a collision detection. The
+ * goal of the narrow phase algorithm is to compute contact
+ * informations of a collision between two bodies.
+ */
 class NarrowPhaseAlgorithm {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // Reference to the memory pool
+        /// Reference to the memory pool
         MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
 
-        // Overlapping pair of the bodies currently tested for collision
+        /// Overlapping pair of the bodies currently tested for collision
         BroadPhasePair* mCurrentOverlappingPair;
         
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm);
 
-        // Private assignment operator
+        /// Private assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm);
 
     public :
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);
 
-        // Destructor
+        /// Destructor
         virtual ~NarrowPhaseAlgorithm();
         
-        // Set the current overlapping pair of bodies
+        /// Set the current overlapping pair of bodies
         void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);
 
-        // Return true and compute a contact info if the two bounding volume collide
+        /// Return true and compute a contact info if the two bounding volume collide
         virtual bool testCollision(const CollisionShape* collisionShape1,
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,

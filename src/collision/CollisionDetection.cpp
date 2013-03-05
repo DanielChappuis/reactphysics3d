@@ -143,8 +143,8 @@ bool CollisionDetection::computeNarrowPhase() {
     return collisionExists;
 }
 
-// Allow the broadphase to notify the collision detection about an overlapping pair
-// This method is called by a broad-phase collision detection algorithm
+// Allow the broadphase to notify the collision detection about an overlapping pair.
+/// This method is called by a broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPair) {
 
     // Get the pair of body index

@@ -41,9 +41,9 @@ Simplex::~Simplex() {
 }
 
 // Add a new support point of (A-B) into the simplex
-// suppPointA : support point of object A in a direction -v
-// suppPointB : support point of object B in a direction v
-// point      : support point of object (A-B) => point = suppPointA - suppPointB
+/// suppPointA : support point of object A in a direction -v
+/// suppPointB : support point of object B in a direction v
+/// point      : support point of object (A-B) => point = suppPointA - suppPointB
 void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Vector3& suppPointB) {
     assert(!isFull());
 
@@ -220,9 +220,9 @@ void Simplex::computeDeterminants() {
     }
 }
 
-// Return true if the subset is a proper subset
-// A proper subset X is a subset where for all point "y_i" in X, we have
-// detX_i value bigger than zero
+// Return true if the subset is a proper subset.
+/// A proper subset X is a subset where for all point "y_i" in X, we have
+/// detX_i value bigger than zero
 bool Simplex::isProperSubset(Bits subset) const {
     int i;
     Bits bit;
@@ -237,8 +237,9 @@ bool Simplex::isProperSubset(Bits subset) const {
     return true;
 }
 
-// Return true if the set is affinely dependent meaning that a point of the set
-// is an affine combination of other points in the set
+// Return true if the set is affinely dependent.
+/// A set if affinely dependent if a point of the set
+/// is an affine combination of other points in the set
 bool Simplex::isAffinelyDependent() const {
     decimal sum = 0.0;
     int i;
@@ -254,10 +255,10 @@ bool Simplex::isAffinelyDependent() const {
     return (sum <= 0.0);
 }
 
-// Return true if the subset is a valid one for the closest point computation
-// A subset X is valid if :
-//    1. delta(X)_i > 0 for each "i" in I_x and
-//    2. delta(X U {y_j})_j <= 0 for each "j" not in I_x_
+// Return true if the subset is a valid one for the closest point computation.
+/// A subset X is valid if :
+///    1. delta(X)_i > 0 for each "i" in I_x and
+///    2. delta(X U {y_j})_j <= 0 for each "j" not in I_x_
 bool Simplex::isValidSubset(Bits subset) const {
     int i;
     Bits bit;
@@ -285,11 +286,11 @@ bool Simplex::isValidSubset(Bits subset) const {
     return true;
 }
 
-// Compute the closest points "pA" and "pB" of object A and B
-// The points are computed as follows :
-//      pA = sum(lambda_i * a_i)    where "a_i" are the support points of object A
-//      pB = sum(lambda_i * b_i)    where "b_i" are the support points of object B
-//      with lambda_i = deltaX_i / deltaX
+// Compute the closest points "pA" and "pB" of object A and B.
+/// The points are computed as follows :
+///      pA = sum(lambda_i * a_i)    where "a_i" are the support points of object A
+///      pB = sum(lambda_i * b_i)    where "b_i" are the support points of object B
+///      with lambda_i = deltaX_i / deltaX
 void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     decimal deltaX = 0.0;
     pA.setAllValues(0.0, 0.0, 0.0);
@@ -313,10 +314,10 @@ void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     pB *= factor;
 }
 
-// Compute the closest point "v" to the origin of the current simplex
-// This method executes the Jonhnson's algorithm for computing the point
-// "v" of simplex that is closest to the origin. The method returns true
-// if a closest point has been found.
+// Compute the closest point "v" to the origin of the current simplex.
+/// This method executes the Jonhnson's algorithm for computing the point
+/// "v" of simplex that is closest to the origin. The method returns true
+/// if a closest point has been found.
 bool Simplex::computeClosestPoint(Vector3& v) {
     Bits subset;
 

@@ -371,10 +371,10 @@ void ContactSolver::initializeContactConstraints() {
     }
 }
 
-// Warm start the solver
-// For each constraint, we apply the previous impulse (from the previous step)
-// at the beginning. With this technique, we will converge faster towards
-// the solution of the linear system
+// Warm start the solver.
+/// For each constraint, we apply the previous impulse (from the previous step)
+/// at the beginning. With this technique, we will converge faster towards
+/// the solution of the linear system
 void ContactSolver::warmStart() {
 
     // For each constraint
@@ -836,7 +836,7 @@ void ContactSolver::applySplitImpulse(const Impulse& impulse,
 }
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
-// for a contact point constraint. The two vectors have to be such that : t1 x t2 = contactNormal.
+// for a contact point. The two vectors have to be such that : t1 x t2 = contactNormal.
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactPointSolver& contactPoint) const {
 
@@ -866,7 +866,7 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 }
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
-// for a contact constraint. The two vectors have to be such that : t1 x t2 = contactNormal.
+// for a contact manifold. The two vectors have to be such that : t1 x t2 = contactNormal.
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactManifoldSolver& contact) const {
 

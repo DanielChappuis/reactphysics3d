@@ -31,141 +31,140 @@
 #include "../body/Body.h"
 #include "../constraint/ContactPoint.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Constants
 const uint MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
 
-/*  -------------------------------------------------------------------
-    Class ContactManifold :
-        This class represents the set of contact points between two bodies.
-        The contact manifold is implemented in a way to cache the contact
-        points among the frames for better stability following the
-        "Contact Generation" presentation of Erwin Coumans at GDC 2010
-        conference (bullet.googlecode.com/files/GDC10_Coumans_Erwin_Contact.pdf).
-        Some code of this class is based on the implementation of the
-        btPersistentManifold class from Bullet physics engine (www.http://bulletphysics.org).
-        The contacts between two bodies are added one after the other in the cache.
-        When the cache is full, we have to remove one point. The idea is to keep
-        the point with the deepest penetration depth and also to keep the
-        points producing the larger area (for a more stable contact manifold).
-        The new added point is always kept.
-    -------------------------------------------------------------------
-*/
+// Class ContactManifold
+/**
+ * This class represents the set of contact points between two bodies.
+ * The contact manifold is implemented in a way to cache the contact
+ * points among the frames for better stability following the
+ * "Contact Generation" presentation of Erwin Coumans at GDC 2010
+ * conference (bullet.googlecode.com/files/GDC10_Coumans_Erwin_Contact.pdf).
+ * Some code of this class is based on the implementation of the
+ * btPersistentManifold class from Bullet physics engine (www.http://bulletphysics.org).
+ * The contacts between two bodies are added one after the other in the cache.
+ * When the cache is full, we have to remove one point. The idea is to keep
+ * the point with the deepest penetration depth and also to keep the
+ * points producing the larger area (for a more stable contact manifold).
+ * The new added point is always kept.
+ */
 class ContactManifold {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the first body
+        /// Pointer to the first body
         Body* const mBody1;
 
-        // Pointer to the second body
+        /// Pointer to the second body
         Body* const mBody2;
 
-        // Contact points in the manifold
+        /// Contact points in the manifold
         ContactPoint* mContactPoints[MAX_CONTACT_POINTS_IN_MANIFOLD];
 
-        // Number of contacts in the cache
+        /// Number of contacts in the cache
         uint mNbContactPoints;
 
-        // First friction vector of the contact manifold
+        /// First friction vector of the contact manifold
         Vector3 mFrictionVector1;
 
-        // Second friction vector of the contact manifold
+        /// Second friction vector of the contact manifold
         Vector3 mFrictionVector2;
 
-        // First friction constraint accumulated impulse
+        /// First friction constraint accumulated impulse
         decimal mFrictionImpulse1;
 
-        // Second friction constraint accumulated impulse
+        /// Second friction constraint accumulated impulse
         decimal mFrictionImpulse2;
 
-        // Twist friction constraint accumulated impulse
+        /// Twist friction constraint accumulated impulse
         decimal mFrictionTwistImpulse;
 
-        // Reference to the memory pool with the contacts
+        /// Reference to the memory pool with the contacts
         MemoryPool<ContactPoint>& mMemoryPoolContacts;
 
         // -------------------- Methods -------------------- //
 
-        // Private copy-constructor
+        /// Private copy-constructor
         ContactManifold(const ContactManifold& contactManifold);
 
-        // Private assignment operator
+        /// Private assignment operator
         ContactManifold& operator=(const ContactManifold& contactManifold);
 
-        // Return the index of maximum area
+        /// Return the index of maximum area
         int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;
 
-        // Return the index of the contact with the larger penetration depth
+        /// Return the index of the contact with the larger penetration depth.
         int getIndexOfDeepestPenetration(ContactPoint* newContact) const;
 
-        // Return the index that will be removed
+        /// Return the index that will be removed.
         int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;
 
-        // Remove a contact point from the manifold
+        /// Remove a contact point from the manifold
         void removeContactPoint(int index);
 
-        // Return true if two vectors are approximatively equal
+        /// Return true if two vectors are approximatively equal
         bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;
         
     public:
 
         // -------------------- Methods -------------------- //
 
-        // Constructor
+        /// Constructor
         ContactManifold(Body* const mBody1, Body* const mBody2,
                         MemoryPool<ContactPoint>& mMemoryPoolContacts);
 
-        // Destructor
+        /// Destructor
         ~ContactManifold();
 
-        // Add a contact point to the manifold
+        /// Add a contact point to the manifold
         void addContactPoint(ContactPoint* contact);
 
-        // Update the contact manifold
+        /// Update the contact manifold.
         void update(const Transform& transform1, const Transform& transform2);
 
-        // Clear the contact manifold
+        /// Clear the contact manifold
         void clear();
 
-        // Return the number of contact points in the manifold
+        /// Return the number of contact points in the manifold
         uint getNbContactPoints() const;
 
-        // Return the first friction vector at the center of the contact manifold
+        /// Return the first friction vector at the center of the contact manifold
         const Vector3& getFrictionVector1() const;
 
-        // set the first friction vector at the center of the contact manifold
+        /// set the first friction vector at the center of the contact manifold
         void setFrictionVector1(const Vector3& mFrictionVector1);
 
-        // Return the second friction vector at the center of the contact manifold
+        /// Return the second friction vector at the center of the contact manifold
         const Vector3& getFrictionVector2() const;
 
-        // set the second friction vector at the center of the contact manifold
+        /// set the second friction vector at the center of the contact manifold
         void setFrictionVector2(const Vector3& mFrictionVector2);
 
-        // Return the first friction accumulated impulse
+        /// Return the first friction accumulated impulse
         decimal getFrictionImpulse1() const;
 
-        // Set the first friction accumulated impulse
+        /// Set the first friction accumulated impulse
         void setFrictionImpulse1(decimal frictionImpulse1);
 
-        // Return the second friction accumulated impulse
+        /// Return the second friction accumulated impulse
         decimal getFrictionImpulse2() const;
 
-        // Set the second friction accumulated impulse
+        /// Set the second friction accumulated impulse
         void setFrictionImpulse2(decimal frictionImpulse2);
 
-        // Return the friction twist accumulated impulse
+        /// Return the friction twist accumulated impulse
         decimal getFrictionTwistImpulse() const;
 
-        // Set the friction twist accumulated impulse
+        /// Set the friction twist accumulated impulse
         void setFrictionTwistImpulse(decimal frictionTwistImpulse);
 
-        // Return a contact point of the manifold
+        /// Return a contact point of the manifold
         ContactPoint* getContactPoint(uint index) const;
 };
 
