@@ -24,63 +24,33 @@
 ********************************************************************************/
 
 // Libraries
-#include "Test.h"
+#include "TestSuite.h"
+#include "tests/mathematics/TestVector3.h"
+#include "tests/mathematics/TestTransform.h"
+#include "tests/mathematics/TestQuaternion.h"
 
 using namespace reactphysics3d;
 
-/// Constructor
-Test::Test(std::ostream* stream) : mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
+int main() {
 
-}
+    TestSuite testSuite("ReactPhysics3D tests");
 
-/// Destructor
-Test::~Test() {
+    // ---------- Mathematics tests ---------- //
 
-}
+    testSuite.addTest(new TestVector3);
+    testSuite.addTest(new TestTransform);
+    testSuite.addTest(new TestQuaternion);
 
-// Called to test a boolean condition.
-// This method should not be called directly in your test but you should call test() instead (macro)
-void Test::applyTest(bool condition, const std::string& testText,
-                     const char* filename, long lineNumber) {
+    // ----------------------------- --------- //
 
-    // If the boolean condition is true
-    if (condition) {
+    // Run the tests
+    testSuite.run();
 
-        // The test passed, call the succeed() method
-        succeed();
-    }
-    else {  // If the boolean condition is false
+    // Display the report
+    long nbFailedTests = testSuite.report();
 
-        // The test failed, call the applyFail() method
-        applyFail(testText, filename, lineNumber);
-    }
-}
+    // Clear the tests from the test suite
+    testSuite.clear();
 
-// Called when a test has failed.
-// This method should not be called directly in your test buy you should call fail() instead (macro)
-void Test::applyFail(const std::string& testText, const char* filename, long lineNumber) {
-
-    if (mOutputStream) {
-
-        // Display the failure message
-        *mOutputStream << typeid(*this).name() << "failure : (" << testText << "), " <<
-                  filename << "(line " << lineNumber << ")" << std::endl;
-    }
-
-    // Increase the number of failed tests
-    mNbFailedTests++;
-}
-
-/// Display the report of the unit test and return the number of failed tests
-long Test::report() const {
-
-    if(mOutputStream) {
-        *mOutputStream << "Test \"" <<
-         typeid(*this).name()
-               << "\":\n\tPassed: " << mNbPassedTests << "\tFailed: " <<
-                  mNbFailedTests  << std::endl;
-      }
-
-    // Return the number of failed tests
-    return mNbFailedTests;
+    return nbFailedTests;
 }

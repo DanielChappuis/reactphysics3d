@@ -34,8 +34,15 @@
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
+// Macros
+#define test(condition) applyTest(condition, #condition, __FILE__, __LINE__)
+#define fail(text) applyFail(text, __FILE__, __LINE__);
+
+// Class Test
 /**
- * This abstract class represents a unit test
+ * This abstract class represents a unit test. To create a unit test, you simply
+ * need to create a class that inherits from the Test class, override the run() method and
+ * use the test() and fail() macros.
  */
 class Test {
 
@@ -44,10 +51,10 @@ class Test {
         // ---------- Attributes ---------- //
 
         /// Number of tests that passed
-        uint mNbPassedTests;
+        long mNbPassedTests;
 
         /// Number of tests that failed
-        uint mNbFailedTests;
+        long mNbFailedTests;
 
         /// Output stream
         std::ostream* mOutputStream;
@@ -62,6 +69,19 @@ class Test {
 
     protected :
 
+        // ---------- Methods ---------- //
+
+        /// Called to test a boolean condition.
+        /// This method should not be called directly in your test but you should
+        /// call test() instead (macro)
+        void applyTest(bool condition, const std::string& testText,
+                       const char* filename, long lineNumber);
+
+        /// Called when a test has failed.
+        /// This method should not be called directly in your test buy you should
+        /// call fail() instead (macro)
+        void applyFail(const std::string& testText, const char* filename, long lineNumber);
+
     public :
 
         // ---------- Methods ---------- //
@@ -73,50 +93,58 @@ class Test {
         ~Test();
 
         /// Return the number of passed tests
-        uint getNbPassedTests() const;
+        long getNbPassedTests() const;
 
         /// Return the number of failed tests
-        uint getNbFailedTests() const;
+        long getNbFailedTests() const;
 
         /// Return the output stream
         const std::ostream* getOutputStream() const;
 
         /// Set the output stream
-        void setOutputStream(const std::ostream* stream);
+        void setOutputStream(std::ostream *stream);
 
         /// Run the unit test
         virtual void run() = 0;
+
+        /// Called when a test passed
+        void succeed();
 
         /// Reset the unit test
         virtual void reset();
 
         /// Display the report of the unit test and return the number of failed tests
-        uint report() const;
+        long report() const;
 };
 
-/// Reset the unit test
+// Called when a test passed
+inline void Test::succeed() {
+    mNbPassedTests++;
+}
+
+// Reset the unit test
 inline void Test::reset() {
     mNbPassedTests = 0;
     mNbFailedTests = 0;
 }
 
-/// Return the number of passed tests
-inline uint Test::getNbPassedTests() const {
+// Return the number of passed tests
+inline long Test::getNbPassedTests() const {
     return mNbPassedTests;
 }
 
-/// Return the number of failed tests
-inline uint Test::getNbFailedTests() const {
+// Return the number of failed tests
+inline long Test::getNbFailedTests() const {
     return mNbFailedTests;
 }
 
-/// Return the output stream
+// Return the output stream
 inline const std::ostream* Test::getOutputStream() const {
     return mOutputStream;
 }
 
-/// Set the output stream
-inline void Test::setOutputStream(const std::ostream* stream) {
+// Set the output stream
+inline void Test::setOutputStream(std::ostream* stream) {
     mOutputStream = stream;
 }
 

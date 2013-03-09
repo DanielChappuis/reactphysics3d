@@ -15,6 +15,6 @@ file (
 )
 
 # Create the tests executable
-ADD_EXECUTABLE(tests ${REACTPHYSICS3D_SOURCE_DIR})
+ADD_EXECUTABLE(tests ${TESTS_SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(tests reactphysics3d)

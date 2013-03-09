@@ -23,13 +23,103 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TESTSUITE_H
-#define TESTSUITE_H
+#ifndef TEST_SUITE_H
+#define TEST_SUITE_H
 
 // Libraries
+#include "Test.h"
+#include <vector>
 
+/// Reactphysics3D namespace
+namespace reactphysics3d {
+
+// Class TestSuite
+/**
+ * This class represents a test suite that can
+ * contains multiple unit tests. You can also add a test suite inside
+ * another test suite (all the tests of the first test suite will be added
+ * to the second one).
+ */
 class TestSuite {
 
+    private :
+
+        // ---------- Attributes ---------- //
+
+        /// Name of the test suite
+        std::string mName;
+
+        /// Output stream
+        std::ostream* mOutputStream;
+
+        /// All the tests of the test suite
+        std::vector<Test*> mTests;
+
+        // ---------- Methods ---------- //
+
+        /// Reset the test suite
+        void reset();
+
+        /// Private copy-constructor
+        TestSuite(const TestSuite& testSuite);
+
+        /// Private assigmnent operator
+        TestSuite& operator=(const TestSuite testSuite);
+
+  public :
+
+        // ---------- Methods ---------- //
+
+        /// Constructor
+        TestSuite(const std::string& name, std::ostream* outputStream = &std::cout);
+
+        /// Return the name of the test suite
+        std::string getName() const;
+
+        /// Return the number of passed tests
+        long getNbPassedTests() const;
+
+        /// Return the number of failed tests
+        long getNbFailedTests() const;
+
+        /// Return the output stream
+        const std::ostream* getOutputStream() const;
+
+        /// Set the output stream
+        void setOutputStream(std::ostream* outputStream);
+
+        /// Add a unit test in the test suite
+        void addTest(Test* test);
+
+        /// Add a test suite to the current test suite
+        void addTestSuite(const TestSuite& testSuite);
+
+        /// Launch the tests of the test suite
+        void run();
+
+        /// Display the tests report and return the number of failed tests
+        long report() const;
+
+        // Delete all the tests
+        void clear();
+
 };
+
+// Return the name of the test suite
+inline std::string TestSuite::getName() const {
+    return mName;
+}
+
+// Return the output stream
+inline const std::ostream* TestSuite::getOutputStream() const {
+    return mOutputStream;
+}
+
+// Set the output stream
+inline void TestSuite::setOutputStream(std::ostream* outputStream) {
+    mOutputStream = outputStream;
+}
+
+}
 
 #endif
