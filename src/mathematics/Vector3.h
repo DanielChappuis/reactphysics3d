@@ -103,9 +103,6 @@ struct Vector3 {
         // Return the axis with the maximal value
         int getMaxAxis() const;
 
-        // Return true if two vectors are parallel
-        bool isParallelWith(const Vector3& vector) const;
-
         // Overloaded operator for the equality condition
         bool operator== (const Vector3& vector) const;
 
@@ -184,14 +181,7 @@ inline void Vector3::normalize() {
 // Return the corresponding absolute value vector
 inline Vector3 Vector3::getAbsoluteVector() const {
     return Vector3(std::abs(x), std::abs(y), std::abs(z));
-}       
-
-// Return true if two vectors are parallel
-inline bool Vector3::isParallelWith(const Vector3& vector) const {
-    decimal scalarProd = this->dot(vector);
-    return approxEqual(std::abs(scalarProd), length() * vector.length());
-}    
-
+}
 
 // Return the axis with the minimal value
 inline int Vector3::getMinAxis() const {
