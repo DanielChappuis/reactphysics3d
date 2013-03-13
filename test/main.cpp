@@ -28,18 +28,20 @@
 #include "tests/mathematics/TestVector3.h"
 #include "tests/mathematics/TestTransform.h"
 #include "tests/mathematics/TestQuaternion.h"
+#include "tests/mathematics/TestMatrix3x3.h"
 
 using namespace reactphysics3d;
 
 int main() {
 
-    TestSuite testSuite("ReactPhysics3D tests");
+    TestSuite testSuite("ReactPhysics3D Tests");
 
     // ---------- Mathematics tests ---------- //
 
     testSuite.addTest(new TestVector3);
     testSuite.addTest(new TestTransform);
     testSuite.addTest(new TestQuaternion);
+    testSuite.addTest(new TestMatrix3x3);
 
     // ----------------------------- --------- //
 

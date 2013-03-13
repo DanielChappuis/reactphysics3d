@@ -82,6 +82,7 @@ class TestTransform : public Test {
             testInverse();
             testGetSetOpenGLMatrix();
             testInterpolateTransform();
+            testIdentity();
             testOperators();
         }
 
@@ -127,27 +128,27 @@ class TestTransform : public Test {
             Transform transform;
             Vector3 position = mTransform1.getPosition();
             Matrix3x3 orientation = mTransform1.getOrientation().getMatrix();
-            decimal openglMatrix[16] = {orientation.getValue(0,0), orientation.getValue(1,0),
-                                        orientation.getValue(2,0), 0,
-                                        orientation.getValue(0,1), orientation.getValue(1,1),
-                                        orientation.getValue(2,1), 0,
-                                        orientation.getValue(0,2), orientation.getValue(1,2),
-                                        orientation.getValue(2,2), 0,
+            decimal openglMatrix[16] = {orientation[0][0], orientation[1][0],
+                                        orientation[2][0], 0,
+                                        orientation[0][1], orientation[1][1],
+                                        orientation[2][1], 0,
+                                        orientation[0][2], orientation[1][2],
+                                        orientation[2][2], 0,
                                         position.x, position.y, position.z, 1};
             transform.setFromOpenGL(openglMatrix);
             decimal openglMatrix2[16];
             transform.getOpenGLMatrix(openglMatrix2);
-            test(approxEqual(openglMatrix2[0], orientation.getValue(0,0)));
-            test(approxEqual(openglMatrix2[1], orientation.getValue(1,0)));
-            test(approxEqual(openglMatrix2[2], orientation.getValue(2,0)));
+            test(approxEqual(openglMatrix2[0], orientation[0][0]));
+            test(approxEqual(openglMatrix2[1], orientation[1][0]));
+            test(approxEqual(openglMatrix2[2], orientation[2][0]));
             test(approxEqual(openglMatrix2[3], 0));
-            test(approxEqual(openglMatrix2[4], orientation.getValue(0,1)));
-            test(approxEqual(openglMatrix2[5], orientation.getValue(1,1)));
-            test(approxEqual(openglMatrix2[6], orientation.getValue(2,1)));
+            test(approxEqual(openglMatrix2[4], orientation[0][1]));
+            test(approxEqual(openglMatrix2[5], orientation[1][1]));
+            test(approxEqual(openglMatrix2[6], orientation[2][1]));
             test(approxEqual(openglMatrix2[7], 0));
-            test(approxEqual(openglMatrix2[8], orientation.getValue(0,2)));
-            test(approxEqual(openglMatrix2[9], orientation.getValue(1,2)));
-            test(approxEqual(openglMatrix2[10], orientation.getValue(2,2)));
+            test(approxEqual(openglMatrix2[8], orientation[0][2]));
+            test(approxEqual(openglMatrix2[9], orientation[1][2]));
+            test(approxEqual(openglMatrix2[10], orientation[2][2]));
             test(approxEqual(openglMatrix2[11], 0));
             test(approxEqual(openglMatrix2[12], position.x));
             test(approxEqual(openglMatrix2[13], position.y));
@@ -178,6 +179,18 @@ class TestTransform : public Test {
             test(approxEqual(orientation.y, sinB));
             test(approxEqual(orientation.z, sinB));
             test(approxEqual(orientation.w, cosB));
+        }
+
+        /// Test the identity methods
+        void testIdentity() {
+            Transform transform = Transform::identity();
+            test(transform.getPosition() == Vector3(0, 0, 0));
+            test(transform.getOrientation() == Quaternion::identity());
+
+            Transform transform2(Vector3(5, 6, 2), Quaternion(3, 5, 1, 6));
+            transform2.setToIdentity();
+            test(transform2.getPosition() == Vector3(0, 0, 0));
+            test(transform2.getOrientation() == Quaternion::identity());
         }
 
         /// Test the overloaded operators

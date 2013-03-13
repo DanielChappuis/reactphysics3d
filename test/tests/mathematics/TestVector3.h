@@ -92,6 +92,10 @@ class TestVector3 : public Test {
             test(approxEqual(newVector2.x, decimal(6.1)));
             test(approxEqual(newVector2.y, decimal(7.2)));
             test(approxEqual(newVector2.z, decimal(8.6)));
+
+            // Test method to set to zero
+            newVector2.setToZero();
+            test(newVector2 == Vector3(0, 0, 0));
         }
 
         /// Test the length, unit vector and normalize methods
@@ -219,6 +223,11 @@ class TestVector3 : public Test {
             vector4 /= 3;
             test(vector3 == Vector3(60, 330, 620));
             test(vector4 == Vector3(5, 20, 11));
+
+            // Negative operator
+            Vector3 vector5(-34, 5, 422);
+            Vector3 negative = -vector5;
+            test(negative == Vector3(34, -5, -422));
         }
  };
 

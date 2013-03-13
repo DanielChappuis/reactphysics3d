@@ -61,18 +61,25 @@ class TestQuaternion : public Test {
         /// Constructor
         TestQuaternion() : mIdentity(Quaternion::identity()) {
 
-            decimal sinA = sin(PI/8.0f);
-            decimal cosA = cos(PI/8.0f);
-            mQuaternion1 = Quaternion(sinA, sinA, sinA, cosA);
+            decimal sinA = sin(decimal(PI/8.0));
+            decimal cosA = cos(decimal(PI/8.0));
+            Vector3 vector(2, 3, 4);
+            vector.normalize();
+            mQuaternion1 = Quaternion(vector.x * sinA, vector.y * sinA, vector.z * sinA, cosA);
+            mQuaternion1.normalize();
         }
 
         /// Run the tests
         void run() {
             testConstructors();
+            testUnitLengthNormalize();
+            testOthersMethods();
+            testOperators();
         }
 
         /// Test the constructors
         void testConstructors() {
+
             Quaternion quaternion1(mQuaternion1);
             test(mQuaternion1== quaternion1);
 
@@ -80,21 +87,144 @@ class TestQuaternion : public Test {
             test(quaternion2 == Quaternion(4, 5, 6, 7));
 
             Quaternion quaternion3(8, Vector3(3, 5, 2));
-            test(quaternion3 == Quaternion(5, 6, 7, 4));
+            test(quaternion3 == Quaternion(3, 5, 2, 8));
 
-            Matrix3x3 matrix(2, 3, 4, 5, 6, 7, 8, 9, 10);
-            Quaternion quaternion4(matrix);
-            Matrix3x3 result = quaternion4.getMatrix();
-            test(approxEqual(matrix.getValue(0, 0), result.getValue(0, 0), 0.1));
-            std::cout << "matrix : " << matrix.getValue(0, 0) << ", " << result.getValue(0, 0) << std::endl;
-            test(approxEqual(matrix.getValue(0, 1), result.getValue(0, 1), 0.1));
-            test(approxEqual(matrix.getValue(0, 2), result.getValue(0, 2), 0.1));
-            test(approxEqual(matrix.getValue(1, 0), result.getValue(1, 0), 0.1));
-            test(approxEqual(matrix.getValue(1, 1), result.getValue(1, 1), 0.1));
-            test(approxEqual(matrix.getValue(1, 2), result.getValue(1, 2), 0.1));
-            test(approxEqual(matrix.getValue(2, 0), result.getValue(2, 0), 0.1));
-            test(approxEqual(matrix.getValue(2, 1), result.getValue(2, 1), 0.1));
-            test(approxEqual(matrix.getValue(2, 2), result.getValue(2, 2), 0.1));
+            Quaternion quaternion4(mQuaternion1.getMatrix());
+            test(approxEqual(quaternion4.x, mQuaternion1.x));
+            test(approxEqual(quaternion4.y, mQuaternion1.y));
+            test(approxEqual(quaternion4.z, mQuaternion1.z));
+            test(approxEqual(quaternion4.w, mQuaternion1.w));
+        }
+
+        /// Test unit, length, normalize methods
+        void testUnitLengthNormalize() {
+
+            // Test method that returns the length
+            Quaternion quaternion(2, 3, -4, 5);
+            test(approxEqual(quaternion.length(), sqrt(decimal(54.0))));
+
+            // Test method that returns a unit quaternion
+            test(approxEqual(quaternion.getUnit().length(), 1.0));
+
+            // Test the normalization method
+            Quaternion quaternion2(4, 5, 6, 7);
+            quaternion2.normalize();
+            test(approxEqual(quaternion2.length(), 1.0));
+        }
+
+        /// Test others methods
+        void testOthersMethods() {
+
+            // Test the method to set the values
+            Quaternion quaternion;
+            quaternion.setAllValues(1, 2, 3, 4);
+            test(quaternion == Quaternion(1, 2, 3, 4));
+
+            // Test the method to set the quaternion to zero
+            quaternion.setToZero();
+            test(quaternion == Quaternion(0, 0, 0, 0));
+
+            // Test the method to get the vector (x, y, z)
+            Vector3 v = mQuaternion1.getVectorV();
+            test(v.x == mQuaternion1.x);
+            test(v.y == mQuaternion1.y);
+            test(v.z == mQuaternion1.z);
+
+            // Test the conjugate method
+            Quaternion conjugate = mQuaternion1.getConjugate();
+            test(conjugate.x == -mQuaternion1.x);
+            test(conjugate.y == -mQuaternion1.y);
+            test(conjugate.z == -mQuaternion1.z);
+            test(conjugate.w == mQuaternion1.w);
+
+            // Test the inverse method
+            Quaternion inverse = mQuaternion1.getInverse();
+            Quaternion product = mQuaternion1 * inverse;
+            test(approxEqual(product.x, mIdentity.x, decimal(10e-6)));
+            test(approxEqual(product.y, mIdentity.y, decimal(10e-6)));
+            test(approxEqual(product.z, mIdentity.z, decimal(10e-6)));
+            test(approxEqual(product.w, mIdentity.w, decimal(10e-6)));
+
+            // Test the dot product
+            Quaternion quaternion1(2, 3, 4, 5);
+            Quaternion quaternion2(6, 7, 8, 9);
+            decimal dotProduct = quaternion1.dot(quaternion2);
+            test(dotProduct == 110);
+
+            // Test the method that returns the rotation angle and axis
+            Vector3 axis;
+            decimal angle;
+            Vector3 originalAxis = Vector3(2, 3, 4).getUnit();
+            mQuaternion1.getRotationAngleAxis(angle, axis);
+            test(approxEqual(axis.x, originalAxis.x));
+            test(approxEqual(angle, decimal(PI/4.0), decimal(10e-6)));
+
+            // Test the method that returns the corresponding matrix
+            Matrix3x3 matrix = mQuaternion1.getMatrix();
+            Vector3 vector(56, -2, 82);
+            Vector3 vector1 = matrix * vector;
+            Vector3 vector2 = mQuaternion1 * vector;
+            test(approxEqual(vector1.x, vector2.x));
+            test(approxEqual(vector1.y, vector2.y));
+            test(approxEqual(vector1.z, vector2.z));
+
+            // Test slerp method
+            Quaternion quatStart = quaternion1.getUnit();
+            Quaternion quatEnd = quaternion2.getUnit();
+            Quaternion test1 = Quaternion::slerp(quatStart, quatEnd, 0.0);
+            Quaternion test2 = Quaternion::slerp(quatStart, quatEnd, 1.0);
+            test(test1 == quatStart);
+            test(test2 == quatEnd);
+            decimal sinA = sin(decimal(PI/4.0));
+            decimal cosA = cos(decimal(PI/4.0));
+            Quaternion quat(sinA, 0, 0, cosA);
+            Quaternion test3 = Quaternion::slerp(mIdentity, quat, decimal(0.5));
+            test(approxEqual(test3.x, sin(decimal(PI/8.0))));
+            test(approxEqual(test3.y, 0.0));
+            test(approxEqual(test3.z, 0.0));
+            test(approxEqual(test3.w, cos(decimal(PI/8.0)), decimal(10e-6)));
+        }
+
+        /// Test overloaded operators
+        void testOperators() {
+
+            // Test addition
+            Quaternion quat1(4, 5, 2, 10);
+            Quaternion quat2(-2, 7, 8, 3);
+            Quaternion test1 = quat1 + quat2;
+            test(test1 == Quaternion(2, 12, 10, 13));
+
+            // Test substraction
+            Quaternion test2 = quat1 - quat2;
+            test(test2 == Quaternion(6, -2, -6, 7));
+
+            // Test multiplication with a number
+            Quaternion test3 = quat1 * 3.0;
+            test(test3 == Quaternion(12, 15, 6, 30));
+
+            // Test multiplication between two quaternions
+            Quaternion test4 = quat1 * quat2;
+            Quaternion test5 = mQuaternion1 * mIdentity;
+            test(test4 == Quaternion(18, 49, 124, -13));
+            test(test5 == mQuaternion1);
+
+            // Test multiplication between a quaternion and a point
+            Vector3 point(5, -24, 563);
+            Vector3 vector1 = mIdentity * point;
+            Vector3 vector2 = mQuaternion1 * point;
+            Vector3 testVector2 = mQuaternion1.getMatrix() * point;
+            test(vector1 == point);
+            test(approxEqual(vector2.x, testVector2.x, decimal(10e-6)));
+            test(approxEqual(vector2.y, testVector2.y, decimal(10e-6)));
+            test(approxEqual(vector2.z, testVector2.z, decimal(10e-6)));
+
+            // Test assignment operator
+            Quaternion quaternion;
+            quaternion = mQuaternion1;
+            test(quaternion == mQuaternion1);
+
+            // Test equality operator
+            test(mQuaternion1 == mQuaternion1);
         }
  };
 
