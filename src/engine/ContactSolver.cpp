@@ -27,6 +27,7 @@
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
 #include "../body/RigidBody.h"
+#include <limits>
 
 using namespace reactphysics3d;
 using namespace std;
