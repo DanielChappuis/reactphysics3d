@@ -23,28 +23,36 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef MATHEMATICS_FUNCTIONS_H
-#define MATHEMATICS_FUNCTIONS_H
-
 // Libraries
-#include "../configuration.h"
-#include "../decimal.h"
+#include "TestSuite.h"
+#include "tests/mathematics/TestVector3.h"
+#include "tests/mathematics/TestTransform.h"
+#include "tests/mathematics/TestQuaternion.h"
+#include "tests/mathematics/TestMatrix3x3.h"
 
-/// ReactPhysics3D namespace
-namespace reactphysics3d {
+using namespace reactphysics3d;
 
-// ---------- Mathematics functions ---------- //
+int main() {
 
-/// Function to test if two real numbers are (almost) equal
-/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
+    TestSuite testSuite("ReactPhysics3D Tests");
 
-    decimal difference = a - b;
-    return (difference < epsilon && difference > -epsilon);
+    // ---------- Mathematics tests ---------- //
+
+    testSuite.addTest(new TestVector3);
+    testSuite.addTest(new TestTransform);
+    testSuite.addTest(new TestQuaternion);
+    testSuite.addTest(new TestMatrix3x3);
+
+    // ----------------------------- --------- //
+
+    // Run the tests
+    testSuite.run();
+
+    // Display the report
+    long nbFailedTests = testSuite.report();
+
+    // Clear the tests from the test suite
+    testSuite.clear();
+
+    return nbFailedTests;
 }
-
-}
-
-
-
-#endif

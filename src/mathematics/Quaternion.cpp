@@ -59,58 +59,51 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
     // Get the trace of the matrix
     decimal trace = matrix.getTrace();
 
-    decimal array[3][3];
-    for (int i=0; i<3; i++) {
-        for (int j=0; j<3; j++) {
-            array[i][j] = matrix.getValue(i, j);
-        }
-    }
-
     decimal r;
     decimal s;
 
     if (trace < 0.0) {
-        if (array[1][1] > array[0][0]) {
-            if(array[2][2] > array[1][1]) {
-                r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
+        if (matrix[1][1] > matrix[0][0]) {
+            if(matrix[2][2] > matrix[1][1]) {
+                r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + 1.0);
                 s = 0.5 / r;
                 
                 // Compute the quaternion
-                x = (array[2][0] + array[0][2])*s;
-                y = (array[1][2] + array[2][1])*s;
+                x = (matrix[2][0] + matrix[0][2])*s;
+                y = (matrix[1][2] + matrix[2][1])*s;
                 z = 0.5*r;
-                w = (array[1][0] - array[0][1])*s;
+                w = (matrix[1][0] - matrix[0][1])*s;
             }
             else {
-                r = sqrt(array[1][1] - array[2][2] - array[0][0] + 1.0);
+                r = sqrt(matrix[1][1] - matrix[2][2] - matrix[0][0] + 1.0);
                 s = 0.5 / r;
 
                 // Compute the quaternion
-                x = (array[0][1] + array[1][0])*s;
+                x = (matrix[0][1] + matrix[1][0])*s;
                 y = 0.5 * r;
-                z = (array[1][2] + array[2][1])*s;
-                w = (array[0][2] - array[2][0])*s;
+                z = (matrix[1][2] + matrix[2][1])*s;
+                w = (matrix[0][2] - matrix[2][0])*s;
             }
         }
-        else if (array[2][2] > array[0][0]) {
-            r = sqrt(array[2][2] - array[0][0] - array[1][1] + 1.0);
+        else if (matrix[2][2] > matrix[0][0]) {
+            r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + 1.0);
             s = 0.5 / r;
 
             // Compute the quaternion
-            x = (array[2][0] + array[0][2])*s;
-            y = (array[1][2] + array[2][1])*s;
+            x = (matrix[2][0] + matrix[0][2])*s;
+            y = (matrix[1][2] + matrix[2][1])*s;
             z = 0.5 * r;
-            w = (array[1][0] - array[0][1])*s;
+            w = (matrix[1][0] - matrix[0][1])*s;
         }
         else {
-            r = sqrt(array[0][0] - array[1][1] - array[2][2] + 1.0);
+            r = sqrt(matrix[0][0] - matrix[1][1] - matrix[2][2] + 1.0);
             s = 0.5 / r;
 
             // Compute the quaternion
             x = 0.5 * r;
-            y = (array[0][1] + array[1][0])*s;
-            z = (array[2][0] - array[0][2])*s;
-            w = (array[2][1] - array[1][2])*s;
+            y = (matrix[0][1] + matrix[1][0])*s;
+            z = (matrix[2][0] - matrix[0][2])*s;
+            w = (matrix[2][1] - matrix[1][2])*s;
         }
     }
     else {
@@ -118,9 +111,9 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
         s = 0.5/r;
 
         // Compute the quaternion
-        x = (array[2][1]-array[1][2])*s;
-        y = (array[0][2]-array[2][0])*s;
-        z = (array[1][0]-array[0][1])*s;
+        x = (matrix[2][1] - matrix[1][2]) * s;
+        y = (matrix[0][2] - matrix[2][0]) * s;
+        z = (matrix[1][0] - matrix[0][1]) * s;
         w = 0.5 * r;
     }
 }

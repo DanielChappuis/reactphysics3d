@@ -9,6 +9,7 @@ SET(LIBRARY_OUTPUT_PATH lib/)
 
 # Options
 OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
+OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
 
 # Headers
 INCLUDE_DIRECTORIES(src)
@@ -31,3 +32,8 @@ ADD_LIBRARY (
 IF (COMPILE_EXAMPLES)
    add_subdirectory(examples/fallingcubes)
 ENDIF (COMPILE_EXAMPLES)
+
+# If we need to compile the tests
+IF (COMPILE_TESTS)
+   add_subdirectory(test/)
+ENDIF (COMPILE_TESTS)

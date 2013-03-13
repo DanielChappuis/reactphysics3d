@@ -23,28 +23,64 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef MATHEMATICS_FUNCTIONS_H
-#define MATHEMATICS_FUNCTIONS_H
-
 // Libraries
-#include "../configuration.h"
-#include "../decimal.h"
+#include "Test.h"
 
-/// ReactPhysics3D namespace
-namespace reactphysics3d {
+using namespace reactphysics3d;
 
-// ---------- Mathematics functions ---------- //
-
-/// Function to test if two real numbers are (almost) equal
-/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
-
-    decimal difference = a - b;
-    return (difference < epsilon && difference > -epsilon);
-}
+/// Constructor
+Test::Test(std::ostream* stream) : mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
 
 }
 
+/// Destructor
+Test::~Test() {
 
+}
 
-#endif
+// Called to test a boolean condition.
+// This method should not be called directly in your test but you should call test() instead (macro)
+void Test::applyTest(bool condition, const std::string& testText,
+                     const char* filename, long lineNumber) {
+
+    // If the boolean condition is true
+    if (condition) {
+
+        // The test passed, call the succeed() method
+        succeed();
+    }
+    else {  // If the boolean condition is false
+
+        // The test failed, call the applyFail() method
+        applyFail(testText, filename, lineNumber);
+    }
+}
+
+// Called when a test has failed.
+// This method should not be called directly in your test buy you should call fail() instead (macro)
+void Test::applyFail(const std::string& testText, const char* filename, long lineNumber) {
+
+    if (mOutputStream) {
+
+        // Display the failure message
+        *mOutputStream << typeid(*this).name() << "failure : (" << testText << "), " <<
+                  filename << "(line " << lineNumber << ")" << std::endl;
+    }
+
+    // Increase the number of failed tests
+    mNbFailedTests++;
+}
+
+/// Display the report of the unit test and return the number of failed tests
+long Test::report() const {
+
+    if(mOutputStream) {
+        *mOutputStream << "Test \"" <<
+         typeid(*this).name()
+               << "\":\n\tPassed: " << mNbPassedTests << "\tFailed: " <<
+                  mNbFailedTests  << std::endl;
+      }
+
+    // Return the number of failed tests
+    return mNbFailedTests;
+}

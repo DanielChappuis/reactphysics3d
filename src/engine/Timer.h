@@ -34,6 +34,7 @@
 #include "../configuration.h"
 
 #if defined(WINDOWS_OS)   // For Windows platform
+   #define NOMINMAX       // This is used to avoid definition of max() and min() macros
    #include <windows.h>
 #else                                   // For Mac OS or Linux platform
    #include <sys/time.h>
