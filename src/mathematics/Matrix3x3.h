@@ -46,8 +46,8 @@ class Matrix3x3 {
 
         // -------------------- Attributes -------------------- //
 
-        // Array with the values of the matrix
-        decimal mArray[3][3];
+        /// Rows of the matrix;
+        Vector3 mRows[3];
 
     public :
 
@@ -72,18 +72,18 @@ class Matrix3x3 {
         // Assignment operator
         Matrix3x3& operator=(const Matrix3x3& matrix);
 
-        // Get a value in the matrix
-        decimal getValue(int i, int j) const;
-
-        // Set a value in the matrix
-        void setValue(int i, int j, decimal value);
-
         // Set all the values in the matrix
         void setAllValues(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
                   decimal c1, decimal c2, decimal c3);
 
+        /// Set the matrix to zero
+        void setToZero();
+
         // Return a column
         Vector3 getColumn(int i) const;
+
+        /// Return a row
+        Vector3 getRow(int i) const;
 
         // Return the transpose matrix
         Matrix3x3 getTranspose() const;
@@ -141,110 +141,120 @@ class Matrix3x3 {
 
         // Overloaded operator for multiplication with a number with assignment
         Matrix3x3& operator*=(decimal nb);
+
+        /// Overloaded operator to read element of the matrix.
+        const Vector3& operator[](int row) const;
+
+        /// Overloaded operator to read/write element of the matrix.
+        Vector3& operator[](int row);
 };
-
-
-// Method to get a value in the matrix (inline)
-inline decimal Matrix3x3::getValue(int i, int j) const {
-    assert(i>=0 && i<3 && j>=0 && j<3);
-    return mArray[i][j];
-}
-
-// Method to set a value in the matrix (inline)
-inline void Matrix3x3::setValue(int i, int j, decimal value) {
-    assert(i>=0 && i<3 && j>=0 && j<3);
-    mArray[i][j] = value;
-}
 
 // Method to set all the values in the matrix
 inline void Matrix3x3::setAllValues(decimal a1, decimal a2, decimal a3,
                                     decimal b1, decimal b2, decimal b3,
                                     decimal c1, decimal c2, decimal c3) {
-    mArray[0][0] = a1; mArray[0][1] = a2; mArray[0][2] = a3;
-    mArray[1][0] = b1; mArray[1][1] = b2; mArray[1][2] = b3;
-    mArray[2][0] = c1; mArray[2][1] = c2; mArray[2][2] = c3;
+    mRows[0][0] = a1; mRows[0][1] = a2; mRows[0][2] = a3;
+    mRows[1][0] = b1; mRows[1][1] = b2; mRows[1][2] = b3;
+    mRows[2][0] = c1; mRows[2][1] = c2; mRows[2][2] = c3;
+}
+
+/// Set the matrix to zero
+inline void Matrix3x3::setToZero() {
+    mRows[0].setToZero();
+    mRows[1].setToZero();
+    mRows[2].setToZero();
 }
 
 // Return a column
 inline Vector3 Matrix3x3::getColumn(int i) const {
     assert(i>= 0 && i<3);
-    return Vector3(mArray[0][i], mArray[1][i], mArray[2][i]);
+    return Vector3(mRows[0][i], mRows[1][i], mRows[2][i]);
+}
+
+/// Return a row
+inline Vector3 Matrix3x3::getRow(int i) const {
+    assert(i>= 0 && i<3);
+    return mRows[i];
 }
 
 // Return the transpose matrix
 inline Matrix3x3 Matrix3x3::getTranspose() const {
+
     // Return the transpose matrix
-    return Matrix3x3(mArray[0][0], mArray[1][0], mArray[2][0],
-                     mArray[0][1], mArray[1][1], mArray[2][1],
-                     mArray[0][2], mArray[1][2], mArray[2][2]);
+    return Matrix3x3(mRows[0][0], mRows[1][0], mRows[2][0],
+                     mRows[0][1], mRows[1][1], mRows[2][1],
+                     mRows[0][2], mRows[1][2], mRows[2][2]);
 }
 
 // Return the determinant of the matrix
 inline decimal Matrix3x3::getDeterminant() const {
+
     // Compute and return the determinant of the matrix
-    return (mArray[0][0]*(mArray[1][1]*mArray[2][2]-mArray[2][1]*mArray[1][2]) -
-            mArray[0][1]*(mArray[1][0]*mArray[2][2]-mArray[2][0]*mArray[1][2]) +
-            mArray[0][2]*(mArray[1][0]*mArray[2][1]-mArray[2][0]*mArray[1][1]));
+    return (mRows[0][0]*(mRows[1][1]*mRows[2][2]-mRows[2][1]*mRows[1][2]) -
+            mRows[0][1]*(mRows[1][0]*mRows[2][2]-mRows[2][0]*mRows[1][2]) +
+            mRows[0][2]*(mRows[1][0]*mRows[2][1]-mRows[2][0]*mRows[1][1]));
 }
 
 // Return the trace of the matrix
 inline decimal Matrix3x3::getTrace() const {
+
     // Compute and return the trace
-    return (mArray[0][0] + mArray[1][1] + mArray[2][2]);
+    return (mRows[0][0] + mRows[1][1] + mRows[2][2]);
 }
 
 // Set the matrix to the identity matrix
 inline void Matrix3x3::setToIdentity() {
-    mArray[0][0] = 1.0; mArray[0][1] = 0.0; mArray[0][2] = 0.0;
-    mArray[1][0] = 0.0; mArray[1][1] = 1.0; mArray[1][2] = 0.0;
-    mArray[2][0] = 0.0; mArray[2][1] = 0.0; mArray[2][2] = 1.0;
+    mRows[0][0] = 1.0; mRows[0][1] = 0.0; mRows[0][2] = 0.0;
+    mRows[1][0] = 0.0; mRows[1][1] = 1.0; mRows[1][2] = 0.0;
+    mRows[2][0] = 0.0; mRows[2][1] = 0.0; mRows[2][2] = 1.0;
 }
 
 // Return the 3x3 identity matrix
 inline Matrix3x3 Matrix3x3::identity() {
+
     // Return the isdentity matrix
     return Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 // Return the matrix with absolute values
 inline Matrix3x3 Matrix3x3::getAbsoluteMatrix() const {
-    return Matrix3x3(fabs(mArray[0][0]), fabs(mArray[0][1]), fabs(mArray[0][2]),
-                     fabs(mArray[1][0]), fabs(mArray[1][1]), fabs(mArray[1][2]),
-                     fabs(mArray[2][0]), fabs(mArray[2][1]), fabs(mArray[2][2]));
+    return Matrix3x3(fabs(mRows[0][0]), fabs(mRows[0][1]), fabs(mRows[0][2]),
+                     fabs(mRows[1][0]), fabs(mRows[1][1]), fabs(mRows[1][2]),
+                     fabs(mRows[2][0]), fabs(mRows[2][1]), fabs(mRows[2][2]));
 }
 
 // Overloaded operator for addition
 inline Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
-    return Matrix3x3(matrix1.mArray[0][0] + matrix2.mArray[0][0], matrix1.mArray[0][1] +
-                     matrix2.mArray[0][1], matrix1.mArray[0][2] + matrix2.mArray[0][2],
-                     matrix1.mArray[1][0] + matrix2.mArray[1][0], matrix1.mArray[1][1] +
-                     matrix2.mArray[1][1], matrix1.mArray[1][2] + matrix2.mArray[1][2],
-                     matrix1.mArray[2][0] + matrix2.mArray[2][0], matrix1.mArray[2][1] +
-                     matrix2.mArray[2][1], matrix1.mArray[2][2] + matrix2.mArray[2][2]);
+    return Matrix3x3(matrix1.mRows[0][0] + matrix2.mRows[0][0], matrix1.mRows[0][1] +
+                     matrix2.mRows[0][1], matrix1.mRows[0][2] + matrix2.mRows[0][2],
+                     matrix1.mRows[1][0] + matrix2.mRows[1][0], matrix1.mRows[1][1] +
+                     matrix2.mRows[1][1], matrix1.mRows[1][2] + matrix2.mRows[1][2],
+                     matrix1.mRows[2][0] + matrix2.mRows[2][0], matrix1.mRows[2][1] +
+                     matrix2.mRows[2][1], matrix1.mRows[2][2] + matrix2.mRows[2][2]);
 }
 
 // Overloaded operator for substraction
 inline Matrix3x3 operator-(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
-    return Matrix3x3(matrix1.mArray[0][0] - matrix2.mArray[0][0], matrix1.mArray[0][1] -
-                     matrix2.mArray[0][1], matrix1.mArray[0][2] - matrix2.mArray[0][2],
-                     matrix1.mArray[1][0] - matrix2.mArray[1][0], matrix1.mArray[1][1] -
-                     matrix2.mArray[1][1], matrix1.mArray[1][2] - matrix2.mArray[1][2],
-                     matrix1.mArray[2][0] - matrix2.mArray[2][0], matrix1.mArray[2][1] -
-                     matrix2.mArray[2][1], matrix1.mArray[2][2] - matrix2.mArray[2][2]);
+    return Matrix3x3(matrix1.mRows[0][0] - matrix2.mRows[0][0], matrix1.mRows[0][1] -
+                     matrix2.mRows[0][1], matrix1.mRows[0][2] - matrix2.mRows[0][2],
+                     matrix1.mRows[1][0] - matrix2.mRows[1][0], matrix1.mRows[1][1] -
+                     matrix2.mRows[1][1], matrix1.mRows[1][2] - matrix2.mRows[1][2],
+                     matrix1.mRows[2][0] - matrix2.mRows[2][0], matrix1.mRows[2][1] -
+                     matrix2.mRows[2][1], matrix1.mRows[2][2] - matrix2.mRows[2][2]);
 }
 
 // Overloaded operator for the negative of the matrix
 inline Matrix3x3 operator-(const Matrix3x3& matrix) {
-    return Matrix3x3(-matrix.mArray[0][0], -matrix.mArray[0][1], -matrix.mArray[0][2],
-                     -matrix.mArray[1][0], -matrix.mArray[1][1], -matrix.mArray[1][2],
-                     -matrix.mArray[2][0], -matrix.mArray[2][1], -matrix.mArray[2][2]);
+    return Matrix3x3(-matrix.mRows[0][0], -matrix.mRows[0][1], -matrix.mRows[0][2],
+                     -matrix.mRows[1][0], -matrix.mRows[1][1], -matrix.mRows[1][2],
+                     -matrix.mRows[2][0], -matrix.mRows[2][1], -matrix.mRows[2][2]);
 }
 
 // Overloaded operator for multiplication with a number
 inline Matrix3x3 operator*(decimal nb, const Matrix3x3& matrix) {
-    return Matrix3x3(matrix.mArray[0][0] * nb, matrix.mArray[0][1] * nb, matrix.mArray[0][2] * nb,
-                     matrix.mArray[1][0] * nb, matrix.mArray[1][1] * nb, matrix.mArray[1][2] * nb,
-                     matrix.mArray[2][0] * nb, matrix.mArray[2][1] * nb, matrix.mArray[2][2] * nb);
+    return Matrix3x3(matrix.mRows[0][0] * nb, matrix.mRows[0][1] * nb, matrix.mRows[0][2] * nb,
+                     matrix.mRows[1][0] * nb, matrix.mRows[1][1] * nb, matrix.mRows[1][2] * nb,
+                     matrix.mRows[2][0] * nb, matrix.mRows[2][1] * nb, matrix.mRows[2][2] * nb);
 }
 
 // Overloaded operator for multiplication with a matrix
@@ -254,44 +264,44 @@ inline Matrix3x3 operator*(const Matrix3x3& matrix, decimal nb) {
 
 // Overloaded operator for matrix multiplication
 inline Matrix3x3 operator*(const Matrix3x3& matrix1, const Matrix3x3& matrix2) {
-    return Matrix3x3(matrix1.mArray[0][0]*matrix2.mArray[0][0] + matrix1.mArray[0][1] *
-                     matrix2.mArray[1][0] + matrix1.mArray[0][2]*matrix2.mArray[2][0],
-                     matrix1.mArray[0][0]*matrix2.mArray[0][1] + matrix1.mArray[0][1] *
-                     matrix2.mArray[1][1] + matrix1.mArray[0][2]*matrix2.mArray[2][1],
-                     matrix1.mArray[0][0]*matrix2.mArray[0][2] + matrix1.mArray[0][1] *
-                     matrix2.mArray[1][2] + matrix1.mArray[0][2]*matrix2.mArray[2][2],
-                     matrix1.mArray[1][0]*matrix2.mArray[0][0] + matrix1.mArray[1][1] *
-                     matrix2.mArray[1][0] + matrix1.mArray[1][2]*matrix2.mArray[2][0],
-                     matrix1.mArray[1][0]*matrix2.mArray[0][1] + matrix1.mArray[1][1] *
-                     matrix2.mArray[1][1] + matrix1.mArray[1][2]*matrix2.mArray[2][1],
-                     matrix1.mArray[1][0]*matrix2.mArray[0][2] + matrix1.mArray[1][1] *
-                     matrix2.mArray[1][2] + matrix1.mArray[1][2]*matrix2.mArray[2][2],
-                     matrix1.mArray[2][0]*matrix2.mArray[0][0] + matrix1.mArray[2][1] *
-                     matrix2.mArray[1][0] + matrix1.mArray[2][2]*matrix2.mArray[2][0],
-                     matrix1.mArray[2][0]*matrix2.mArray[0][1] + matrix1.mArray[2][1] *
-                     matrix2.mArray[1][1] + matrix1.mArray[2][2]*matrix2.mArray[2][1],
-                     matrix1.mArray[2][0]*matrix2.mArray[0][2] + matrix1.mArray[2][1] *
-                     matrix2.mArray[1][2] + matrix1.mArray[2][2]*matrix2.mArray[2][2]);
+    return Matrix3x3(matrix1.mRows[0][0]*matrix2.mRows[0][0] + matrix1.mRows[0][1] *
+                     matrix2.mRows[1][0] + matrix1.mRows[0][2]*matrix2.mRows[2][0],
+                     matrix1.mRows[0][0]*matrix2.mRows[0][1] + matrix1.mRows[0][1] *
+                     matrix2.mRows[1][1] + matrix1.mRows[0][2]*matrix2.mRows[2][1],
+                     matrix1.mRows[0][0]*matrix2.mRows[0][2] + matrix1.mRows[0][1] *
+                     matrix2.mRows[1][2] + matrix1.mRows[0][2]*matrix2.mRows[2][2],
+                     matrix1.mRows[1][0]*matrix2.mRows[0][0] + matrix1.mRows[1][1] *
+                     matrix2.mRows[1][0] + matrix1.mRows[1][2]*matrix2.mRows[2][0],
+                     matrix1.mRows[1][0]*matrix2.mRows[0][1] + matrix1.mRows[1][1] *
+                     matrix2.mRows[1][1] + matrix1.mRows[1][2]*matrix2.mRows[2][1],
+                     matrix1.mRows[1][0]*matrix2.mRows[0][2] + matrix1.mRows[1][1] *
+                     matrix2.mRows[1][2] + matrix1.mRows[1][2]*matrix2.mRows[2][2],
+                     matrix1.mRows[2][0]*matrix2.mRows[0][0] + matrix1.mRows[2][1] *
+                     matrix2.mRows[1][0] + matrix1.mRows[2][2]*matrix2.mRows[2][0],
+                     matrix1.mRows[2][0]*matrix2.mRows[0][1] + matrix1.mRows[2][1] *
+                     matrix2.mRows[1][1] + matrix1.mRows[2][2]*matrix2.mRows[2][1],
+                     matrix1.mRows[2][0]*matrix2.mRows[0][2] + matrix1.mRows[2][1] *
+                     matrix2.mRows[1][2] + matrix1.mRows[2][2]*matrix2.mRows[2][2]);
 }
 
 // Overloaded operator for multiplication with a vector
 inline Vector3 operator*(const Matrix3x3& matrix, const Vector3& vector) {
-    return Vector3(matrix.mArray[0][0]*vector.x + matrix.mArray[0][1]*vector.y +
-                   matrix.mArray[0][2]*vector.z,
-                   matrix.mArray[1][0]*vector.x + matrix.mArray[1][1]*vector.y +
-                   matrix.mArray[1][2]*vector.z,
-                   matrix.mArray[2][0]*vector.x + matrix.mArray[2][1]*vector.y +
-                   matrix.mArray[2][2]*vector.z);
+    return Vector3(matrix.mRows[0][0]*vector.x + matrix.mRows[0][1]*vector.y +
+                   matrix.mRows[0][2]*vector.z,
+                   matrix.mRows[1][0]*vector.x + matrix.mRows[1][1]*vector.y +
+                   matrix.mRows[1][2]*vector.z,
+                   matrix.mRows[2][0]*vector.x + matrix.mRows[2][1]*vector.y +
+                   matrix.mRows[2][2]*vector.z);
 }
 
 // Overloaded operator for equality condition
 inline bool Matrix3x3::operator==(const Matrix3x3& matrix) const {
-    return (mArray[0][0] == matrix.mArray[0][0] && mArray[0][1] == matrix.mArray[0][1] &&
-            mArray[0][2] == matrix.mArray[0][2] &&
-            mArray[1][0] == matrix.mArray[1][0] && mArray[1][1] == matrix.mArray[1][1] &&
-            mArray[1][2] == matrix.mArray[1][2] &&
-            mArray[2][0] == matrix.mArray[2][0] && mArray[2][1] == matrix.mArray[2][1] &&
-            mArray[2][2] == matrix.mArray[2][2]);
+    return (mRows[0][0] == matrix.mRows[0][0] && mRows[0][1] == matrix.mRows[0][1] &&
+            mRows[0][2] == matrix.mRows[0][2] &&
+            mRows[1][0] == matrix.mRows[1][0] && mRows[1][1] == matrix.mRows[1][1] &&
+            mRows[1][2] == matrix.mRows[1][2] &&
+            mRows[2][0] == matrix.mRows[2][0] && mRows[2][1] == matrix.mRows[2][1] &&
+            mRows[2][2] == matrix.mRows[2][2]);
 }
 
 // Overloaded operator for the is different condition
@@ -301,30 +311,44 @@ inline bool Matrix3x3::operator!= (const Matrix3x3& matrix) const {
 
 // Overloaded operator for addition with assignment
 inline Matrix3x3& Matrix3x3::operator+=(const Matrix3x3& matrix) {
-   mArray[0][0] += matrix.mArray[0][0]; mArray[0][1] += matrix.mArray[0][1];
-   mArray[0][2] += matrix.mArray[0][2]; mArray[1][0] += matrix.mArray[1][0];
-   mArray[1][1] += matrix.mArray[1][1]; mArray[1][2] += matrix.mArray[1][2];
-   mArray[2][0] += matrix.mArray[2][0]; mArray[2][1] += matrix.mArray[2][1];
-   mArray[2][2] += matrix.mArray[2][2];
+   mRows[0][0] += matrix.mRows[0][0]; mRows[0][1] += matrix.mRows[0][1];
+   mRows[0][2] += matrix.mRows[0][2]; mRows[1][0] += matrix.mRows[1][0];
+   mRows[1][1] += matrix.mRows[1][1]; mRows[1][2] += matrix.mRows[1][2];
+   mRows[2][0] += matrix.mRows[2][0]; mRows[2][1] += matrix.mRows[2][1];
+   mRows[2][2] += matrix.mRows[2][2];
    return *this;
 }
 
 // Overloaded operator for substraction with assignment
 inline Matrix3x3& Matrix3x3::operator-=(const Matrix3x3& matrix) {
-   mArray[0][0] -= matrix.mArray[0][0]; mArray[0][1] -= matrix.mArray[0][1];
-   mArray[0][2] -= matrix.mArray[0][2]; mArray[1][0] -= matrix.mArray[1][0];
-   mArray[1][1] -= matrix.mArray[1][1]; mArray[1][2] -= matrix.mArray[1][2];
-   mArray[2][0] -= matrix.mArray[2][0]; mArray[2][1] -= matrix.mArray[2][1];
-   mArray[2][2] -= matrix.mArray[2][2];
+   mRows[0][0] -= matrix.mRows[0][0]; mRows[0][1] -= matrix.mRows[0][1];
+   mRows[0][2] -= matrix.mRows[0][2]; mRows[1][0] -= matrix.mRows[1][0];
+   mRows[1][1] -= matrix.mRows[1][1]; mRows[1][2] -= matrix.mRows[1][2];
+   mRows[2][0] -= matrix.mRows[2][0]; mRows[2][1] -= matrix.mRows[2][1];
+   mRows[2][2] -= matrix.mRows[2][2];
    return *this;
 }
 
 // Overloaded operator for multiplication with a number with assignment
 inline Matrix3x3& Matrix3x3::operator*=(decimal nb) {
-   mArray[0][0] *= nb; mArray[0][1] *= nb; mArray[0][2] *= nb;
-   mArray[1][0] *= nb; mArray[1][1] *= nb; mArray[1][2] *= nb;
-   mArray[2][0] *= nb; mArray[2][1] *= nb; mArray[2][2] *= nb;
+   mRows[0][0] *= nb; mRows[0][1] *= nb; mRows[0][2] *= nb;
+   mRows[1][0] *= nb; mRows[1][1] *= nb; mRows[1][2] *= nb;
+   mRows[2][0] *= nb; mRows[2][1] *= nb; mRows[2][2] *= nb;
    return *this;
+}
+
+// Overloaded operator to return a row of the matrix.
+/// This operator is also used to access a matrix value using the syntax
+/// matrix[row][col].
+inline const Vector3& Matrix3x3::operator[](int row) const {
+    return mRows[row];
+}
+
+// Overloaded operator to return a row of the matrix.
+/// This operator is also used to access a matrix value using the syntax
+/// matrix[row][col].
+inline Vector3& Matrix3x3::operator[](int row) {
+    return mRows[row];
 }
 
 }

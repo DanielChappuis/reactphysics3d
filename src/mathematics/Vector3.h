@@ -67,6 +67,9 @@ struct Vector3 {
         // Set all the values of the vector
         void setAllValues(decimal newX, decimal newY, decimal newZ);
 
+        /// Set the vector to zero
+        void setToZero();
+
         // Return the lenght of the vector
         decimal length() const;
 
@@ -139,6 +142,13 @@ struct Vector3 {
         friend Vector3 operator*(decimal number, const Vector3& vector);
         friend Vector3 operator/(const Vector3& vector, decimal number);
 };
+
+// Set the vector to zero
+inline void Vector3::setToZero() {
+    x = 0;
+    y = 0;
+    z = 0;
+}
 
 // Set all the values of the vector
 inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
