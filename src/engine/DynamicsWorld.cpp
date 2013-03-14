@@ -289,7 +289,7 @@ void DynamicsWorld::removeAllConstraints() {
 void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
 
     // Get the pair of body index
-    std::pair<bodyindex, bodyindex> indexPair = addedPair->getBodiesIndexPair();
+    bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Add the pair into the set of overlapping pairs (if not there yet)
     OverlappingPair* newPair = new (mMemoryPoolOverlappingPairs.allocateObject()) OverlappingPair(

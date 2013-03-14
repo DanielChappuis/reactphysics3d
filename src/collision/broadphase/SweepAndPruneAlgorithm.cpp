@@ -131,7 +131,7 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
     // in order to remove all overlapping pairs from the pair manager
     const decimal max = DECIMAL_LARGEST;
     const Vector3 maxVector(max, max, max);
-    const AABB aabb(maxVector, maxVector, body);
+    const AABB aabb(maxVector, maxVector);
     updateObject(body, aabb);
 
     // Get the corresponding box

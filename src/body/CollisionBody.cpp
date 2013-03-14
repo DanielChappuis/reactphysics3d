@@ -44,13 +44,11 @@ CollisionBody::CollisionBody(const Transform& transform, CollisionShape *collisi
     // Initialize the old transform
     mOldTransform = transform;
 
-    // Create the AABB for broad-phase collision detection
-    mAabb = new AABB(transform, collisionShape->getLocalExtents(OBJECT_MARGIN));
+    // Initialize the AABB for broad-phase collision detection
+    mCollisionShape->updateAABB(mAabb, transform);
 }
 
 // Destructor
 CollisionBody::~CollisionBody() {
 
-    // Delete the AABB
-    delete mAabb;
 }

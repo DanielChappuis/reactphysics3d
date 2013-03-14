@@ -54,10 +54,6 @@ class AABB {
         /// Maximum world coordinates of the AABB on the x,y and z axis
         Vector3 mMaxCoordinates;
 
-        /// Pointer to the owner body (not the abstract class Body
-        /// but its derivative which is instanciable)
-        Body* mBodyPointer;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -65,6 +61,9 @@ class AABB {
 
         /// Private assignment operator
         AABB& operator=(const AABB& aabb);
+
+        /// Constructor
+        AABB(const Transform& transform, const Vector3& extents);
 
     public :
 
@@ -74,10 +73,9 @@ class AABB {
         AABB();
 
         /// Constructor
-        AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates, Body* modyPointer);
+        AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
 
-        /// Constructor
-        AABB(const Transform& transform, const Vector3& extents);
+
 
         /// Destructor
         virtual ~AABB();
@@ -88,21 +86,17 @@ class AABB {
         /// Return the minimum coordinates of the AABB
         const Vector3& getMin() const;
 
+        /// Set the minimum coordinates of the AABB
+        void setMin(const Vector3& min);
+
         /// Return the maximum coordinates of the AABB
         const Vector3& getMax() const;
 
-        /// Return a pointer to the owner body
-        Body* getBodyPointer() const;
-
-        /// Set the body pointer
-        void setBodyPointer(Body* bodyPointer);
+        /// Set the maximum coordinates of the AABB
+        void setMax(const Vector3& max);
 
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
-
-        /// Update the oriented bounding box orientation
-        /// according to a new orientation of the rigid body
-        virtual void update(const Transform& newTransform, const Vector3& extents);
 
 #ifdef VISUAL_DEBUG
        /// Draw the AABB (only for testing purpose)
@@ -120,19 +114,19 @@ inline const Vector3& AABB::getMin() const {
     return mMinCoordinates;
 }
 
+// Set the minimum coordinates of the AABB
+inline void AABB::setMin(const Vector3& min) {
+    mMinCoordinates = min;
+}
+
 // Return the maximum coordinates of the AABB
 inline const Vector3& AABB::getMax() const {
     return mMaxCoordinates;
 }
 
-// Return a pointer to the owner body
-inline Body* AABB::getBodyPointer() const {
-    return mBodyPointer;
-}
-
-// Set the body pointer
-inline void AABB::setBodyPointer(Body* bodyPointer) {
-    mBodyPointer = bodyPointer;
+/// Set the maximum coordinates of the AABB
+inline void AABB::setMax(const Vector3& max) {
+    mMaxCoordinates = max;
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument.
@@ -145,16 +139,6 @@ inline bool AABB::testCollision(const AABB& aabb) const {
     if (mMaxCoordinates.z < aabb.mMinCoordinates.z||
         aabb.mMaxCoordinates.z < mMinCoordinates.z) return false;
     return true;
-}
-
-// Update the world minimum and maximum coordinates of the AABB on the three x,y and z axis
-inline void AABB::update(const Transform& newTransform, const Vector3& extents) {
-    Matrix3x3 worldAxis = newTransform.getOrientation().getMatrix().getAbsoluteMatrix();
-    Vector3 worldExtents = Vector3(worldAxis.getColumn(0).dot(extents),
-                                     worldAxis.getColumn(1).dot(extents),
-                                     worldAxis.getColumn(2).dot(extents));
-    mMinCoordinates = newTransform.getPosition() - worldExtents;
-    mMaxCoordinates = newTransform.getPosition() + worldExtents;
 }
 
 }

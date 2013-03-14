@@ -94,7 +94,7 @@ class CollisionDetection {
         void computeBroadPhase();
 
         /// Compute the narrow-phase collision detection
-        bool computeNarrowPhase();
+        void computeNarrowPhase();
 
         /// Select the narrow phase algorithm to use given two collision shapes
         NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1,
@@ -117,7 +117,7 @@ class CollisionDetection {
         void removeBody(CollisionBody* body);
 
         /// Compute the collision detection
-        bool computeCollisionDetection();
+        void computeCollisionDetection();
 
         /// Allow the broadphase to notify the collision detection about a new overlapping pair.
         void broadPhaseNotifyAddedOverlappingPair(BodyPair* pair);
@@ -143,7 +143,7 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
 inline void CollisionDetection::addBody(CollisionBody* body) {
     
     // Add the body to the broad-phase
-    mBroadPhaseAlgorithm->addObject(body, *(body->getAABB()));
+    mBroadPhaseAlgorithm->addObject(body, body->getAABB());
 }  
 
 // Remove a body from the collision detection

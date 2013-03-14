@@ -71,7 +71,7 @@ class CollisionBody : public Body {
         bool mIsCollisionEnabled;
 
         /// AABB for Broad-Phase collision detection
-        AABB* mAabb;
+        AABB mAabb;
 
         /// True if the body has moved during the last frame
         bool mHasMoved;
@@ -119,7 +119,7 @@ class CollisionBody : public Body {
         void setTransform(const Transform& transform);
 
         /// Return the AAABB of the body
-        const AABB* getAABB() const;
+        const AABB& getAABB() const;
 
         /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
@@ -216,7 +216,7 @@ inline void CollisionBody::setTransform(const Transform& transform) {
 }
 
 // Return the AAABB of the body
-inline const AABB* CollisionBody::getAABB() const {
+inline const AABB& CollisionBody::getAABB() const {
     return mAabb;
 }
 
@@ -242,7 +242,7 @@ inline void CollisionBody::updateAABB() {
     // TODO : An AABB should not be updated every frame but only if the body has moved
 
     // Update the AABB
-    mAabb->update(mTransform, mCollisionShape->getLocalExtents(OBJECT_MARGIN));
+    mCollisionShape->updateAABB(mAabb, mTransform);
 }
 
 }
