@@ -153,7 +153,7 @@ class RigidBody : public CollisionBody {
         decimal getRestitution() const;
 
         /// Set the restitution coefficient
-        void setRestitution(decimal restitution) throw(std::invalid_argument);
+        void setRestitution(decimal restitution);
 
         /// Get the friction coefficient
         decimal getFrictionCoefficient() const;
@@ -273,15 +273,9 @@ inline decimal RigidBody::getRestitution() const {
 }
 
 // Set the restitution coefficient
-inline void RigidBody::setRestitution(decimal restitution) throw(std::invalid_argument) {
-
-    // Check if the restitution coefficient is between 0 and 1
-    if (restitution >= 0.0 && restitution <= 1.0) {
-        mRestitution = restitution;
-    }
-    else {
-        throw std::invalid_argument("Error : the restitution coefficent must be between 0 and 1");
-    }
+inline void RigidBody::setRestitution(decimal restitution) {
+    assert(restitution >= 0.0 && restitution <= 1.0);
+    mRestitution = restitution;
 }
 
 // Get the friction coefficient

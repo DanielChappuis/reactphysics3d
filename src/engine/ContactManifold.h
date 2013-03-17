@@ -106,7 +106,7 @@ class ContactManifold {
         int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;
 
         /// Remove a contact point from the manifold
-        void removeContactPoint(int index);
+        void removeContactPoint(uint index);
 
         /// Return true if two vectors are approximatively equal
         bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;

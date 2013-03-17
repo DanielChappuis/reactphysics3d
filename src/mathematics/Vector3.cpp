@@ -58,7 +58,7 @@ Vector3 Vector3::getUnit() const {
     assert(lengthVector > MACHINE_EPSILON);
 
     // Compute and return the unit vector
-    decimal lengthInv = 1.0 / lengthVector;
+    decimal lengthInv = decimal(1.0) / lengthVector;
     return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
 }
 

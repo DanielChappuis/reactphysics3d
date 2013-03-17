@@ -48,7 +48,7 @@ namespace reactphysics3d {
 
 typedef unsigned int uint;
 typedef long unsigned int luint;
-typedef short unsigned int bodyindex;
+typedef luint bodyindex;
 typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
 // ------------------- Constants ------------------- //

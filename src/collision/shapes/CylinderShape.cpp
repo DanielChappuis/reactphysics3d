@@ -44,7 +44,7 @@ using namespace reactphysics3d;
 
 // Constructor
 CylinderShape::CylinderShape(decimal radius, decimal height)
-                 : CollisionShape(CYLINDER), mRadius(radius), mHalfHeight(height/2.0) {
+                 : CollisionShape(CYLINDER), mRadius(radius), mHalfHeight(height/decimal(2.0)) {
 
 }
 

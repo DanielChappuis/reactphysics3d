@@ -101,8 +101,8 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     // Create a new box
     BoxAABB* box = &mBoxes[boxIndex];
     box->body = body;
-    const uint minEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 2.0);
-    const uint maxEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 1.0);
+    const uint minEndPointValue = encodeFloatIntoInteger(FLT_MAX - 2.0f);
+    const uint maxEndPointValue = encodeFloatIntoInteger(FLT_MAX - 1.0f);
     for (uint axis=0; axis<3; axis++) {
         box->min[axis] = indexLimitEndPoint;
         box->max[axis] = indexLimitEndPoint + 1;

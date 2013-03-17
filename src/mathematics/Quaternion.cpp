@@ -65,56 +65,56 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
     if (trace < 0.0) {
         if (matrix[1][1] > matrix[0][0]) {
             if(matrix[2][2] > matrix[1][1]) {
-                r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + 1.0);
-                s = 0.5 / r;
+                r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
+                s = decimal(0.5) / r;
                 
                 // Compute the quaternion
-                x = (matrix[2][0] + matrix[0][2])*s;
-                y = (matrix[1][2] + matrix[2][1])*s;
-                z = 0.5*r;
-                w = (matrix[1][0] - matrix[0][1])*s;
+                x = (matrix[2][0] + matrix[0][2]) * s;
+                y = (matrix[1][2] + matrix[2][1]) * s;
+                z = decimal(0.5) * r;
+                w = (matrix[1][0] - matrix[0][1]) * s;
             }
             else {
-                r = sqrt(matrix[1][1] - matrix[2][2] - matrix[0][0] + 1.0);
-                s = 0.5 / r;
+                r = sqrt(matrix[1][1] - matrix[2][2] - matrix[0][0] + decimal(1.0));
+                s = decimal(0.5) / r;
 
                 // Compute the quaternion
-                x = (matrix[0][1] + matrix[1][0])*s;
-                y = 0.5 * r;
-                z = (matrix[1][2] + matrix[2][1])*s;
-                w = (matrix[0][2] - matrix[2][0])*s;
+                x = (matrix[0][1] + matrix[1][0]) * s;
+                y = decimal(0.5) * r;
+                z = (matrix[1][2] + matrix[2][1]) * s;
+                w = (matrix[0][2] - matrix[2][0]) * s;
             }
         }
         else if (matrix[2][2] > matrix[0][0]) {
-            r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + 1.0);
-            s = 0.5 / r;
+            r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
+            s = decimal(0.5) / r;
 
             // Compute the quaternion
-            x = (matrix[2][0] + matrix[0][2])*s;
-            y = (matrix[1][2] + matrix[2][1])*s;
-            z = 0.5 * r;
-            w = (matrix[1][0] - matrix[0][1])*s;
+            x = (matrix[2][0] + matrix[0][2]) * s;
+            y = (matrix[1][2] + matrix[2][1]) * s;
+            z = decimal(0.5) * r;
+            w = (matrix[1][0] - matrix[0][1]) * s;
         }
         else {
-            r = sqrt(matrix[0][0] - matrix[1][1] - matrix[2][2] + 1.0);
-            s = 0.5 / r;
+            r = sqrt(matrix[0][0] - matrix[1][1] - matrix[2][2] + decimal(1.0));
+            s = decimal(0.5) / r;
 
             // Compute the quaternion
-            x = 0.5 * r;
-            y = (matrix[0][1] + matrix[1][0])*s;
-            z = (matrix[2][0] - matrix[0][2])*s;
-            w = (matrix[2][1] - matrix[1][2])*s;
+            x = decimal(0.5) * r;
+            y = (matrix[0][1] + matrix[1][0]) * s;
+            z = (matrix[2][0] - matrix[0][2]) * s;
+            w = (matrix[2][1] - matrix[1][2]) * s;
         }
     }
     else {
-        r = sqrt(trace + 1.0);
-        s = 0.5/r;
+        r = sqrt(trace + decimal(1.0));
+        s = decimal(0.5) / r;
 
         // Compute the quaternion
         x = (matrix[2][1] - matrix[1][2]) * s;
         y = (matrix[0][2] - matrix[2][0]) * s;
         z = (matrix[1][0] - matrix[0][1]) * s;
-        w = 0.5 * r;
+        w = decimal(0.5) * r;
     }
 }
 
@@ -139,7 +139,7 @@ void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
     }
 
     // Compute the roation angle
-    angle = acos(quaternion.w) * 2.0;
+    angle = acos(quaternion.w) * decimal(2.0);
 
     // Compute the 3D rotation axis
     Vector3 rotationAxis(quaternion.x, quaternion.y, quaternion.z);
@@ -158,7 +158,7 @@ Matrix3x3 Quaternion::getMatrix() const {
     decimal s = 0.0;
 
     if (nQ > 0.0) {
-        s = 2.0/nQ;
+        s = decimal(2.0) / nQ;
     }
 
     // Computations used for optimization (less multiplications)
@@ -176,9 +176,9 @@ Matrix3x3 Quaternion::getMatrix() const {
     decimal zzs = z*zs;
 
     // Create the matrix corresponding to the quaternion
-    return Matrix3x3(1.0-yys-zzs, xys-wzs, xzs + wys,
-                     xys + wzs, 1.0-xxs-zzs, yzs-wxs,
-                     xzs-wys, yzs + wxs, 1.0-xxs-yys);
+    return Matrix3x3(decimal(1.0) - yys - zzs, xys-wzs, xzs + wys,
+                     xys + wzs, decimal(1.0) - xxs - zzs, yzs-wxs,
+                     xzs-wys, yzs + wxs, decimal(1.0) - xxs - yys);
 }
 
 // Compute the spherical linear interpolation between two quaternions.
@@ -201,9 +201,9 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
     // Because of precision, if cos(theta) is nearly 1,
     // therefore theta is nearly 0 and we can write
     // sin((1-t)*theta) as (1-t) and sin(t*theta) as t
-    const decimal epsilon = 0.00001;
+    const decimal epsilon = decimal(0.00001);
     if(1-cosineTheta < epsilon) {
-        return quaternion1 * (1.0-t) + quaternion2 * (t * invert);
+        return quaternion1 * (decimal(1.0)-t) + quaternion2 * (t * invert);
     }
 
     // Compute the theta angle
@@ -213,7 +213,7 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
     decimal sineTheta = sin(theta);
 
     // Compute the two coefficients that are in the spherical linear interpolation formula
-    decimal coeff1 = sin((1.0-t)*theta) / sineTheta;
+    decimal coeff1 = sin((decimal(1.0)-t)*theta) / sineTheta;
     decimal coeff2 = sin(t*theta) / sineTheta * invert;
 
     // Compute and return the interpolated quaternion

@@ -81,7 +81,7 @@ void DynamicsWorld::update() {
         if (!mContactManifolds.empty()) {
 
             // Solve the contacts
-            mContactSolver.solve(mTimer.getTimeStep());
+            mContactSolver.solve(static_cast<decimal>(mTimer.getTimeStep()));
         }
 
         // Update the timer
@@ -106,7 +106,7 @@ void DynamicsWorld::update() {
 
 // Update the position and orientation of the rigid bodies
 void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
-    decimal dt = mTimer.getTimeStep();
+    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     
     // For each rigid body of the world
     set<RigidBody*>::iterator it;
