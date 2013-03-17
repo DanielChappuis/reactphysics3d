@@ -4,14 +4,9 @@ cmake_minimum_required(VERSION 2.6)
 # Project configuration
 PROJECT(FallingCubes)
 
-# Headers
-INCLUDE_DIRECTORIES(${REACTPHYSICS3D_SOURCE_DIR}/src)
-
 # Find Glut or Freeglut
-if(WIN32 OR APPLE)
-   # Find the necessary libraries
-   FIND_PACKAGE(GLUT)
-else()
+FIND_PACKAGE(GLUT)
+if (NOT GLUT_FOUND)
    # Find the Freeglut library
    FIND_PATH(FREEGLUT_INCLUDE_DIR NAMES GL/freeglut.h
              /usr/include/GL
@@ -38,12 +33,23 @@ else()
    MESSAGE("OpenGL not found")
 endif()
 
+# Headers
+if(GLUT_FOUND)
+    INCLUDE_DIRECTORIES(${REACTPHYSICS3D_SOURCE_DIR}/src ${GLUT_INCLUDE_DIR})
+elseif(FREEGLUT_FOUND)
+    INCLUDE_DIRECTORIES(${REACTPHYSICS3D_SOURCE_DIR}/src ${FREEGLUT_INCLUDE_DIRS})
+endif()
+
+# Definitions
+if (FREEGLUT_FOUND)
+    add_definition(-DUSE_FREEGLUT)
+endif()
 
 # Create the example executable using the
 # compiled reactphysics3d static library
 ADD_EXECUTABLE(fallingcubes main.cpp Box.cpp Box.h)
 
-if(WIN32 OR APPLE)
+if(GLUT_FOUND)
    TARGET_LINK_LIBRARIES(fallingcubes reactphysics3d ${GLUT_LIBRARY} ${OPENGL_LIBRARY})
 elseif(FREEGLUT_FOUND)
    TARGET_LINK_LIBRARIES(fallingcubes reactphysics3d ${FREEGLUT_LIBRARY} ${OPENGL_LIBRARY})
