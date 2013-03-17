@@ -24,61 +24,35 @@
 ********************************************************************************/
 
 // Libraries
-#include "Vector3.h"
-#include <iostream>
-#include <vector>
+#include "TestSuite.h"
+#include "tests/mathematics/TestVector3.h"
+#include "tests/mathematics/TestTransform.h"
+#include "tests/mathematics/TestQuaternion.h"
+#include "tests/mathematics/TestMatrix3x3.h"
 
-// Namespaces
 using namespace reactphysics3d;
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+int main() {
 
-}
+    TestSuite testSuite("ReactPhysics3D Tests");
 
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+    // ---------- Mathematics tests ---------- //
 
-}
+    testSuite.addTest(new TestVector3);
+    testSuite.addTest(new TestTransform);
+    testSuite.addTest(new TestQuaternion);
+    testSuite.addTest(new TestMatrix3x3);
 
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+    // ----------------------------- --------- //
 
-}
+    // Run the tests
+    testSuite.run();
 
-// Destructor
-Vector3::~Vector3() {
+    // Display the report
+    long nbFailedTests = testSuite.report();
 
-}
+    // Clear the tests from the test suite
+    testSuite.clear();
 
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
-
-    assert(lengthVector > MACHINE_EPSILON);
-
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
-
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
+    return nbFailedTests;
 }

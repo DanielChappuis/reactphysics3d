@@ -81,7 +81,7 @@ void DynamicsWorld::update() {
         if (!mContactManifolds.empty()) {
 
             // Solve the contacts
-            mContactSolver.solve(mTimer.getTimeStep());
+            mContactSolver.solve(static_cast<decimal>(mTimer.getTimeStep()));
         }
 
         // Update the timer
@@ -106,7 +106,7 @@ void DynamicsWorld::update() {
 
 // Update the position and orientation of the rigid bodies
 void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
-    decimal dt = mTimer.getTimeStep();
+    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     
     // For each rigid body of the world
     set<RigidBody*>::iterator it;
@@ -289,7 +289,7 @@ void DynamicsWorld::removeAllConstraints() {
 void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
 
     // Get the pair of body index
-    std::pair<bodyindex, bodyindex> indexPair = addedPair->getBodiesIndexPair();
+    bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Add the pair into the set of overlapping pairs (if not there yet)
     OverlappingPair* newPair = new (mMemoryPoolOverlappingPairs.allocateObject()) OverlappingPair(

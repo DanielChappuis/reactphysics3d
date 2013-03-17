@@ -37,8 +37,6 @@
 #include <set>
 #include <utility>
 #include <utility>
-#include <sys/time.h>       // TODO : Delete this
-#include <iostream>         // TODO : Delete this
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -62,48 +60,33 @@ CollisionDetection::~CollisionDetection() {
 }
 
 // Compute the collision detection
-bool CollisionDetection::computeCollisionDetection() {
+void CollisionDetection::computeCollisionDetection() {
 	    
-    // TODO : Remove this code
-    timeval timeValueStart;
-    timeval timeValueStop;
-    gettimeofday(&timeValueStart, NULL);
-
     // Compute the broad-phase collision detection
     computeBroadPhase();
     
-    // TODO : Remove this code
-    gettimeofday(&timeValueStop, NULL);
-    double startTime = timeValueStart.tv_sec * 1000000.0 + (timeValueStart.tv_usec);
-    double stopTime = timeValueStop.tv_sec * 1000000.0 + (timeValueStop.tv_usec);
-    double deltaTime = stopTime - startTime;
-    //printf("Broadphase time : %f micro sec \n", deltaTime);
-    
     // Compute the narrow-phase collision detection
-    bool collisionExists = computeNarrowPhase();
-	
-    // Return true if at least one contact has been found
-    return collisionExists;
+    computeNarrowPhase();
 }
 
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
-    for (set<CollisionBody*>::iterator it = mWorld->getBodiesBeginIterator(); it != mWorld->getBodiesEndIterator(); it++) {
+    for (set<CollisionBody*>::iterator it = mWorld->getBodiesBeginIterator();
+         it != mWorld->getBodiesEndIterator(); it++) {
 
         // If the body has moved
         if ((*it)->getHasMoved()) {
 
             // Notify the broad-phase that the body has moved
-            mBroadPhaseAlgorithm->updateObject(*it, *((*it)->getAABB()));
+            mBroadPhaseAlgorithm->updateObject(*it, (*it)->getAABB());
         }
     }  
 }
 
 // Compute the narrow-phase collision detection
-bool CollisionDetection::computeNarrowPhase() {
-    bool collisionExists = false;
+void CollisionDetection::computeNarrowPhase() {
     map<bodyindexpair, BroadPhasePair*>::iterator it;
     
     // For each possible collision pair of bodies
@@ -120,16 +103,19 @@ bool CollisionDetection::computeNarrowPhase() {
         mWorld->updateOverlappingPair(pair);
         
         // Select the narrow phase algorithm to use according to the two collision shapes
-        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1->getCollisionShape(), body2->getCollisionShape());
+        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(
+                                                        body1->getCollisionShape(),
+                                                        body2->getCollisionShape());
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
         
-        // Use the narrow-phase collision detection algorithm to check if there really is a collision
+        // Use the narrow-phase collision detection algorithm to check
+        // if there really is a collision
         if (narrowPhaseAlgorithm.testCollision(body1->getCollisionShape(), body1->getTransform(),
-                                               body2->getCollisionShape(), body2->getTransform(), contactInfo)) {
+                                               body2->getCollisionShape(), body2->getTransform(),
+                                               contactInfo)) {
             assert(contactInfo != NULL);
-            collisionExists = true;
 
             // Notify the world about the new narrow-phase contact
             mWorld->notifyNewContact(pair, contactInfo);
@@ -139,8 +125,6 @@ bool CollisionDetection::computeNarrowPhase() {
             mMemoryPoolContactInfos.freeObject(contactInfo);
         }
     }
-    
-    return collisionExists;
 }
 
 // Allow the broadphase to notify the collision detection about an overlapping pair.
@@ -151,11 +135,14 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPai
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Create the corresponding broad-phase pair object
-    BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject()) BroadPhasePair(addedPair->body1, addedPair->body2);
+    BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject())
+                                             BroadPhasePair(addedPair->body1, addedPair->body2);
     assert(broadPhasePair != NULL);
 
     // Add the pair into the set of overlapping pairs (if not there yet)
-    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = mOverlappingPairs.insert(make_pair(indexPair, broadPhasePair));
+    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = mOverlappingPairs.insert(
+                                                                            make_pair(indexPair,
+                                                                            broadPhasePair));
     assert(check.second);
 
     // Notify the world about the new broad-phase overlapping pair

@@ -101,8 +101,8 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     // Create a new box
     BoxAABB* box = &mBoxes[boxIndex];
     box->body = body;
-    const uint minEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 2.0);
-    const uint maxEndPointValue = encodeFloatIntoInteger(DECIMAL_LARGEST - 1.0);
+    const uint minEndPointValue = encodeFloatIntoInteger(FLT_MAX - 2.0f);
+    const uint maxEndPointValue = encodeFloatIntoInteger(FLT_MAX - 1.0f);
     for (uint axis=0; axis<3; axis++) {
         box->min[axis] = indexLimitEndPoint;
         box->max[axis] = indexLimitEndPoint + 1;
@@ -131,7 +131,7 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
     // in order to remove all overlapping pairs from the pair manager
     const decimal max = DECIMAL_LARGEST;
     const Vector3 maxVector(max, max, max);
-    const AABB aabb(maxVector, maxVector, body);
+    const AABB aabb(maxVector, maxVector);
     updateObject(body, aabb);
 
     // Get the corresponding box

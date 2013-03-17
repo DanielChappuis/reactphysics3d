@@ -86,6 +86,9 @@ class SphereShape : public CollisionShape {
         /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
+        /// Update the AABB of a body using its collision shape
+        virtual void updateAABB(AABB& aabb, const Transform& transform);
+
 #ifdef VISUAL_DEBUG
         /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
@@ -143,6 +146,21 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
 // Return the margin distance around the shape
 inline decimal SphereShape::getMargin() const {
     return mRadius + OBJECT_MARGIN;
+}
+
+// Update the AABB of a body using its collision shape
+inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
+
+    // Get the local extents in x,y and z direction
+    Vector3 extents = getLocalExtents(OBJECT_MARGIN);
+
+    // Compute the minimum and maximum coordinates of the rotated extents
+    Vector3 minCoordinates = transform.getPosition() - extents;
+    Vector3 maxCoordinates = transform.getPosition() + extents;
+
+    // Update the AABB with the new minimum and maximum coordinates
+    aabb.setMin(minCoordinates);
+    aabb.setMax(maxCoordinates);
 }
 
 }

@@ -103,10 +103,10 @@ class Constraint {
         unsigned int getNbConstraints() const;
 
         /// Get one cached lambda value
-        decimal getCachedLambda(int index) const;
+        decimal getCachedLambda(uint index) const;
 
         /// Set on cached lambda value
-        void setCachedLambda(int index, decimal lambda);
+        void setCachedLambda(uint index, decimal lambda);
 };
 
 // Return the reference to the body 1
@@ -136,14 +136,14 @@ inline uint Constraint::getNbConstraints() const {
 }
 
 // Get one previous lambda value
-inline decimal Constraint::getCachedLambda(int index) const {
-    assert(index >= 0 && index < mNbConstraints);
+inline decimal Constraint::getCachedLambda(uint index) const {
+    assert(index < mNbConstraints);
     return mCachedLambdas[index];
 } 
 
 // Set on cached lambda value  
-inline void Constraint::setCachedLambda(int index, decimal lambda) {
-    assert(index >= 0 && index < mNbConstraints);
+inline void Constraint::setCachedLambda(uint index, decimal lambda) {
+    assert(index < mNbConstraints);
     mCachedLambdas[index] = lambda;
 }                                                   
 

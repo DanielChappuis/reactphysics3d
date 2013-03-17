@@ -34,6 +34,7 @@
 #include "../configuration.h"
 
 #if defined(WINDOWS_OS)   // For Windows platform
+   #define NOMINMAX       // This is used to avoid definition of max() and min() macros
    #include <windows.h>
 #else                                   // For Mac OS or Linux platform
    #include <sys/time.h>
@@ -119,7 +120,7 @@ class Timer {
         void nextStep();
 
         /// Compute the interpolation factor
-        double computeInterpolationFactor();
+        decimal computeInterpolationFactor();
 };
 
 // Return the timestep of the physics engine
@@ -188,8 +189,8 @@ inline void Timer::nextStep() {
 }
 
 // Compute the interpolation factor
-inline double Timer::computeInterpolationFactor() {
-    return (mAccumulator / mTimeStep);
+inline decimal Timer::computeInterpolationFactor() {
+    return (decimal(mAccumulator / mTimeStep));
 }
 
 // Compute the time since the last update() call and add it to the accumulator

@@ -46,8 +46,14 @@ struct Vector3 {
 
         // -------------------- Attributes -------------------- //
 
-        /// Values of the 3D vector
-        decimal x, y, z;
+        /// Component x
+        decimal x;
+
+        /// Component y
+        decimal y;
+
+        /// Component z
+        decimal z;
 
         // -------------------- Methods -------------------- //
 
@@ -66,7 +72,10 @@ struct Vector3 {
         /// Set all the values of the vector
         void setAllValues(decimal newX, decimal newY, decimal newZ);
 
-        /// Return the lenght of the vector
+        /// Set the vector to zero
+        void setToZero();
+
+        /// Return the length of the vector
         decimal length() const;
 
         /// Return the square of the length of the vector
@@ -142,6 +151,13 @@ struct Vector3 {
         friend Vector3 operator/(const Vector3& vector, decimal number);
 };
 
+// Set the vector to zero
+inline void Vector3::setToZero() {
+    x = 0;
+    y = 0;
+    z = 0;
+}
+
 // Set all the values of the vector
 inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
     x = newX;
@@ -183,14 +199,7 @@ inline void Vector3::normalize() {
 // Return the corresponding absolute value vector
 inline Vector3 Vector3::getAbsoluteVector() const {
     return Vector3(std::abs(x), std::abs(y), std::abs(z));
-}       
-
-// Return true if two vectors are parallel
-inline bool Vector3::isParallelWith(const Vector3& vector) const {
-    decimal scalarProd = this->dot(vector);
-    return approxEqual(std::abs(scalarProd), length() * vector.length());
-}    
-
+}
 
 // Return the axis with the minimal value
 inline int Vector3::getMinAxis() const {

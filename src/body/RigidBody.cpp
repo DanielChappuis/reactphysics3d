@@ -39,11 +39,7 @@ using namespace reactphysics3d;
 
     mRestitution = decimal(1.0);
 
-    // Set the body pointer of the AABB and the collision shape
-    mAabb->setBodyPointer(this);
-
     assert(collisionShape);
-    assert(mAabb);
 }
 
 // Destructor

@@ -309,7 +309,7 @@ void Simplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
     }
 
     assert(deltaX > 0.0);
-    decimal factor = 1.0 / deltaX;
+    decimal factor = decimal(1.0) / deltaX;
     pA *= factor;
     pB *= factor;
 }
@@ -390,5 +390,5 @@ Vector3 Simplex::computeClosestPointForSubset(Bits subset) {
     assert(deltaX > 0.0);
 
     // Return the closet point "v" in the convex hull for the given subset
-    return (1.0 / deltaX) * v;
+    return (decimal(1.0) / deltaX) * v;
 }

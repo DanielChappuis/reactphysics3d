@@ -116,7 +116,7 @@ inline void CylinderShape::setRadius(decimal radius) {
 
 // Return the height
 inline decimal CylinderShape::getHeight() const {
-    return mHalfHeight * 2.0;
+    return mHalfHeight * decimal(2.0);
 }
 
 // Set the height

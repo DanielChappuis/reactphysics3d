@@ -38,3 +38,24 @@ CollisionShape::CollisionShape(CollisionShapeType type) : mType(type) {
 CollisionShape::~CollisionShape() {
 
 }
+
+// Update the AABB of a body using its collision shape
+inline void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
+
+    // Get the local extents in x,y and z direction
+    Vector3 extents = getLocalExtents(OBJECT_MARGIN);
+
+    // Rotate the local extents according to the orientation of the body
+    Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
+    Vector3 worldExtents = Vector3(worldAxis.getColumn(0).dot(extents),
+                                   worldAxis.getColumn(1).dot(extents),
+                                   worldAxis.getColumn(2).dot(extents));
+
+    // Compute the minimum and maximum coordinates of the rotated extents
+    Vector3 minCoordinates = transform.getPosition() - worldExtents;
+    Vector3 maxCoordinates = transform.getPosition() + worldExtents;
+
+    // Update the AABB with the new minimum and maximum coordinates
+    aabb.setMin(minCoordinates);
+    aabb.setMax(maxCoordinates);
+}

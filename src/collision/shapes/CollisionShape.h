@@ -30,6 +30,7 @@
 #include <cassert>
 #include "../../mathematics/Vector3.h"
 #include "../../mathematics/Matrix3x3.h"
+#include "AABB.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -89,12 +90,15 @@ class CollisionShape {
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
+
+        /// Update the AABB of a body using its collision shape
+        virtual void updateAABB(AABB& aabb, const Transform& transform);
 };
 
 // Return the type of the collision shape
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
-}                                                                  
+}
 
 }
 

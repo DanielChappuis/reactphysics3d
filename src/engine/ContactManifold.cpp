@@ -24,6 +24,7 @@
 ********************************************************************************/
 
 // Libraries
+#include <iostream>
 #include "ContactManifold.h"
 
 using namespace reactphysics3d;
@@ -77,8 +78,8 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
 }
 
 // Remove a contact point from the manifold
-void ContactManifold::removeContactPoint(int index) {
-    assert(index >= 0 && index < mNbContactPoints);
+void ContactManifold::removeContactPoint(uint index) {
+    assert(index < mNbContactPoints);
     assert(mNbContactPoints > 0);
 	
 	// Call the destructor explicitly and tell the memory pool that
@@ -101,10 +102,11 @@ void ContactManifold::removeContactPoint(int index) {
 /// the contacts with a too large distance between the contact points in the plane orthogonal to the
 /// contact normal.
 void ContactManifold::update(const Transform& transform1, const Transform& transform2) {
+
     if (mNbContactPoints == 0) return;
 
     // Update the world coordinates and penetration depth of the contact points in the manifold
-    for (int i=0; i<mNbContactPoints; i++) {
+    for (uint i=0; i<mNbContactPoints; i++) {
         mContactPoints[i]->setWorldPointOnBody1(transform1 * mContactPoints[i]->getLocalPointOnBody1());
         mContactPoints[i]->setWorldPointOnBody2(transform2 * mContactPoints[i]->getLocalPointOnBody2());
         mContactPoints[i]->setPenetrationDepth((mContactPoints[i]->getWorldPointOnBody1() - mContactPoints[i]->getWorldPointOnBody2()).dot(mContactPoints[i]->getNormal()));
@@ -114,8 +116,8 @@ void ContactManifold::update(const Transform& transform1, const Transform& trans
                                                      PERSISTENT_CONTACT_DIST_THRESHOLD;
 
     // Remove the contact points that don't represent very well the contact manifold
-    for (int i=mNbContactPoints-1; i>=0; i--) {
-        assert(i>= 0 && i < mNbContactPoints);
+    for (int i=static_cast<int>(mNbContactPoints)-1; i>=0; i--) {
+        assert(i < static_cast<int>(mNbContactPoints));
 
         // Compute the distance between contact points in the normal direction
         decimal distanceNormal = -mContactPoints[i]->getPenetrationDepth();

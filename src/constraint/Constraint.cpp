@@ -35,7 +35,7 @@ Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
             mNbConstraints(nbConstraints), mType(type) {
     
     // Initialize the cached lambda values
-    for (int i=0; i<nbConstraints; i++) {
+    for (uint i=0; i<nbConstraints; i++) {
         mCachedLambdas.push_back(0.0);
     }
 }

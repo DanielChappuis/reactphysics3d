@@ -56,9 +56,9 @@ Matrix3x3::~Matrix3x3() {
 
 // Copy-constructor
 Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
-    setAllValues(matrix.mArray[0][0], matrix.mArray[0][1], matrix.mArray[0][2],
-                 matrix.mArray[1][0], matrix.mArray[1][1], matrix.mArray[1][2],
-                 matrix.mArray[2][0], matrix.mArray[2][1], matrix.mArray[2][2]);
+    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
+                 matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
+                 matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
 }
 
 // Assignment operator
@@ -66,9 +66,9 @@ Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix) {
 
     // Check for self-assignment
     if (&matrix != this) {
-        setAllValues(matrix.mArray[0][0], matrix.mArray[0][1], matrix.mArray[0][2],
-                     matrix.mArray[1][0], matrix.mArray[1][1], matrix.mArray[1][2],
-                     matrix.mArray[2][0], matrix.mArray[2][1], matrix.mArray[2][2]);
+        setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
+                     matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
+                     matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
     }
     return *this;
 }
@@ -84,15 +84,15 @@ Matrix3x3 Matrix3x3::getInverse() const {
 
     decimal invDeterminant = decimal(1.0) / determinant;
 
-    Matrix3x3 tempMatrix((mArray[1][1]*mArray[2][2]-mArray[2][1]*mArray[1][2]),
-                         -(mArray[0][1]*mArray[2][2]-mArray[2][1]*mArray[0][2]),
-                         (mArray[0][1]*mArray[1][2]-mArray[0][2]*mArray[1][1]),
-                            -(mArray[1][0]*mArray[2][2]-mArray[2][0]*mArray[1][2]),
-                         (mArray[0][0]*mArray[2][2]-mArray[2][0]*mArray[0][2]),
-                         -(mArray[0][0]*mArray[1][2]-mArray[1][0]*mArray[0][2]),
-                            (mArray[1][0]*mArray[2][1]-mArray[2][0]*mArray[1][1]),
-                         -(mArray[0][0]*mArray[2][1]-mArray[2][0]*mArray[0][1]),
-                         (mArray[0][0]*mArray[1][1]-mArray[0][1]*mArray[1][0]));
+    Matrix3x3 tempMatrix((mRows[1][1]*mRows[2][2]-mRows[2][1]*mRows[1][2]),
+                         -(mRows[0][1]*mRows[2][2]-mRows[2][1]*mRows[0][2]),
+                         (mRows[0][1]*mRows[1][2]-mRows[0][2]*mRows[1][1]),
+                            -(mRows[1][0]*mRows[2][2]-mRows[2][0]*mRows[1][2]),
+                         (mRows[0][0]*mRows[2][2]-mRows[2][0]*mRows[0][2]),
+                         -(mRows[0][0]*mRows[1][2]-mRows[1][0]*mRows[0][2]),
+                            (mRows[1][0]*mRows[2][1]-mRows[2][0]*mRows[1][1]),
+                         -(mRows[0][0]*mRows[2][1]-mRows[2][0]*mRows[0][1]),
+                         (mRows[0][0]*mRows[1][1]-mRows[0][1]*mRows[1][0]));
 
     // Return the inverse matrix
     return (invDeterminant * tempMatrix);

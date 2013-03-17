@@ -24,80 +24,63 @@
 ********************************************************************************/
 
 // Libraries
-#include "CylinderShape.h"
-#include "../../configuration.h"
-
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
+#include "Test.h"
 
 using namespace reactphysics3d;
 
-// Constructor
-CylinderShape::CylinderShape(decimal radius, decimal height)
-                 : CollisionShape(CYLINDER), mRadius(radius), mHalfHeight(height/decimal(2.0)) {
+/// Constructor
+Test::Test(std::ostream* stream) : mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
 
 }
 
-// Destructor
-CylinderShape::~CylinderShape() {
+/// Destructor
+Test::~Test() {
 
 }
 
-// Return a local support point in a given direction with the object margin
-Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+// Called to test a boolean condition.
+// This method should not be called directly in your test but you should call test() instead (macro)
+void Test::applyTest(bool condition, const std::string& testText,
+                     const char* filename, long lineNumber) {
 
-    // Compute the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+    // If the boolean condition is true
+    if (condition) {
 
-    // Add the margin to the support point
-    Vector3 unitVec(0.0, 1.0, 0.0);
-    if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-        unitVec = direction.getUnit();
+        // The test passed, call the succeed() method
+        succeed();
     }
-    supportPoint += unitVec * getMargin();
+    else {  // If the boolean condition is false
 
-    return supportPoint;
+        // The test failed, call the applyFail() method
+        applyFail(testText, filename, lineNumber);
+    }
 }
 
-// Return a local support point in a given direction without the object margin
-Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+// Called when a test has failed.
+// This method should not be called directly in your test buy you should call fail() instead (macro)
+void Test::applyFail(const std::string& testText, const char* filename, long lineNumber) {
 
-    Vector3 supportPoint(0.0, 0.0, 0.0);
-    decimal uDotv = direction.y;
-    Vector3 w(direction.x, 0.0, direction.z);
-    decimal lengthW = sqrt(direction.x * direction.x + direction.z * direction.z);
+    if (mOutputStream) {
 
-    if (lengthW > MACHINE_EPSILON) {
-        if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
-        else supportPoint.y = mHalfHeight;
-        supportPoint += (mRadius / lengthW) * w;
-    }
-    else {
-         if (uDotv < 0.0) supportPoint.y = -mHalfHeight;
-         else supportPoint.y = mHalfHeight;
+        // Display the failure message
+        *mOutputStream << typeid(*this).name() << "failure : (" << testText << "), " <<
+                  filename << "(line " << lineNumber << ")" << std::endl;
     }
 
-    return supportPoint;
+    // Increase the number of failed tests
+    mNbFailedTests++;
 }
 
-#ifdef VISUAL_DEBUG
-// Draw the cone (only for debuging purpose)
-void CylinderShape::draw() const {
+/// Display the report of the unit test and return the number of failed tests
+long Test::report() const {
 
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
+    if(mOutputStream) {
+        *mOutputStream << "Test \"" <<
+         typeid(*this).name()
+               << "\":\n\tPassed: " << mNbPassedTests << "\tFailed: " <<
+                  mNbFailedTests  << std::endl;
+      }
 
-    // Draw the sphere
-    glutWireSphere(mRadius, 50, 50);
+    // Return the number of failed tests
+    return mNbFailedTests;
 }
-#endif

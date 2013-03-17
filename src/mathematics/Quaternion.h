@@ -46,8 +46,17 @@ struct Quaternion {
 
         // -------------------- Attributes -------------------- //
 
-        /// Components of the quaternion
-        decimal x, y, z, w;
+        /// Component x
+        decimal x;
+
+        /// Component y
+        decimal y;
+
+        /// Component z
+        decimal z;
+
+        /// Component w
+        decimal w;
 
         // -------------------- Methods -------------------- //
 
@@ -69,11 +78,20 @@ struct Quaternion {
         /// Destructor
         ~Quaternion();
 
+        /// Set all the values
+        void setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW);
+
+        /// Set the quaternion to zero
+        void setToZero();
+
         /// Return the vector v=(x y z) of the quaternion
-        Vector3 vectorV() const;
+        Vector3 getVectorV() const;
 
         /// Return the length of the quaternion
         decimal length() const;
+
+        /// Normalize the quaternion
+        void normalize();
 
         /// Return the unit quaternion
         Quaternion getUnit() const;
@@ -112,6 +130,9 @@ struct Quaternion {
         /// Overloaded operator for the multiplication
         Quaternion operator*(const Quaternion& quaternion) const;
 
+        /// Overloaded operator for the multiplication with a vector
+        Vector3 operator*(const Vector3& point);
+
         /// Overloaded operator for assignment
         Quaternion& operator=(const Quaternion& quaternion);
 
@@ -119,8 +140,24 @@ struct Quaternion {
         bool operator==(const Quaternion& quaternion) const;
 };
 
+/// Set all the values
+inline void Quaternion::setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW) {
+    x = newX;
+    y = newY;
+    z = newZ;
+    w = newW;
+}
+
+/// Set the quaternion to zero
+inline void Quaternion::setToZero() {
+    x = 0;
+    y = 0;
+    z = 0;
+    w = 0;
+}
+
 // Return the vector v=(x y z) of the quaternion
-inline Vector3 Quaternion::vectorV() const {
+inline Vector3 Quaternion::getVectorV() const {
 
     // Return the vector v
     return Vector3(x, y, z);
@@ -129,6 +166,20 @@ inline Vector3 Quaternion::vectorV() const {
 // Return the length of the quaternion (inline)
 inline decimal Quaternion::length() const {
     return sqrt(x*x + y*y + z*z + w*w);
+}
+
+// Normalize the quaternion
+inline void Quaternion::normalize() {
+
+    decimal l = length();
+
+    // Check if the length is not equal to zero
+    assert (l > MACHINE_EPSILON);
+
+    x /= l;
+    y /= l;
+    z /= l;
+    w /= l;
 }
 
 // Return the unit quaternion
@@ -192,9 +243,16 @@ inline Quaternion Quaternion::operator*(decimal nb) const {
 
 // Overloaded operator for the multiplication of two quaternions
 inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
-    return Quaternion(w * quaternion.w - vectorV().dot(quaternion.vectorV()),
-                      w * quaternion.vectorV() + quaternion.w * vectorV() +
-                      vectorV().cross(quaternion.vectorV()));
+    return Quaternion(w * quaternion.w - getVectorV().dot(quaternion.getVectorV()),
+                      w * quaternion.getVectorV() + quaternion.w * getVectorV() +
+                      getVectorV().cross(quaternion.getVectorV()));
+}
+
+// Overloaded operator for the multiplication with a vector.
+/// This methods rotates a point given the rotation of a quaternion.
+inline Vector3 Quaternion::operator*(const Vector3& point) {
+    Quaternion p(point.x, point.y, point.z, 0.0);
+    return (((*this) * p) * getConjugate()).getVectorV();
 }
 
 // Overloaded operator for the assignment
