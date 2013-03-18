@@ -164,9 +164,9 @@ class TestQuaternion : public Test {
             Vector3 vector(56, -2, 82);
             Vector3 vector1 = matrix * vector;
             Vector3 vector2 = mQuaternion1 * vector;
-            test(approxEqual(vector1.x, vector2.x));
-            test(approxEqual(vector1.y, vector2.y));
-            test(approxEqual(vector1.z, vector2.z));
+            test(approxEqual(vector1.x, vector2.x, decimal(10e-6)));
+            test(approxEqual(vector1.y, vector2.y, decimal(10e-6)));
+            test(approxEqual(vector1.z, vector2.z, decimal(10e-6)));
 
             // Test slerp method
             Quaternion quatStart = quaternion1.getUnit();
@@ -214,9 +214,9 @@ class TestQuaternion : public Test {
             Vector3 vector2 = mQuaternion1 * point;
             Vector3 testVector2 = mQuaternion1.getMatrix() * point;
             test(vector1 == point);
-            test(approxEqual(vector2.x, testVector2.x, decimal(10e-6)));
-            test(approxEqual(vector2.y, testVector2.y, decimal(10e-6)));
-            test(approxEqual(vector2.z, testVector2.z, decimal(10e-6)));
+            test(approxEqual(vector2.x, testVector2.x, decimal(10e-5)));
+            test(approxEqual(vector2.y, testVector2.y, decimal(10e-5)));
+            test(approxEqual(vector2.z, testVector2.z, decimal(10e-5)));
 
             // Test assignment operator
             Quaternion quaternion;

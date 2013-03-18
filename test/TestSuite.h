@@ -29,6 +29,7 @@
 // Libraries
 #include "Test.h"
 #include <vector>
+#include <stdexcept>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
