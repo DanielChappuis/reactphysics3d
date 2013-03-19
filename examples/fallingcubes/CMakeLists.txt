@@ -42,7 +42,7 @@ endif()
 
 # Definitions
 if (FREEGLUT_FOUND)
-    add_definition(-DUSE_FREEGLUT)
+    ADD_DEFINITIONS(-DUSE_FREEGLUT)
 endif()
 
 # Create the example executable using the
