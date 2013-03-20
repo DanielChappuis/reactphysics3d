@@ -28,6 +28,7 @@
 #include "../CollisionDetection.h"
 #include "PairManager.h"
 #include <climits>
+#include <cstring>
 
 // Namespaces
 using namespace reactphysics3d;

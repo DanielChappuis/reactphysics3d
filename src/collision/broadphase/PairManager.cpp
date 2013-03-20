@@ -27,6 +27,7 @@
 #include "PairManager.h"
 #include "../CollisionDetection.h"
 #include <cassert>
+#include <cstring>
 
 using namespace reactphysics3d;
 

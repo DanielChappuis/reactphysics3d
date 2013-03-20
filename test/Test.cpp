@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Test.h"
+#include <typeinfo>
 
 using namespace reactphysics3d;
 
