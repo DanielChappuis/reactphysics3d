@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,32 +27,55 @@
 #define	CONTACT_INFO_H
 
 // Libraries
-#include "../colliders/BoxCollider.h"
+#include "../collision/shapes/BoxShape.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Structure ContactInfo :
-       This structure contains informations about a collision contact
-       computed during the narrow-phase collision detection. Those
-       informations are use to compute the contact set for a contact
-       between two bodies.
-    -------------------------------------------------------------------
-*/
+// Structure ContactInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
 struct ContactInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        ContactInfo(const ContactInfo& contactInfo);
+
+        /// Private assignment operator
+        ContactInfo& operator=(const ContactInfo& contactInfo);
+
     public:
-        const Vector3 normal;           // Normal vector the the collision contact in world space
-        const decimal penetrationDepth; // Penetration depth of the contact
-        const Vector3 localPoint1;      // Contact point of body 1 in local space of body 1
-        const Vector3 localPoint2;      // Contact point of body 2 in local space of body 2
-        
+
+        // -------------------- Attributes -------------------- //
+
+        /// Normal vector the the collision contact in world space
+        const Vector3 normal;
+
+        /// Penetration depth of the contact
+        const decimal penetrationDepth;
+
+        /// Contact point of body 1 in local space of body 1
+        const Vector3 localPoint1;
+
+        /// Contact point of body 2 in local space of body 2
+        const Vector3 localPoint2;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
         ContactInfo(const Vector3& normal, decimal penetrationDepth,
-                    const Vector3& localPoint1, const Vector3& localPoint2);    // Constructor
+                    const Vector3& localPoint1, const Vector3& localPoint2);
 };
 
-} // End of the ReactPhysics3D namespace
+}
 
 #endif
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,21 +30,26 @@
 using namespace reactphysics3d;
 
 // Constructor
-Transform::Transform() {
-    position = Vector3(0.0, 0.0, 0.0);
-    orientation = Quaternion::identity();
+Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
+
 }
 
 // Constructor
-Transform::Transform(const Vector3& position, const Matrix3x3& orientation) {
-    this->position = position;
-    this->orientation = Quaternion(orientation);
+Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
+          : mPosition(position), mOrientation(Quaternion(orientation)) {
+
 }
 
 // Constructor
-Transform::Transform(const Vector3& position, const Quaternion& orientation) {
-    this->position = position;
-    this->orientation = orientation;
+Transform::Transform(const Vector3& position, const Quaternion& orientation)
+          : mPosition(position), mOrientation(orientation) {
+
+}
+
+// Copy-constructor
+Transform::Transform(const Transform& transform)
+          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
+
 }
 
 // Destructor

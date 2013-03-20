@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,19 +30,20 @@
 #include "../configuration.h"
 #include "../decimal.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // ---------- Mathematics functions ---------- //
 
-// function to test if two real numbers are (almost) equal
-// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(decimal a, decimal b, decimal epsilon = 1.0e-10) {
+/// Function to test if two real numbers are (almost) equal
+/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
+inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
+
     decimal difference = a - b;
     return (difference < epsilon && difference > -epsilon);
 }
 
-} // End of ReactPhysics3D namespace
+}
 
 
 

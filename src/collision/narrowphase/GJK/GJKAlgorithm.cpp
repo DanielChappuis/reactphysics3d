@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,22 +26,19 @@
 // Libraries
 #include "GJKAlgorithm.h"
 #include "Simplex.h"
-#include "../../../constraint/Contact.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../configuration.h"
-#include "../../OverlappingPair.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
 #include <cassert>
-#include <iostream> // TODO : DELETE THIS
-
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
 GJKAlgorithm::GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
-             :NarrowPhaseAlgorithm(memoryPoolContactInfos), algoEPA(memoryPoolContactInfos) {
+             :NarrowPhaseAlgorithm(memoryPoolContactInfos), mAlgoEPA(memoryPoolContactInfos) {
     
 }
 
@@ -50,18 +47,20 @@ GJKAlgorithm::~GJKAlgorithm() {
 
 }
 
-// Return true and compute a contact info if the two bounding volume collide.
-// This method implements the Hybrid Technique for computing the penetration depth by
-// running the GJK algorithm on original objects (without margin).
-// If the objects don't intersect, this method returns false. If they intersect
-// only in the margins, the method compute the penetration depth and contact points
-// (of enlarged objects). If the original objects (without margin) intersect, we
-// call the computePenetrationDepthForEnlargedObjects() method that run the GJK
-// algorithm on the enlarged object to obtain a simplex polytope that contains the
-// origin, they we give that simplex polytope to the EPA algorithm which will compute
-// the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& transform1,
-                                 const Collider* collider2,  const Transform& transform2,
+// Return true and compute a contact info if the two bounding volumes collide.
+/// This method implements the Hybrid Technique for computing the penetration depth by
+/// running the GJK algorithm on original objects (without margin).
+/// If the objects don't intersect, this method returns false. If they intersect
+/// only in the margins, the method compute the penetration depth and contact points
+/// (of enlarged objects). If the original objects (without margin) intersect, we
+/// call the computePenetrationDepthForEnlargedObjects() method that run the GJK
+/// algorithm on the enlarged object to obtain a simplex polytope that contains the
+/// origin, they we give that simplex polytope to the EPA algorithm which will compute
+/// the correct penetration depth and contact points between the enlarged objects.
+bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
+                                 const Transform& transform1,
+                                 const CollisionShape* collisionShape2,
+                                 const Transform& transform2,
 		                         ContactInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
@@ -72,14 +71,17 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     decimal vDotw;
     decimal prevDistSquare;
 
-    // Transform a point from local space of body 2 to local space of body 1 (the GJK algorithm is done in local space of body 1)
+    // Transform a point from local space of body 2 to local
+    // space of body 1 (the GJK algorithm is done in local space of body 1)
     Transform body2Tobody1 = transform1.inverse() * transform2;
 
-    // Matrix that transform a direction from local space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
+    // Matrix that transform a direction from local
+    // space of body 1 into local space of body 2
+    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
+                              transform1.getOrientation().getMatrix();
 
     // Initialize the margin (sum of margins of both objects)
-    decimal margin = 2 * OBJECT_MARGIN;
+    decimal margin = collisionShape1->getMargin() + collisionShape2->getMargin();
     decimal marginSquare = margin * margin;
     assert(margin > 0.0);
 
@@ -87,7 +89,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     Simplex simplex;
 
     // Get the previous point V (last cached separating axis)
-	Vector3 v = currentOverlappingPair->getCachedSeparatingAxis();
+    Vector3 v = mCurrentOverlappingPair->previousSeparatingAxis;
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -95,8 +97,9 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
     do {
               
         // Compute the support points for original objects (without margins) A and B
-        suppA = collider1->getLocalSupportPoint(-v);
-        suppB = body2Tobody1 * collider2->getLocalSupportPoint(rotateToBody2 * v);
+        suppA = collisionShape1->getLocalSupportPointWithoutMargin(-v);
+        suppB = body2Tobody1 *
+                     collisionShape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -107,7 +110,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
         if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            currentOverlappingPair->setCachedSeparatingAxis(v);
+            mCurrentOverlappingPair->previousSeparatingAxis = v;
             
             // No intersection, we return false
             return false;
@@ -115,6 +118,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 
         // If the objects intersect only in the margins
         if (simplex.isPointInSimplex(w) || distSquare - vDotw <= distSquare * REL_ERROR_SQUARE) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -122,8 +126,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -133,7 +137,9 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
+            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+                                                                                   penetrationDepth,
+                                                                                    pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -144,6 +150,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 
         // If the simplex is affinely dependent
         if (simplex.isAffinelyDependent()) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -151,8 +158,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -162,7 +169,9 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
+            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+                                                                                   penetrationDepth,
+                                                                                   pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -171,6 +180,7 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
         // Compute the point of the simplex closest to the origin
         // If the computation of the closest point fail
         if (!simplex.computeClosestPoint(v)) {
+
             // Compute the closet points of both objects (without the margins)
             simplex.computeClosestPointsOfAandB(pA, pB);
 
@@ -178,8 +188,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -189,7 +199,9 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
+            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+                                                                                   penetrationDepth,
+                                                                                    pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -213,8 +225,8 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
             // object with the margins
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
-            pA = (pA - (OBJECT_MARGIN / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (OBJECT_MARGIN / dist) * v);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -224,28 +236,35 @@ bool GJKAlgorithm::testCollision(const Collider* collider1, const Transform& tra
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(normal, penetrationDepth, pA, pB);
+            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+                                                                                   penetrationDepth,
+                                                                                    pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
         }
-    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON *
+                                 simplex.getMaxLengthSquareOfAPoint());
 
-    // The objects (without margins) intersect. Therefore, we run the GJK algorithm again but on the
-    // enlarged objects to compute a simplex polytope that contains the origin. Then, we give that simplex
-    // polytope to the EPA algorithm to compute the correct penetration depth and contact points between
-    // the enlarged objects.
-    return computePenetrationDepthForEnlargedObjects(collider1, transform1, collider2, transform2, contactInfo, v);
+    // The objects (without margins) intersect. Therefore, we run the GJK algorithm
+    // again but on the enlarged objects to compute a simplex polytope that contains
+    // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
+    // the correct penetration depth and contact points between the enlarged objects.
+    return computePenetrationDepthForEnlargedObjects(collisionShape1, transform1, collisionShape2,
+                                                     transform2, contactInfo, v);
 }
 
-// This method runs the GJK algorithm on the two enlarged objects (with margin)
-// to compute a simplex polytope that contains the origin. The two objects are
-// assumed to intersect in the original objects (without margin). Therefore such
-// a polytope must exist. Then, we give that polytope to the EPA algorithm to
-// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* const collider1, const Transform& transform1,
-                                                             const Collider* const collider2, const Transform& transform2,
-                                                             ContactInfo*& contactInfo, Vector3& v) {
+/// This method runs the GJK algorithm on the two enlarged objects (with margin)
+/// to compute a simplex polytope that contains the origin. The two objects are
+/// assumed to intersect in the original objects (without margin). Therefore such
+/// a polytope must exist. Then, we give that polytope to the EPA algorithm to
+/// compute the correct penetration depth and contact points of the enlarged objects.
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1,
+                                                             const Transform& transform1,
+                                                             const CollisionShape* collisionShape2,
+                                                             const Transform& transform2,
+                                                             ContactInfo*& contactInfo,
+                                                             Vector3& v) {
     Simplex simplex;
     Vector3 suppA;
     Vector3 suppB;
@@ -254,16 +273,18 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
     decimal distSquare = DECIMAL_LARGEST;
     decimal prevDistSquare;
 
-    // Transform a point from local space of body 2 to local space of body 1 (the GJK algorithm is done in local space of body 1)
+    // Transform a point from local space of body 2 to local space
+    // of body 1 (the GJK algorithm is done in local space of body 1)
     Transform body2ToBody1 = transform1.inverse() * transform2;
 
     // Matrix that transform a direction from local space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() * transform1.getOrientation().getMatrix();
+    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
+                              transform1.getOrientation().getMatrix();
     
     do {
         // Compute the support points for the enlarged object A and B
-        suppA = collider1->getLocalSupportPoint(-v, OBJECT_MARGIN);
-        suppB = body2ToBody1 * collider2->getLocalSupportPoint(rotateToBody2 * v, OBJECT_MARGIN);
+        suppA = collisionShape1->getLocalSupportPointWithMargin(-v);
+        suppB = body2ToBody1 * collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -272,6 +293,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
 
         // If the enlarge objects do not intersect
         if (vDotw > 0.0) {
+
             // No intersection, we return false
             return false;
         }
@@ -295,9 +317,13 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const Collider* con
             return false;
         }
 
-    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON *
+                                 simplex.getMaxLengthSquareOfAPoint());
 
-    // Give the simplex computed with GJK algorithm to the EPA algorithm which will compute the correct
-    // penetration depth and contact points between the two enlarged objects
-    return algoEPA.computePenetrationDepthAndContactPoints(simplex, collider1, transform1, collider2, transform2, v, contactInfo);
+    // Give the simplex computed with GJK algorithm to the EPA algorithm
+    // which will compute the correct penetration depth and contact points
+    // between the two enlarged objects
+    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, collisionShape1,
+                                                            transform1, collisionShape2, transform2,
+                                                            v, contactInfo);
 }

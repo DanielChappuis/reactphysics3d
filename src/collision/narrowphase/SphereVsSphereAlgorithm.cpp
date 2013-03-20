@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,7 +25,7 @@
 
 // Libraries
 #include "SphereVsSphereAlgorithm.h"
-#include "../../colliders/SphereCollider.h"
+#include "../../collision/shapes/SphereShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -41,31 +41,37 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(const Collider* collider1, const Transform& transform1,
-                                            const Collider* collider2, const Transform& transform2, ContactInfo*& contactInfo) {
+bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape1,
+                                            const Transform& transform1,
+                                            const CollisionShape* collisionShape2,
+                                            const Transform& transform2,
+                                            ContactInfo*& contactInfo) {
     
-    // Get the sphere colliders
-    const SphereCollider* sphereCollider1 = dynamic_cast<const SphereCollider*>(collider1);
-    const SphereCollider* sphereCollider2 = dynamic_cast<const SphereCollider*>(collider2);
+    // Get the sphere collision shapes
+    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(collisionShape1);
+    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(collisionShape2);
     
     // Compute the distance between the centers
     Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
     decimal squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquare();
 
     // Compute the sum of the radius
-    decimal sumRadius = sphereCollider1->getRadius() + sphereCollider2->getRadius();
+    decimal sumRadius = sphereShape1->getRadius() + sphereShape2->getRadius();
     
-    // If the sphere colliders intersect
+    // If the sphere collision shapes intersect
     if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
         Vector3 centerSphere2InBody1LocalSpace = transform1.inverse() * transform2.getPosition();
         Vector3 centerSphere1InBody2LocalSpace = transform2.inverse() * transform1.getPosition();
-        Vector3 intersectionOnBody1 = sphereCollider1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
-        Vector3 intersectionOnBody2 = sphereCollider2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
+        Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
+                                      centerSphere2InBody1LocalSpace.getUnit();
+        Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
+                                      centerSphere1InBody2LocalSpace.getUnit();
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactInfo = new (memoryPoolContactInfos.allocateObject()) ContactInfo(vectorBetweenCenters.getUnit(), penetrationDepth,
-                                                                                intersectionOnBody1, intersectionOnBody2);
+        contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(
+                           vectorBetweenCenters.getUnit(), penetrationDepth,
+                           intersectionOnBody1, intersectionOnBody2);
     
         return true;
     }

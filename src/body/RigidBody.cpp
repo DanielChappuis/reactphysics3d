@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,27 +25,25 @@
 
 // Libraries
 #include "RigidBody.h"
-#include "../colliders/Collider.h"
+#include "../collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
  // Constructor
- RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal, Collider* collider, bodyindex id)
-           : Body(transform, collider, mass, id), inertiaTensorLocal(inertiaTensorLocal),
-             inertiaTensorLocalInverse(inertiaTensorLocal.getInverse()), massInverse(1.0/mass) {
+ RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
+                      CollisionShape *collisionShape, bodyindex id)
+           : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
+             mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
+             mMassInverse(decimal(1.0) / mass), mFrictionCoefficient(DEFAULT_FRICTION_COEFFICIENT) {
 
-    restitution = 1.0;
+    mRestitution = decimal(1.0);
 
-    // Set the body pointer of the AABB and the collider
-    aabb->setBodyPointer(this);
-
-    assert(collider);
-    assert(aabb);
+    assert(collisionShape);
 }
 
 // Destructor
 RigidBody::~RigidBody() {
 
-};
+}
 

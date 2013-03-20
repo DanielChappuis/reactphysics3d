@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,16 +26,17 @@
 // Libraries
 #include "Constraint.h"
 
-// We want ot use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(Body* const body1, Body* const body2, uint nbConstraints, bool active, ConstraintType type)
-           :body1(body1), body2(body2), active(active), nbConstraints(nbConstraints), type(type) {
+Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
+                       uint nbConstraints, bool active, ConstraintType type)
+           :mBody1(body1), mBody2(body2), mActive(active),
+            mNbConstraints(nbConstraints), mType(type) {
     
     // Initialize the cached lambda values
-    for (int i=0; i<nbConstraints; i++) {
-        cachedLambdas.push_back(0.0);
+    for (uint i=0; i<nbConstraints; i++) {
+        mCachedLambdas.push_back(0.0);
     }
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,70 +32,91 @@
 #include <set>
 #include <iostream>
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  --------------------------------------------------------------------
-    Class NoBroadPhaseAlgorithm :
-        This class implements a broad-phase algorithm that does nothing.
-        It should be use if we don't want to perform a broad-phase for
-        the collision detection.
-    --------------------------------------------------------------------
-*/
+// Class NoBroadPhaseAlgorithm
+/**
+ * This class implements a broad-phase algorithm that does nothing.
+ * It should be use if we don't want to perform a broad-phase for
+ * the collision detection.
+ */
 class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
+
     protected :
-        std::set<Body*> bodies;                                         // All bodies of the world
+
+        // -------------------- Attributes -------------------- //
+
+        /// All bodies of the world
+        std::set<CollisionBody*> mBodies;
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        NoBroadPhaseAlgorithm(const NoBroadPhaseAlgorithm& algorithm);
+
+        /// Private assignment operator
+        NoBroadPhaseAlgorithm& operator=(const NoBroadPhaseAlgorithm& algorithm);
 
     public :
-        NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection);  // Constructor
-        virtual ~NoBroadPhaseAlgorithm();                               // Destructor
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection);
+
+        /// Destructor
+        virtual ~NoBroadPhaseAlgorithm();
         
-        virtual void addObject(Body* body, const AABB& aabb);         // Notify the broad-phase about a new object in the world
-        virtual void removeObject(Body* body);                        // Notify the broad-phase about an object that has been removed from the world
-        virtual void updateObject(Body* body, const AABB& aabb);      // Notify the broad-phase that the AABB of an object has changed
+        /// Notify the broad-phase about a new object in the world
+        virtual void addObject(CollisionBody* body, const AABB& aabb);
+
+        /// Notify the broad-phase about an object that has been removed from the world
+        virtual void removeObject(CollisionBody* body);
+
+        /// Notify the broad-phase that the AABB of an object has changed
+        virtual void updateObject(CollisionBody* body, const AABB& aabb);
 };
 
         
 // Notify the broad-phase about a new object in the world
-inline void NoBroadPhaseAlgorithm::addObject(Body* body, const AABB& aabb) {
-    
-    std::cout << "New body in broadphase with id=" << body->getID() << std::endl;
-    
+inline void NoBroadPhaseAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
+        
     // For each body that is already in the world
-    for (std::set<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+    for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
         
         // Add an overlapping pair with the new body
-        pairManager.addPair(*it, body);
+        mPairManager.addPair(*it, body);
     }
     
     // Add the new body into the list of bodies
-    bodies.insert(body);
+    mBodies.insert(body);
 }   
 
 // Notify the broad-phase about an object that has been removed from the world
-inline void NoBroadPhaseAlgorithm::removeObject(Body* body) {
+inline void NoBroadPhaseAlgorithm::removeObject(CollisionBody* body) {
     
     // For each body that is in the world
-    for (std::set<Body*>::iterator it = bodies.begin(); it != bodies.end(); ++it) {
+    for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
         
         if ((*it)->getID() != body->getID()) {
             
            // Remove the overlapping pair with the new body
-           pairManager.removePair((*it)->getID(), body->getID());
+           mPairManager.removePair((*it)->getID(), body->getID());
         }
     }
     
     // Remove the body from the broad-phase
-    bodies.erase(body);
+    mBodies.erase(body);
 }  
         
 // Notify the broad-phase that the AABB of an object has changed
-inline void NoBroadPhaseAlgorithm::updateObject(Body* body, const AABB& aabb) {
+inline void NoBroadPhaseAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
     // Do nothing
     return;
 }     
 
-} // End of reactphysics3d namespace
+}
 
 #endif
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.02                                                                  *
+* Version 0.3.0                                                                 *
 * http://code.google.com/p/reactphysics3d/                                      *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
@@ -37,19 +37,18 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
+#include "body/CollisionBody.h"
 #include "body/RigidBody.h"
-#include "engine/PhysicsWorld.h"
-#include "engine/PhysicsEngine.h"
-#include "colliders/Collider.h"
-#include "colliders/BoxCollider.h"
-#include "colliders/SphereCollider.h"
-#include "colliders/ConeCollider.h"
-#include "colliders/CylinderCollider.h"
-#include "colliders/AABB.h"
+#include "engine/DynamicsWorld.h"
+#include "engine/CollisionWorld.h"
+#include "collision/shapes/CollisionShape.h"
+#include "collision/shapes/BoxShape.h"
+#include "collision/shapes/SphereShape.h"
+#include "collision/shapes/ConeShape.h"
+#include "collision/shapes/CylinderShape.h"
+#include "collision/shapes/AABB.h"
 
-// Alias to the ReactPhysics3D namespace
+/// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
-
-// TODO : Use using namespace std in every possible cpp files to increase readability
 
 #endif

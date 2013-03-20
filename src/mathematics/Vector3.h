@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,161 +28,202 @@
 
 // Libraries
 #include <cmath>
+#include <cassert>
 #include "mathematics_functions.h"
 #include "../decimal.h"
 
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class Vector3 :
-        This class represents 3D vector in space.
-    -------------------------------------------------------------------
-*/
-class Vector3 {
-    private :
-        decimal values[3];                                      // Values of the 3D vector
+// Class Vector3
+/**
+ * This class represents a 3D vector.
+ */
+struct Vector3 {
 
-    public :
-        Vector3();                                              // Constructor of the class Vector3D
-        Vector3(decimal x, decimal y, decimal z);               // Constructor with arguments
-        Vector3(const Vector3& vector);                         // Copy-constructor
-        virtual ~Vector3();                                     // Destructor
-        decimal getX() const;                                   // Get the x component of the vector
-        decimal getY() const;                                   // Get the y component of the vector
-        decimal getZ() const;                                   // Get the z component of the vector
-        void setX(decimal x);                                   // Set the x component of the vector
-        void setY(decimal y);                                   // Set the y component of the vector
-        void setZ(decimal z);                                   // Set the z component of the vector
-        void setAllValues(decimal x, decimal y, decimal z);     // Set all the values of the vector
-        decimal length() const;                                 // Return the lenght of the vector
-        decimal lengthSquare() const;                           // Return the square of the length of the vector
-        Vector3 getUnit() const;                                // Return the corresponding unit vector
-        bool isUnit() const;                                    // Return true if the vector is unit and false otherwise
-        bool isZero() const;                                    // Return true if the current vector is the zero vector
-        Vector3 getOneOrthogonalVector() const;                 // Return one unit orthogonal vectors of the current vector
-        decimal dot(const Vector3& vector) const;               // Dot product of two vectors
-        Vector3 cross(const Vector3& vector) const;             // Cross product of two vectors
-        Vector3 getAbsoluteVector() const;                      // Return the corresponding absolute value vector
-        int getMinAxis() const;                                 // Return the axis with the minimal value
-        int getMaxAxis() const;                                 // Return the axis with the maximal value
-        bool isParallelWith(const Vector3& vector) const;       // Return true if two vectors are parallel
-        
-        // --- Overloaded operators --- //
-        bool operator== (const Vector3& vector) const;          // Overloaded operator for the equality condition
-        bool operator!= (const Vector3& vector) const;          // Overloaded operator for the is different condition
-        Vector3& operator+=(const Vector3& vector);             // Overloaded operator for addition with assignment
-        Vector3& operator-=(const Vector3& vector);             // Overloaded operator for substraction with assignment
-        Vector3& operator*=(decimal number);                    // Overloaded operator for multiplication with a number with assignment
-        decimal& operator[] (int index);                        // Overloaded operator for value access
-        const decimal& operator[] (int index) const;            // Overloaded operator for value access
-        
-        // Friend functions
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Component x
+        decimal x;
+
+        /// Component y
+        decimal y;
+
+        /// Component z
+        decimal z;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor of the class Vector3D
+        Vector3();
+
+        /// Constructor with arguments
+        Vector3(decimal newX, decimal newY, decimal newZ);
+
+        /// Copy-constructor
+        Vector3(const Vector3& vector);
+
+        /// Destructor
+        ~Vector3();
+
+        /// Set all the values of the vector
+        void setAllValues(decimal newX, decimal newY, decimal newZ);
+
+        /// Set the vector to zero
+        void setToZero();
+
+        /// Return the length of the vector
+        decimal length() const;
+
+        /// Return the square of the length of the vector
+        decimal lengthSquare() const;
+
+        /// Return the corresponding unit vector
+        Vector3 getUnit() const;
+
+        /// Return one unit orthogonal vector of the current vector
+        Vector3 getOneUnitOrthogonalVector() const;
+
+        /// Return true if the vector is unit and false otherwise
+        bool isUnit() const;
+
+        /// Return true if the current vector is the zero vector
+        bool isZero() const;
+
+        /// Dot product of two vectors
+        decimal dot(const Vector3& vector) const;
+
+        /// Cross product of two vectors
+        Vector3 cross(const Vector3& vector) const;
+
+        /// Normalize the vector
+        void normalize();
+
+        /// Return the corresponding absolute value vector
+        Vector3 getAbsoluteVector() const;
+
+        /// Return the axis with the minimal value
+        int getMinAxis() const;
+
+        /// Return the axis with the maximal value
+        int getMaxAxis() const;
+
+        /// Return true if two vectors are parallel
+        bool isParallelWith(const Vector3& vector) const;
+
+        /// Overloaded operator for the equality condition
+        bool operator== (const Vector3& vector) const;
+
+        /// Overloaded operator for the is different condition
+        bool operator!= (const Vector3& vector) const;
+
+        /// Overloaded operator for addition with assignment
+        Vector3& operator+=(const Vector3& vector);
+
+        /// Overloaded operator for substraction with assignment
+        Vector3& operator-=(const Vector3& vector);
+
+        /// Overloaded operator for multiplication with a number with assignment
+        Vector3& operator*=(decimal number);
+
+        /// Overloaded operator for division by a number with assignment
+        Vector3& operator/=(decimal number);
+
+        /// Overloaded operator for value access
+        decimal& operator[] (int index);
+
+        /// Overloaded operator for value access
+        const decimal& operator[] (int index) const;
+
+        /// Overloaded operator
+        Vector3& operator=(const Vector3& vector);
+
+        // -------------------- Friends -------------------- //
+
         friend Vector3 operator+(const Vector3& vector1, const Vector3& vector2);
         friend Vector3 operator-(const Vector3& vector1, const Vector3& vector2);
         friend Vector3 operator-(const Vector3& vector);
         friend Vector3 operator*(const Vector3& vector, decimal number);
         friend Vector3 operator*(decimal number, const Vector3& vector);
+        friend Vector3 operator/(const Vector3& vector, decimal number);
 };
 
-// Get the x component of the vector
-inline decimal Vector3::getX() const {
-    return values[0];
+// Set the vector to zero
+inline void Vector3::setToZero() {
+    x = 0;
+    y = 0;
+    z = 0;
 }
 
-// Get the y component of the vector
-inline decimal Vector3::getY() const {
-    return values[1];
+// Set all the values of the vector
+inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
+    x = newX;
+    y = newY;
+    z = newZ;
 }
 
-// Get the z component of the vector
-inline decimal Vector3::getZ() const {
-    return values[2];
-}
-
-// Set the x component of the vector
-inline void Vector3::setX(decimal x) {
-    this->values[0] = x;
-}
-
-// Set the y component of the vector
-inline void Vector3::setY(decimal y) {
-    this->values[1] = y;
-}
-
-// Set the z component of the vector
-inline void Vector3::setZ(decimal z) {
-    this->values[2] = z;
-}
-
-// Set all the values of the vector (inline)
-inline void Vector3::setAllValues(decimal x, decimal y, decimal z) {
-    values[0]= x;
-    values[1] = y;
-    values[2] = z;
-}
-
-// Return the length of the vector (inline)
+// Return the length of the vector
 inline decimal Vector3::length() const {
-    // Compute and return the length of the vector
-    return sqrt(values[0]*values[0] + values[1]*values[1] + values[2]*values[2]);
+    return sqrt(x*x + y*y + z*z);
 }
 
 // Return the square of the length of the vector
 inline decimal Vector3::lengthSquare() const {
-    return values[0]*values[0] + values[1]*values[1] + values[2]*values[2];
+    return x*x + y*y + z*z;
 }
 
 // Scalar product of two vectors (inline)
 inline decimal Vector3::dot(const Vector3& vector) const {
-    // Compute and return the result of the scalar product
-    return (values[0] * vector.values[0] + values[1] * vector.values[1] + values[2] * vector.values[2]);
+    return (x*vector.x + y*vector.y + z*vector.z);
 }
 
 // Cross product of two vectors (inline)
 inline Vector3 Vector3::cross(const Vector3& vector) const {
-    // Compute and return the cross product
-    return Vector3(values[1] * vector.values[2] - values[2] * vector.values[1],
-                   values[2] * vector.values[0] - values[0] * vector.values[2],
-                   values[0] * vector.values[1] - values[1] * vector.values[0]);
+    return Vector3(y * vector.z - z * vector.y,
+                   z * vector.x - x * vector.z,
+                   x * vector.y - y * vector.x);
+}
+
+// Normalize the vector
+inline void Vector3::normalize() {
+    decimal l = length();
+    assert(l > std::numeric_limits<decimal>::epsilon());
+    x /= l;
+    y /= l;
+    z /= l;
 }
 
 // Return the corresponding absolute value vector
 inline Vector3 Vector3::getAbsoluteVector() const {
-    return Vector3(std::abs(values[0]), std::abs(values[1]), std::abs(values[2]));
-}       
-
-// Return true if two vectors are parallel
-inline bool Vector3::isParallelWith(const Vector3& vector) const {
-    decimal scalarProd = this->dot(vector);
-    return approxEqual(std::abs(scalarProd), length() * vector.length());
-}    
-
+    return Vector3(std::abs(x), std::abs(y), std::abs(z));
+}
 
 // Return the axis with the minimal value
 inline int Vector3::getMinAxis() const {
-    return (values[0] < values[1] ? (values[0] < values[2] ? 0 : 2) : (values[1] < values[2] ? 1 : 2));
+    return (x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2));
 }
 
 // Return the axis with the maximal value
 inline int Vector3::getMaxAxis() const {
-    return (values[0] < values[1] ? (values[1] < values[2] ? 2 : 1) : (values[0] < values[2] ? 2 : 0));
+    return (x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0));
 }
 
 // Return true if the vector is unit and false otherwise
 inline bool Vector3::isUnit() const {
-    return approxEqual(values[0] * values[0] + values[1] * values[1] + values[2] * values[2], 1.0);
+    return approxEqual(lengthSquare(), 1.0);
 }
 
 // Return true if the vector is the zero vector
 inline bool Vector3::isZero() const {
-    return approxEqual(values[0] * values[0] + values[1] * values[1] + values[2] * values[2], 0.0);
+    return approxEqual(lengthSquare(), 0.0);
 }
 
 // Overloaded operator for the equality condition
 inline bool Vector3::operator== (const Vector3& vector) const {
-    return (values[0] == vector.values[0] && values[1] == vector.values[1] && values[2] == vector.values[2]);
+    return (x == vector.x && y == vector.y && z == vector.z);
 }
 
 // Overloaded operator for the is different condition
@@ -192,56 +233,71 @@ inline bool Vector3::operator!= (const Vector3& vector) const {
 
 // Overloaded operator for addition with assignment
 inline Vector3& Vector3::operator+=(const Vector3& vector) {
-    values[0] += vector.values[0];
-    values[1] += vector.values[1];
-    values[2] += vector.values[2];
+    x += vector.x;
+    y += vector.y;
+    z += vector.z;
     return *this;
 }
 
 // Overloaded operator for substraction with assignment
 inline Vector3& Vector3::operator-=(const Vector3& vector) {
-    values[0] -= vector.values[0];
-    values[1] -= vector.values[1];
-    values[2] -= vector.values[2];
+    x -= vector.x;
+    y -= vector.y;
+    z -= vector.z;
     return *this;
 }
 
 // Overloaded operator for multiplication with a number with assignment
 inline Vector3& Vector3::operator*=(decimal number) {
-    values[0] *= number;
-    values[1] *= number;
-    values[2] *= number;
+    x *= number;
+    y *= number;
+    z *= number;
+    return *this;
+}
+
+// Overloaded operator for division by a number with assignment
+inline Vector3& Vector3::operator/=(decimal number) {
+    assert(number > std::numeric_limits<decimal>::epsilon());
+    x /= number;
+    y /= number;
+    z /= number;
     return *this;
 }
 
 // Overloaded operator for value access
 inline decimal& Vector3::operator[] (int index) {
-    return values[index];
+    return (&x)[index];
 }
 
 // Overloaded operator for value access
 inline const decimal& Vector3::operator[] (int index) const {
-    return values[index];
+    return (&x)[index];
 }
 
 // Overloaded operator for addition
 inline Vector3 operator+(const Vector3& vector1, const Vector3& vector2) {
-    return Vector3(vector1.values[0] + vector2.values[0], vector1.values[1] + vector2.values[1], vector1.values[2] + vector2.values[2]);
+    return Vector3(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z);
 }
 
 // Overloaded operator for substraction
 inline Vector3 operator-(const Vector3& vector1, const Vector3& vector2) {
-    return Vector3(vector1.values[0] - vector2.values[0], vector1.values[1] - vector2.values[1], vector1.values[2] - vector2.values[2]);
+    return Vector3(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z);
 }
 
 // Overloaded operator for the negative of a vector
 inline Vector3 operator-(const Vector3& vector) {
-    return Vector3(-vector.values[0], -vector.values[1], -vector.values[2]);
+    return Vector3(-vector.x, -vector.y, -vector.z);
 }
 
 // Overloaded operator for multiplication with a number
 inline Vector3 operator*(const Vector3& vector, decimal number) {
-    return Vector3(number * vector.values[0], number * vector.values[1], number * vector.values[2]);
+    return Vector3(number * vector.x, number * vector.y, number * vector.z);
+}
+
+// Overloaded operator for division by a number
+inline Vector3 operator/(const Vector3& vector, decimal number) {
+    assert(number > MACHINE_EPSILON);
+    return Vector3(vector.x / number, vector.y / number, vector.z / number);
 }
 
 // Overloaded operator for multiplication with a number
@@ -249,6 +305,16 @@ inline Vector3 operator*(decimal number, const Vector3& vector) {
     return vector * number;
 }
 
-} // End of the ReactPhysics3D namespace
+// Assignment operator
+inline Vector3& Vector3::operator=(const Vector3& vector) {
+    if (&vector != this) {
+        x = vector.x;
+        y = vector.y;
+        z = vector.z;
+    }
+    return *this;
+}
+
+}
 
 #endif

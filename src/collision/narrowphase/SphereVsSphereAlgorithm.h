@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,28 +32,45 @@
 #include "NarrowPhaseAlgorithm.h"
 
 
-// Namespace ReactPhysics3D
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-/*  -------------------------------------------------------------------
-    Class SphereVsSphereAlgorithm :
-        This class is used to compute the narrow-phase collision detection
-        between two sphere colliders.
-    -------------------------------------------------------------------
-*/
+// Class SphereVsSphereAlgorithm
+/**
+ * This class is used to compute the narrow-phase collision detection
+ * between two sphere collision shapes.
+ */
 class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
+
     protected :
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm);
+
+        /// Private assignment operator
+        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm);
         
     public :
-        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);       // Constructor
-        virtual ~SphereVsSphereAlgorithm();                                             // Destructor
 
-        virtual bool testCollision(const Collider* collider1, const Transform& transform1,
-                                   const Collider* collider2, const Transform& transform2,
-                                   ContactInfo*& contactInfo);  // Return true and compute a contact info if the two bounding volume collide
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+
+        /// Destructor
+        virtual ~SphereVsSphereAlgorithm();
+
+        /// Return true and compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const CollisionShape* collisionShape1,
+                                   const Transform& transform1,
+                                   const CollisionShape* collisionShape2,
+                                   const Transform& transform2,
+                                   ContactInfo*& contactInfo);
 };
 
-} // End of reactphysics3d namespace
+}
 
 #endif
 

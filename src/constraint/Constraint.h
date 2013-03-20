@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define CONSTRAINT_H
 
 // Libraries
-#include "../body/Body.h"
+#include "../body/RigidBody.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
@@ -36,80 +36,117 @@ namespace reactphysics3d {
 // Enumeration for the type of a constraint
 enum ConstraintType {CONTACT};
 
-/*  -------------------------------------------------------------------
-    Class Constraint :
-        This abstract class represents a constraint in the physics engine.
-        A constraint can be a collision contact or a joint for
-        instance. Each constraint can be made of several "mathematical
-        constraints" needed to represent the main constraint.
-    -------------------------------------------------------------------
-*/
+// Class Constraint
+/**
+ * This abstract class represents a constraint in the physics engine.
+ * A constraint can be a collision contact or a joint for
+ * instance. Each constraint can be made of several "mathematical
+ * constraints" needed to represent the main constraint.
+ */
 class Constraint {
+
     protected :
-        Body* const body1;                      // Pointer to the first body of the constraint
-        Body* const body2;                      // Pointer to the second body of the constraint
-        bool active;                            // True if the constraint is active
-        uint nbConstraints;                     // Number mathematical constraints associated with this Constraint
-        const ConstraintType type;              // Type of the constraint
-        std::vector<decimal> cachedLambdas;     // Cached lambda values of each mathematical constraint for more precise initializaton of LCP solver
+
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer to the first body of the constraint
+        RigidBody* const mBody1;
+
+        /// Pointer to the second body of the constraint
+        RigidBody* const mBody2;
+
+        /// True if the constraint is active
+        bool mActive;
+
+        /// Number mathematical constraints associated with this Constraint
+        uint mNbConstraints;
+
+        /// Type of the constraint
+        const ConstraintType mType;
+
+        /// Cached lambda values of each mathematical constraint for
+        /// more precise initializaton of LCP solver
+        std::vector<decimal> mCachedLambdas;
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        Constraint(const Constraint& constraint);
+
+        /// Private assignment operator
+        Constraint& operator=(const Constraint& constraint);
 
     public :
-        Constraint(Body* const body1, Body* const body2, uint nbConstraints,
-                   bool active, ConstraintType type);                           // Constructor                                                                                                   // Constructor
-        virtual ~Constraint();                                                  // Destructor
-        Body* const getBody1() const;                                           // Return the reference to the body 1
-        Body* const getBody2() const;                                           // Return the reference to the body 2                                                                        // Evaluate the constraint
-        bool isActive() const;                                                  // Return true if the constraint is active                                                             // Return the jacobian matrix of body 2
-        ConstraintType getType() const;                                         // Return the type of the constraint                 
-        virtual void computeJacobian(int noConstraint, decimal J_sp[NB_MAX_CONSTRAINTS][2*6]) const=0;               // Compute the jacobian matrix for all mathematical constraints
-        virtual void computeLowerBound(int noConstraint, decimal lowerBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the lowerbounds values for all the mathematical constraints
-        virtual void computeUpperBound(int noConstraint, decimal upperBounds[NB_MAX_CONSTRAINTS]) const=0;           // Compute the upperbounds values for all the mathematical constraints
-        virtual void computeErrorValue(int noConstraint, decimal errorValues[]) const=0;   // Compute the error values for all the mathematical constraints
-        unsigned int getNbConstraints() const;                                                                      // Return the number of mathematical constraints                                                                                                         // Return the number of auxiliary constraints
-        decimal getCachedLambda(int index) const;                                                                    // Get one cached lambda value
-        void setCachedLambda(int index, decimal lambda);                                                             // Set on cached lambda value  
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints,
+                   bool active, ConstraintType type);
+
+        /// Destructor
+        virtual ~Constraint();
+
+        /// Return the reference to the body 1
+        RigidBody* const getBody1() const;
+
+        /// Return the reference to the body 2
+        RigidBody* const getBody2() const;
+
+        /// Return true if the constraint is active
+        bool isActive() const;
+
+        /// Return the type of the constraint
+        ConstraintType getType() const;
+
+        /// Return the number of mathematical constraints
+        unsigned int getNbConstraints() const;
+
+        /// Get one cached lambda value
+        decimal getCachedLambda(uint index) const;
+
+        /// Set on cached lambda value
+        void setCachedLambda(uint index, decimal lambda);
 };
 
 // Return the reference to the body 1
-inline Body* const Constraint::getBody1() const {
-    return body1;
+inline RigidBody* const Constraint::getBody1() const {
+    return mBody1;
 }
 
 // Return the reference to the body 2
-inline Body* const Constraint::getBody2() const {
-    return body2;
+inline RigidBody* const Constraint::getBody2() const {
+    return mBody2;
 }
 
 // Return true if the constraint is active
 inline bool Constraint::isActive() const {
-    return active;
+    return mActive;
 }
 
 // Return the type of the constraint
 inline ConstraintType Constraint::getType() const {
-    return type;
+    return mType;
 }                                                          
 
 
 // Return the number auxiliary constraints
 inline uint Constraint::getNbConstraints() const {
-    return nbConstraints;
+    return mNbConstraints;
 }
 
 // Get one previous lambda value
-inline decimal Constraint::getCachedLambda(int index) const {
-    assert(index >= 0 && index < nbConstraints);
-    return cachedLambdas[index];
+inline decimal Constraint::getCachedLambda(uint index) const {
+    assert(index < mNbConstraints);
+    return mCachedLambdas[index];
 } 
 
 // Set on cached lambda value  
-inline void Constraint::setCachedLambda(int index, decimal lambda) {
-    assert(index >= 0 && index < nbConstraints);
-    cachedLambdas[index] = lambda;
+inline void Constraint::setCachedLambda(uint index, decimal lambda) {
+    assert(index < mNbConstraints);
+    mCachedLambdas[index] = lambda;
 }                                                   
 
-
-
-} // End of the ReactPhysics3D namespace
+}
 
 #endif

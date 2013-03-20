@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,10 +29,11 @@
 // Libraries
 #include <limits>
 #include <cfloat>
+#include <utility>
 #include "decimal.h"
 
 // Windows platform
-#if defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+#if defined(WIN32) ||defined(_WIN32) || defined(_WIN64) ||defined(__WIN32__) || defined(__WINDOWS__)
     #define WINDOWS_OS
 #elif defined(__APPLE__)     // Apple platform
     #define APPLE_OS
@@ -40,43 +41,50 @@
     #define LINUX_OS
 #endif
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
-// Type definitions
+// ------------------- Type definitions ------------------- //
+
 typedef unsigned int uint;
 typedef long unsigned int luint;
-typedef short unsigned int bodyindex;  // TODO : Replace whenever possible using the bodyindex type
+typedef luint bodyindex;
+typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
-// Mathematical constants
-const reactphysics3d::decimal DECIMAL_SMALLEST = - std::numeric_limits<reactphysics3d::decimal>::max();                // Minimun decimal value
-const reactphysics3d::decimal DECIMAL_LARGEST = std::numeric_limits<reactphysics3d::decimal>::max();               // Maximum decimal value
-const reactphysics3d::decimal MACHINE_EPSILON = std::numeric_limits<reactphysics3d::decimal>::epsilon();        // Machine epsilon
-const reactphysics3d::decimal DECIMAL_INFINITY = std::numeric_limits<reactphysics3d::decimal>::infinity();      // Infinity
-const reactphysics3d::decimal PI = 3.14159265;                                                                  // Pi constant
+// ------------------- Constants ------------------- //
 
-// Physics Engine constants
-const reactphysics3d::decimal DEFAULT_TIMESTEP = 1.0 / 60.0;  // Default internal constant timestep in seconds
-const bool DEACTIVATION_ENABLED = true;                       // True if the deactivation (sleeping) of inactive bodies is enabled
+/// Smallest decimal value (negative)
+const decimal DECIMAL_SMALLEST = - std::numeric_limits<decimal>::max();
 
-// GJK Algorithm parameters
-const reactphysics3d::decimal OBJECT_MARGIN = 0.04;                      // Object margin for collision detection in cm
+/// Maximum decimal value
+const decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
 
-// Contact constants
-const reactphysics3d::decimal FRICTION_COEFFICIENT = 0.4;                // Friction coefficient
-const reactphysics3d::decimal PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02;  // Distance threshold for two contact points for a valid persistent contact
+/// Machine epsilon
+const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 
-// Constraint solver constants
-const int NB_MAX_BODIES = 100000;             // Maximum number of bodies
-const int NB_MAX_CONTACTS = 100000;           // Maximum number of contacts (for memory pool allocation)
-const int NB_MAX_CONSTRAINTS = 100000;        // Maximum number of constraints
-const int NB_MAX_COLLISION_PAIRS = 10000;     // Maximum number of collision pairs of bodies (for memory pool allocation)
+/// Pi constant
+const decimal PI = decimal(3.14159265);
 
-// Constraint solver constants
-const uint DEFAULT_LCP_ITERATIONS = 15;                                            // Number of iterations when solving a LCP problem
-const uint DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;                            // Number of iterations when solving a LCP problem for error correction
-const bool ERROR_CORRECTION_PROJECTION_ENABLED = true;                             // True if the error correction projection (first order world) is active in the constraint solver
-const reactphysics3d::decimal PENETRATION_DEPTH_THRESHOLD_ERROR_CORRECTION = 0.20; // Contacts with penetration depth (in meters) larger that this use error correction with projection
+/// Default internal constant timestep in seconds
+const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
+
+/// Default friction coefficient for a rigid body
+const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
+
+/// True if the deactivation (sleeping) of inactive bodies is enabled
+const bool DEACTIVATION_ENABLED = true;
+
+///Object margin for collision detection in cm (For GJK-EPA Algorithm)
+const decimal OBJECT_MARGIN = decimal(0.04);
+
+/// Distance threshold for two contact points for a valid persistent contact (in meters)
+const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
+
+/// Velocity threshold for contact velocity restitution
+const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
+
+/// Number of iterations when solving a LCP problem
+const uint DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 
 }
 

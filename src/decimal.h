@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 #ifndef DECIMAL_H
 #define	DECIMAL_H
 
-// ReactPhysiscs3D namespace
+/// ReactPhysiscs3D namespace
 namespace reactphysics3d {
 
 #if defined(DOUBLE_PRECISION_ENABLED)   // If we are compiling for double precision

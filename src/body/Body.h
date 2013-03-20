@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,199 +29,81 @@
 // Libraries
 #include <stdexcept>
 #include <cassert>
-#include "../mathematics/Transform.h"
-#include "../colliders/AABB.h"
-#include "../colliders/Collider.h"
 #include "../configuration.h"
 
-// Namespace reactphysics3d
+/// Namespace reactphysics3d
 namespace reactphysics3d {
 
-
-/*  -------------------------------------------------------------------
-    Class Body :
-        This class is an abstract class to represent a body of the physics
-        engine.
-    -------------------------------------------------------------------
-*/
+// Class Body
+/**
+ * This class is an abstract class to represent a body of the physics engine.
+ */
 class Body {
+
     protected :
-        Collider* collider;             // Collider of the body
-        decimal mass;                   // Mass of the body
-        Transform transform;            // Position and orientation of the body
-        Transform oldTransform;         // Last position and orientation of the body
-        decimal interpolationFactor;    // Interpolation factor used for the state interpolation
-        bool isActive;                  // True if the body is active (not sleeping because of deactivation)
-        bool isMotionEnabled;           // True if the body is able to move
-        bool isCollisionEnabled;        // True if the body can collide with others bodies
-        AABB* aabb;                     // Axis-Aligned Bounding Box for Broad-Phase collision detection
-        bodyindex id;                   // ID of the body
-        bool hasMoved;                  // True if the body has moved during the last frame
+
+        // -------------------- Attributes -------------------- //
+
+        /// ID of the body
+        bodyindex mID;
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        Body(const Body& body);
+
+        /// Private assignment operator
+        Body& operator=(const Body& body);
 
     public :
-        Body(const Transform& transform, Collider* collider, decimal mass, bodyindex id);       // Constructor
-        virtual ~Body();                                                                        // Destructor
 
-        bodyindex getID() const;                                // Return the id of the body
-        bool getHasMoved() const;                               // Return true if the body has moved during the last frame
-        void setHasMoved(bool hasMoved);                        // Set the hasMoved variable (true if the body has moved during the last frame)
-        Collider* getCollider() const;                          // Return the collision collider
-        void setCollider(Collider* collider);                   // Set the collision collider
-        decimal getMass() const;                                // Return the mass of the body
-        void setMass(decimal mass);                             // Set the mass of the body
-        bool getIsActive() const;                               // Return true if the body is active
-        void setIsActive(bool isActive);                        // Set the isActive variable
-        const Transform& getTransform() const;                  // Return the current position and orientation
-        void setTransform(const Transform& transform);          // Set the current position and orientation
-        const AABB* getAABB() const;                            // Return the AAABB of the body
-        Transform getInterpolatedTransform() const;             // Return the interpolated transform for rendering
-        void setInterpolationFactor(decimal factor);            // Set the interpolation factor of the body
-        bool getIsMotionEnabled() const;                        // Return if the rigid body can move
-        void setIsMotionEnabled(bool isMotionEnabled);          // Set the value to true if the body can move
-        bool getIsCollisionEnabled() const;                     // Return true if the body can collide with others bodies
-        void setIsCollisionEnabled(bool isCollisionEnabled);    // Set the isCollisionEnabled value
-        void updateOldTransform();                              // Update the old transform with the current one
-        void updateAABB();                                      // Update the Axis-Aligned Bounding Box coordinates
+        // -------------------- Methods -------------------- //
 
-        // Operators
-        bool operator<(const Body& body2) const;                // Smaller than operator
-        bool operator>(const Body& body2) const;                // Larger than operator
-        bool operator==(const Body& body2) const;               // Equal operator
-        bool operator!=(const Body& body2) const;               // Equal operator
+        /// Constructor
+        Body(bodyindex id);
+
+        /// Destructor
+        virtual ~Body();
+
+        /// Return the id of the body
+        bodyindex getID() const;
+
+        /// Smaller than operator
+        bool operator<(const Body& body2) const;
+
+        /// Larger than operator
+        bool operator>(const Body& body2) const;
+
+        /// Equal operator
+        bool operator==(const Body& body2) const;
+
+        /// Not equal operator
+        bool operator!=(const Body& body2) const;
 };
 
 // Return the id of the body
 inline bodyindex Body::getID() const {
-    return id;
-}
-
-// Return true if the body has moved during the last frame
-inline bool Body::getHasMoved() const {
-    return hasMoved;
-}
-
-// Set the hasMoved variable (true if the body has moved during the last frame)
-inline void Body::setHasMoved(bool hasMoved) {
-    this->hasMoved = hasMoved;
-}
-
-// Return the collider
-inline Collider* Body::getCollider() const {
-    assert(collider);
-    return collider;
-}
-
-// Set the collider
-inline void Body::setCollider(Collider* collider) {
-    assert(collider);
-    this->collider = collider;
-}
-
-// Method that return the mass of the body
-inline decimal Body::getMass() const {
-    return mass;
-};
-
-// Method that set the mass of the body
-inline void Body::setMass(decimal mass) {
-    this->mass = mass;
-}
-
-// Return true if the body is active
-inline bool Body::getIsActive() const {
-    return isActive;
-}                  
-
-// Set the isActive variable
-inline void Body::setIsActive(bool isActive) {
-    this->isActive = isActive;
-}                        
-
-// Return the interpolated transform for rendering
-inline Transform Body::getInterpolatedTransform() const {
-    return Transform::interpolateTransforms(oldTransform, transform, interpolationFactor);
-}
-
-// Set the interpolation factor of the body
-inline void Body::setInterpolationFactor(decimal factor) {
-    // Set the factor
-    interpolationFactor = factor;
-}
-
-// Return if the rigid body can move
-inline bool Body::getIsMotionEnabled() const {
-    return isMotionEnabled;
-}
-
-// Set the value to true if the body can move
-inline void Body::setIsMotionEnabled(bool isMotionEnabled) {
-    this->isMotionEnabled = isMotionEnabled;
-}
-
-// Return the current position and orientation
-inline const Transform& Body::getTransform() const {
-    return transform;
-}
-
-// Set the current position and orientation
-inline void Body::setTransform(const Transform& transform) {
-
-    // Check if the body has moved
-    if (this->transform != transform) {
-        hasMoved = true;
-    }
-
-    this->transform = transform;
-}
-
-// Return the AAABB of the body
-inline const AABB* Body::getAABB() const {
-    return aabb;
-}
-
- // Return true if the body can collide with others bodies
-inline bool Body::getIsCollisionEnabled() const {
-    return isCollisionEnabled;
-}
-
-// Set the isCollisionEnabled value
-inline void Body::setIsCollisionEnabled(bool isCollisionEnabled) {
-    this->isCollisionEnabled = isCollisionEnabled;
-}
-
-// Update the old transform with the current one
-// This is used to compute the interpolated position and orientation of the body
-inline void Body::updateOldTransform() {
-    oldTransform = transform;
-}
-
-// Update the rigid body in order to reflect a change in the body state
-inline void Body::updateAABB() {
-    
-    // TODO : An AABB should not be updated every frame but only if the body has moved
-    
-    // Update the AABB
-    aabb->update(transform, collider->getLocalExtents(OBJECT_MARGIN));
+    return mID;
 }
 
 // Smaller than operator
 inline bool Body::operator<(const Body& body2) const {
-    return (id < body2.id);
+    return (mID < body2.mID);
 } 
 
 // Larger than operator
 inline bool Body::operator>(const Body& body2) const {
-    return (id > body2.id);
+    return (mID > body2.mID);
 } 
 
 // Equal operator
 inline bool Body::operator==(const Body& body2) const {
-    return (id == body2.id);
+    return (mID == body2.mID);
 }
         
-// Equal operator
+// Not equal operator
 inline bool Body::operator!=(const Body& body2) const {
-    return (id != body2.id);
+    return (mID != body2.mID);
 }               
 
 }

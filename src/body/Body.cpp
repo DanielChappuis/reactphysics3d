@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2012 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,31 +25,17 @@
 
  // Libraries
 #include "Body.h"
-#include "../colliders/Collider.h"
+#include "../collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(const Transform& transform, Collider* collider, decimal mass, bodyindex id)
-    : collider(collider), mass(mass), transform(transform), isActive(true), id(id), hasMoved(false) {
-    assert(mass > 0.0);
-    assert(collider);
+Body::Body(bodyindex id) : mID(id) {
 
-    isMotionEnabled = true;
-    isCollisionEnabled = true;
-    interpolationFactor = 0.0;
-
-    // Initialize the old transform
-    oldTransform = transform;
-
-    // Create the AABB for broad-phase collision detection
-    aabb = new AABB(transform, collider->getLocalExtents(OBJECT_MARGIN));
 }
 
 // Destructor
 Body::~Body() {
 
-    // Delete the AABB
-    delete aabb;
 }
