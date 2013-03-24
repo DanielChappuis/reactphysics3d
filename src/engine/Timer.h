@@ -74,6 +74,7 @@ class Timer {
         /// True if the timer is running
         bool mIsRunning;
 
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -98,8 +99,8 @@ class Timer {
         /// Set the timestep of the physics engine
         void setTimeStep(double timeStep);
 
-        /// Return the current time
-        long double getTime() const;
+        /// Return the current time of the physics engine
+        long double getPhysicsTime() const;
 
         /// Start the timer
         void start();
@@ -121,6 +122,9 @@ class Timer {
 
         /// Compute the interpolation factor
         decimal computeInterpolationFactor();
+
+        /// Return the current time of the system
+        static long double getCurrentSystemTime();
 };
 
 // Return the timestep of the physics engine
@@ -135,7 +139,7 @@ inline void Timer::setTimeStep(double timeStep) {
 }
 
 // Return the current time
-inline long double Timer::getTime() const {
+inline long double Timer::getPhysicsTime() const {
     return mTime;
 }
 
@@ -147,19 +151,9 @@ inline bool Timer::getIsRunning() const {
 // Start the timer
 inline void Timer::start() {
     if (!mIsRunning) {
-        
-#if defined(WINDOWS_OS)
-        LARGE_INTEGER ticksPerSecond;
-        LARGE_INTEGER ticks;
-        QueryPerformanceFrequency(&ticksPerSecond);
-        QueryPerformanceCounter(&ticks);
-        mLastUpdateTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
-#else
-        // Initialize the lastUpdateTime with the current time in seconds
-        timeval timeValue;
-        gettimeofday(&timeValue, NULL);
-        mLastUpdateTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
-#endif
+
+        // Get the current system time
+        mLastUpdateTime = getCurrentSystemTime();
         
         mAccumulator = 0.0;
         mIsRunning = true;
@@ -168,7 +162,6 @@ inline void Timer::start() {
 
 // Stop the timer
 inline void Timer::stop() {
-    std::cout << "Timer stop" << std::endl;
     mIsRunning = false;
 }
 
@@ -195,20 +188,9 @@ inline decimal Timer::computeInterpolationFactor() {
 
 // Compute the time since the last update() call and add it to the accumulator
 inline void Timer::update() {
-    long double currentTime;
-    
-#if defined(WINDOWS_OS)
-   LARGE_INTEGER ticksPerSecond;
-   LARGE_INTEGER ticks;
-   QueryPerformanceFrequency(&ticksPerSecond);
-   QueryPerformanceCounter(&ticks);
-   currentTime = double(ticks.QuadPart) / double(ticksPerSecond.QuadPart);
-#else
-    // Compute the current time is seconds
-    timeval timeValue;
-    gettimeofday(&timeValue, NULL);
-    currentTime = timeValue.tv_sec + (timeValue.tv_usec / 1000000.0);
-#endif
+
+    // Get the current system time
+    long double currentTime = getCurrentSystemTime();
     
     // Compute the delta display time between two display frames
     mDeltaTime = currentTime - mLastUpdateTime;

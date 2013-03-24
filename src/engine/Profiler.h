@@ -26,7 +26,146 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
+#ifdef IS_PROFILING_ACTIVE
+
 // Libraries
+#include "../configuration.h"
+#include "Timer.h"
+
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
+
+// Class ProfileNode
+/**
+ * It represents a profile sample in the profiler tree.
+ */
+class ProfileNode {
+
+    private :
+
+        /// Name of the node
+        const char* mName;
+
+        /// Total number of calls of this node
+        uint mNbTotalCalls;
+
+        /// Starting time of the sampling of corresponding block of code
+        long double mStartingTime;
+
+        /// Total time spent in the block of code
+        long double mTotalTime;
+
+        /// Recursion counter
+        int mRecursionCounter;
+
+        /// Pointer to the parent node
+        ProfileNode* mParentNode;
+
+        /// Pointer to a child node
+        ProfileNode* mChildNode;
+
+        /// Pointer to a sibling node
+        ProfileNode* mSiblingNode;
+
+    public :
+
+        /// Constructor
+        ProfileNode(const char* name, ProfileNode* parentNode);
+
+        /// Destructor
+        ~ProfileNode();
+
+        /// Return a pointer to a sub node
+        ProfileNode* findSubNode(const char* name);
+
+        /// Return a pointer to the parent node
+        ProfileNode* getParentNode();
+
+        /// Return a pointer to a sibling node
+        ProfileNode* getSiblingNode();
+
+        /// Return a pointer to a child node
+        ProfileNode* getChildNode();
+
+        /// Return the name of the node
+        const char* getName();
+
+        /// Return the total number of call of the corresponding block of code
+        uint getNbTotalCalls() const;
+
+        /// Return the total time spent in the block of code
+        long double getTotalTime() const;
+
+        /// Called when we enter the block of code corresponding to this profile node
+        void enterBlockOfCode();
+
+        /// Called when we exit the block of code corresponding to this profile node
+        bool exitBlockOfCode();
+};
+
+// Class ProfileNodeIterator
+/**
+ * This class allow us to iterator over the profiler tree.
+ */
+class ProfileNodeIterator {
+
+    private :
+
+        /// Current parent node
+        ProfileNode* mCurrentParent;
+
+        /// Current child node
+        ProfileNode* mCurrentChild;
+
+    public :
+
+        /// Constructor
+        ProfileNodeIterator(ProfileNode* startingNode);
+
+        /// Go to the first node
+        void first();
+
+        /// Go to the next node
+        void next();
+
+        /// Enter a given child node
+        void enterChild();
+
+};
+
+// Class Profiler
+/**
+ * This is the main class of the profiler. This profiler is based on "Real-Time Hierarchical
+ * Profiling" article from "Game Programming Gems 3" by Greg Hjelstrom and Byon Garrabrant.
+ */
+class Profiler {
+
+    private :
+
+        /// Root node of the profiler tree
+        static ProfileNode mRootNode;
+
+        /// Current node in the current execution
+        static ProfileNode* mCurrentNode;
+
+        /// Frame counter
+        static uint mFrameCounter;
+
+    public :
+
+        /// Method called when we want to start profiling a block of code.
+        static void startProfilingBlock(const char *name);
+
+        /// Method called at the end of the scope where the
+        /// startProfilingBlock() method has been called.
+        static void stopProfilingBlock();
+
+        /// Return an iterator over the profiler tree starting at the root
+        static ProfileNodeIterator* getIterator();
+
+        /// Print the report of the profiler in a given output stream
+        static void printReport(std::ostream& outputStream);
+};
 
 // Class ProfileSample
 /**
@@ -42,7 +181,7 @@ class ProfileSample {
         ProfileSample(const char* name) {
 
             // Ask the profiler to start profiling a block of code
-            Profiler::startProfilingBlock();
+            Profiler::startProfilingBlock(name);
         }
 
         /// Destructor
@@ -56,32 +195,43 @@ class ProfileSample {
 /// Use this macro to start profile a block of code
 #define PROFILE(name) ProfileSample profileSample(name)
 
-// Class ProfileNode
-/**
- * Node of the profiler tree
- */
-class ProfileNode {
+/// Return a pointer to the parent node
+ProfileNode* ProfileNode::getParentNode() {
+    return mParentNode;
+}
 
-};
+/// Return a pointer to a sibling node
+ProfileNode* ProfileNode::getSiblingNode() {
+    return mSiblingNode;
+}
 
-// Class Profiler
-/**
- * This is the main class of the profiler
- */
-class Profiler {
+/// Return a pointer to a child node
+ProfileNode* ProfileNode::getChildNode() {
+    return mChildNode;
+}
 
-    public :
+/// Return the name of the node
+const char* ProfileNode::getName() {
+    return mName;
+}
 
-        /// Method called when we want to start profiling a block of code.
-        static void startProfilingBlock() {
+/// Return the total number of call of the corresponding block of code
+uint ProfileNode::getNbTotalCalls() const {
+    return mNbTotalCalls;
+}
 
-        }
+/// Return the total time spent in the block of code
+long double ProfileNode::getTotalTime() const {
+    return mTotalTime;
+}
 
-        /// Method called at the end of the scope where the startProfilingBlock() method
-        /// has been called.
-        static void stopProfilingBlock() {
+}
 
-        }
-};
+#else   // In profile is not active
+
+// Empty macro in case profiling is not active
+#define PROFILE(name)
+
+#endif
 
 #endif
