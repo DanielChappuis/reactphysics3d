@@ -61,6 +61,8 @@ CollisionDetection::~CollisionDetection() {
 
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
+
+    PROFILE("CollisionDetection::computeCollisionDetection()");
 	    
     // Compute the broad-phase collision detection
     computeBroadPhase();
@@ -71,6 +73,8 @@ void CollisionDetection::computeCollisionDetection() {
 
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
+
+    PROFILE("CollisionDetection::computeBroadPhase()");
 
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
     for (set<CollisionBody*>::iterator it = mWorld->getBodiesBeginIterator();
@@ -87,6 +91,9 @@ void CollisionDetection::computeBroadPhase() {
 
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
+
+    PROFILE("CollisionDetection::computeNarrowPhase()");
+
     map<bodyindexpair, BroadPhasePair*>::iterator it;
     
     // For each possible collision pair of bodies

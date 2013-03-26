@@ -74,7 +74,6 @@ class Timer {
         /// True if the timer is running
         bool mIsRunning;
 
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -123,7 +122,7 @@ class Timer {
         /// Compute the interpolation factor
         decimal computeInterpolationFactor();
 
-        /// Return the current time of the system
+        /// Return the current time of the system in seconds
         static long double getCurrentSystemTime();
 };
 

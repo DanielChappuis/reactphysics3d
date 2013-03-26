@@ -39,7 +39,7 @@ Timer::~Timer() {
 
 }
 
-// Return the current time of the system
+// Return the current time of the system in seconds
 long double Timer::getCurrentSystemTime() {
 
     #if defined(WINDOWS_OS)

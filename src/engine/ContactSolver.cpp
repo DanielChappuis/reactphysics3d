@@ -27,6 +27,7 @@
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
 #include "../body/RigidBody.h"
+#include "Profiler.h"
 #include <limits>
 
 using namespace reactphysics3d;
@@ -747,6 +748,8 @@ void ContactSolver::solveContactConstraints() {
 
 // Solve the constraints
 void ContactSolver::solve(decimal timeStep) {
+
+    PROFILE("ContactSolver::solve()");
 
     // Set the current time step
     mTimeStep = timeStep;
