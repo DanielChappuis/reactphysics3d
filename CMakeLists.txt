@@ -10,9 +10,14 @@ SET(LIBRARY_OUTPUT_PATH lib/)
 # Options
 OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
+OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
 
 # Headers
 INCLUDE_DIRECTORIES(src)
+
+IF (PROFILING_ENABLED)
+	ADD_DEFINITIONS(-DIS_PROFILING_ACTIVE)
+ENDIF (PROFILING_ENABLED)
 
 # Library configuration
 file (

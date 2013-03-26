@@ -52,10 +52,27 @@ DynamicsWorld::~DynamicsWorld() {
 
     // Free the allocated memory for the constrained velocities
     cleanupConstrainedVelocitiesArray();
+
+#ifdef IS_PROFILING_ACTIVE
+
+    // Print the profiling report
+    Profiler::printReport(std::cout);
+
+    // Destroy the profiler (release the allocated memory)
+    Profiler::destroy();
+#endif
+
 }
 
 // Update the physics simulation
 void DynamicsWorld::update() {
+
+#ifdef IS_PROFILING_ACTIVE
+    // Increment the frame counter of the profiler
+    Profiler::incrementFrameCounter();
+#endif
+
+    PROFILE("DynamicsWorld::update()");
 
     assert(mTimer.getIsRunning());
     
@@ -106,6 +123,9 @@ void DynamicsWorld::update() {
 
 // Update the position and orientation of the rigid bodies
 void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
+
+    PROFILE("DynamicsWorld::updateRigidBodiesPositionAndOrientation()");
+
     decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     
     // For each rigid body of the world
@@ -159,6 +179,8 @@ void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
 
 // Compute and set the interpolation factor to all bodies
 void DynamicsWorld::setInterpolationFactorToAllBodies() {
+
+    PROFILE("DynamicsWorld::setInterpolationFactorToAllBodies()");
     
     // Compute the interpolation factor
     decimal factor = mTimer.computeInterpolationFactor();
@@ -214,6 +236,8 @@ void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
 
 // Apply the gravity force to all bodies of the physics world
 void DynamicsWorld::applyGravity() {
+
+    PROFILE("DynamicsWorld::applyGravity()");
 
     // For each body of the physics world
     set<RigidBody*>::iterator it;

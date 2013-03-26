@@ -31,6 +31,7 @@
 #include <set>
 #include <algorithm>
 #include "../mathematics/mathematics.h"
+#include "Profiler.h"
 #include "../body/CollisionBody.h"
 #include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
