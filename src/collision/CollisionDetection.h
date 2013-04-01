@@ -30,9 +30,9 @@
 #include "../body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "BroadPhasePair.h"
-#include "../memory/MemoryPool.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
+#include "../memory/MemoryAllocator.h"
 #include "ContactInfo.h"
 #include <vector>
 #include <map>
@@ -64,6 +64,9 @@ class CollisionDetection {
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
+        /// Memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
         /// Broad-phase overlapping pairs
         std::map<bodyindexpair, BroadPhasePair*> mOverlappingPairs;
 
@@ -75,12 +78,6 @@ class CollisionDetection {
 
         /// Narrow-phase Sphere vs Sphere algorithm
         SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
-
-        /// Memory pool for contactinfo
-        MemoryPool<ContactInfo> mMemoryPoolContactInfos;
-
-        /// Memory pool for broad-phase pairs
-        MemoryPool<BroadPhasePair> mMemoryPoolBroadPhasePairs;
 
         // -------------------- Methods -------------------- //
 
@@ -105,7 +102,7 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world);
+        CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~CollisionDetection();

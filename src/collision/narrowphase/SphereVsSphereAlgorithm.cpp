@@ -31,8 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
-                        :NarrowPhaseAlgorithm(memoryPoolContactInfos) {
+SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator)
+                        :NarrowPhaseAlgorithm(memoryAllocator) {
     
 }
 
@@ -69,7 +69,7 @@ bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(
+        contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(
                            vectorBetweenCenters.getUnit(), penetrationDepth,
                            intersectionOnBody1, intersectionOnBody2);
     

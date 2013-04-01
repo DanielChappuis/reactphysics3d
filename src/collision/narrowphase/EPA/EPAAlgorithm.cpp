@@ -32,8 +32,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-EPAAlgorithm::EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
-             : mMemoryPoolContactInfos(memoryPoolContactInfos) {
+EPAAlgorithm::EPAAlgorithm(MemoryAllocator& memoryAllocator)
+             : mMemoryAllocator(memoryAllocator) {
 
 }
 
@@ -400,7 +400,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
                                                                              penetrationDepth,
                                                                              pALocal, pBLocal);
     

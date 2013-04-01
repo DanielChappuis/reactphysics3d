@@ -72,7 +72,7 @@ class OverlappingPair {
 
         /// Constructor
         OverlappingPair(CollisionBody* body1, CollisionBody* body2,
-                        MemoryPool<ContactPoint>& memoryPoolContacts);
+                        MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair();

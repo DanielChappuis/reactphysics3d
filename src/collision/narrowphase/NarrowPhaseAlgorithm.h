@@ -30,7 +30,7 @@
 #include "../../body/Body.h"
 #include "../ContactInfo.h"
 #include "../broadphase/PairManager.h"
-#include "../../memory/MemoryPool.h"
+#include "../../memory/MemoryAllocator.h"
 #include "../BroadPhasePair.h"
 
 
@@ -50,8 +50,8 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory pool
-        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
         BroadPhasePair* mCurrentOverlappingPair;
@@ -69,7 +69,7 @@ class NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);
+        NarrowPhaseAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm();

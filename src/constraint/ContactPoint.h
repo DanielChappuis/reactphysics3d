@@ -32,7 +32,6 @@
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include "../mathematics/mathematics.h"
-#include "../memory/MemoryPool.h"
 #include "../configuration.h"
 
 #if defined(VISUAL_DEBUG)

@@ -30,6 +30,7 @@
 #include <vector>
 #include "../body/Body.h"
 #include "../constraint/ContactPoint.h"
+#include "../memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -85,8 +86,8 @@ class ContactManifold {
         /// Twist friction constraint accumulated impulse
         decimal mFrictionTwistImpulse;
 
-        /// Reference to the memory pool with the contacts
-        MemoryPool<ContactPoint>& mMemoryPoolContacts;
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
 
         // -------------------- Methods -------------------- //
 
@@ -116,8 +117,7 @@ class ContactManifold {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(Body* const mBody1, Body* const mBody2,
-                        MemoryPool<ContactPoint>& mMemoryPoolContacts);
+        ContactManifold(Body* const mBody1, Body* const mBody2, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~ContactManifold();
