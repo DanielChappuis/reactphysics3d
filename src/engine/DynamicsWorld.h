@@ -73,15 +73,6 @@ class DynamicsWorld : public CollisionWorld {
         /// True if the gravity force is on
         bool mIsGravityOn;
 
-        /// Memory pool for the overlapping pairs
-        MemoryPool<OverlappingPair> mMemoryPoolOverlappingPairs;
-
-        /// Memory pool for rigid bodies memory allocation
-        MemoryPool<RigidBody> mMemoryPoolRigidBodies;
-
-        /// Memory pool for the contacts
-        MemoryPool<ContactPoint> mMemoryPoolContacts;
-
         /// Array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
         std::vector<Vector3> mConstrainedLinearVelocities;

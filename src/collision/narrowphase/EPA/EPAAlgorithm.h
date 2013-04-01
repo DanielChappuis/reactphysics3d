@@ -32,7 +32,7 @@
 #include "../../ContactInfo.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
-#include "../../../memory/MemoryPool.h"
+#include "../../../memory/MemoryAllocator.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace
@@ -85,8 +85,8 @@ class EPAAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory pool
-        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
 
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
@@ -112,7 +112,7 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        EPAAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~EPAAlgorithm();

@@ -57,7 +57,7 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         virtual ~SphereVsSphereAlgorithm();

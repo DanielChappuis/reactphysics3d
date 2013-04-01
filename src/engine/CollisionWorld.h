@@ -37,7 +37,7 @@
 #include "../collision/CollisionDetection.h"
 #include "../constraint/Constraint.h"
 #include "../constraint/ContactPoint.h"
-#include "../memory/MemoryPool.h"
+#include "../memory/MemoryAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -66,11 +66,11 @@ class CollisionWorld {
         /// Current body ID
         bodyindex mCurrentBodyID;
 
-        /// Memory pool
-        MemoryPool<CollisionBody> mMemoryPoolCollisionBodies;
-
         /// List of free ID for rigid bodies
         std::vector<luint> mFreeBodiesIDs;
+
+        /// Memory allocator
+        MemoryAllocator mMemoryAllocator;
 
         // -------------------- Methods -------------------- //
 

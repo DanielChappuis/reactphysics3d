@@ -37,8 +37,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos)
-             :NarrowPhaseAlgorithm(memoryPoolContactInfos), mAlgoEPA(memoryPoolContactInfos) {
+GJKAlgorithm::GJKAlgorithm(MemoryAllocator& memoryAllocator)
+             :NarrowPhaseAlgorithm(memoryAllocator), mAlgoEPA(memoryAllocator) {
     
 }
 
@@ -137,7 +137,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -169,7 +169,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
                                                                                    penetrationDepth,
                                                                                    pA, pB);
 
@@ -199,7 +199,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -236,7 +236,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryPoolContactInfos.allocateObject()) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 

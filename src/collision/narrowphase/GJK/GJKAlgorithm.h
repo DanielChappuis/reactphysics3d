@@ -85,7 +85,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        GJKAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~GJKAlgorithm();

@@ -47,7 +47,7 @@ DynamicsWorld::~DynamicsWorld() {
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
         // Delete the overlapping pair
         (*it).second->OverlappingPair::~OverlappingPair();
-        mMemoryPoolOverlappingPairs.freeObject((*it).second);
+        mMemoryAllocator.release((*it).second, sizeof(OverlappingPair));
     }
 
     // Free the allocated memory for the constrained velocities
@@ -267,7 +267,8 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the rigid body
-    RigidBody* rigidBody = new (mMemoryPoolRigidBodies.allocateObject()) RigidBody(transform, mass,
+    RigidBody* rigidBody = new (mMemoryAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
+                                                                                mass,
                                                                                 inertiaTensorLocal,
                                                                                 collisionShape,
                                                                                 bodyID);
@@ -300,8 +301,8 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     mBodies.erase(rigidBody);
     mRigidBodies.erase(rigidBody);
 
-    // Free the object from the memory pool
-    mMemoryPoolRigidBodies.freeObject(rigidBody);
+    // Free the object from the memory allocator
+    mMemoryAllocator.release(rigidBody, sizeof(RigidBody));
 }
 
 // Remove all constraints in the physics world
@@ -316,8 +317,8 @@ void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) 
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Add the pair into the set of overlapping pairs (if not there yet)
-    OverlappingPair* newPair = new (mMemoryPoolOverlappingPairs.allocateObject()) OverlappingPair(
-                                        addedPair->body1, addedPair->body2, mMemoryPoolContacts);
+    OverlappingPair* newPair = new (mMemoryAllocator.allocate(sizeof(OverlappingPair))) OverlappingPair(
+                                        addedPair->body1, addedPair->body2, mMemoryAllocator);
     assert(newPair != NULL);
     std::pair<map<bodyindexpair, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(indexPair, newPair));
@@ -330,9 +331,9 @@ void DynamicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPa
     // Get the pair of body index
     std::pair<bodyindex, bodyindex> indexPair = removedPair->getBodiesIndexPair();
 
-    // Remove the overlapping pair from the memory pool
+    // Remove the overlapping pair from the memory allocator
     mOverlappingPairs.find(indexPair)->second->OverlappingPair::~OverlappingPair();
-    mMemoryPoolOverlappingPairs.freeObject(mOverlappingPairs[indexPair]);
+    mMemoryAllocator.release(mOverlappingPairs[indexPair], sizeof(OverlappingPair));
     mOverlappingPairs.erase(indexPair);
 }
 
@@ -347,7 +348,8 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
     assert(rigidBody2 != NULL);
 
     // Create a new contact
-    ContactPoint* contact = new (mMemoryPoolContacts.allocateObject()) ContactPoint(rigidBody1,
+    ContactPoint* contact = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(
+                                                                                    rigidBody1,
                                                                                     rigidBody2,
                                                                                     contactInfo);
     assert(contact != NULL);

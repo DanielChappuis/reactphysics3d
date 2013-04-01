@@ -32,7 +32,8 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionWorld::CollisionWorld() : mCollisionDetection(this), mCurrentBodyID(0) {
+CollisionWorld::CollisionWorld()
+               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0) {
 }
 
 // Destructor
@@ -75,7 +76,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the collision body
-    CollisionBody* collisionBody = new (mMemoryPoolCollisionBodies.allocateObject())
+    CollisionBody* collisionBody = new (mMemoryAllocator.allocate(sizeof(CollisionBody)))
                                         CollisionBody(transform, collisionShape, bodyID);
 
     assert(collisionBody != NULL);
@@ -105,8 +106,8 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Remove the collision body from the list of bodies
     mBodies.erase(collisionBody);           // TODO : Maybe use a set to make this faster
 
-    // Free the object from the memory pool
-    mMemoryPoolCollisionBodies.freeObject(collisionBody);
+    // Free the object from the memory allocator
+    mMemoryAllocator.release(collisionBody, sizeof(CollisionBody));
 }
 
 // Return the next available body ID

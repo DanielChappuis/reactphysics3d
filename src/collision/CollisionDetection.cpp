@@ -43,9 +43,10 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world)
-                   : mWorld(world), mNarrowPhaseGJKAlgorithm(mMemoryPoolContactInfos),
-                     mNarrowPhaseSphereVsSphereAlgorithm(mMemoryPoolContactInfos) {
+CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator)
+                   : mWorld(world), mMemoryAllocator(memoryAllocator),
+                     mNarrowPhaseGJKAlgorithm(memoryAllocator),
+                     mNarrowPhaseSphereVsSphereAlgorithm(memoryAllocator) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
@@ -127,9 +128,9 @@ void CollisionDetection::computeNarrowPhase() {
             // Notify the world about the new narrow-phase contact
             mWorld->notifyNewContact(pair, contactInfo);
 
-            // Delete and remove the contact info from the memory pool
+            // Delete and remove the contact info from the memory allocator
             contactInfo->ContactInfo::~ContactInfo();
-            mMemoryPoolContactInfos.freeObject(contactInfo);
+            mMemoryAllocator.release(contactInfo, sizeof(ContactInfo));
         }
     }
 }
@@ -142,7 +143,7 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPai
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Create the corresponding broad-phase pair object
-    BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject())
+    BroadPhasePair* broadPhasePair = new (mMemoryAllocator.allocate(sizeof(BroadPhasePair)))
                                              BroadPhasePair(addedPair->body1, addedPair->body2);
     assert(broadPhasePair != NULL);
 
@@ -169,8 +170,8 @@ void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* remove
     // Notify the world about the removed broad-phase pair
     mWorld->notifyRemovedOverlappingPair(broadPhasePair);
 
-    // Remove the overlapping pair from the memory pool
+    // Remove the overlapping pair from the memory allocator
     broadPhasePair->BroadPhasePair::~BroadPhasePair();
-    mMemoryPoolBroadPhasePairs.freeObject(broadPhasePair);
+    mMemoryAllocator.release(broadPhasePair, sizeof(BroadPhasePair));
     mOverlappingPairs.erase(indexPair);
 }

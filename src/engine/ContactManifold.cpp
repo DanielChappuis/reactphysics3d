@@ -31,10 +31,10 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifold::ContactManifold(Body* const body1, Body* const body2,
-                                 MemoryPool<ContactPoint>& memoryPoolContacts)
+                                 MemoryAllocator& memoryAllocator)
                 : mBody1(body1), mBody2(body2), mNbContactPoints(0), mFrictionImpulse1(0.0),
                   mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0),
-                  mMemoryPoolContacts(memoryPoolContacts) {
+                  mMemoryAllocator(memoryAllocator) {
     
 }
 
@@ -57,7 +57,7 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
 
             // Delete the new contact
             contact->ContactPoint::~ContactPoint();
-            mMemoryPoolContacts.freeObject(contact);
+            mMemoryAllocator.release(contact, sizeof(ContactPoint));
             //removeContact(i);
 
             return;
@@ -82,10 +82,10 @@ void ContactManifold::removeContactPoint(uint index) {
     assert(index < mNbContactPoints);
     assert(mNbContactPoints > 0);
 	
-	// Call the destructor explicitly and tell the memory pool that
+    // Call the destructor explicitly and tell the memory allocator that
 	// the corresponding memory block is now free
     mContactPoints[index]->ContactPoint::~ContactPoint();
-    mMemoryPoolContacts.freeObject(mContactPoints[index]);
+    mMemoryAllocator.release(mContactPoints[index], sizeof(ContactPoint));
 	
     // If we don't remove the last index
     if (index < mNbContactPoints - 1) {
@@ -243,10 +243,10 @@ int ContactManifold::getMaxArea(decimal area0, decimal area1, decimal area2, dec
 void ContactManifold::clear() {
     for (uint i=0; i<mNbContactPoints; i++) {
 		
-		// Call the destructor explicitly and tell the memory pool that
+        // Call the destructor explicitly and tell the memory allocator that
 		// the corresponding memory block is now free
         mContactPoints[i]->ContactPoint::~ContactPoint();
-        mMemoryPoolContacts.freeObject(mContactPoints[i]);
+        mMemoryAllocator.release(mContactPoints[i], sizeof(ContactPoint));
     }
     mNbContactPoints = 0;
 }
