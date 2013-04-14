@@ -23,89 +23,61 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef SCENE_H
+#define SCENE_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "Box.h"
 
-// Structure VertexData
-struct VertexData {
+// Constants
+const int NB_BOXES = 10;                                     // Number of boxes in the scene
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
+const float BOX_MASS = 1.0f;                                // Box mass in kilograms
+const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 
-    /// Vertex position
-    openglframework::Vector3 position;
-
-    /// Vertex normal
-    openglframework::Vector3 normal;
-
-    // Vertex color
-    openglframework::Color color;
-};
-
-// Class Box
-class Box : public openglframework::Object3D {
+// Class Scene
+class Scene {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Size of each side of the box
-        float mSize[3];
+        // Pointer to the viewer
+        openglframework::GlutViewer* mViewer;
 
-        /// Rigid body used to simulate the dynamics of the box
-        rp3d::RigidBody* mRigidBody;
+        // Light 0
+        openglframework::Light mLight0;
 
-        /// Collision shape of the rigid body
-        rp3d::BoxShape* mCollisionShape;
+        // Phong shader
+        openglframework::Shader mPhongShader;
 
-        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
-        openglframework::Matrix4 mScalingMatrix;
+        /// All the boxes of the scene
+        std::vector<Box*> mBoxes;
 
-        /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOVertices;
+        /// Box for the floor
+        Box* mFloor;
 
-        /// Vertex Buffer Object for the indices used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOIndices;
+        /// Dynamics world used for the physics simulation
+        rp3d::DynamicsWorld* mDynamicsWorld;
 
-        /// Vertex data for each vertex of the cube (used to render the box)
-        static VertexData mCubeVertices[8];
-
-        /// Indices of the cube (used to render the box)
-        static GLuint mCubeIndices[36];
-
-        /// True if the VBOs have already been created
-        static bool areVBOsCreated;
-
-        // -------------------- Methods -------------------- //
-
-        /// Create a Vertex Buffer Object to render to box with OpenGL
-        static void createVBO();
-
-    public :
+    public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, rp3d::DynamicsWorld* dynamicsWorld);
+        Scene(openglframework::GlutViewer* viewer);
 
         /// Destructor
-        ~Box();
+        ~Scene();
 
-        /// Return a pointer to the rigid body of the box
-        rp3d::RigidBody* getRigidBody();
+        /// Take a step for the simulation
+        void simulate();
 
-        /// Update the transform matrix of the box
-        void updateTransform();
-
-        /// Render the cube at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader);
+        /// Render the scene
+        void render();
 };
-
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Box::getRigidBody() {
-    return mRigidBody;
-}
 
 #endif

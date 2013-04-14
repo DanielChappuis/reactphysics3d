@@ -35,7 +35,7 @@ ADD_LIBRARY (
 
 # If we need to compile the examples
 IF (COMPILE_EXAMPLES)
-   add_subdirectory(examples/fallingcubes)
+   add_subdirectory(examples/)
 ENDIF (COMPILE_EXAMPLES)
 
 # If we need to compile the tests

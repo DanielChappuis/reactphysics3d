@@ -24,225 +24,166 @@
 ********************************************************************************/
 
 // Libraries
-#include <stdlib.h>
-#include <reactphysics3d.h>
-#include "Box.h"
+#include "Scene.h"
+#include <sstream>
 
-// Prototypes
-void init();
-void display();
+// Declarations
 void simulate();
-void clean();
-void reshape(int w, int h);
+void display();
+void displayFPS();
+void computeFPS();
+void reshape(int width, int height);
+void mouseButton(int button, int state, int x, int y);
+void mouseMotion(int x, int y);
+void keyboardSpecial(int key, int x, int y);
+void init();
 
-// Use the ReactPhysics3D namespace
-using namespace reactphysics3d;
-
-// Constants
-const double FLOOR_SIZE = 20;
-const double FLOOR_THICKNESS = 0.02;
+// Namespaces
+using namespace openglframework;
 
 // Global variables
-DynamicsWorld* dynamicsWorld;   // Dynamics world
-Box* boxes[2];                  // Falling boxes
-BoxShape* collisionShapeBox1;   // Collision shape of the first box
-BoxShape* collisionShapeBox2;   // Collision shape of the second box
-BoxShape* collisionShapeFloor;  // Collision shape of the floor
-RigidBody* floorRigidBody;      // Rigid body corresponding the floor
-
-
-// Simulation function
-void simulate() {
-
-    // Update the physics simulation
-    dynamicsWorld->update();
-
-    // Display the scene
-    display();
-}
+GlutViewer* viewer;
+Scene* scene;
+int fps;
+int nbFrames;
+int currentTime;
+int previousTime;
+int width, height;
 
 // Main function
 int main(int argc, char** argv) {
 
-    // Initialize GLUT
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(800, 600);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("ReactPhysics3D Example - Falling Cubes");
+    // Create and initialize the Viewer
+    viewer = new GlutViewer();
+    Vector2 windowsSize = Vector2(800, 600);
+    Vector2 windowsPosition = Vector2(100, 100);
+    width = windowsSize.x;
+    height = windowsSize.y;
+    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Falling Cubes", windowsSize, windowsPosition);
+    if (!initOK) return 1;
+
+    // Create the scene
+    scene = new Scene(viewer);
 
     init();
 
+    nbFrames = 0;
+
+    // Glut Idle function that is continuously called
     glutIdleFunc(simulate);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMotion);
+    glutSpecialFunc(keyboardSpecial);
+
+    // Glut main looop
     glutMainLoop();
 
-    // Stop the physics simulation
-    dynamicsWorld->stop();
+    delete viewer;
+    delete scene;
 
-    clean();
-    
     return 0;
 }
 
-// Initialization function
-void init() {
+// Simulate function
+void simulate() {
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    // Physics simulation
+    scene->simulate();
 
-    // Light
-    glShadeModel(GL_SMOOTH);
-    GLfloat light_position[] = {5.0f, 5.0f, 5.0f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    computeFPS();
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_DEPTH_TEST);
-
-    // Gravity vector of the physics world
-    Vector3 gravity(0.0, -9.81, 0.0);
-
-    // Timestep of the simulation
-    decimal timeStep = 1.0/60.0;
-
-    // Create the dynamics world
-    dynamicsWorld = new DynamicsWorld(gravity, timeStep);
-
-    // --- Create a falling box with a size of 1m and weight of 3kg --- //
-
-    float size = 1.0f;
-
-    // Initial position and orientation of the box
-    Vector3 positionBox1(-2.0f, 7.0f, 0.0f);
-    Quaternion orientationBox1(0.3, 1.0, 0.8, 0.0);
-    Transform initTransform(positionBox1, orientationBox1);
-
-    // Create a box collision shape for the box (used for collision detection)
-    collisionShapeBox1 = new BoxShape(Vector3(size/2.0f, size/2.0f, size/2.0f));
-
-    // Compute the inertia tensor of the box using the collision shape
-    Matrix3x3 inertiaTensorBox1;
-    float massBox1 = 3.0f;
-    collisionShapeBox1->computeLocalInertiaTensor(inertiaTensorBox1, massBox1);
-
-    // Create the rigid body associated with the box in the dynamics world
-    RigidBody* rigidBody = dynamicsWorld->createRigidBody(initTransform, massBox1,
-                                                          inertiaTensorBox1, collisionShapeBox1);
-
-    // Set the contact velocity restitution factor of the rigid body
-    rigidBody->setRestitution(0.5f);
-
-    // Create the box object (used for display)
-    boxes[0] = new Box(size, rigidBody);
-
-    // --- Create a second falling box with a size of 1.5m and weight of 4.5kg --- //
-
-    size = 1.5;
-
-    // Initial position and orientation of the box
-    Vector3 positionBox2(2.0, 4.0, 0.0);
-    Quaternion orientationBox2(1.0, 1.0, 0.5, 0.0);
-    Transform initTransform2(positionBox2, orientationBox2);
-
-    // Create a box collision shape for the box (used for collision detection)
-    collisionShapeBox2 = new BoxShape(Vector3(size/2.0f, size/2.0f, size/2.0f));
-
-    // Compute the inertia tensor using the collision shape
-    Matrix3x3 inertiaTensorBox2;
-    float massBox2 = 4.5f;
-    collisionShapeBox2->computeLocalInertiaTensor(inertiaTensorBox2, massBox2);
-
-    // Create the rigid body associated with the box in the dynamcis world
-    RigidBody* rigidBody2 = dynamicsWorld->createRigidBody(initTransform2, massBox2,
-                                                           inertiaTensorBox2, collisionShapeBox2);
-
-    // Set the contact velocity restitution factor of the rigid body
-    rigidBody2->setRestitution(0.5);
-
-    // Create the box object (used for display)
-    boxes[1] = new Box(size, rigidBody2);
-
-    // --- Create the rigid body corresponding to the floor --- //
-
-    // Initial position and orientation of the floor
-    Vector3 positionFloor(0.0, 0.0, 0.0);
-    Quaternion orientationFloor(0.0, 1.0, 0.0, 0.0);
-    Transform initTransformFloor(positionFloor, orientationFloor);
-
-    // Create a box collision shape for the floor (used for collision detection)
-    collisionShapeFloor = new BoxShape(Vector3(FLOOR_SIZE, FLOOR_THICKNESS, FLOOR_SIZE));
-
-    // Compute the inertia tensor of the floor using the collision shape
-    float massFloor = 100.0f;
-    rp3d::Matrix3x3 inertiaTensorFloor;
-    collisionShapeFloor->computeLocalInertiaTensor(inertiaTensorFloor, massFloor);
-
-    // Create the rigid body associated with the floor in the dynamcis world
-    floorRigidBody = dynamicsWorld->createRigidBody(initTransformFloor, massFloor,
-                                                    inertiaTensorFloor, collisionShapeFloor);
-
-    // The floor is a rigid body that cannot move
-    floorRigidBody->setIsMotionEnabled(false);
-
-    // Set the contact velocity restitution factor of the floor
-    floorRigidBody->setRestitution(0.5);
-
-    // Start the dynamics simulation
-    dynamicsWorld->start();
+    // Ask GLUT to render the scene
+    glutPostRedisplay ();
 }
 
-// Display function
-void display() {
+// Initialization
+void init() {
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Display each falling box of the scene
-    for (int i=0; i<2; i++) {
-        boxes[i]->draw();
-    }
-
-    // Display the plane for the floor
-    glBegin(GL_POLYGON);
-        glNormal3f(0.0, 1.0, 0.0);
-        glVertex3f(-FLOOR_SIZE/2, 0.0, -FLOOR_SIZE/2);
-        glVertex3f(-FLOOR_SIZE/2, 0.0, FLOOR_SIZE/2);
-        glVertex3f(FLOOR_SIZE/2, 0.0, FLOOR_SIZE/2);
-        glVertex3f(FLOOR_SIZE/2, 0.0, -FLOOR_SIZE/2);
-    glEnd();
-
-    glutSwapBuffers();
+    // Define the background color (black)
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 // Reshape function
-void reshape(int w, int h) {
-    float ratio = ((float)w / h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glViewport(0, 0, w, h);
-    gluPerspective(45, ratio,1,1000);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(20.0, 4.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+void reshape(int newWidth, int newHeight) {
+    viewer->reshape(newWidth, newHeight);
+    width = newWidth;
+    height = newHeight;
 }
 
-// Clean the memory allocation
-void clean() {
+// Called when a mouse button event occurs
+void mouseButton(int button, int state, int x, int y) {
+    viewer->mouseButtonEvent(button, state, x, y);
+}
 
-    // Destroy the rigid bodies from the dynamics world
-    dynamicsWorld->destroyRigidBody(boxes[0]->getRigidBodyPointer());
-    dynamicsWorld->destroyRigidBody(boxes[1]->getRigidBodyPointer());
-    dynamicsWorld->destroyRigidBody(floorRigidBody);
+// Called when a mouse motion event occurs
+void mouseMotion(int x, int y) {
+    viewer->mouseMotionEvent(x, y);
+}
 
-    // Destroy the dynamics world
-    delete dynamicsWorld;
+// Called when the user hits a special key on the keyboard
+void keyboardSpecial(int key, int x, int y) {
+   /*
+    if(key=='0')
+            exit(0);
+    if(key== GLUT_KEY_RIGHT) {
+    */
+}
 
-    // Destroy the boxes
-    delete boxes[0];
-    delete boxes[1];
+// Display the scene
+void display() {
 
-    // Destroy the collision shapes
-    delete collisionShapeBox1;
-    delete collisionShapeBox2;
-    delete collisionShapeFloor;
+    // Render the scene
+    scene->render();
+
+    // Display the FPS
+    displayFPS();
+
+    // Swap the buffers
+    glutSwapBuffers();
+
+    // Check the OpenGL errors
+    GlutViewer::checkOpenGLErrors();
+}
+
+// Compute the FPS
+void computeFPS() {
+    nbFrames++;
+
+    //  Get the number of milliseconds since glutInit called
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+
+    //  Calculate time passed
+    int timeInterval = currentTime - previousTime;
+
+    // Update the FPS counter each second
+    if(timeInterval > 1000){
+
+        //  calculate the number of frames per second
+        fps = nbFrames / (timeInterval / 1000.0f);
+
+         //  Set time
+         previousTime = currentTime;
+
+         //  Reset frame count
+         nbFrames = 0;
+    }
+}
+
+// Display the FPS
+void displayFPS() {
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, -1, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glRasterPos2i(10, 20);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    std::stringstream ss;
+    ss << "FPS : " << fps;
+    glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)ss.str().c_str());
 }

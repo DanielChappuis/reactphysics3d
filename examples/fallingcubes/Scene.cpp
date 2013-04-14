@@ -1,0 +1,169 @@
+/********************************************************************************
+* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+*********************************************************************************
+*                                                                               *
+* This software is provided 'as-is', without any express or implied warranty.   *
+* In no event will the authors be held liable for any damages arising from the  *
+* use of this software.                                                         *
+*                                                                               *
+* Permission is granted to anyone to use this software for any purpose,         *
+* including commercial applications, and to alter it and redistribute it        *
+* freely, subject to the following restrictions:                                *
+*                                                                               *
+* 1. The origin of this software must not be misrepresented; you must not claim *
+*    that you wrote the original software. If you use this software in a        *
+*    product, an acknowledgment in the product documentation would be           *
+*    appreciated but is not required.                                           *
+*                                                                               *
+* 2. Altered source versions must be plainly marked as such, and must not be    *
+*    misrepresented as being the original software.                             *
+*                                                                               *
+* 3. This notice may not be removed or altered from any source distribution.    *
+*                                                                               *
+********************************************************************************/
+
+// Libraries
+#include "Scene.h"
+
+// Namespaces
+using namespace openglframework;
+
+// Constructor
+Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
+                               mPhongShader("shaders/phong.vert",
+                                            "shaders/phong.frag"){
+
+    // Move the light 0
+    mLight0.translateWorld(Vector3(7, 15, 15));
+
+    // Compute the radius and the center of the scene
+    float radius = 10.0f;
+    openglframework::Vector3 center(0, 5, 0);
+
+    // Set the center of the scene
+    mViewer->setScenePosition(center, radius);
+
+    // Gravity vector in the dynamics world
+    rp3d::Vector3 gravity(0, -9.81, 0);
+
+    // Time step for the physics simulation
+    rp3d::decimal timeStep = 1.0f / 80.0f;
+
+    // Create the dynamics world for the physics simulation
+    mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
+
+    // Create all the cubes of the scene
+    for (int i=0; i<NB_BOXES; i++) {
+
+        // Position of the cubes
+        openglframework::Vector3 position(0, 5 + i * (BOX_SIZE.y + 0.5f), 0);
+
+        // Create a cube and a corresponding rigid in the dynamics world
+        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+
+        // The box is a moving rigid body
+        cube->getRigidBody()->setIsMotionEnabled(true);
+
+        // Set the bouncing factor of the box
+        cube->getRigidBody()->setRestitution(0.4);
+
+        // Add the box the list of box in the scene
+        mBoxes.push_back(cube);
+    }
+
+    // Create the floor
+    openglframework::Vector3 floorPosition(0, 0, 0);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+
+    // The floor must be a non-moving rigid body
+    mFloor->getRigidBody()->setIsMotionEnabled(false);
+
+    // Set the bouncing factor of the floor
+    mFloor->getRigidBody()->setRestitution(0.3);
+
+    // Start the simulation
+    mDynamicsWorld->start();
+}
+
+// Destructor
+Scene::~Scene() {
+
+    // Stop the physics simulation
+    mDynamicsWorld->stop();
+
+    // Destroy the shader
+    mPhongShader.destroy();
+
+    // Destroy all the cubes of the scene
+    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+
+        // Destroy the corresponding rigid body from the dynamics world
+        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
+
+        // Destroy the cube
+        delete (*it);
+    }
+
+    // Destroy the rigid body of the floor
+    mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
+
+    // Destroy the floor
+    delete mFloor;
+
+    // Destroy the dynamics world
+    delete mDynamicsWorld;
+}
+
+// Take a step for the simulation
+void Scene::simulate() {
+
+    // Take a simulation step
+    mDynamicsWorld->update();
+
+    // Update the position and orientation of the boxes
+    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    mFloor->updateTransform();
+}
+
+// Render the scene
+void Scene::render() {
+
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_CULL_FACE);
+
+    // Bind the shader
+    mPhongShader.bind();
+
+    // Set the variables of the shader
+    const Camera& camera = mViewer->getCamera();
+    Matrix4 matrixIdentity;
+    matrixIdentity.setToIdentity();
+    mPhongShader.setVector3Uniform("cameraWorldPosition", mViewer->getCamera().getOrigin());
+    mPhongShader.setMatrix4x4Uniform("worldToCameraMatrix", camera.getTransformMatrix().getInverse());
+    mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
+    mPhongShader.setVector3Uniform("lightWorldPosition", mLight0.getOrigin());
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
+    Color& diffCol = mLight0.getDiffuseColor();
+    Color& specCol = mLight0.getSpecularColor();
+    mPhongShader.setVector3Uniform("lightDiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
+    mPhongShader.setVector3Uniform("lightSpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
+    mPhongShader.setFloatUniform("shininess", 60.0f);
+
+    // Render all the cubes of the scene
+    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+        (*it)->render(mPhongShader);
+    }
+
+    // Render the floor
+    mFloor->render(mPhongShader);
+
+    // Unbind the shader
+    mPhongShader.unbind();
+}
