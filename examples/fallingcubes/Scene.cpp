@@ -32,32 +32,40 @@ using namespace openglframework;
 // Constructor
 Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"){
+                                            "shaders/phong.frag"), mIsRunning(false) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
     // Compute the radius and the center of the scene
-    float radius = 10.0f;
+    float radiusScene = 10.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    mViewer->setScenePosition(center, radius);
+    mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, -9.81, 0);
 
     // Time step for the physics simulation
-    rp3d::decimal timeStep = 1.0f / 80.0f;
+    rp3d::decimal timeStep = 1.0f / 60.0f;
 
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
+
+    // Set the number of iterations of the constraint solver
+    mDynamicsWorld->setNbIterationsSolver(15);
+
+    float radius = 2.0f;
 
     // Create all the cubes of the scene
     for (int i=0; i<NB_BOXES; i++) {
 
         // Position of the cubes
-        openglframework::Vector3 position(0, 5 + i * (BOX_SIZE.y + 0.5f), 0);
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          1 + i * (BOX_SIZE.y + 0.3f),
+                                          radius * sin(angle));
 
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
@@ -83,14 +91,14 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mFloor->getRigidBody()->setRestitution(0.3);
 
     // Start the simulation
-    mDynamicsWorld->start();
+    startSimulation();
 }
 
 // Destructor
 Scene::~Scene() {
 
     // Stop the physics simulation
-    mDynamicsWorld->stop();
+    stopSimulation();
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -118,17 +126,22 @@ Scene::~Scene() {
 // Take a step for the simulation
 void Scene::simulate() {
 
-    // Take a simulation step
-    mDynamicsWorld->update();
+    // If the physics simulation is running
+    if (mIsRunning) {
 
-    // Update the position and orientation of the boxes
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+        // Take a simulation step
+        mDynamicsWorld->update();
 
-        // Update the transform used for the rendering
-        (*it)->updateTransform();
+        // Update the position and orientation of the boxes
+        for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+
+            // Update the transform used for the rendering
+            (*it)->updateTransform();
+        }
+
+        mFloor->updateTransform();
+
     }
-
-    mFloor->updateTransform();
 }
 
 // Render the scene
@@ -136,7 +149,7 @@ void Scene::render() {
 
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     // Bind the shader
     mPhongShader.bind();

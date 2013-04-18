@@ -23,95 +23,89 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef BOX_H
+#define BOX_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Box.h"
 
-// Constants
-const int NB_BOXES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                                // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+// Structure VertexData
+struct VertexData {
 
-// Class Scene
-class Scene {
+    /// Vertex position
+    openglframework::Vector3 position;
+
+    /// Vertex normal
+    openglframework::Vector3 normal;
+
+    // Vertex color
+    openglframework::Color color;
+};
+
+// Class Box
+class Box : public openglframework::Object3D {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        /// Size of each side of the box
+        float mSize[3];
 
-        // Light 0
-        openglframework::Light mLight0;
+        /// Rigid body used to simulate the dynamics of the box
+        rp3d::RigidBody* mRigidBody;
 
-        // Phong shader
-        openglframework::Shader mPhongShader;
+        /// Collision shape of the rigid body
+        rp3d::BoxShape* mCollisionShape;
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
+        openglframework::Matrix4 mScalingMatrix;
 
-        /// Box for the floor
-        Box* mFloor;
+        /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
+        static openglframework::VertexBufferObject mVBOVertices;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
+        /// Vertex Buffer Object for the indices used to render the box with OpenGL
+        static openglframework::VertexBufferObject mVBOIndices;
 
-        /// True if the physics simulation is running
-        bool mIsRunning;
+        /// Vertex data for each vertex of the cube (used to render the box)
+        static VertexData mCubeVertices[8];
 
-    public:
+        /// Indices of the cube (used to render the box)
+        static GLuint mCubeIndices[36];
+
+        /// True if the VBOs have already been created
+        static bool areVBOsCreated;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create a Vertex Buffer Object to render to box with OpenGL
+        static void createVBO();
+
+    public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
+            float mass, rp3d::DynamicsWorld* dynamicsWorld);
 
         /// Destructor
-        ~Scene();
+        ~Box();
 
-        /// Take a step for the simulation
-        void simulate();
+        /// Return a pointer to the rigid body of the box
+        rp3d::RigidBody* getRigidBody();
 
-        /// Stop the simulation
-        void stopSimulation();
+        /// Update the transform matrix of the box
+        void updateTransform();
 
-        /// Start the simulation
-        void startSimulation();
-
-        /// Pause or continue simulation
-        void pauseContinueSimulation();
-
-        /// Render the scene
-        void render();
+        /// Render the cube at the correct position and with the correct orientation
+        void render(openglframework::Shader& shader);
 };
 
-// Stop the simulation
-inline void Scene::stopSimulation() {
-    mDynamicsWorld->stop();
-    mIsRunning = false;
-}
-
-// Start the simulation
-inline void Scene::startSimulation() {
-    mDynamicsWorld->start();
-    mIsRunning = true;
-}
-
-// Pause or continue simulation
-inline void Scene::pauseContinueSimulation() {
-    if (mIsRunning) {
-        stopSimulation();
-    }
-    else {
-        startSimulation();
-    }
+// Return a pointer to the rigid body of the box
+inline rp3d::RigidBody* Box::getRigidBody() {
+    return mRigidBody;
 }
 
 #endif

@@ -23,95 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef VIEWER_H
+#define VIEWER_H
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
-#include "Box.h"
 
-// Constants
-const int NB_BOXES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                                // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
-
-// Class Scene
-class Scene {
+// Class Viewer
+class Viewer : public openglframework::GlutViewer {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        /// Current number of frames per seconds
+        int fps;
 
-        // Light 0
-        openglframework::Light mLight0;
+        /// Number of frames during the last second
+        int nbFrames;
 
-        // Phong shader
-        openglframework::Shader mPhongShader;
+        /// Current time for fps computation
+        int currentTime;
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Previous time for fps computation
+        int previousTime;
 
-        /// Box for the floor
-        Box* mFloor;
+        // -------------------- Methods -------------------- //
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
+        /// Display the FPS
+        void displayFPS();
 
-        /// True if the physics simulation is running
-        bool mIsRunning;
-
-    public:
+    public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Viewer();
 
-        /// Destructor
-        ~Scene();
+        /// Compute the FPS
+        void computeFPS();
 
-        /// Take a step for the simulation
-        void simulate();
+        /// Display the GUI
+        void displayGUI();
 
-        /// Stop the simulation
-        void stopSimulation();
-
-        /// Start the simulation
-        void startSimulation();
-
-        /// Pause or continue simulation
-        void pauseContinueSimulation();
-
-        /// Render the scene
-        void render();
 };
-
-// Stop the simulation
-inline void Scene::stopSimulation() {
-    mDynamicsWorld->stop();
-    mIsRunning = false;
-}
-
-// Start the simulation
-inline void Scene::startSimulation() {
-    mDynamicsWorld->start();
-    mIsRunning = true;
-}
-
-// Pause or continue simulation
-inline void Scene::pauseContinueSimulation() {
-    if (mIsRunning) {
-        stopSimulation();
-    }
-    else {
-        startSimulation();
-    }
-}
 
 #endif

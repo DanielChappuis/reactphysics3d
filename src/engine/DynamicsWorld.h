@@ -215,7 +215,6 @@ inline void DynamicsWorld::start() {
 }
 
 inline void DynamicsWorld::stop() {
-    std::cout << "Stop Simulation" << std::endl;
     mTimer.stop();
 }                
 

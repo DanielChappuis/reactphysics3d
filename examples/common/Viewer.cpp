@@ -24,131 +24,18 @@
 ********************************************************************************/
 
 // Libraries
-#include "Scene.h"
+#include "Viewer.h"
+#include "openglframework.h"
 #include <sstream>
 
-// Declarations
-void simulate();
-void display();
-void displayFPS();
-void computeFPS();
-void reshape(int width, int height);
-void mouseButton(int button, int state, int x, int y);
-void mouseMotion(int x, int y);
-void keyboardSpecial(int key, int x, int y);
-void init();
+// Constructor
+Viewer::Viewer() : openglframework::GlutViewer(), fps(0), nbFrames(0) {
 
-// Namespaces
-using namespace openglframework;
-
-// Global variables
-GlutViewer* viewer;
-Scene* scene;
-int fps;
-int nbFrames;
-int currentTime;
-int previousTime;
-int width, height;
-
-// Main function
-int main(int argc, char** argv) {
-
-    // Create and initialize the Viewer
-    viewer = new GlutViewer();
-    Vector2 windowsSize = Vector2(800, 600);
-    Vector2 windowsPosition = Vector2(100, 100);
-    width = windowsSize.x;
-    height = windowsSize.y;
-    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Falling Cubes", windowsSize, windowsPosition);
-    if (!initOK) return 1;
-
-    // Create the scene
-    scene = new Scene(viewer);
-
-    init();
-
-    nbFrames = 0;
-
-    // Glut Idle function that is continuously called
-    glutIdleFunc(simulate);
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMotion);
-    glutSpecialFunc(keyboardSpecial);
-
-    // Glut main looop
-    glutMainLoop();
-
-    delete viewer;
-    delete scene;
-
-    return 0;
-}
-
-// Simulate function
-void simulate() {
-
-    // Physics simulation
-    scene->simulate();
-
-    computeFPS();
-
-    // Ask GLUT to render the scene
-    glutPostRedisplay ();
-}
-
-// Initialization
-void init() {
-
-    // Define the background color (black)
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-}
-
-// Reshape function
-void reshape(int newWidth, int newHeight) {
-    viewer->reshape(newWidth, newHeight);
-    width = newWidth;
-    height = newHeight;
-}
-
-// Called when a mouse button event occurs
-void mouseButton(int button, int state, int x, int y) {
-    viewer->mouseButtonEvent(button, state, x, y);
-}
-
-// Called when a mouse motion event occurs
-void mouseMotion(int x, int y) {
-    viewer->mouseMotionEvent(x, y);
-}
-
-// Called when the user hits a special key on the keyboard
-void keyboardSpecial(int key, int x, int y) {
-   /*
-    if(key=='0')
-            exit(0);
-    if(key== GLUT_KEY_RIGHT) {
-    */
-}
-
-// Display the scene
-void display() {
-
-    // Render the scene
-    scene->render();
-
-    // Display the FPS
-    displayFPS();
-
-    // Swap the buffers
-    glutSwapBuffers();
-
-    // Check the OpenGL errors
-    GlutViewer::checkOpenGLErrors();
 }
 
 // Compute the FPS
-void computeFPS() {
+void Viewer::computeFPS() {
+
     nbFrames++;
 
     //  Get the number of milliseconds since glutInit called
@@ -171,12 +58,19 @@ void computeFPS() {
     }
 }
 
+// Display the GUI
+void Viewer::displayGUI() {
+
+    // Display the FPS
+    displayFPS();
+}
+
 // Display the FPS
-void displayFPS() {
+void Viewer::displayFPS() {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, width, height, 0, -1, 1);
+    glOrtho(0, mCamera.getWidth(), mCamera.getHeight(), 0, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

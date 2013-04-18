@@ -39,7 +39,7 @@ namespace openglframework {
 // Class Renderer
 class GlutViewer {
 
-    private:
+    protected :
 
         // -------------------- Attributes -------------------- //
 
@@ -81,7 +81,7 @@ class GlutViewer {
         GlutViewer();
 
         // Destructor
-        ~GlutViewer();
+        virtual ~GlutViewer();
 
         // Initialize the viewer
         bool init(int argc, char** argv, const std::string& windowsTitle,
@@ -112,16 +112,17 @@ class GlutViewer {
         // Get the camera
         Camera& getCamera();
 
-        void motion(int x, int y);
-
         // Called when a GLUT mouse button event occurs
         void mouseButtonEvent(int button, int state, int x, int y);
 
         // Called when a GLUT mouse motion event occurs
         void mouseMotionEvent(int xMouse, int yMouse);
 
-        void keyboard(int key, int x, int y);
-        void special(int key, int x, int y);
+        // Called when a GLUT keyboard event occurs
+        void keyboardEvent(int key, int xMouse, int yMouse);
+
+        // Called when a GLUT special keyboard event occurs
+        void keyboardSpecialEvent(int key, int xMouse, int yMouse);
 
         // Check the OpenGL errors
         static void checkOpenGLErrors();

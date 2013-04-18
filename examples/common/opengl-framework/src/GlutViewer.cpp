@@ -168,6 +168,16 @@ void GlutViewer::mouseMotionEvent(int xMouse, int yMouse) {
     glutPostRedisplay();
 }
 
+// Called when a GLUT keyboard event occurs
+void GlutViewer::keyboardEvent(int key, int xMouse, int yMouse) {
+
+}
+
+// Called when a GLUT special keyboard event occurs
+void GlutViewer::keyboardSpecialEvent(int key, int xMouse, int yMouse) {
+
+}
+
 // Map the mouse x,y coordinates to a point on a sphere
 bool GlutViewer::mapMouseCoordinatesToSphere(int xMouse, int yMouse, Vector3& spherePoint) const {
 
