@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_MANIFOLD_H
-#define	CONTACT_MANIFOLD_H
+#ifndef REACTPHYSICS3D_CONTACT_MANIFOLD_H
+#define	REACTPHYSICS3D_CONTACT_MANIFOLD_H
 
 // Libraries
 #include <vector>

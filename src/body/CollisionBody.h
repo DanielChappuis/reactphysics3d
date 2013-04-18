@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_BODY_H
-#define COLLISION_BODY_H
+#ifndef REACTPHYSICS3D_COLLISION_BODY_H
+#define REACTPHYSICS3D_COLLISION_BODY_H
 
 // Libraries
 #include <stdexcept>

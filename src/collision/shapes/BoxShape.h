@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_SHAPE_H
-#define BOX_SHAPE_H
+#ifndef REACTPHYSICS3D_BOX_SHAPE_H
+#define REACTPHYSICS3D_BOX_SHAPE_H
 
 // Libraries
 #include <cfloat>

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONFIGURATION_H
-#define	CONFIGURATION_H
+#ifndef REACTPHYSICS3D_CONFIGURATION_H
+#define	REACTPHYSICS3D_CONFIGURATION_H
 
 // Libraries
 #include <limits>

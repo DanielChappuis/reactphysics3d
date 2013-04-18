@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef PROFILER_H
-#define PROFILER_H
+#ifndef REACTPHYSICS3D_PROFILER_H
+#define REACTPHYSICS3D_PROFILER_H
 
 #ifdef IS_PROFILING_ACTIVE
 

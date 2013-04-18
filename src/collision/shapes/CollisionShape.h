@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_SHAPE_H
-#define COLLISION_SHAPE_H
+#ifndef REACTPHYSICS3D_COLLISION_SHAPE_H
+#define REACTPHYSICS3D_COLLISION_SHAPE_H
 
 // Libraries
 #include <cassert>

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef QUATERNION_H
-#define QUATERNION_H
+#ifndef REACTPHYSICS3D_QUATERNION_H
+#define REACTPHYSICS3D_QUATERNION_H
 
 // Libraries
 #include <cmath>

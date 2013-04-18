@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_POINT_H
-#define CONTACT_POINT_H
+#ifndef REACTPHYSICS3D_CONTACT_POINT_H
+#define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
 #include "Constraint.h"

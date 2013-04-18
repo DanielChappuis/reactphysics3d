@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_SOLVER_H
-#define CONTACT_SOLVER_H
+#ifndef REACTPHYSICS3D_CONTACT_SOLVER_H
+#define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
 #include "../constraint/ContactPoint.h"

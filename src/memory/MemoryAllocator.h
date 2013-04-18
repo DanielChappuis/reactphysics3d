@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef MEMORY_ALLOCATOR_H
-#define MEMORY_ALLOCATOR_H
+#ifndef REACTPHYSICS3D_MEMORY_ALLOCATOR_H
+#define REACTPHYSICS3D_MEMORY_ALLOCATOR_H
 
 // Libraries
 #include "../configuration.h"

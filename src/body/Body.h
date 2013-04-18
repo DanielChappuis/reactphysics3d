@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BODY_H
-#define BODY_H
+#ifndef REACTPHYSICS3D_BODY_H
+#define REACTPHYSICS3D_BODY_H
 
 // Libraries
 #include <stdexcept>

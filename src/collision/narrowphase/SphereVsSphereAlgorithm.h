@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SPHERE_VS_SPHERE_ALGORITHM_H
-#define	SPHERE_VS_SPHERE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
+#define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
 
 // Libraries
 #include "../../body/Body.h"

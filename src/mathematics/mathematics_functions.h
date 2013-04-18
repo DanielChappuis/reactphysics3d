@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef MATHEMATICS_FUNCTIONS_H
-#define MATHEMATICS_FUNCTIONS_H
+#ifndef REACTPHYSICS3D_MATHEMATICS_FUNCTIONS_H
+#define REACTPHYSICS3D_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
 #include "../configuration.h"

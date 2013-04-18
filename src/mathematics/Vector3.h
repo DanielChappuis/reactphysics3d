@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#ifndef REACTPHYSICS3D_VECTOR3_H
+#define REACTPHYSICS3D_VECTOR3_H
 
 // Libraries
 #include <cmath>

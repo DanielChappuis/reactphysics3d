@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 
-#ifndef MATRIX3X3_H
-#define MATRIX3X3_H
+#ifndef REACTPHYSICS3D_MATRIX3X3_H
+#define REACTPHYSICS3D_MATRIX3X3_H
 
 // Libraries
 #include <cassert>

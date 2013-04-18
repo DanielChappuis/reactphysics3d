@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef GJK_ALGORITHM_H
-#define GJK_ALGORITHM_H
+#ifndef REACTPHYSICS3D_GJK_ALGORITHM_H
+#define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"

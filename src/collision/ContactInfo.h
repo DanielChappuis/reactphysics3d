@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_INFO_H
-#define	CONTACT_INFO_H
+#ifndef REACTPHYSICS3D_CONTACT_INFO_H
+#define	REACTPHYSICS3D_CONTACT_INFO_H
 
 // Libraries
 #include "../collision/shapes/BoxShape.h"

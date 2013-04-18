@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_DETECTION_H
-#define COLLISION_DETECTION_H
+#ifndef REACTPHYSICS3D_COLLISION_DETECTION_H
+#define REACTPHYSICS3D_COLLISION_DETECTION_H
 
 // Libraries
 #include "../body/CollisionBody.h"

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef DYNAMICS_WORLD_H
-#define DYNAMICS_WORLD_H
+#ifndef REACTPHYSICS3D_DYNAMICS_WORLD_H
+#define REACTPHYSICS3D_DYNAMICS_WORLD_H
 
 // Libraries
 #include "CollisionWorld.h"

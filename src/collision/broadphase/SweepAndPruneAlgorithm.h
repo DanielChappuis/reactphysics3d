@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SWEEP_AND_PRUNE_ALGORITHM_H
-#define SWEEP_AND_PRUNE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_SWEEP_AND_PRUNE_ALGORITHM_H
+#define REACTPHYSICS3D_SWEEP_AND_PRUNE_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"

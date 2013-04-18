@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef EDGE_EPA_H
-#define EDGE_EPA_H
+#ifndef REACTPHYSICS3D_EDGE_EPA_H
+#define REACTPHYSICS3D_EDGE_EPA_H
 
 
 // Libraries

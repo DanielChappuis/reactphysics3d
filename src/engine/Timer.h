@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef REACTPHYSICS3D_TIMER_H
+#define REACTPHYSICS3D_TIMER_H
 
 // Libraries
 #include <stdexcept>

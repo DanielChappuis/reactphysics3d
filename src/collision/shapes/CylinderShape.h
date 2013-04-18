@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CYLINDER_SHAPE_H
-#define CYLINDER_SHAPE_H
+#ifndef REACTPHYSICS3D_CYLINDER_SHAPE_H
+#define REACTPHYSICS3D_CYLINDER_SHAPE_H
 
 // Libraries
 #include "CollisionShape.h"

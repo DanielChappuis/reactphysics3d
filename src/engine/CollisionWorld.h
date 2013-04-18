@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_WORLD_H
-#define COLLISION_WORLD_H
+#ifndef REACTPHYSICS3D_COLLISION_WORLD_H
+#define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
 #include <vector>

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BROAD_PHASE_PAIR_H
-#define BROAD_PHASE_PAIR_H
+#ifndef REACTPHYSICS3D_BROAD_PHASE_PAIR_H
+#define REACTPHYSICS3D_BROAD_PHASE_PAIR_H
 
 // Libraries
 #include "../body/CollisionBody.h"

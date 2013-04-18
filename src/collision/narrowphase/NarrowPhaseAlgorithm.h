@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef NARROW_PHASE_ALGORITHM_H
-#define NARROW_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
+#define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
 #include "../../body/Body.h"

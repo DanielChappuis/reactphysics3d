@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SPHERE_SHAPE_H
-#define SPHERE_SHAPE_H
+#ifndef REACTPHYSICS3D_SPHERE_SHAPE_H
+#define REACTPHYSICS3D_SPHERE_SHAPE_H
 
 // Libraries
 #include "CollisionShape.h"

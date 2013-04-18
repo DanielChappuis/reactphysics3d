@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef PAIR_MANAGER_H
-#define PAIR_MANAGER_H
+#ifndef REACTPHYSICS3D_PAIR_MANAGER_H
+#define REACTPHYSICS3D_PAIR_MANAGER_H
 
 // Libraries
 #include "../../body/CollisionBody.h"

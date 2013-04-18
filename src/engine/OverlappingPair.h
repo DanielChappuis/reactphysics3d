@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef OVERLAPPING_PAIR_H
-#define	OVERLAPPING_PAIR_H
+#ifndef REACTPHYSICS3D_OVERLAPPING_PAIR_H
+#define	REACTPHYSICS3D_OVERLAPPING_PAIR_H
 
 // Libraries
 #include "ContactManifold.h"

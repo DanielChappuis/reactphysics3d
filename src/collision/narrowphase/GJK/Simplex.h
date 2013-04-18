@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SIMPLEX_H
-#define	SIMPLEX_H
+#ifndef REACTPHYSICS3D_SIMPLEX_H
+#define	REACTPHYSICS3D_SIMPLEX_H
 
 // Libraries
 #include "../../../mathematics/mathematics.h"

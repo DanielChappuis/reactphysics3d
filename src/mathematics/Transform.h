@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TRANSFORM_H
-#define	TRANSFORM_H
+#ifndef REACTPHYSICS3D_TRANSFORM_H
+#define	REACTPHYSICS3D_TRANSFORM_H
 
 // Libraries
 #include "Matrix3x3.h"

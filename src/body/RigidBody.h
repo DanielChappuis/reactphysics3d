@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef RIGID_BODY_H
-#define RIGID_BODY_H
+#ifndef REACTPHYSICS3D_RIGID_BODY_H
+#define REACTPHYSICS3D_RIGID_BODY_H
 
 // Libraries
 #include <cassert>

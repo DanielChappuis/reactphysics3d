@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef AABB_H
-#define AABB_H
+#ifndef REACTPHYSICS3D_AABB_H
+#define REACTPHYSICS3D_AABB_H
 
 // Libraries
 #include "../../mathematics/mathematics.h"
