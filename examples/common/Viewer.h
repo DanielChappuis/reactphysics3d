@@ -23,89 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef VIEWER_H
+#define VIEWER_H
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
 
-// Structure VertexData
-struct VertexData {
-
-    /// Vertex position
-    openglframework::Vector3 position;
-
-    /// Vertex normal
-    openglframework::Vector3 normal;
-
-    // Vertex color
-    openglframework::Color color;
-};
-
-// Class Box
-class Box : public openglframework::Object3D {
+// Class Viewer
+class Viewer : public openglframework::GlutViewer {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Size of each side of the box
-        float mSize[3];
+        /// Current number of frames per seconds
+        int fps;
 
-        /// Rigid body used to simulate the dynamics of the box
-        rp3d::RigidBody* mRigidBody;
+        /// Number of frames during the last second
+        int nbFrames;
 
-        /// Collision shape of the rigid body
-        rp3d::BoxShape* mCollisionShape;
+        /// Current time for fps computation
+        int currentTime;
 
-        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
-        openglframework::Matrix4 mScalingMatrix;
-
-        /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOVertices;
-
-        /// Vertex Buffer Object for the indices used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOIndices;
-
-        /// Vertex data for each vertex of the cube (used to render the box)
-        static VertexData mCubeVertices[8];
-
-        /// Indices of the cube (used to render the box)
-        static GLuint mCubeIndices[36];
-
-        /// True if the VBOs have already been created
-        static bool areVBOsCreated;
+        /// Previous time for fps computation
+        int previousTime;
 
         // -------------------- Methods -------------------- //
 
-        /// Create a Vertex Buffer Object to render to box with OpenGL
-        static void createVBO();
+        /// Display the FPS
+        void displayFPS();
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, rp3d::DynamicsWorld* dynamicsWorld);
+        Viewer();
 
-        /// Destructor
-        ~Box();
+        /// Compute the FPS
+        void computeFPS();
 
-        /// Return a pointer to the rigid body of the box
-        rp3d::RigidBody* getRigidBody();
+        /// Display the GUI
+        void displayGUI();
 
-        /// Update the transform matrix of the box
-        void updateTransform();
-
-        /// Render the cube at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader);
 };
-
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Box::getRigidBody() {
-    return mRigidBody;
-}
 
 #endif
