@@ -71,6 +71,9 @@ class CylinderShape : public CollisionShape {
         /// Destructor
         virtual ~CylinderShape();
 
+        /// Allocate and return a copy of the object
+        virtual CylinderShape* clone(void* allocatedMemory) const;
+
         /// Return the radius
         decimal getRadius() const;
 
@@ -82,6 +85,9 @@ class CylinderShape : public CollisionShape {
 
         /// Set the height
         void setHeight(decimal height);
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
@@ -98,11 +104,19 @@ class CylinderShape : public CollisionShape {
         /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
+        /// Test equality between two cylinder shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+
 #ifdef VISUAL_DEBUG
         /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
 #endif
 };
+
+/// Allocate and return a copy of the object
+inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) CylinderShape(*this);
+}
 
 // Return the radius
 inline decimal CylinderShape::getRadius() const {
@@ -124,6 +138,11 @@ inline void CylinderShape::setHeight(decimal height) {
     mHalfHeight = height * decimal(0.5);
 }
 
+// Return the number of bytes used by the collision shape
+inline size_t CylinderShape::getSizeInBytes() const {
+    return sizeof(CylinderShape);
+}
+
 // Return the local extents in x,y and z direction
 inline Vector3 CylinderShape::getLocalExtents(decimal margin) const {
     return Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
@@ -141,6 +160,12 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
 // Return the margin distance around the shape
 inline decimal CylinderShape::getMargin() const {
    return OBJECT_MARGIN;
+}
+
+// Test equality between two cylinder shapes
+inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
+    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 }

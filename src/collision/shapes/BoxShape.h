@@ -69,6 +69,9 @@ class BoxShape : public CollisionShape {
         /// Destructor
         virtual ~BoxShape();
 
+        /// Allocate and return a copy of the object
+        virtual BoxShape* clone(void* allocatedMemory) const;
+
         /// Return the extents of the box
         const Vector3& getExtent() const;
 
@@ -81,6 +84,9 @@ class BoxShape : public CollisionShape {
         /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
@@ -90,11 +96,19 @@ class BoxShape : public CollisionShape {
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
+        /// Test equality between two box shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+
 #ifdef VISUAL_DEBUG
         /// Draw the Box (only for testing purpose)
         virtual void draw() const;
 #endif
 };
+
+// Allocate and return a copy of the object
+inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) BoxShape(*this);
+}
 
 // Return the extents of the box
 inline const Vector3& BoxShape::getExtent() const {
@@ -117,6 +131,11 @@ inline decimal BoxShape::getMargin() const {
     return OBJECT_MARGIN;
 }
 
+// Return the number of bytes used by the collision shape
+inline size_t BoxShape::getSizeInBytes() const {
+    return sizeof(BoxShape);
+}
+
 // Return a local support point in a given direction with the object margin
 inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
@@ -134,6 +153,12 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,
                    direction.z < 0.0 ? -mExtent.z : mExtent.z);
+}
+
+// Test equality between two box shapes
+inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
+    return (mExtent == otherShape.mExtent);
 }
 
 }

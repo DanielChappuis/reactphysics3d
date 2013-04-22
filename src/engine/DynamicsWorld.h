@@ -158,10 +158,10 @@ public :
         /// Set the isErrorCorrectionActive value
         void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
 
-        /// Create a rigid body into the physics world
+        /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
                                    const Matrix3x3& inertiaTensorLocal,
-                                   CollisionShape* collisionShape);
+                                   const CollisionShape& collisionShape);
 
         /// Destroy a rigid body
         void destroyRigidBody(RigidBody* rigidBody);

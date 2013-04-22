@@ -38,7 +38,8 @@ CollisionWorld::CollisionWorld()
 
 // Destructor
 CollisionWorld::~CollisionWorld() {
-
+    assert(mCollisionShapes.empty());
+    assert(mBodies.empty());
 }
 
 // Notify the world about a new broad-phase overlapping pair
@@ -104,7 +105,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     collisionBody->CollisionBody::~CollisionBody();
 
     // Remove the collision body from the list of bodies
-    mBodies.erase(collisionBody);           // TODO : Maybe use a set to make this faster
+    mBodies.erase(collisionBody);
 
     // Free the object from the memory allocator
     mMemoryAllocator.release(collisionBody, sizeof(CollisionBody));
@@ -125,6 +126,64 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
     }
 
     return bodyID;
+}
+
+// Create a new collision shape.
+/// First, this methods checks that the new collision shape does not exist yet in the
+/// world. If it already exists, we do not allocate memory for a new one but instead
+/// we reuse the existing one. The goal is to only allocate memory for a single
+/// collision shape if this one is used for several bodies in the world. To allocate
+/// memory for a new collision shape, we use the memory allocator.
+CollisionShape* CollisionWorld::createCollisionShape(const CollisionShape& collisionShape) {
+
+    // Check if there is already a similar collision shape in the world
+    std::list<CollisionShape*>::iterator it;
+    for (it = mCollisionShapes.begin(); it != mCollisionShapes.end(); ++it) {
+
+        if (collisionShape == (*(*it))) {
+
+            // Increment the number of similar created shapes
+            (*it)->incrementNbSimilarCreatedShapes();
+
+            // A similar collision shape already exists in the world, so we do not
+            // create a new one but we simply return a pointer to the existing one
+            return (*it);
+        }
+    }
+
+    // A similar collision shape does not already exist in the world, so we create a
+    // new one and add it to the world
+    void* allocatedMemory = mMemoryAllocator.allocate(collisionShape.getSizeInBytes());
+    CollisionShape* newCollisionShape = collisionShape.clone(allocatedMemory);
+    mCollisionShapes.push_back(newCollisionShape);
+
+    newCollisionShape->incrementNbSimilarCreatedShapes();
+
+    // Return a pointer to the new collision shape
+    return newCollisionShape;
+}
+
+
+// Remove a collision shape.
+/// First, we check if another body is still using the same collision shape. If so,
+/// we keep the allocated collision shape. If it is not the case, we can deallocate
+/// the memory associated with the collision shape.
+void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
+
+    assert(collisionShape->getNbSimilarCreatedShapes() != 0);
+
+    // Decrement the number of bodies using the same collision shape
+    collisionShape->decrementNbSimilarCreatedShapes();
+
+    // If no other body is using the collision shape in the world
+    if (collisionShape->getNbSimilarCreatedShapes() == 0) {
+
+        // Remove the shape from the set of shapes in the world
+        mCollisionShapes.remove(collisionShape);
+
+        // Deallocate the memory used by the collision shape
+        mMemoryAllocator.release(collisionShape, collisionShape->getSizeInBytes());
+    }
 }
 
 

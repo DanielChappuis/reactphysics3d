@@ -53,6 +53,13 @@ ConeShape::ConeShape(decimal radius, decimal height)
     mSinTheta = radius / (sqrt(radius * radius + height * height));
 }
 
+// Private copy-constructor
+ConeShape::ConeShape(const ConeShape& shape)
+          : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight),
+            mSinTheta(shape.mSinTheta){
+
+}
+
 // Destructor
 ConeShape::~ConeShape() {
 

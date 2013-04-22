@@ -75,6 +75,9 @@ class ConeShape : public CollisionShape {
         /// Destructor
         virtual ~ConeShape();
 
+        /// Allocate and return a copy of the object
+        virtual ConeShape* clone(void* allocatedMemory) const;
+
         /// Return the radius
         decimal getRadius() const;
 
@@ -86,6 +89,9 @@ class ConeShape : public CollisionShape {
 
         /// Set the height
         void setHeight(decimal height);
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
@@ -102,11 +108,19 @@ class ConeShape : public CollisionShape {
         /// Return the margin distance around the shape
         virtual decimal getMargin() const;
 
+        /// Test equality between two cone shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+
 #ifdef VISUAL_DEBUG
         /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
 #endif
 };
+
+// Allocate and return a copy of the object
+inline ConeShape* ConeShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) ConeShape(*this);
+}
 
 // Return the radius
 inline decimal ConeShape::getRadius() const {
@@ -134,6 +148,11 @@ inline void ConeShape::setHeight(decimal height) {
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
 }
 
+// Return the number of bytes used by the collision shape
+inline size_t ConeShape::getSizeInBytes() const {
+    return sizeof(ConeShape);
+}
+
 // Return the local extents in x,y and z direction
 inline Vector3 ConeShape::getLocalExtents(decimal margin) const {
     return Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
@@ -151,6 +170,12 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
 // Return the margin distance around the shape
 inline decimal ConeShape::getMargin() const {
     return OBJECT_MARGIN;
+}
+
+// Test equality between two cone shapes
+inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
+    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 }

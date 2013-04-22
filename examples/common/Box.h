@@ -56,9 +56,6 @@ class Box : public openglframework::Object3D {
         /// Rigid body used to simulate the dynamics of the box
         rp3d::RigidBody* mRigidBody;
 
-        /// Collision shape of the rigid body
-        rp3d::BoxShape* mCollisionShape;
-
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

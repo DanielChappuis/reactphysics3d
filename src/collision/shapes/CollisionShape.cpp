@@ -30,13 +30,20 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type) : mType(type) {
+CollisionShape::CollisionShape(CollisionShapeType type)
+               : mType(type), mNbSimilarCreatedShapes(0) {
     
+}
+
+// Private copy-constructor
+CollisionShape::CollisionShape(const CollisionShape& shape)
+               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes){
+
 }
 
 // Destructor
 CollisionShape::~CollisionShape() {
-
+    assert(mNbSimilarCreatedShapes == 0);
 }
 
 // Update the AABB of a body using its collision shape

@@ -50,6 +50,11 @@ BoxShape::BoxShape(const Vector3& extent) : CollisionShape(BOX), mExtent(extent)
 
 }
 
+// Private copy-constructor
+BoxShape::BoxShape(const BoxShape& shape) : CollisionShape(shape), mExtent(shape.mExtent) {
+
+}
+
 // Destructor
 BoxShape::~BoxShape() {
 

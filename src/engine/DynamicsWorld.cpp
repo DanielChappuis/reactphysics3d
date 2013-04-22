@@ -258,7 +258,7 @@ void DynamicsWorld::applyGravity() {
 // Create a rigid body into the physics world
 RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal mass,
                                           const Matrix3x3& inertiaTensorLocal,
-                                          CollisionShape* collisionShape) {
+                                          const CollisionShape& collisionShape) {
 
     // Compute the body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -266,11 +266,14 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
+    // Create a collision shape for the rigid body into the world
+    CollisionShape* newCollisionShape = createCollisionShape(collisionShape);
+
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
                                                                                 mass,
                                                                                 inertiaTensorLocal,
-                                                                                collisionShape,
+                                                                                newCollisionShape,
                                                                                 bodyID);
     assert(rigidBody != NULL);
 
@@ -293,6 +296,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(rigidBody->getID());
+
+    // Remove the collision shape from the world
+    removeCollisionShape(rigidBody->getCollisionShape());
 
     // Call the constructor of the rigid body
     rigidBody->RigidBody::~RigidBody();

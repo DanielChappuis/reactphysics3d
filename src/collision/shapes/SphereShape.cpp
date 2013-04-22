@@ -45,7 +45,13 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), mRadius(radius) {
+SphereShape::SphereShape(decimal radius): CollisionShape(SPHERE), mRadius(radius) {
+
+}
+
+// Private copy-constructor
+SphereShape::SphereShape(const SphereShape& shape)
+            : CollisionShape(shape), mRadius(shape.mRadius) {
 
 }
 

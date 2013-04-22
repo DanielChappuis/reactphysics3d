@@ -48,6 +48,12 @@ CylinderShape::CylinderShape(decimal radius, decimal height)
 
 }
 
+// Private copy-constructor
+CylinderShape::CylinderShape(const CylinderShape& shape)
+              : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight) {
+
+}
+
 // Destructor
 CylinderShape::~CylinderShape() {
 

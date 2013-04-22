@@ -29,6 +29,7 @@
 // Libraries
 #include <vector>
 #include <set>
+#include <list>
 #include <algorithm>
 #include "../mathematics/mathematics.h"
 #include "Profiler.h"
@@ -59,6 +60,9 @@ class CollisionWorld {
 
         /// All the bodies (rigid and soft) of the world
         std::set<CollisionBody*> mBodies;
+
+        /// All the collision shapes of the world
+        std::list<CollisionShape*> mCollisionShapes;
 
         /// Broad-phase overlapping pairs of bodies
         std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
@@ -95,9 +99,15 @@ class CollisionWorld {
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
+        /// Create a new collision shape.
+        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
+
+        /// Remove a collision shape.
+        void removeCollisionShape(CollisionShape* collisionShape);
+
     public :
 
-        // ----- Methods ----- //
+        // -------------------- Methods -------------------- //
 
         /// Constructor
         CollisionWorld();
@@ -118,7 +128,7 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        // ----- Friends ----- //
+        // -------------------- Friends -------------------- //
 
         friend class CollisionDetection;
 };

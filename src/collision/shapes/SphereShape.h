@@ -65,11 +65,17 @@ class SphereShape : public CollisionShape {
         /// Destructor
         virtual ~SphereShape();
 
+        /// Allocate and return a copy of the object
+        virtual SphereShape* clone(void* allocatedMemory) const;
+
         /// Return the radius of the sphere
         decimal getRadius() const;
 
         /// Set the radius of the sphere
         void setRadius(decimal radius);
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
@@ -89,11 +95,19 @@ class SphereShape : public CollisionShape {
         /// Update the AABB of a body using its collision shape
         virtual void updateAABB(AABB& aabb, const Transform& transform);
 
+        /// Test equality between two sphere shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+
 #ifdef VISUAL_DEBUG
         /// Draw the sphere (only for testing purpose)
         virtual void draw() const;
 #endif
 };
+
+/// Allocate and return a copy of the object
+inline SphereShape* SphereShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) SphereShape(*this);
+}
 
 // Get the radius of the sphere
 inline decimal SphereShape::getRadius() const {
@@ -103,6 +117,11 @@ inline decimal SphereShape::getRadius() const {
 // Set the radius of the sphere
 inline void SphereShape::setRadius(decimal radius) {
     mRadius = radius;
+}
+
+// Return the number of bytes used by the collision shape
+inline size_t SphereShape::getSizeInBytes() const {
+    return sizeof(SphereShape);
 }
 
 // Return a local support point in a given direction with the object margin
@@ -161,6 +180,12 @@ inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(minCoordinates);
     aabb.setMax(maxCoordinates);
+}
+
+// Test equality between two sphere shapes
+inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
+    return (mRadius == otherShape.mRadius);
 }
 
 }
