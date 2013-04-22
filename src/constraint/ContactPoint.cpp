@@ -32,13 +32,16 @@ using namespace std;
 // Constructor
 ContactPoint::ContactPoint(RigidBody* const body1, RigidBody* const body2,
                            const ContactInfo* contactInfo)
-             : Constraint(body1, body2, 3, true, CONTACT), mNormal(contactInfo->normal),
+             : Constraint(body1, body2, true, CONTACT), mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnBody1(contactInfo->localPoint1),
                mLocalPointOnBody2(contactInfo->localPoint2),
                mWorldPointOnBody1(body1->getTransform() * contactInfo->localPoint1),
-              mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2),
-              mIsRestingContact(false), mFrictionVectors(2, Vector3(0, 0, 0)) {
+               mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2),
+               mIsRestingContact(false) {
+
+    mFrictionVectors[0] = Vector3(0, 0, 0);
+    mFrictionVectors[1] = Vector3(0, 0, 0);
 
     assert(mPenetrationDepth > 0.0);
 

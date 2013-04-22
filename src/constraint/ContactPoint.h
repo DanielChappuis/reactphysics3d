@@ -84,7 +84,16 @@ class ContactPoint : public Constraint {
         bool mIsRestingContact;
 
         /// Two orthogonal vectors that span the tangential friction plane
-        std::vector<Vector3> mFrictionVectors;
+        Vector3 mFrictionVectors[2];
+
+        /// Cached penetration impulse
+        decimal mPenetrationImpulse;
+
+        /// Cached first friction impulse
+        decimal mFrictionImpulse1;
+
+        /// Cached second friction impulse
+        decimal mFrictionImpulse2;
         
         // -------------------- Methods -------------------- //
 
@@ -121,6 +130,24 @@ class ContactPoint : public Constraint {
 
         /// Return the contact world point on body 2
         Vector3 getWorldPointOnBody2() const;
+
+        /// Return the cached penetration impulse
+        decimal getPenetrationImpulse() const;
+
+        /// Return the cached first friction impulse
+        decimal getFrictionImpulse1() const;
+
+        /// Return the cached second friction impulse
+        decimal getFrictionImpulse2() const;
+
+        /// Set the cached penetration impulse
+        void setPenetrationImpulse(decimal impulse);
+
+        /// Set the first cached friction impulse
+        void setFrictionImpulse1(decimal impulse);
+
+        /// Set the second cached friction impulse
+        void setFrictionImpulse2(decimal impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -183,6 +210,36 @@ inline Vector3 ContactPoint::getWorldPointOnBody1() const {
 // Return the contact world point on body 2
 inline Vector3 ContactPoint::getWorldPointOnBody2() const {
     return mWorldPointOnBody2;
+}
+
+// Return the cached penetration impulse
+inline decimal ContactPoint::getPenetrationImpulse() const {
+    return mPenetrationImpulse;
+}
+
+// Return the cached first friction impulse
+inline decimal ContactPoint::getFrictionImpulse1() const {
+    return mFrictionImpulse1;
+}
+
+// Return the cached second friction impulse
+inline decimal ContactPoint::getFrictionImpulse2() const {
+    return mFrictionImpulse2;
+}
+
+// Set the cached penetration impulse
+inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
+    mPenetrationImpulse = impulse;
+}
+
+// Set the first cached friction impulse
+inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
+    mFrictionImpulse1 = impulse;
+}
+
+// Set the second cached friction impulse
+inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
+    mFrictionImpulse2 = impulse;
 }
 
 // Set the contact world point on body 1

@@ -307,9 +307,9 @@ void ContactSolver::initializeContactConstraints() {
             if (mIsWarmStartingActive) {
 
                 // Get the cached accumulated impulses from the previous step
-                contactPoint.penetrationImpulse = externalContact->getCachedLambda(0);
-                contactPoint.friction1Impulse = externalContact->getCachedLambda(1);
-                contactPoint.friction2Impulse = externalContact->getCachedLambda(2);
+                contactPoint.penetrationImpulse = externalContact->getPenetrationImpulse();
+                contactPoint.friction1Impulse = externalContact->getFrictionImpulse1();
+                contactPoint.friction2Impulse = externalContact->getFrictionImpulse2();
             }
 
             // Initialize the split impulses to zero
@@ -785,9 +785,9 @@ void ContactSolver::storeImpulses() {
 
             ContactPointSolver& contactPoint = manifold.contacts[i];
 
-            contactPoint.externalContact->setCachedLambda(0, contactPoint.penetrationImpulse);
-            contactPoint.externalContact->setCachedLambda(1, contactPoint.friction1Impulse);
-            contactPoint.externalContact->setCachedLambda(2, contactPoint.friction2Impulse);
+            contactPoint.externalContact->setPenetrationImpulse(contactPoint.penetrationImpulse);
+            contactPoint.externalContact->setFrictionImpulse1(contactPoint.friction1Impulse);
+            contactPoint.externalContact->setFrictionImpulse2(contactPoint.friction2Impulse);
 
             contactPoint.externalContact->setFrictionVector1(contactPoint.frictionVector1);
             contactPoint.externalContact->setFrictionVector2(contactPoint.frictionVector2);

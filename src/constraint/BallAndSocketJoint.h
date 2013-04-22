@@ -23,95 +23,36 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CONSTRAINT_H
-#define REACTPHYSICS3D_CONSTRAINT_H
+#ifndef REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
+#define REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
 
 // Libraries
-#include "../body/RigidBody.h"
-#include "../mathematics/mathematics.h"
+#include "Constraint.h"
 
-// ReactPhysics3D namespace
 namespace reactphysics3d {
-    
-// Enumeration for the type of a constraint
-enum ConstraintType {CONTACT, BALLSOCKETJOINT};
 
-// Class Constraint
+// Class BallAndSocketJoint
 /**
- * This abstract class represents a constraint in the physics engine.
- * A constraint can be a collision contact or a joint for
- * instance. Each constraint can be made of several "mathematical
- * constraints" needed to represent the main constraint.
+ * This class represents a ball-and-socket joint that allows arbitrary rotation
+ * between two bodies.
  */
-class Constraint {
+class BallAndSocketJoint : public Constraint {
 
-    protected :
+    private :
 
         // -------------------- Attributes -------------------- //
-
-        /// Pointer to the first body of the constraint
-        RigidBody* const mBody1;
-
-        /// Pointer to the second body of the constraint
-        RigidBody* const mBody2;
-
-        /// True if the constraint is active
-        bool mActive;
-
-        /// Type of the constraint
-        const ConstraintType mType;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        Constraint(const Constraint& constraint);
-
-        /// Private assignment operator
-        Constraint& operator=(const Constraint& constraint);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Constraint(RigidBody* const body1, RigidBody* const body2,
-                   bool active, ConstraintType type);
+        BallAndSocketJoint(RigidBody* const body1, RigidBody* const body2,
+                           bool active, ConstraintType type);
 
         /// Destructor
-        virtual ~Constraint();
-
-        /// Return the reference to the body 1
-        RigidBody* const getBody1() const;
-
-        /// Return the reference to the body 2
-        RigidBody* const getBody2() const;
-
-        /// Return true if the constraint is active
-        bool isActive() const;
-
-        /// Return the type of the constraint
-        ConstraintType getType() const;
+        virtual ~BallAndSocketJoint();
 };
-
-// Return the reference to the body 1
-inline RigidBody* const Constraint::getBody1() const {
-    return mBody1;
-}
-
-// Return the reference to the body 2
-inline RigidBody* const Constraint::getBody2() const {
-    return mBody2;
-}
-
-// Return true if the constraint is active
-inline bool Constraint::isActive() const {
-    return mActive;
-}
-
-// Return the type of the constraint
-inline ConstraintType Constraint::getType() const {
-    return mType;
-}                                                                                                         
 
 }
 

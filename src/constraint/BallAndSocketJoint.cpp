@@ -24,18 +24,19 @@
 ********************************************************************************/
 
 // Libraries
-#include "Constraint.h"
+#include "BallAndSocketJoint.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
-                       bool active, ConstraintType type)
-           :mBody1(body1), mBody2(body2), mActive(active), mType(type) {
+BallAndSocketJoint::BallAndSocketJoint(RigidBody* const body1, RigidBody* const body2,
+                                       bool active, ConstraintType type)
+                   : Constraint(body1, body2, active, type){
 
 }
 
 // Destructor
-Constraint::~Constraint() {
+BallAndSocketJoint::~BallAndSocketJoint() {
 
 }
+

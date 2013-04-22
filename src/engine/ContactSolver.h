@@ -345,7 +345,7 @@ class ContactSolver {
         /// Reference to the world
         DynamicsWorld& mWorld;
 
-        /// Number of iterations of the constraints solver
+        /// Number of iterations of the contact solver
         uint mNbIterations;
 
         /// Split linear velocities for the position contact solver (split impulse)
