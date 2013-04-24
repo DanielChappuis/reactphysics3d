@@ -27,6 +27,11 @@
 #define REACTPHYSICS3D_CONSTRAINT_SOLVER_H
 
 // Libraries
+#include "../configuration.h"
+#include "mathematics/mathematics.h"
+#include "../constraint/Constraint.h"
+#include <map>
+#include <set>
 
 namespace reactphysics3d {
 
@@ -105,6 +110,20 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
+        /// Reference to all the joints of the world
+        std::set<Constraint*>& mJoints;
+
+        /// Reference to the array of constrained linear velocities (state of the linear velocities
+        /// after solving the constraints)
+        std::vector<Vector3>& mConstrainedLinearVelocities;
+
+        /// Reference to the array of constrained angular velocities (state of the angular velocities
+        /// after solving the constraints)
+        std::vector<Vector3>& mConstrainedAngularVelocities;
+
+        /// Reference to the map of rigid body to their index in the constrained velocities array
+        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
+
         /// Number of iterations of the contact solver
         uint mNbIterations;
 
@@ -116,11 +135,13 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver();
+        ConstraintSolver(std::set<Constraint*>& joints,
+                         std::vector<Vector3>& constrainedLinearVelocities,
+                         std::vector<Vector3>& constrainedAngularVelocities,
+                         const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
         ~ConstraintSolver();
-
 };
 
 }

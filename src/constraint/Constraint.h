@@ -36,6 +36,39 @@ namespace reactphysics3d {
 // Enumeration for the type of a constraint
 enum ConstraintType {CONTACT, BALLSOCKETJOINT};
 
+// Structure ConstraintInfo
+/**
+ * This structure is used to gather the information needed to create a constraint.
+ */
+struct ConstraintInfo {
+
+    public :
+
+        // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the constraint
+        RigidBody* body1;
+
+        /// Second rigid body of the constraint
+        RigidBody* body2;
+
+        /// Type of the constraint
+        ConstraintType type;
+
+        /// Constructor
+        ConstraintInfo(ConstraintType constraintType)
+                      : body1(NULL), body2(NULL), type(constraintType) {}
+
+        /// Constructor
+        ConstraintInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, ConstraintType constraintType)
+                      : body1(rigidBody1), body2(rigidBody2), type(constraintType) {
+        }
+
+        /// Destructor
+        virtual ~ConstraintInfo() {}
+
+};
+
 // Class Constraint
 /**
  * This abstract class represents a constraint in the physics engine.
@@ -74,8 +107,7 @@ class Constraint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Constraint(RigidBody* const body1, RigidBody* const body2,
-                   bool active, ConstraintType type);
+        Constraint(const ConstraintInfo& constraintInfo);
 
         /// Destructor
         virtual ~Constraint();
@@ -91,6 +123,9 @@ class Constraint {
 
         /// Return the type of the constraint
         ConstraintType getType() const;
+
+        /// Return the number of bytes used by the constraint
+        virtual size_t getSizeInBytes() const = 0;
 };
 
 // Return the reference to the body 1

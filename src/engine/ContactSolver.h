@@ -342,8 +342,8 @@ class ContactSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the world
-        DynamicsWorld& mWorld;
+        /// Reference to all the contact manifold of the world
+        std::vector<ContactManifold*>& mContactManifolds;
 
         /// Number of iterations of the contact solver
         uint mNbIterations;
@@ -366,11 +366,11 @@ class ContactSolver {
         /// Constrained bodies
         std::set<RigidBody*> mConstraintBodies;
 
-        /// Pointer to the array of constrained linear velocities (state of the linear velocities
+        /// Reference to the array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
         std::vector<Vector3>& mConstrainedLinearVelocities;
 
-        /// Pointer to the array of constrained angular velocities (state of the angular velocities
+        /// Reference to the array of constrained angular velocities (state of the angular velocities
         /// after solving the constraints)
         std::vector<Vector3>& mConstrainedAngularVelocities;
 
@@ -452,7 +452,8 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(DynamicsWorld& mWorld, std::vector<Vector3>& constrainedLinearVelocities,
+        ContactSolver(std::vector<ContactManifold*>& contactManifolds,
+                      std::vector<Vector3>& constrainedLinearVelocities,
                       std::vector<Vector3>& constrainedAngularVelocities,
                       const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 

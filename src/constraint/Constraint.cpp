@@ -29,10 +29,12 @@
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
-                       bool active, ConstraintType type)
-           :mBody1(body1), mBody2(body2), mActive(active), mType(type) {
+Constraint::Constraint(const ConstraintInfo& constraintInfo)
+           :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
+            mType(constraintInfo.type) {
 
+    assert(mBody1 != NULL);
+    assert(mBody2 != NULL);
 }
 
 // Destructor

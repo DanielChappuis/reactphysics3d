@@ -39,10 +39,12 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(DynamicsWorld& world,std::vector<Vector3>& constrainedLinearVelocities,
+ContactSolver::ContactSolver(std::vector<ContactManifold*>& contactManifolds,
+                             std::vector<Vector3>& constrainedLinearVelocities,
                              std::vector<Vector3>& constrainedAngularVelocities,
                              const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-              :mWorld(world), mNbIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
+              :mContactManifolds(contactManifolds),
+               mNbIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
                mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
                mContactConstraints(NULL),
                mConstrainedLinearVelocities(constrainedLinearVelocities),
@@ -62,14 +64,13 @@ ContactSolver::~ContactSolver() {
 void ContactSolver::initialize() {
 
     // TODO : Use better memory allocation here
-    mContactConstraints = new ContactManifoldSolver[mWorld.getNbContactManifolds()];
+    mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
 
     mNbContactManifolds = 0;
 
     // For each contact manifold of the world
     vector<ContactManifold*>::iterator it;
-    for (it = mWorld.getContactManifoldsBeginIterator();
-         it != mWorld.getContactManifoldsEndIterator(); ++it) {
+    for (it = mContactManifolds.begin(); it != mContactManifolds.end(); ++it) {
 
         ContactManifold* externalManifold = *it;
 
@@ -174,8 +175,8 @@ void ContactSolver::initialize() {
 
     // Allocated memory for split impulse velocities
     // TODO : Use better memory allocation here
-    mSplitLinearVelocities = new Vector3[mWorld.getNbRigidBodies()];
-    mSplitAngularVelocities = new Vector3[mWorld.getNbRigidBodies()];
+    mSplitLinearVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
+    mSplitAngularVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
     assert(mSplitLinearVelocities != NULL);
     assert(mSplitAngularVelocities != NULL);
 

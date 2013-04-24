@@ -61,7 +61,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
                                  const Transform& transform1,
                                  const CollisionShape* collisionShape2,
                                  const Transform& transform2,
-		                         ContactInfo*& contactInfo) {
+		                         ContactPointInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -137,7 +137,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -169,7 +169,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                    pA, pB);
 
@@ -199,7 +199,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -236,7 +236,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -263,7 +263,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
                                                              const Transform& transform1,
                                                              const CollisionShape* collisionShape2,
                                                              const Transform& transform2,
-                                                             ContactInfo*& contactInfo,
+                                                             ContactPointInfo*& contactInfo,
                                                              Vector3& v) {
     Simplex simplex;
     Vector3 suppA;

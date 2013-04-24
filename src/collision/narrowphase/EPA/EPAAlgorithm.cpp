@@ -87,7 +87,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                                            const Transform& transform1,
                                                            const CollisionShape* collisionShape2,
                                                            const Transform& transform2,
-                                                           Vector3& v, ContactInfo*& contactInfo) {
+                                                           Vector3& v, ContactPointInfo*& contactInfo) {
 
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];  // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];  // Support points of object B in local coordinates
@@ -400,7 +400,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                              penetrationDepth,
                                                                              pALocal, pBLocal);
     

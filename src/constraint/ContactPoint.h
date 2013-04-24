@@ -28,7 +28,6 @@
 
 // Libraries
 #include "Constraint.h"
-#include "../collision/ContactInfo.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include "../mathematics/mathematics.h"
@@ -49,6 +48,52 @@
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Structure ContactPointInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
+struct ContactPointInfo : public ConstraintInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        ContactPointInfo(const ContactPointInfo& contactInfo);
+
+        /// Private assignment operator
+        ContactPointInfo& operator=(const ContactPointInfo& contactInfo);
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Normal vector the the collision contact in world space
+        const Vector3 normal;
+
+        /// Penetration depth of the contact
+        const decimal penetrationDepth;
+
+        /// Contact point of body 1 in local space of body 1
+        const Vector3 localPoint1;
+
+        /// Contact point of body 2 in local space of body 2
+        const Vector3 localPoint2;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactPointInfo(const Vector3& normal, decimal penetrationDepth,
+                         const Vector3& localPoint1, const Vector3& localPoint2)
+            : ConstraintInfo(CONTACT), normal(normal), penetrationDepth(penetrationDepth),
+              localPoint1(localPoint1), localPoint2(localPoint2) {
+
+        }
+};
 
 // Class ContactPoint
 /**
@@ -108,7 +153,7 @@ class ContactPoint : public Constraint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
+        ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
         virtual ~ContactPoint();
@@ -175,6 +220,9 @@ class ContactPoint : public Constraint {
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
+
+        /// Return the number of bytes used by the contact point
+        virtual size_t getSizeInBytes() const;
 
         #ifdef VISUAL_DEBUG
             /// Draw the contact (for debugging)
@@ -287,6 +335,10 @@ inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
+// Return the number of bytes used by the contact point
+inline size_t ContactPoint::getSizeInBytes() const {
+    return sizeof(ContactPoint);
+}
 
 #ifdef VISUAL_DEBUG
 inline void ContactPoint::draw() const {

@@ -29,9 +29,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-BallAndSocketJoint::BallAndSocketJoint(RigidBody* const body1, RigidBody* const body2,
-                                       bool active, ConstraintType type)
-                   : Constraint(body1, body2, active, type){
+BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo &jointInfo)
+                   : Constraint(jointInfo){
 
 }
 

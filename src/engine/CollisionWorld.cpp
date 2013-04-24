@@ -56,7 +56,7 @@ void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedP
 
 // Notify the world about a new narrow-phase contact
 void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
-                                      const ContactInfo* contactInfo) {
+                                      const ContactPointInfo* contactInfo) {
 
     // TODO : Implement this method
 }
@@ -101,7 +101,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(collisionBody->getID());
 
-    // Call the constructor of the collision body
+    // Call the destructor of the collision body
     collisionBody->CollisionBody::~CollisionBody();
 
     // Remove the collision body from the list of bodies
@@ -180,6 +180,9 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
 
         // Remove the shape from the set of shapes in the world
         mCollisionShapes.remove(collisionShape);
+
+        // Call the destructor of the collision shape
+        collisionShape->CollisionShape::~CollisionShape();
 
         // Deallocate the memory used by the collision shape
         mMemoryAllocator.release(collisionShape, collisionShape->getSizeInBytes());

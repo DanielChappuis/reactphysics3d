@@ -33,7 +33,7 @@
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
 #include "../memory/MemoryAllocator.h"
-#include "ContactInfo.h"
+#include "../constraint/ContactPoint.h"
 #include <vector>
 #include <map>
 #include <set>

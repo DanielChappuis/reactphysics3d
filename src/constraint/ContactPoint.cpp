@@ -30,14 +30,13 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(RigidBody* const body1, RigidBody* const body2,
-                           const ContactInfo* contactInfo)
-             : Constraint(body1, body2, true, CONTACT), mNormal(contactInfo->normal),
-               mPenetrationDepth(contactInfo->penetrationDepth),
-               mLocalPointOnBody1(contactInfo->localPoint1),
-               mLocalPointOnBody2(contactInfo->localPoint2),
-               mWorldPointOnBody1(body1->getTransform() * contactInfo->localPoint1),
-               mWorldPointOnBody2(body2->getTransform() * contactInfo->localPoint2),
+ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
+             : Constraint(contactInfo), mNormal(contactInfo.normal),
+               mPenetrationDepth(contactInfo.penetrationDepth),
+               mLocalPointOnBody1(contactInfo.localPoint1),
+               mLocalPointOnBody2(contactInfo.localPoint2),
+               mWorldPointOnBody1(contactInfo.body1->getTransform() * contactInfo.localPoint1),
+               mWorldPointOnBody2(contactInfo.body2->getTransform() * contactInfo.localPoint2),
                mIsRestingContact(false) {
 
     mFrictionVectors[0] = Vector3(0, 0, 0);

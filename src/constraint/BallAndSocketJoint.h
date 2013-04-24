@@ -28,8 +28,27 @@
 
 // Libraries
 #include "Constraint.h"
+#include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
+
+// Structure BallAndSocketJointInfo
+/**
+ * This structure is used to gather the information needed to create a ball-and-socket
+ * joint. This structure will be used to create the actual ball-and-socket joint.
+ */
+struct BallAndSocketJointInfo : public ConstraintInfo {
+
+    public :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Anchor point (in world space coordinates)
+        Vector3 anchorPoint;
+
+        /// Constructor
+        BallAndSocketJointInfo() : ConstraintInfo(BALLSOCKETJOINT) {}
+};
 
 // Class BallAndSocketJoint
 /**
@@ -42,17 +61,30 @@ class BallAndSocketJoint : public Constraint {
 
         // -------------------- Attributes -------------------- //
 
+        /// Anchor point of body 1 (in local space coordinates)
+        Vector3 mLocalAnchorPoint1;
+
+        /// Anchor point of body 2 (in local space coordinates)
+        Vector3 mLocalAnchorPoint2;
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(RigidBody* const body1, RigidBody* const body2,
-                           bool active, ConstraintType type);
+        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
 
         /// Destructor
         virtual ~BallAndSocketJoint();
+
+        /// Return the number of bytes used by the joint
+        virtual size_t getSizeInBytes() const;
 };
+
+// Return the number of bytes used by the joint
+inline size_t BallAndSocketJoint::getSizeInBytes() const {
+    return sizeof(BallAndSocketJoint);
+}
 
 }
 

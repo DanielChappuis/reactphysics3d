@@ -29,7 +29,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver() {
+ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
+                                   std::vector<Vector3>& constrainedLinearVelocities,
+                                   std::vector<Vector3>& constrainedAngularVelocities,
+                                   const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
+                 : mJoints(joints), mConstrainedLinearVelocities(constrainedLinearVelocities),
+                   mConstrainedAngularVelocities(constrainedAngularVelocities),
+                   mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex) {
 
 }
 

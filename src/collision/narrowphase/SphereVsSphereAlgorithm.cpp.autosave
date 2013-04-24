@@ -30,6 +30,7 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+
 // Constructor
 SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator)
                         :NarrowPhaseAlgorithm(memoryAllocator) {

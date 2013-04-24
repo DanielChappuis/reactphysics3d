@@ -30,6 +30,7 @@
 #include "CollisionWorld.h"
 #include "../collision/CollisionDetection.h"
 #include "ContactSolver.h"
+#include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
 #include "../configuration.h"
@@ -55,6 +56,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Contact solver
         ContactSolver mContactSolver;
 
+        /// Constraint solver
+        ConstraintSolver mConstraintSolver;
+
         /// True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
 
@@ -64,8 +68,11 @@ class DynamicsWorld : public CollisionWorld {
         /// All the contact constraints
         std::vector<ContactManifold*> mContactManifolds;
 
-        /// All the constraints (except contact constraints)
-        std::vector<Constraint*> mConstraints;
+        /// All the joints of the world
+        std::set<Constraint*> mJoints;
+
+        /// All the bodies that are part of contacts or constraints
+        std::set<RigidBody*> mConstrainedBodies;
 
         /// Gravity vector of the world
         Vector3 mGravity;
@@ -124,7 +131,7 @@ class DynamicsWorld : public CollisionWorld {
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
+        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactPointInfo* contactInfo);
 
 public :
 
@@ -166,6 +173,12 @@ public :
         /// Destroy a rigid body
         void destroyRigidBody(RigidBody* rigidBody);
 
+        /// Create a joint between two bodies in the world and return a pointer to the new joint
+        Constraint* createJoint(const ConstraintInfo& jointInfo);
+
+        /// Destroy a joint
+        void destroyJoint(Constraint* joint);
+
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
@@ -178,29 +191,8 @@ public :
         /// Return the number of rigid bodies in the world
         uint getNbRigidBodies() const;
 
-        /// Add a constraint
-        void addConstraint(Constraint* constraint);
-
-        /// Remove a constraint
-        void removeConstraint(Constraint* constraint);
-
-        /// Remove all constraints and delete them (free their memory)
-        void removeAllConstraints();
-
         /// Return the number of contact constraints in the world
         uint getNbContactManifolds() const;
-
-        /// Return a start iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsBeginIterator();
-
-        /// Return a end iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsEndIterator();
-
-        /// Return a start iterator on the contact manifolds list
-        std::vector<ContactManifold*>::iterator getContactManifoldsBeginIterator();
-
-        /// Return a end iterator on the contact manifolds list
-        std::vector<ContactManifold*>::iterator getContactManifoldsEndIterator();
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -259,24 +251,6 @@ inline void DynamicsWorld::updateOverlappingPair(const BroadPhasePair* pair) {
     overlappingPair->update();
 }
 
-
-// Add a constraint into the physics world
-inline void DynamicsWorld::addConstraint(Constraint* constraint) {
-    assert(constraint != 0);
-    mConstraints.push_back(constraint);
-}
-
-// Remove a constraint and free its memory
-inline void DynamicsWorld::removeConstraint(Constraint* constraint) {
-    std::vector<Constraint*>::iterator it;
-
-    assert(constraint != NULL);
-    it = std::find(mConstraints.begin(), mConstraints.end(), constraint);
-    assert(*it == constraint);
-    delete *it;
-    mConstraints.erase(it);
-}
-
 // Return the gravity vector of the world
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
@@ -310,26 +284,6 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
 // Return the number of contact manifolds in the world
 inline uint DynamicsWorld::getNbContactManifolds() const {
     return mContactManifolds.size();
-}
-
-// Return a start iterator on the constraint list
-inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIterator() {
-    return mConstraints.begin();
-}
-
-// Return a end iterator on the constraint list
-inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsEndIterator() {
-    return mConstraints.end();
-}
-
-// Return a start iterator on the contact manifolds list
-inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsBeginIterator() {
-    return mContactManifolds.begin();
-}
-
-// Return a end iterator on the contact manifolds list
-inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsEndIterator() {
-    return mContactManifolds.end();
 }
 
 }

@@ -25,6 +25,7 @@
 
 // Libraries
 #include "DynamicsWorld.h"
+#include "constraint/BallAndSocketJoint.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -33,8 +34,10 @@ using namespace std;
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
               : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true),
-                mContactSolver(*this, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
+                mContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
                                mMapBodyToConstrainedVelocityIndex),
+                mConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
+                                  mMapBodyToConstrainedVelocityIndex),
                 mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
@@ -221,6 +224,8 @@ void DynamicsWorld::initConstrainedVelocitiesArray() {
 
         i++;
     }
+
+    assert(mMapBodyToConstrainedVelocityIndex.size() == mRigidBodies.size());
 }
 
 // Cleanup the constrained velocities array at each step
@@ -229,6 +234,9 @@ void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
     // Clear the constrained velocites
     mConstrainedLinearVelocities.clear();
     mConstrainedAngularVelocities.clear();
+
+    // Clear the constrained bodies
+    mConstrainedBodies.clear();
 
     // Clear the rigid body to velocities array index mapping
     mMapBodyToConstrainedVelocityIndex.clear();
@@ -300,7 +308,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     // Remove the collision shape from the world
     removeCollisionShape(rigidBody->getCollisionShape());
 
-    // Call the constructor of the rigid body
+    // Call the destructor of the rigid body
     rigidBody->RigidBody::~RigidBody();
 
     // Remove the rigid body from the list of rigid bodies
@@ -311,9 +319,51 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     mMemoryAllocator.release(rigidBody, sizeof(RigidBody));
 }
 
-// Remove all constraints in the physics world
-void DynamicsWorld::removeAllConstraints() {
-    mConstraints.clear();
+// Create a joint between two bodies in the world and return a pointer to the new joint
+Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
+
+    Constraint* newJoint = NULL;
+
+    // Allocate memory to create the new joint
+    switch(jointInfo.type) {
+
+        // Ball-and-Socket joint
+        case BALLSOCKETJOINT:
+        {
+            void* allocatedMemory = mMemoryAllocator.allocate(sizeof(BallAndSocketJoint));
+            const BallAndSocketJointInfo& info = dynamic_cast<const BallAndSocketJointInfo&>(
+                                                                                        jointInfo);
+            newJoint = new (allocatedMemory) BallAndSocketJoint(info);
+            break;
+        }
+
+        default:
+        {
+            assert(false);
+            return NULL;
+        }
+    }
+
+    // Add the joint into the world
+    mJoints.insert(newJoint);
+
+    // Return the pointer to the created joint
+    return newJoint;
+}
+
+// Destroy a joint
+void DynamicsWorld::destroyJoint(Constraint* joint) {
+
+    assert(joint != NULL);
+
+    // Remove the joint from the world
+    mJoints.erase(joint);
+
+    // Call the destructor of the joint
+    joint->Constraint::~Constraint();
+
+    // Release the allocated memory
+    mMemoryAllocator.release(joint, joint->getSizeInBytes());
 }
 
 // Notify the world about a new broad-phase overlapping pair
@@ -345,19 +395,11 @@ void DynamicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPa
 
 // Notify the world about a new narrow-phase contact
 void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
-                                     const ContactInfo* contactInfo) {
-
-    RigidBody* const rigidBody1 = dynamic_cast<RigidBody* const>(broadPhasePair->body1);
-    RigidBody* const rigidBody2 = dynamic_cast<RigidBody* const>(broadPhasePair->body2);
-
-    assert(rigidBody1 != NULL);
-    assert(rigidBody2 != NULL);
+                                     const ContactPointInfo* contactInfo) {
 
     // Create a new contact
     ContactPoint* contact = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(
-                                                                                    rigidBody1,
-                                                                                    rigidBody2,
-                                                                                    contactInfo);
+                                                                                    *contactInfo);
     assert(contact != NULL);
 
     // Get the corresponding overlapping pair
