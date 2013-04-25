@@ -142,6 +142,12 @@ class ConstraintSolver {
 
         /// Destructor
         ~ConstraintSolver();
+
+        /// Initialize the constraint solver
+        void initialize(decimal dt);
+
+        /// Solve the constraints
+        void solve();
 };
 
 }

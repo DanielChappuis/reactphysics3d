@@ -59,6 +59,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Constraint solver
         ConstraintSolver mConstraintSolver;
 
+        /// Number of solver iterations for the Sequential Impulses technique
+        uint mNbSolverIterations;
+
         /// True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
 
@@ -70,9 +73,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// All the joints of the world
         std::set<Constraint*> mJoints;
-
-        /// All the bodies that are part of contacts or constraints
-        std::set<RigidBody*> mConstrainedBodies;
 
         /// Gravity vector of the world
         Vector3 mGravity;
@@ -99,8 +99,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Private assignment operator
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
-        /// Compute the motion of all bodies and update their positions and orientations
-        void updateRigidBodiesPositionAndOrientation();
+        /// Integrate the positions and orientations of rigid bodies
+        void integrateRigidBodiesPositions();
 
         /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
@@ -109,8 +109,11 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
 
-        /// Initialize the constrained velocities array at each step
-        void initConstrainedVelocitiesArray();
+        /// Integrate the velocities of rigid bodies
+        void integrateRigidBodiesVelocities();
+
+        /// Solve the contacts and constraints
+        void solveContactsAndConstraints();
 
         /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
@@ -212,7 +215,7 @@ inline void DynamicsWorld::stop() {
 
 // Set the number of iterations of the constraint solver
 inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
-    mContactSolver.setNbIterationsSolver(nbIterations);
+    mNbSolverIterations = nbIterations;
 }
 
 // Activate or Deactivate the split impulses for contacts

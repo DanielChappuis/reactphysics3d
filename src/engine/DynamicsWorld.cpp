@@ -38,6 +38,7 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
                                mMapBodyToConstrainedVelocityIndex),
                 mConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
                                   mMapBodyToConstrainedVelocityIndex),
+                mNbSolverIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
                 mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
@@ -94,15 +95,11 @@ void DynamicsWorld::update() {
         // Compute the collision detection
         mCollisionDetection.computeCollisionDetection();
 
-        // Initialize the constrained velocities
-        initConstrainedVelocitiesArray();
+        // Integrate the velocities
+        integrateRigidBodiesVelocities();
 
-        // If there are contacts
-        if (!mContactManifolds.empty()) {
-
-            // Solve the contacts
-            mContactSolver.solve(static_cast<decimal>(mTimer.getTimeStep()));
-        }
+        // Solve the contacts and constraints
+        solveContactsAndConstraints();
 
         // Update the timer
         mTimer.nextStep();
@@ -110,8 +107,8 @@ void DynamicsWorld::update() {
         // Reset the movement boolean variable of each body to false
         resetBodiesMovementVariable();
 
-        // Update the position and orientation of each body
-        updateRigidBodiesPositionAndOrientation();
+        // Integrate the position and orientation of each body
+        integrateRigidBodiesPositions();
 
         // Cleanup of the contact solver
         mContactSolver.cleanup();
@@ -124,8 +121,8 @@ void DynamicsWorld::update() {
     setInterpolationFactorToAllBodies();
 }
 
-// Update the position and orientation of the rigid bodies
-void DynamicsWorld::updateRigidBodiesPositionAndOrientation() {
+// Integrate position and orientation of the rigid bodies
+void DynamicsWorld::integrateRigidBodiesPositions() {
 
     PROFILE("DynamicsWorld::updateRigidBodiesPositionAndOrientation()");
 
@@ -200,8 +197,8 @@ void DynamicsWorld::setInterpolationFactorToAllBodies() {
     }
 }
 
-// Initialize the constrained velocities array at each step
-void DynamicsWorld::initConstrainedVelocitiesArray() {
+// Integrate the velocities of rigid bodies
+void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     // TODO : Use better memory allocation here
     mConstrainedLinearVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
@@ -228,15 +225,56 @@ void DynamicsWorld::initConstrainedVelocitiesArray() {
     assert(mMapBodyToConstrainedVelocityIndex.size() == mRigidBodies.size());
 }
 
+// Solve the contacts and constraints
+void DynamicsWorld::solveContactsAndConstraints() {
+
+    PROFILE("DynamicsWorld::solveContactsAndConstraints()");
+
+    // Get the current time step
+    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
+
+    // Check if there are contacts and constraints to solve
+    bool isConstraintsToSolve = !mJoints.empty();
+    bool isContactsToSolve = !mContactManifolds.empty();
+    if (!isConstraintsToSolve && !isContactsToSolve) return;
+
+    // If there are contacts
+    if (isContactsToSolve) {
+
+        // Initialize the solver
+        mContactSolver.initialize(dt);
+
+        // Warm start the contact solver
+        mContactSolver.warmStart();
+    }
+
+    // If there are constraints
+    if (isConstraintsToSolve) {
+
+        // Initialize the constraint solver
+        mConstraintSolver.initialize(dt);
+    }
+
+    // For each iteration of the solver
+    for (uint i=0; i<mNbSolverIterations; i++) {
+
+        // Solve the constraints
+        if (isConstraintsToSolve) mConstraintSolver.solve();
+
+        // Solve the contacts
+        if (isContactsToSolve) mContactSolver.solve();
+    }
+
+    // Cache the lambda values in order to use them in the next step
+    if (isContactsToSolve) mContactSolver.storeImpulses();
+}
+
 // Cleanup the constrained velocities array at each step
 void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
 
     // Clear the constrained velocites
     mConstrainedLinearVelocities.clear();
     mConstrainedAngularVelocities.clear();
-
-    // Clear the constrained bodies
-    mConstrainedBodies.clear();
 
     // Clear the rigid body to velocities array index mapping
     mMapBodyToConstrainedVelocityIndex.clear();

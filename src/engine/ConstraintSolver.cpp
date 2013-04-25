@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConstraintSolver.h"
+#include "Profiler.h"
 
 using namespace reactphysics3d;
 
@@ -41,5 +42,21 @@ ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
 
 // Destructor
 ConstraintSolver::~ConstraintSolver() {
+
+}
+
+// Initialize the constraint solver
+void ConstraintSolver::initialize(decimal dt) {
+
+    PROFILE("ConstraintSolver::initialize()");
+
+    // Set the current time step
+    mTimeStep = dt;
+}
+
+// Solve the constraints
+void ConstraintSolver::solve() {
+
+    PROFILE("ConstraintSolver::solve()");
 
 }

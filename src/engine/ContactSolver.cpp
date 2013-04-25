@@ -44,7 +44,6 @@ ContactSolver::ContactSolver(std::vector<ContactManifold*>& contactManifolds,
                              std::vector<Vector3>& constrainedAngularVelocities,
                              const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
               :mContactManifolds(contactManifolds),
-               mNbIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
                mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
                mContactConstraints(NULL),
                mConstrainedLinearVelocities(constrainedLinearVelocities),
@@ -61,7 +60,12 @@ ContactSolver::~ContactSolver() {
 }
 
 // Initialize the constraint solver
-void ContactSolver::initialize() {
+void ContactSolver::initialize(decimal dt) {
+
+    PROFILE("ContactSolver::initialize()");
+
+    // Set the current time step
+    mTimeStep = dt;
 
     // TODO : Use better memory allocation here
     mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
@@ -187,6 +191,9 @@ void ContactSolver::initialize() {
 
     // Initialize the split impulse velocities
     initializeSplitImpulseVelocities();
+
+    // Fill-in all the matrices needed to solve the LCP problem
+    initializeContactConstraints();
 }
 
 // Initialize the split impulse velocities
@@ -380,6 +387,9 @@ void ContactSolver::initializeContactConstraints() {
 /// the solution of the linear system
 void ContactSolver::warmStart() {
 
+    // Check that warm starting is active
+    if (!mIsWarmStartingActive) return;
+
     // For each constraint
     for (uint c=0; c<mNbContactManifolds; c++) {
 
@@ -519,258 +529,229 @@ void ContactSolver::warmStart() {
     }
 }
 
-// Solve the contact constraints by applying sequential impulses
-void ContactSolver::solveContactConstraints() {
+// Solve the contacts
+void ContactSolver::solve() {
+
+    PROFILE("ContactSolver::solve()");
 
     decimal deltaLambda;
     decimal lambdaTemp;
-    uint iter;
 
-    // For each iteration of the contact solver
-    for(iter=0; iter<mNbIterations; iter++) {
+    // For each contact manifold
+    for (uint c=0; c<mNbContactManifolds; c++) {
 
-        // For each contact manifold
-        for (uint c=0; c<mNbContactManifolds; c++) {
+        ContactManifoldSolver& contactManifold = mContactConstraints[c];
 
-            ContactManifoldSolver& contactManifold = mContactConstraints[c];
+        decimal sumPenetrationImpulse = 0.0;
 
-            decimal sumPenetrationImpulse = 0.0;
+        // Get the constrained velocities
+        const Vector3& v1 = mConstrainedLinearVelocities[contactManifold.indexBody1];
+        const Vector3& w1 = mConstrainedAngularVelocities[contactManifold.indexBody1];
+        const Vector3& v2 = mConstrainedLinearVelocities[contactManifold.indexBody2];
+        const Vector3& w2 = mConstrainedAngularVelocities[contactManifold.indexBody2];
 
-            // Get the constrained velocities
-            const Vector3& v1 = mConstrainedLinearVelocities[contactManifold.indexBody1];
-            const Vector3& w1 = mConstrainedAngularVelocities[contactManifold.indexBody1];
-            const Vector3& v2 = mConstrainedLinearVelocities[contactManifold.indexBody2];
-            const Vector3& w2 = mConstrainedAngularVelocities[contactManifold.indexBody2];
+        for (uint i=0; i<contactManifold.nbContacts; i++) {
 
-            for (uint i=0; i<contactManifold.nbContacts; i++) {
+            ContactPointSolver& contactPoint = contactManifold.contacts[i];
 
-                ContactPointSolver& contactPoint = contactManifold.contacts[i];
+            // --------- Penetration --------- //
 
-                // --------- Penetration --------- //
+            // Compute J*v
+            Vector3 deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
+            decimal deltaVDotN = deltaV.dot(contactPoint.normal);
+            decimal Jv = deltaVDotN;
 
-                // Compute J*v
-                Vector3 deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
-                decimal deltaVDotN = deltaV.dot(contactPoint.normal);
-                decimal Jv = deltaVDotN;
+            // Compute the bias "b" of the constraint
+            decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
+            decimal biasPenetrationDepth = 0.0;
+            if (contactPoint.penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
+                    max(0.0f, float(contactPoint.penetrationDepth - SLOP));
+            decimal b = biasPenetrationDepth + contactPoint.restitutionBias;
 
-                // Compute the bias "b" of the constraint
-                decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
-                decimal biasPenetrationDepth = 0.0;
-                if (contactPoint.penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
-                        max(0.0f, float(contactPoint.penetrationDepth - SLOP));
-                decimal b = biasPenetrationDepth + contactPoint.restitutionBias;
+            // Compute the Lagrange multiplier lambda
+            if (mIsSplitImpulseActive) {
+                deltaLambda = - (Jv + contactPoint.restitutionBias) *
+                        contactPoint.inversePenetrationMass;
+            }
+            else {
+                deltaLambda = - (Jv + b) * contactPoint.inversePenetrationMass;
+            }
+            lambdaTemp = contactPoint.penetrationImpulse;
+            contactPoint.penetrationImpulse = std::max(contactPoint.penetrationImpulse +
+                                                       deltaLambda, decimal(0.0));
+            deltaLambda = contactPoint.penetrationImpulse - lambdaTemp;
 
-                // Compute the Lagrange multiplier lambda
-                if (mIsSplitImpulseActive) {
-                    deltaLambda = - (Jv + contactPoint.restitutionBias) *
-                                     contactPoint.inversePenetrationMass;
-                }
-                else {
-                    deltaLambda = - (Jv + b) * contactPoint.inversePenetrationMass;
-                }
-                lambdaTemp = contactPoint.penetrationImpulse;
-                contactPoint.penetrationImpulse = std::max(contactPoint.penetrationImpulse +
-                                                           deltaLambda, decimal(0.0));
-                deltaLambda = contactPoint.penetrationImpulse - lambdaTemp;
+            // Compute the impulse P=J^T * lambda
+            const Impulse impulsePenetration = computePenetrationImpulse(deltaLambda,
+                                                                         contactPoint);
+
+            // Apply the impulse to the bodies of the constraint
+            applyImpulse(impulsePenetration, contactManifold);
+
+            sumPenetrationImpulse += contactPoint.penetrationImpulse;
+
+            // If the split impulse position correction is active
+            if (mIsSplitImpulseActive) {
+
+                // Split impulse (position correction)
+                const Vector3& v1Split = mSplitLinearVelocities[contactManifold.indexBody1];
+                const Vector3& w1Split = mSplitAngularVelocities[contactManifold.indexBody1];
+                const Vector3& v2Split = mSplitLinearVelocities[contactManifold.indexBody2];
+                const Vector3& w2Split = mSplitAngularVelocities[contactManifold.indexBody2];
+                Vector3 deltaVSplit = v2Split + w2Split.cross(contactPoint.r2) -
+                        v1Split - w1Split.cross(contactPoint.r1);
+                decimal JvSplit = deltaVSplit.dot(contactPoint.normal);
+                decimal deltaLambdaSplit = - (JvSplit + biasPenetrationDepth) *
+                        contactPoint.inversePenetrationMass;
+                decimal lambdaTempSplit = contactPoint.penetrationSplitImpulse;
+                contactPoint.penetrationSplitImpulse = std::max(
+                            contactPoint.penetrationSplitImpulse +
+                            deltaLambdaSplit, decimal(0.0));
+                deltaLambda = contactPoint.penetrationSplitImpulse - lambdaTempSplit;
 
                 // Compute the impulse P=J^T * lambda
-                const Impulse impulsePenetration = computePenetrationImpulse(deltaLambda,
-                                                                             contactPoint);
+                const Impulse splitImpulsePenetration = computePenetrationImpulse(
+                            deltaLambdaSplit, contactPoint);
 
-                // Apply the impulse to the bodies of the constraint
-                applyImpulse(impulsePenetration, contactManifold);
-
-                sumPenetrationImpulse += contactPoint.penetrationImpulse;
-
-                // If the split impulse position correction is active
-                if (mIsSplitImpulseActive) {
-
-                    // Split impulse (position correction)
-                    const Vector3& v1Split = mSplitLinearVelocities[contactManifold.indexBody1];
-                    const Vector3& w1Split = mSplitAngularVelocities[contactManifold.indexBody1];
-                    const Vector3& v2Split = mSplitLinearVelocities[contactManifold.indexBody2];
-                    const Vector3& w2Split = mSplitAngularVelocities[contactManifold.indexBody2];
-                    Vector3 deltaVSplit = v2Split + w2Split.cross(contactPoint.r2) -
-                                          v1Split - w1Split.cross(contactPoint.r1);
-                    decimal JvSplit = deltaVSplit.dot(contactPoint.normal);
-                    decimal deltaLambdaSplit = - (JvSplit + biasPenetrationDepth) *
-                                                  contactPoint.inversePenetrationMass;
-                    decimal lambdaTempSplit = contactPoint.penetrationSplitImpulse;
-                    contactPoint.penetrationSplitImpulse = std::max(
-                                                             contactPoint.penetrationSplitImpulse +
-                                                             deltaLambdaSplit, decimal(0.0));
-                    deltaLambda = contactPoint.penetrationSplitImpulse - lambdaTempSplit;
-
-                    // Compute the impulse P=J^T * lambda
-                    const Impulse splitImpulsePenetration = computePenetrationImpulse(
-                                                               deltaLambdaSplit, contactPoint);
-
-                    applySplitImpulse(splitImpulsePenetration, contactManifold);
-                }
-
-                // If we do not solve the friction constraints at the center of the contact manifold
-                if (!mIsSolveFrictionAtContactManifoldCenterActive) {
-
-                    // --------- Friction 1 --------- //
-
-                    // Compute J*v
-                    deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
-                    Jv = deltaV.dot(contactPoint.frictionVector1);
-
-                    // Compute the Lagrange multiplier lambda
-                    deltaLambda = -Jv;
-                    deltaLambda *= contactPoint.inverseFriction1Mass;
-                    decimal frictionLimit = contactManifold.frictionCoefficient *
-                                            contactPoint.penetrationImpulse;
-                    lambdaTemp = contactPoint.friction1Impulse;
-                    contactPoint.friction1Impulse = std::max(-frictionLimit,
-                                                             std::min(contactPoint.friction1Impulse
-                                                             + deltaLambda, frictionLimit));
-                    deltaLambda = contactPoint.friction1Impulse - lambdaTemp;
-
-                    // Compute the impulse P=J^T * lambda
-                    const Impulse impulseFriction1 = computeFriction1Impulse(deltaLambda,
-                                                                             contactPoint);
-
-                    // Apply the impulses to the bodies of the constraint
-                    applyImpulse(impulseFriction1, contactManifold);
-
-                    // --------- Friction 2 --------- //
-
-                    // Compute J*v
-                    deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
-                    Jv = deltaV.dot(contactPoint.frictionVector2);
-
-                    // Compute the Lagrange multiplier lambda
-                    deltaLambda = -Jv;
-                    deltaLambda *= contactPoint.inverseFriction2Mass;
-                    frictionLimit = contactManifold.frictionCoefficient *
-                                    contactPoint.penetrationImpulse;
-                    lambdaTemp = contactPoint.friction2Impulse;
-                    contactPoint.friction2Impulse = std::max(-frictionLimit,
-                                                             std::min(contactPoint.friction2Impulse
-                                                             + deltaLambda, frictionLimit));
-                    deltaLambda = contactPoint.friction2Impulse - lambdaTemp;
-
-                    // Compute the impulse P=J^T * lambda
-                    const Impulse impulseFriction2 = computeFriction2Impulse(deltaLambda,
-                                                                             contactPoint);
-
-                    // Apply the impulses to the bodies of the constraint
-                    applyImpulse(impulseFriction2, contactManifold);
-                }
+                applySplitImpulse(splitImpulsePenetration, contactManifold);
             }
 
-            // If we solve the friction constraints at the center of the contact manifold
-            if (mIsSolveFrictionAtContactManifoldCenterActive) {
+            // If we do not solve the friction constraints at the center of the contact manifold
+            if (!mIsSolveFrictionAtContactManifoldCenterActive) {
 
-                // ------ First friction constraint at the center of the contact manifol ------ //
+                // --------- Friction 1 --------- //
 
                 // Compute J*v
-                Vector3 deltaV = v2 + w2.cross(contactManifold.r2Friction)
-                                 - v1 - w1.cross(contactManifold.r1Friction);
-                decimal Jv = deltaV.dot(contactManifold.frictionVector1);
+                deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
+                Jv = deltaV.dot(contactPoint.frictionVector1);
 
                 // Compute the Lagrange multiplier lambda
-                decimal deltaLambda = -Jv * contactManifold.inverseFriction1Mass;
-                decimal frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-                lambdaTemp = contactManifold.friction1Impulse;
-                contactManifold.friction1Impulse = std::max(-frictionLimit,
-                                                        std::min(contactManifold.friction1Impulse +
-                                                                 deltaLambda, frictionLimit));
-                deltaLambda = contactManifold.friction1Impulse - lambdaTemp;
+                deltaLambda = -Jv;
+                deltaLambda *= contactPoint.inverseFriction1Mass;
+                decimal frictionLimit = contactManifold.frictionCoefficient *
+                        contactPoint.penetrationImpulse;
+                lambdaTemp = contactPoint.friction1Impulse;
+                contactPoint.friction1Impulse = std::max(-frictionLimit,
+                                                         std::min(contactPoint.friction1Impulse
+                                                                  + deltaLambda, frictionLimit));
+                deltaLambda = contactPoint.friction1Impulse - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda
-                Vector3 linearImpulseBody1 = -contactManifold.frictionVector1 * deltaLambda;
-                Vector3 angularImpulseBody1 = -contactManifold.r1CrossT1 * deltaLambda;
-                Vector3 linearImpulseBody2 = contactManifold.frictionVector1 * deltaLambda;
-                Vector3 angularImpulseBody2 = contactManifold.r2CrossT1 * deltaLambda;
-                const Impulse impulseFriction1(linearImpulseBody1, angularImpulseBody1,
-                                               linearImpulseBody2, angularImpulseBody2);
+                const Impulse impulseFriction1 = computeFriction1Impulse(deltaLambda,
+                                                                         contactPoint);
 
                 // Apply the impulses to the bodies of the constraint
                 applyImpulse(impulseFriction1, contactManifold);
 
-                // ------ Second friction constraint at the center of the contact manifol ----- //
+                // --------- Friction 2 --------- //
 
                 // Compute J*v
-                deltaV = v2 + w2.cross(contactManifold.r2Friction)
-                        - v1 - w1.cross(contactManifold.r1Friction);
-                Jv = deltaV.dot(contactManifold.frictionVector2);
+                deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
+                Jv = deltaV.dot(contactPoint.frictionVector2);
 
                 // Compute the Lagrange multiplier lambda
-                deltaLambda = -Jv * contactManifold.inverseFriction2Mass;
-                frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-                lambdaTemp = contactManifold.friction2Impulse;
-                contactManifold.friction2Impulse = std::max(-frictionLimit,
-                                                        std::min(contactManifold.friction2Impulse +
-                                                                 deltaLambda, frictionLimit));
-                deltaLambda = contactManifold.friction2Impulse - lambdaTemp;
+                deltaLambda = -Jv;
+                deltaLambda *= contactPoint.inverseFriction2Mass;
+                frictionLimit = contactManifold.frictionCoefficient *
+                        contactPoint.penetrationImpulse;
+                lambdaTemp = contactPoint.friction2Impulse;
+                contactPoint.friction2Impulse = std::max(-frictionLimit,
+                                                         std::min(contactPoint.friction2Impulse
+                                                                  + deltaLambda, frictionLimit));
+                deltaLambda = contactPoint.friction2Impulse - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda
-                linearImpulseBody1 = -contactManifold.frictionVector2 * deltaLambda;
-                angularImpulseBody1 = -contactManifold.r1CrossT2 * deltaLambda;
-                linearImpulseBody2 = contactManifold.frictionVector2 * deltaLambda;
-                angularImpulseBody2 = contactManifold.r2CrossT2 * deltaLambda;
-                const Impulse impulseFriction2(linearImpulseBody1, angularImpulseBody1,
-                                               linearImpulseBody2, angularImpulseBody2);
+                const Impulse impulseFriction2 = computeFriction2Impulse(deltaLambda,
+                                                                         contactPoint);
 
                 // Apply the impulses to the bodies of the constraint
                 applyImpulse(impulseFriction2, contactManifold);
-
-                // ------ Twist friction constraint at the center of the contact manifol ------ //
-
-                // Compute J*v
-                deltaV = w2 - w1;
-                Jv = deltaV.dot(contactManifold.normal);
-
-                deltaLambda = -Jv * (contactManifold.inverseTwistFrictionMass);
-                frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-                lambdaTemp = contactManifold.frictionTwistImpulse;
-                contactManifold.frictionTwistImpulse = std::max(-frictionLimit,
-                                                       std::min(contactManifold.frictionTwistImpulse
-                                                       + deltaLambda, frictionLimit));
-                deltaLambda = contactManifold.frictionTwistImpulse - lambdaTemp;
-
-                // Compute the impulse P=J^T * lambda
-                linearImpulseBody1 = Vector3(0.0, 0.0, 0.0);
-                angularImpulseBody1 = -contactManifold.normal * deltaLambda;
-                linearImpulseBody2 = Vector3(0.0, 0.0, 0.0);;
-                angularImpulseBody2 = contactManifold.normal * deltaLambda;
-                const Impulse impulseTwistFriction(linearImpulseBody1, angularImpulseBody1,
-                                                   linearImpulseBody2, angularImpulseBody2);
-
-                // Apply the impulses to the bodies of the constraint
-                applyImpulse(impulseTwistFriction, contactManifold);
             }
         }
+
+        // If we solve the friction constraints at the center of the contact manifold
+        if (mIsSolveFrictionAtContactManifoldCenterActive) {
+
+            // ------ First friction constraint at the center of the contact manifol ------ //
+
+            // Compute J*v
+            Vector3 deltaV = v2 + w2.cross(contactManifold.r2Friction)
+                    - v1 - w1.cross(contactManifold.r1Friction);
+            decimal Jv = deltaV.dot(contactManifold.frictionVector1);
+
+            // Compute the Lagrange multiplier lambda
+            decimal deltaLambda = -Jv * contactManifold.inverseFriction1Mass;
+            decimal frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+            lambdaTemp = contactManifold.friction1Impulse;
+            contactManifold.friction1Impulse = std::max(-frictionLimit,
+                                                        std::min(contactManifold.friction1Impulse +
+                                                                 deltaLambda, frictionLimit));
+            deltaLambda = contactManifold.friction1Impulse - lambdaTemp;
+
+            // Compute the impulse P=J^T * lambda
+            Vector3 linearImpulseBody1 = -contactManifold.frictionVector1 * deltaLambda;
+            Vector3 angularImpulseBody1 = -contactManifold.r1CrossT1 * deltaLambda;
+            Vector3 linearImpulseBody2 = contactManifold.frictionVector1 * deltaLambda;
+            Vector3 angularImpulseBody2 = contactManifold.r2CrossT1 * deltaLambda;
+            const Impulse impulseFriction1(linearImpulseBody1, angularImpulseBody1,
+                                           linearImpulseBody2, angularImpulseBody2);
+
+            // Apply the impulses to the bodies of the constraint
+            applyImpulse(impulseFriction1, contactManifold);
+
+            // ------ Second friction constraint at the center of the contact manifol ----- //
+
+            // Compute J*v
+            deltaV = v2 + w2.cross(contactManifold.r2Friction)
+                    - v1 - w1.cross(contactManifold.r1Friction);
+            Jv = deltaV.dot(contactManifold.frictionVector2);
+
+            // Compute the Lagrange multiplier lambda
+            deltaLambda = -Jv * contactManifold.inverseFriction2Mass;
+            frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+            lambdaTemp = contactManifold.friction2Impulse;
+            contactManifold.friction2Impulse = std::max(-frictionLimit,
+                                                        std::min(contactManifold.friction2Impulse +
+                                                                 deltaLambda, frictionLimit));
+            deltaLambda = contactManifold.friction2Impulse - lambdaTemp;
+
+            // Compute the impulse P=J^T * lambda
+            linearImpulseBody1 = -contactManifold.frictionVector2 * deltaLambda;
+            angularImpulseBody1 = -contactManifold.r1CrossT2 * deltaLambda;
+            linearImpulseBody2 = contactManifold.frictionVector2 * deltaLambda;
+            angularImpulseBody2 = contactManifold.r2CrossT2 * deltaLambda;
+            const Impulse impulseFriction2(linearImpulseBody1, angularImpulseBody1,
+                                           linearImpulseBody2, angularImpulseBody2);
+
+            // Apply the impulses to the bodies of the constraint
+            applyImpulse(impulseFriction2, contactManifold);
+
+            // ------ Twist friction constraint at the center of the contact manifol ------ //
+
+            // Compute J*v
+            deltaV = w2 - w1;
+            Jv = deltaV.dot(contactManifold.normal);
+
+            deltaLambda = -Jv * (contactManifold.inverseTwistFrictionMass);
+            frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+            lambdaTemp = contactManifold.frictionTwistImpulse;
+            contactManifold.frictionTwistImpulse = std::max(-frictionLimit,
+                                                            std::min(contactManifold.frictionTwistImpulse
+                                                                     + deltaLambda, frictionLimit));
+            deltaLambda = contactManifold.frictionTwistImpulse - lambdaTemp;
+
+            // Compute the impulse P=J^T * lambda
+            linearImpulseBody1 = Vector3(0.0, 0.0, 0.0);
+            angularImpulseBody1 = -contactManifold.normal * deltaLambda;
+            linearImpulseBody2 = Vector3(0.0, 0.0, 0.0);;
+            angularImpulseBody2 = contactManifold.normal * deltaLambda;
+            const Impulse impulseTwistFriction(linearImpulseBody1, angularImpulseBody1,
+                                               linearImpulseBody2, angularImpulseBody2);
+
+            // Apply the impulses to the bodies of the constraint
+            applyImpulse(impulseTwistFriction, contactManifold);
+        }
     }
-}
-
-// Solve the constraints
-void ContactSolver::solve(decimal timeStep) {
-
-    PROFILE("ContactSolver::solve()");
-
-    // Set the current time step
-    mTimeStep = timeStep;
-
-    // Initialize the solver
-    initialize();
-
-    // Fill-in all the matrices needed to solve the LCP problem
-    initializeContactConstraints();
-
-    // Warm start the solver
-    if (mIsWarmStartingActive) {
-        warmStart();
-    }
-
-    // Solve the contact constraints
-    solveContactConstraints();
-
-    // Cache the lambda values in order to use them in the next step
-    storeImpulses();
 }
 
 // Store the computed impulses to use them to

@@ -345,9 +345,6 @@ class ContactSolver {
         /// Reference to all the contact manifold of the world
         std::vector<ContactManifold*>& mContactManifolds;
 
-        /// Number of iterations of the contact solver
-        uint mNbIterations;
-
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -389,24 +386,11 @@ class ContactSolver {
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the constraint solver
-        void initialize();
-
         /// Initialize the split impulse velocities
         void initializeSplitImpulseVelocities();
 
         /// Initialize the contact constraints before solving the system
         void initializeContactConstraints();
-
-        /// Store the computed impulses to use them to
-        /// warm start the solver at the next iteration
-        void storeImpulses();
-
-        /// Warm start the solver.
-        void warmStart();
-
-        /// Solve the contact constraints by applying sequential impulses
-        void solveContactConstraints();
 
         /// Apply an impulse to the two bodies of a constraint
         void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
@@ -460,8 +444,18 @@ class ContactSolver {
         /// Destructor
         virtual ~ContactSolver();
 
-        /// Solve the constraints
-        void solve(decimal timeStep);
+        /// Initialize the constraint solver
+        void initialize(decimal dt);
+
+        /// Warm start the solver.
+        void warmStart();
+
+        /// Store the computed impulses to use them to
+        /// warm start the solver at the next iteration
+        void storeImpulses();
+
+        /// Solve the contacts
+        void solve();
 
         /// Return true if the body is in at least one constraint
         bool isConstrainedBody(RigidBody* body) const;
@@ -480,9 +474,6 @@ class ContactSolver {
 
         /// Clean up the constraint solver
         void cleanup();
-
-        /// Set the number of iterations of the constraint solver
-        void setNbIterationsSolver(uint nbIterations);
 
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
@@ -509,11 +500,6 @@ inline Vector3 ContactSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
     assert(isConstrainedBody(body));
     const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
     return mSplitAngularVelocities[indexBody];
-}
-
-// Set the number of iterations of the constraint solver
-inline void ContactSolver::setNbIterationsSolver(uint nbIterations) {
-    mNbIterations = nbIterations;
 }
 
 // Activate or Deactivate the split impulses for contacts
