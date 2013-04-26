@@ -7,6 +7,9 @@ PROJECT(REACTPHYSICS3D)
 # Where to build the library
 SET(LIBRARY_OUTPUT_PATH lib/)
 
+# Where to find the module to find special packages/libraries
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
 # Options
 OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
