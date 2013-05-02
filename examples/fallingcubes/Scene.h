@@ -45,13 +45,13 @@ class Scene {
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the viewer
+        /// Pointer to the viewer
         openglframework::GlutViewer* mViewer;
 
-        // Light 0
+        /// Light 0
         openglframework::Light mLight0;
 
-        // Phong shader
+        /// Phong shader
         openglframework::Shader mPhongShader;
 
         /// All the boxes of the scene

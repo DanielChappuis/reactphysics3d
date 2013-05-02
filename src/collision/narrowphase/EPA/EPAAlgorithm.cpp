@@ -98,7 +98,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.inverse() * transform2;
+    Transform body2Tobody1 = transform1.getInverse() * transform2;
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
@@ -394,7 +394,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     // Compute the contact info
     v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3 pBLocal = body2Tobody1.inverse() * triangle->computeClosestPointOfObject(suppPointsB);
+    Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);

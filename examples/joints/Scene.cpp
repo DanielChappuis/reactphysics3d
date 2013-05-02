@@ -56,39 +56,11 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsSolver(15);
 
-    float radius = 2.0f;
-
-    // Create all the cubes of the scene
-    for (int i=0; i<NB_BOXES; i++) {
-
-        // Position of the cubes
-        float angle = i * 30.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          1 + i * (BOX_SIZE.y + 0.3f),
-                                          radius * sin(angle));
-
-        // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
-
-        // The box is a moving rigid body
-        cube->getRigidBody()->setIsMotionEnabled(true);
-
-        // Set the bouncing factor of the box
-        cube->getRigidBody()->setRestitution(0.4);
-
-        // Add the box the list of box in the scene
-        mBoxes.push_back(cube);
-    }
+    // Create the Ball-and-Socket joint
+    createBallAndSocketJoints();
 
     // Create the floor
-    openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
-
-    // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
-
-    // Set the bouncing factor of the floor
-    mFloor->getRigidBody()->setRestitution(0.3);
+    createFloor();
 
     // Start the simulation
     startSimulation();
@@ -103,20 +75,17 @@ Scene::~Scene() {
     // Destroy the shader
     mPhongShader.destroy();
 
-    // Destroy all the cubes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+    // Destroy the joints
+    mDynamicsWorld->destroyJoint(mBallAndSocketJoint);
 
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the cube
-        delete (*it);
-    }
-
-    // Destroy the rigid body of the floor
-    mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
+    // Destroy all the boxes of the scene
+    mDynamicsWorld->destroyRigidBody(mBallAndSocketJointBox1->getRigidBody());
+    mDynamicsWorld->destroyRigidBody(mBallAndSocketJointBox2->getRigidBody());
+    delete mBallAndSocketJointBox1;
+    delete mBallAndSocketJointBox2;
 
     // Destroy the floor
+    mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
     delete mFloor;
 
     // Destroy the dynamics world
@@ -133,12 +102,10 @@ void Scene::simulate() {
         mDynamicsWorld->update();
 
         // Update the position and orientation of the boxes
-        for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+        mBallAndSocketJointBox1->updateTransform();
+        mBallAndSocketJointBox2->updateTransform();
 
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
+        // Update the position and orientation of the floor
         mFloor->updateTransform();
 
     }
@@ -169,14 +136,71 @@ void Scene::render() {
     mPhongShader.setVector3Uniform("lightSpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
-    // Render all the cubes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(mPhongShader);
-    }
+    // Render all the boxes
+    mBallAndSocketJointBox1->render(mPhongShader);
+    mBallAndSocketJointBox2->render(mPhongShader);
 
     // Render the floor
     mFloor->render(mPhongShader);
 
     // Unbind the shader
     mPhongShader.unbind();
+}
+
+// Create the boxes and joints for the Ball-and-Socket joint example
+void Scene::createBallAndSocketJoints() {
+
+    // --------------- Create the first box --------------- //
+
+    // Position of the box
+    openglframework::Vector3 positionBox1(0, 15, 0);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mBallAndSocketJointBox1 = new Box(BOX_SIZE, positionBox1 , BOX_MASS, mDynamicsWorld);
+
+    // The fist box cannot move
+    mBallAndSocketJointBox1->getRigidBody()->setIsMotionEnabled(false);
+
+    // Set the bouncing factor of the box
+    mBallAndSocketJointBox1->getRigidBody()->setRestitution(0.4);
+
+    // --------------- Create the second box --------------- //
+
+    // Position of the box
+    openglframework::Vector3 positionBox2(0, 10, 0);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mBallAndSocketJointBox2 = new Box(BOX_SIZE, positionBox2 , BOX_MASS, mDynamicsWorld);
+
+    // The second box is allowed to move
+    mBallAndSocketJointBox2->getRigidBody()->setIsMotionEnabled(true);
+
+    // Set the bouncing factor of the box
+    mBallAndSocketJointBox2->getRigidBody()->setRestitution(0.4);
+
+    // --------------- Create the joint --------------- //
+
+    // Create the joint info object
+    rp3d::BallAndSocketJointInfo jointInfo;
+    jointInfo.body1 = mBallAndSocketJointBox1->getRigidBody();
+    jointInfo.body2 = mBallAndSocketJointBox2->getRigidBody();
+    jointInfo.anchorPointWorldSpace = rp3d::Vector3(0, 12.5, 0);
+
+    // Create the joint in the dynamics world
+    mBallAndSocketJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(
+                                                  mDynamicsWorld->createJoint(jointInfo));
+}
+
+// Create the floor
+void Scene::createFloor() {
+
+    // Create the floor
+    openglframework::Vector3 floorPosition(0, 0, 0);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+
+    // The floor must be a non-moving rigid body
+    mFloor->getRigidBody()->setIsMotionEnabled(false);
+
+    // Set the bouncing factor of the floor
+    mFloor->getRigidBody()->setRestitution(0.3);
 }

@@ -131,7 +131,7 @@ struct Quaternion {
         Quaternion operator*(const Quaternion& quaternion) const;
 
         /// Overloaded operator for the multiplication with a vector
-        Vector3 operator*(const Vector3& point);
+        Vector3 operator*(const Vector3& point) const;
 
         /// Overloaded operator for assignment
         Quaternion& operator=(const Quaternion& quaternion);
@@ -250,7 +250,7 @@ inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
 
 // Overloaded operator for the multiplication with a vector.
 /// This methods rotates a point given the rotation of a quaternion.
-inline Vector3 Quaternion::operator*(const Vector3& point) {
+inline Vector3 Quaternion::operator*(const Vector3& point) const {
     Quaternion p(point.x, point.y, point.z, 0.0);
     return (((*this) * p) * getConjugate()).getVectorV();
 }

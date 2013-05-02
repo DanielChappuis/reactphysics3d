@@ -50,3 +50,13 @@ ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
 ContactPoint::~ContactPoint() {
 
 }
+
+// Initialize before solving the constraint
+void ContactPoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
+
+}
+
+// Solve the constraint
+void ContactPoint::solve(const ConstraintSolverData& constraintSolverData) {
+
+}

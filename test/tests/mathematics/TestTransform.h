@@ -114,7 +114,7 @@ class TestTransform : public Test {
 
         /// Test the inverse
         void testInverse() {
-            Transform inverseTransform = mTransform1.inverse();
+            Transform inverseTransform = mTransform1.getInverse();
             Vector3 vector(2, 3, 4);
             Vector3 tempVector = mTransform1 * vector;
             Vector3 tempVector2 = inverseTransform * tempVector;

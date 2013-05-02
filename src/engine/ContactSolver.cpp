@@ -46,8 +46,8 @@ ContactSolver::ContactSolver(std::vector<ContactManifold*>& contactManifolds,
               :mContactManifolds(contactManifolds),
                mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
                mContactConstraints(NULL),
-               mConstrainedLinearVelocities(constrainedLinearVelocities),
-               mConstrainedAngularVelocities(constrainedAngularVelocities),
+               mLinearVelocities(constrainedLinearVelocities),
+               mAngularVelocities(constrainedAngularVelocities),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
                mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
                mIsSolveFrictionAtContactManifoldCenterActive(true) {
@@ -186,8 +186,8 @@ void ContactSolver::initialize(decimal dt) {
 
     assert(mConstraintBodies.size() > 0);
     assert(mMapBodyToConstrainedVelocityIndex.size() >= mConstraintBodies.size());
-    assert(mConstrainedLinearVelocities.size() >= mConstraintBodies.size());
-    assert(mConstrainedAngularVelocities.size() >= mConstraintBodies.size());
+    assert(mLinearVelocities.size() >= mConstraintBodies.size());
+    assert(mAngularVelocities.size() >= mConstraintBodies.size());
 
     // Initialize the split impulse velocities
     initializeSplitImpulseVelocities();
@@ -231,10 +231,10 @@ void ContactSolver::initializeContactConstraints() {
         }
 
         // Get the velocities of the bodies
-        const Vector3& v1 = mConstrainedLinearVelocities[manifold.indexBody1];
-        const Vector3& w1 = mConstrainedAngularVelocities[manifold.indexBody1];
-        const Vector3& v2 = mConstrainedLinearVelocities[manifold.indexBody2];
-        const Vector3& w2 = mConstrainedAngularVelocities[manifold.indexBody2];
+        const Vector3& v1 = mLinearVelocities[manifold.indexBody1];
+        const Vector3& w1 = mAngularVelocities[manifold.indexBody1];
+        const Vector3& v2 = mLinearVelocities[manifold.indexBody2];
+        const Vector3& w2 = mAngularVelocities[manifold.indexBody2];
 
         // For each contact point constraint
         for (uint i=0; i<manifold.nbContacts; i++) {
@@ -545,10 +545,10 @@ void ContactSolver::solve() {
         decimal sumPenetrationImpulse = 0.0;
 
         // Get the constrained velocities
-        const Vector3& v1 = mConstrainedLinearVelocities[contactManifold.indexBody1];
-        const Vector3& w1 = mConstrainedAngularVelocities[contactManifold.indexBody1];
-        const Vector3& v2 = mConstrainedLinearVelocities[contactManifold.indexBody2];
-        const Vector3& w2 = mConstrainedAngularVelocities[contactManifold.indexBody2];
+        const Vector3& v1 = mLinearVelocities[contactManifold.indexBody1];
+        const Vector3& w1 = mAngularVelocities[contactManifold.indexBody1];
+        const Vector3& v2 = mLinearVelocities[contactManifold.indexBody2];
+        const Vector3& w2 = mAngularVelocities[contactManifold.indexBody2];
 
         for (uint i=0; i<contactManifold.nbContacts; i++) {
 
@@ -789,15 +789,15 @@ void ContactSolver::applyImpulse(const Impulse& impulse,
 
     // Update the velocities of the bodies by applying the impulse P
     if (manifold.isBody1Moving) {
-        mConstrainedLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
+        mLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
                                                     impulse.linearImpulseBody1;
-        mConstrainedAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
+        mAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
                                                      impulse.angularImpulseBody1;
     }
     if (manifold.isBody2Moving) {
-        mConstrainedLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
+        mLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
                                                     impulse.linearImpulseBody2;
-        mConstrainedAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
+        mAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
                                                      impulse.angularImpulseBody2;
     }
 }

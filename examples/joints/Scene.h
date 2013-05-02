@@ -32,7 +32,6 @@
 #include "Box.h"
 
 // Constants
-const int NB_BOXES = 20;                                    // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                                // Box mass in kilograms
@@ -45,17 +44,23 @@ class Scene {
 
         // -------------------- Attributes -------------------- //
 
-        // Pointer to the viewer
+        /// Pointer to the viewer
         openglframework::GlutViewer* mViewer;
 
-        // Light 0
+        /// Light 0
         openglframework::Light mLight0;
 
-        // Phong shader
+        /// Phong shader
         openglframework::Shader mPhongShader;
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Box 1 of Ball-And-Socket joint
+        Box* mBallAndSocketJointBox1;
+
+        /// Box 2 of Ball-And-Socket joint
+        Box* mBallAndSocketJointBox2;
+
+        /// Ball-and-Socket joint
+        rp3d::BallAndSocketJoint* mBallAndSocketJoint;
 
         /// Box for the floor
         Box* mFloor;
@@ -65,6 +70,14 @@ class Scene {
 
         /// True if the physics simulation is running
         bool mIsRunning;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the boxes and joints for the Ball-and-Socket joint example
+        void createBallAndSocketJoints();
+
+        /// Create the floor
+        void createFloor();
 
     public:
 

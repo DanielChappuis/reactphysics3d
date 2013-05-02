@@ -224,6 +224,12 @@ class ContactPoint : public Constraint {
         /// Return the number of bytes used by the contact point
         virtual size_t getSizeInBytes() const;
 
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the constraint
+        virtual void solve(const ConstraintSolverData& constraintSolverData);
+
         #ifdef VISUAL_DEBUG
             /// Draw the contact (for debugging)
            void draw() const;

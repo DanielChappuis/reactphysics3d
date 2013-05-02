@@ -23,33 +23,43 @@
 *                                                                               *
 ********************************************************************************/
 
-
-/********************************************************************************
-* ReactPhysics3D                                                                *
-* Version 0.3.0                                                                 *
-* http://code.google.com/p/reactphysics3d/                                      *
-* Daniel Chappuis                                                               *
-********************************************************************************/
-
-#ifndef REACTPHYSICS3D_H
-#define REACTPHYSICS3D_H
+#ifndef REACTPHYSICS3D_IMPULSE_H
+#define REACTPHYSICS3D_IMPULSE_H
 
 // Libraries
-#include "configuration.h"
-#include "mathematics/mathematics.h"
-#include "body/CollisionBody.h"
-#include "body/RigidBody.h"
-#include "engine/DynamicsWorld.h"
-#include "engine/CollisionWorld.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConeShape.h"
-#include "collision/shapes/CylinderShape.h"
-#include "collision/shapes/AABB.h"
-#include "constraint/BallAndSocketJoint.h"
+#include "../mathematics/mathematics.h"
 
-/// Alias to the ReactPhysics3D namespace
-namespace rp3d = reactphysics3d;
+namespace reactphysics3d {
+
+// Structure Impulse
+/**
+ * Represents an impulse that we can apply to bodies in the contact or constraint solver.
+ */
+struct Impulse {
+
+    public:
+
+        /// Linear impulse applied to the first body
+        const Vector3 linearImpulseBody1;
+
+        /// Linear impulse applied to the second body
+        const Vector3 linearImpulseBody2;
+
+        /// Angular impulse applied to the first body
+        const Vector3 angularImpulseBody1;
+
+        /// Angular impulse applied to the second body
+        const Vector3 angularImpulseBody2;
+
+        /// Constructor
+        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
+                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
+            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
+              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
+
+        }
+};
+
+}
 
 #endif

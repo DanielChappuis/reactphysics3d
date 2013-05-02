@@ -35,6 +35,43 @@
 
 namespace reactphysics3d {
 
+// Structure ConstraintSolverData
+/**
+ * This structure contains data from the constraint solver that are used to solve
+ * each joint constraint.
+ */
+struct ConstraintSolverData {
+
+    public :
+
+        /// Current time step of the simulation
+        decimal timeStep;
+
+        /// Reference to the bodies linear velocities
+        std::vector<Vector3>& linearVelocities;
+
+        /// Reference to the bodies angular velocities
+        std::vector<Vector3>& angularVelocities;
+
+        /// Reference to the map that associates rigid body to their index
+        /// in the constrained velocities array
+        const std::map<RigidBody*, uint>& mapBodyToConstrainedVelocityIndex;
+
+        /// True if warm starting of the solver is active
+        bool isWarmStartingActive;
+
+        /// Constructor
+        ConstraintSolverData(std::vector<Vector3>& refLinearVelocities,
+                             std::vector<Vector3>& refAngularVelocities,
+                             const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
+                           :linearVelocities(refLinearVelocities),
+                            angularVelocities(refAngularVelocities),
+                            mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
+
+        }
+
+};
+
 // Class ConstraintSolver
 /**
  * This class represents the constraint solver that is used to solve constraints between
@@ -113,22 +150,29 @@ class ConstraintSolver {
         /// Reference to all the joints of the world
         std::set<Constraint*>& mJoints;
 
+        /// Constrained bodies
+        std::set<RigidBody*> mConstraintBodies;
+
         /// Reference to the array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedLinearVelocities;
+        std::vector<Vector3>& mLinearVelocities;
 
         /// Reference to the array of constrained angular velocities (state of the angular velocities
         /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedAngularVelocities;
+        std::vector<Vector3>& mAngularVelocities;
 
-        /// Reference to the map of rigid body to their index in the constrained velocities array
+        /// Reference to the map that associates rigid body to their index in
+        /// the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
-        /// Number of iterations of the contact solver
-        uint mNbIterations;
 
         /// Current time step
         decimal mTimeStep;
+
+        /// True if the warm starting of the solver is active
+        bool mIsWarmStartingActive;
+
+        /// Constraint solver data used to initialize and solve the constraints
+        ConstraintSolverData mConstraintSolverData;
 
     public :
 
@@ -136,8 +180,8 @@ class ConstraintSolver {
 
         /// Constructor
         ConstraintSolver(std::set<Constraint*>& joints,
-                         std::vector<Vector3>& constrainedLinearVelocities,
-                         std::vector<Vector3>& constrainedAngularVelocities,
+                         std::vector<Vector3>& linearVelocities,
+                         std::vector<Vector3>& angularVelocities,
                          const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor

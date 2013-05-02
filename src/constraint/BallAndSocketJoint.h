@@ -44,7 +44,7 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         // -------------------- Attributes -------------------- //
 
         /// Anchor point (in world space coordinates)
-        Vector3 anchorPoint;
+        Vector3 anchorPointWorldSpace;
 
         /// Constructor
         BallAndSocketJointInfo() : ConstraintInfo(BALLSOCKETJOINT) {}
@@ -62,10 +62,28 @@ class BallAndSocketJoint : public Constraint {
         // -------------------- Attributes -------------------- //
 
         /// Anchor point of body 1 (in local space coordinates)
-        Vector3 mLocalAnchorPoint1;
+        Vector3 mLocalAnchorPointBody1;
 
         /// Anchor point of body 2 (in local space coordinates)
-        Vector3 mLocalAnchorPoint2;
+        Vector3 mLocalAnchorPointBody2;
+
+        /// Vector from center of body 2 to anchor point in world-space
+        Vector3 mU1World;
+
+        /// Vector from center of body 2 to anchor point in world-space
+        Vector3 mU2World;
+
+        /// Skew-Symmetric matrix for cross product with vector mU1World
+        Matrix3x3 mSkewSymmetricMatrixU1World;
+
+        /// Skew-Symmetric matrix for cross product with vector mU2World
+        Matrix3x3 mSkewSymmetricMatrixU2World;
+
+        /// Inverse mass matrix K=JM^-1J^-t of the constraint
+        Matrix3x3 mInverseMassMatrix;
+
+        /// Accumulated impulse
+        Vector3 mImpulse;
 
     public :
 
@@ -79,6 +97,12 @@ class BallAndSocketJoint : public Constraint {
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
+
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the constraint
+        virtual void solve(const ConstraintSolverData& constraintSolverData);
 };
 
 // Return the number of bytes used by the joint

@@ -31,12 +31,14 @@ using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
-                                   std::vector<Vector3>& constrainedLinearVelocities,
-                                   std::vector<Vector3>& constrainedAngularVelocities,
+                                   std::vector<Vector3>& linearVelocities,
+                                   std::vector<Vector3>& angularVelocities,
                                    const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-                 : mJoints(joints), mConstrainedLinearVelocities(constrainedLinearVelocities),
-                   mConstrainedAngularVelocities(constrainedAngularVelocities),
-                   mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex) {
+                 : mJoints(joints), mLinearVelocities(linearVelocities),
+                   mAngularVelocities(angularVelocities),
+                   mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
+                   mIsWarmStartingActive(false), mConstraintSolverData(linearVelocities,
+                   angularVelocities, mapBodyToVelocityIndex){
 
 }
 
@@ -52,6 +54,28 @@ void ConstraintSolver::initialize(decimal dt) {
 
     // Set the current time step
     mTimeStep = dt;
+
+    // Initialize the constraint solver data used to initialize and solve the constraints
+    mConstraintSolverData.timeStep = mTimeStep;
+    mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
+
+    // For each joint
+    std::set<Constraint*>::iterator it;
+    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
+
+        Constraint* joint = (*it);
+
+        // Get the rigid bodies of the joint
+        RigidBody* body1 = joint->getBody1();
+        RigidBody* body2 = joint->getBody2();
+
+        // Add the bodies to the set of constrained bodies
+        mConstraintBodies.insert(body1);
+        mConstraintBodies.insert(body2);
+
+        // Initialize the constraint before solving it
+        joint->initBeforeSolve(mConstraintSolverData);
+    }
 }
 
 // Solve the constraints
@@ -59,4 +83,13 @@ void ConstraintSolver::solve() {
 
     PROFILE("ConstraintSolver::solve()");
 
+    // For each joint
+    std::set<Constraint*>::iterator it;
+    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
+
+        Constraint* joint = (*it);
+
+        // Solve the constraint
+        joint->solve(mConstraintSolverData);
+    }
 }

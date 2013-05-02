@@ -31,43 +31,12 @@
 #include "../configuration.h"
 #include "../constraint/Constraint.h"
 #include "ContactManifold.h"
+#include "Impulse.h"
 #include <map>
 #include <set>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Declarations
-class DynamicsWorld;
-
-// Structure Impulse
-/**
- * Represents an impulse that we can apply to bodies in the contact or constraint solver.
- */
-struct Impulse {
-
-    public:
-
-        /// Linear impulse applied to the first body
-        const Vector3 linearImpulseBody1;
-
-        /// Linear impulse applied to the second body
-        const Vector3 linearImpulseBody2;
-
-        /// Angular impulse applied to the first body
-        const Vector3 angularImpulseBody1;
-
-        /// Angular impulse applied to the second body
-        const Vector3 angularImpulseBody2;
-
-        /// Constructor
-        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
-                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
-            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
-              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
-
-        }
-};
 
 
 // Class Contact Solver
@@ -85,7 +54,7 @@ struct Impulse {
  * F_c = J^t * lambda where J^t is the transpose of the Jacobian matrix and lambda is a
  * Lagrange multiplier. Therefore, finding the force F_c is equivalent to finding the Lagrange
  * multiplier lambda.
-
+ *
  * An impulse P = F * dt where F is a force and dt is the timestep. We can apply impulses a
  * body to change its velocity. The idea of the Sequential Impulse technique is to apply
  * impulses to bodies of each constraints in order to keep the constraint satisfied.
@@ -363,13 +332,11 @@ class ContactSolver {
         /// Constrained bodies
         std::set<RigidBody*> mConstraintBodies;
 
-        /// Reference to the array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedLinearVelocities;
+        /// Reference to the array of linear velocities
+        std::vector<Vector3>& mLinearVelocities;
 
-        /// Reference to the array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedAngularVelocities;
+        /// Reference to the array of angular velocities
+        std::vector<Vector3>& mAngularVelocities;
 
         /// Reference to the map of rigid body to their index in the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;

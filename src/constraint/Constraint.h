@@ -36,6 +36,9 @@ namespace reactphysics3d {
 // Enumeration for the type of a constraint
 enum ConstraintType {CONTACT, BALLSOCKETJOINT};
 
+// Class declarations
+struct ConstraintSolverData;
+
 // Structure ConstraintInfo
 /**
  * This structure is used to gather the information needed to create a constraint.
@@ -94,6 +97,12 @@ class Constraint {
         /// Type of the constraint
         const ConstraintType mType;
 
+        /// Body 1 index in the velocity array to solve the constraint
+        uint mIndexBody1;
+
+        /// Body 2 index in the velocity array to solve the constraint
+        uint mIndexBody2;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -126,6 +135,12 @@ class Constraint {
 
         /// Return the number of bytes used by the constraint
         virtual size_t getSizeInBytes() const = 0;
+
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the constraint
+        virtual void solve(const ConstraintSolverData& constraintSolverData) = 0;
 };
 
 // Return the reference to the body 1
