@@ -99,7 +99,7 @@ class DynamicsWorld : public CollisionWorld {
         /// Private assignment operator
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
-        /// Integrate the positions and orientations of rigid bodies
+        /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
         /// Update the position and orientation of a body
@@ -109,7 +109,7 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
 
-        /// Integrate the velocities of rigid bodies
+        /// Integrate the velocities of rigid bodies.
         void integrateRigidBodiesVelocities();
 
         /// Solve the contacts and constraints

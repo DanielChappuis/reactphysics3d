@@ -121,7 +121,9 @@ void DynamicsWorld::update() {
     setInterpolationFactorToAllBodies();
 }
 
-// Integrate position and orientation of the rigid bodies
+// Integrate position and orientation of the rigid bodies.
+/// The positions and orientations of the bodies are integrated using
+/// the sympletic Euler time stepping scheme.
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
     PROFILE("DynamicsWorld::updateRigidBodiesPositionAndOrientation()");
@@ -197,7 +199,11 @@ void DynamicsWorld::setInterpolationFactorToAllBodies() {
     }
 }
 
-// Integrate the velocities of rigid bodies
+// Integrate the velocities of rigid bodies.
+/// This method only set the temporary velocities but does not update
+/// the actual velocitiy of the bodies. The velocities updated in this method
+/// might violate the constraints and will be corrected in the constraint and
+/// contact solver.
 void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     // TODO : Use better memory allocation here
