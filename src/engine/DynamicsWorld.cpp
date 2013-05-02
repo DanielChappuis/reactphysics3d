@@ -219,11 +219,15 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
         RigidBody* rigidBody = *it;
         mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*, uint>(rigidBody, i));
 
-        // Integrate the external force to get the new velocity of the body
-        mConstrainedLinearVelocities[i] = rigidBody->getLinearVelocity() +
-                   dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
-        mConstrainedAngularVelocities[i] = rigidBody->getAngularVelocity() +
-                   dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+        // If the body is allowed to move
+        if (rigidBody->getIsMotionEnabled()) {
+
+            // Integrate the external force to get the new velocity of the body
+            mConstrainedLinearVelocities[i] = rigidBody->getLinearVelocity() +
+                    dt * rigidBody->getMassInverse() * rigidBody->getExternalForce();
+            mConstrainedAngularVelocities[i] = rigidBody->getAngularVelocity() +
+                    dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
+        }
 
         i++;
     }

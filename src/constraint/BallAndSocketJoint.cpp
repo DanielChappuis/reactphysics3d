@@ -34,8 +34,10 @@ BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo &jointInfo)
                    : Constraint(jointInfo), mImpulse(Vector3(0, 0, 0)) {
 
     // Compute the local-space anchor point for each body
-    mLocalAnchorPointBody1 = mBody1->getTransform().getInverse() * jointInfo.anchorPointWorldSpace;
-    mLocalAnchorPointBody1 = mBody1->getTransform().getInverse() * jointInfo.anchorPointWorldSpace;
+    mLocalAnchorPointBody1 = mBody1->getTransform().getOrientation().getInverse() *
+                             jointInfo.anchorPointWorldSpace;
+    mLocalAnchorPointBody2 = mBody2->getTransform().getOrientation().getInverse() *
+                             jointInfo.anchorPointWorldSpace;
 }
 
 // Destructor
@@ -107,13 +109,13 @@ void BallAndSocketJoint::solve(const ConstraintSolverData& constraintSolverData)
     Vector3 Jv = -v1 + mU1World.cross(w1) + v2 - mU2World.cross(w2);
 
     // Compute the bias "b" of the constraint
-    decimal beta = 0.8;     // TODO : Use a constant here
+    decimal beta = 0.7;     // TODO : Use a constant here
     decimal biasFactor = -(beta/constraintSolverData.timeStep);
     Vector3 b = biasFactor * (x2 + mU2World - x1 - mU1World);
 
     // Compute the Lagrange multiplier lambda
     Vector3 deltaLambda = mInverseMassMatrix * (-Jv - b);
-    mImpulse = mImpulse + deltaLambda;
+    mImpulse += deltaLambda;
 
     // Compute the impulse P=J^T * lambda
     Vector3 linearImpulseBody1 = -deltaLambda;
