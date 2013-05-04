@@ -167,7 +167,7 @@ void Scene::createBallAndSocketJoints() {
     // --------------- Create the second box --------------- //
 
     // Position of the box
-    openglframework::Vector3 positionBox2(0, 10, 0);
+    openglframework::Vector3 positionBox2(5, 10, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
     mBallAndSocketJointBox2 = new Box(BOX_SIZE, positionBox2 , BOX_MASS, mDynamicsWorld);
@@ -184,7 +184,7 @@ void Scene::createBallAndSocketJoints() {
     rp3d::BallAndSocketJointInfo jointInfo;
     jointInfo.body1 = mBallAndSocketJointBox1->getRigidBody();
     jointInfo.body2 = mBallAndSocketJointBox2->getRigidBody();
-    jointInfo.anchorPointWorldSpace = rp3d::Vector3(0, 12.5, 0);
+    jointInfo.anchorPointWorldSpace = rp3d::Vector3(0, 10, 0);
 
     // Create the joint in the dynamics world
     mBallAndSocketJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(

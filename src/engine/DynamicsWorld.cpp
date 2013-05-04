@@ -407,11 +407,14 @@ void DynamicsWorld::destroyJoint(Constraint* joint) {
     // Remove the joint from the world
     mJoints.erase(joint);
 
+    // Get the size in bytes of the joint
+    size_t nbBytes = joint->getSizeInBytes();
+
     // Call the destructor of the joint
     joint->Constraint::~Constraint();
 
     // Release the allocated memory
-    mMemoryAllocator.release(joint, joint->getSizeInBytes());
+    mMemoryAllocator.release(joint, nbBytes);
 }
 
 // Notify the world about a new broad-phase overlapping pair
