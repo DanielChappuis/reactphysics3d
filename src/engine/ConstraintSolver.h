@@ -171,6 +171,9 @@ class ConstraintSolver {
         /// True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
 
+        /// True if the Non-Linear-Gauss-Seidel position correction technique is enabled
+        bool mIsNonLinearGaussSeidelPositionCorrectionActive;
+
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
@@ -191,8 +194,27 @@ class ConstraintSolver {
         void initialize(decimal dt);
 
         /// Solve the constraints
-        void solve();
+        void solveVelocityConstraints();
+
+        /// Solve the position constraints
+        void solvePositionConstraints();
+
+        /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
+        bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;
+
+        /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
+        void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
 };
+
+// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
+inline bool ConstraintSolver::getIsNonLinearGaussSeidelPositionCorrectionActive() const {
+    return mIsNonLinearGaussSeidelPositionCorrectionActive;
+}
+
+// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
+inline void ConstraintSolver::setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive) {
+    mIsNonLinearGaussSeidelPositionCorrectionActive = isActive;
+}
 
 }
 

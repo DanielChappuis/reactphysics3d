@@ -27,6 +27,7 @@
 #define REACTPHYSICS3D_CONSTRAINT_H
 
 // Libraries
+#include "../configuration.h"
 #include "../body/RigidBody.h"
 #include "../mathematics/mathematics.h"
 
@@ -34,7 +35,7 @@
 namespace reactphysics3d {
     
 // Enumeration for the type of a constraint
-enum ConstraintType {CONTACT, BALLSOCKETJOINT};
+enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT};
 
 // Class declarations
 struct ConstraintSolverData;
@@ -58,13 +59,19 @@ struct ConstraintInfo {
         /// Type of the constraint
         ConstraintType type;
 
+        /// Position correction technique used for the constraint (used for joints).
+        /// By default, the BAUMGARTE technique is used
+        JointsPositionCorrectionTechnique positionCorrectionTechnique;
+
         /// Constructor
         ConstraintInfo(ConstraintType constraintType)
-                      : body1(NULL), body2(NULL), type(constraintType) {}
+                      : body1(NULL), body2(NULL), type(constraintType),
+                        positionCorrectionTechnique(BAUMGARTE_JOINTS) {}
 
         /// Constructor
         ConstraintInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, ConstraintType constraintType)
-                      : body1(rigidBody1), body2(rigidBody2), type(constraintType) {
+                      : body1(rigidBody1), body2(rigidBody2), type(constraintType),
+                        positionCorrectionTechnique(BAUMGARTE_JOINTS) {
         }
 
         /// Destructor
@@ -103,6 +110,9 @@ class Constraint {
         /// Body 2 index in the velocity array to solve the constraint
         uint mIndexBody2;
 
+        /// Position correction technique used for the constraint (used for joints)
+        JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -139,8 +149,11 @@ class Constraint {
         /// Initialize before solving the constraint
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
 
-        /// Solve the constraint
-        virtual void solve(const ConstraintSolverData& constraintSolverData) = 0;
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the position constraint
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 };
 
 // Return the reference to the body 1

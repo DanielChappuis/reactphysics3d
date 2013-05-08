@@ -37,7 +37,9 @@ ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
                  : mJoints(joints), mLinearVelocities(linearVelocities),
                    mAngularVelocities(angularVelocities),
                    mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(false), mConstraintSolverData(linearVelocities,
+                   mIsWarmStartingActive(false),
+                   mIsNonLinearGaussSeidelPositionCorrectionActive(false),
+                   mConstraintSolverData(linearVelocities,
                    angularVelocities, mapBodyToVelocityIndex){
 
 }
@@ -78,10 +80,10 @@ void ConstraintSolver::initialize(decimal dt) {
     }
 }
 
-// Solve the constraints
-void ConstraintSolver::solve() {
+// Solve the velocity constraints
+void ConstraintSolver::solveVelocityConstraints() {
 
-    PROFILE("ConstraintSolver::solve()");
+    PROFILE("ConstraintSolver::solveVelocityConstraints()");
 
     // For each joint
     std::set<Constraint*>::iterator it;
@@ -90,6 +92,22 @@ void ConstraintSolver::solve() {
         Constraint* joint = (*it);
 
         // Solve the constraint
-        joint->solve(mConstraintSolverData);
+        joint->solveVelocityConstraint(mConstraintSolverData);
+    }
+}
+
+// Solve the position constraints
+void ConstraintSolver::solvePositionConstraints() {
+
+    PROFILE("ConstraintSolver::solvePositionConstraints()");
+
+    // For each joint
+    std::set<Constraint*>::iterator it;
+    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
+
+        Constraint* joint = (*it);
+
+        // Solve the constraint
+        joint->solveVelocityConstraint(mConstraintSolverData);
     }
 }

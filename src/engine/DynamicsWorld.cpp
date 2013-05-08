@@ -26,6 +26,7 @@
 // Libraries
 #include "DynamicsWorld.h"
 #include "constraint/BallAndSocketJoint.h"
+#include "constraint/SliderJoint.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -38,7 +39,8 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
                                mMapBodyToConstrainedVelocityIndex),
                 mConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
                                   mMapBodyToConstrainedVelocityIndex),
-                mNbSolverIterations(DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS),
+                mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
+                mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
                 mIsDeactivationActive(DEACTIVATION_ENABLED) {
 
 }
@@ -248,6 +250,8 @@ void DynamicsWorld::solveContactsAndConstraints() {
     bool isContactsToSolve = !mContactManifolds.empty();
     if (!isConstraintsToSolve && !isContactsToSolve) return;
 
+    // ---------- Solve velocity constraints for joints and contacts ---------- //
+
     // If there are contacts
     if (isContactsToSolve) {
 
@@ -265,11 +269,11 @@ void DynamicsWorld::solveContactsAndConstraints() {
         mConstraintSolver.initialize(dt);
     }
 
-    // For each iteration of the solver
-    for (uint i=0; i<mNbSolverIterations; i++) {
+    // For each iteration of the velocity solver
+    for (uint i=0; i<mNbVelocitySolverIterations; i++) {
 
-        // Solve the constraints
-        if (isConstraintsToSolve) mConstraintSolver.solve();
+        // Solve the velocity constraints
+        if (isConstraintsToSolve) mConstraintSolver.solveVelocityConstraints();
 
         // Solve the contacts
         if (isContactsToSolve) mContactSolver.solve();
@@ -277,6 +281,21 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
     // Cache the lambda values in order to use them in the next step
     if (isContactsToSolve) mContactSolver.storeImpulses();
+
+    // ---------- Solve positions constraints (error correction) for joints only ---------- //
+
+    // TODO : Integrate the bodies positions here
+
+    // If the Non-Linear-Gauss-Seidel position correction is active
+    if (mConstraintSolver.getIsNonLinearGaussSeidelPositionCorrectionActive()) {
+
+        // For each iteration of the position (error correction) solver
+        for (uint i=0; i<mNbPositionSolverIterations; i++) {
+
+            // Solve the position constraints
+            if (isConstraintsToSolve) mConstraintSolver.solvePositionConstraints();
+        }
+    }
 }
 
 // Cleanup the constrained velocities array at each step
@@ -382,6 +401,15 @@ Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
             const BallAndSocketJointInfo& info = dynamic_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
             newJoint = new (allocatedMemory) BallAndSocketJoint(info);
+            break;
+        }
+
+        // Slider joint
+        case SLIDERJOINT:
+        {
+            void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
+            const SliderJointInfo& info = dynamic_cast<const SliderJointInfo&>(jointInfo);
+            newJoint = new (allocatedMemory) SliderJoint(info);
             break;
         }
 

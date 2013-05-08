@@ -23,21 +23,21 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
-#define REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
+#ifndef REACTPHYSICS3D_SLIDER_JOINT_H
+#define REACTPHYSICS3D_SLIDER_JOINT_H
 
 // Libraries
-#include "Constraint.h"
 #include "../mathematics/mathematics.h"
+#include "../engine/ConstraintSolver.h"
 
 namespace reactphysics3d {
 
-// Structure BallAndSocketJointInfo
+// Structure SliderJointInfo
 /**
- * This structure is used to gather the information needed to create a ball-and-socket
- * joint. This structure will be used to create the actual ball-and-socket joint.
+ * This structure is used to gather the information needed to create a slider
+ * joint. This structure will be used to create the actual slider joint.
  */
-struct BallAndSocketJointInfo : public ConstraintInfo {
+struct SliderJointInfo : public ConstraintInfo {
 
     public :
 
@@ -46,19 +46,23 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         /// Anchor point (in world-space coordinates)
         Vector3 anchorPointWorldSpace;
 
+        /// Slider axis (in world-space coordinates)
+        Vector3 axisWorldSpace;
+
         /// Constructor
-        BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
-                               const Vector3& initAnchorPointWorldSpace)
-                              : ConstraintInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
-                                anchorPointWorldSpace(initAnchorPointWorldSpace){}
+        SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                        const Vector3& initAnchorPointWorldSpace,
+                        const Vector3& initAxisWorldSpace)
+                       : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                         anchorPointWorldSpace(initAnchorPointWorldSpace),
+                         axisWorldSpace(initAxisWorldSpace) {}
 };
 
-// Class BallAndSocketJoint
+// Class SliderJoint
 /**
- * This class represents a ball-and-socket joint that allows arbitrary rotation
- * between two bodies.
+ * This class represents a slider joint.
  */
-class BallAndSocketJoint : public Constraint {
+class SliderJoint : public Constraint {
 
     private :
 
@@ -76,27 +80,33 @@ class BallAndSocketJoint : public Constraint {
         /// Vector from center of body 2 to anchor point in world-space
         Vector3 mU2World;
 
-        /// Skew-Symmetric matrix for cross product with vector mU1World
-        Matrix3x3 mSkewSymmetricMatrixU1World;
+        /// First vector orthogonal to vector mU1World in world-space
+        Vector3 mN1;
 
-        /// Skew-Symmetric matrix for cross product with vector mU2World
-        Matrix3x3 mSkewSymmetricMatrixU2World;
+        /// Second vector orthogonal to vector mU1World and mN1 in world-space
+        Vector3 mN2;
 
-        /// Inverse mass matrix K=JM^-1J^-t of the constraint
-        Matrix3x3 mInverseMassMatrix;
+        /// Cross product of mU1World and mN1
+        Vector3 mU1WorldCrossN1;
 
-        /// Accumulated impulse
-        Vector3 mImpulse;
+        /// Cross product of mU1World and mN2
+        Vector3 mU1WorldCrossN2;
+
+        /// Cross product of mU2World and mN1
+        Vector3 mU2WorldCrossN1;
+
+        /// Cross product of mU2World and mN2
+        Vector3 mU2WorldCrossN2;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
+        SliderJoint(const SliderJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~BallAndSocketJoint();
+        virtual ~SliderJoint();
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
@@ -112,8 +122,8 @@ class BallAndSocketJoint : public Constraint {
 };
 
 // Return the number of bytes used by the joint
-inline size_t BallAndSocketJoint::getSizeInBytes() const {
-    return sizeof(BallAndSocketJoint);
+inline size_t SliderJoint::getSizeInBytes() const {
+    return sizeof(SliderJoint);
 }
 
 }

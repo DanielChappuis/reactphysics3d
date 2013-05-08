@@ -59,8 +59,11 @@ class DynamicsWorld : public CollisionWorld {
         /// Constraint solver
         ConstraintSolver mConstraintSolver;
 
-        /// Number of solver iterations for the Sequential Impulses technique
-        uint mNbSolverIterations;
+        /// Number of iterations for the velocity solver of the Sequential Impulses technique
+        uint mNbVelocitySolverIterations;
+
+        /// Number of iterations for the position solver of the Sequential Impulses technique
+        uint mNbPositionSolverIterations;
 
         /// True if the deactivation (sleeping) of inactive bodies is enabled
         bool mIsDeactivationActive;
@@ -155,18 +158,21 @@ public :
         /// Update the physics simulation
         void update();
 
-        /// Set the number of iterations of the constraint solver
-        void setNbIterationsSolver(uint nbIterations);
+        /// Set the number of iterations for the velocity constraint solver
+        void setNbIterationsVelocitySolver(uint nbIterations);
 
-        /// Activate or Deactivate the split impulses for contacts
-        void setIsSplitImpulseActive(bool isActive);
+        /// Set the number of iterations for the position constraint solver
+        void setNbIterationsPositionSolver(uint nbIterations);
+
+        /// Set the position correction technique used for contacts
+        void setContactsPositionCorrectionTechnique(ContactsPositionCorrectionTechnique technique);
+
+        /// Set the position correction technique used for joints
+        void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
 
         /// Activate or deactivate the solving of friction constraints at the center of
         /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
-
-        /// Set the isErrorCorrectionActive value
-        void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
 
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
@@ -213,14 +219,36 @@ inline void DynamicsWorld::stop() {
     mTimer.stop();
 }                
 
-// Set the number of iterations of the constraint solver
-inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
-    mNbSolverIterations = nbIterations;
+// Set the number of iterations for the velocity constraint solver
+inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
+    mNbVelocitySolverIterations = nbIterations;
 }
 
-// Activate or Deactivate the split impulses for contacts
-inline void DynamicsWorld::setIsSplitImpulseActive(bool isActive) {
-    mContactSolver.setIsSplitImpulseActive(isActive);
+// Set the number of iterations for the position constraint solver
+inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
+    mNbPositionSolverIterations = nbIterations;
+}
+
+// Set the position correction technique used for contacts
+inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
+                              ContactsPositionCorrectionTechnique technique) {
+    if (technique == BAUMGARTE_CONTACTS) {
+        mContactSolver.setIsSplitImpulseActive(false);
+    }
+    else {
+        mContactSolver.setIsSplitImpulseActive(true);
+    }
+}
+
+// Set the position correction technique used for joints
+inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
+                              JointsPositionCorrectionTechnique technique) {
+    if (technique == BAUMGARTE_JOINTS) {
+        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
+    }
+    else {
+        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
+    }
 }
 
 // Activate or deactivate the solving of friction constraints at the center of

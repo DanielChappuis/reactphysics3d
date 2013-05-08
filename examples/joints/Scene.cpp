@@ -54,7 +54,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
 
     // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsSolver(15);
+    mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
@@ -181,10 +181,10 @@ void Scene::createBallAndSocketJoints() {
     // --------------- Create the joint --------------- //
 
     // Create the joint info object
-    rp3d::BallAndSocketJointInfo jointInfo;
-    jointInfo.body1 = mBallAndSocketJointBox1->getRigidBody();
-    jointInfo.body2 = mBallAndSocketJointBox2->getRigidBody();
-    jointInfo.anchorPointWorldSpace = rp3d::Vector3(0, 10, 0);
+    rp3d::RigidBody* body1 = mBallAndSocketJointBox1->getRigidBody();
+    rp3d::RigidBody* body2 = mBallAndSocketJointBox2->getRigidBody();
+    const rp3d::Vector3 anchorPointWorldSpace(0, 10, 0);
+    rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
 
     // Create the joint in the dynamics world
     mBallAndSocketJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(

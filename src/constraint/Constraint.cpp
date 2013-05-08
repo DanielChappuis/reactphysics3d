@@ -31,7 +31,8 @@ using namespace reactphysics3d;
 // Constructor
 Constraint::Constraint(const ConstraintInfo& constraintInfo)
            :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
-            mType(constraintInfo.type) {
+            mType(constraintInfo.type),
+            mPositionCorrectionTechnique(constraintInfo.positionCorrectionTechnique) {
 
     assert(mBody1 != NULL);
     assert(mBody2 != NULL);

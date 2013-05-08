@@ -227,8 +227,11 @@ class ContactPoint : public Constraint {
         /// Initialize before solving the constraint
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
 
-        /// Solve the constraint
-        virtual void solve(const ConstraintSolverData& constraintSolverData);
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the position constraint
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 
         #ifdef VISUAL_DEBUG
             /// Draw the contact (for debugging)

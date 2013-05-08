@@ -56,7 +56,12 @@ void ContactPoint::initBeforeSolve(const ConstraintSolverData& constraintSolverD
 
 }
 
-// Solve the constraint
-void ContactPoint::solve(const ConstraintSolverData& constraintSolverData) {
+// Solve the velocity constraint
+void ContactPoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
+
+}
+
+// Solve the position constraint
+void ContactPoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
 
 }
