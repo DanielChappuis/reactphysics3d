@@ -27,13 +27,9 @@
 #ifndef TEST_TRANSFORM_H
 #define TEST_TRANSFORM_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Transform.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -216,3 +212,5 @@ class TestTransform : public Test {
  };
 
 }
+
+#endif

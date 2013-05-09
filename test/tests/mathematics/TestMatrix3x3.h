@@ -1,4 +1,3 @@
-
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2010-2013 Daniel Chappuis                                       *
@@ -27,13 +26,9 @@
 #ifndef TEST_MATRIX3X3_H
 #define TEST_MATRIX3X3_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Matrix3x3.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -287,3 +282,5 @@ class TestMatrix3x3 : public Test {
  };
 
 }
+
+#endif

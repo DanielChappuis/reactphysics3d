@@ -27,13 +27,9 @@
 #ifndef TEST_QUATERNION_H
 #define TEST_QUATERNION_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Quaternion.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -229,3 +225,5 @@ class TestQuaternion : public Test {
  };
 
 }
+
+#endif
