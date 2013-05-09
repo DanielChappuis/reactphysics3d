@@ -80,9 +80,7 @@ Matrix2x2 Matrix2x2::getInverse() const {
 
     decimal invDeterminant = decimal(1.0) / determinant;
 
-    // TODO : Implement this
-    assert(false);
-    Matrix2x2 tempMatrix;
+    Matrix2x2 tempMatrix(mRows[1][1], -mRows[0][1], -mRows[1][0], mRows[0][0]);
 
     // Return the inverse matrix
     return (invDeterminant * tempMatrix);

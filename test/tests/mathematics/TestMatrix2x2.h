@@ -57,7 +57,6 @@ class TestMatrix2x2 : public Test {
         TestMatrix2x2() : mIdentity(Matrix2x2::identity()),
                           mMatrix1(2, 24, -4, 5) {
 
-
         }
 
         /// Run the tests
@@ -147,21 +146,22 @@ class TestMatrix2x2 : public Test {
             test(mIdentity.getDeterminant() == 1);
 
             // Test inverse
-            Matrix2x2 inverseMatrix = matrix.getInverse();
-            test(approxEqual(inverseMatrix[0][0], decimal(0.056369), decimal(10e-6)));
-            test(approxEqual(inverseMatrix[0][1], decimal(-0.049549), decimal(10e-6)));
-            test(approxEqual(inverseMatrix[1][0], decimal(0.029460), decimal(10e-6)));
-            test(approxEqual(inverseMatrix[1][1], decimal(0.038575), decimal(10e-6)));
+            Matrix2x2 matrix2(1, 2, 3, 4);
+            Matrix2x2 inverseMatrix = matrix2.getInverse();
+            test(approxEqual(inverseMatrix[0][0], decimal(-2), decimal(10e-6)));
+            test(approxEqual(inverseMatrix[0][1], decimal(1), decimal(10e-6)));
+            test(approxEqual(inverseMatrix[1][0], decimal(-0.75), decimal(10e-6)));
+            test(approxEqual(inverseMatrix[1][1], decimal(0.25), decimal(10e-6)));
             Matrix2x2 inverseMatrix1 = mMatrix1.getInverse();
-            test(approxEqual(inverseMatrix1[0][0], decimal(0.030232), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[0][1], decimal(0.015676), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[1][0], decimal(-0.057410), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[1][1], decimal(0.039088), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[0][0], decimal(0.04716981), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[0][1], decimal(-0.2264150), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[1][0], decimal(0.0377358), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[1][1], decimal(0.0188679), decimal(10e-6)));
 
             // Test absolute matrix
-            Matrix2x2 matrix2(-2, -3, -4, -5);
+            Matrix2x2 matrix3(-2, -3, -4, -5);
             test(matrix.getAbsoluteMatrix() == Matrix2x2(24, 64, 253, 35));
-            Matrix2x2 absoluteMatrix = matrix2.getAbsoluteMatrix();
+            Matrix2x2 absoluteMatrix = matrix3.getAbsoluteMatrix();
             test(absoluteMatrix == Matrix2x2(2, 3, 4, 5));
         }
 
