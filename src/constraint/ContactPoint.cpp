@@ -56,6 +56,11 @@ void ContactPoint::initBeforeSolve(const ConstraintSolverData& constraintSolverD
 
 }
 
+// Warm start the constraint (apply the previous impulse at the beginning of the step)
+void ContactPoint::warmstart(const ConstraintSolverData& constraintSolverData) {
+
+}
+
 // Solve the velocity constraint
 void ContactPoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 

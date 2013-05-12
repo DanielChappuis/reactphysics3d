@@ -78,6 +78,38 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     mInverseMassMatrix = massMatrix.getInverse();
 }
 
+// Warm start the constraint (apply the previous impulse at the beginning of the step)
+void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
+
+    // Get the velocities
+    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
+    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
+    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
+    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+
+    // Get the inverse mass and inverse inertia tensors of the bodies
+    decimal inverseMassBody1 = mBody1->getMassInverse();
+    decimal inverseMassBody2 = mBody2->getMassInverse();
+    Matrix3x3 I1 = mBody1->getInertiaTensorInverseWorld();
+    Matrix3x3 I2 = mBody2->getInertiaTensorInverseWorld();
+
+    // Compute the impulse P=J^T * lambda
+    Vector3 linearImpulseBody1 = -mImpulse;
+    Vector3 angularImpulseBody1 = mImpulse.cross(mU1World);
+    Vector3 linearImpulseBody2 = mImpulse;
+    Vector3 angularImpulseBody2 = -mImpulse.cross(mU2World);
+
+    // Apply the impulse to the bodies of the joint
+    if (mBody1->getIsMotionEnabled()) {
+        v1 += inverseMassBody1 * linearImpulseBody1;
+        w1 += I1 * angularImpulseBody1;
+    }
+    if (mBody2->getIsMotionEnabled()) {
+        v2 += inverseMassBody2 * linearImpulseBody2;
+        w2 += I2 * angularImpulseBody2;
+    }
+}
+
 // Solve the velocity constraint
 void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
@@ -94,8 +126,8 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     // Get the inverse mass and inverse inertia tensors of the bodies
     decimal inverseMassBody1 = mBody1->getMassInverse();
     decimal inverseMassBody2 = mBody2->getMassInverse();
-    Matrix3x3 inverseInertiaTensorBody1 = mBody1->getInertiaTensorInverseWorld();
-    Matrix3x3 inverseInertiaTensorBody2 = mBody2->getInertiaTensorInverseWorld();
+    Matrix3x3 I1 = mBody1->getInertiaTensorInverseWorld();
+    Matrix3x3 I2 = mBody2->getInertiaTensorInverseWorld();
 
     // Compute J*v
     Vector3 Jv = -v1 + mU1World.cross(w1) + v2 - mU2World.cross(w2);
@@ -121,11 +153,11 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     // Apply the impulse to the bodies of the joint
     if (mBody1->getIsMotionEnabled()) {
         v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += inverseInertiaTensorBody1 * angularImpulseBody1;
+        w1 += I1 * angularImpulseBody1;
     }
     if (mBody2->getIsMotionEnabled()) {
         v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += inverseInertiaTensorBody2 * angularImpulseBody2;
+        w2 += I2 * angularImpulseBody2;
     }
 }
 

@@ -98,6 +98,18 @@ class SliderJoint : public Constraint {
         /// Cross product of mU2World and mN2
         Vector3 mU2WorldCrossN2;
 
+        /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
+        Matrix2x2 mInverseMassMatrixTranslationConstraint;
+
+        /// Inverse of mass matrix K=JM^-1J^t for the rotation constraint (3x3 matrix)
+        Matrix3x3 mInverseMassMatrixRotationConstraint;
+
+        /// Impulse for the 2 translation constraints
+        Vector2 mImpulseTranslation;
+
+        /// Impulse for the 3 rotation constraints
+        Vector3 mImpulseRotation;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -113,6 +125,9 @@ class SliderJoint : public Constraint {
 
         /// Initialize before solving the constraint
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
 
         /// Solve the velocity constraint
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);

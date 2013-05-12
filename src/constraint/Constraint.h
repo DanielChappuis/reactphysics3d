@@ -149,6 +149,9 @@ class Constraint {
         /// Initialize before solving the constraint
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
 
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
+
         /// Solve the velocity constraint
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 
