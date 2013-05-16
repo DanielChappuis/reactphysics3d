@@ -54,7 +54,7 @@ class TestVector2 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestVector1() : mVectorZero(0, 0), mVector34(3, 4) {}
+        TestVector2() : mVectorZero(0, 0), mVector34(3, 4) {}
 
         /// Run the tests
         void run() {
@@ -98,14 +98,14 @@ class TestVector2 : public Test {
             test(mVectorZero.lengthSquare() == 0.0);
             test(Vector2(1, 0).length() == 1.0);
             test(Vector2(0, 1).length() == 1.0);
-            test(mVector345.lengthSquare() == 50.0);
+            test(mVector34.lengthSquare() == 25.0);
 
             // Test unit vector methods
             test(Vector2(1, 0).isUnit());
             test(Vector2(0, 1).isUnit());
             test(!mVector34.isUnit());
-            test(Vector2(5, 0).getUnit() == Vector3(1, 0));
-            test(Vector2(0, 5).getUnit() == Vector3(0, 1));
+            test(Vector2(5, 0).getUnit() == Vector2(1, 0));
+            test(Vector2(0, 5).getUnit() == Vector2(0, 1));
 
             test(!mVector34.isZero());
             test(mVectorZero.isZero());

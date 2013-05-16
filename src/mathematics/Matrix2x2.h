@@ -60,7 +60,7 @@ class Matrix2x2 {
         Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2);
 
         /// Destructor
-        virtual ~Matrix2x2();
+        ~Matrix2x2();
 
         /// Copy-constructor
         Matrix2x2(const Matrix2x2& matrix);

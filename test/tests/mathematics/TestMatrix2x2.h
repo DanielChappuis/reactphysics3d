@@ -107,10 +107,10 @@ class TestMatrix2x2 : public Test {
             test(column2 == Vector2(24, 5));
 
             // Test method that returns a row
-            Vector3 row1 = mMatrix1.getRow(0);
-            Vector3 row2 = mMatrix1.getRow(1);
-            test(row1 == Vector3(2, 24));
-            test(row2 == Vector3(-4, 5));
+            Vector2 row1 = mMatrix1.getRow(0);
+            Vector2 row2 = mMatrix1.getRow(1);
+            test(row1 == Vector2(2, 24));
+            test(row2 == Vector2(-4, 5));
         }
 
         /// Test the identity methods
@@ -136,7 +136,7 @@ class TestMatrix2x2 : public Test {
             test(transpose == Matrix2x2(2, -4, 24, 5));
 
             // Test trace
-            test(mMatrix1.getTrace() == 10);
+            test(mMatrix1.getTrace() ==7);
             test(Matrix2x2::identity().getTrace() == 2);
 
             // Test determinant
@@ -150,13 +150,13 @@ class TestMatrix2x2 : public Test {
             Matrix2x2 inverseMatrix = matrix2.getInverse();
             test(approxEqual(inverseMatrix[0][0], decimal(-2), decimal(10e-6)));
             test(approxEqual(inverseMatrix[0][1], decimal(1), decimal(10e-6)));
-            test(approxEqual(inverseMatrix[1][0], decimal(-0.75), decimal(10e-6)));
-            test(approxEqual(inverseMatrix[1][1], decimal(0.25), decimal(10e-6)));
+            test(approxEqual(inverseMatrix[1][0], decimal(1.5), decimal(10e-6)));
+            test(approxEqual(inverseMatrix[1][1], decimal(-0.5), decimal(10e-6)));
             Matrix2x2 inverseMatrix1 = mMatrix1.getInverse();
-            test(approxEqual(inverseMatrix1[0][0], decimal(0.04716981), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[0][1], decimal(-0.2264150), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[1][0], decimal(0.0377358), decimal(10e-6)));
-            test(approxEqual(inverseMatrix1[1][1], decimal(0.0188679), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[0][0], decimal(0.047169811), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[0][1], decimal(-0.226415094), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[1][0], decimal(0.037735849), decimal(10e-6)));
+            test(approxEqual(inverseMatrix1[1][1], decimal(0.018867925), decimal(10e-6)));
 
             // Test absolute matrix
             Matrix2x2 matrix3(-2, -3, -4, -5);
@@ -208,8 +208,8 @@ class TestMatrix2x2 : public Test {
             Vector2 vector2(-31, -422);
             Vector2 test1 = matrix1 * vector1;
             Vector2 test2 = matrix2 * vector2;
-            test(test1 == Vector2(-762, -182));
-            test(test2 == Vector2(-10190, -1986));
+            test(test1 == Vector2(-90, -148));
+            test(test2 == Vector2(-1204, -4065));
 
             // Test equality operators
             test(Matrix2x2(34, 38, 43, 64) ==

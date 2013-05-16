@@ -25,9 +25,11 @@
 
 // Libraries
 #include "TestSuite.h"
+#include "tests/mathematics/TestVector2.h"
 #include "tests/mathematics/TestVector3.h"
 #include "tests/mathematics/TestTransform.h"
 #include "tests/mathematics/TestQuaternion.h"
+#include "tests/mathematics/TestMatrix2x2.h"
 #include "tests/mathematics/TestMatrix3x3.h"
 
 using namespace reactphysics3d;
@@ -38,10 +40,12 @@ int main() {
 
     // ---------- Mathematics tests ---------- //
 
+    testSuite.addTest(new TestVector2);
     testSuite.addTest(new TestVector3);
     testSuite.addTest(new TestTransform);
     testSuite.addTest(new TestQuaternion);
     testSuite.addTest(new TestMatrix3x3);
+    testSuite.addTest(new TestMatrix2x2);
 
     // ----------------------------- --------- //
 
