@@ -47,15 +47,15 @@ struct SliderJointInfo : public ConstraintInfo {
         Vector3 anchorPointWorldSpace;
 
         /// Slider axis (in world-space coordinates)
-        Vector3 axisWorldSpace;
+        Vector3 sliderAxisWorldSpace;
 
         /// Constructor
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
-                        const Vector3& initAxisWorldSpace)
+                        const Vector3& initSliderAxisWorldSpace)
                        : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
-                         axisWorldSpace(initAxisWorldSpace) {}
+                         sliderAxisWorldSpace(initSliderAxisWorldSpace) {}
 };
 
 // Class SliderJoint
@@ -68,35 +68,38 @@ class SliderJoint : public Constraint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Anchor point of body 1 (in local space coordinates)
+        /// Anchor point of body 1 (in local-space coordinates of body 1)
         Vector3 mLocalAnchorPointBody1;
 
-        /// Anchor point of body 2 (in local space coordinates)
+        /// Anchor point of body 2 (in local-space coordinates of body 2)
         Vector3 mLocalAnchorPointBody2;
 
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mU1World;
+        /// Slider axis (in local-space coordinates of body 1)
+        Vector3 mSliderAxisBody1;
 
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mU2World;
-
-        /// First vector orthogonal to vector mU1World in world-space
+        /// First vector orthogonal to the slider axis local-space of body 1
         Vector3 mN1;
 
-        /// Second vector orthogonal to vector mU1World and mN1 in world-space
+        /// Second vector orthogonal to the slider axis and mN1 in local-space of body 1
         Vector3 mN2;
 
-        /// Cross product of mU1World and mN1
-        Vector3 mU1WorldCrossN1;
+        /// Vector r1 in world-space coordinates
+        Vector3 mR1;
 
-        /// Cross product of mU1World and mN2
-        Vector3 mU1WorldCrossN2;
+        /// Vector r2 in world-space coordinates
+        Vector3 mR2;
 
-        /// Cross product of mU2World and mN1
-        Vector3 mU2WorldCrossN1;
+        /// Cross product of r2 and n1
+        Vector3 mR2CrossN1;
 
-        /// Cross product of mU2World and mN2
-        Vector3 mU2WorldCrossN2;
+        /// Cross product of r2 and n2
+        Vector3 mR2CrossN2;
+
+        /// Cross product of vector (r1 + u) and n1
+        Vector3 mR1PlusUCrossN1;
+
+        /// Cross product of vector (r1 + u) and n2
+        Vector3 mR1PlusUCrossN2;
 
         /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
         Matrix2x2 mInverseMassMatrixTranslationConstraint;

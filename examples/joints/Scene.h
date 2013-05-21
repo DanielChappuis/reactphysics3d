@@ -62,6 +62,15 @@ class Scene {
         /// Ball-and-Socket joint
         rp3d::BallAndSocketJoint* mBallAndSocketJoint;
 
+        /// Box 1 of Slider joint
+        Box* mSliderJointBox1;
+
+        /// Box 2 of Slider joint
+        Box* mSliderJointBox2;
+
+        /// Slider joint
+        rp3d::SliderJoint* mSliderJoint;
+
         /// Box for the floor
         Box* mFloor;
 
@@ -75,6 +84,9 @@ class Scene {
 
         /// Create the boxes and joints for the Ball-and-Socket joint example
         void createBallAndSocketJoints();
+
+        /// Create the boxes and joint for the Slider joint example
+        void createSliderJoint();
 
         /// Create the floor
         void createFloor();

@@ -48,6 +48,7 @@
 #include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/AABB.h"
 #include "constraint/BallAndSocketJoint.h"
+#include "constraint/SliderJoint.h"
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

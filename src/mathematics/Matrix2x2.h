@@ -44,7 +44,7 @@ class Matrix2x2 {
         // -------------------- Attributes -------------------- //
 
         /// Rows of the matrix;
-        Vector2 mRows[3];
+        Vector2 mRows[2];
 
     public :
 

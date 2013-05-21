@@ -59,6 +59,9 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
 
+    // Create the Slider joint
+    createSliderJoint();
+
     // Create the floor
     createFloor();
 
@@ -77,12 +80,17 @@ Scene::~Scene() {
 
     // Destroy the joints
     mDynamicsWorld->destroyJoint(mBallAndSocketJoint);
+    mDynamicsWorld->destroyJoint(mSliderJoint);
 
     // Destroy all the boxes of the scene
     mDynamicsWorld->destroyRigidBody(mBallAndSocketJointBox1->getRigidBody());
     mDynamicsWorld->destroyRigidBody(mBallAndSocketJointBox2->getRigidBody());
+    mDynamicsWorld->destroyRigidBody(mSliderJointBox1->getRigidBody());
+    mDynamicsWorld->destroyRigidBody(mSliderJointBox2->getRigidBody());
     delete mBallAndSocketJointBox1;
     delete mBallAndSocketJointBox2;
+    delete mSliderJointBox1;
+    delete mSliderJointBox2;
 
     // Destroy the floor
     mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
@@ -104,10 +112,11 @@ void Scene::simulate() {
         // Update the position and orientation of the boxes
         mBallAndSocketJointBox1->updateTransform();
         mBallAndSocketJointBox2->updateTransform();
+        mSliderJointBox1->updateTransform();
+        mSliderJointBox2->updateTransform();
 
         // Update the position and orientation of the floor
         mFloor->updateTransform();
-
     }
 }
 
@@ -139,6 +148,8 @@ void Scene::render() {
     // Render all the boxes
     mBallAndSocketJointBox1->render(mPhongShader);
     mBallAndSocketJointBox2->render(mPhongShader);
+    mSliderJointBox1->render(mPhongShader);
+    mSliderJointBox2->render(mPhongShader);
 
     // Render the floor
     mFloor->render(mPhongShader);
@@ -189,6 +200,52 @@ void Scene::createBallAndSocketJoints() {
     // Create the joint in the dynamics world
     mBallAndSocketJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(
                                                   mDynamicsWorld->createJoint(jointInfo));
+}
+
+/// Create the boxes and joint for the Slider joint example
+void Scene::createSliderJoint() {
+
+    // --------------- Create the first box --------------- //
+
+    // Position of the box
+    openglframework::Vector3 positionBox1(-4, 6, 0);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mSliderJointBox1 = new Box(BOX_SIZE, positionBox1 , BOX_MASS, mDynamicsWorld);
+
+    // The fist box cannot move
+    mSliderJointBox1->getRigidBody()->setIsMotionEnabled(false);
+
+    // Set the bouncing factor of the box
+    mSliderJointBox1->getRigidBody()->setRestitution(0.4);
+
+    // --------------- Create the second box --------------- //
+
+    // Position of the box
+    openglframework::Vector3 positionBox2(2, 4, 0);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mSliderJointBox2 = new Box(BOX_SIZE, positionBox2 , BOX_MASS, mDynamicsWorld);
+
+    // The second box is allowed to move
+    mSliderJointBox2->getRigidBody()->setIsMotionEnabled(true);
+
+    // Set the bouncing factor of the box
+    mSliderJointBox2->getRigidBody()->setRestitution(0.4);
+
+    // --------------- Create the joint --------------- //
+
+    // Create the joint info object
+    rp3d::RigidBody* body1 = mSliderJointBox1->getRigidBody();
+    rp3d::RigidBody* body2 = mSliderJointBox2->getRigidBody();
+    const rp3d::Vector3& body1Position = body1->getTransform().getPosition();
+    const rp3d::Vector3& body2Position = body2->getTransform().getPosition();
+    const rp3d::Vector3 anchorPointWorldSpace = 0.5 * (body2Position + body1Position);
+    const rp3d::Vector3 sliderAxisWorldSpace = body2Position - body1Position;
+    rp3d::SliderJointInfo jointInfo(body1, body2, anchorPointWorldSpace, sliderAxisWorldSpace);
+
+    // Create the joint in the dynamics world
+    mSliderJoint = dynamic_cast<rp3d::SliderJoint*>(mDynamicsWorld->createJoint(jointInfo));
 }
 
 // Create the floor

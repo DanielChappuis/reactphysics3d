@@ -50,7 +50,7 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
                               : ConstraintInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
-                                anchorPointWorldSpace(initAnchorPointWorldSpace){}
+                                anchorPointWorldSpace(initAnchorPointWorldSpace) {}
 };
 
 // Class BallAndSocketJoint
@@ -64,23 +64,23 @@ class BallAndSocketJoint : public Constraint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Anchor point of body 1 (in local space coordinates)
+        /// Anchor point of body 1 (in local-space coordinates of body 1)
         Vector3 mLocalAnchorPointBody1;
 
-        /// Anchor point of body 2 (in local space coordinates)
+        /// Anchor point of body 2 (in local-space coordinates of body 2)
         Vector3 mLocalAnchorPointBody2;
 
         /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mU1World;
+        Vector3 mR1World;
 
         /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mU2World;
+        Vector3 mR2World;
 
-        /// Skew-Symmetric matrix for cross product with vector mU1World
-        Matrix3x3 mSkewSymmetricMatrixU1World;
+        /// Skew-Symmetric matrix for cross product with vector mR1World
+        Matrix3x3 mSkewSymmetricMatrixR1World;
 
-        /// Skew-Symmetric matrix for cross product with vector mU2World
-        Matrix3x3 mSkewSymmetricMatrixU2World;
+        /// Skew-Symmetric matrix for cross product with vector mR2World
+        Matrix3x3 mSkewSymmetricMatrixR2World;
 
         /// Inverse mass matrix K=JM^-1J^-t of the constraint
         Matrix3x3 mInverseMassMatrix;
