@@ -49,13 +49,34 @@ struct SliderJointInfo : public ConstraintInfo {
         /// Slider axis (in world-space coordinates)
         Vector3 sliderAxisWorldSpace;
 
-        /// Constructor
+        /// True if the slider limits are active
+        bool isLimitsActive;
+
+        /// Lower limit
+        decimal lowerLimit;
+
+        /// Upper limit
+        decimal upperLimit;
+
+        /// Constructor without limits
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
                        : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
-                         sliderAxisWorldSpace(initSliderAxisWorldSpace) {}
+                         sliderAxisWorldSpace(initSliderAxisWorldSpace),
+                         isLimitsActive(false), lowerLimit(-1.0), upperLimit(1.0) {}
+
+        /// Constructor with limits
+        SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                        const Vector3& initAnchorPointWorldSpace,
+                        const Vector3& initSliderAxisWorldSpace,
+                        decimal initLowerLimit, decimal initUpperLimit)
+                       : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                         anchorPointWorldSpace(initAnchorPointWorldSpace),
+                         sliderAxisWorldSpace(initSliderAxisWorldSpace),
+                         isLimitsActive(true), lowerLimit(initLowerLimit),
+                         upperLimit(initUpperLimit) {}
 };
 
 // Class SliderJoint
@@ -77,6 +98,9 @@ class SliderJoint : public Constraint {
         /// Slider axis (in local-space coordinates of body 1)
         Vector3 mSliderAxisBody1;
 
+        /// Initial orientation difference between the two bodies
+        Quaternion mInitOrientationDifference;
+
         /// First vector orthogonal to the slider axis local-space of body 1
         Vector3 mN1;
 
@@ -95,11 +119,26 @@ class SliderJoint : public Constraint {
         /// Cross product of r2 and n2
         Vector3 mR2CrossN2;
 
+        /// Cross product of r2 and the slider axis
+        Vector3 mR2CrossSliderAxis;
+
         /// Cross product of vector (r1 + u) and n1
         Vector3 mR1PlusUCrossN1;
 
         /// Cross product of vector (r1 + u) and n2
         Vector3 mR1PlusUCrossN2;
+
+        /// Cross product of vector (r1 + u) and the slider axis
+        Vector3 mR1PlusUCrossSliderAxis;
+
+        /// Bias of the 2 translation constraints
+        Vector2 mBTranslation;
+
+        /// Bias of the 3 rotation constraints
+        Vector3 mBRotation;
+
+        /// Bias of the lower limit constraint
+        decimal mBLowerLimit;
 
         /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
         Matrix2x2 mInverseMassMatrixTranslationConstraint;
@@ -107,11 +146,35 @@ class SliderJoint : public Constraint {
         /// Inverse of mass matrix K=JM^-1J^t for the rotation constraint (3x3 matrix)
         Matrix3x3 mInverseMassMatrixRotationConstraint;
 
+        /// Inverse of mass matrix K=JM^-1J^t for the lower limit constraint (1x1 matrix)
+        decimal mInverseMassMatrixLowerLimit;
+
         /// Impulse for the 2 translation constraints
         Vector2 mImpulseTranslation;
 
         /// Impulse for the 3 rotation constraints
         Vector3 mImpulseRotation;
+
+        /// Impulse for the lower limit constraint
+        decimal mImpulseLowerLimit;
+
+        /// True if the slider limits are active
+        bool mIsLimitsActive;
+
+        /// Slider axis in world-space coordinates
+        Vector3 mSliderAxisWorld;
+
+        /// Lower limit
+        decimal mLowerLimit;
+
+        /// Upper limit
+        decimal mUpperLimit;
+
+        /// True if the lower limit is violated
+        bool mIsLowerLimitViolated;
+
+        /// True if the upper limit is violated
+        bool mIsUpperLimitViolated;
 
     public :
 
