@@ -31,8 +31,9 @@ using namespace reactphysics3d;
 // Constructor
 SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
             : Constraint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
-              mImpulseLowerLimit(0), mIsLimitsActive(jointInfo.isLimitsActive),
-              mLowerLimit(jointInfo.lowerLimit), mUpperLimit(jointInfo.upperLimit) {
+              mImpulseLowerLimit(0), mImpulseUpperLimit(0),
+              mIsLimitsActive(jointInfo.isLimitsActive),  mLowerLimit(jointInfo.lowerLimit),
+              mUpperLimit(jointInfo.upperLimit) {
 
     assert(mUpperLimit >= 0.0);
     assert(mLowerLimit <= 0.0);
@@ -83,15 +84,18 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     // Compute the vector u
     const Vector3 u = x2 + mR2 - x1 - mR1;
 
-    // Compute the two orthogonal vectors to the slider axis in local-space of body 1
+    // Compute the two orthogonal vectors to the slider axis in world-space
     mSliderAxisWorld = orientationBody1 * mSliderAxisBody1;
     mSliderAxisWorld.normalize();
     mN1 = mSliderAxisWorld.getOneUnitOrthogonalVector();
     mN2 = mSliderAxisWorld.cross(mN1);
 
     // Check if the limit constraints are violated or not
-    decimal lowerLimitError = u.dot(mSliderAxisWorld) - mLowerLimit;
+    decimal uDotSliderAxis = u.dot(mSliderAxisWorld);
+    decimal lowerLimitError = uDotSliderAxis - mLowerLimit;
+    decimal upperLimitError = mUpperLimit - uDotSliderAxis;
     mIsLowerLimitViolated = (lowerLimitError <= 0);
+    mIsUpperLimitViolated = (upperLimitError <= 0);
 
     // Compute the cross products used in the Jacobians
     mR2CrossN1 = mR2.cross(mN1);
@@ -167,7 +171,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     }
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the lower limit (1x1 matrix)
-    mInverseMassMatrixLowerLimit = sumInverseMass +
+    mInverseMassMatrixLimit = sumInverseMass +
                                    mR1PlusUCrossSliderAxis.dot(I1 * mR1PlusUCrossSliderAxis) +
                                    mR2CrossSliderAxis.dot(I2 * mR2CrossSliderAxis);
 
@@ -175,6 +179,12 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     mBLowerLimit = 0.0;
     if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
         mBLowerLimit = biasFactor * lowerLimitError;
+    }
+
+    // Compute the bias "b" of the upper limit constraint
+    mBUpperLimit = 0.0;
+    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        mBUpperLimit = biasFactor * upperLimitError;
     }
 }
 
@@ -293,16 +303,46 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
                                          mSliderAxisWorld.dot(v1) - mR1PlusUCrossSliderAxis.dot(w1);
 
             // Compute the Lagrange multiplier lambda for the lower limit constraint
-            decimal deltaLambdaLower = mInverseMassMatrixLowerLimit * (-JvLowerLimit -mBLowerLimit);
+            decimal deltaLambdaLower = mInverseMassMatrixLimit * (-JvLowerLimit -mBLowerLimit);
             decimal lambdaTemp = mImpulseLowerLimit;
             mImpulseLowerLimit = std::max(mImpulseLowerLimit + deltaLambdaLower, decimal(0.0));
             deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
 
             // Compute the impulse P=J^T * lambda for the lower limit constraint
-            Vector3 linearImpulseBody1 = -deltaLambdaLower * mSliderAxisWorld;
-            Vector3 angularImpulseBody1 = -deltaLambdaLower * mR1PlusUCrossSliderAxis;
-            Vector3 linearImpulseBody2 = -linearImpulseBody1;
-            Vector3 angularImpulseBody2 = deltaLambdaLower * mR2CrossSliderAxis;
+            const Vector3 linearImpulseBody1 = -deltaLambdaLower * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = -deltaLambdaLower * mR1PlusUCrossSliderAxis;
+            const Vector3 linearImpulseBody2 = -linearImpulseBody1;
+            const Vector3 angularImpulseBody2 = deltaLambdaLower * mR2CrossSliderAxis;
+
+            // Apply the impulse to the bodies of the joint
+            if (mBody1->getIsMotionEnabled()) {
+                v1 += inverseMassBody1 * linearImpulseBody1;
+                w1 += I1 * angularImpulseBody1;
+            }
+            if (mBody2->getIsMotionEnabled()) {
+                v2 += inverseMassBody2 * linearImpulseBody2;
+                w2 += I2 * angularImpulseBody2;
+            }
+        }
+
+        // If the upper limit is violated
+        if (mIsUpperLimitViolated) {
+
+            // Compute J*v for the upper limit constraint
+            const decimal JvUpperLimit = mSliderAxisWorld.dot(v1) + mR1PlusUCrossSliderAxis.dot(w1)
+                                        - mSliderAxisWorld.dot(v2) - mR2CrossSliderAxis.dot(w2);
+
+            // Compute the Lagrange multiplier lambda for the upper limit constraint
+            decimal deltaLambdaUpper = mInverseMassMatrixLimit * (-JvUpperLimit -mBUpperLimit);
+            decimal lambdaTemp = mImpulseUpperLimit;
+            mImpulseUpperLimit = std::max(mImpulseUpperLimit + deltaLambdaUpper, decimal(0.0));
+            deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
+
+            // Compute the impulse P=J^T * lambda for the upper limit constraint
+            const Vector3 linearImpulseBody1 = deltaLambdaUpper * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = deltaLambdaUpper * mR1PlusUCrossSliderAxis;
+            const Vector3 linearImpulseBody2 = -linearImpulseBody1;
+            const Vector3 angularImpulseBody2 = -deltaLambdaUpper * mR2CrossSliderAxis;
 
             // Apply the impulse to the bodies of the joint
             if (mBody1->getIsMotionEnabled()) {

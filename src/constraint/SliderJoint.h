@@ -140,14 +140,17 @@ class SliderJoint : public Constraint {
         /// Bias of the lower limit constraint
         decimal mBLowerLimit;
 
+        /// Bias of the upper limit constraint
+        decimal mBUpperLimit;
+
         /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
         Matrix2x2 mInverseMassMatrixTranslationConstraint;
 
         /// Inverse of mass matrix K=JM^-1J^t for the rotation constraint (3x3 matrix)
         Matrix3x3 mInverseMassMatrixRotationConstraint;
 
-        /// Inverse of mass matrix K=JM^-1J^t for the lower limit constraint (1x1 matrix)
-        decimal mInverseMassMatrixLowerLimit;
+        /// Inverse of mass matrix K=JM^-1J^t for the upper and lower limit constraints (1x1 matrix)
+        decimal mInverseMassMatrixLimit;
 
         /// Impulse for the 2 translation constraints
         Vector2 mImpulseTranslation;
@@ -157,6 +160,9 @@ class SliderJoint : public Constraint {
 
         /// Impulse for the lower limit constraint
         decimal mImpulseLowerLimit;
+
+        /// Impulse for the upper limit constraint
+        decimal mImpulseUpperLimit;
 
         /// True if the slider limits are active
         bool mIsLimitsActive;
