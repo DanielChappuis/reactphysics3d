@@ -33,9 +33,9 @@
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
-    
+
 // Enumeration for the type of a constraint
-enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT};
+enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT};
 
 // Class declarations
 struct ConstraintSolverData;

@@ -29,8 +29,11 @@
 
 using namespace reactphysics3d;
 
+// Static variables definition
+const decimal BallAndSocketJoint::BETA = 0.2;
+
 // Constructor
-BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo &jointInfo)
+BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo)
                    : Constraint(jointInfo), mImpulse(Vector3(0, 0, 0)) {
 
     // Compute the local-space anchor point for each body
@@ -51,6 +54,8 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
     // Get the bodies positions and orientations
+    const Vector3& x1 = mBody1->getTransform().getPosition();
+    const Vector3& x2 = mBody2->getTransform().getPosition();
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -89,6 +94,20 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     if (mBody1->getIsMotionEnabled() || mBody2->getIsMotionEnabled()) {
         mInverseMassMatrix = massMatrix.getInverse();
     }
+
+    // Compute the bias "b" of the constraint
+    mBiasVector.setToZero();
+    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        decimal biasFactor = (BETA / constraintSolverData.timeStep);
+        mBiasVector = biasFactor * (x2 + mR2World - x1 - mR1World);
+    }
+
+    // If warm-starting is not enabled
+    if (!constraintSolverData.isWarmStartingActive) {
+
+        // Reset the accumulated impulse
+        mImpulse.setToZero();
+    }
 }
 
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
@@ -126,10 +145,6 @@ void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverD
 // Solve the velocity constraint
 void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
-    // Get the body positions
-    const Vector3& x1 = mBody1->getTransform().getPosition();
-    const Vector3& x2 = mBody2->getTransform().getPosition();
-
     // Get the velocities
     Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
     Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
@@ -143,18 +158,10 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     Matrix3x3 I2 = mBody2->getInertiaTensorInverseWorld();
 
     // Compute J*v
-    const Vector3 Jv = -v1 + mR1World.cross(w1) + v2 - mR2World.cross(w2);
-
-    // Compute the bias "b" of the constraint
-    Vector3 b(0, 0, 0);
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-        decimal beta = decimal(0.2);     // TODO : Use a constant here
-        decimal biasFactor = (beta / constraintSolverData.timeStep);
-        b = biasFactor * (x2 + mR2World - x1 - mR1World);
-    }
+    const Vector3 Jv = v2 + w2.cross(mR2World) - v1 - w1.cross(mR1World);
 
     // Compute the Lagrange multiplier lambda
-    const Vector3 deltaLambda = mInverseMassMatrix * (-Jv - b);
+    const Vector3 deltaLambda = mInverseMassMatrix * (-Jv - mBiasVector);
     mImpulse += deltaLambda;
 
     // Compute the impulse P=J^T * lambda

@@ -62,6 +62,11 @@ class BallAndSocketJoint : public Constraint {
 
     private :
 
+        // -------------------- Constants -------------------- //
+
+        // Beta value for the bias factor of position correction
+        static const decimal BETA;
+
         // -------------------- Attributes -------------------- //
 
         /// Anchor point of body 1 (in local-space coordinates of body 1)
@@ -75,6 +80,9 @@ class BallAndSocketJoint : public Constraint {
 
         /// Vector from center of body 2 to anchor point in world-space
         Vector3 mR2World;
+
+        /// Bias vector for the constraint
+        Vector3 mBiasVector;
 
         /// Skew-Symmetric matrix for cross product with vector mR1World
         Matrix3x3 mSkewSymmetricMatrixR1World;

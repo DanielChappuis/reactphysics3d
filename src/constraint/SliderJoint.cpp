@@ -28,15 +28,21 @@
 
 using namespace reactphysics3d;
 
+// Static variables definition
+const decimal SliderJoint::BETA = decimal(0.2);
+
 // Constructor
 SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
             : Constraint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
-              mImpulseLowerLimit(0), mImpulseUpperLimit(0),
-              mIsLimitsActive(jointInfo.isLimitsActive),  mLowerLimit(jointInfo.lowerLimit),
-              mUpperLimit(jointInfo.upperLimit) {
+              mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
+              mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
+              mLowerLimit(jointInfo.lowerLimit), mUpperLimit(jointInfo.upperLimit),
+              mIsLowerLimitViolated(false), mIsUpperLimitViolated(false),
+              mMotorSpeed(jointInfo.motorSpeed), mMaxMotorForce(jointInfo.maxMotorForce){
 
     assert(mUpperLimit >= 0.0);
     assert(mLowerLimit <= 0.0);
+    assert(mMaxMotorForce >= 0.0);
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();
@@ -63,7 +69,7 @@ SliderJoint::~SliderJoint() {
 // Initialize before solving the constraint
 void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
-    // Initialize the bodies index in the velocity array
+    // Initialize the bodies index in the veloc ity array
     mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
@@ -94,8 +100,16 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     decimal uDotSliderAxis = u.dot(mSliderAxisWorld);
     decimal lowerLimitError = uDotSliderAxis - mLowerLimit;
     decimal upperLimitError = mUpperLimit - uDotSliderAxis;
-    mIsLowerLimitViolated = (lowerLimitError <= 0);
-    mIsUpperLimitViolated = (upperLimitError <= 0);
+    bool oldIsLowerLimitViolated = mIsLowerLimitViolated;
+    mIsLowerLimitViolated = lowerLimitError <= 0;
+    if (mIsLowerLimitViolated != oldIsLowerLimitViolated) {
+        mImpulseLowerLimit = 0.0;
+    }
+    bool oldIsUpperLimitViolated = mIsUpperLimitViolated;
+    mIsUpperLimitViolated = upperLimitError <= 0;
+    if (mIsUpperLimitViolated != oldIsUpperLimitViolated) {
+        mImpulseUpperLimit = 0.0;
+    }
 
     // Compute the cross products used in the Jacobians
     mR2CrossN1 = mR2.cross(mN1);
@@ -139,8 +153,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
     // Compute the bias "b" of the translation constraint
     mBTranslation.setToZero();
-    decimal beta = decimal(0.2);     // TODO : Use a constant here
-    decimal biasFactor = (beta / constraintSolverData.timeStep);
+    decimal biasFactor = (BETA / constraintSolverData.timeStep);
     if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
         mBTranslation.x = u.dot(mN1);
         mBTranslation.y = u.dot(mN2);
@@ -170,21 +183,54 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
-    // Compute the inverse of the mass matrix K=JM^-1J^t for the lower limit (1x1 matrix)
-    mInverseMassMatrixLimit = sumInverseMass +
-                                   mR1PlusUCrossSliderAxis.dot(I1 * mR1PlusUCrossSliderAxis) +
-                                   mR2CrossSliderAxis.dot(I2 * mR2CrossSliderAxis);
+    if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
-    // Compute the bias "b" of the lower limit constraint
-    mBLowerLimit = 0.0;
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-        mBLowerLimit = biasFactor * lowerLimitError;
+        // Compute the inverse of the mass matrix K=JM^-1J^t for the lower limit (1x1 matrix)
+        mInverseMassMatrixLimit = 0.0;
+        if (mBody1->getIsMotionEnabled()) {
+            mInverseMassMatrixLimit += mBody1->getMassInverse() +
+                                       mR1PlusUCrossSliderAxis.dot(I1 * mR1PlusUCrossSliderAxis);
+        }
+        if (mBody2->getIsMotionEnabled()) {
+            mInverseMassMatrixLimit += mBody2->getMassInverse() +
+                                       mR2CrossSliderAxis.dot(I2 * mR2CrossSliderAxis);
+        }
+        mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
+                                  decimal(1.0) / mInverseMassMatrixLimit : decimal(0.0);
+
+        // Compute the bias "b" of the lower limit constraint
+        mBLowerLimit = 0.0;
+        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+            mBLowerLimit = biasFactor * lowerLimitError;
+        }
+
+        // Compute the bias "b" of the upper limit constraint
+        mBUpperLimit = 0.0;
+        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+            mBUpperLimit = biasFactor * upperLimitError;
+        }
     }
 
-    // Compute the bias "b" of the upper limit constraint
-    mBUpperLimit = 0.0;
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-        mBUpperLimit = biasFactor * upperLimitError;
+    // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
+    mInverseMassMatrixMotor = 0.0;
+    if (mBody1->getIsMotionEnabled()) {
+        mInverseMassMatrixMotor += mBody1->getMassInverse();
+    }
+    if (mBody2->getIsMotionEnabled()) {
+        mInverseMassMatrixMotor += mBody2->getMassInverse();
+    }
+    mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
+                              decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
+
+    // If warm-starting is not enabled
+    if (!constraintSolverData.isWarmStartingActive) {
+
+        // Reset all the accumulated impulses
+        mImpulseTranslation.setToZero();
+        mImpulseRotation.setToZero();
+        mImpulseLowerLimit = 0.0;
+        mImpulseUpperLimit = 0.0;
+        mImpulseMotor = 0.0;
     }
 }
 
@@ -214,6 +260,19 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints
     angularImpulseBody1 += -mImpulseRotation;
     angularImpulseBody2 += mImpulseRotation;
+
+    // Compute the impulse P=J^T * lambda for the lower and upper limits constraints
+    decimal impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
+    Vector3 linearImpulseLimits = impulseLimits * mSliderAxisWorld;
+    linearImpulseBody1 += linearImpulseLimits;
+    angularImpulseBody1 += impulseLimits * mR1PlusUCrossSliderAxis;
+    linearImpulseBody2 += -linearImpulseLimits;
+    angularImpulseBody2 += -impulseLimits * mR2CrossSliderAxis;
+
+    // Compute the impulse P=J^T * lambda for the motor constraint
+    Vector3 impulseMotor = mImpulseMotor * mSliderAxisWorld;
+    linearImpulseBody1 += impulseMotor;
+    linearImpulseBody2 += -impulseMotor;
 
     // Apply the impulse to the bodies of the joint
     if (mBody1->getIsMotionEnabled()) {
@@ -293,7 +352,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
     // --------------- Limits Constraints --------------- //
 
-    if (mIsLimitsActive) {
+    if (mIsLimitEnabled) {
 
         // If the lower limit is violated
         if (mIsLowerLimitViolated) {
@@ -355,9 +414,118 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             }
         }
     }
+
+    // --------------- Motor --------------- //
+
+    if (mIsMotorEnabled) {
+
+        // Compute J*v for the motor
+        const decimal JvMotor = mSliderAxisWorld.dot(v1) - mSliderAxisWorld.dot(v2);
+
+        // Compute the Lagrange multiplier lambda for the motor
+        const decimal maxMotorImpulse = mMaxMotorForce * constraintSolverData.timeStep;
+        decimal deltaLambdaMotor = mInverseMassMatrixMotor * (-JvMotor -mMotorSpeed);
+        decimal lambdaTemp = mImpulseMotor;
+        mImpulseMotor = clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
+        deltaLambdaMotor = mImpulseMotor - lambdaTemp;
+
+        // Compute the impulse P=J^T * lambda for the motor
+        const Vector3 linearImpulseBody1 = deltaLambdaMotor * mSliderAxisWorld;
+        const Vector3 linearImpulseBody2 = -linearImpulseBody1;
+
+        // Apply the impulse to the bodies of the joint
+        if (mBody1->getIsMotionEnabled()) {
+            v1 += inverseMassBody1 * linearImpulseBody1;
+        }
+        if (mBody2->getIsMotionEnabled()) {
+            v2 += inverseMassBody2 * linearImpulseBody2;
+        }
+    }
 }
 
 // Solve the position constraint
 void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
 
+}
+
+// Enable/Disable the limits of the joint
+void SliderJoint::enableLimit(bool isLimitEnabled) {
+
+    if (isLimitEnabled != mIsLimitEnabled) {
+
+        mIsLimitEnabled = isLimitEnabled;
+
+        // Reset the limits
+        resetLimits();
+    }
+}
+
+// Enable/Disable the motor of the joint
+void SliderJoint::enableMotor(bool isMotorEnabled) {
+
+    mIsMotorEnabled = isMotorEnabled;
+    mImpulseMotor = 0.0;
+
+    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+}
+
+// Set the lower limit
+void SliderJoint::setLowerLimit(decimal lowerLimit) {
+
+    assert(lowerLimit <= mUpperLimit);
+
+    if (lowerLimit != mLowerLimit) {
+
+        mLowerLimit = lowerLimit;
+
+        // Reset the limits
+        resetLimits();
+    }
+}
+
+// Set the upper limit
+void SliderJoint::setUpperLimit(decimal upperLimit) {
+
+    assert(mLowerLimit <= upperLimit);
+
+    if (upperLimit != mUpperLimit) {
+
+        mUpperLimit = upperLimit;
+
+        // Reset the limits
+        resetLimits();
+    }
+}
+
+// Reset the limits
+void SliderJoint::resetLimits() {
+
+    // Reset the accumulated impulses for the limits
+    mImpulseLowerLimit = 0.0;
+    mImpulseUpperLimit = 0.0;
+
+    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+}
+
+// Set the motor speed
+void SliderJoint::setMotorSpeed(decimal motorSpeed) {
+
+    if (motorSpeed != mMotorSpeed) {
+
+        mMotorSpeed = motorSpeed;
+
+        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    }
+}
+
+// Set the maximum motor force
+void SliderJoint::setMaxMotorForce(decimal maxMotorForce) {
+
+    if (maxMotorForce != mMaxMotorForce) {
+
+        assert(mMaxMotorForce >= 0.0);
+        mMaxMotorForce = maxMotorForce;
+
+        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    }
 }
