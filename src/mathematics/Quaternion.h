@@ -84,14 +84,23 @@ struct Quaternion {
         /// Set the quaternion to zero
         void setToZero();
 
+        /// Set to the identity quaternion
+        void setToIdentity();
+
         /// Return the vector v=(x y z) of the quaternion
         Vector3 getVectorV() const;
 
         /// Return the length of the quaternion
         decimal length() const;
 
+        /// Return the square of the length of the quaternion
+        decimal lengthSquare() const;
+
         /// Normalize the quaternion
         void normalize();
+
+        /// Inverse the quaternion
+        void inverse();
 
         /// Return the unit quaternion
         Quaternion getUnit() const;
@@ -156,6 +165,14 @@ inline void Quaternion::setToZero() {
     w = 0;
 }
 
+// Set to the identity quaternion
+inline void Quaternion::setToIdentity() {
+    x = 0;
+    y = 0;
+    z = 0;
+    w = 1;
+}
+
 // Return the vector v=(x y z) of the quaternion
 inline Vector3 Quaternion::getVectorV() const {
 
@@ -166,6 +183,11 @@ inline Vector3 Quaternion::getVectorV() const {
 // Return the length of the quaternion (inline)
 inline decimal Quaternion::length() const {
     return sqrt(x*x + y*y + z*z + w*w);
+}
+
+// Return the square of the length of the quaternion
+inline decimal Quaternion::lengthSquare() const {
+    return x*x + y*y + z*z + w*w;
 }
 
 // Normalize the quaternion
@@ -180,6 +202,21 @@ inline void Quaternion::normalize() {
     y /= l;
     z /= l;
     w /= l;
+}
+
+// Inverse the quaternion
+inline void Quaternion::inverse() {
+
+    // Get the square length of the quaternion
+    decimal lengthSquareQuaternion = lengthSquare();
+
+    assert (lengthSquareQuaternion > MACHINE_EPSILON);
+
+    // Compute and return the inverse quaternion
+    x /= -lengthSquareQuaternion;
+    y /= -lengthSquareQuaternion;
+    z /= -lengthSquareQuaternion;
+    w /= lengthSquareQuaternion;
 }
 
 // Return the unit quaternion
@@ -207,14 +244,13 @@ inline Quaternion Quaternion::getConjugate() const {
 // Return the inverse of the quaternion (inline)
 inline Quaternion Quaternion::getInverse() const {
 
-    decimal lengthQuaternion = length();
-    lengthQuaternion = lengthQuaternion * lengthQuaternion;
+    decimal lengthSquareQuaternion = lengthSquare();
 
-    assert (lengthQuaternion > MACHINE_EPSILON);
+    assert (lengthSquareQuaternion > MACHINE_EPSILON);
 
     // Compute and return the inverse quaternion
-    return Quaternion(-x / lengthQuaternion, -y / lengthQuaternion,
-                      -z / lengthQuaternion, w / lengthQuaternion);
+    return Quaternion(-x / lengthSquareQuaternion, -y / lengthSquareQuaternion,
+                      -z / lengthSquareQuaternion, w / lengthSquareQuaternion);
 }
 
 // Scalar product between two quaternions

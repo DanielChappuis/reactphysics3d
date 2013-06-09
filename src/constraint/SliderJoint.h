@@ -55,11 +55,11 @@ struct SliderJointInfo : public ConstraintInfo {
         /// True if the slider motor is enabled
         bool isMotorEnabled;
 
-        /// Lower limit
-        decimal lowerLimit;
+        /// Mininum allowed translation if limits are enabled
+        decimal minTranslationLimit;
 
-        /// Upper limit
-        decimal upperLimit;
+        /// Maximum allowed translation if limits are enabled
+        decimal maxTranslationLimit;
 
         /// Motor speed
         decimal motorSpeed;
@@ -74,31 +74,34 @@ struct SliderJointInfo : public ConstraintInfo {
                        : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
-                         isLimitEnabled(false), isMotorEnabled(false), lowerLimit(-1.0),
-                         upperLimit(1.0), motorSpeed(0), maxMotorForce(0) {}
+                         isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
+                         maxTranslationLimit(1.0), motorSpeed(0), maxMotorForce(0) {}
 
         /// Constructor with limits and no motor
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
-                        decimal initLowerLimit, decimal initUpperLimit)
+                        decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
                        : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
-                         isLimitEnabled(true), isMotorEnabled(false), lowerLimit(initLowerLimit),
-                         upperLimit(initUpperLimit), motorSpeed(0), maxMotorForce(0) {}
+                         isLimitEnabled(true), isMotorEnabled(false),
+                         minTranslationLimit(initMinTranslationLimit),
+                         maxTranslationLimit(initMaxTranslationLimit), motorSpeed(0),
+                         maxMotorForce(0) {}
 
         /// Constructor with limits and motor
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
-                        decimal initLowerLimit, decimal initUpperLimit,
+                        decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
                         decimal initMotorSpeed, decimal initMaxMotorForce)
                        : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
-                         isLimitEnabled(true), isMotorEnabled(true), lowerLimit(initLowerLimit),
-                         upperLimit(initUpperLimit), motorSpeed(initMotorSpeed),
+                         isLimitEnabled(true), isMotorEnabled(true),
+                         minTranslationLimit(initMinTranslationLimit),
+                         maxTranslationLimit(initMaxTranslationLimit), motorSpeed(initMotorSpeed),
                          maxMotorForce(initMaxMotorForce) {}
 };
 
@@ -126,8 +129,8 @@ class SliderJoint : public Constraint {
         /// Slider axis (in local-space coordinates of body 1)
         Vector3 mSliderAxisBody1;
 
-        /// Initial orientation difference between the two bodies
-        Quaternion mInitOrientationDifference;
+        /// Inverse of the initial orientation difference between the two bodies
+        Quaternion mInitOrientationDifferenceInv;
 
         /// First vector orthogonal to the slider axis local-space of body 1
         Vector3 mN1;
@@ -183,19 +186,19 @@ class SliderJoint : public Constraint {
         /// Inverse of mass matrix K=JM^-1J^t for the motor
         decimal mInverseMassMatrixMotor;
 
-        /// Impulse for the 2 translation constraints
+        /// Accumulated impulse for the 2 translation constraints
         Vector2 mImpulseTranslation;
 
-        /// Impulse for the 3 rotation constraints
+        /// Accumulated impulse for the 3 rotation constraints
         Vector3 mImpulseRotation;
 
-        /// Impulse for the lower limit constraint
+        /// Accumulated impulse for the lower limit constraint
         decimal mImpulseLowerLimit;
 
-        /// Impulse for the upper limit constraint
+        /// Accumulated impulse for the upper limit constraint
         decimal mImpulseUpperLimit;
 
-        /// Impulse for the motor
+        /// Accumulated impulse for the motor
         decimal mImpulseMotor;
 
         /// True if the slider limits are enabled
@@ -207,10 +210,10 @@ class SliderJoint : public Constraint {
         /// Slider axis in world-space coordinates
         Vector3 mSliderAxisWorld;
 
-        /// Lower limit
+        /// Lower limit (minimum translation distance)
         decimal mLowerLimit;
 
-        /// Upper limit
+        /// Upper limit (maximum translation distance)
         decimal mUpperLimit;
 
         /// True if the lower limit is violated
@@ -252,17 +255,17 @@ class SliderJoint : public Constraint {
         /// Enable/Disable the motor of the joint
         void enableMotor(bool isMotorEnabled);
 
-        /// Return the lower limit
-        decimal getLowerLimit() const;
+        /// Return the minimum translation limit
+        decimal getMinTranslationLimit() const;
 
-        /// Set the lower limit
-        void setLowerLimit(decimal lowerLimit);
+        /// Set the minimum translation limit
+        void setMinTranslationLimit(decimal lowerLimit);
 
-        /// Return the upper limit
-        decimal getUpperLimit() const;
+        /// Return the maximum translation limit
+        decimal getMaxTranslationLimit() const;
 
-        /// Set the upper limit
-        void setUpperLimit(decimal upperLimit);
+        /// Set the maximum translation limit
+        void setMaxTranslationLimit(decimal upperLimit);
 
         /// Return the motor speed
         decimal getMotorSpeed() const;
@@ -305,13 +308,13 @@ inline bool SliderJoint::isMotorEnabled() const {
     return mIsMotorEnabled;
 }
 
-// Return the lower limit
-inline decimal SliderJoint::getLowerLimit() const {
+// Return the minimum translation limit
+inline decimal SliderJoint::getMinTranslationLimit() const {
     return mLowerLimit;
 }
 
-// Return the upper limit
-inline decimal SliderJoint::getUpperLimit() const {
+// Return the maximum translation limit
+inline decimal SliderJoint::getMaxTranslationLimit() const {
     return mUpperLimit;
 }
 

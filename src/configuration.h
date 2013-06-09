@@ -81,6 +81,9 @@ const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 /// Pi constant
 const decimal PI = decimal(3.14159265);
 
+/// 2*Pi constant
+const decimal PI_TIMES_2 = decimal(6.28318530);
+
 /// Default internal constant timestep in seconds
 const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
 

@@ -37,7 +37,7 @@ ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
                  : mJoints(joints), mLinearVelocities(linearVelocities),
                    mAngularVelocities(angularVelocities),
                    mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(false),
+                   mIsWarmStartingActive(true),
                    mIsNonLinearGaussSeidelPositionCorrectionActive(false),
                    mConstraintSolverData(linearVelocities,
                    angularVelocities, mapBodyToVelocityIndex){
@@ -77,6 +77,11 @@ void ConstraintSolver::initialize(decimal dt) {
 
         // Initialize the constraint before solving it
         joint->initBeforeSolve(mConstraintSolverData);
+
+        // Warm-start the constraint if warm-starting is enabled
+        if (mIsWarmStartingActive) {
+            joint->warmstart(mConstraintSolverData);
+        }
     }
 }
 

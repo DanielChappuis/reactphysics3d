@@ -26,6 +26,8 @@
 // Libraries
 #include "SliderJoint.h"
 
+// TODO : Solve 2x2 or 3x3 linear systems without inverting the A matrix (direct resolution)
+
 using namespace reactphysics3d;
 
 // Static variables definition
@@ -36,7 +38,7 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
             : Constraint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
               mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
-              mLowerLimit(jointInfo.lowerLimit), mUpperLimit(jointInfo.upperLimit),
+              mLowerLimit(jointInfo.minTranslationLimit), mUpperLimit(jointInfo.maxTranslationLimit),
               mIsLowerLimitViolated(false), mIsUpperLimitViolated(false),
               mMotorSpeed(jointInfo.motorSpeed), mMaxMotorForce(jointInfo.maxMotorForce){
 
@@ -50,10 +52,11 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
     mLocalAnchorPointBody1 = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
     mLocalAnchorPointBody2 = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
 
-    // Compute the initial orientation difference between the two bodies
-    mInitOrientationDifference = transform2.getOrientation() *
+    // Compute the inverse of the initial orientation difference between the two bodies
+    mInitOrientationDifferenceInv = transform2.getOrientation() *
                                  transform1.getOrientation().getInverse();
-    mInitOrientationDifference.normalize();
+    mInitOrientationDifferenceInv.normalize();
+    mInitOrientationDifferenceInv.inverse();
 
     // Compute the slider axis in local-space of body 1
     mSliderAxisBody1 = mBody1->getTransform().getOrientation().getInverse() *
@@ -87,7 +90,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     mR1 = orientationBody1 * mLocalAnchorPointBody1;
     mR2 = orientationBody2 * mLocalAnchorPointBody2;
 
-    // Compute the vector u
+    // Compute the vector u (difference between anchor points)
     const Vector3 u = x2 + mR2 - x1 - mR1;
 
     // Compute the two orthogonal vectors to the slider axis in world-space
@@ -178,14 +181,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
         Quaternion currentOrientationDifference = orientationBody2 * orientationBody1.getInverse();
         currentOrientationDifference.normalize();
-        const Quaternion qError = currentOrientationDifference *
-                                  mInitOrientationDifference.getInverse();
+        const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
     if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
-        // Compute the inverse of the mass matrix K=JM^-1J^t for the lower limit (1x1 matrix)
+        // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
         mInverseMassMatrixLimit = 0.0;
         if (mBody1->getIsMotionEnabled()) {
             mInverseMassMatrixLimit += mBody1->getMassInverse() +
@@ -424,7 +426,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
         // Compute the Lagrange multiplier lambda for the motor
         const decimal maxMotorImpulse = mMaxMotorForce * constraintSolverData.timeStep;
-        decimal deltaLambdaMotor = mInverseMassMatrixMotor * (-JvMotor -mMotorSpeed);
+        decimal deltaLambdaMotor = mInverseMassMatrixMotor * (-JvMotor - mMotorSpeed);
         decimal lambdaTemp = mImpulseMotor;
         mImpulseMotor = clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
         deltaLambdaMotor = mImpulseMotor - lambdaTemp;
@@ -469,8 +471,8 @@ void SliderJoint::enableMotor(bool isMotorEnabled) {
     // TODO : Wake up the bodies of the joint here when sleeping is implemented
 }
 
-// Set the lower limit
-void SliderJoint::setLowerLimit(decimal lowerLimit) {
+// Set the minimum translation limit
+void SliderJoint::setMinTranslationLimit(decimal lowerLimit) {
 
     assert(lowerLimit <= mUpperLimit);
 
@@ -483,8 +485,8 @@ void SliderJoint::setLowerLimit(decimal lowerLimit) {
     }
 }
 
-// Set the upper limit
-void SliderJoint::setUpperLimit(decimal upperLimit) {
+// Set the maximum translation limit
+void SliderJoint::setMaxTranslationLimit(decimal upperLimit) {
 
     assert(mLowerLimit <= upperLimit);
 

@@ -120,6 +120,12 @@ class TestQuaternion : public Test {
             quaternion.setToZero();
             test(quaternion == Quaternion(0, 0, 0, 0));
 
+            // Tes the methods to get or set to identity
+            Quaternion identity1(1, 2, 3, 4);
+            identity1.setToIdentity();
+            test(identity1 == Quaternion(0, 0, 0, 1));
+            test(Quaternion::identity() == Quaternion(0, 0, 0, 1));
+
             // Test the method to get the vector (x, y, z)
             Vector3 v = mQuaternion1.getVectorV();
             test(v.x == mQuaternion1.x);
@@ -133,9 +139,12 @@ class TestQuaternion : public Test {
             test(conjugate.z == -mQuaternion1.z);
             test(conjugate.w == mQuaternion1.w);
 
-            // Test the inverse method
-            Quaternion inverse = mQuaternion1.getInverse();
-            Quaternion product = mQuaternion1 * inverse;
+            // Test the inverse methods
+            Quaternion inverse1 = mQuaternion1.getInverse();
+            Quaternion inverse2(mQuaternion1);
+            inverse2.inverse();
+            test(inverse2 == inverse1);
+            Quaternion product = mQuaternion1 * inverse1;
             test(approxEqual(product.x, mIdentity.x, decimal(10e-6)));
             test(approxEqual(product.y, mIdentity.y, decimal(10e-6)));
             test(approxEqual(product.z, mIdentity.z, decimal(10e-6)));

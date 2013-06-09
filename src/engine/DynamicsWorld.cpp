@@ -27,6 +27,7 @@
 #include "DynamicsWorld.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
+#include "constraint/HingeJoint.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -212,7 +213,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     mConstrainedLinearVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
     mConstrainedAngularVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
 
-    double dt = mTimer.getTimeStep();
+    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
     // Fill in the mapping of rigid body to their index in the constrained
     // velocities arrays
@@ -410,6 +411,15 @@ Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
             const SliderJointInfo& info = dynamic_cast<const SliderJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) SliderJoint(info);
+            break;
+        }
+
+        // Hinge joint
+        case HINGEJOINT:
+        {
+            void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
+            const HingeJointInfo& info = dynamic_cast<const HingeJointInfo&>(jointInfo);
+            newJoint = new (allocatedMemory) HingeJoint(info);
             break;
         }
 
