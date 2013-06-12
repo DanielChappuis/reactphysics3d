@@ -28,6 +28,7 @@
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"
+#include "constraint/FixedJoint.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -420,6 +421,15 @@ Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
             const HingeJointInfo& info = dynamic_cast<const HingeJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) HingeJoint(info);
+            break;
+        }
+
+        // Fixed joint
+        case FIXEDJOINT:
+        {
+            void* allocatedMemory = mMemoryAllocator.allocate(sizeof(FixedJoint));
+            const FixedJointInfo& info = dynamic_cast<const FixedJointInfo&>(jointInfo);
+            newJoint = new (allocatedMemory) FixedJoint(info);
             break;
         }
 

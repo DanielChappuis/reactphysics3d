@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
-#define REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
+#ifndef REACTPHYSICS3D_FIXED_JOINT_H
+#define REACTPHYSICS3D_FIXED_JOINT_H
 
 // Libraries
 #include "Constraint.h"
@@ -32,12 +32,12 @@
 
 namespace reactphysics3d {
 
-// Structure BallAndSocketJointInfo
+// Structure FixedJointInfo
 /**
- * This structure is used to gather the information needed to create a ball-and-socket
- * joint. This structure will be used to create the actual ball-and-socket joint.
+ * This structure is used to gather the information needed to create a fixed
+ * joint. This structure will be used to create the actual fixed joint.
  */
-struct BallAndSocketJointInfo : public ConstraintInfo {
+struct FixedJointInfo : public ConstraintInfo {
 
     public :
 
@@ -47,18 +47,18 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         Vector3 anchorPointWorldSpace;
 
         /// Constructor
-        BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
-                               const Vector3& initAnchorPointWorldSpace)
-                              : ConstraintInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
-                                anchorPointWorldSpace(initAnchorPointWorldSpace) {}
+        FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                       const Vector3& initAnchorPointWorldSpace)
+                       : ConstraintInfo(rigidBody1, rigidBody2, FIXEDJOINT),
+                         anchorPointWorldSpace(initAnchorPointWorldSpace){}
 };
 
-// Class BallAndSocketJoint
+// Class FixedJoint
 /**
- * This class represents a ball-and-socket joint that allows arbitrary rotation
+ * This class represents a fixed joint that is used to forbid any translation or rotation
  * between two bodies.
  */
-class BallAndSocketJoint : public Constraint {
+class FixedJoint : public Constraint {
 
     private :
 
@@ -81,24 +81,36 @@ class BallAndSocketJoint : public Constraint {
         /// Vector from center of body 2 to anchor point in world-space
         Vector3 mR2World;
 
-        /// Bias vector for the constraint
-        Vector3 mBiasVector;
+        /// Accumulated impulse for the 3 translation constraints
+        Vector3 mImpulseTranslation;
 
-        /// Inverse mass matrix K=JM^-1J^-t of the constraint
-        Matrix3x3 mInverseMassMatrix;
+        /// Accumulate impulse for the 3 rotation constraints
+        Vector3 mImpulseRotation;
 
-        /// Accumulated impulse
-        Vector3 mImpulse;
+        /// Inverse mass matrix K=JM^-1J^-t of the 3 translation constraints (3x3 matrix)
+        Matrix3x3 mInverseMassMatrixTranslation;
+
+        /// Inverse mass matrix K=JM^-1J^-t of the 3 rotation constraints (3x3 matrix)
+        Matrix3x3 mInverseMassMatrixRotation;
+
+        /// Bias vector for the 3 translation constraints
+        Vector3 mBiasTranslation;
+
+        /// Bias vector for the 3 rotation constraints
+        Vector3 mBiasRotation;
+
+        /// Inverse of the initial orientation difference between the two bodies
+        Quaternion mInitOrientationDifferenceInv;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
+        FixedJoint(const FixedJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~BallAndSocketJoint();
+        virtual ~FixedJoint();
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
@@ -117,8 +129,8 @@ class BallAndSocketJoint : public Constraint {
 };
 
 // Return the number of bytes used by the joint
-inline size_t BallAndSocketJoint::getSizeInBytes() const {
-    return sizeof(BallAndSocketJoint);
+inline size_t FixedJoint::getSizeInBytes() const {
+    return sizeof(FixedJoint);
 }
 
 }

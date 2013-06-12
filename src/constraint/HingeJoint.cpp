@@ -28,8 +28,6 @@
 #include "../engine/ConstraintSolver.h"
 #include <cmath>
 
-// TODO : Solve 2x2 or 3x3 linear systems without inverting the A matrix (direct resolution)
-
 using namespace reactphysics3d;
 
 // Static variables definition

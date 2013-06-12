@@ -208,7 +208,7 @@ inline const Transform& CollisionBody::getTransform() const {
 inline void CollisionBody::setTransform(const Transform& transform) {
 
     // Check if the body has moved
-    if (this->mTransform != transform) {
+    if (mTransform != transform) {
         mHasMoved = true;
     }
 
