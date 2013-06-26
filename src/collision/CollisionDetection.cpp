@@ -109,6 +109,9 @@ void CollisionDetection::computeNarrowPhase() {
         
         // Update the contact cache of the overlapping pair
         mWorld->updateOverlappingPair(pair);
+
+        // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
+        if (mNoCollisionPairs.count(pair->getBodiesIndexPair()) > 0) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(

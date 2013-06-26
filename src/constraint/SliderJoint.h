@@ -64,7 +64,7 @@ struct SliderJointInfo : public ConstraintInfo {
         /// Motor speed
         decimal motorSpeed;
 
-        /// Maximum motor force (in Newton) that can be applied to reach to desired motor speed
+        /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
         decimal maxMotorForce;
 
         /// Constructor without limits and without motor
@@ -128,6 +128,12 @@ class SliderJoint : public Constraint {
 
         /// Slider axis (in local-space coordinates of body 1)
         Vector3 mSliderAxisBody1;
+
+        /// Inertia tensor of body 1 (in world-space coordinates)
+        Matrix3x3 mI1;
+
+        /// Inertia tensor of body 2 (in world-space coordinates)
+        Matrix3x3 mI2;
 
         /// Inverse of the initial orientation difference between the two bodies
         Quaternion mInitOrientationDifferenceInv;
@@ -225,7 +231,7 @@ class SliderJoint : public Constraint {
         /// Motor speed
         decimal mMotorSpeed;
 
-        /// Maximum motor force (in Newton) that can be applied to reach to desired motor speed
+        /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
         decimal mMaxMotorForce;
 
         // -------------------- Methods -------------------- //
@@ -254,6 +260,9 @@ class SliderJoint : public Constraint {
 
         /// Enable/Disable the motor of the joint
         void enableMotor(bool isMotorEnabled);
+
+        /// Return the current translation value of the joint
+        decimal getTranslation() const;
 
         /// Return the minimum translation limit
         decimal getMinTranslationLimit() const;
@@ -294,7 +303,7 @@ class SliderJoint : public Constraint {
         /// Solve the velocity constraint
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
 
-        /// Solve the position constraint
+        /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 };
 

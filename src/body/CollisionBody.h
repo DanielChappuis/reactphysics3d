@@ -239,8 +239,6 @@ inline void CollisionBody::updateOldTransform() {
 // Update the rigid body in order to reflect a change in the body state
 inline void CollisionBody::updateAABB() {
 
-    // TODO : An AABB should not be updated every frame but only if the body has moved
-
     // Update the AABB
     mCollisionShape->updateAABB(mAabb, mTransform);
 }

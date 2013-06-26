@@ -33,14 +33,15 @@ using namespace reactphysics3d;
 ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
                                    std::vector<Vector3>& linearVelocities,
                                    std::vector<Vector3>& angularVelocities,
+                                   std::vector<Vector3>& positions,
+                                   std::vector<Quaternion>& orientations,
                                    const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
                  : mJoints(joints), mLinearVelocities(linearVelocities),
-                   mAngularVelocities(angularVelocities),
+                   mAngularVelocities(angularVelocities), mPositions(positions),
+                   mOrientations(orientations),
                    mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(true),
-                   mIsNonLinearGaussSeidelPositionCorrectionActive(false),
-                   mConstraintSolverData(linearVelocities,
-                   angularVelocities, mapBodyToVelocityIndex){
+                   mIsWarmStartingActive(true), mConstraintSolverData(linearVelocities,
+                   angularVelocities, positions, orientations, mapBodyToVelocityIndex){
 
 }
 
@@ -94,10 +95,8 @@ void ConstraintSolver::solveVelocityConstraints() {
     std::set<Constraint*>::iterator it;
     for (it = mJoints.begin(); it != mJoints.end(); ++it) {
 
-        Constraint* joint = (*it);
-
         // Solve the constraint
-        joint->solveVelocityConstraint(mConstraintSolverData);
+        (*it)->solveVelocityConstraint(mConstraintSolverData);
     }
 }
 
@@ -110,9 +109,7 @@ void ConstraintSolver::solvePositionConstraints() {
     std::set<Constraint*>::iterator it;
     for (it = mJoints.begin(); it != mJoints.end(); ++it) {
 
-        Constraint* joint = (*it);
-
         // Solve the constraint
-        joint->solveVelocityConstraint(mConstraintSolverData);
+        (*it)->solvePositionConstraint(mConstraintSolverData);
     }
 }

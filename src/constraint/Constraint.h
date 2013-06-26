@@ -59,6 +59,9 @@ struct ConstraintInfo {
         /// Type of the constraint
         ConstraintType type;
 
+        /// True if the two bodies of the constraint are allowed to collide with each other
+        bool isCollisionEnabled;
+
         /// Position correction technique used for the constraint (used for joints).
         /// By default, the BAUMGARTE technique is used
         JointsPositionCorrectionTechnique positionCorrectionTechnique;
@@ -66,12 +69,14 @@ struct ConstraintInfo {
         /// Constructor
         ConstraintInfo(ConstraintType constraintType)
                       : body1(NULL), body2(NULL), type(constraintType),
-                        positionCorrectionTechnique(BAUMGARTE_JOINTS) {}
+                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        isCollisionEnabled(true) {}
 
         /// Constructor
         ConstraintInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, ConstraintType constraintType)
                       : body1(rigidBody1), body2(rigidBody2), type(constraintType),
-                        positionCorrectionTechnique(BAUMGARTE_JOINTS) {
+                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        isCollisionEnabled(true) {
         }
 
         /// Destructor
@@ -113,6 +118,9 @@ class Constraint {
         /// Position correction technique used for the constraint (used for joints)
         JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
 
+        /// True if the two bodies of the constraint are allowed to collide with each other
+        bool mIsCollisionEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -142,6 +150,9 @@ class Constraint {
 
         /// Return the type of the constraint
         ConstraintType getType() const;
+
+        /// Return true if the collision between the two bodies of the constraint is enabled
+        bool isCollisionEnabled() const;
 
         /// Return the number of bytes used by the constraint
         virtual size_t getSizeInBytes() const = 0;
@@ -177,7 +188,12 @@ inline bool Constraint::isActive() const {
 // Return the type of the constraint
 inline ConstraintType Constraint::getType() const {
     return mType;
-}                                                                                                         
+}
+
+// Return true if the collision between the two bodies of the constraint is enabled
+inline bool Constraint::isCollisionEnabled() const {
+    return mIsCollisionEnabled;
+}
 
 }
 

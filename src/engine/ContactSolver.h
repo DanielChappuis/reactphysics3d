@@ -442,6 +442,9 @@ class ContactSolver {
         /// Clean up the constraint solver
         void cleanup();
 
+        /// Return true if the split impulses position correction technique is used for contacts
+        bool isSplitImpulseActive() const;
+
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
 
@@ -469,6 +472,11 @@ inline Vector3 ContactSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
     return mSplitAngularVelocities[indexBody];
 }
 
+// Return true if the split impulses position correction technique is used for contacts
+inline bool ContactSolver::isSplitImpulseActive() const {
+    return mIsSplitImpulseActive;
+}
+
 // Activate or Deactivate the split impulses for contacts
 inline void ContactSolver::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
@@ -482,7 +490,7 @@ inline void ContactSolver::setIsSolveFrictionAtContactManifoldCenterActive(bool 
 
 // Compute the collision restitution factor from the restitution factor of each body
 inline decimal ContactSolver::computeMixedRestitutionFactor(const RigidBody* body1,
-                                                               const RigidBody* body2) const {
+                                                            const RigidBody* body2) const {
     decimal restitution1 = body1->getRestitution();
     decimal restitution2 = body2->getRestitution();
 

@@ -133,6 +133,12 @@ struct Quaternion {
         /// Overloaded operator for the substraction
         Quaternion operator-(const Quaternion& quaternion) const;
 
+        /// Overloaded operator for addition with assignment
+        Quaternion& operator+=(const Quaternion& quaternion);
+
+        /// Overloaded operator for substraction with assignment
+        Quaternion& operator-=(const Quaternion& quaternion);
+
         /// Overloaded operator for the multiplication with a constant
         Quaternion operator*(decimal nb) const;
 
@@ -270,6 +276,24 @@ inline Quaternion Quaternion::operator-(const Quaternion& quaternion) const {
 
     // Return the result of the substraction
     return Quaternion(x - quaternion.x, y - quaternion.y, z - quaternion.z, w - quaternion.w);
+}
+
+// Overloaded operator for addition with assignment
+inline Quaternion& Quaternion::operator+=(const Quaternion& quaternion) {
+    x += quaternion.x;
+    y += quaternion.y;
+    z += quaternion.z;
+    w += quaternion.w;
+    return *this;
+}
+
+// Overloaded operator for substraction with assignment
+inline Quaternion& Quaternion::operator-=(const Quaternion& quaternion) {
+    x -= quaternion.x;
+    y -= quaternion.y;
+    z -= quaternion.z;
+    w -= quaternion.w;
+    return *this;
 }
 
 // Overloaded operator for the multiplication with a constant

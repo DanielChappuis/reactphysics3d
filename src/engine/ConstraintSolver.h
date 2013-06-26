@@ -53,6 +53,12 @@ struct ConstraintSolverData {
         /// Reference to the bodies angular velocities
         std::vector<Vector3>& angularVelocities;
 
+        /// Reference to the bodies positions
+        std::vector<Vector3>& positions;
+
+        /// Reference to the bodies orientations
+        std::vector<Quaternion>& orientations;
+
         /// Reference to the map that associates rigid body to their index
         /// in the constrained velocities array
         const std::map<RigidBody*, uint>& mapBodyToConstrainedVelocityIndex;
@@ -63,9 +69,12 @@ struct ConstraintSolverData {
         /// Constructor
         ConstraintSolverData(std::vector<Vector3>& refLinearVelocities,
                              std::vector<Vector3>& refAngularVelocities,
+                             std::vector<Vector3>& refPositions,
+                             std::vector<Quaternion>& refOrientations,
                              const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
                            :linearVelocities(refLinearVelocities),
                             angularVelocities(refAngularVelocities),
+                            positions(refPositions), orientations(refOrientations),
                             mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
 
         }
@@ -161,6 +170,12 @@ class ConstraintSolver {
         /// after solving the constraints)
         std::vector<Vector3>& mAngularVelocities;
 
+        /// Reference to the array of bodies positions (for position error correction)
+        std::vector<Vector3>& mPositions;
+
+        /// Reference to the array of bodies orientations (for position error correction)
+        std::vector<Quaternion>& mOrientations;
+
         /// Reference to the map that associates rigid body to their index in
         /// the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
@@ -170,9 +185,6 @@ class ConstraintSolver {
 
         /// True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
-
-        /// True if the Non-Linear-Gauss-Seidel position correction technique is enabled
-        bool mIsNonLinearGaussSeidelPositionCorrectionActive;
 
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
@@ -185,6 +197,8 @@ class ConstraintSolver {
         ConstraintSolver(std::set<Constraint*>& joints,
                          std::vector<Vector3>& linearVelocities,
                          std::vector<Vector3>& angularVelocities,
+                         std::vector<Vector3>& positions,
+                         std::vector<Quaternion>& orientations,
                          const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
@@ -204,16 +218,14 @@ class ConstraintSolver {
 
         /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
         void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
+
+        /// Return true if the body is in at least one constraint
+        bool isConstrainedBody(RigidBody* body) const;
 };
 
-// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
-inline bool ConstraintSolver::getIsNonLinearGaussSeidelPositionCorrectionActive() const {
-    return mIsNonLinearGaussSeidelPositionCorrectionActive;
-}
-
-// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
-inline void ConstraintSolver::setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive) {
-    mIsNonLinearGaussSeidelPositionCorrectionActive = isActive;
+// Return true if the body is in at least one constraint
+inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
+    return mConstraintBodies.count(body) == 1;
 }
 
 }

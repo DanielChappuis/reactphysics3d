@@ -197,11 +197,17 @@ class TestQuaternion : public Test {
             Quaternion quat1(4, 5, 2, 10);
             Quaternion quat2(-2, 7, 8, 3);
             Quaternion test1 = quat1 + quat2;
+            Quaternion test11(-6, 52, 2, 8);
+            test11 += quat1;
             test(test1 == Quaternion(2, 12, 10, 13));
+            test(test11 == Quaternion(-2, 57, 4, 18));
 
             // Test substraction
             Quaternion test2 = quat1 - quat2;
+            Quaternion test22(-73, 62, 25, 9);
+            test22 -= quat1;
             test(test2 == Quaternion(6, -2, -6, 7));
+            test(test22 == Quaternion(-77, 57, 23, -1));
 
             // Test multiplication with a number
             Quaternion test3 = quat1 * 3.0;

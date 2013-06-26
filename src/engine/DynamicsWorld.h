@@ -91,6 +91,12 @@ class DynamicsWorld : public CollisionWorld {
         /// after solving the constraints)
         std::vector<Vector3> mConstrainedAngularVelocities;
 
+        /// Array of constrained rigid bodies position (for position error correction)
+        std::vector<Vector3> mConstrainedPositions;
+
+        /// Array of constrained rigid bodies orientation (for position error correction)
+        std::vector<Quaternion> mConstrainedOrientations;
+
         /// Map body to their index in the constrained velocities array
         std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
 
@@ -105,6 +111,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
+        /// Update the AABBs of the bodies
+        void updateRigidBodiesAABB();
+
         /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
                                                 Vector3 newAngVelocity);
@@ -117,6 +126,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Solve the contacts and constraints
         void solveContactsAndConstraints();
+
+        /// Solve the position error correction of the constraints
+        void solvePositionCorrection();
 
         /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
@@ -137,7 +149,8 @@ class DynamicsWorld : public CollisionWorld {
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactPointInfo* contactInfo);
+        virtual void notifyNewContact(const BroadPhasePair* pair,
+                                      const ContactPointInfo* contactInfo);
 
 public :
 
@@ -179,7 +192,7 @@ public :
                                    const Matrix3x3& inertiaTensorLocal,
                                    const CollisionShape& collisionShape);
 
-        /// Destroy a rigid body
+        /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
 
         /// Create a joint between two bodies in the world and return a pointer to the new joint
@@ -200,8 +213,14 @@ public :
         /// Return the number of rigid bodies in the world
         uint getNbRigidBodies() const;
 
-        /// Return the number of contact constraints in the world
+        /// Return the number of joints in the world
+        uint getNbJoints() const;
+
+        /// Return the number of contact manifolds in the world
         uint getNbContactManifolds() const;
+
+        /// Return the current physics time (in seconds)
+        long double getPhysicsTime() const;
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -302,6 +321,11 @@ inline uint DynamicsWorld::getNbRigidBodies() const {
     return mRigidBodies.size();
 }
 
+/// Return the number of joints in the world
+inline uint DynamicsWorld::getNbJoints() const {
+    return mJoints.size();
+}
+
 // Return an iterator to the beginning of the bodies of the physics world
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator() {
     return mRigidBodies.begin();
@@ -315,6 +339,11 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
 // Return the number of contact manifolds in the world
 inline uint DynamicsWorld::getNbContactManifolds() const {
     return mContactManifolds.size();
+}
+
+/// Return the current physics time (in seconds)
+inline long double DynamicsWorld::getPhysicsTime() const {
+    return mTimer.getPhysicsTime();
 }
 
 }

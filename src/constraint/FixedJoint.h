@@ -81,6 +81,12 @@ class FixedJoint : public Constraint {
         /// Vector from center of body 2 to anchor point in world-space
         Vector3 mR2World;
 
+        /// Inertia tensor of body 1 (in world-space coordinates)
+        Matrix3x3 mI1;
+
+        /// Inertia tensor of body 2 (in world-space coordinates)
+        Matrix3x3 mI2;
+
         /// Accumulated impulse for the 3 translation constraints
         Vector3 mImpulseTranslation;
 
@@ -124,7 +130,7 @@ class FixedJoint : public Constraint {
         /// Solve the velocity constraint
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
 
-        /// Solve the position constraint
+        /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 };
 

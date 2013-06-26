@@ -143,7 +143,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             int minAxis = d.getAbsoluteVector().getMinAxis();
 
             // Compute sin(60)
-            const decimal sin60 = sqrt(3.0) * decimal(0.5);
+            const decimal sin60 = decimal(sqrt(3.0)) * decimal(0.5);
 
             // Create a rotation quaternion to rotate the vector v1 to get the vectors
             // v2 and v3

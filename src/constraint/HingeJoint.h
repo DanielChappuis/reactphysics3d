@@ -66,8 +66,9 @@ struct HingeJointInfo : public ConstraintInfo {
         /// Motor speed (in radian/second)
         decimal motorSpeed;
 
-        /// Maximum motor force (in Newton) that can be applied to reach to desired motor speed
-        decimal maxMotorForce;
+        /// Maximum motor torque (in Newtons * meters) that can be applied to reach
+        /// to desired motor speed
+        decimal maxMotorTorque;
 
         /// Constructor without limits and without motor
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
@@ -76,8 +77,8 @@ struct HingeJointInfo : public ConstraintInfo {
                               : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
-                                isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1), motorSpeed(0),
-                                maxMotorForce(0) {}
+                                isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
+                                motorSpeed(0), maxMotorTorque(0) {}
 
         /// Constructor with limits but without motor
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
@@ -88,20 +89,21 @@ struct HingeJointInfo : public ConstraintInfo {
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
-                                maxAngleLimit(initMaxAngleLimit), motorSpeed(0), maxMotorForce(0) {}
+                                maxAngleLimit(initMaxAngleLimit), motorSpeed(0),
+                                maxMotorTorque(0) {}
 
         /// Constructor with limits and motor
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
-                               decimal initMotorSpeed, decimal initMaxMotorForce)
+                               decimal initMotorSpeed, decimal initMaxMotorTorque)
                               : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
                                 maxAngleLimit(initMaxAngleLimit), motorSpeed(initMotorSpeed),
-                                maxMotorForce(initMaxMotorForce) {}
+                                maxMotorTorque(initMaxMotorTorque) {}
 };
 
 // Class HingeJoint
@@ -131,6 +133,12 @@ class HingeJoint : public Constraint {
 
         /// Hinge rotation axis (in local-space coordiantes of body 2)
         Vector3 mHingeLocalAxisBody2;
+
+        /// Inertia tensor of body 1 (in world-space coordinates)
+        Matrix3x3 mI1;
+
+        /// Inertia tensor of body 2 (in world-space coordinates)
+        Matrix3x3 mI2;
 
         /// Hinge rotation axis (in world-space coordinates) computed from body 1
         Vector3 mA1;
@@ -210,15 +218,16 @@ class HingeJoint : public Constraint {
         /// Motor speed
         decimal mMotorSpeed;
 
-        /// Maximum motor force (in Newton) that can be applied to reach to desired motor speed
-        decimal mMaxMotorForce;
+        /// Maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
+        decimal mMaxMotorTorque;
 
         // -------------------- Methods -------------------- //
 
         /// Reset the limits
         void resetLimits();
 
-        /// Given an angle in radian, this method returns the corresponding angle in the range [-pi; pi]
+        /// Given an angle in radian, this method returns the corresponding
+        /// angle in the range [-pi; pi]
         decimal computeNormalizedAngle(decimal angle) const;
 
         /// Given an "inputAngle" in the range [-pi, pi], this method returns an
@@ -271,14 +280,14 @@ class HingeJoint : public Constraint {
         /// Set the motor speed
         void setMotorSpeed(decimal motorSpeed);
 
-        /// Return the maximum motor force
-        decimal getMaxMotorForce() const;
+        /// Return the maximum motor torque
+        decimal getMaxMotorTorque() const;
 
-        /// Set the maximum motor force
-        void setMaxMotorForce(decimal maxMotorForce);
+        /// Set the maximum motor torque
+        void setMaxMotorTorque(decimal maxMotorTorque);
 
-        /// Return the intensity of the current force applied for the joint motor
-        decimal getMotorForce(decimal timeStep) const;
+        /// Return the intensity of the current torque applied for the joint motor
+        decimal getMotorTorque(decimal timeStep) const;
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
@@ -292,7 +301,7 @@ class HingeJoint : public Constraint {
         /// Solve the velocity constraint
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
 
-        /// Solve the position constraint
+        /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 };
 
@@ -321,13 +330,13 @@ inline decimal HingeJoint::getMotorSpeed() const {
     return mMotorSpeed;
 }
 
-// Return the maximum motor force
-inline decimal HingeJoint::getMaxMotorForce() const {
-    return mMaxMotorForce;
+// Return the maximum motor torque
+inline decimal HingeJoint::getMaxMotorTorque() const {
+    return mMaxMotorTorque;
 }
 
-// Return the intensity of the current force applied for the joint motor
-inline decimal HingeJoint::getMotorForce(decimal timeStep) const {
+// Return the intensity of the current torque applied for the joint motor
+inline decimal HingeJoint::getMotorTorque(decimal timeStep) const {
     return mImpulseMotor / timeStep;
 }
 

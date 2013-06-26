@@ -54,15 +54,14 @@ typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 // ------------------- Enumerations ------------------- //
 
 /// Position correction technique used in the constraint solver (for joints).
-/// BAUMGARTE : Faster but can be innacurate in some situations. This is the option
-///             used by default.
-/// NON_LINEAR_GAUSS_SEIDEL : Slower but more precise.
+/// BAUMGARTE_JOINTS : Faster but can be innacurate in some situations.
+/// NON_LINEAR_GAUSS_SEIDEL : Slower but more precise. This is the option used by default.
 enum JointsPositionCorrectionTechnique {BAUMGARTE_JOINTS, NON_LINEAR_GAUSS_SEIDEL};
 
 /// Position correction technique used in the contact solver (for contacts)
-/// BAUMGARTE : Faster but can be innacurate and can lead to unexpected bounciness
-///             in some situations (due to error correction factor being added to
-///             the bodies momentum).
+/// BAUMGARTE_CONTACTS : Faster but can be innacurate and can lead to unexpected bounciness
+///                      in some situations (due to error correction factor being added to
+///                      the bodies momentum).
 /// SPLIT_IMPULSES : A bit slower but the error correction factor is not added to the
 ///                 bodies momentum. This is the option used by default.
 enum ContactsPositionCorrectionTechnique {BAUMGARTE_CONTACTS, SPLIT_IMPULSES};
@@ -93,7 +92,7 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 
-///Object margin for collision detection in cm (For GJK-EPA Algorithm)
+/// Object margin for collision detection in cm (For GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);
 
 /// Distance threshold for two contact points for a valid persistent contact (in meters)
@@ -106,7 +105,7 @@ const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
 const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
 
 /// Number of iterations when solving the position constraints of the Sequential Impulse technique
-const uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 3;  // TODO : Maybe we can use less iterations here
+const uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
 
 }
 
