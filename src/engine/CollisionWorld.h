@@ -91,7 +91,7 @@ class CollisionWorld {
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
+        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactPointInfo* contactInfo);
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);

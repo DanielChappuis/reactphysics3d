@@ -27,14 +27,62 @@
 #define REACTPHYSICS3D_CONSTRAINT_H
 
 // Libraries
+#include "../configuration.h"
 #include "../body/RigidBody.h"
 #include "../mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
-    
+
 // Enumeration for the type of a constraint
-enum ConstraintType {CONTACT};
+enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
+
+// Class declarations
+struct ConstraintSolverData;
+
+// Structure ConstraintInfo
+/**
+ * This structure is used to gather the information needed to create a constraint.
+ */
+struct ConstraintInfo {
+
+    public :
+
+        // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the constraint
+        RigidBody* body1;
+
+        /// Second rigid body of the constraint
+        RigidBody* body2;
+
+        /// Type of the constraint
+        ConstraintType type;
+
+        /// True if the two bodies of the constraint are allowed to collide with each other
+        bool isCollisionEnabled;
+
+        /// Position correction technique used for the constraint (used for joints).
+        /// By default, the BAUMGARTE technique is used
+        JointsPositionCorrectionTechnique positionCorrectionTechnique;
+
+        /// Constructor
+        ConstraintInfo(ConstraintType constraintType)
+                      : body1(NULL), body2(NULL), type(constraintType),
+                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        isCollisionEnabled(true) {}
+
+        /// Constructor
+        ConstraintInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, ConstraintType constraintType)
+                      : body1(rigidBody1), body2(rigidBody2), type(constraintType),
+                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        isCollisionEnabled(true) {
+        }
+
+        /// Destructor
+        virtual ~ConstraintInfo() {}
+
+};
 
 // Class Constraint
 /**
@@ -58,15 +106,20 @@ class Constraint {
         /// True if the constraint is active
         bool mActive;
 
-        /// Number mathematical constraints associated with this Constraint
-        uint mNbConstraints;
-
         /// Type of the constraint
         const ConstraintType mType;
 
-        /// Cached lambda values of each mathematical constraint for
-        /// more precise initializaton of LCP solver
-        std::vector<decimal> mCachedLambdas;
+        /// Body 1 index in the velocity array to solve the constraint
+        uint mIndexBody1;
+
+        /// Body 2 index in the velocity array to solve the constraint
+        uint mIndexBody2;
+
+        /// Position correction technique used for the constraint (used for joints)
+        JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
+
+        /// True if the two bodies of the constraint are allowed to collide with each other
+        bool mIsCollisionEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -81,8 +134,7 @@ class Constraint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Constraint(RigidBody* const body1, RigidBody* const body2, uint nbConstraints,
-                   bool active, ConstraintType type);
+        Constraint(const ConstraintInfo& constraintInfo);
 
         /// Destructor
         virtual ~Constraint();
@@ -99,14 +151,23 @@ class Constraint {
         /// Return the type of the constraint
         ConstraintType getType() const;
 
-        /// Return the number of mathematical constraints
-        unsigned int getNbConstraints() const;
+        /// Return true if the collision between the two bodies of the constraint is enabled
+        bool isCollisionEnabled() const;
 
-        /// Get one cached lambda value
-        decimal getCachedLambda(uint index) const;
+        /// Return the number of bytes used by the constraint
+        virtual size_t getSizeInBytes() const = 0;
 
-        /// Set on cached lambda value
-        void setCachedLambda(uint index, decimal lambda);
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the position constraint
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 };
 
 // Return the reference to the body 1
@@ -127,25 +188,12 @@ inline bool Constraint::isActive() const {
 // Return the type of the constraint
 inline ConstraintType Constraint::getType() const {
     return mType;
-}                                                          
-
-
-// Return the number auxiliary constraints
-inline uint Constraint::getNbConstraints() const {
-    return mNbConstraints;
 }
 
-// Get one previous lambda value
-inline decimal Constraint::getCachedLambda(uint index) const {
-    assert(index < mNbConstraints);
-    return mCachedLambdas[index];
-} 
-
-// Set on cached lambda value  
-inline void Constraint::setCachedLambda(uint index, decimal lambda) {
-    assert(index < mNbConstraints);
-    mCachedLambdas[index] = lambda;
-}                                                   
+// Return true if the collision between the two bodies of the constraint is enabled
+inline bool Constraint::isCollisionEnabled() const {
+    return mIsCollisionEnabled;
+}
 
 }
 

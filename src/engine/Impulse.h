@@ -23,59 +23,43 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CONTACT_INFO_H
-#define	REACTPHYSICS3D_CONTACT_INFO_H
+#ifndef REACTPHYSICS3D_IMPULSE_H
+#define REACTPHYSICS3D_IMPULSE_H
 
 // Libraries
-#include "../collision/shapes/BoxShape.h"
 #include "../mathematics/mathematics.h"
 
-// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Structure ContactInfo
+// Structure Impulse
 /**
- * This structure contains informations about a collision contact
- * computed during the narrow-phase collision detection. Those
- * informations are used to compute the contact set for a contact
- * between two bodies.
+ * Represents an impulse that we can apply to bodies in the contact or constraint solver.
  */
-struct ContactInfo {
-
-    private:
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ContactInfo(const ContactInfo& contactInfo);
-
-        /// Private assignment operator
-        ContactInfo& operator=(const ContactInfo& contactInfo);
+struct Impulse {
 
     public:
 
-        // -------------------- Attributes -------------------- //
+        /// Linear impulse applied to the first body
+        const Vector3 linearImpulseBody1;
 
-        /// Normal vector the the collision contact in world space
-        const Vector3 normal;
+        /// Linear impulse applied to the second body
+        const Vector3 linearImpulseBody2;
 
-        /// Penetration depth of the contact
-        const decimal penetrationDepth;
+        /// Angular impulse applied to the first body
+        const Vector3 angularImpulseBody1;
 
-        /// Contact point of body 1 in local space of body 1
-        const Vector3 localPoint1;
-
-        /// Contact point of body 2 in local space of body 2
-        const Vector3 localPoint2;
-
-        // -------------------- Methods -------------------- //
+        /// Angular impulse applied to the second body
+        const Vector3 angularImpulseBody2;
 
         /// Constructor
-        ContactInfo(const Vector3& normal, decimal penetrationDepth,
-                    const Vector3& localPoint1, const Vector3& localPoint2);
+        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
+                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
+            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
+              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
+
+        }
 };
 
 }
 
 #endif
-

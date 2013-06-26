@@ -1,4 +1,3 @@
-
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
 * Copyright (c) 2010-2013 Daniel Chappuis                                       *
@@ -27,13 +26,9 @@
 #ifndef TEST_MATRIX3X3_H
 #define TEST_MATRIX3X3_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Matrix3x3.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -196,6 +191,15 @@ class TestMatrix3x3 : public Test {
             test(matrix.getAbsoluteMatrix() == Matrix3x3(24, 64, 253, 35, 52, 72, 21, 35, 363));
             Matrix3x3 absoluteMatrix = matrix2.getAbsoluteMatrix();
             test(absoluteMatrix == Matrix3x3(2, 3, 4, 5, 6, 7, 8, 9, 10));
+
+            // Test method that computes skew-symmetric matrix for cross product
+            Vector3 vector1(3, -5, 6);
+            Vector3 vector2(73, 42, 26);
+            Matrix3x3 skewMatrix = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(vector1);
+            test(skewMatrix == Matrix3x3(0, -6, -5, 6, 0, -3, 5, 3, 0));
+            Vector3 crossProduct1 = vector1.cross(vector2);
+            Vector3 crossProduct2 = skewMatrix * vector2;
+            test(crossProduct1 == crossProduct2);
         }
 
         /// Test the operators
@@ -278,3 +282,5 @@ class TestMatrix3x3 : public Test {
  };
 
 }
+
+#endif

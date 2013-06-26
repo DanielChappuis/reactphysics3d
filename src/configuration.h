@@ -51,6 +51,21 @@ typedef long unsigned int luint;
 typedef luint bodyindex;
 typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
+// ------------------- Enumerations ------------------- //
+
+/// Position correction technique used in the constraint solver (for joints).
+/// BAUMGARTE_JOINTS : Faster but can be innacurate in some situations.
+/// NON_LINEAR_GAUSS_SEIDEL : Slower but more precise. This is the option used by default.
+enum JointsPositionCorrectionTechnique {BAUMGARTE_JOINTS, NON_LINEAR_GAUSS_SEIDEL};
+
+/// Position correction technique used in the contact solver (for contacts)
+/// BAUMGARTE_CONTACTS : Faster but can be innacurate and can lead to unexpected bounciness
+///                      in some situations (due to error correction factor being added to
+///                      the bodies momentum).
+/// SPLIT_IMPULSES : A bit slower but the error correction factor is not added to the
+///                 bodies momentum. This is the option used by default.
+enum ContactsPositionCorrectionTechnique {BAUMGARTE_CONTACTS, SPLIT_IMPULSES};
+
 // ------------------- Constants ------------------- //
 
 /// Smallest decimal value (negative)
@@ -65,6 +80,9 @@ const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 /// Pi constant
 const decimal PI = decimal(3.14159265);
 
+/// 2*Pi constant
+const decimal PI_TIMES_2 = decimal(6.28318530);
+
 /// Default internal constant timestep in seconds
 const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
 
@@ -74,7 +92,7 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 
-///Object margin for collision detection in cm (For GJK-EPA Algorithm)
+/// Object margin for collision detection in cm (For GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);
 
 /// Distance threshold for two contact points for a valid persistent contact (in meters)
@@ -83,8 +101,11 @@ const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 /// Velocity threshold for contact velocity restitution
 const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
 
-/// Number of iterations when solving a LCP problem
-const uint DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
+/// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
+const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
+
+/// Number of iterations when solving the position constraints of the Sequential Impulse technique
+const uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
 
 }
 

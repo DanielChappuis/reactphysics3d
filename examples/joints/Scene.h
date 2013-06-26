@@ -32,11 +32,12 @@
 #include "Box.h"
 
 // Constants
-const int NB_BOXES = 20;                                    // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                                // Box mass in kilograms
 const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
+const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
 // Class Scene
 class Scene {
@@ -54,8 +55,44 @@ class Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Boxes of Ball-And-Socket joint chain
+        Box* mBallAndSocketJointChainBoxes[NB_BALLSOCKETJOINT_BOXES];
+
+        /// Boxes of the Hinge joint chain
+        Box* mHingeJointChainBoxes[NB_HINGE_BOXES];
+
+        /// Ball-And-Socket joints of the chain
+        rp3d::BallAndSocketJoint* mBallAndSocketJoints[NB_BALLSOCKETJOINT_BOXES-1];
+
+        /// Hinge joints of the chain
+        rp3d::HingeJoint* mHingeJoints[NB_HINGE_BOXES-1];
+
+        /// Bottom box of the Slider joint
+        Box* mSliderJointBottomBox;
+
+        /// Top box of the Slider joint
+        Box* mSliderJointTopBox;
+
+        /// Slider joint
+        rp3d::SliderJoint* mSliderJoint;
+
+        /// Propeller box
+        Box* mPropellerBox;
+
+        /// Box 1 of Fixed joint
+        Box* mFixedJointBox1;
+
+        /// Box 2 of Fixed joint
+        Box* mFixedJointBox2;
+
+        /// Hinge joint
+        rp3d::HingeJoint* mPropellerHingeJoint;
+
+        /// First Fixed joint
+        rp3d::FixedJoint* mFixedJoint1;
+
+        /// Second Fixed joint
+        rp3d::FixedJoint* mFixedJoint2;
 
         /// Box for the floor
         Box* mFloor;
@@ -65,6 +102,23 @@ class Scene {
 
         /// True if the physics simulation is running
         bool mIsRunning;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the boxes and joints for the Ball-and-Socket joint example
+        void createBallAndSocketJoints();
+
+        /// Create the boxes and joint for the Slider joint example
+        void createSliderJoint();
+
+        /// Create the boxes and joint for the Hinge joint example
+        void createPropellerHingeJoint();
+
+        /// Create the boxes and joint for the Fixed joint example
+        void createFixedJoints();
+
+        /// Create the floor
+        void createFloor();
 
     public:
 

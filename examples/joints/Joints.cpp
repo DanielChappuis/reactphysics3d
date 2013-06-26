@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     viewer = new Viewer();
     Vector2 windowsSize = Vector2(800, 600);
     Vector2 windowsPosition = Vector2(100, 100);
-    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Falling Cubes", windowsSize, windowsPosition);
+    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Joints", windowsSize, windowsPosition);
     if (!initOK) return 1;
 
     // Create the scene

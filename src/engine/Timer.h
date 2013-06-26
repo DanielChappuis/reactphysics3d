@@ -47,7 +47,7 @@ namespace reactphysics3d {
 // Class Timer
 /**
  * This class will take care of the time in the physics engine. It
- * uses fuunctions that depend on the current platform to get the
+ * uses functions that depend on the current platform to get the
  * current time.
  */
 class Timer {
@@ -58,9 +58,6 @@ class Timer {
 
         /// Timestep dt of the physics engine (timestep > 0.0)
         double mTimeStep;
-
-        /// Current time of the physics engine
-        long double mTime;
 
         /// Last time the timer has been updated
         long double mLastUpdateTime;
@@ -139,7 +136,7 @@ inline void Timer::setTimeStep(double timeStep) {
 
 // Return the current time
 inline long double Timer::getPhysicsTime() const {
-    return mTime;
+    return mLastUpdateTime;
 }
 
 // Return if the timer is running
@@ -172,9 +169,6 @@ inline bool Timer::isPossibleToTakeStep() const {
 // Take a new step => update the timer by adding the timeStep value to the current time
 inline void Timer::nextStep() {
     assert(mIsRunning);
-
-    // Update the current time of the physics engine
-    mTime += mTimeStep;
 
     // Update the accumulator value
     mAccumulator -= mTimeStep;

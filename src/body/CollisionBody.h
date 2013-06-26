@@ -208,7 +208,7 @@ inline const Transform& CollisionBody::getTransform() const {
 inline void CollisionBody::setTransform(const Transform& transform) {
 
     // Check if the body has moved
-    if (this->mTransform != transform) {
+    if (mTransform != transform) {
         mHasMoved = true;
     }
 
@@ -238,8 +238,6 @@ inline void CollisionBody::updateOldTransform() {
 
 // Update the rigid body in order to reflect a change in the body state
 inline void CollisionBody::updateAABB() {
-
-    // TODO : An AABB should not be updated every frame but only if the body has moved
 
     // Update the AABB
     mCollisionShape->updateAABB(mAabb, mTransform);

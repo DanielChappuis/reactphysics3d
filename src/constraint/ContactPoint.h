@@ -28,7 +28,6 @@
 
 // Libraries
 #include "Constraint.h"
-#include "../collision/ContactInfo.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include "../mathematics/mathematics.h"
@@ -49,6 +48,52 @@
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Structure ContactPointInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
+struct ContactPointInfo : public ConstraintInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        ContactPointInfo(const ContactPointInfo& contactInfo);
+
+        /// Private assignment operator
+        ContactPointInfo& operator=(const ContactPointInfo& contactInfo);
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Normal vector the the collision contact in world space
+        const Vector3 normal;
+
+        /// Penetration depth of the contact
+        const decimal penetrationDepth;
+
+        /// Contact point of body 1 in local space of body 1
+        const Vector3 localPoint1;
+
+        /// Contact point of body 2 in local space of body 2
+        const Vector3 localPoint2;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactPointInfo(const Vector3& normal, decimal penetrationDepth,
+                         const Vector3& localPoint1, const Vector3& localPoint2)
+            : ConstraintInfo(CONTACT), normal(normal), penetrationDepth(penetrationDepth),
+              localPoint1(localPoint1), localPoint2(localPoint2) {
+
+        }
+};
 
 // Class ContactPoint
 /**
@@ -84,7 +129,16 @@ class ContactPoint : public Constraint {
         bool mIsRestingContact;
 
         /// Two orthogonal vectors that span the tangential friction plane
-        std::vector<Vector3> mFrictionVectors;
+        Vector3 mFrictionVectors[2];
+
+        /// Cached penetration impulse
+        decimal mPenetrationImpulse;
+
+        /// Cached first friction impulse
+        decimal mFrictionImpulse1;
+
+        /// Cached second friction impulse
+        decimal mFrictionImpulse2;
         
         // -------------------- Methods -------------------- //
 
@@ -99,7 +153,7 @@ class ContactPoint : public Constraint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
+        ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
         virtual ~ContactPoint();
@@ -121,6 +175,24 @@ class ContactPoint : public Constraint {
 
         /// Return the contact world point on body 2
         Vector3 getWorldPointOnBody2() const;
+
+        /// Return the cached penetration impulse
+        decimal getPenetrationImpulse() const;
+
+        /// Return the cached first friction impulse
+        decimal getFrictionImpulse1() const;
+
+        /// Return the cached second friction impulse
+        decimal getFrictionImpulse2() const;
+
+        /// Set the cached penetration impulse
+        void setPenetrationImpulse(decimal impulse);
+
+        /// Set the first cached friction impulse
+        void setFrictionImpulse1(decimal impulse);
+
+        /// Set the second cached friction impulse
+        void setFrictionImpulse2(decimal impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -148,6 +220,21 @@ class ContactPoint : public Constraint {
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
+
+        /// Return the number of bytes used by the contact point
+        virtual size_t getSizeInBytes() const;
+
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the position constraint
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 
         #ifdef VISUAL_DEBUG
             /// Draw the contact (for debugging)
@@ -183,6 +270,36 @@ inline Vector3 ContactPoint::getWorldPointOnBody1() const {
 // Return the contact world point on body 2
 inline Vector3 ContactPoint::getWorldPointOnBody2() const {
     return mWorldPointOnBody2;
+}
+
+// Return the cached penetration impulse
+inline decimal ContactPoint::getPenetrationImpulse() const {
+    return mPenetrationImpulse;
+}
+
+// Return the cached first friction impulse
+inline decimal ContactPoint::getFrictionImpulse1() const {
+    return mFrictionImpulse1;
+}
+
+// Return the cached second friction impulse
+inline decimal ContactPoint::getFrictionImpulse2() const {
+    return mFrictionImpulse2;
+}
+
+// Set the cached penetration impulse
+inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
+    mPenetrationImpulse = impulse;
+}
+
+// Set the first cached friction impulse
+inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
+    mFrictionImpulse1 = impulse;
+}
+
+// Set the second cached friction impulse
+inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
+    mFrictionImpulse2 = impulse;
 }
 
 // Set the contact world point on body 1
@@ -230,6 +347,10 @@ inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
+// Return the number of bytes used by the contact point
+inline size_t ContactPoint::getSizeInBytes() const {
+    return sizeof(ContactPoint);
+}
 
 #ifdef VISUAL_DEBUG
 inline void ContactPoint::draw() const {

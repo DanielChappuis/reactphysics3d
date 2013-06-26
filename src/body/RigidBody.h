@@ -135,7 +135,7 @@ class RigidBody : public CollisionBody {
         decimal getMassInverse() const;
 
         /// Return the local inertia tensor of the body (in body coordinates)
-        Matrix3x3 getInertiaTensorLocal() const;
+        const Matrix3x3& getInertiaTensorLocal() const;
 
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
@@ -222,7 +222,7 @@ inline decimal RigidBody::getMassInverse() const {
 }
 
 // Return the local inertia tensor of the body (in body coordinates)
-inline Matrix3x3 RigidBody::getInertiaTensorLocal() const {
+inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
     return mInertiaTensorLocal;
 }
 

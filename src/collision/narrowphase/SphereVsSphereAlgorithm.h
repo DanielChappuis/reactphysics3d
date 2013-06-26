@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../../body/Body.h"
-#include "../ContactInfo.h"
+#include "../../constraint/ContactPoint.h"
 #include "NarrowPhaseAlgorithm.h"
 
 
@@ -67,7 +67,7 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo);
+                                   ContactPointInfo*& contactInfo);
 };
 
 }

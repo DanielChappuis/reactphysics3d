@@ -29,15 +29,14 @@
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(RigidBody* const body1, RigidBody* const body2,
-                       uint nbConstraints, bool active, ConstraintType type)
-           :mBody1(body1), mBody2(body2), mActive(active),
-            mNbConstraints(nbConstraints), mType(type) {
-    
-    // Initialize the cached lambda values
-    for (uint i=0; i<nbConstraints; i++) {
-        mCachedLambdas.push_back(0.0);
-    }
+Constraint::Constraint(const ConstraintInfo& constraintInfo)
+           :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
+            mType(constraintInfo.type),
+            mPositionCorrectionTechnique(constraintInfo.positionCorrectionTechnique),
+            mIsCollisionEnabled(constraintInfo.isCollisionEnabled){
+
+    assert(mBody1 != NULL);
+    assert(mBody2 != NULL);
 }
 
 // Destructor

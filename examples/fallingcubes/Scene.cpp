@@ -54,7 +54,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
 
     // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsSolver(15);
+    mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
     float radius = 2.0f;
 

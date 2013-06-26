@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_VECTOR3_H
-#define REACTPHYSICS3D_VECTOR3_H
+#ifndef REACTPHYSICS3D_VECTOR2_H
+#define REACTPHYSICS3D_VECTOR2_H
 
 // Libraries
 #include <cmath>
@@ -36,11 +36,11 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class Vector3
+// Class Vector2
 /**
- * This class represents a 3D vector.
+ * This class represents a 2D vector.
  */
-struct Vector3 {
+struct Vector2 {
 
     public:
 
@@ -52,25 +52,22 @@ struct Vector3 {
         /// Component y
         decimal y;
 
-        /// Component z
-        decimal z;
-
         // -------------------- Methods -------------------- //
 
         /// Constructor of the class Vector3D
-        Vector3();
+        Vector2();
 
         /// Constructor with arguments
-        Vector3(decimal newX, decimal newY, decimal newZ);
+        Vector2(decimal newX, decimal newY);
 
         /// Copy-constructor
-        Vector3(const Vector3& vector);
+        Vector2(const Vector2& vector);
 
         /// Destructor
-        ~Vector3();
+        ~Vector2();
 
         /// Set all the values of the vector
-        void setAllValues(decimal newX, decimal newY, decimal newZ);
+        void setAllValues(decimal newX, decimal newY);
 
         /// Set the vector to zero
         void setToZero();
@@ -82,10 +79,10 @@ struct Vector3 {
         decimal lengthSquare() const;
 
         /// Return the corresponding unit vector
-        Vector3 getUnit() const;
+        Vector2 getUnit() const;
 
         /// Return one unit orthogonal vector of the current vector
-        Vector3 getOneUnitOrthogonalVector() const;
+        Vector2 getOneUnitOrthogonalVector() const;
 
         /// Return true if the vector is unit and false otherwise
         bool isUnit() const;
@@ -94,16 +91,13 @@ struct Vector3 {
         bool isZero() const;
 
         /// Dot product of two vectors
-        decimal dot(const Vector3& vector) const;
-
-        /// Cross product of two vectors
-        Vector3 cross(const Vector3& vector) const;
+        decimal dot(const Vector2& vector) const;
 
         /// Normalize the vector
         void normalize();
 
         /// Return the corresponding absolute value vector
-        Vector3 getAbsoluteVector() const;
+        Vector2 getAbsoluteVector() const;
 
         /// Return the axis with the minimal value
         int getMinAxis() const;
@@ -112,22 +106,22 @@ struct Vector3 {
         int getMaxAxis() const;
 
         /// Overloaded operator for the equality condition
-        bool operator== (const Vector3& vector) const;
+        bool operator== (const Vector2& vector) const;
 
         /// Overloaded operator for the is different condition
-        bool operator!= (const Vector3& vector) const;
+        bool operator!= (const Vector2& vector) const;
 
         /// Overloaded operator for addition with assignment
-        Vector3& operator+=(const Vector3& vector);
+        Vector2& operator+=(const Vector2& vector);
 
         /// Overloaded operator for substraction with assignment
-        Vector3& operator-=(const Vector3& vector);
+        Vector2& operator-=(const Vector2& vector);
 
         /// Overloaded operator for multiplication with a number with assignment
-        Vector3& operator*=(decimal number);
+        Vector2& operator*=(decimal number);
 
         /// Overloaded operator for division by a number with assignment
-        Vector3& operator/=(decimal number);
+        Vector2& operator/=(decimal number);
 
         /// Overloaded operator for value access
         decimal& operator[] (int index);
@@ -136,178 +130,163 @@ struct Vector3 {
         const decimal& operator[] (int index) const;
 
         /// Overloaded operator
-        Vector3& operator=(const Vector3& vector);
+        Vector2& operator=(const Vector2& vector);
 
         // -------------------- Friends -------------------- //
 
-        friend Vector3 operator+(const Vector3& vector1, const Vector3& vector2);
-        friend Vector3 operator-(const Vector3& vector1, const Vector3& vector2);
-        friend Vector3 operator-(const Vector3& vector);
-        friend Vector3 operator*(const Vector3& vector, decimal number);
-        friend Vector3 operator*(decimal number, const Vector3& vector);
-        friend Vector3 operator/(const Vector3& vector, decimal number);
+        friend Vector2 operator+(const Vector2& vector1, const Vector2& vector2);
+        friend Vector2 operator-(const Vector2& vector1, const Vector2& vector2);
+        friend Vector2 operator-(const Vector2& vector);
+        friend Vector2 operator*(const Vector2& vector, decimal number);
+        friend Vector2 operator*(decimal number, const Vector2& vector);
+        friend Vector2 operator/(const Vector2& vector, decimal number);
 };
 
 // Set the vector to zero
-inline void Vector3::setToZero() {
+inline void Vector2::setToZero() {
     x = 0;
     y = 0;
-    z = 0;
 }
 
 // Set all the values of the vector
-inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
+inline void Vector2::setAllValues(decimal newX, decimal newY) {
     x = newX;
     y = newY;
-    z = newZ;
 }
 
 // Return the length of the vector
-inline decimal Vector3::length() const {
-    return sqrt(x*x + y*y + z*z);
+inline decimal Vector2::length() const {
+    return sqrt(x*x + y*y);
 }
 
 // Return the square of the length of the vector
-inline decimal Vector3::lengthSquare() const {
-    return x*x + y*y + z*z;
+inline decimal Vector2::lengthSquare() const {
+    return x*x + y*y;
 }
 
 // Scalar product of two vectors (inline)
-inline decimal Vector3::dot(const Vector3& vector) const {
-    return (x*vector.x + y*vector.y + z*vector.z);
-}
-
-// Cross product of two vectors (inline)
-inline Vector3 Vector3::cross(const Vector3& vector) const {
-    return Vector3(y * vector.z - z * vector.y,
-                   z * vector.x - x * vector.z,
-                   x * vector.y - y * vector.x);
+inline decimal Vector2::dot(const Vector2& vector) const {
+    return (x*vector.x + y*vector.y);
 }
 
 // Normalize the vector
-inline void Vector3::normalize() {
+inline void Vector2::normalize() {
     decimal l = length();
     assert(l > std::numeric_limits<decimal>::epsilon());
     x /= l;
     y /= l;
-    z /= l;
 }
 
 // Return the corresponding absolute value vector
-inline Vector3 Vector3::getAbsoluteVector() const {
-    return Vector3(std::abs(x), std::abs(y), std::abs(z));
+inline Vector2 Vector2::getAbsoluteVector() const {
+    return Vector2(std::abs(x), std::abs(y));
 }
 
 // Return the axis with the minimal value
-inline int Vector3::getMinAxis() const {
-    return (x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2));
+inline int Vector2::getMinAxis() const {
+    return (x < y ? 0 : 1);
 }
 
 // Return the axis with the maximal value
-inline int Vector3::getMaxAxis() const {
-    return (x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0));
+inline int Vector2::getMaxAxis() const {
+    return (x < y ? 1 : 0);
 }
 
 // Return true if the vector is unit and false otherwise
-inline bool Vector3::isUnit() const {
+inline bool Vector2::isUnit() const {
     return approxEqual(lengthSquare(), 1.0);
 }
 
 // Return true if the vector is the zero vector
-inline bool Vector3::isZero() const {
+inline bool Vector2::isZero() const {
     return approxEqual(lengthSquare(), 0.0);
 }
 
 // Overloaded operator for the equality condition
-inline bool Vector3::operator== (const Vector3& vector) const {
-    return (x == vector.x && y == vector.y && z == vector.z);
+inline bool Vector2::operator== (const Vector2& vector) const {
+    return (x == vector.x && y == vector.y);
 }
 
 // Overloaded operator for the is different condition
-inline bool Vector3::operator!= (const Vector3& vector) const {
+inline bool Vector2::operator!= (const Vector2& vector) const {
     return !(*this == vector);
 }
 
 // Overloaded operator for addition with assignment
-inline Vector3& Vector3::operator+=(const Vector3& vector) {
+inline Vector2& Vector2::operator+=(const Vector2& vector) {
     x += vector.x;
     y += vector.y;
-    z += vector.z;
     return *this;
 }
 
 // Overloaded operator for substraction with assignment
-inline Vector3& Vector3::operator-=(const Vector3& vector) {
+inline Vector2& Vector2::operator-=(const Vector2& vector) {
     x -= vector.x;
     y -= vector.y;
-    z -= vector.z;
     return *this;
 }
 
 // Overloaded operator for multiplication with a number with assignment
-inline Vector3& Vector3::operator*=(decimal number) {
+inline Vector2& Vector2::operator*=(decimal number) {
     x *= number;
     y *= number;
-    z *= number;
     return *this;
 }
 
 // Overloaded operator for division by a number with assignment
-inline Vector3& Vector3::operator/=(decimal number) {
+inline Vector2& Vector2::operator/=(decimal number) {
     assert(number > std::numeric_limits<decimal>::epsilon());
     x /= number;
     y /= number;
-    z /= number;
     return *this;
 }
 
 // Overloaded operator for value access
-inline decimal& Vector3::operator[] (int index) {
+inline decimal& Vector2::operator[] (int index) {
     return (&x)[index];
 }
 
 // Overloaded operator for value access
-inline const decimal& Vector3::operator[] (int index) const {
+inline const decimal& Vector2::operator[] (int index) const {
     return (&x)[index];
 }
 
 // Overloaded operator for addition
-inline Vector3 operator+(const Vector3& vector1, const Vector3& vector2) {
-    return Vector3(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z);
+inline Vector2 operator+(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(vector1.x + vector2.x, vector1.y + vector2.y);
 }
 
 // Overloaded operator for substraction
-inline Vector3 operator-(const Vector3& vector1, const Vector3& vector2) {
-    return Vector3(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z);
+inline Vector2 operator-(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(vector1.x - vector2.x, vector1.y - vector2.y);
 }
 
 // Overloaded operator for the negative of a vector
-inline Vector3 operator-(const Vector3& vector) {
-    return Vector3(-vector.x, -vector.y, -vector.z);
+inline Vector2 operator-(const Vector2& vector) {
+    return Vector2(-vector.x, -vector.y);
 }
 
 // Overloaded operator for multiplication with a number
-inline Vector3 operator*(const Vector3& vector, decimal number) {
-    return Vector3(number * vector.x, number * vector.y, number * vector.z);
+inline Vector2 operator*(const Vector2& vector, decimal number) {
+    return Vector2(number * vector.x, number * vector.y);
 }
 
 // Overloaded operator for division by a number
-inline Vector3 operator/(const Vector3& vector, decimal number) {
+inline Vector2 operator/(const Vector2& vector, decimal number) {
     assert(number > MACHINE_EPSILON);
-    return Vector3(vector.x / number, vector.y / number, vector.z / number);
+    return Vector2(vector.x / number, vector.y / number);
 }
 
 // Overloaded operator for multiplication with a number
-inline Vector3 operator*(decimal number, const Vector3& vector) {
+inline Vector2 operator*(decimal number, const Vector2& vector) {
     return vector * number;
 }
 
 // Assignment operator
-inline Vector3& Vector3::operator=(const Vector3& vector) {
+inline Vector2& Vector2::operator=(const Vector2& vector) {
     if (&vector != this) {
         x = vector.x;
         y = vector.y;
-        z = vector.z;
     }
     return *this;
 }

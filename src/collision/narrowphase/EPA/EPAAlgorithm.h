@@ -29,7 +29,7 @@
 // Libraries
 #include "../GJK/Simplex.h"
 #include "../../shapes/CollisionShape.h"
-#include "../../ContactInfo.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
 #include "../../../memory/MemoryAllocator.h"
@@ -123,7 +123,7 @@ class EPAAlgorithm {
                                                      const Transform& transform1,
                                                      const CollisionShape* collisionShape2,
                                                      const Transform& transform2,
-                                                     Vector3& v, ContactInfo*& contactInfo);
+                                                     Vector3& v, ContactPointInfo*& contactInfo);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm

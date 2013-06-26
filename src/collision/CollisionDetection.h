@@ -33,7 +33,7 @@
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
 #include "../memory/MemoryAllocator.h"
-#include "ContactInfo.h"
+#include "../constraint/ContactPoint.h"
 #include <vector>
 #include <map>
 #include <set>
@@ -79,6 +79,9 @@ class CollisionDetection {
         /// Narrow-phase Sphere vs Sphere algorithm
         SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
 
+        /// Set of pair of bodies that cannot collide between each other
+        std::set<bodyindexpair> mNoCollisionPairs;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -112,6 +115,12 @@ class CollisionDetection {
 
         /// Remove a body from the collision detection
         void removeBody(CollisionBody* body);
+
+        /// Add a pair of bodies that cannot collide with each other
+        void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
+
+        /// Remove a pair of bodies that cannot collide with each other
+        void removeNoCollisionPair(CollisionBody *body1, CollisionBody *body2);
 
         /// Compute the collision detection
         void computeCollisionDetection();
@@ -148,7 +157,19 @@ inline void CollisionDetection::removeBody(CollisionBody* body) {
     
     // Remove the body from the broad-phase
     mBroadPhaseAlgorithm->removeObject(body);
-}                                                    
+}
+
+// Add a pair of bodies that cannot collide with each other
+inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
+                                                   CollisionBody* body2) {
+    mNoCollisionPairs.insert(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+}
+
+// Remove a pair of bodies that cannot collide with each other
+inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
+                                                      CollisionBody* body2) {
+    mNoCollisionPairs.erase(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+}
 
 }
 

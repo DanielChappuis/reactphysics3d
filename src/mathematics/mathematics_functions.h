@@ -29,6 +29,7 @@
 // Libraries
 #include "../configuration.h"
 #include "../decimal.h"
+#include <algorithm>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -41,6 +42,13 @@ inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON)
 
     decimal difference = a - b;
     return (difference < epsilon && difference > -epsilon);
+}
+
+/// Function that returns the result of the "value" clamped by
+/// two others values "lowerLimit" and "upperLimit"
+inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
+    assert(lowerLimit <= upperLimit);
+    return std::min(std::max(value, lowerLimit), upperLimit);
 }
 
 }

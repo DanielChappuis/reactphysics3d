@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
-#include "../../ContactInfo.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../collision/shapes/CollisionShape.h"
 #include "../EPA/EPAAlgorithm.h"
 
@@ -78,7 +78,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                                        const Transform& transform1,
                                                        const CollisionShape* collisionShape2,
                                                        const Transform& transform2,
-                                                       ContactInfo*& contactInfo, Vector3& v);
+                                                       ContactPointInfo*& contactInfo, Vector3& v);
 
     public :
 
@@ -95,7 +95,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo);
+                                   ContactPointInfo*& contactInfo);
 };
 
 }

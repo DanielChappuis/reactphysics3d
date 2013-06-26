@@ -61,7 +61,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
                                  const Transform& transform1,
                                  const CollisionShape* collisionShape2,
                                  const Transform& transform2,
-		                         ContactInfo*& contactInfo) {
+		                         ContactPointInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -73,7 +73,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.inverse() * transform2;
+    Transform body2Tobody1 = transform1.getInverse() * transform2;
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
@@ -127,7 +127,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
             pA = (pA - (collisionShape1->getMargin() / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -137,7 +137,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -159,7 +159,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
             pA = (pA - (collisionShape1->getMargin() / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -169,7 +169,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                    pA, pB);
 
@@ -189,7 +189,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
             pA = (pA - (collisionShape1->getMargin() / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -199,7 +199,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -226,7 +226,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
             decimal dist = sqrt(distSquare);
             assert(dist > 0.0);
             pA = (pA - (collisionShape1->getMargin() / dist) * v);
-            pB = body2Tobody1.inverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
@@ -236,7 +236,7 @@ bool GJKAlgorithm::testCollision(const CollisionShape* collisionShape1,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                                    penetrationDepth,
                                                                                     pA, pB);
 
@@ -263,7 +263,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
                                                              const Transform& transform1,
                                                              const CollisionShape* collisionShape2,
                                                              const Transform& transform2,
-                                                             ContactInfo*& contactInfo,
+                                                             ContactPointInfo*& contactInfo,
                                                              Vector3& v) {
     Simplex simplex;
     Vector3 suppA;
@@ -275,7 +275,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
 
     // Transform a point from local space of body 2 to local space
     // of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2ToBody1 = transform1.inverse() * transform2;
+    Transform body2ToBody1 = transform1.getInverse() * transform2;
 
     // Matrix that transform a direction from local space of body 1 into local space of body 2
     Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *

@@ -56,7 +56,7 @@ void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedP
 
 // Notify the world about a new narrow-phase contact
 void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
-                                      const ContactInfo* contactInfo) {
+                                      const ContactPointInfo* contactInfo) {
 
     // TODO : Implement this method
 }
@@ -101,7 +101,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(collisionBody->getID());
 
-    // Call the constructor of the collision body
+    // Call the destructor of the collision body
     collisionBody->CollisionBody::~CollisionBody();
 
     // Remove the collision body from the list of bodies
@@ -154,6 +154,7 @@ CollisionShape* CollisionWorld::createCollisionShape(const CollisionShape& colli
     // A similar collision shape does not already exist in the world, so we create a
     // new one and add it to the world
     void* allocatedMemory = mMemoryAllocator.allocate(collisionShape.getSizeInBytes());
+    size_t test = collisionShape.getSizeInBytes();
     CollisionShape* newCollisionShape = collisionShape.clone(allocatedMemory);
     mCollisionShapes.push_back(newCollisionShape);
 
@@ -181,8 +182,14 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
         // Remove the shape from the set of shapes in the world
         mCollisionShapes.remove(collisionShape);
 
+        // Compute the size (in bytes) of the collision shape
+        size_t nbBytesShape = collisionShape->getSizeInBytes();
+
+        // Call the destructor of the collision shape
+        collisionShape->CollisionShape::~CollisionShape();
+
         // Deallocate the memory used by the collision shape
-        mMemoryAllocator.release(collisionShape, collisionShape->getSizeInBytes());
+        mMemoryAllocator.release(collisionShape, nbBytesShape);
     }
 }
 

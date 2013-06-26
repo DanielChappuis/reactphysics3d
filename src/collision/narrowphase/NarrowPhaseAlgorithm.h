@@ -28,7 +28,7 @@
 
 // Libraries
 #include "../../body/Body.h"
-#include "../ContactInfo.h"
+#include "../../constraint/ContactPoint.h"
 #include "../broadphase/PairManager.h"
 #include "../../memory/MemoryAllocator.h"
 #include "../BroadPhasePair.h"
@@ -36,7 +36,7 @@
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
-    
+
 // Class NarrowPhaseAlgorithm
 /**
  * This class is an abstract class that represents an algorithm
@@ -82,7 +82,7 @@ class NarrowPhaseAlgorithm {
                                    const Transform& transform1,
                                    const CollisionShape* collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo)=0;
+                                   ContactPointInfo*& contactInfo)=0;
 };
 
 // Set the current overlapping pair of bodies

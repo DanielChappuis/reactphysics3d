@@ -24,49 +24,48 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactPoint.h"
+#include "Vector2.h"
+#include <vector>
 
+// Namespaces
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
-             : Constraint(contactInfo), mNormal(contactInfo.normal),
-               mPenetrationDepth(contactInfo.penetrationDepth),
-               mLocalPointOnBody1(contactInfo.localPoint1),
-               mLocalPointOnBody2(contactInfo.localPoint2),
-               mWorldPointOnBody1(contactInfo.body1->getTransform() * contactInfo.localPoint1),
-               mWorldPointOnBody2(contactInfo.body2->getTransform() * contactInfo.localPoint2),
-               mIsRestingContact(false) {
+Vector2::Vector2() : x(0.0), y(0.0) {
 
-    mFrictionVectors[0] = Vector3(0, 0, 0);
-    mFrictionVectors[1] = Vector3(0, 0, 0);
+}
 
-    assert(mPenetrationDepth > 0.0);
+// Constructor with arguments
+Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
+
+}
+
+// Copy-constructor
+Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
 
 }
 
 // Destructor
-ContactPoint::~ContactPoint() {
+Vector2::~Vector2() {
 
 }
 
-// Initialize before solving the constraint
-void ContactPoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
+// Return the corresponding unit vector
+Vector2 Vector2::getUnit() const {
+    decimal lengthVector = length();
 
+    assert(lengthVector > MACHINE_EPSILON);
+
+    // Compute and return the unit vector
+    decimal lengthInv = decimal(1.0) / lengthVector;
+    return Vector2(x * lengthInv, y * lengthInv);
 }
 
-// Warm start the constraint (apply the previous impulse at the beginning of the step)
-void ContactPoint::warmstart(const ConstraintSolverData& constraintSolverData) {
+// Return one unit orthogonal vector of the current vector
+Vector2 Vector2::getOneUnitOrthogonalVector() const {
 
-}
+    decimal l = length();
+    assert(l > MACHINE_EPSILON);
 
-// Solve the velocity constraint
-void ContactPoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the position constraint
-void ContactPoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
-
+    return Vector2(-y / l, x / l);
 }

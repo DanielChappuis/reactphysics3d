@@ -99,7 +99,7 @@ void CollisionDetection::computeNarrowPhase() {
     
     // For each possible collision pair of bodies
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
-        ContactInfo* contactInfo = NULL;
+        ContactPointInfo* contactInfo = NULL;
 
         BroadPhasePair* pair = (*it).second;
         assert(pair != NULL);
@@ -109,6 +109,9 @@ void CollisionDetection::computeNarrowPhase() {
         
         // Update the contact cache of the overlapping pair
         mWorld->updateOverlappingPair(pair);
+
+        // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
+        if (mNoCollisionPairs.count(pair->getBodiesIndexPair()) > 0) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(
@@ -125,12 +128,18 @@ void CollisionDetection::computeNarrowPhase() {
                                                contactInfo)) {
             assert(contactInfo != NULL);
 
+            // Set the bodies of the contact
+            contactInfo->body1 = dynamic_cast<RigidBody*>(body1);
+            contactInfo->body2 = dynamic_cast<RigidBody*>(body2);
+            assert(contactInfo->body1 != NULL);
+            assert(contactInfo->body2 != NULL);
+
             // Notify the world about the new narrow-phase contact
             mWorld->notifyNewContact(pair, contactInfo);
 
             // Delete and remove the contact info from the memory allocator
-            contactInfo->ContactInfo::~ContactInfo();
-            mMemoryAllocator.release(contactInfo, sizeof(ContactInfo));
+            contactInfo->ContactPointInfo::~ContactPointInfo();
+            mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
 }

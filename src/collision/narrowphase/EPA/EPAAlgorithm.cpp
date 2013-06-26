@@ -87,7 +87,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                                            const Transform& transform1,
                                                            const CollisionShape* collisionShape2,
                                                            const Transform& transform2,
-                                                           Vector3& v, ContactInfo*& contactInfo) {
+                                                           Vector3& v, ContactPointInfo*& contactInfo) {
 
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];  // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];  // Support points of object B in local coordinates
@@ -98,7 +98,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.inverse() * transform2;
+    Transform body2Tobody1 = transform1.getInverse() * transform2;
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
@@ -143,7 +143,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             int minAxis = d.getAbsoluteVector().getMinAxis();
 
             // Compute sin(60)
-            const decimal sin60 = sqrt(3.0) * 0.5;
+            const decimal sin60 = decimal(sqrt(3.0)) * decimal(0.5);
 
             // Create a rotation quaternion to rotate the vector v1 to get the vectors
             // v2 and v3
@@ -394,13 +394,13 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     // Compute the contact info
     v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
-    Vector3 pBLocal = body2Tobody1.inverse() * triangle->computeClosestPointOfObject(suppPointsB);
+    Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactInfo))) ContactInfo(normal,
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
                                                                              penetrationDepth,
                                                                              pALocal, pBLocal);
     
