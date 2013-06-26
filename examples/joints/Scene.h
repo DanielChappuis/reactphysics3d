@@ -36,6 +36,8 @@ const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                                // Box mass in kilograms
 const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
+const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
 // Class Scene
 class Scene {
@@ -53,23 +55,44 @@ class Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
-        /// Box 1 of Ball-And-Socket joint
-        Box* mBallAndSocketJointBox1;
+        /// Boxes of Ball-And-Socket joint chain
+        Box* mBallAndSocketJointChainBoxes[NB_BALLSOCKETJOINT_BOXES];
 
-        /// Box 2 of Ball-And-Socket joint
-        Box* mBallAndSocketJointBox2;
+        /// Boxes of the Hinge joint chain
+        Box* mHingeJointChainBoxes[NB_HINGE_BOXES];
 
-        /// Ball-and-Socket joint
-        rp3d::BallAndSocketJoint* mBallAndSocketJoint;
+        /// Ball-And-Socket joints of the chain
+        rp3d::BallAndSocketJoint* mBallAndSocketJoints[NB_BALLSOCKETJOINT_BOXES-1];
 
-        /// Box 1 of Slider joint
-        Box* mSliderJointBox1;
+        /// Hinge joints of the chain
+        rp3d::HingeJoint* mHingeJoints[NB_HINGE_BOXES-1];
 
-        /// Box 2 of Slider joint
-        Box* mSliderJointBox2;
+        /// Bottom box of the Slider joint
+        Box* mSliderJointBottomBox;
+
+        /// Top box of the Slider joint
+        Box* mSliderJointTopBox;
 
         /// Slider joint
         rp3d::SliderJoint* mSliderJoint;
+
+        /// Propeller box
+        Box* mPropellerBox;
+
+        /// Box 1 of Fixed joint
+        Box* mFixedJointBox1;
+
+        /// Box 2 of Fixed joint
+        Box* mFixedJointBox2;
+
+        /// Hinge joint
+        rp3d::HingeJoint* mPropellerHingeJoint;
+
+        /// First Fixed joint
+        rp3d::FixedJoint* mFixedJoint1;
+
+        /// Second Fixed joint
+        rp3d::FixedJoint* mFixedJoint2;
 
         /// Box for the floor
         Box* mFloor;
@@ -87,6 +110,12 @@ class Scene {
 
         /// Create the boxes and joint for the Slider joint example
         void createSliderJoint();
+
+        /// Create the boxes and joint for the Hinge joint example
+        void createPropellerHingeJoint();
+
+        /// Create the boxes and joint for the Fixed joint example
+        void createFixedJoints();
 
         /// Create the floor
         void createFloor();
