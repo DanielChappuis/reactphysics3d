@@ -35,7 +35,8 @@ using namespace reactphysics3d;
                       CollisionShape *collisionShape, bodyindex id)
            : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
              mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             mMassInverse(decimal(1.0) / mass), mFrictionCoefficient(DEFAULT_FRICTION_COEFFICIENT) {
+             mMassInverse(decimal(1.0) / mass), mFrictionCoefficient(DEFAULT_FRICTION_COEFFICIENT),
+             mIsGravityEnabled(true) {
 
     mRestitution = decimal(1.0);
 

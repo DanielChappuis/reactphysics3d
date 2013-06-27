@@ -88,9 +88,6 @@ void DynamicsWorld::update() {
     // Compute the time since the last update() call and update the timer
     mTimer.update();
 
-    // Apply the gravity force to all bodies
-    applyGravity();
-
     // While the time accumulator is not empty
     while(mTimer.isPossibleToTakeStep()) {
 
@@ -253,6 +250,14 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             mConstrainedAngularVelocities[i] = rigidBody->getAngularVelocity() +
                     dt * rigidBody->getInertiaTensorInverseWorld() * rigidBody->getExternalTorque();
 
+            // If the gravity has to be applied to this rigid body
+            if (rigidBody->isGravityEnabled() && mIsGravityOn) {
+
+                // Integrate the gravity force
+                mConstrainedLinearVelocities[i] += dt * rigidBody->getMassInverse() *
+                                                   rigidBody->getMass() * mGravity;
+            }
+
             // Update the old Transform of the body
             rigidBody->updateOldTransform();
         }
@@ -374,27 +379,6 @@ void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
 
     // Clear the rigid body to velocities array index mapping
     mMapBodyToConstrainedVelocityIndex.clear();
-}
-
-// Apply the gravity force to all bodies of the physics world
-void DynamicsWorld::applyGravity() {
-
-    PROFILE("DynamicsWorld::applyGravity()");
-
-    // For each body of the physics world
-    set<RigidBody*>::iterator it;
-    for (it = getRigidBodiesBeginIterator(); it != getRigidBodiesEndIterator(); ++it) {
-
-        RigidBody* rigidBody = dynamic_cast<RigidBody*>(*it);
-        assert(rigidBody != NULL);
-   
-        // If the gravity force is on
-        if(mIsGravityOn) {
-
-            // Apply the current gravity force to the body
-            rigidBody->setExternalForce(rigidBody->getMass() * mGravity);
-        }
-    }
 }
 
 // Create a rigid body into the physics world

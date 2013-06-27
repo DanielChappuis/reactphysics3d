@@ -79,6 +79,9 @@ class RigidBody : public CollisionBody {
         /// Friction coefficient
         decimal mFrictionCoefficient;
 
+        /// True if the gravity needs to be applied to this rigid body
+        bool mIsGravityEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -160,6 +163,12 @@ class RigidBody : public CollisionBody {
 
         /// Set the friction coefficient
         void setFrictionCoefficient(decimal frictionCoefficient);
+
+        /// Return true if the gravity needs to be applied to this rigid body
+        bool isGravityEnabled() const;
+
+        /// Set the variable to know if the gravity is applied to this rigid body
+        void enableGravity(bool isEnabled);
 };
 
 // Method that return the mass of the body
@@ -286,6 +295,16 @@ inline decimal RigidBody::getFrictionCoefficient() const {
 // Set the friction coefficient
 inline void RigidBody::setFrictionCoefficient(decimal frictionCoefficient) {
     mFrictionCoefficient = frictionCoefficient;
+}
+
+// Return true if the gravity needs to be applied to this rigid body
+inline bool RigidBody::isGravityEnabled() const {
+    return mIsGravityEnabled;
+}
+
+// Set the variable to know if the gravity is applied to this rigid body
+inline void RigidBody::enableGravity(bool isEnabled) {
+    mIsGravityEnabled = isEnabled;
 }
 
 }

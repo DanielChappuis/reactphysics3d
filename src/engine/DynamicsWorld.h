@@ -133,9 +133,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
 
-        /// Apply the gravity force to all bodies
-        void applyGravity();
-
         /// Reset the boolean movement variable of each body
         void resetBodiesMovementVariable();
 
