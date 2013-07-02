@@ -59,7 +59,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_BOXES; i++) {
+    for (int i=0; i<NB_SPHERES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
@@ -68,7 +68,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, position , SPHERE_MASS, mDynamicsWorld);
 
         // The box is a moving rigid body
         cube->getRigidBody()->setIsMotionEnabled(true);
@@ -151,17 +151,16 @@ void Scene::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
+    // Get the world-space to camera-space matrix
+    const Camera& camera = mViewer->getCamera();
+    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+
     // Bind the shader
     mPhongShader.bind();
 
     // Set the variables of the shader
-    const Camera& camera = mViewer->getCamera();
-    Matrix4 matrixIdentity;
-    matrixIdentity.setToIdentity();
-    mPhongShader.setVector3Uniform("cameraWorldPosition", mViewer->getCamera().getOrigin());
-    mPhongShader.setMatrix4x4Uniform("worldToCameraMatrix", camera.getTransformMatrix().getInverse());
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("lightWorldPosition", mLight0.getOrigin());
+    mPhongShader.setVector3Uniform("lightPosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     Color& diffCol = mLight0.getDiffuseColor();
     Color& specCol = mLight0.getSpecularColor();
@@ -171,11 +170,11 @@ void Scene::render() {
 
     // Render all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(mPhongShader);
+        (*it)->render(mPhongShader, worldToCameraMatrix);
     }
 
     // Render the floor
-    mFloor->render(mPhongShader);
+    mFloor->render(mPhongShader, worldToCameraMatrix);
 
     // Unbind the shader
     mPhongShader.unbind();

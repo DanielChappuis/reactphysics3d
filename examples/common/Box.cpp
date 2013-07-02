@@ -105,13 +105,21 @@ Box::~Box() {
 }
 
 // Render the cube at the correct position and with the correct orientation
-void Box::render(openglframework::Shader& shader) {
+void Box::render(openglframework::Shader& shader,
+                 const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
 
-    // Set the model to World matrix
-    shader.setMatrix4x4Uniform("modelToWorldMatrix", mTransformMatrix);
+    // Set the model to camera matrix
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
+    shader.setMatrix4x4Uniform("localToCameraMatrix", localToCameraMatrix);
+
+    // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
+    // model-view matrix)
+    const openglframework::Matrix3 normalMatrix =
+                       localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
 
     // Bind the vertices VBO
     mVBOVertices.bind();

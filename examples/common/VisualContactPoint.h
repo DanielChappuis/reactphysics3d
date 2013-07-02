@@ -23,86 +23,51 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef VISUAL_CONTACT_POINT_H
+#define VISUAL_CONTACT_POINT_H
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
 
-// Structure VertexData
-struct VertexData {
+const float VISUAL_CONTACT_POINT_RADIUS = 0.1f;
 
-    /// Vertex position
-    openglframework::Vector3 position;
-
-    /// Vertex normal
-    openglframework::Vector3 normal;
-
-    // Vertex color
-    openglframework::Color color;
-};
-
-// Class Box
-class Box : public openglframework::Object3D {
+// Class VisualContactPoint
+class VisualContactPoint : public openglframework::Object3D {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Size of each side of the box
-        float mSize[3];
+        /// Total number of existing contact points (static attribute)
+        static int mNbTotalPoints;
 
-        /// Rigid body used to simulate the dynamics of the box
-        rp3d::RigidBody* mRigidBody;
+        /// Sphere mesh for the visual contact point
+        static openglframework::Mesh mMesh;
 
-        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
-        openglframework::Matrix4 mScalingMatrix;
-
-        /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOVertices;
-
-        /// Vertex Buffer Object for the indices used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOIndices;
-
-        /// Vertex data for each vertex of the cube (used to render the box)
-        static VertexData mCubeVertices[8];
-
-        /// Indices of the cube (used to render the box)
-        static GLuint mCubeIndices[36];
-
-        /// True if the VBOs have already been created
-        static bool areVBOsCreated;
+        /// True if the mesh has been initialized
+        static bool mIsMeshInitialized;
 
         // -------------------- Methods -------------------- //
-
-        /// Create a Vertex Buffer Object to render to box with OpenGL
-        static void createVBO();
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, rp3d::DynamicsWorld* dynamicsWorld);
+        VisualContactPoint(const openglframework::Vector3& position);
 
         /// Destructor
-        ~Box();
+        ~VisualContactPoint();
 
-        /// Return a pointer to the rigid body of the box
-        rp3d::RigidBody* getRigidBody();
+        /// Load and initialize the mesh for all the contact points
+        static void createStaticData();
 
-        /// Update the transform matrix of the box
-        void updateTransform();
+        /// Destroy the mesh for the contact points
+        static void destroyStaticData();
 
-        /// Render the cube at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
+        /// Render the sphere at the correct position and with the correct orientation
+        void render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix);
 };
-
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Box::getRigidBody() {
-    return mRigidBody;
-}
 
 #endif

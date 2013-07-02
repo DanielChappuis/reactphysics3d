@@ -24,28 +24,27 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform mat4 modelToWorldMatrix;        // Model too world coordinates matrix
-uniform mat4 worldToCameraMatrix;       // World to camera coordinates matrix
+uniform mat4 localToCameraMatrix;       // Local-space to camera-space matrix
 uniform mat4 projectionMatrix;          // Projection matrix
+uniform mat3 normalMatrix;              // Normal matrix
 
 // Varying variables
-varying vec3 worldPosition;             // World position of the vertex
-varying vec3 worldNormal;               // World surface normalWorld
+varying vec3 vertexPosCameraSpace;      // Camera-space position of the vertex
+varying vec3 vertexNormalCameraSpace;   // Vertex normal in camera-space
 varying vec2 texCoords;                 // Texture coordinates
 
 void main() {
 
     // Compute the vertex position
-    vec4 worldPos = modelToWorldMatrix * gl_Vertex;
-    worldPosition = worldPos.xyz;
+    vec4 positionCameraSpace = localToCameraMatrix * gl_Vertex;
+    vertexPosCameraSpace = positionCameraSpace.xyz;
 
     // Compute the world surface normal
-    vec3 bodyNormal = normalize(gl_Normal);
-    worldNormal = (modelToWorldMatrix * vec4(bodyNormal, 0.0)).xyz;
+    vertexNormalCameraSpace = normalMatrix * gl_Normal;
 
     // Get the texture coordinates
     texCoords = gl_MultiTexCoord0.xy;
 
     // Compute the clip-space vertex coordinates
-    gl_Position = projectionMatrix * worldToCameraMatrix * worldPos;
+    gl_Position = projectionMatrix * positionCameraSpace;
 }

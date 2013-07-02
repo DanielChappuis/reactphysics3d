@@ -156,15 +156,15 @@ void Scene::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
+    // Get the world-space to camera-space matrix
+    const Camera& camera = mViewer->getCamera();
+    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+
     // Bind the shader
     mPhongShader.bind();
 
     // Set the variables of the shader
-    const Camera& camera = mViewer->getCamera();
-    Matrix4 matrixIdentity;
-    matrixIdentity.setToIdentity();
-    mPhongShader.setVector3Uniform("cameraWorldPosition", mViewer->getCamera().getOrigin());
-    mPhongShader.setMatrix4x4Uniform("worldToCameraMatrix", camera.getTransformMatrix().getInverse());
+    mPhongShader.setVector3Uniform("lightPosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("lightWorldPosition", mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
@@ -175,17 +175,17 @@ void Scene::render() {
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
     // Render all the boxes
-    mSliderJointBottomBox->render(mPhongShader);
-    mSliderJointTopBox->render(mPhongShader);
-    mPropellerBox->render(mPhongShader);
-    mFixedJointBox1->render(mPhongShader);
-    mFixedJointBox2->render(mPhongShader);
+    mSliderJointBottomBox->render(mPhongShader, worldToCameraMatrix);
+    mSliderJointTopBox->render(mPhongShader, worldToCameraMatrix);
+    mPropellerBox->render(mPhongShader, worldToCameraMatrix);
+    mFixedJointBox1->render(mPhongShader, worldToCameraMatrix);
+    mFixedJointBox2->render(mPhongShader, worldToCameraMatrix);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mBallAndSocketJointChainBoxes[i]->render(mPhongShader);
+        mBallAndSocketJointChainBoxes[i]->render(mPhongShader, worldToCameraMatrix);
     }
 
     // Render the floor
-    mFloor->render(mPhongShader);
+    mFloor->render(mPhongShader, worldToCameraMatrix);
 
     // Unbind the shader
     mPhongShader.unbind();
@@ -244,7 +244,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
@@ -259,7 +259,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5, 4, 1.5);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , SPHERE_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
@@ -297,7 +297,7 @@ void Scene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
@@ -334,7 +334,7 @@ void Scene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
@@ -348,7 +348,7 @@ void Scene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , SPHERE_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);

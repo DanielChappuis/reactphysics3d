@@ -24,8 +24,7 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform vec3 cameraWorldPosition;           // World position of the camera
-uniform vec3 lightWorldPosition;            // World position of the light
+uniform vec3 lightPosCameraSpace;           // Camera-space position of the light
 uniform vec3 lightAmbientColor;             // Lights ambient color
 uniform vec3 lightDiffuseColor;             // Light diffuse color
 uniform vec3 lightSpecularColor;            // Light specular color
@@ -34,9 +33,9 @@ uniform sampler2D texture;                  // Texture
 uniform bool isTexture;                     // True if we need to use the texture
 
 // Varying variables
-varying vec3 worldPosition;             // World position of the vertex
-varying vec3 worldNormal;               // World surface normalWorld
-varying vec2 texCoords;                 // Texture coordinates
+varying vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
+varying vec3 vertexNormalCameraSpace;       // Vertex normal in camera-space
+varying vec2 texCoords;                     // Texture coordinates
 
 void main() {
 
@@ -44,19 +43,21 @@ void main() {
     vec3 ambient = lightAmbientColor;
 
     // Get the texture color
-
     vec3 textureColor = vec3(1);
     if (isTexture) textureColor = texture2D(texture, texCoords).rgb;
 
     // Compute the diffuse term
-    vec3 L = normalize(lightWorldPosition - worldPosition);
-    vec3 N = normalize(worldNormal);
-    vec3 diffuse = lightDiffuseColor * max(dot(N, L), 0.0) * textureColor;
+    vec3 L = normalize(lightPosCameraSpace - vertexPosCameraSpace);
+    vec3 N = normalize(vertexNormalCameraSpace);
+    float diffuseFactor = max(dot(N, L), 0.0);
+    vec3 diffuse = lightDiffuseColor * diffuseFactor * textureColor;
 
     // Compute the specular term
-    vec3 V = normalize(cameraWorldPosition - worldPosition);
+    vec3 V = normalize(-vertexPosCameraSpace);
     vec3 H = normalize(V + L);
-    vec3 specular = lightSpecularColor * pow(max(dot(N, H), 0), shininess);
+    float specularFactor = pow(max(dot(N, H), 0), shininess);
+    if (diffuseFactor < 0) specularFactor = 0.0;
+    vec3 specular = lightSpecularColor * specularFactor;
 
     // Compute the final color
     gl_FragColor = vec4(ambient + diffuse + specular, 1.0);

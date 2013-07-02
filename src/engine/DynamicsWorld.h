@@ -224,6 +224,9 @@ public :
 
         /// Return an iterator to the end of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
+
+        /// Return a reference to the contact manifolds of the world
+        const std::vector<ContactManifold*>& getContactManifolds() const;
 };
 
 // Start the physics simulation
@@ -333,12 +336,17 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
     return mRigidBodies.end();
 }
 
+// Return a reference to the contact manifolds of the world
+inline const std::vector<ContactManifold*>& DynamicsWorld::getContactManifolds() const {
+    return mContactManifolds;
+}
+
 // Return the number of contact manifolds in the world
 inline uint DynamicsWorld::getNbContactManifolds() const {
     return mContactManifolds.size();
 }
 
-/// Return the current physics time (in seconds)
+// Return the current physics time (in seconds)
 inline long double DynamicsWorld::getPhysicsTime() const {
     return mTimer.getPhysicsTime();
 }

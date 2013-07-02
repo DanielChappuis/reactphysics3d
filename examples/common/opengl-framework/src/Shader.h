@@ -111,6 +111,11 @@ class Shader {
         void setMatrix3x3Uniform(const std::string& variableName, const float* matrix,
                                  bool transpose = false) const;
 
+        // Set a 3x3 matrix uniform value to this shader (be careful if the uniform is not
+        // used in the shader, the compiler will remove it, then when you will try
+        // to set it, an assert will occur)
+        void setMatrix3x3Uniform(const std::string& variableName, const Matrix3& matrix) const;
+
         // Set a 4x4 matrix uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
@@ -206,6 +211,20 @@ inline void Shader::setMatrix3x3Uniform(const std::string& variableName, const f
                                         bool transpose) const {
     assert(mProgramObjectID != 0);
     glUniformMatrix3fv(getUniformLocation(variableName), 1, transpose, matrix);
+}
+
+// Set a 3x3 matrix uniform value to this shader (be careful if the uniform is not
+// used in the shader, the compiler will remove it, then when you will try
+// to set it, an assert will occur)
+inline void Shader::setMatrix3x3Uniform(const std::string& variableName, const Matrix3& matrix) const {
+    assert(mProgramObjectID != 0);
+    GLfloat mat[9];
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            mat[i*3 + j] = matrix.getValue(i, j);
+        }
+    }
+    glUniformMatrix3fv(getUniformLocation(variableName), 1, true, mat);
 }
 
 // Set a 4x4 matrix uniform value to this shader (be careful if the uniform is not

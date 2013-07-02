@@ -23,85 +23,55 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef SPHERE_H
+#define SPHERE_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
 
-// Structure VertexData
-struct VertexData {
-
-    /// Vertex position
-    openglframework::Vector3 position;
-
-    /// Vertex normal
-    openglframework::Vector3 normal;
-
-    // Vertex color
-    openglframework::Color color;
-};
-
-// Class Box
-class Box : public openglframework::Object3D {
+// Class Sphere
+class Sphere : public openglframework::Mesh {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Size of each side of the box
-        float mSize[3];
+        /// Radius of the sphere
+        float mRadius;
 
-        /// Rigid body used to simulate the dynamics of the box
+        /// Rigid body used to simulate the dynamics of the sphere
         rp3d::RigidBody* mRigidBody;
 
-        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
+        /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
-        /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOVertices;
-
-        /// Vertex Buffer Object for the indices used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOIndices;
-
-        /// Vertex data for each vertex of the cube (used to render the box)
-        static VertexData mCubeVertices[8];
-
-        /// Indices of the cube (used to render the box)
-        static GLuint mCubeIndices[36];
-
-        /// True if the VBOs have already been created
-        static bool areVBOsCreated;
-
         // -------------------- Methods -------------------- //
-
-        /// Create a Vertex Buffer Object to render to box with OpenGL
-        static void createVBO();
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, rp3d::DynamicsWorld* dynamicsWorld);
+        Sphere(float radius, const openglframework::Vector3& position,
+               float mass, rp3d::DynamicsWorld* dynamicsWorld);
 
         /// Destructor
-        ~Box();
+        ~Sphere();
 
-        /// Return a pointer to the rigid body of the box
+        /// Return a pointer to the rigid body of the sphere
         rp3d::RigidBody* getRigidBody();
 
-        /// Update the transform matrix of the box
+        /// Update the transform matrix of the sphere
         void updateTransform();
 
-        /// Render the cube at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
+        /// Render the sphere at the correct position and with the correct orientation
+        void render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Box::getRigidBody() {
+// Return a pointer to the rigid body of the sphere
+inline rp3d::RigidBody* Sphere::getRigidBody() {
     return mRigidBody;
 }
 
