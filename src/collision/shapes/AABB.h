@@ -97,11 +97,6 @@ class AABB {
 
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
-
-#ifdef VISUAL_DEBUG
-       /// Draw the AABB (only for testing purpose)
-       virtual void draw() const;
-#endif
 };
 
 // Return the center point of the AABB in world coordinates

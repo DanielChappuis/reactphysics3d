@@ -70,7 +70,7 @@ class ConeShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConeShape(decimal mRadius, decimal height);
+        ConeShape(decimal mRadius, decimal height, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
         virtual ~ConeShape();
@@ -81,14 +81,8 @@ class ConeShape : public CollisionShape {
         /// Return the radius
         decimal getRadius() const;
 
-        /// Set the radius
-        void setRadius(decimal radius);
-
         /// Return the height
         decimal getHeight() const;
-
-        /// Set the height
-        void setHeight(decimal height);
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -100,21 +94,13 @@ class ConeShape : public CollisionShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
+        virtual Vector3 getLocalExtents() const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Return the margin distance around the shape
-        virtual decimal getMargin() const;
-
         /// Test equality between two cone shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
-
-#ifdef VISUAL_DEBUG
-        /// Draw the sphere (only for testing purpose)
-        virtual void draw() const;
-#endif
 };
 
 // Allocate and return a copy of the object
@@ -127,25 +113,9 @@ inline decimal ConeShape::getRadius() const {
     return mRadius;
 }
 
-// Set the radius
-inline void ConeShape::setRadius(decimal radius) {
-    mRadius = radius;
-
-    // Update sine of the semi-angle at the apex point
-    mSinTheta = radius / (sqrt(radius * radius + 4 * mHalfHeight * mHalfHeight));
-}
-
 // Return the height
 inline decimal ConeShape::getHeight() const {
     return decimal(2.0) * mHalfHeight;
-}
-
-// Set the height
-inline void ConeShape::setHeight(decimal height) {
-    mHalfHeight = height * decimal(0.5);
-
-    // Update the sine of the semi-angle at the apex point
-    mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
 }
 
 // Return the number of bytes used by the collision shape
@@ -154,8 +124,8 @@ inline size_t ConeShape::getSizeInBytes() const {
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3 ConeShape::getLocalExtents(decimal margin) const {
-    return Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
+inline Vector3 ConeShape::getLocalExtents() const {
+    return Vector3(mRadius + mMargin, mHalfHeight + mMargin, mRadius + mMargin);
 }
 
 // Return the local inertia tensor of the collision shape
@@ -165,11 +135,6 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
     tensor.setAllValues(diagXZ, 0.0, 0.0,
                         0.0, decimal(0.3) * mass * rSquare,
                         0.0, 0.0, 0.0, diagXZ);
-}
-
-// Return the margin distance around the shape
-inline decimal ConeShape::getMargin() const {
-    return OBJECT_MARGIN;
 }
 
 // Test equality between two cone shapes

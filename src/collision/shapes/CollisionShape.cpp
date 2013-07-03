@@ -30,14 +30,15 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type)
-               : mType(type), mNbSimilarCreatedShapes(0) {
+CollisionShape::CollisionShape(CollisionShapeType type, decimal margin)
+               : mType(type), mNbSimilarCreatedShapes(0), mMargin(margin) {
     
 }
 
 // Private copy-constructor
 CollisionShape::CollisionShape(const CollisionShape& shape)
-               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes){
+               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes),
+                 mMargin(shape.mMargin) {
 
 }
 
@@ -50,7 +51,7 @@ CollisionShape::~CollisionShape() {
 inline void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
 
     // Get the local extents in x,y and z direction
-    Vector3 extents = getLocalExtents(OBJECT_MARGIN);
+    Vector3 extents = getLocalExtents();
 
     // Rotate the local extents according to the orientation of the body
     Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();

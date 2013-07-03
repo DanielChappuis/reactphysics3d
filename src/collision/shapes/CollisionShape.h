@@ -36,7 +36,7 @@
 namespace reactphysics3d {
     
 /// Type of the collision shape
-enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER};
+enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE};
 
 // Declarations
 class Body;
@@ -57,6 +57,9 @@ class CollisionShape {
 
         /// Current number of similar created shapes
         uint mNbSimilarCreatedShapes;
+
+        /// Margin used for the GJK collision detection algorithm
+        decimal mMargin;
         
         // -------------------- Methods -------------------- //
 
@@ -71,7 +74,7 @@ class CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShape(CollisionShapeType type);
+        CollisionShape(CollisionShapeType type, decimal margin);
 
         /// Destructor
         virtual ~CollisionShape();
@@ -85,6 +88,9 @@ class CollisionShape {
         /// Return the number of similar created shapes
         uint getNbSimilarCreatedShapes() const;
 
+        /// Return the current object margin
+        decimal getMargin() const;
+
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;
 
@@ -95,10 +101,7 @@ class CollisionShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
 
         /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const=0;
-
-        /// Return the margin distance around the shape
-        virtual decimal getMargin() const=0;
+        virtual Vector3 getLocalExtents() const=0;
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
@@ -129,6 +132,11 @@ inline uint CollisionShape::getNbSimilarCreatedShapes() const {
     return mNbSimilarCreatedShapes;
 }
 
+// Return the current object margin
+inline decimal CollisionShape::getMargin() const {
+    return mMargin;
+}
+
 // Increment the number of similar allocated collision shapes
 inline void CollisionShape::incrementNbSimilarCreatedShapes() {
     mNbSimilarCreatedShapes++;
@@ -149,6 +157,8 @@ inline bool CollisionShape::operator==(const CollisionShape& otherCollisionShape
     if (mType != otherCollisionShape.mType) return false;
 
     assert(typeid(*this) == typeid(otherCollisionShape));
+
+    if (mMargin != otherCollisionShape.mMargin) return false;
 
     // Check if the two shapes are equal
     return otherCollisionShape.isEqualTo(*this);

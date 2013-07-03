@@ -33,19 +33,6 @@
 #include "../mathematics/mathematics.h"
 #include "../configuration.h"
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-        #include <GL/freeglut.h>
-        #include <GL/gl.h>
-    #endif
-#endif
-
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -235,11 +222,6 @@ class ContactPoint : public Constraint {
 
         /// Solve the position constraint
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
-
-        #ifdef VISUAL_DEBUG
-            /// Draw the contact (for debugging)
-           void draw() const;
-        #endif
 };
 
 // Return the normal vector of the contact
@@ -351,13 +333,6 @@ inline decimal ContactPoint::getPenetrationDepth() const {
 inline size_t ContactPoint::getSizeInBytes() const {
     return sizeof(ContactPoint);
 }
-
-#ifdef VISUAL_DEBUG
-inline void ContactPoint::draw() const {
-    glColor3f(1.0, 0.0, 0.0);
-    glutSolidSphere(0.3, 20, 20);
-}
-#endif 
 
 }
 

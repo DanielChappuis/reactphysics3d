@@ -66,7 +66,7 @@ class CylinderShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CylinderShape(decimal radius, decimal height);
+        CylinderShape(decimal radius, decimal height, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
         virtual ~CylinderShape();
@@ -77,14 +77,8 @@ class CylinderShape : public CollisionShape {
         /// Return the radius
         decimal getRadius() const;
 
-        /// Set the radius
-        void setRadius(decimal mRadius);
-
         /// Return the height
         decimal getHeight() const;
-
-        /// Set the height
-        void setHeight(decimal height);
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -96,21 +90,13 @@ class CylinderShape : public CollisionShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
+        virtual Vector3 getLocalExtents() const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Return the margin distance around the shape
-        virtual decimal getMargin() const;
-
         /// Test equality between two cylinder shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
-
-#ifdef VISUAL_DEBUG
-        /// Draw the sphere (only for testing purpose)
-        virtual void draw() const;
-#endif
 };
 
 /// Allocate and return a copy of the object
@@ -123,19 +109,9 @@ inline decimal CylinderShape::getRadius() const {
     return mRadius;
 }
 
-// Set the radius
-inline void CylinderShape::setRadius(decimal radius) {
-    this->mRadius = radius;
-}
-
 // Return the height
 inline decimal CylinderShape::getHeight() const {
     return mHalfHeight * decimal(2.0);
-}
-
-// Set the height
-inline void CylinderShape::setHeight(decimal height) {
-    mHalfHeight = height * decimal(0.5);
 }
 
 // Return the number of bytes used by the collision shape
@@ -144,8 +120,8 @@ inline size_t CylinderShape::getSizeInBytes() const {
 }
 
 // Return the local extents in x,y and z direction
-inline Vector3 CylinderShape::getLocalExtents(decimal margin) const {
-    return Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
+inline Vector3 CylinderShape::getLocalExtents() const {
+    return Vector3(mRadius + mMargin, mHalfHeight + mMargin, mRadius + mMargin);
 }
 
 // Return the local inertia tensor of the cylinder
@@ -155,11 +131,6 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
     tensor.setAllValues(diag, 0.0, 0.0, 0.0,
                         decimal(0.5) * mass * mRadius * mRadius, 0.0,
                         0.0, 0.0, diag);
-}
-
-// Return the margin distance around the shape
-inline decimal CylinderShape::getMargin() const {
-   return OBJECT_MARGIN;
 }
 
 // Test equality between two cylinder shapes

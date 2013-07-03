@@ -28,26 +28,14 @@
 #include "../../configuration.h"
 #include "ConeShape.h"
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
-
 using namespace reactphysics3d;
 
 // Constructor
-ConeShape::ConeShape(decimal radius, decimal height)
-          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
-    assert(mRadius > 0.0);
-    assert(mHalfHeight > 0.0);
+ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
+          : CollisionShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+    assert(mRadius > decimal(0.0));
+    assert(mHalfHeight > decimal(0.0));
+    assert(margin > decimal(0.0));
     
     // Compute the sine of the semi-angle at the apex point
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
@@ -76,7 +64,7 @@ inline Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& directio
     if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
         unitVec = direction.getUnit();
     }
-    supportPoint += unitVec * getMargin();
+    supportPoint += unitVec * mMargin;
 
     return supportPoint;
 }
@@ -104,15 +92,3 @@ inline Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direc
 
     return supportPoint;
 }
-
-#ifdef VISUAL_DEBUG
-// Draw the cone (only for debuging purpose)
-void ConeShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireCone(mRadius, 2.0 * mHalfHeight, 50, 50);
-}
-#endif

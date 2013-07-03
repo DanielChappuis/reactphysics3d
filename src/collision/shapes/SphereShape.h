@@ -71,9 +71,6 @@ class SphereShape : public CollisionShape {
         /// Return the radius of the sphere
         decimal getRadius() const;
 
-        /// Set the radius of the sphere
-        void setRadius(decimal radius);
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -84,24 +81,16 @@ class SphereShape : public CollisionShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
+        virtual Vector3 getLocalExtents() const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Return the margin distance around the shape
-        virtual decimal getMargin() const;
 
         /// Update the AABB of a body using its collision shape
         virtual void updateAABB(AABB& aabb, const Transform& transform);
 
         /// Test equality between two sphere shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
-
-#ifdef VISUAL_DEBUG
-        /// Draw the sphere (only for testing purpose)
-        virtual void draw() const;
-#endif
 };
 
 /// Allocate and return a copy of the object
@@ -114,11 +103,6 @@ inline decimal SphereShape::getRadius() const {
     return mRadius;
 }
 
-// Set the radius of the sphere
-inline void SphereShape::setRadius(decimal radius) {
-    mRadius = radius;
-}
-
 // Return the number of bytes used by the collision shape
 inline size_t SphereShape::getSizeInBytes() const {
     return sizeof(SphereShape);
@@ -127,18 +111,16 @@ inline size_t SphereShape::getSizeInBytes() const {
 // Return a local support point in a given direction with the object margin
 inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
-    decimal margin = getMargin();
-
     // If the direction vector is not the zero vector
     if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
 
         // Return the support point of the sphere in the given direction
-        return margin * direction.getUnit();
+        return mMargin * direction.getUnit();
     }
 
     // If the direction vector is the zero vector we return a point on the
     // boundary of the sphere
-    return Vector3(0, margin, 0);
+    return Vector3(0, mMargin, 0);
 }
 
 // Return a local support point in a given direction without the object margin
@@ -150,8 +132,8 @@ inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& dir
 
 // Return the local extents of the collision shape (half-width) in x,y and z local direction
 // This method is used to compute the AABB of the box
-inline Vector3 SphereShape::getLocalExtents(decimal margin) const {
-    return Vector3(mRadius + margin, mRadius + margin, mRadius + margin);
+inline Vector3 SphereShape::getLocalExtents() const {
+    return Vector3(mRadius, mRadius, mRadius);
 }
 
 // Return the local inertia tensor of the sphere
@@ -162,16 +144,11 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
                         0.0, 0.0, diag);
 }
 
-// Return the margin distance around the shape
-inline decimal SphereShape::getMargin() const {
-    return mRadius + OBJECT_MARGIN;
-}
-
 // Update the AABB of a body using its collision shape
 inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
 
     // Get the local extents in x,y and z direction
-    Vector3 extents = getLocalExtents(OBJECT_MARGIN);
+    Vector3 extents = getLocalExtents();
 
     // Compute the minimum and maximum coordinates of the rotated extents
     Vector3 minCoordinates = transform.getPosition() - extents;

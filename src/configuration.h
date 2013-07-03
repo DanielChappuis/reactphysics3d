@@ -92,7 +92,7 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 
-/// Object margin for collision detection in cm (For GJK-EPA Algorithm)
+/// Object margin for collision detection in meters (for the GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);
 
 /// Distance threshold for two contact points for a valid persistent contact (in meters)
