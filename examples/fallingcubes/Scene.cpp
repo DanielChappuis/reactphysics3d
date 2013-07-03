@@ -59,7 +59,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
@@ -68,7 +68,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , SPHERE_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, position , CUBE_MASS, mDynamicsWorld);
 
         // The box is a moving rigid body
         cube->getRigidBody()->setIsMotionEnabled(true);
@@ -160,12 +160,12 @@ void Scene::render() {
 
     // Set the variables of the shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("lightPosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
+    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     Color& diffCol = mLight0.getDiffuseColor();
     Color& specCol = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("lightDiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("lightSpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
+    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
+    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
     // Render all the cubes of the scene

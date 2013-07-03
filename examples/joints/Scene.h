@@ -34,7 +34,7 @@
 // Constants
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float SPHERE_MASS = 1.0f;                                // Box mass in kilograms
+const float CUBE_MASS = 1.0f;                                // Box mass in kilograms
 const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
 const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes

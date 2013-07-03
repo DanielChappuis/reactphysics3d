@@ -164,14 +164,13 @@ void Scene::render() {
     mPhongShader.bind();
 
     // Set the variables of the shader
-    mPhongShader.setVector3Uniform("lightPosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
+    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("lightWorldPosition", mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     Color& diffCol = mLight0.getDiffuseColor();
     Color& specCol = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("lightDiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("lightSpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
+    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
+    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
     // Render all the boxes
@@ -244,7 +243,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
@@ -259,7 +258,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5, 4, 1.5);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , SPHERE_MASS, mDynamicsWorld);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
@@ -297,7 +296,7 @@ void Scene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
@@ -334,7 +333,7 @@ void Scene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , SPHERE_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
@@ -348,7 +347,7 @@ void Scene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , SPHERE_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);
@@ -363,6 +362,7 @@ void Scene::createFixedJoints() {
     rp3d::RigidBody* propellerBody = mPropellerBox->getRigidBody();
     const rp3d::Vector3 anchorPointWorldSpace1(5, 7, 0);
     rp3d::FixedJointInfo jointInfo1(body1, propellerBody, anchorPointWorldSpace1);
+    jointInfo1.isCollisionEnabled = false;
 
     // Create the joint in the dynamics world
     mFixedJoint1 = dynamic_cast<rp3d::FixedJoint*>(mDynamicsWorld->createJoint(jointInfo1));
@@ -373,6 +373,7 @@ void Scene::createFixedJoints() {
     rp3d::RigidBody* body2 = mFixedJointBox2->getRigidBody();
     const rp3d::Vector3 anchorPointWorldSpace2(-5, 7, 0);
     rp3d::FixedJointInfo jointInfo2(body2, propellerBody, anchorPointWorldSpace2);
+    jointInfo2.isCollisionEnabled = false;
 
     // Create the joint in the dynamics world
     mFixedJoint2 = dynamic_cast<rp3d::FixedJoint*>(mDynamicsWorld->createJoint(jointInfo2));

@@ -45,12 +45,12 @@ using namespace reactphysics3d;
 
 // Constructor
 ConeShape::ConeShape(decimal radius, decimal height)
-          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height / decimal(2.0)) {
-    assert(radius > 0.0);
+          : CollisionShape(CONE), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+    assert(mRadius > 0.0);
     assert(mHalfHeight > 0.0);
     
     // Compute the sine of the semi-angle at the apex point
-    mSinTheta = radius / (sqrt(radius * radius + height * height));
+    mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
 }
 
 // Private copy-constructor
@@ -88,7 +88,7 @@ inline Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direc
     decimal sinThetaTimesLengthV = mSinTheta * v.length();
     Vector3 supportPoint;
 
-    if (v.y >= sinThetaTimesLengthV) {
+    if (v.y > sinThetaTimesLengthV) {
         supportPoint = Vector3(0.0, mHalfHeight, 0.0);
     }
     else {
@@ -98,7 +98,7 @@ inline Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direc
             supportPoint = Vector3(v.x * d, -mHalfHeight, v.z * d);
         }
         else {
-            supportPoint = Vector3(mRadius, -mHalfHeight, 0.0);
+            supportPoint = Vector3(0.0, -mHalfHeight, 0.0);
         }
     }
 

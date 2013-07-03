@@ -6,7 +6,7 @@
 * This software is provided 'as-is', without any express or implied warranty.   *
 * In no event will the authors be held liable for any damages arising from the  *
 * use of this software.                                                         *
-*                                                                               *
+*                                                                                *
 * Permission is granted to anyone to use this software for any purpose,         *
 * including commercial applications, and to alter it and redistribute it        *
 * freely, subject to the following restrictions:                                *
@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform vec3 lightPosCameraSpace;           // Camera-space position of the light
 uniform vec3 lightAmbientColor;             // Lights ambient color
-uniform vec3 lightDiffuseColor;             // Light diffuse color
-uniform vec3 lightSpecularColor;            // Light specular color
+uniform vec3 light0PosCameraSpace;          // Camera-space position of the light
+uniform vec3 light0DiffuseColor;            // Light 0 diffuse color
+uniform vec3 light0SpecularColor;           // Light 0 specular color
 uniform float shininess;                    // Shininess
 uniform sampler2D texture;                  // Texture
 uniform bool isTexture;                     // True if we need to use the texture
@@ -46,18 +46,20 @@ void main() {
     vec3 textureColor = vec3(1);
     if (isTexture) textureColor = texture2D(texture, texCoords).rgb;
 
-    // Compute the diffuse term
-    vec3 L = normalize(lightPosCameraSpace - vertexPosCameraSpace);
+    // Compute the surface normal vector
     vec3 N = normalize(vertexNormalCameraSpace);
-    float diffuseFactor = max(dot(N, L), 0.0);
-    vec3 diffuse = lightDiffuseColor * diffuseFactor * textureColor;
 
-    // Compute the specular term
+    // Compute the diffuse term of light 0
+    vec3 L0 = normalize(light0PosCameraSpace - vertexPosCameraSpace);
+    float diffuseFactor = max(dot(N, L0), 0.0);
+    vec3 diffuse = light0DiffuseColor * diffuseFactor * textureColor;
+
+    // Compute the specular term of light 0
     vec3 V = normalize(-vertexPosCameraSpace);
-    vec3 H = normalize(V + L);
-    float specularFactor = pow(max(dot(N, H), 0), shininess);
+    vec3 H0 = normalize(V + L0);
+    float specularFactor = pow(max(dot(N, H0), 0), shininess);
     if (diffuseFactor < 0) specularFactor = 0.0;
-    vec3 specular = lightSpecularColor * specularFactor;
+    vec3 specular = light0SpecularColor * specularFactor;
 
     // Compute the final color
     gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
