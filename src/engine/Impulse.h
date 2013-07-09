@@ -37,7 +37,16 @@ namespace reactphysics3d {
  */
 struct Impulse {
 
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private assignment operator
+        Impulse& operator=(const Impulse& impulse);
+
     public:
+
+        // -------------------- Attributes -------------------- //
 
         /// Linear impulse applied to the first body
         const Vector3 linearImpulseBody1;
@@ -51,12 +60,25 @@ struct Impulse {
         /// Angular impulse applied to the second body
         const Vector3 angularImpulseBody2;
 
-        /// Constructor
-        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
-                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
-            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
-              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
+        // -------------------- Methods -------------------- //
 
+        /// Constructor
+        Impulse(const Vector3& initLinearImpulseBody1, const Vector3& initAngularImpulseBody1,
+                const Vector3& initLinearImpulseBody2, const Vector3& initAngularImpulseBody2)
+            : linearImpulseBody1(initLinearImpulseBody1),
+              angularImpulseBody1(initAngularImpulseBody1),
+              linearImpulseBody2(initLinearImpulseBody2),
+              angularImpulseBody2(initAngularImpulseBody2) {
+
+        }
+
+        /// Copy-constructor
+        Impulse(const Impulse& impulse)
+              : linearImpulseBody1(impulse.linearImpulseBody1),
+                angularImpulseBody1(impulse.angularImpulseBody1),
+                linearImpulseBody2(impulse.linearImpulseBody2),
+                angularImpulseBody2(impulse.angularImpulseBody2) {
+;
         }
 };
 

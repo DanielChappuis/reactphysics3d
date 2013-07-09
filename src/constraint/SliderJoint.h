@@ -236,6 +236,12 @@ class SliderJoint : public Constraint {
 
         // -------------------- Methods -------------------- //
 
+        /// Private copy-constructor
+        SliderJoint(const SliderJoint& constraint);
+
+        /// Private assignment operator
+        SliderJoint& operator=(const SliderJoint& constraint);
+
         /// Reset the limits
         void resetLimits();
 

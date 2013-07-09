@@ -108,6 +108,14 @@ class FixedJoint : public Constraint {
         /// Inverse of the initial orientation difference between the two bodies
         Quaternion mInitOrientationDifferenceInv;
 
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        FixedJoint(const FixedJoint& constraint);
+
+        /// Private assignment operator
+        FixedJoint& operator=(const FixedJoint& constraint);
+
     public :
 
         // -------------------- Methods -------------------- //

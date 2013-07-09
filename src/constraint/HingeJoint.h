@@ -223,6 +223,12 @@ class HingeJoint : public Constraint {
 
         // -------------------- Methods -------------------- //
 
+        /// Private copy-constructor
+        HingeJoint(const HingeJoint& constraint);
+
+        /// Private assignment operator
+        HingeJoint& operator=(const HingeJoint& constraint);
+
         /// Reset the limits
         void resetLimits();
 

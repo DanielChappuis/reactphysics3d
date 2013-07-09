@@ -96,6 +96,14 @@ class BallAndSocketJoint : public Constraint {
         /// Accumulated impulse
         Vector3 mImpulse;
 
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        BallAndSocketJoint(const BallAndSocketJoint& constraint);
+
+        /// Private assignment operator
+        BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint);
+
     public :
 
         // -------------------- Methods -------------------- //
