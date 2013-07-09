@@ -40,6 +40,13 @@ namespace reactphysics3d {
  * and centered at the origin. The cylinder is defined by its height
  * and the radius of its base. The "transform" of the corresponding
  * rigid body gives an orientation and a position to the cylinder.
+ * This collision shape uses an extra margin distance around it for collision
+ * detection purpose. The default margin is 4cm (if your units are meters,
+ * which is recommended). In case, you want to simulate small objects
+ * (smaller than the margin distance), you might want to reduce the margin by
+ * specifying your own margin distance using the "margin" parameter in the
+ * constructor of the cylinder shape. Otherwise, it is recommended to use the
+ * default margin distance by not using the "margin" parameter in the constructor.
  */
 class CylinderShape : public CollisionShape {
 
@@ -111,7 +118,7 @@ inline decimal CylinderShape::getRadius() const {
 
 // Return the height
 inline decimal CylinderShape::getHeight() const {
-    return mHalfHeight * decimal(2.0);
+    return mHalfHeight + mHalfHeight;
 }
 
 // Return the number of bytes used by the collision shape

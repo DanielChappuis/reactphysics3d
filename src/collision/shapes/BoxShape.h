@@ -40,7 +40,14 @@ namespace reactphysics3d {
  * This class represents a 3D box shape. Those axis are unit length.
  * The three extents are half-widths of the box along the three
  * axis x, y, z local axis. The "transform" of the corresponding
- * rigid body gives an orientation and a position to the box.
+ * rigid body will give an orientation and a position to the box. This
+ * collision shape uses an extra margin distance around it for collision
+ * detection purpose. The default margin is 4cm (if your units are meters,
+ * which is recommended). In case, you want to simulate small objects
+ * (smaller than the margin distance), you might want to reduce the margin by
+ * specifying your own margin distance using the "margin" parameter in the
+ * constructor of the box shape. Otherwise, it is recommended to use the
+ * default margin distance by not using the "margin" parameter in the constructor.
  */
 class BoxShape : public CollisionShape {
 

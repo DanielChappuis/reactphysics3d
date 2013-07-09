@@ -29,7 +29,6 @@
 #include <cassert>
 
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
 SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE, radius), mRadius(radius) {

@@ -40,7 +40,13 @@ namespace reactphysics3d {
  * by its height and by the radius of its base. The center of the
  * cone is at the half of the height. The "transform" of the
  * corresponding rigid body gives an orientation and a position
- * to the cone.
+ * to the cone. This collision shape uses an extra margin distance around
+ * it for collision detection purpose. The default margin is 4cm (if your
+ * units are meters, which is recommended). In case, you want to simulate small
+ * objects (smaller than the margin distance), you might want to reduce the margin
+ * by specifying your own margin distance using the "margin" parameter in the
+ * constructor of the cone shape. Otherwise, it is recommended to use the
+ * default margin distance by not using the "margin" parameter in the constructor.
  */
 class ConeShape : public CollisionShape {
 

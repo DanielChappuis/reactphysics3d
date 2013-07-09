@@ -36,7 +36,10 @@ namespace reactphysics3d {
 // Class SphereShape
 /**
  * This class represents a sphere collision shape that is centered
- * at the origin and defined by its radius.
+ * at the origin and defined by its radius. This collision shape does not
+ * have an explicit object margin distance. The margin is implicitly the
+ * radius of the sphere. Therefore, no need to specify an object margin
+ * for a sphere shape.
  */
 class SphereShape : public CollisionShape {
 

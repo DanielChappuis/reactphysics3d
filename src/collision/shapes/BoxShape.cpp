@@ -30,7 +30,6 @@
 #include <cassert>
 
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
 BoxShape::BoxShape(const Vector3& extent, decimal margin)
