@@ -89,6 +89,9 @@ const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
 /// Default friction coefficient for a rigid body
 const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 
+/// Default bounciness factor for a rigid body
+const decimal DEFAULT_BOUNCINESS = decimal(0.5);
+
 /// True if the deactivation (sleeping) of inactive bodies is enabled
 const bool DEACTIVATION_ENABLED = true;
 

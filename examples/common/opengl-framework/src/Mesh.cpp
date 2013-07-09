@@ -84,7 +84,7 @@ void Mesh::calculateNormals() {
 
     // Normalize the normal at each vertex
     for (uint i=0; i<getNbVertices(); i++) {
-        assert(mNormals[i].length() > 0);
+        std::cout << "vertex n : " << i << std::endl;
         mNormals[i] = mNormals[i].normalize();
     }
 }

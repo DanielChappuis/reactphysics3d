@@ -59,7 +59,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_CUBES; i++) {
+    for (int i=0; i<NB_SPHERES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
@@ -70,11 +70,11 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , CUBE_MASS, mDynamicsWorld);
 
-        // The box is a moving rigid body
         cube->getRigidBody()->setIsMotionEnabled(true);
 
-        // Set the bouncing factor of the box
-        cube->getRigidBody()->setRestitution(0.4);
+        // Change the material properties of the rigid body
+        rp3d::Material& material = cube->getRigidBody()->getMaterial();
+        material.setBounciness(0.4);
 
         // Add the box the list of box in the scene
         mBoxes.push_back(cube);
@@ -87,8 +87,9 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     // The floor must be a non-moving rigid body
     mFloor->getRigidBody()->setIsMotionEnabled(false);
 
-    // Set the bouncing factor of the floor
-    mFloor->getRigidBody()->setRestitution(0.3);
+    // Change the material properties of the floor rigid body
+    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
+    material.setBounciness(0.3);
 
     // Start the simulation
     startSimulation();

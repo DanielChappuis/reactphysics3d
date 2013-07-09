@@ -29,6 +29,7 @@
 // Libraries
 #include <cassert>
 #include "CollisionBody.h"
+#include "../engine/Material.h"
 #include "../mathematics/mathematics.h"
 
 /// Namespace reactphysics3d
@@ -73,14 +74,11 @@ class RigidBody : public CollisionBody {
         /// Inverse of the mass of the body
         decimal mMassInverse;
 
-        /// Coefficient of restitution (between 0 and 1) where 1 is for a very bouncy body
-        decimal mRestitution;
-
-        /// Friction coefficient
-        decimal mFrictionCoefficient;
-
         /// True if the gravity needs to be applied to this rigid body
         bool mIsGravityEnabled;
+
+        /// Material properties of the rigid body
+        Material mMaterial;
 
         // -------------------- Methods -------------------- //
 
@@ -151,24 +149,18 @@ class RigidBody : public CollisionBody {
 
         /// Return the inverse of the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorInverseWorld() const;
-        
-        /// Get the restitution coefficient
-        decimal getRestitution() const;
-
-        /// Set the restitution coefficient
-        void setRestitution(decimal restitution);
-
-        /// Get the friction coefficient
-        decimal getFrictionCoefficient() const;
-
-        /// Set the friction coefficient
-        void setFrictionCoefficient(decimal frictionCoefficient);
 
         /// Return true if the gravity needs to be applied to this rigid body
         bool isGravityEnabled() const;
 
         /// Set the variable to know if the gravity is applied to this rigid body
         void enableGravity(bool isEnabled);
+
+        /// Return a reference to the material properties of the rigid body
+        Material& getMaterial();
+
+        /// Set a new material for this rigid body
+        void setMaterial(const Material& material);
 };
 
 // Method that return the mass of the body
@@ -276,27 +268,6 @@ inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     }
 }
 
-// Get the restitution coeffficient of the rigid body
-inline decimal RigidBody::getRestitution() const {
-    return mRestitution;
-}
-
-// Set the restitution coefficient
-inline void RigidBody::setRestitution(decimal restitution) {
-    assert(restitution >= 0.0 && restitution <= 1.0);
-    mRestitution = restitution;
-}
-
-// Get the friction coefficient
-inline decimal RigidBody::getFrictionCoefficient() const {
-    return mFrictionCoefficient;
-}
-
-// Set the friction coefficient
-inline void RigidBody::setFrictionCoefficient(decimal frictionCoefficient) {
-    mFrictionCoefficient = frictionCoefficient;
-}
-
 // Return true if the gravity needs to be applied to this rigid body
 inline bool RigidBody::isGravityEnabled() const {
     return mIsGravityEnabled;
@@ -305,6 +276,16 @@ inline bool RigidBody::isGravityEnabled() const {
 // Set the variable to know if the gravity is applied to this rigid body
 inline void RigidBody::enableGravity(bool isEnabled) {
     mIsGravityEnabled = isEnabled;
+}
+
+// Return a reference to the material properties of the rigid body
+inline Material& RigidBody::getMaterial() {
+    return mMaterial;
+}
+
+// Set a new material for this rigid body
+inline void RigidBody::setMaterial(const Material& material) {
+    mMaterial = material;
 }
 
 }

@@ -209,8 +209,9 @@ void Scene::createBallAndSocketJoints() {
         if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(false);
         else mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(true);
 
-        // Set the bouncing factor of the box
-        mBallAndSocketJointChainBoxes[i]->getRigidBody()->setRestitution(0.4);
+        // Change the material properties of the rigid body
+        rp3d::Material& material = mBallAndSocketJointChainBoxes[i]->getRigidBody()->getMaterial();
+        material.setBounciness(0.4);
 
         positionBox.y -= boxDimension.y + 0.5;
     }
@@ -248,8 +249,9 @@ void Scene::createSliderJoint() {
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
 
-    // Set the bouncing factor of the box
-    mSliderJointBottomBox->getRigidBody()->setRestitution(0.4);
+    // Change the material properties of the rigid body
+    rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
+    material1.setBounciness(0.4);
 
     // --------------- Create the second box --------------- //
 
@@ -263,8 +265,9 @@ void Scene::createSliderJoint() {
     // The second box is allowed to move
     mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
 
-    // Set the bouncing factor of the box
-    mSliderJointTopBox->getRigidBody()->setRestitution(0.4);
+    // Change the material properties of the rigid body
+    rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
+    material2.setBounciness(0.4);
 
     // --------------- Create the joint --------------- //
 
@@ -301,8 +304,9 @@ void Scene::createPropellerHingeJoint() {
     // The fist box cannot move
     mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
 
-    // Set the bouncing factor of the box
-    mPropellerBox->getRigidBody()->setRestitution(0.4);
+    // Change the material properties of the rigid body
+    rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
+    material.setBounciness(0.4);
 
     // --------------- Create the Hinge joint --------------- //
 
@@ -338,8 +342,9 @@ void Scene::createFixedJoints() {
     // The fist box cannot move
     mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
 
-    // Set the bouncing factor of the box
-    mFixedJointBox1->getRigidBody()->setRestitution(0.4);
+    // Change the material properties of the rigid body
+    rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
+    material1.setBounciness(0.4);
 
     // --------------- Create the second box --------------- //
 
@@ -352,8 +357,9 @@ void Scene::createFixedJoints() {
     // The second box is allowed to move
     mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);
 
-    // Set the bouncing factor of the box
-    mFixedJointBox2->getRigidBody()->setRestitution(0.4);
+    // Change the material properties of the rigid body
+    rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
+    material2.setBounciness(0.4);
 
     // --------------- Create the first fixed joint --------------- //
 
@@ -390,6 +396,7 @@ void Scene::createFloor() {
     // The floor must be a non-moving rigid body
     mFloor->getRigidBody()->setIsMotionEnabled(false);
 
-    // Set the bouncing factor of the floor
-    mFloor->getRigidBody()->setRestitution(0.3);
+    // Change the material properties of the rigid body
+    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
+    material.setBounciness(0.3);
 }

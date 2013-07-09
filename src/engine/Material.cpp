@@ -24,24 +24,23 @@
 ********************************************************************************/
 
 // Libraries
-#include "RigidBody.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "Material.h"
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
- // Constructor
- RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
-                      CollisionShape *collisionShape, bodyindex id)
-           : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
-             mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true) {
+// Constructor
+Material::Material()
+         : mFrictionCoefficient(DEFAULT_FRICTION_COEFFICIENT), mBounciness(DEFAULT_BOUNCINESS) {
 
-    assert(collisionShape);
+}
+
+// Copy-constructor
+Material::Material(const Material& material)
+         : mFrictionCoefficient(material.mFrictionCoefficient), mBounciness(material.mBounciness) {
+
 }
 
 // Destructor
-RigidBody::~RigidBody() {
+Material::~Material() {
 
 }
-

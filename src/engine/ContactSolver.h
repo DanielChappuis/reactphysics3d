@@ -367,12 +367,12 @@ class ContactSolver {
                                const ContactManifoldSolver& manifold);
 
         /// Compute the collision restitution factor from the restitution factor of each body
-        decimal computeMixedRestitutionFactor(const RigidBody* body1,
-                                              const RigidBody* body2) const;
+        decimal computeMixedRestitutionFactor(RigidBody *body1,
+                                              RigidBody *body2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each body
-        decimal computeMixedFrictionCoefficient(const RigidBody* body1,
-                                                const RigidBody* body2)const;
+        decimal computeMixedFrictionCoefficient(RigidBody* body1,
+                                                RigidBody* body2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact point. The two vectors have to be
@@ -489,20 +489,21 @@ inline void ContactSolver::setIsSolveFrictionAtContactManifoldCenterActive(bool 
 }
 
 // Compute the collision restitution factor from the restitution factor of each body
-inline decimal ContactSolver::computeMixedRestitutionFactor(const RigidBody* body1,
-                                                            const RigidBody* body2) const {
-    decimal restitution1 = body1->getRestitution();
-    decimal restitution2 = body2->getRestitution();
+inline decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
+                                                            RigidBody* body2) const {
+    decimal restitution1 = body1->getMaterial().getBounciness();
+    decimal restitution2 = body2->getMaterial().getBounciness();
 
     // Return the largest restitution factor
     return (restitution1 > restitution2) ? restitution1 : restitution2;
 }
 
 // Compute the mixed friction coefficient from the friction coefficient of each body
-inline decimal ContactSolver::computeMixedFrictionCoefficient(const RigidBody* body1,
-                                                              const RigidBody* body2) const {
+inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
+                                                              RigidBody *body2) const {
     // Use the geometric mean to compute the mixed friction coefficient
-    return sqrt(body1->getFrictionCoefficient() * body2->getFrictionCoefficient());
+    return sqrt(body1->getMaterial().getFrictionCoefficient() *
+                body2->getMaterial().getFrictionCoefficient());
 }
 
 // Compute a penetration constraint impulse

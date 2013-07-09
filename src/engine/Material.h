@@ -23,95 +23,97 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef REACTPHYSICS3D_MATERIAL_H
+#define REACTPHYSICS3D_MATERIAL_H
 
 // Libraries
-#include "openglframework.h"
-#include "reactphysics3d.h"
-#include "Box.h"
+#include <cassert>
+#include "../configuration.h"
 
-// Constants
-const int NB_SPHERES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float CUBE_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+namespace reactphysics3d {
 
-// Class Scene
-class Scene {
+// Class Material
+/**
+ * This class contains the material properties of a rigid body that will be use for
+ * the dynamics simulation like the friction coefficient or the bounciness of the rigid
+ * body.
+ */
+class Material {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        /// Friction coefficient (positive value)
+        decimal mFrictionCoefficient;
 
-        /// Light 0
-        openglframework::Light mLight0;
+        /// Bounciness during collisions (between 0 and 1) where 1 is for a very bouncy body
+        decimal mBounciness;
 
-        /// Phong shader
-        openglframework::Shader mPhongShader;
-
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
-
-        /// Box for the floor
-        Box* mFloor;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
-        /// True if the physics simulation is running
-        bool mIsRunning;
-
-    public:
+    public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Material();
+
+        /// Copy-constructor
+        Material(const Material& material);
 
         /// Destructor
-        ~Scene();
+        ~Material();
 
-        /// Take a step for the simulation
-        void simulate();
+        /// Return the bounciness
+        decimal getBounciness() const;
 
-        /// Stop the simulation
-        void stopSimulation();
+        /// Set the bounciness
+        void setBounciness(decimal bounciness);
 
-        /// Start the simulation
-        void startSimulation();
+        /// Return the friction coefficient
+        decimal getFrictionCoefficient() const;
 
-        /// Pause or continue simulation
-        void pauseContinueSimulation();
+        /// Set the friction coefficient
+        void setFrictionCoefficient(decimal frictionCoefficient);
 
-        /// Render the scene
-        void render();
+        /// Overloaded assignment operator
+        Material& operator=(const Material& material);
 };
 
-// Stop the simulation
-inline void Scene::stopSimulation() {
-    mDynamicsWorld->stop();
-    mIsRunning = false;
+// Return the bounciness
+inline decimal Material::getBounciness() const {
+    return mBounciness;
 }
 
-// Start the simulation
-inline void Scene::startSimulation() {
-    mDynamicsWorld->start();
-    mIsRunning = true;
+// Set the bounciness
+inline void Material::setBounciness(decimal bounciness) {
+    assert(bounciness >= decimal(0.0) && bounciness <= decimal(1.0));
+    mBounciness = bounciness;
 }
 
-// Pause or continue simulation
-inline void Scene::pauseContinueSimulation() {
-    if (mIsRunning) {
-        stopSimulation();
+// Return the friction coefficient
+inline decimal Material::getFrictionCoefficient() const {
+    return mFrictionCoefficient;
+}
+
+// Set the friction coefficient
+inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
+    assert(frictionCoefficient >= decimal(0.0));
+    mFrictionCoefficient = frictionCoefficient;
+}
+
+// Overloaded assignment operator
+inline Material& Material::operator=(const Material& material) {
+
+    // Check for self-assignment
+    if (this != &material) {
+        mFrictionCoefficient = material.mFrictionCoefficient;
+        mBounciness = material.mBounciness;
     }
-    else {
-        startSimulation();
-    }
+
+    // Return this material
+    return *this;
+}
+
 }
 
 #endif
