@@ -48,6 +48,7 @@
 #include "collision/shapes/ConeShape.h"
 #include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/CapsuleShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/AABB.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
