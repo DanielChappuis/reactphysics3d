@@ -80,19 +80,19 @@ class BoxShape : public CollisionShape {
         virtual BoxShape* clone(void* allocatedMemory) const;
 
         /// Return the extents of the box
-        const Vector3& getExtent() const;
+        Vector3 getExtent() const;
 
-        /// Return the local extents in x,y and z direction.
-        virtual Vector3 getLocalExtents() const;
+        /// Return the local bounds of the shape in x, y and z directions
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -107,14 +107,19 @@ inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
 }
 
 // Return the extents of the box
-inline const Vector3& BoxShape::getExtent() const {
+inline Vector3 BoxShape::getExtent() const {
     return mExtent + Vector3(mMargin, mMargin, mMargin);
 }
 
-// Return the local extents of the box (half-width) in x,y and z local direction.
+// Return the local bounds of the shape in x, y and z directions
 /// This method is used to compute the AABB of the box
-inline Vector3 BoxShape::getLocalExtents() const {
-    return mExtent + Vector3(mMargin, mMargin, mMargin);
+inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
+
+    // Maximum bounds
+    max = mExtent + Vector3(mMargin, mMargin, mMargin);
+
+    // Minimum bounds
+    min = -max;
 }
 
 // Return the number of bytes used by the collision shape
@@ -123,7 +128,7 @@ inline size_t BoxShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 
     assert(mMargin > 0.0);
     
@@ -133,7 +138,7 @@ inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction
 }
 
 // Return a local support point in a given direction without the objec margin
-inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
 
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,

@@ -83,9 +83,9 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                           const CollisionShape* collisionShape1,
+                                                           CollisionShape* collisionShape1,
                                                            const Transform& transform1,
-                                                           const CollisionShape* collisionShape2,
+                                                           CollisionShape* collisionShape2,
                                                            const Transform& transform2,
                                                            Vector3& v, ContactPointInfo*& contactInfo) {
 

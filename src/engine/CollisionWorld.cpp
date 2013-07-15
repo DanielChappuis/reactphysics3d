@@ -154,7 +154,6 @@ CollisionShape* CollisionWorld::createCollisionShape(const CollisionShape& colli
     // A similar collision shape does not already exist in the world, so we create a
     // new one and add it to the world
     void* allocatedMemory = mMemoryAllocator.allocate(collisionShape.getSizeInBytes());
-    size_t test = collisionShape.getSizeInBytes();
     CollisionShape* newCollisionShape = collisionShape.clone(allocatedMemory);
     mCollisionShapes.push_back(newCollisionShape);
 

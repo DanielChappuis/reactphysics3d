@@ -78,13 +78,13 @@ class SphereShape : public CollisionShape {
         virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
-        /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents() const;
+        /// Return the local bounds of the shape in x, y and z directions.
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -112,7 +112,7 @@ inline size_t SphereShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 
     // If the direction vector is not the zero vector
     if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
@@ -127,16 +127,25 @@ inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direct
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
 
     // Return the center of the sphere (the radius is taken into account in the object margin)
     return Vector3(0.0, 0.0, 0.0);
 }
 
-// Return the local extents of the collision shape (half-width) in x,y and z local direction
+// Return the local bounds of the shape in x, y and z directions.
 // This method is used to compute the AABB of the box
-inline Vector3 SphereShape::getLocalExtents() const {
-    return Vector3(mRadius, mRadius, mRadius);
+inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
+
+    // Maximum bounds
+    max.x = mRadius;
+    max.y = mRadius;
+    max.z = mRadius;
+
+    // Minimum bounds
+    min.x = -mRadius;
+    min.y = min.x;
+    min.z = min.x;
 }
 
 // Return the local inertia tensor of the sphere
@@ -151,15 +160,11 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
 inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
 
     // Get the local extents in x,y and z direction
-    Vector3 extents = getLocalExtents();
-
-    // Compute the minimum and maximum coordinates of the rotated extents
-    Vector3 minCoordinates = transform.getPosition() - extents;
-    Vector3 maxCoordinates = transform.getPosition() + extents;
+    Vector3 extents(mRadius, mRadius, mRadius);
 
     // Update the AABB with the new minimum and maximum coordinates
-    aabb.setMin(minCoordinates);
-    aabb.setMax(maxCoordinates);
+    aabb.setMin(transform.getPosition() - extents);
+    aabb.setMax(transform.getPosition() + extents);
 }
 
 // Test equality between two sphere shapes

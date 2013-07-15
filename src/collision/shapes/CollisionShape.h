@@ -36,7 +36,7 @@
 namespace reactphysics3d {
     
 /// Type of the collision shape
-enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE};
+enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH};
 
 // Declarations
 class Body;
@@ -95,13 +95,13 @@ class CollisionShape {
         virtual size_t getSizeInBytes() const = 0;
 
         /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const=0;
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction)=0;
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction)=0;
 
-        /// Return the local extents in x,y and z direction
-        virtual Vector3 getLocalExtents() const=0;
+        /// Return the local bounds of the shape in x, y and z directions
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;

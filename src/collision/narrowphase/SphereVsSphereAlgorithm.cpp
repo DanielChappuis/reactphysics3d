@@ -41,9 +41,9 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(const CollisionShape* collisionShape1,
+bool SphereVsSphereAlgorithm::testCollision(CollisionShape* collisionShape1,
                                             const Transform& transform1,
-                                            const CollisionShape* collisionShape2,
+                                            CollisionShape* collisionShape2,
                                             const Transform& transform2,
                                             ContactPointInfo*& contactInfo) {
     

@@ -63,9 +63,9 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         virtual ~SphereVsSphereAlgorithm();
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const CollisionShape* collisionShape1,
+        virtual bool testCollision(CollisionShape* collisionShape1,
                                    const Transform& transform1,
-                                   const CollisionShape* collisionShape2,
+                                   CollisionShape* collisionShape2,
                                    const Transform& transform2,
                                    ContactPointInfo*& contactInfo);
 };
