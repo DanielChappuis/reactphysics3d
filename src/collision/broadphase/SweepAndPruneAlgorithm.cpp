@@ -35,15 +35,30 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Initialization of static variables
-bodyindex SweepAndPruneAlgorithm::INVALID_INDEX = std::numeric_limits<bodyindex>::max();
+const bodyindex SweepAndPruneAlgorithm::INVALID_INDEX = std::numeric_limits<bodyindex>::max();
+const luint SweepAndPruneAlgorithm::NB_SENTINELS = 2;
 
-// Constructor of AABBInt
+// Constructor that takes an AABB as input
 AABBInt::AABBInt(const AABB& aabb) {
-    for (int axis=0; axis<3; axis++) {
-        min[axis] = encodeFloatIntoInteger(aabb.getMin()[axis]);
-        max[axis] = encodeFloatIntoInteger(aabb.getMax()[axis]);
-    }
-}      
+    min[0] = encodeFloatIntoInteger(aabb.getMin().x);
+    min[1] = encodeFloatIntoInteger(aabb.getMin().y);
+    min[2] = encodeFloatIntoInteger(aabb.getMin().z);
+
+    max[0] = encodeFloatIntoInteger(aabb.getMax().x);
+    max[1] = encodeFloatIntoInteger(aabb.getMax().y);
+    max[2] = encodeFloatIntoInteger(aabb.getMax().z);
+}
+
+// Constructor that set all the axis with an minimum and maximum value
+AABBInt::AABBInt(uint minValue, uint maxValue) {
+    min[0] = minValue;
+    min[1] = minValue;
+    min[2] = minValue;
+
+    max[0] = maxValue;
+    max[1] = maxValue;
+    max[2] = maxValue;
+}
 
 // Constructor
 SweepAndPruneAlgorithm::SweepAndPruneAlgorithm(CollisionDetection& collisionDetection)
@@ -67,8 +82,16 @@ SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 // Notify the broad-phase about a new object in the world
 /// This method adds the AABB of the object ion to broad-phase
 void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
+
     bodyindex boxIndex;
-    
+
+    assert(encodeFloatIntoInteger(aabb.getMin().x) > encodeFloatIntoInteger(-FLT_MAX));
+    assert(encodeFloatIntoInteger(aabb.getMin().y) > encodeFloatIntoInteger(-FLT_MAX));
+    assert(encodeFloatIntoInteger(aabb.getMin().z) > encodeFloatIntoInteger(-FLT_MAX));
+    assert(encodeFloatIntoInteger(aabb.getMax().x) < encodeFloatIntoInteger(FLT_MAX));
+    assert(encodeFloatIntoInteger(aabb.getMax().y) < encodeFloatIntoInteger(FLT_MAX));
+    assert(encodeFloatIntoInteger(aabb.getMax().z) < encodeFloatIntoInteger(FLT_MAX));
+
     // If the index of the first free box is valid (means that
     // there is a bucket in the middle of the array that doesn't
     // contain a box anymore because it has been removed)
@@ -88,12 +111,11 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     
     // Move the maximum limit end-point two elements further
     // at the end-points array in all three axis
-    const luint nbSentinels = 2;
-    const luint indexLimitEndPoint = 2 * mNbBoxes + nbSentinels - 1;
+    const luint indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
     for (uint axis=0; axis<3; axis++) {
         EndPoint* maxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint];
-        assert(mEndPoints[axis][0].boxID == INVALID_INDEX && mEndPoints[axis][0].isMin == true);
-        assert(maxLimitEndPoint->boxID == INVALID_INDEX && maxLimitEndPoint->isMin == false);
+        assert(mEndPoints[axis][0].boxID == INVALID_INDEX && mEndPoints[axis][0].isMin);
+        assert(maxLimitEndPoint->boxID == INVALID_INDEX && !maxLimitEndPoint->isMin);
         EndPoint* newMaxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint + 2];
         newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin,
                                        maxLimitEndPoint->value);
@@ -102,15 +124,15 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     // Create a new box
     BoxAABB* box = &mBoxes[boxIndex];
     box->body = body;
-    const uint minEndPointValue = encodeFloatIntoInteger(FLT_MAX - 2.0f);
-    const uint maxEndPointValue = encodeFloatIntoInteger(FLT_MAX - 1.0f);
+    const uint maxEndPointValue = encodeFloatIntoInteger(FLT_MAX) - 1;
+    const uint minEndPointValue = encodeFloatIntoInteger(FLT_MAX) - 2;
     for (uint axis=0; axis<3; axis++) {
         box->min[axis] = indexLimitEndPoint;
         box->max[axis] = indexLimitEndPoint + 1;
         EndPoint* minimumEndPoint = &mEndPoints[axis][box->min[axis]];
-        minimumEndPoint->setValues(body->getID(), true, minEndPointValue);
+        minimumEndPoint->setValues(boxIndex, true, minEndPointValue);
         EndPoint* maximumEndPoint = &mEndPoints[axis][box->max[axis]];
-        maximumEndPoint->setValues(body->getID(), false, maxEndPointValue);
+        maximumEndPoint->setValues(boxIndex, false, maxEndPointValue);
     }
     
     // Add the body pointer to box index mapping
@@ -125,19 +147,36 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     updateObject(body, aabb);
 } 
 
-// Notify the broad-phase about a object that has been removed from the world
+// Notify the broad-phase about an object that has been removed from the world
 void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
+
+    assert(mNbBoxes > 0);
 
     // Call the update method with an AABB that is very far away
     // in order to remove all overlapping pairs from the pair manager
-    const decimal max = DECIMAL_LARGEST;
-    const Vector3 maxVector(max, max, max);
-    const AABB aabb(maxVector, maxVector);
-    updateObject(body, aabb);
+    const uint maxEndPointValue = encodeFloatIntoInteger(FLT_MAX) - 1;
+    const uint minEndPointValue = encodeFloatIntoInteger(FLT_MAX) - 2;
+    const AABBInt aabbInt(minEndPointValue, maxEndPointValue);
+    updateObjectIntegerAABB(body, aabbInt);
 
     // Get the corresponding box
     bodyindex boxIndex = mMapBodyToBoxIndex.find(body)->second;
-    BoxAABB* box = &mBoxes[boxIndex];
+
+    // Remove the end-points of the box by moving the maximum end-points two elements back in
+    // the end-points array
+    const luint indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
+    for (uint axis=0; axis < 3; axis++) {
+        EndPoint* maxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint];
+        assert(mEndPoints[axis][0].boxID == INVALID_INDEX && mEndPoints[axis][0].isMin);
+        assert(maxLimitEndPoint->boxID == INVALID_INDEX && !maxLimitEndPoint->isMin);
+        EndPoint* newMaxLimitEndPoint = &mEndPoints[axis][indexLimitEndPoint - 2];
+        assert(mEndPoints[axis][indexLimitEndPoint - 1].boxID == boxIndex);
+        assert(!mEndPoints[axis][indexLimitEndPoint - 1].isMin);
+        assert(newMaxLimitEndPoint->boxID == boxIndex);
+        assert(newMaxLimitEndPoint->isMin);
+        newMaxLimitEndPoint->setValues(maxLimitEndPoint->boxID, maxLimitEndPoint->isMin,
+                                       maxLimitEndPoint->value);
+    }
 
     // Add the box index into the list of free indices
     mFreeBoxIndices.push_back(boxIndex);
@@ -146,11 +185,16 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
     mNbBoxes--;
 } 
         
-// Notify the broad-phase that the AABB of an object has changed
-void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
-    
-    // Compute the AABB with integer coordinates
-    AABBInt aabbInt(aabb);
+// Notify the broad-phase that the AABB of an object has changed.
+/// The input is an AABB with integer coordinates
+void SweepAndPruneAlgorithm::updateObjectIntegerAABB(CollisionBody* body, const AABBInt& aabbInt) {
+
+    assert(aabbInt.min[0] > encodeFloatIntoInteger(-FLT_MAX));
+    assert(aabbInt.min[1] > encodeFloatIntoInteger(-FLT_MAX));
+    assert(aabbInt.min[2] > encodeFloatIntoInteger(-FLT_MAX));
+    assert(aabbInt.max[0] < encodeFloatIntoInteger(FLT_MAX));
+    assert(aabbInt.max[1] < encodeFloatIntoInteger(FLT_MAX));
+    assert(aabbInt.max[2] < encodeFloatIntoInteger(FLT_MAX));
     
     // Get the corresponding box
     bodyindex boxIndex = mMapBodyToBoxIndex.find(body)->second;
@@ -182,7 +226,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             
             // The minimum end-point is moving left
             EndPoint savedEndPoint = *currentMinEndPoint;
-            luint indexEndPoint = (size_t(currentMinEndPoint) - size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            luint indexEndPoint = (size_t(currentMinEndPoint) -
+                                   size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
             const luint savedEndPointIndex = indexEndPoint;
             
             while ((--currentMinEndPoint)->value > limit) {
@@ -197,7 +242,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                     // for box intersection
                     if (box != id1) {
                         if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2) &&
-                            testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+                            testIntersect1DSortedAABBs(*id1, aabbInt,
+                                                       startEndPointsCurrentAxis, axis)) {
                             
                             // Add an overlapping pair to the pair manager
                             mPairManager.addPair(body, id1->body);
@@ -225,13 +271,14 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                 startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
             }
         }
-        else if (limit > currentMinEndPoint->value) {   // The minimum of the box has moved to the right
+        else if (limit > currentMinEndPoint->value){// The minimum of the box has moved to the right
             
             currentMinEndPoint->value = limit;
             
             // The minimum en-point is moving right
             EndPoint savedEndPoint = *currentMinEndPoint;
-            luint indexEndPoint = (size_t(currentMinEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            luint indexEndPoint = (size_t(currentMinEndPoint) -
+                                   size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
             const luint savedEndPointIndex = indexEndPoint;
             
             // For each end-point between the current position of the minimum
@@ -291,7 +338,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             currentMaxEndPoint->value = limit;
             
             EndPoint savedEndPoint = *currentMaxEndPoint;
-            luint indexEndPoint = (size_t(currentMaxEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            luint indexEndPoint = (size_t(currentMaxEndPoint) -
+                                   size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
             const luint savedEndPointIndex = indexEndPoint;
             
             while ((++currentMaxEndPoint)->value < limit) {
@@ -308,7 +356,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
                     // for box intersection
                     if (box != id1) {
                         if (testIntersect2D(*box, *id1, otherAxis1, otherAxis2) &&
-                            testIntersect1DSortedAABBs(*id1, aabbInt, startEndPointsCurrentAxis,axis)) {
+                            testIntersect1DSortedAABBs(*id1, aabbInt,
+                                                       startEndPointsCurrentAxis,axis)) {
                             
                             // Add an overlapping pair to the pair manager
                             mPairManager.addPair(body, id1->body);
@@ -340,7 +389,8 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
             currentMaxEndPoint->value = limit;
             
             EndPoint savedEndPoint = *currentMaxEndPoint;
-            luint indexEndPoint = (size_t(currentMaxEndPoint) -size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
+            luint indexEndPoint = (size_t(currentMaxEndPoint) -
+                                   size_t(startEndPointsCurrentAxis)) / sizeof(EndPoint);
             const luint savedEndPointIndex = indexEndPoint;
             
             // For each end-point between the current position of the maximum
@@ -390,10 +440,9 @@ void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb)
 void SweepAndPruneAlgorithm::resizeArrays() {
     
     // New number of boxes in the array
-    const luint nbSentinels = 2;
     const luint newNbMaxBoxes = mNbMaxBoxes ? 2 * mNbMaxBoxes : 100;
-    const luint nbEndPoints = mNbBoxes * 2 + nbSentinels;
-    const luint newNbEndPoints = newNbMaxBoxes * 2 + nbSentinels;
+    const luint nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
+    const luint newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
     
     // Allocate memory for the new boxes and end-points arrays
     BoxAABB* newBoxesArray = new BoxAABB[newNbMaxBoxes];
@@ -409,18 +458,18 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     // If the arrays were not empty before
     if (mNbBoxes > 0) {
         
-        // Copy the data in the old arrays into the new one
+        // Copy the data from the old arrays into the new one
         memcpy(newBoxesArray, mBoxes, sizeof(BoxAABB) * mNbBoxes);
-        size_t nbBytesNewEndPoints = sizeof(EndPoint) * nbEndPoints;
+        const size_t nbBytesNewEndPoints = sizeof(EndPoint) * nbEndPoints;
         memcpy(newEndPointsXArray, mEndPoints[0], nbBytesNewEndPoints);
         memcpy(newEndPointsYArray, mEndPoints[1], nbBytesNewEndPoints);
         memcpy(newEndPointsZArray, mEndPoints[2], nbBytesNewEndPoints);
     }
     else {   // If the arrays were empty
-        
+
         // Add the limits endpoints (sentinels) into the array
-        const uint min = encodeFloatIntoInteger(DECIMAL_SMALLEST);
-        const uint max = encodeFloatIntoInteger(DECIMAL_LARGEST);
+        const uint min = encodeFloatIntoInteger(-FLT_MAX);
+        const uint max = encodeFloatIntoInteger(FLT_MAX);
         newEndPointsXArray[0].setValues(INVALID_INDEX, true, min);
         newEndPointsXArray[1].setValues(INVALID_INDEX, false, max);
         newEndPointsYArray[0].setValues(INVALID_INDEX, true, min);
