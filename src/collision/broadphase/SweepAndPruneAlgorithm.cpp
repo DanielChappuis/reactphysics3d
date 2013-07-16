@@ -183,6 +183,12 @@ void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
 
     mMapBodyToBoxIndex.erase(body);
     mNbBoxes--;
+
+    // Check if we need to shrink the allocated memory
+    const luint nextPowerOf2 = PairManager::computeNextPowerOfTwo((mNbBoxes-1) / 100 );
+    if (nextPowerOf2 * 100 < mNbMaxBoxes) {
+        shrinkArrays();
+    }
 } 
         
 // Notify the broad-phase that the AABB of an object has changed.
@@ -490,5 +496,101 @@ void SweepAndPruneAlgorithm::resizeArrays() {
     mEndPoints[1] = newEndPointsYArray;
     mEndPoints[2] = newEndPointsZArray;
     
+    mNbMaxBoxes = newNbMaxBoxes;
+}
+
+// Shrink the boxes and end-points arrays when too much memory is allocated
+void SweepAndPruneAlgorithm::shrinkArrays() {
+
+    // New number of boxes and end-points in the array
+    const luint nextPowerOf2 = PairManager::computeNextPowerOfTwo((mNbBoxes-1) / 100 );
+    const luint newNbMaxBoxes = (mNbBoxes > 100) ? nextPowerOf2 * 100 : 100;
+    const luint nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
+    const luint newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
+
+    assert(newNbMaxBoxes < mNbMaxBoxes);
+
+    // Sort the list of the free boxes indices in ascending order
+    mFreeBoxIndices.sort();
+
+    // Reorganize the boxes inside the boxes array so that all the boxes are at the
+    // beginning of the array
+    std::map<CollisionBody*, bodyindex> newMapBodyToBoxIndex;
+    std::map<CollisionBody*,bodyindex>::const_iterator it;
+    for (it = mMapBodyToBoxIndex.begin(); it != mMapBodyToBoxIndex.end(); ++it) {
+
+        CollisionBody* body = it->first;
+        bodyindex boxIndex = it->second;
+
+        // If the box index is outside the range of the current number of boxes
+        if (boxIndex >= mNbBoxes) {
+
+            assert(!mFreeBoxIndices.empty());
+
+            // Get a new box index for that body (from the list of free box indices)
+            bodyindex newBoxIndex = mFreeBoxIndices.front();
+            mFreeBoxIndices.pop_front();
+            assert(newBoxIndex < mNbBoxes);
+
+            // Copy the box to its new location in the boxes array
+            BoxAABB* oldBox = &mBoxes[boxIndex];
+            BoxAABB* newBox = &mBoxes[newBoxIndex];
+            assert(oldBox->body->getID() == body->getID());
+            newBox->body = oldBox->body;
+            for (uint axis=0; axis<3; axis++) {
+
+                // Copy the minimum and maximum end-points indices
+                newBox->min[axis] = oldBox->min[axis];
+                newBox->max[axis] = oldBox->max[axis];
+
+                // Update the box index of the end-points
+                EndPoint* minimumEndPoint = &mEndPoints[axis][newBox->min[axis]];
+                EndPoint* maximumEndPoint = &mEndPoints[axis][newBox->max[axis]];
+                assert(minimumEndPoint->boxID == boxIndex);
+                assert(maximumEndPoint->boxID == boxIndex);
+                minimumEndPoint->boxID = newBoxIndex;
+                maximumEndPoint->boxID = newBoxIndex;
+            }
+
+            newMapBodyToBoxIndex.insert(pair<CollisionBody*, bodyindex>(body, newBoxIndex));
+        }
+        else {
+            newMapBodyToBoxIndex.insert(pair<CollisionBody*, bodyindex>(body, boxIndex));
+        }
+    }
+
+    assert(newMapBodyToBoxIndex.size() == mMapBodyToBoxIndex.size());
+    mMapBodyToBoxIndex = newMapBodyToBoxIndex;
+
+    // Allocate memory for the new boxes and end-points arrays
+    BoxAABB* newBoxesArray = new BoxAABB[newNbMaxBoxes];
+    EndPoint* newEndPointsXArray = new EndPoint[newNbEndPoints];
+    EndPoint* newEndPointsYArray = new EndPoint[newNbEndPoints];
+    EndPoint* newEndPointsZArray = new EndPoint[newNbEndPoints];
+
+    assert(newBoxesArray != NULL);
+    assert(newEndPointsXArray != NULL);
+    assert(newEndPointsYArray != NULL);
+    assert(newEndPointsZArray != NULL);
+
+    // Copy the data from the old arrays into the new one
+    memcpy(newBoxesArray, mBoxes, sizeof(BoxAABB) * mNbBoxes);
+    const size_t nbBytesNewEndPoints = sizeof(EndPoint) * nbEndPoints;
+    memcpy(newEndPointsXArray, mEndPoints[0], nbBytesNewEndPoints);
+    memcpy(newEndPointsYArray, mEndPoints[1], nbBytesNewEndPoints);
+    memcpy(newEndPointsZArray, mEndPoints[2], nbBytesNewEndPoints);
+
+    // Delete the old arrays
+    delete[] mBoxes;
+    delete[] mEndPoints[0];
+    delete[] mEndPoints[1];
+    delete[] mEndPoints[2];
+
+    // Assign the pointer to the new arrays
+    mBoxes = newBoxesArray;
+    mEndPoints[0] = newEndPointsXArray;
+    mEndPoints[1] = newEndPointsYArray;
+    mEndPoints[2] = newEndPointsZArray;
+
     mNbMaxBoxes = newNbMaxBoxes;
 }

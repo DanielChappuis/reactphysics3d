@@ -31,6 +31,7 @@
 #include "../../collision/shapes/AABB.h"
 #include <map>
 #include <vector>
+#include <list>
 
 
 /// Namespace ReactPhysics3D
@@ -135,7 +136,7 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         bodyindex mNbMaxBoxes;
 
         /// Indices that are not used by any boxes
-        std::vector<bodyindex> mFreeBoxIndices;
+        std::list<bodyindex> mFreeBoxIndices;
 
         /// Map a body pointer to a box index
         std::map<CollisionBody*,bodyindex> mMapBodyToBoxIndex;
@@ -150,6 +151,9 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
 
         /// Resize the boxes and end-points arrays when it's full
         void resizeArrays();
+
+        /// Shrink the boxes and end-points arrays when too much memory is allocated
+        void shrinkArrays();
 
         /// Add an overlapping pair of AABBS
         void addPair(CollisionBody* body1, CollisionBody* body2);
