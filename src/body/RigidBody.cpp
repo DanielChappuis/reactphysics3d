@@ -30,12 +30,13 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
- // Constructor
- RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
+// Constructor
+RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
                       CollisionShape *collisionShape, bodyindex id)
            : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
              mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true) {
+             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true),
+             mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)) {
 
     assert(collisionShape);
 }

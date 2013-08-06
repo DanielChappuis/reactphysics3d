@@ -45,7 +45,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, -9.81, 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -74,7 +74,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
-        material.setBounciness(0.4);
+        material.setBounciness(rp3d::decimal(0.4));
 
         // Add the box the list of box in the scene
         mBoxes.push_back(cube);
@@ -89,7 +89,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
-    material.setBounciness(0.3);
+    material.setBounciness(rp3d::decimal(0.3));
 
     // Start the simulation
     startSimulation();

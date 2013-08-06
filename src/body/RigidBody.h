@@ -80,6 +80,12 @@ class RigidBody : public CollisionBody {
         /// Material properties of the rigid body
         Material mMaterial;
 
+        /// Linear velocity damping factor
+        decimal mLinearDamping;
+
+        /// Angular velocity damping factor
+        decimal mAngularDamping;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -161,6 +167,18 @@ class RigidBody : public CollisionBody {
 
         /// Set a new material for this rigid body
         void setMaterial(const Material& material);
+
+        /// Return the linear velocity damping factor
+        decimal getLinearDamping() const;
+
+        /// Set the linear damping factor
+        void setLinearDamping(decimal linearDamping);
+
+        /// Return the angular velocity damping factor
+        decimal getAngularDamping() const;
+
+        /// Set the angular damping factor
+        void setAngularDamping(decimal angularDamping);
 };
 
 // Method that return the mass of the body
@@ -286,6 +304,28 @@ inline Material& RigidBody::getMaterial() {
 // Set a new material for this rigid body
 inline void RigidBody::setMaterial(const Material& material) {
     mMaterial = material;
+}
+
+// Return the linear velocity damping factor
+inline decimal RigidBody::getLinearDamping() const {
+    return mLinearDamping;
+}
+
+// Set the linear damping factor
+inline void RigidBody::setLinearDamping(decimal linearDamping) {
+    assert(linearDamping >= decimal(0.0));
+    mLinearDamping = linearDamping;
+}
+
+// Return the angular velocity damping factor
+inline decimal RigidBody::getAngularDamping() const {
+    return mAngularDamping;
+}
+
+// Set the angular damping factor
+inline void RigidBody::setAngularDamping(decimal angularDamping) {
+    assert(angularDamping >= decimal(0.0));
+    mAngularDamping = angularDamping;
 }
 
 }

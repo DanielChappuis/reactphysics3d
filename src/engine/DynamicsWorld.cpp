@@ -258,6 +258,28 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
                                                    rigidBody->getMass() * mGravity;
             }
 
+            // Apply the velocity damping
+            // Damping force : F_c = -c' * v (c=damping factor)
+            // Equation      : m * dv/dt = -c' * v
+            //                 => dv/dt = -c * v (with c=c'/m)
+            //                 => dv/dt + c * v = 0
+            // Solution      : v(t) = v0 * e^(-c * t)
+            //                 => v(t + dt) = v0 * e^(-c(t + dt))
+            //                              = v0 * e^(-ct) * e^(-c * dt)
+            //                              = v(t) * e^(-c * dt)
+            //                 => v2 = v1 * e^(-c * dt)
+            // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
+            //                              => e^(-x) ~ 1 - x
+            //                 => v2 = v1 * (1 - c * dt)
+            decimal linDampingFactor = rigidBody->getLinearDamping();
+            decimal angDampingFactor = rigidBody->getAngularDamping();
+            decimal linearDamping = clamp(decimal(1.0) - dt * linDampingFactor,
+                                          decimal(0.0), decimal(1.0));
+            decimal angularDamping = clamp(decimal(1.0) - dt * angDampingFactor,
+                                          decimal(0.0), decimal(1.0));
+            mConstrainedLinearVelocities[i] *= clamp(linearDamping, decimal(0.0), decimal(1.0));
+            mConstrainedAngularVelocities[i] *= clamp(angularDamping, decimal(0.0), decimal(1.0));
+
             // Update the old Transform of the body
             rigidBody->updateOldTransform();
         }
