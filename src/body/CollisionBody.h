@@ -33,10 +33,14 @@
 #include "../mathematics/Transform.h"
 #include "../collision/shapes/AABB.h"
 #include "../collision/shapes/CollisionShape.h"
+#include "../memory/MemoryAllocator.h"
 #include "../configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Class declarations
+struct ContactManifoldListElement;
 
 // Class CollisionBody
 /**
@@ -76,6 +80,9 @@ class CollisionBody : public Body {
         /// True if the body has moved during the last frame
         bool mHasMoved;
 
+        /// First element of the linked list of contact manifolds involving this body
+        ContactManifoldListElement* mContactManifoldsList;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -83,6 +90,9 @@ class CollisionBody : public Body {
 
         /// Private assignment operator
         CollisionBody& operator=(const CollisionBody& body);
+
+        /// Reset the contact manifold lists
+        void resetContactManifoldsList(MemoryAllocator& memoryAllocator);
 
     public :
 
@@ -144,6 +154,13 @@ class CollisionBody : public Body {
 
         /// Update the Axis-Aligned Bounding Box coordinates
         void updateAABB();
+
+        /// Return the first element of the linked list of contact manifolds involving this body
+        const ContactManifoldListElement* getContactManifoldsLists() const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Return true if the body has moved during the last frame
@@ -241,6 +258,11 @@ inline void CollisionBody::updateAABB() {
 
     // Update the AABB
     mCollisionShape->updateAABB(mAabb, mTransform);
+}
+
+// Return the first element of the linked list of contact manifolds involving this body
+inline const ContactManifoldListElement* CollisionBody::getContactManifoldsLists() const {
+    return mContactManifoldsList;
 }
 
 }

@@ -33,6 +33,7 @@
 #include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
+#include "Island.h"
 #include "../configuration.h"
 
 /// Namespace ReactPhysics3D
@@ -65,13 +66,14 @@ class DynamicsWorld : public CollisionWorld {
         /// Number of iterations for the position solver of the Sequential Impulses technique
         uint mNbPositionSolverIterations;
 
-        /// True if the deactivation (sleeping) of inactive bodies is enabled
-        bool mIsDeactivationActive;
+        /// True if the spleeping technique for inactive bodies is enabled
+        bool mIsSleepingEnabled;
 
         /// All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
         /// All the contact constraints
+        // TODO : Remove this variable (we will use the ones in the island now)
         std::vector<ContactManifold*> mContactManifolds;
 
         /// All the joints of the world
@@ -99,6 +101,15 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Map body to their index in the constrained velocities array
         std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
+
+        /// Number of islands in the world
+        uint mNbIslands;
+
+        /// Current allocated capacity for the islands
+        uint mNbIslandsCapacity;
+
+        /// Array with all the islands of awaken bodies
+        Island** mIslands;
 
         // -------------------- Methods -------------------- //
 
@@ -135,6 +146,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Reset the boolean movement variable of each body
         void resetBodiesMovementVariable();
+
+        /// Compute the islands of awake bodies.
+        void computeIslands();
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
@@ -198,6 +212,17 @@ public :
         /// Destroy a joint
         void destroyJoint(Constraint* joint);
 
+        /// Add the joint to the list of joints of the two bodies involved in the joint
+        void addJointToBody(Constraint* joint);
+
+        //// Add a contact manifold to the linked list of contact manifolds of the two bodies involed
+        //// in the corresponding contact.
+        void addContactManifoldToBody(ContactManifold* contactManifold,
+                                      CollisionBody *body1, CollisionBody *body2);
+
+        /// Reset all the contact manifolds linked list of each body
+        void resetContactManifoldListsOfBodies();
+
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
@@ -227,6 +252,12 @@ public :
 
         /// Return a reference to the contact manifolds of the world
         const std::vector<ContactManifold*>& getContactManifolds() const;
+
+        // TODO : REMOVE THIS
+        Island** getIslands() { return mIslands;}
+
+        // TODO : REMOVE THIS
+        uint getNbIslands() const {return mNbIslands;}
 };
 
 // Start the physics simulation

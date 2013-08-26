@@ -92,8 +92,8 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// Default bounciness factor for a rigid body
 const decimal DEFAULT_BOUNCINESS = decimal(0.5);
 
-/// True if the deactivation (sleeping) of inactive bodies is enabled
-const bool DEACTIVATION_ENABLED = true;
+/// True if the spleeping technique for inactive bodies is enabled
+const bool SPLEEPING_ENABLED = true;
 
 /// Object margin for collision detection in meters (for the GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);

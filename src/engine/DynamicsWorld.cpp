@@ -44,7 +44,8 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
                                   mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsDeactivationActive(DEACTIVATION_ENABLED) {
+                mIsSleepingEnabled(SPLEEPING_ENABLED), mNbIslands(0), mNbIslandsCapacity(0),
+                mIslands(NULL) {
 
 }
 
@@ -57,6 +58,19 @@ DynamicsWorld::~DynamicsWorld() {
         // Delete the overlapping pair
         (*it).second->OverlappingPair::~OverlappingPair();
         mMemoryAllocator.release((*it).second, sizeof(OverlappingPair));
+    }
+
+    // Release the memory allocated for the islands
+    for (uint i=0; i<mNbIslands; i++) {
+
+        // Call the island destructor
+        mIslands[i]->Island::~Island();
+
+        // Release the allocated memory for the island
+        mMemoryAllocator.release(mIslands[i], sizeof(Island));
+    }
+    if (mNbIslandsCapacity > 0) {
+        mMemoryAllocator.release(mIslands, sizeof(Island*) * mNbIslandsCapacity);
     }
 
     // Free the allocated memory for the constrained velocities
@@ -93,6 +107,9 @@ void DynamicsWorld::update() {
 
         // Remove all contact manifolds
         mContactManifolds.clear();
+
+        // Reset all the contact manifolds lists of each body
+        resetContactManifoldListsOfBodies();
 		
         // Compute the collision detection
         mCollisionDetection.computeCollisionDetection();
@@ -105,6 +122,9 @@ void DynamicsWorld::update() {
 
         // Update the timer
         mTimer.nextStep();
+
+        // Compute the islands (separate groups of bodies with constraints between each others)
+        computeIslands();
 
         // Solve the contacts and constraints
         solveContactsAndConstraints();
@@ -448,13 +468,17 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     // Remove the collision shape from the world
     removeCollisionShape(rigidBody->getCollisionShape());
 
-    // Destroy all the joints that contains the rigid body to be destroyed
+    // Destroy all the joints in which the rigid body to be destroyed is involved
+    // TODO : Iterate on the mJointList of the rigid body instead over all the joints of the world
     bodyindex idToRemove = rigidBody->getID();
     for (std::set<Constraint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         if ((*it)->getBody1()->getID() == idToRemove || (*it)->getBody2()->getID() == idToRemove) {
             destroyJoint(*it);
         }
     }
+
+    // Reset the contact manifold list of the body
+    rigidBody->resetContactManifoldsList(mMemoryAllocator);
 
     // Call the destructor of the rigid body
     rigidBody->RigidBody::~RigidBody();
@@ -529,6 +553,9 @@ Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
     // Add the joint into the world
     mJoints.insert(newJoint);
 
+    // Add the joint into the joint list of the bodies involved in the joint
+    addJointToBody(newJoint);
+
     // Return the pointer to the created joint
     return newJoint;
 }
@@ -548,14 +575,235 @@ void DynamicsWorld::destroyJoint(Constraint* joint) {
     // Remove the joint from the world
     mJoints.erase(joint);
 
-    // Get the size in bytes of the joint
-    size_t nbBytes = joint->getSizeInBytes();
+    // Remove the joint from the joint list of the bodies involved in the joint
+    joint->mBody1->removeJointFromJointsList(mMemoryAllocator, joint);
+    joint->mBody2->removeJointFromJointsList(mMemoryAllocator, joint);
 
     // Call the destructor of the joint
     joint->Constraint::~Constraint();
 
     // Release the allocated memory
-    mMemoryAllocator.release(joint, nbBytes);
+    mMemoryAllocator.release(joint, joint->getSizeInBytes());
+}
+
+// Add the joint to the list of joints of the two bodies involved in the joint
+void DynamicsWorld::addJointToBody(Constraint* joint) {
+
+    assert(joint != NULL);
+
+    // Add the joint at the beginning of the linked list of joints of the first body
+    void* allocatedMemory1 = mMemoryAllocator.allocate(sizeof(JointListElement));
+    JointListElement* jointListElement1 = new (allocatedMemory1) JointListElement(joint,
+                                                                     joint->mBody1->mJointsList);
+    joint->mBody1->mJointsList = jointListElement1;
+
+    // Add the joint at the beginning of the linked list of joints of the second body
+    void* allocatedMemory2 = mMemoryAllocator.allocate(sizeof(JointListElement));
+    JointListElement* jointListElement2 = new (allocatedMemory2) JointListElement(joint,
+                                                                     joint->mBody2->mJointsList);
+    joint->mBody2->mJointsList = jointListElement2;
+}
+
+// Add a contact manifold to the linked list of contact manifolds of the two bodies involed
+// in the corresponding contact
+void DynamicsWorld::addContactManifoldToBody(ContactManifold* contactManifold,
+                                             CollisionBody* body1, CollisionBody* body2) {
+
+    assert(contactManifold != NULL);
+
+    // Add the contact manifold at the beginning of the linked
+    // list of contact manifolds of the first body
+    void* allocatedMemory1 = mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+    ContactManifoldListElement* listElement1 = new (allocatedMemory1)
+                                                  ContactManifoldListElement(contactManifold,
+                                                                     body1->mContactManifoldsList);
+    body1->mContactManifoldsList = listElement1;
+
+    // Add the joint at the beginning of the linked list of joints of the second body
+    void* allocatedMemory2 = mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+    ContactManifoldListElement* listElement2 = new (allocatedMemory2)
+                                                  ContactManifoldListElement(contactManifold,
+                                                                     body2->mContactManifoldsList);
+    body2->mContactManifoldsList = listElement2;
+}
+
+// Reset all the contact manifolds linked list of each body
+void DynamicsWorld::resetContactManifoldListsOfBodies() {
+
+    // For each rigid body of the world
+    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+
+        // Reset the contact manifold list of the body
+        (*it)->resetContactManifoldsList(mMemoryAllocator);
+    }
+}
+
+// Compute the islands of awake bodies.
+/// An island is an isolated group of rigid bodies that have constraints (joints or contacts)
+/// between each other. This method computes the islands at each time step as follows: For each
+/// awake rigid body, we run a Depth First Search (DFS) through the constraint graph of that body
+/// (graph where nodes are the bodies and where the edges are the constraints between the bodies) to
+/// find all the bodies that are connected with it (the bodies that share joints or contacts with
+/// it). Then, we create an island with this group of connected bodies.
+void DynamicsWorld::computeIslands() {
+
+    PROFILE("DynamicsWorld::computeIslands()");
+
+    uint nbBodies = mRigidBodies.size();
+
+    // Clear all the islands
+    for (uint i=0; i<mNbIslands; i++) {
+
+        // Call the island destructor
+        mIslands[i]->Island::~Island();
+
+        // Release the allocated memory for the island
+        mMemoryAllocator.release(mIslands[i], sizeof(Island));
+    }
+
+    // Allocate and create the array of islands
+    if (mNbIslandsCapacity != nbBodies && nbBodies > 0) {
+        if (mNbIslandsCapacity > 0) {
+            mMemoryAllocator.release(mIslands, sizeof(Island*) * mNbIslandsCapacity);
+        }
+        mNbIslandsCapacity = nbBodies;
+        mIslands = (Island**)mMemoryAllocator.allocate(sizeof(Island*) * mNbIslandsCapacity);
+    }
+    mNbIslands = 0;
+
+    // Reset all the isAlreadyInIsland variables of bodies, joints and contact manifolds
+    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+        (*it)->mIsAlreadyInIsland = false;
+    }
+    for (std::vector<ContactManifold*>::iterator it = mContactManifolds.begin();
+         it != mContactManifolds.end(); ++it) {
+        (*it)->mIsAlreadyInIsland = false;
+    }
+    for (std::set<Constraint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
+        (*it)->mIsAlreadyInIsland = false;
+    }
+
+    // Create a stack (using an array) for the rigid bodies to visit during the Depth First Search
+    size_t nbBytesStack = sizeof(RigidBody*) * nbBodies;
+    RigidBody** stackBodiesToVisit = (RigidBody**)mMemoryAllocator.allocate(nbBytesStack);
+
+    uint idIsland = 0;  // TODO : REMOVE THIS
+
+    // For each rigid body of the world
+    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+
+        RigidBody* body = *it;
+
+        // If the body has already been added to an island, we go to the next body
+        if (body->isAlreadyInIsland()) continue;
+
+        // If the body is not moving, we go to the next body
+        // TODO : When we will use STATIC bodies, we will need to take care of this case here
+        if (!body->getIsMotionEnabled()) continue;
+
+        // If the body is sleeping, we go to the next body
+        if (body->isSleeping()) continue;
+
+        // Reset the stack of bodies to visit
+        uint stackIndex = 0;
+        stackBodiesToVisit[stackIndex] = body;
+        stackIndex++;
+        body->mIsAlreadyInIsland = true;
+
+        // Create the new island
+        void* allocatedMemoryIsland = mMemoryAllocator.allocate(sizeof(Island));
+        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(idIsland, nbBodies,mContactManifolds.size(),
+                                                                  mJoints.size(), mMemoryAllocator);
+        idIsland++;
+
+        // While there are still some bodies to visit in the stack
+        while (stackIndex > 0) {
+
+            // Get the next body to visit from the stack
+            stackIndex--;
+            RigidBody* bodyToVisit = stackBodiesToVisit[stackIndex];
+
+            // Awake the body if it is slepping
+            bodyToVisit->setIsSleeping(false);
+
+            // Add the body into the island
+            mIslands[mNbIslands]->addBody(bodyToVisit);
+
+            // If the current body is not moving, we do not want to perform the DFS
+            // search across that body
+            if (!bodyToVisit->getIsMotionEnabled()) continue;
+
+            // For each contact manifold in which the current body is involded
+            ContactManifoldListElement* contactElement;
+            for (contactElement = bodyToVisit->mContactManifoldsList; contactElement != NULL;
+                 contactElement = contactElement->next) {
+
+                ContactManifold* contactManifold = contactElement->contactManifold;
+
+                // Check if the current contact manifold has already been added into an island
+                if (contactManifold->isAlreadyInIsland()) continue;
+
+                // Add the contact manifold into the island
+                mIslands[mNbIslands]->addContactManifold(contactManifold);
+                contactManifold->mIsAlreadyInIsland = true;
+
+                // Get the other body of the contact manifold
+                RigidBody* body1 = dynamic_cast<RigidBody*>(contactManifold->getBody1());
+                RigidBody* body2 = dynamic_cast<RigidBody*>(contactManifold->getBody2());
+                RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
+
+                // Check if the other body has already been added to the island
+                if (otherBody->isAlreadyInIsland()) continue;
+
+                // Insert the other body into the stack of bodies to visit
+                stackBodiesToVisit[stackIndex] = otherBody;
+                stackIndex++;
+                otherBody->mIsAlreadyInIsland = true;
+            }
+
+            // For each joint in which the current body is involved
+            JointListElement* jointElement;
+            for (jointElement = bodyToVisit->mJointsList; jointElement != NULL;
+                 jointElement = jointElement->next) {
+
+                Constraint* joint = jointElement->joint;
+
+                // Check if the current joint has already been added into an island
+                if (joint->isAlreadyInIsland()) continue;
+
+                // Add the joint into the island
+                mIslands[mNbIslands]->addJoint(joint);
+                joint->mIsAlreadyInIsland = true;
+
+                // Get the other body of the contact manifold
+                RigidBody* body1 = dynamic_cast<RigidBody*>(joint->getBody1());
+                RigidBody* body2 = dynamic_cast<RigidBody*>(joint->getBody2());
+                RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
+
+                // Check if the other body has already been added to the island
+                if (otherBody->isAlreadyInIsland()) continue;
+
+                // Insert the other body into the stack of bodies to visit
+                stackBodiesToVisit[stackIndex] = otherBody;
+                stackIndex++;
+                otherBody->mIsAlreadyInIsland = true;
+            }
+        }
+
+        // Reset the isAlreadyIsland variable of the static bodies so that they
+        // can also be included in the other islands
+        for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
+
+            if (!mIslands[mNbIslands]->mBodies[i]->getIsMotionEnabled()) {
+                mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
+            }
+        }
+
+        mNbIslands++;
+     }
+
+    // Release the allocated memory for the stack of bodies to visit
+    mMemoryAllocator.release(stackBodiesToVisit, nbBytesStack);
 }
 
 // Notify the world about a new broad-phase overlapping pair
@@ -565,8 +813,8 @@ void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) 
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Add the pair into the set of overlapping pairs (if not there yet)
-    OverlappingPair* newPair = new (mMemoryAllocator.allocate(sizeof(OverlappingPair))) OverlappingPair(
-                                        addedPair->body1, addedPair->body2, mMemoryAllocator);
+    OverlappingPair* newPair = new (mMemoryAllocator.allocate(sizeof(OverlappingPair)))
+                              OverlappingPair(addedPair->body1, addedPair->body2, mMemoryAllocator);
     assert(newPair != NULL);
     std::pair<map<bodyindexpair, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(indexPair, newPair));
@@ -604,4 +852,9 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
 
     // Add the contact manifold to the world
     mContactManifolds.push_back(overlappingPair->getContactManifold());
+
+    // Add the contact manifold into the list of contact manifolds
+    // of the two bodies involved in the contact
+    addContactManifoldToBody(overlappingPair->getContactManifold(), overlappingPair->mBody1,
+                             overlappingPair->mBody2);
 }

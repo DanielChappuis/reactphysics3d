@@ -47,6 +47,15 @@ class Body {
         /// ID of the body
         bodyindex mID;
 
+        /// True if the body has already been added in an island (for sleeping technique)
+        bool mIsAlreadyInIsland;
+
+        /// True if the body is allowed to go to sleep for better efficiency
+        bool mIsAllowedToSleep;
+
+        /// True if the body is sleeping (for sleeping technique)
+        bool mIsSleeping;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -68,6 +77,24 @@ class Body {
         /// Return the id of the body
         bodyindex getID() const;
 
+        /// Return true if the body has already been added in an island (for the sleeping technique)
+        bool isAlreadyInIsland() const;
+
+        /// Set the value of to know if the body has already been added into an island
+        void setIsAlreadyInIsland(bool isAlreadyInIsland);
+
+        /// Return whether or not the body is allowed to sleep
+        bool isAllowedToSleep() const;
+
+        /// Set whether or not the body is allowed to go to sleep
+        void setIsAllowedToSleep(bool isAllowedToSleep);
+
+        /// Return whether or not the body is sleeping
+        bool isSleeping() const;
+
+        /// Set the variable to know whether or not the body is sleeping
+        void setIsSleeping(bool isSleeping);
+
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 
@@ -79,11 +106,45 @@ class Body {
 
         /// Not equal operator
         bool operator!=(const Body& body2) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Return the id of the body
 inline bodyindex Body::getID() const {
     return mID;
+}
+
+// Return true if the body has already been added in an island (for the sleeping technique)
+inline bool Body::isAlreadyInIsland() const {
+    return mIsAlreadyInIsland;
+}
+
+// Set the value of to know if the body has already been added into an island
+inline void Body::setIsAlreadyInIsland(bool isAlreadyInIsland) {
+    mIsAlreadyInIsland = isAlreadyInIsland;
+}
+
+// Return whether or not the body is allowed to sleep
+inline bool Body::isAllowedToSleep() const {
+    return mIsAllowedToSleep;
+}
+
+// Set whether or not the body is allowed to go to sleep
+inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
+    mIsAllowedToSleep = isAllowedToSleep;
+}
+
+// Return whether or not the body is sleeping
+inline bool Body::isSleeping() const {
+    return mIsSleeping;
+}
+
+// Set the variable to know whether or not the body is sleeping
+inline void Body::setIsSleeping(bool isSleeping) {
+    mIsSleeping = isSleeping;
 }
 
 // Smaller than operator

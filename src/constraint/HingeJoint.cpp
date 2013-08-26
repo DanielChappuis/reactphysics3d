@@ -59,7 +59,7 @@ HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)
 
     // Compute the inverse of the initial orientation difference between the two bodies
     mInitOrientationDifferenceInv = transform2.getOrientation() *
-                                 transform1.getOrientation().getInverse();
+                                    transform1.getOrientation().getInverse();
     mInitOrientationDifferenceInv.normalize();
     mInitOrientationDifferenceInv.inverse();
 }
