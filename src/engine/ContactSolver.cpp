@@ -36,18 +36,12 @@ using namespace std;
 // Constants initialization
 const decimal ContactSolver::BETA = decimal(0.2);
 const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
-const decimal ContactSolver::SLOP = decimal(0.01);
+const decimal ContactSolver::SLOP= decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(std::vector<ContactManifold*>& contactManifolds,
-                             std::vector<Vector3>& constrainedLinearVelocities,
-                             std::vector<Vector3>& constrainedAngularVelocities,
-                             const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-              :mContactManifolds(contactManifolds),
-               mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
-               mContactConstraints(NULL),
-               mLinearVelocities(constrainedLinearVelocities),
-               mAngularVelocities(constrainedAngularVelocities),
+ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
+              :mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
+               mContactConstraints(NULL), mLinearVelocities(NULL), mAngularVelocities(NULL),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
                mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
                mIsSolveFrictionAtContactManifoldCenterActive(true) {
@@ -59,36 +53,38 @@ ContactSolver::~ContactSolver() {
 
 }
 
-// Initialize the constraint solver
-void ContactSolver::initialize(decimal dt) {
+// Initialize the constraint solver for a given island
+void ContactSolver::initializeForIsland(decimal dt, Island* island) {
 
-    PROFILE("ContactSolver::initialize()");
+    PROFILE("ContactSolver::initializeForIsland()");
+
+    assert(island != NULL);
+    assert(island->getNbBodies() > 0);
+    assert(island->getNbContactManifolds() > 0);
+    assert(mSplitLinearVelocities != NULL);
+    assert(mSplitAngularVelocities != NULL);
 
     // Set the current time step
     mTimeStep = dt;
 
-    // TODO : Use better memory allocation here
-    mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
+    mNbContactManifolds = island->getNbContactManifolds();
 
-    mNbContactManifolds = 0;
+    mContactConstraints = new ContactManifoldSolver[mNbContactManifolds];
+    assert(mContactConstraints != NULL);
 
-    // For each contact manifold of the world
-    vector<ContactManifold*>::iterator it;
-    for (it = mContactManifolds.begin(); it != mContactManifolds.end(); ++it) {
+    // For each contact manifold of the island
+    ContactManifold** contactManifolds = island->getContactManifold();
+    for (uint i=0; i<mNbContactManifolds; i++) {
 
-        ContactManifold* externalManifold = *it;
+        ContactManifold* externalManifold = contactManifolds[i];
 
-        ContactManifoldSolver& internalManifold = mContactConstraints[mNbContactManifolds];
+        ContactManifoldSolver& internalManifold = mContactConstraints[i];
 
         assert(externalManifold->getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
         RigidBody* body1 = externalManifold->getContactPoint(0)->getBody1();
         RigidBody* body2 = externalManifold->getContactPoint(0)->getBody2();
-
-        // Add the two bodies of the constraint in the constraintBodies list
-        mConstraintBodies.insert(body1);
-        mConstraintBodies.insert(body2);
 
         // Get the position of the two bodies
         Vector3 x1 = body1->getTransform().getPosition();
@@ -173,44 +169,10 @@ void ContactSolver::initialize(decimal dt) {
                 internalManifold.frictionTwistImpulse = 0.0;
             }
         }
-
-        mNbContactManifolds++;
     }
-
-    // Allocated memory for split impulse velocities
-    // TODO : Use better memory allocation here
-    mSplitLinearVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
-    mSplitAngularVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
-    assert(mSplitLinearVelocities != NULL);
-    assert(mSplitAngularVelocities != NULL);
-
-    assert(mConstraintBodies.size() > 0);
-    assert(mMapBodyToConstrainedVelocityIndex.size() >= mConstraintBodies.size());
-    assert(mLinearVelocities.size() >= mConstraintBodies.size());
-    assert(mAngularVelocities.size() >= mConstraintBodies.size());
-
-    // Initialize the split impulse velocities
-    initializeSplitImpulseVelocities();
 
     // Fill-in all the matrices needed to solve the LCP problem
     initializeContactConstraints();
-}
-
-// Initialize the split impulse velocities
-void ContactSolver::initializeSplitImpulseVelocities() {
-
-    // For each current body that is implied in some constraint
-    set<RigidBody*>::iterator it;
-    for (it = mConstraintBodies.begin(); it != mConstraintBodies.end(); ++it) {
-        RigidBody* rigidBody = *it;
-        assert(rigidBody);
-
-        uint bodyNumber = mMapBodyToConstrainedVelocityIndex.find(rigidBody)->second;
-
-        // Initialize the split impulse velocities to zero
-        mSplitLinearVelocities[bodyNumber] = Vector3(0, 0, 0);
-        mSplitAngularVelocities[bodyNumber] = Vector3(0, 0, 0);
-    }
 }
 
 // Initialize the contact constraints before solving the system
@@ -884,18 +846,8 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 // Clean up the constraint solver
 void ContactSolver::cleanup() {
 
-    mConstraintBodies.clear();
-
     if (mContactConstraints != NULL) {
         delete[] mContactConstraints;
         mContactConstraints = NULL;
-    }
-    if (mSplitLinearVelocities != NULL) {
-        delete[] mSplitLinearVelocities;
-        mSplitLinearVelocities = NULL;
-    }
-    if (mSplitAngularVelocities != NULL) {
-        delete[] mSplitAngularVelocities;
-        mSplitAngularVelocities = NULL;
     }
 }

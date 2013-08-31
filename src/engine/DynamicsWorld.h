@@ -87,11 +87,17 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
-        std::vector<Vector3> mConstrainedLinearVelocities;
+        Vector3* mConstrainedLinearVelocities;
 
         /// Array of constrained angular velocities (state of the angular velocities
         /// after solving the constraints)
-        std::vector<Vector3> mConstrainedAngularVelocities;
+        Vector3* mConstrainedAngularVelocities;
+
+        /// Split linear velocities for the position contact solver (split impulse)
+        Vector3* mSplitLinearVelocities;
+
+        /// Split angular velocities for the position contact solver (split impulse)
+        Vector3* mSplitAngularVelocities;
 
         /// Array of constrained rigid bodies position (for position error correction)
         std::vector<Vector3> mConstrainedPositions;
@@ -110,6 +116,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Array with all the islands of awaken bodies
         Island** mIslands;
+
+        /// Current allocated capacity for the bodies
+        uint mNbBodiesCapacity;
 
         // -------------------- Methods -------------------- //
 
@@ -131,6 +140,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
+
+        /// Initialize the bodies velocities arrays for the next simulation step.
+        void initVelocityArrays();
 
         /// Integrate the velocities of rigid bodies.
         void integrateRigidBodiesVelocities();

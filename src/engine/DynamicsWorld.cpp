@@ -37,15 +37,15 @@ using namespace std;
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
               : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityOn(true),
-                mContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
-                               mMapBodyToConstrainedVelocityIndex),
-                mConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities,
-                                  mConstrainedPositions, mConstrainedOrientations,
+                mConstrainedLinearVelocities(NULL), mConstrainedAngularVelocities(NULL),
+                mContactSolver(mMapBodyToConstrainedVelocityIndex),
+                mConstraintSolver(mConstrainedPositions, mConstrainedOrientations,
                                   mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsSleepingEnabled(SPLEEPING_ENABLED), mNbIslands(0), mNbIslandsCapacity(0),
-                mIslands(NULL) {
+                mIsSleepingEnabled(SPLEEPING_ENABLED), mSplitLinearVelocities(NULL),
+                mSplitAngularVelocities(NULL), mNbIslands(0), mNbIslandsCapacity(0),
+                mIslands(NULL), mNbBodiesCapacity(0) {
 
 }
 
@@ -73,8 +73,13 @@ DynamicsWorld::~DynamicsWorld() {
         mMemoryAllocator.release(mIslands, sizeof(Island*) * mNbIslandsCapacity);
     }
 
-    // Free the allocated memory for the constrained velocities
-    cleanupConstrainedVelocitiesArray();
+    // Release the memory allocated for the bodies velocity arrays
+    if (mNbBodiesCapacity > 0) {
+        delete[] mSplitLinearVelocities;
+        delete[] mSplitAngularVelocities;
+        delete[] mConstrainedLinearVelocities;
+        delete[] mConstrainedAngularVelocities;
+    }
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -137,12 +142,6 @@ void DynamicsWorld::update() {
 
         // Update the AABBs of the bodies
         updateRigidBodiesAABB();
-
-        // Cleanup of the contact solver
-        mContactSolver.cleanup();
-
-        // Cleanup the constrained velocities
-        cleanupConstrainedVelocitiesArray();
     }
 
     // Compute and set the interpolation factor to all the bodies
@@ -178,11 +177,10 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             rigidBody->setAngularVelocity(newAngVelocity);
 
             // Add the split impulse velocity from Contact Solver (only used to update the position)
-            if (mContactSolver.isConstrainedBody(rigidBody) &&
-                mContactSolver.isSplitImpulseActive()) {
+            if (mContactSolver.isSplitImpulseActive()) {
 
-                newLinVelocity += mContactSolver.getSplitLinearVelocityOfBody(rigidBody);
-                newAngVelocity += mContactSolver.getSplitAngularVelocityOfBody(rigidBody);
+                newLinVelocity += mSplitLinearVelocities[indexArray];
+                newAngVelocity += mSplitAngularVelocities[indexArray];
             }
 
             // Get current position and orientation of the body
@@ -239,6 +237,34 @@ void DynamicsWorld::setInterpolationFactorToAllBodies() {
     }
 }
 
+// Initialize the bodies velocities arrays for the next simulation step.
+void DynamicsWorld::initVelocityArrays() {
+
+    // Allocate memory for the bodies velocity arrays
+    uint nbBodies = mRigidBodies.size();
+    if (mNbBodiesCapacity != nbBodies && nbBodies > 0) {
+        if (mNbBodiesCapacity > 0) {
+            delete[] mSplitLinearVelocities;
+            delete[] mSplitAngularVelocities;
+        }
+        mNbBodiesCapacity = nbBodies;
+        mSplitLinearVelocities = new Vector3[mNbBodiesCapacity];
+        mSplitAngularVelocities = new Vector3[mNbBodiesCapacity];
+        mConstrainedLinearVelocities = new Vector3[mNbBodiesCapacity];
+        mConstrainedAngularVelocities = new Vector3[mNbBodiesCapacity];
+        assert(mSplitLinearVelocities != NULL);
+        assert(mSplitAngularVelocities != NULL);
+        assert(mConstrainedLinearVelocities != NULL);
+        assert(mConstrainedAngularVelocities != NULL);
+    }
+
+    // Reset the velocities arrays
+    for (uint i=0; i<mNbBodiesCapacity; i++) {
+        mSplitLinearVelocities[i].setToZero();
+        mSplitAngularVelocities[i].setToZero();
+    }
+}
+
 // Integrate the velocities of rigid bodies.
 /// This method only set the temporary velocities but does not update
 /// the actual velocitiy of the bodies. The velocities updated in this method
@@ -248,18 +274,21 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()");
 
-    // TODO : Use better memory allocation here
-    mConstrainedLinearVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
-    mConstrainedAngularVelocities = std::vector<Vector3>(mRigidBodies.size(), Vector3(0, 0, 0));
+    // Initialize the bodies velocity arrays
+    initVelocityArrays();
 
     decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
     // Fill in the mapping of rigid body to their index in the constrained
     // velocities arrays
     uint i = 0;
+    mMapBodyToConstrainedVelocityIndex.clear();
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
         RigidBody* rigidBody = *it;
         mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*, uint>(rigidBody, i));
+
+        assert(mSplitLinearVelocities[i] == Vector3(0, 0, 0));
+        assert(mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
         // If the body is allowed to move
         if (rigidBody->getIsMotionEnabled()) {
@@ -318,42 +347,59 @@ void DynamicsWorld::solveContactsAndConstraints() {
     // Get the current time step
     decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
-    // Check if there are contacts and constraints to solve
-    bool isConstraintsToSolve = !mJoints.empty();
-    bool isContactsToSolve = !mContactManifolds.empty();
-    if (!isConstraintsToSolve && !isContactsToSolve) return;
+    // Set the velocities arrays
+    mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
+    mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
+                                                  mConstrainedAngularVelocities);
+    mConstraintSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
+                                                     mConstrainedAngularVelocities);
 
     // ---------- Solve velocity constraints for joints and contacts ---------- //
 
-    // If there are contacts
-    if (isContactsToSolve) {
+    // For each island of the world
+    for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
 
-        // Initialize the solver
-        mContactSolver.initialize(dt);
+        // Check if there are contacts and constraints to solve
+        bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
+        bool isContactsToSolve = mIslands[islandIndex]->getNbContactManifolds() > 0;
+        if (!isConstraintsToSolve && !isContactsToSolve) continue;
 
-        // Warm start the contact solver
-        mContactSolver.warmStart();
+        // If there are contacts in the current island
+        if (isContactsToSolve) {
+
+            // Initialize the solver
+            mContactSolver.initializeForIsland(dt, mIslands[islandIndex]);
+
+            // Warm start the contact solver
+            mContactSolver.warmStart();
+        }
+
+        // If there are constraints
+        if (isConstraintsToSolve) {
+
+            // Initialize the constraint solver
+            mConstraintSolver.initializeForIsland(dt, mIslands[islandIndex]);
+        }
+
+        // For each iteration of the velocity solver
+        for (uint i=0; i<mNbVelocitySolverIterations; i++) {
+
+            // Solve the constraints
+            if (isConstraintsToSolve) {
+                mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
+            }
+
+            // Solve the contacts
+            if (isContactsToSolve) mContactSolver.solve();
+        }        
+
+        // Cache the lambda values in order to use them in the next
+        // step and cleanup the contact solver
+        if (isContactsToSolve) {
+            mContactSolver.storeImpulses();
+            mContactSolver.cleanup();
+        }
     }
-
-    // If there are constraints
-    if (isConstraintsToSolve) {
-
-        // Initialize the constraint solver
-        mConstraintSolver.initialize(dt);
-    }
-
-    // For each iteration of the velocity solver
-    for (uint i=0; i<mNbVelocitySolverIterations; i++) {
-
-        // Solve the constraints
-        if (isConstraintsToSolve) mConstraintSolver.solveVelocityConstraints();
-
-        // Solve the contacts
-        if (isContactsToSolve) mContactSolver.solve();
-    }
-
-    // Cache the lambda values in order to use them in the next step
-    if (isContactsToSolve) mContactSolver.storeImpulses();
 }
 
 // Solve the position error correction of the constraints
@@ -369,37 +415,36 @@ void DynamicsWorld::solvePositionCorrection() {
     // TODO : Use better memory allocation here
     mConstrainedPositions = std::vector<Vector3>(mRigidBodies.size());
     mConstrainedOrientations = std::vector<Quaternion>(mRigidBodies.size());
-    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
-        // If it is a constrained bodies (by a joint)
-        if (mConstraintSolver.isConstrainedBody(*it)) {
+    // For each island of the world
+    for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
 
-            uint index = mMapBodyToConstrainedVelocityIndex.find(*it)->second;
+        // For each body of the island
+        RigidBody** bodies = mIslands[islandIndex]->getBodies();
+        for (uint b=0; b < mIslands[islandIndex]->getNbBodies(); b++) {
+
+            uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
 
             // Get the position/orientation of the rigid body
-            const Transform& transform = (*it)->getTransform();
+            const Transform& transform = bodies[b]->getTransform();
             mConstrainedPositions[index] = transform.getPosition();
             mConstrainedOrientations[index]= transform.getOrientation();
         }
-    }
 
-    // ---------- Solve the position error correction for the constraints ---------- //
+        // ---------- Solve the position error correction for the constraints ---------- //
 
-    // For each iteration of the position (error correction) solver
-    for (uint i=0; i<mNbPositionSolverIterations; i++) {
+        // For each iteration of the position (error correction) solver
+        for (uint i=0; i<mNbPositionSolverIterations; i++) {
 
-        // Solve the position constraints
-        mConstraintSolver.solvePositionConstraints();
-    }
+            // Solve the position constraints
+            mConstraintSolver.solvePositionConstraints(mIslands[islandIndex]);
+        }
 
-    // ---------- Update the position/orientation of the rigid bodies ---------- //
+        // ---------- Update the position/orientation of the rigid bodies ---------- //
 
-    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+        for (uint b=0; b < mIslands[islandIndex]->getNbBodies(); b++) {
 
-        // If it is a constrained bodies (by a joint)
-        if (mConstraintSolver.isConstrainedBody(*it)) {
-
-            uint index = mMapBodyToConstrainedVelocityIndex.find(*it)->second;
+            uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
 
             // Get the new position/orientation of the body
             const Vector3& newPosition = mConstrainedPositions[index];
@@ -407,20 +452,9 @@ void DynamicsWorld::solvePositionCorrection() {
 
             // Update the Transform of the body
             Transform newTransform(newPosition, newOrientation.getUnit());
-            (*it)->setTransform(newTransform);
+            bodies[b]->setTransform(newTransform);
         }
     }
-}
-
-// Cleanup the constrained velocities array at each step
-void DynamicsWorld::cleanupConstrainedVelocitiesArray() {
-
-    // Clear the constrained velocites
-    mConstrainedLinearVelocities.clear();
-    mConstrainedAngularVelocities.clear();
-
-    // Clear the rigid body to velocities array index mapping
-    mMapBodyToConstrainedVelocityIndex.clear();
 }
 
 // Create a rigid body into the physics world
@@ -579,11 +613,13 @@ void DynamicsWorld::destroyJoint(Constraint* joint) {
     joint->mBody1->removeJointFromJointsList(mMemoryAllocator, joint);
     joint->mBody2->removeJointFromJointsList(mMemoryAllocator, joint);
 
+    size_t nbBytes = joint->getSizeInBytes();
+
     // Call the destructor of the joint
     joint->Constraint::~Constraint();
 
     // Release the allocated memory
-    mMemoryAllocator.release(joint, joint->getSizeInBytes());
+    mMemoryAllocator.release(joint, nbBytes);
 }
 
 // Add the joint to the list of joints of the two bodies involved in the joint

@@ -70,6 +70,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
                 memoryAllocator.release(elementToRemove, sizeof(JointListElement));
                 break;
             }
+            currentElement = currentElement->next;
         }
     }
 }
