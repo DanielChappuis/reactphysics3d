@@ -148,10 +148,10 @@ void* MemoryAllocator::allocate(size_t size) {
         assert(nbUnits * unitSize <= BLOCK_SIZE);
         for (size_t i=0; i < nbUnits - 1; i++) {
             MemoryUnit* unit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * i);
-            MemoryUnit* nextUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * (i + 1));
+            MemoryUnit* nextUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * (i+1));
             unit->nextUnit = nextUnit;
         }
-        MemoryUnit* lastUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * (nbUnits - 1));
+        MemoryUnit* lastUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize*(nbUnits-1));
         lastUnit->nextUnit = NULL;
 
         // Add the new allocated block into the list of free memory units in the heap

@@ -23,52 +23,32 @@
 *                                                                               *
 ********************************************************************************/
 
- // Libraries
-#include "CollisionBody.h"
-#include "../engine/ContactManifold.h"
+// Libraries
+#include "Island.h"
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionBody::CollisionBody(const Transform& transform, CollisionShape *collisionShape,
-                             bodyindex id)
-    : Body(id), mCollisionShape(collisionShape), mTransform(transform),
-      mIsActive(true), mHasMoved(false), mContactManifoldsList(NULL) {
+Island::Island(uint id, uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
+               MemoryAllocator& memoryAllocator)
+       : mID(id), mBodies(NULL), mContactManifolds(NULL), mJoints(NULL), mNbBodies(0),
+         mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
 
-    assert(collisionShape);
-
-    mIsMotionEnabled = true;
-    mIsCollisionEnabled = true;
-    mInterpolationFactor = 0.0;
-
-    // Initialize the old transform
-    mOldTransform = transform;
-
-    // Initialize the AABB for broad-phase collision detection
-    mCollisionShape->updateAABB(mAabb, transform);
+    // Allocate memory for the arrays
+    mNbAllocatedBytesBodies = sizeof(RigidBody*) * nbMaxBodies;
+    mBodies = (RigidBody**) mMemoryAllocator.allocate(mNbAllocatedBytesBodies);
+    mNbAllocatedBytesContactManifolds = sizeof(ContactManifold*) * nbMaxContactManifolds;
+    mContactManifolds = (ContactManifold**) mMemoryAllocator.allocate(
+                                                                mNbAllocatedBytesContactManifolds);
+    mNbAllocatedBytesJoints = sizeof(Constraint*) * nbMaxJoints;
+    mJoints = (Constraint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
 }
 
 // Destructor
-CollisionBody::~CollisionBody() {
-    assert(mContactManifoldsList == NULL);
-}
+Island::~Island() {
 
-// Reset the contact manifold lists
-void CollisionBody::resetContactManifoldsList(MemoryAllocator& memoryAllocator) {
-
-    // Delete the linked list of contact manifolds of that body
-    ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != NULL) {
-        ContactManifoldListElement* nextElement = currentElement->next;
-
-        // Delete the current element
-        currentElement->ContactManifoldListElement::~ContactManifoldListElement();
-        memoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
-
-        currentElement = nextElement;
-    }
-    mContactManifoldsList = NULL;
-
-    assert(mContactManifoldsList == NULL);
+    // Release the memory of the arrays
+    mMemoryAllocator.release(mBodies, mNbAllocatedBytesBodies);
+    mMemoryAllocator.release(mContactManifolds, mNbAllocatedBytesContactManifolds);
+    mMemoryAllocator.release(mJoints, mNbAllocatedBytesJoints);
 }

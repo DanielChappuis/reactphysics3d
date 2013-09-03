@@ -33,7 +33,7 @@ Constraint::Constraint(const ConstraintInfo& constraintInfo)
            :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
             mType(constraintInfo.type),
             mPositionCorrectionTechnique(constraintInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(constraintInfo.isCollisionEnabled){
+            mIsCollisionEnabled(constraintInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 
     assert(mBody1 != NULL);
     assert(mBody2 != NULL);

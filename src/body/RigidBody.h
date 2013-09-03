@@ -31,9 +31,14 @@
 #include "CollisionBody.h"
 #include "../engine/Material.h"
 #include "../mathematics/mathematics.h"
+#include "../memory/MemoryAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Class declarations
+struct JointListElement;
+class Constraint;
 
 // Class RigidBody
 /**
@@ -86,6 +91,9 @@ class RigidBody : public CollisionBody {
         /// Angular velocity damping factor
         decimal mAngularDamping;
 
+        /// First element of the linked list of joints involving this body
+        JointListElement* mJointsList;        
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -93,6 +101,9 @@ class RigidBody : public CollisionBody {
 
         /// Private assignment operator
         RigidBody& operator=(const RigidBody& body);
+
+        /// Remove a joint from the joints list
+        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Constraint* joint);
 
     public :
 
@@ -179,6 +190,16 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular damping factor
         void setAngularDamping(decimal angularDamping);
+
+        /// Return the first element of the linked list of joints involving this body
+        const JointListElement* getJointsList() const;
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Method that return the mass of the body
@@ -326,6 +347,24 @@ inline decimal RigidBody::getAngularDamping() const {
 inline void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
     mAngularDamping = angularDamping;
+}
+
+// Return the first element of the linked list of joints involving this body
+inline const JointListElement* RigidBody::getJointsList() const {
+    return mJointsList;
+}
+
+// Set the variable to know whether or not the body is sleeping
+inline void RigidBody::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mLinearVelocity.setToZero();
+        mAngularVelocity.setToZero();
+        mExternalForce.setToZero();
+        mExternalTorque.setToZero();
+    }
+
+    Body::setIsSleeping(isSleeping);
 }
 
 }

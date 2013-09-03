@@ -30,6 +30,7 @@
 #include "../configuration.h"
 #include "mathematics/mathematics.h"
 #include "../constraint/Constraint.h"
+#include "Island.h"
 #include <map>
 #include <set>
 
@@ -47,11 +48,11 @@ struct ConstraintSolverData {
         /// Current time step of the simulation
         decimal timeStep;
 
-        /// Reference to the bodies linear velocities
-        std::vector<Vector3>& linearVelocities;
+        /// Array with the bodies linear velocities
+        Vector3* linearVelocities;
 
-        /// Reference to the bodies angular velocities
-        std::vector<Vector3>& angularVelocities;
+        /// Array with the bodies angular velocities
+        Vector3* angularVelocities;
 
         /// Reference to the bodies positions
         std::vector<Vector3>& positions;
@@ -67,13 +68,11 @@ struct ConstraintSolverData {
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(std::vector<Vector3>& refLinearVelocities,
-                             std::vector<Vector3>& refAngularVelocities,
-                             std::vector<Vector3>& refPositions,
+        ConstraintSolverData(std::vector<Vector3>& refPositions,
                              std::vector<Quaternion>& refOrientations,
                              const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(refLinearVelocities),
-                            angularVelocities(refAngularVelocities),
+                           :linearVelocities(NULL),
+                            angularVelocities(NULL),
                             positions(refPositions), orientations(refOrientations),
                             mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
 
@@ -156,19 +155,13 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to all the joints of the world
-        std::set<Constraint*>& mJoints;
-
-        /// Constrained bodies
-        std::set<RigidBody*> mConstraintBodies;
-
-        /// Reference to the array of constrained linear velocities (state of the linear velocities
+        /// Array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
-        std::vector<Vector3>& mLinearVelocities;
+        Vector3* mLinearVelocities;
 
-        /// Reference to the array of constrained angular velocities (state of the angular velocities
+        /// Array of constrained angular velocities (state of the angular velocities
         /// after solving the constraints)
-        std::vector<Vector3>& mAngularVelocities;
+        Vector3* mAngularVelocities;
 
         /// Reference to the array of bodies positions (for position error correction)
         std::vector<Vector3>& mPositions;
@@ -194,24 +187,20 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(std::set<Constraint*>& joints,
-                         std::vector<Vector3>& linearVelocities,
-                         std::vector<Vector3>& angularVelocities,
-                         std::vector<Vector3>& positions,
-                         std::vector<Quaternion>& orientations,
+        ConstraintSolver(std::vector<Vector3>& positions, std::vector<Quaternion>& orientations,
                          const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
         ~ConstraintSolver();
 
-        /// Initialize the constraint solver
-        void initialize(decimal dt);
+        /// Initialize the constraint solver for a given island
+        void initializeForIsland(decimal dt, Island* island);
 
         /// Solve the constraints
-        void solveVelocityConstraints();
+        void solveVelocityConstraints(Island* island);
 
         /// Solve the position constraints
-        void solvePositionConstraints();
+        void solvePositionConstraints(Island* island);
 
         /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
         bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;
@@ -219,13 +208,20 @@ class ConstraintSolver {
         /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
         void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
 
-        /// Return true if the body is in at least one constraint
-        bool isConstrainedBody(RigidBody* body) const;
+        /// Set the constrained velocities arrays
+        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                            Vector3* constrainedAngularVelocities);
 };
 
-// Return true if the body is in at least one constraint
-inline bool ConstraintSolver::isConstrainedBody(RigidBody* body) const {
-    return mConstraintBodies.count(body) == 1;
+// Set the constrained velocities arrays
+inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                                            Vector3* constrainedAngularVelocities) {
+    assert(constrainedLinearVelocities != NULL);
+    assert(constrainedAngularVelocities != NULL);
+    mLinearVelocities = constrainedLinearVelocities;
+    mAngularVelocities = constrainedAngularVelocities;
+    mConstraintSolverData.linearVelocities = mLinearVelocities;
+    mConstraintSolverData.angularVelocities = mAngularVelocities;
 }
 
 }

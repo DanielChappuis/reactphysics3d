@@ -59,7 +59,7 @@ HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)
 
     // Compute the inverse of the initial orientation difference between the two bodies
     mInitOrientationDifferenceInv = transform2.getOrientation() *
-                                 transform1.getOrientation().getInverse();
+                                    transform1.getOrientation().getInverse();
     mInitOrientationDifferenceInv.normalize();
     mInitOrientationDifferenceInv.inverse();
 }
@@ -732,7 +732,9 @@ void HingeJoint::enableMotor(bool isMotorEnabled) {
     mIsMotorEnabled = isMotorEnabled;
     mImpulseMotor = 0.0;
 
-    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    // Wake up the two bodies of the joint
+    mBody1->setIsSleeping(false);
+    mBody2->setIsSleeping(false);
 }
 
 // Set the minimum angle limit
@@ -770,7 +772,9 @@ void HingeJoint::resetLimits() {
     mImpulseLowerLimit = 0.0;
     mImpulseUpperLimit = 0.0;
 
-    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    // Wake up the two bodies of the joint
+    mBody1->setIsSleeping(false);
+    mBody2->setIsSleeping(false);
 }
 
 // Set the motor speed
@@ -780,7 +784,9 @@ void HingeJoint::setMotorSpeed(decimal motorSpeed) {
 
         mMotorSpeed = motorSpeed;
 
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        // Wake up the two bodies of the joint
+        mBody1->setIsSleeping(false);
+        mBody2->setIsSleeping(false);
     }
 }
 
@@ -792,7 +798,9 @@ void HingeJoint::setMaxMotorTorque(decimal maxMotorTorque) {
         assert(mMaxMotorTorque >= 0.0);
         mMaxMotorTorque = maxMotorTorque;
 
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        // Wake up the two bodies of the joint
+        mBody1->setIsSleeping(false);
+        mBody2->setIsSleeping(false);
     }
 }
 

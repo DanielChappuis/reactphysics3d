@@ -39,6 +39,32 @@ enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOI
 
 // Class declarations
 struct ConstraintSolverData;
+class Constraint;
+
+// Structure JointListElement
+/**
+ * This structure represents a single element of a linked list of joints
+ */
+struct JointListElement {
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer to the actual joint
+        Constraint* joint;
+
+        /// Next element of the list
+        JointListElement* next;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        JointListElement(Constraint* initJoint, JointListElement* initNext)
+                        :joint(initJoint), next(initNext){
+
+        }
+};
 
 // Structure ConstraintInfo
 /**
@@ -87,9 +113,8 @@ struct ConstraintInfo {
 // Class Constraint
 /**
  * This abstract class represents a constraint in the physics engine.
- * A constraint can be a collision contact or a joint for
- * instance. Each constraint can be made of several "mathematical
- * constraints" needed to represent the main constraint.
+ * A constraint can be a collision contact point or a joint for
+ * instance.
  */
 class Constraint {
 
@@ -120,6 +145,9 @@ class Constraint {
 
         /// True if the two bodies of the constraint are allowed to collide with each other
         bool mIsCollisionEnabled;
+
+        /// True if the joint has already been added into an island
+        bool mIsAlreadyInIsland;
 
         // -------------------- Methods -------------------- //
 
@@ -154,6 +182,9 @@ class Constraint {
         /// Return true if the collision between the two bodies of the constraint is enabled
         bool isCollisionEnabled() const;
 
+        /// Return true if the joint has already been added into an island
+        bool isAlreadyInIsland() const;
+
         /// Return the number of bytes used by the constraint
         virtual size_t getSizeInBytes() const = 0;
 
@@ -168,6 +199,11 @@ class Constraint {
 
         /// Solve the position constraint
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
+        friend class Island;
 };
 
 // Return the reference to the body 1
@@ -193,6 +229,11 @@ inline ConstraintType Constraint::getType() const {
 // Return true if the collision between the two bodies of the constraint is enabled
 inline bool Constraint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
+}
+
+// Return true if the joint has already been added into an island
+inline bool Constraint::isAlreadyInIsland() const {
+    return mIsAlreadyInIsland;
 }
 
 }

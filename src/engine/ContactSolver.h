@@ -31,6 +31,7 @@
 #include "../configuration.h"
 #include "../constraint/Constraint.h"
 #include "ContactManifold.h"
+#include "Island.h"
 #include "Impulse.h"
 #include <map>
 #include <set>
@@ -311,9 +312,6 @@ class ContactSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to all the contact manifold of the world
-        std::vector<ContactManifold*>& mContactManifolds;
-
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -329,14 +327,11 @@ class ContactSolver {
         /// Number of contact constraints
         uint mNbContactManifolds;
 
-        /// Constrained bodies
-        std::set<RigidBody*> mConstraintBodies;
+        /// Array of linear velocities
+        Vector3* mLinearVelocities;
 
-        /// Reference to the array of linear velocities
-        std::vector<Vector3>& mLinearVelocities;
-
-        /// Reference to the array of angular velocities
-        std::vector<Vector3>& mAngularVelocities;
+        /// Array of angular velocities
+        Vector3* mAngularVelocities;
 
         /// Reference to the map of rigid body to their index in the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
@@ -352,9 +347,6 @@ class ContactSolver {
         bool mIsSolveFrictionAtContactManifoldCenterActive;
 
         // -------------------- Methods -------------------- //
-
-        /// Initialize the split impulse velocities
-        void initializeSplitImpulseVelocities();
 
         /// Initialize the contact constraints before solving the system
         void initializeContactConstraints();
@@ -403,16 +395,21 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(std::vector<ContactManifold*>& contactManifolds,
-                      std::vector<Vector3>& constrainedLinearVelocities,
-                      std::vector<Vector3>& constrainedAngularVelocities,
-                      const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
         virtual ~ContactSolver();
 
-        /// Initialize the constraint solver
-        void initialize(decimal dt);
+        /// Initialize the constraint solver for a given island
+        void initializeForIsland(decimal dt, Island* island);
+
+        /// Set the split velocities arrays
+        void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
+                                      Vector3* splitAngularVelocities);
+
+        /// Set the constrained velocities arrays
+        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                            Vector3* constrainedAngularVelocities);
 
         /// Warm start the solver.
         void warmStart();
@@ -424,24 +421,6 @@ class ContactSolver {
         /// Solve the contacts
         void solve();
 
-        /// Return true if the body is in at least one constraint
-        bool isConstrainedBody(RigidBody* body) const;
-
-        /// Return the constrained linear velocity of a body after solving the constraints
-        Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);
-
-        /// Return the split linear velocity
-        Vector3 getSplitLinearVelocityOfBody(RigidBody* body);
-
-        /// Return the constrained angular velocity of a body after solving the constraints
-        Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);
-
-        /// Return the split angular velocity
-        Vector3 getSplitAngularVelocityOfBody(RigidBody* body);
-
-        /// Clean up the constraint solver
-        void cleanup();
-
         /// Return true if the split impulses position correction technique is used for contacts
         bool isSplitImpulseActive() const;
 
@@ -451,25 +430,27 @@ class ContactSolver {
         /// Activate or deactivate the solving of friction constraints at the center of
         /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
+
+        /// Clean up the constraint solver
+        void cleanup();
 };
 
-// Return true if the body is in at least one constraint
-inline bool ContactSolver::isConstrainedBody(RigidBody* body) const {
-    return mConstraintBodies.count(body) == 1;
+// Set the split velocities arrays
+inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
+                                                    Vector3* splitAngularVelocities) {
+    assert(splitLinearVelocities != NULL);
+    assert(splitAngularVelocities != NULL);
+    mSplitLinearVelocities = splitLinearVelocities;
+    mSplitAngularVelocities = splitAngularVelocities;
 }
 
-// Return the split linear velocity
-inline Vector3 ContactSolver::getSplitLinearVelocityOfBody(RigidBody* body) {
-    assert(isConstrainedBody(body));
-    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
-    return mSplitLinearVelocities[indexBody];
-}
-
-// Return the split angular velocity
-inline Vector3 ContactSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
-    assert(isConstrainedBody(body));
-    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
-    return mSplitAngularVelocities[indexBody];
+// Set the constrained velocities arrays
+inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                                          Vector3* constrainedAngularVelocities) {
+    assert(constrainedLinearVelocities != NULL);
+    assert(constrainedAngularVelocities != NULL);
+    mLinearVelocities = constrainedLinearVelocities;
+    mAngularVelocities = constrainedAngularVelocities;
 }
 
 // Return true if the split impulses position correction technique is used for contacts
