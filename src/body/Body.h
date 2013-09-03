@@ -56,6 +56,9 @@ class Body {
         /// True if the body is sleeping (for sleeping technique)
         bool mIsSleeping;
 
+        /// Elapsed time since the body velocity was bellow the sleep velocity
+        decimal mSleepTime;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -93,7 +96,7 @@ class Body {
         bool isSleeping() const;
 
         /// Set the variable to know whether or not the body is sleeping
-        void setIsSleeping(bool isSleeping);
+        virtual void setIsSleeping(bool isSleeping);
 
         /// Smaller than operator
         bool operator<(const Body& body2) const;
@@ -135,6 +138,8 @@ inline bool Body::isAllowedToSleep() const {
 // Set whether or not the body is allowed to go to sleep
 inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
     mIsAllowedToSleep = isAllowedToSleep;
+
+    if (!mIsAllowedToSleep) setIsSleeping(false);
 }
 
 // Return whether or not the body is sleeping
@@ -144,6 +149,16 @@ inline bool Body::isSleeping() const {
 
 // Set the variable to know whether or not the body is sleeping
 inline void Body::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mSleepTime = decimal(0.0);
+    }
+    else {
+        if (mIsSleeping) {
+            mSleepTime = decimal(0.0);
+        }
+    }
+
     mIsSleeping = isSleeping;
 }
 

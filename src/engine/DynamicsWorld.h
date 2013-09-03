@@ -83,7 +83,7 @@ class DynamicsWorld : public CollisionWorld {
         Vector3 mGravity;
 
         /// True if the gravity force is on
-        bool mIsGravityOn;
+        bool mIsGravityEnabled;
 
         /// Array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
@@ -119,6 +119,16 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Current allocated capacity for the bodies
         uint mNbBodiesCapacity;
+
+        /// Sleep linear velocity threshold
+        decimal mSleepLinearVelocity;
+
+        /// Sleep angular velocity threshold
+        decimal mSleepAngularVelocity;
+
+        /// Time (in seconds) before a body is put to sleep if its velocity
+        /// becomes smaller than the sleep velocity.
+        decimal mTimeBeforeSleep;
 
         // -------------------- Methods -------------------- //
 
@@ -161,6 +171,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Compute the islands of awake bodies.
         void computeIslands();
+
+        /// Put bodies to sleep if needed.
+        void updateSleepingBodies();
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
@@ -239,10 +252,10 @@ public :
         Vector3 getGravity() const;
 
         /// Return if the gravity is on
-        bool getIsGravityOn() const;
+        bool isGravityEnabled() const;
 
-        /// Set the isGravityOn attribute
-        void setIsGratityOn(bool isGravityOn);
+        /// Enable/Disable the gravity
+        void setIsGratityEnabled(bool isGravityEnabled);
 
         /// Return the number of rigid bodies in the world
         uint getNbRigidBodies() const;
@@ -264,6 +277,30 @@ public :
 
         /// Return a reference to the contact manifolds of the world
         const std::vector<ContactManifold*>& getContactManifolds() const;
+
+        /// Return true if the sleeping technique is enabled
+        bool isSleepingEnabled() const;
+
+        /// Enable/Disable the sleeping technique
+        void enableSleeping(bool isSleepingEnabled);
+
+        /// Return the current sleep linear velocity
+        decimal getSleepLinearVelocity() const;
+
+        /// Set the sleep linear velocity.
+        void setSleepLinearVelocity(decimal sleepLinearVelocity);
+
+        /// Return the current sleep angular velocity
+        decimal getSleepAngularVelocity() const;
+
+        /// Set the sleep angular velocity.
+        void setSleepAngularVelocity(decimal sleepAngularVelocity);
+
+        /// Return the time a body is required to stay still before sleeping
+        decimal getTimeBeforeSleep() const;
+
+        /// Set the time a body is required to stay still before sleeping
+        void setTimeBeforeSleep(decimal timeBeforeSleep);
 
         // TODO : REMOVE THIS
         Island** getIslands() { return mIslands;}
@@ -349,14 +386,14 @@ inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
 }
 
-// Return if the gravity is on
-inline bool DynamicsWorld::getIsGravityOn() const {
-    return mIsGravityOn;
+// Return if the gravity is enaled
+inline bool DynamicsWorld::isGravityEnabled() const {
+    return mIsGravityEnabled;
 }
 
-// Set the isGravityOn attribute
-inline void DynamicsWorld::setIsGratityOn(bool isGravityOn) {
-    mIsGravityOn = isGravityOn;
+// Enable/Disable the gravity
+inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
+    mIsGravityEnabled = isGravityEnabled;
 }
 
 // Return the number of rigid bodies in the world
@@ -392,6 +429,51 @@ inline uint DynamicsWorld::getNbContactManifolds() const {
 // Return the current physics time (in seconds)
 inline long double DynamicsWorld::getPhysicsTime() const {
     return mTimer.getPhysicsTime();
+}
+
+// Return true if the sleeping technique is enabled
+inline bool DynamicsWorld::isSleepingEnabled() const {
+    return mIsSleepingEnabled;
+}
+
+// Return the current sleep linear velocity
+inline decimal DynamicsWorld::getSleepLinearVelocity() const {
+    return mSleepLinearVelocity;
+}
+
+// Set the sleep linear velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+inline void DynamicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
+    assert(sleepLinearVelocity >= decimal(0.0));
+    mSleepLinearVelocity = sleepLinearVelocity;
+}
+
+// Return the current sleep angular velocity
+inline decimal DynamicsWorld::getSleepAngularVelocity() const {
+    return mSleepAngularVelocity;
+}
+
+// Set the sleep angular velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
+    assert(sleepAngularVelocity >= decimal(0.0));
+    mSleepAngularVelocity = sleepAngularVelocity;
+}
+
+// Return the time a body is required to stay still before sleeping
+inline decimal DynamicsWorld::getTimeBeforeSleep() const {
+    return mTimeBeforeSleep;
+}
+
+
+// Set the time a body is required to stay still before sleeping
+inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
+    assert(timeBeforeSleep >= decimal(0.0));
+    mTimeBeforeSleep = timeBeforeSleep;
 }
 
 }

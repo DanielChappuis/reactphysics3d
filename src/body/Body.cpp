@@ -32,7 +32,8 @@ using namespace reactphysics3d;
 
 // Constructor
 Body::Body(bodyindex id)
-     : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsSleeping(false) {
+     : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsSleeping(false),
+       mSleepTime(0) {
 
 }
 

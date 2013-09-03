@@ -194,6 +194,9 @@ class RigidBody : public CollisionBody {
         /// Return the first element of the linked list of joints involving this body
         const JointListElement* getJointsList() const;
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
@@ -349,6 +352,19 @@ inline void RigidBody::setAngularDamping(decimal angularDamping) {
 // Return the first element of the linked list of joints involving this body
 inline const JointListElement* RigidBody::getJointsList() const {
     return mJointsList;
+}
+
+// Set the variable to know whether or not the body is sleeping
+inline void RigidBody::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mLinearVelocity.setToZero();
+        mAngularVelocity.setToZero();
+        mExternalForce.setToZero();
+        mExternalTorque.setToZero();
+    }
+
+    Body::setIsSleeping(isSleeping);
 }
 
 }
