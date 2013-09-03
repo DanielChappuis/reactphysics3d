@@ -266,10 +266,10 @@ void ContactSolver::initializeContactConstraints() {
             // Compute the restitution velocity bias "b". We compute this here instead
             // of inside the solve() method because we need to use the velocity difference
             // at the beginning of the contact. Note that if it is a resting contact (normal
-            // velocity under a given threshold), we don't add a restitution velocity bias
+            // velocity bellow a given threshold), we do not add a restitution velocity bias
             contactPoint.restitutionBias = 0.0;
             decimal deltaVDotN = deltaV.dot(contactPoint.normal);
-            if (deltaVDotN < RESTITUTION_VELOCITY_THRESHOLD) {
+            if (deltaVDotN < -RESTITUTION_VELOCITY_THRESHOLD) {
                 contactPoint.restitutionBias = manifold.restitutionFactor * deltaVDotN;
             }
 
