@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_HINGE_JOINT_H
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 #include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a hinge joint.
  * This structure will be used to create the actual hinge joint.
  */
-struct HingeJointInfo : public ConstraintInfo {
+struct HingeJointInfo : public JointInfo {
 
     public :
 
@@ -74,7 +74,7 @@ struct HingeJointInfo : public ConstraintInfo {
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
                                 isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
@@ -85,7 +85,7 @@ struct HingeJointInfo : public ConstraintInfo {
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -98,7 +98,7 @@ struct HingeJointInfo : public ConstraintInfo {
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
                                decimal initMotorSpeed, decimal initMaxMotorTorque)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -111,7 +111,7 @@ struct HingeJointInfo : public ConstraintInfo {
  * This class represents a hinge joint that allows arbitrary rotation
  * between two bodies around a single axis.
  */
-class HingeJoint : public Constraint {
+class HingeJoint : public Joint {
 
     private :
 

@@ -33,8 +33,8 @@ using namespace reactphysics3d;
 // Constructor
 CollisionBody::CollisionBody(const Transform& transform, CollisionShape *collisionShape,
                              bodyindex id)
-    : Body(id), mCollisionShape(collisionShape), mTransform(transform),
-      mIsActive(true), mHasMoved(false), mContactManifoldsList(NULL) {
+              : Body(id), mCollisionShape(collisionShape), mTransform(transform),
+                mHasMoved(false), mContactManifoldsList(NULL) {
 
     assert(collisionShape);
 

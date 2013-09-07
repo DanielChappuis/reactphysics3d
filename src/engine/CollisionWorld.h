@@ -36,7 +36,7 @@
 #include "../body/CollisionBody.h"
 #include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "../constraint/ContactPoint.h"
 #include "../memory/MemoryAllocator.h"
 

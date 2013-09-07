@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 #include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a ball-and-socket
  * joint. This structure will be used to create the actual ball-and-socket joint.
  */
-struct BallAndSocketJointInfo : public ConstraintInfo {
+struct BallAndSocketJointInfo : public JointInfo {
 
     public :
 
@@ -49,7 +49,7 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         /// Constructor
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
-                              : ConstraintInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace) {}
 };
 
@@ -58,7 +58,7 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
  * This class represents a ball-and-socket joint that allows arbitrary rotation
  * between two bodies.
  */
-class BallAndSocketJoint : public Constraint {
+class BallAndSocketJoint : public Joint {
 
     private :
 

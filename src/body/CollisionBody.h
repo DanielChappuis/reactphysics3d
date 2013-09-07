@@ -65,9 +65,6 @@ class CollisionBody : public Body {
         /// Interpolation factor used for the state interpolation
         decimal mInterpolationFactor;
 
-        /// True if the body is active (not sleeping)
-        bool mIsActive;
-
         /// True if the body is able to move
         bool mIsMotionEnabled;
 
@@ -115,12 +112,6 @@ class CollisionBody : public Body {
 
         /// Set the collision shape
         void setCollisionShape(CollisionShape* collisionShape);
-
-        /// Return true for an active body
-        bool getIsActive() const;
-
-        /// Set the isActive variable
-        void setIsActive(bool isActive);
 
         /// Return the current position and orientation
         const Transform& getTransform() const;
@@ -183,16 +174,6 @@ inline CollisionShape* CollisionBody::getCollisionShape() const {
 inline void CollisionBody::setCollisionShape(CollisionShape* collisionShape) {
     assert(collisionShape);
     mCollisionShape = collisionShape;
-}
-
-// Return true if the body is active
-inline bool CollisionBody::getIsActive() const {
-    return mIsActive;
-}
-
-// Set the isActive variable
-inline void CollisionBody::setIsActive(bool isActive) {
-    mIsActive = isActive;
 }
 
 // Return the interpolated transform for rendering

@@ -53,6 +53,9 @@ class Body {
         /// True if the body is allowed to go to sleep for better efficiency
         bool mIsAllowedToSleep;
 
+        /// True if the body is active
+        bool mIsActive;
+
         /// True if the body is sleeping (for sleeping technique)
         bool mIsSleeping;
 
@@ -94,6 +97,9 @@ class Body {
 
         /// Return whether or not the body is sleeping
         bool isSleeping() const;
+
+        /// Return true if the body is active
+        bool isActive() const;
 
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
@@ -145,6 +151,11 @@ inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
 // Return whether or not the body is sleeping
 inline bool Body::isSleeping() const {
     return mIsSleeping;
+}
+
+// Return true if the body is active
+inline bool Body::isActive() const {
+    return mIsActive;
 }
 
 // Set the variable to know whether or not the body is sleeping

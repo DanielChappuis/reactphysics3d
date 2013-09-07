@@ -29,7 +29,7 @@
 // Libraries
 #include "../configuration.h"
 #include "mathematics/mathematics.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "Island.h"
 #include <map>
 #include <set>

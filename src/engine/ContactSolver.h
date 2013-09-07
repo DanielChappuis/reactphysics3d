@@ -29,7 +29,7 @@
 // Libraries
 #include "../constraint/ContactPoint.h"
 #include "../configuration.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "ContactManifold.h"
 #include "Island.h"
 #include "Impulse.h"

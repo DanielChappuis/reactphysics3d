@@ -25,7 +25,7 @@
 
 // Libraries
 #include "RigidBody.h"
-#include "constraint/Constraint.h"
+#include "constraint/Joint.h"
 #include "../collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
@@ -48,7 +48,7 @@ RigidBody::~RigidBody() {
 }
 
 // Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Constraint* joint) {
+void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint) {
 
     assert(joint != NULL);
     assert(mJointsList != NULL);

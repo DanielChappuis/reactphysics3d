@@ -40,8 +40,8 @@ Island::Island(uint id, uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMax
     mNbAllocatedBytesContactManifolds = sizeof(ContactManifold*) * nbMaxContactManifolds;
     mContactManifolds = (ContactManifold**) mMemoryAllocator.allocate(
                                                                 mNbAllocatedBytesContactManifolds);
-    mNbAllocatedBytesJoints = sizeof(Constraint*) * nbMaxJoints;
-    mJoints = (Constraint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
+    mNbAllocatedBytesJoints = sizeof(Joint*) * nbMaxJoints;
+    mJoints = (Joint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
 }
 
 // Destructor

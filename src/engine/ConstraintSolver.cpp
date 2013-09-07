@@ -65,7 +65,7 @@ void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
     mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
 
     // For each joint of the island
-    Constraint** joints = island->getJoints();
+    Joint** joints = island->getJoints();
     for (uint i=0; i<island->getNbJoints(); i++) {
 
         // Initialize the constraint before solving it
@@ -87,7 +87,7 @@ void ConstraintSolver::solveVelocityConstraints(Island* island) {
     assert(island->getNbJoints() > 0);
 
     // For each joint of the island
-    Constraint** joints = island->getJoints();
+    Joint** joints = island->getJoints();
     for (uint i=0; i<island->getNbJoints(); i++) {
 
         // Solve the constraint
@@ -104,7 +104,7 @@ void ConstraintSolver::solvePositionConstraints(Island* island) {
     assert(island->getNbJoints() > 0);
 
     // For each joint of the island
-    Constraint** joints = island->getJoints();
+    Joint** joints = island->getJoints();
     for (uint i=0; i < island->getNbJoints(); i++) {
 
         // Solve the constraint

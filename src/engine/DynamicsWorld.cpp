@@ -147,6 +147,9 @@ void DynamicsWorld::update() {
 
         // Update the AABBs of the bodies
         updateRigidBodiesAABB();
+
+        // Reset the external force and torque applied to the bodies
+        resetBodiesForceAndTorque();
     }
 
     // Compute and set the interpolation factor to all the bodies
@@ -315,10 +318,10 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
                 // Integrate the external force to get the new velocity of the body
                 mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
-                        dt * bodies[b]->getMassInverse() * bodies[b]->getExternalForce();
+                        dt * bodies[b]->getMassInverse() * bodies[b]->mExternalForce;
                 mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
                         dt * bodies[b]->getInertiaTensorInverseWorld() *
-                        bodies[b]->getExternalTorque();
+                        bodies[b]->mExternalTorque;
 
                 // If the gravity has to be applied to this rigid body
                 if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
@@ -527,7 +530,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     // Destroy all the joints in which the rigid body to be destroyed is involved
     // TODO : Iterate on the mJointList of the rigid body instead over all the joints of the world
     bodyindex idToRemove = rigidBody->getID();
-    for (std::set<Constraint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
+    for (std::set<Joint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         if ((*it)->getBody1()->getID() == idToRemove || (*it)->getBody2()->getID() == idToRemove) {
             destroyJoint(*it);
         }
@@ -548,9 +551,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 }
 
 // Create a joint between two bodies in the world and return a pointer to the new joint
-Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
+Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
-    Constraint* newJoint = NULL;
+    Joint* newJoint = NULL;
 
     // Allocate memory to create the new joint
     switch(jointInfo.type) {
@@ -617,7 +620,7 @@ Constraint* DynamicsWorld::createJoint(const ConstraintInfo& jointInfo) {
 }
 
 // Destroy a joint
-void DynamicsWorld::destroyJoint(Constraint* joint) {
+void DynamicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != NULL);
 
@@ -642,14 +645,14 @@ void DynamicsWorld::destroyJoint(Constraint* joint) {
     size_t nbBytes = joint->getSizeInBytes();
 
     // Call the destructor of the joint
-    joint->Constraint::~Constraint();
+    joint->Joint::~Joint();
 
     // Release the allocated memory
     mMemoryAllocator.release(joint, nbBytes);
 }
 
 // Add the joint to the list of joints of the two bodies involved in the joint
-void DynamicsWorld::addJointToBody(Constraint* joint) {
+void DynamicsWorld::addJointToBody(Joint* joint) {
 
     assert(joint != NULL);
 
@@ -741,7 +744,7 @@ void DynamicsWorld::computeIslands() {
          it != mContactManifolds.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
     }
-    for (std::set<Constraint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
+    for (std::set<Joint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
     }
 
@@ -763,8 +766,8 @@ void DynamicsWorld::computeIslands() {
         // TODO : When we will use STATIC bodies, we will need to take care of this case here
         if (!body->getIsMotionEnabled()) continue;
 
-        // If the body is sleeping, we go to the next body
-        if (body->isSleeping()) continue;
+        // If the body is sleeping or inactive, we go to the next body
+        if (body->isSleeping() || !body->isActive()) continue;
 
         // Reset the stack of bodies to visit
         uint stackIndex = 0;
@@ -784,6 +787,7 @@ void DynamicsWorld::computeIslands() {
             // Get the next body to visit from the stack
             stackIndex--;
             RigidBody* bodyToVisit = stackBodiesToVisit[stackIndex];
+            assert(bodyToVisit->isActive());
 
             // Awake the body if it is slepping
             bodyToVisit->setIsSleeping(false);
@@ -828,7 +832,7 @@ void DynamicsWorld::computeIslands() {
             for (jointElement = bodyToVisit->mJointsList; jointElement != NULL;
                  jointElement = jointElement->next) {
 
-                Constraint* joint = jointElement->joint;
+                Joint* joint = jointElement->joint;
 
                 // Check if the current joint has already been added into an island
                 if (joint->isAlreadyInIsland()) continue;

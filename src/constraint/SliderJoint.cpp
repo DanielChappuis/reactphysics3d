@@ -33,7 +33,7 @@ const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
 SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
-            : Constraint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
+            : Joint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
               mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
               mLowerLimit(jointInfo.minTranslationLimit),

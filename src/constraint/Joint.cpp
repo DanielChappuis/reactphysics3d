@@ -24,22 +24,21 @@
 ********************************************************************************/
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(const ConstraintInfo& constraintInfo)
-           :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
-            mType(constraintInfo.type),
-            mPositionCorrectionTechnique(constraintInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(constraintInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
+Joint::Joint(const JointInfo& jointInfo)
+           :mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
+            mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
+            mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 
     assert(mBody1 != NULL);
     assert(mBody2 != NULL);
 }
 
 // Destructor
-Constraint::~Constraint() {
+Joint::~Joint() {
 
 }

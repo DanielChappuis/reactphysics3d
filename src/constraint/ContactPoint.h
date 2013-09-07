@@ -27,7 +27,6 @@
 #define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
-#include "Constraint.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include "../mathematics/mathematics.h"
@@ -43,7 +42,7 @@ namespace reactphysics3d {
  * informations are used to compute the contact set for a contact
  * between two bodies.
  */
-struct ContactPointInfo : public ConstraintInfo {
+struct ContactPointInfo {
 
     private:
 
@@ -58,6 +57,12 @@ struct ContactPointInfo : public ConstraintInfo {
     public:
 
         // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the constraint
+        RigidBody* body1;
+
+        /// Second rigid body of the constraint
+        RigidBody* body2;
 
         /// Normal vector the the collision contact in world space
         const Vector3 normal;
@@ -76,7 +81,7 @@ struct ContactPointInfo : public ConstraintInfo {
         /// Constructor
         ContactPointInfo(const Vector3& normal, decimal penetrationDepth,
                          const Vector3& localPoint1, const Vector3& localPoint2)
-            : ConstraintInfo(CONTACT), normal(normal), penetrationDepth(penetrationDepth),
+            : normal(normal), penetrationDepth(penetrationDepth),
               localPoint1(localPoint1), localPoint2(localPoint2) {
 
         }
@@ -85,14 +90,19 @@ struct ContactPointInfo : public ConstraintInfo {
 // Class ContactPoint
 /**
  * This class represents a collision contact point between two
- * bodies in the physics engine. The ContactPoint class inherits from
- * the Constraint class.
+ * bodies in the physics engine.
  */
-class ContactPoint : public Constraint {
+class ContactPoint {
 
-    protected :
+    private :
 
         // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the contact
+        RigidBody* mBody1;
+
+        /// Second rigid body of the contact
+        RigidBody* mBody2;
 
         /// Normal vector of the contact (From body1 toward body2) in world space
         const Vector3 mNormal;
@@ -143,7 +153,13 @@ class ContactPoint : public Constraint {
         ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
-        virtual ~ContactPoint();
+        ~ContactPoint();
+
+        /// Return the reference to the body 1
+        RigidBody* const getBody1() const;
+
+        /// Return the reference to the body 2
+        RigidBody* const getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -209,20 +225,18 @@ class ContactPoint : public Constraint {
         decimal getPenetrationDepth() const;
 
         /// Return the number of bytes used by the contact point
-        virtual size_t getSizeInBytes() const;
-
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the position constraint
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        size_t getSizeInBytes() const;
 };
+
+// Return the reference to the body 1
+inline RigidBody* const ContactPoint::getBody1() const {
+    return mBody1;
+}
+
+// Return the reference to the body 2
+inline RigidBody* const ContactPoint::getBody2() const {
+    return mBody2;
+}
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {

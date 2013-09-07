@@ -77,7 +77,7 @@ class DynamicsWorld : public CollisionWorld {
         std::vector<ContactManifold*> mContactManifolds;
 
         /// All the joints of the world
-        std::set<Constraint*> mJoints;
+        std::set<Joint*> mJoints;
 
         /// Gravity vector of the world
         Vector3 mGravity;
@@ -143,6 +143,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Update the AABBs of the bodies
         void updateRigidBodiesAABB();
+
+        /// Reset the external force and torque applied to the bodies
+        void resetBodiesForceAndTorque();
 
         /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
@@ -232,13 +235,13 @@ public :
         void destroyRigidBody(RigidBody* rigidBody);
 
         /// Create a joint between two bodies in the world and return a pointer to the new joint
-        Constraint* createJoint(const ConstraintInfo& jointInfo);
+        Joint* createJoint(const JointInfo& jointInfo);
 
         /// Destroy a joint
-        void destroyJoint(Constraint* joint);
+        void destroyJoint(Joint* joint);
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
-        void addJointToBody(Constraint* joint);
+        void addJointToBody(Joint* joint);
 
         //// Add a contact manifold to the linked list of contact manifolds of the two bodies involed
         //// in the corresponding contact.
@@ -308,6 +311,17 @@ public :
         // TODO : REMOVE THIS
         uint getNbIslands() const {return mNbIslands;}
 };
+
+// Reset the external force and torque applied to the bodies
+inline void DynamicsWorld::resetBodiesForceAndTorque() {
+
+    // For each body of the world
+    std::set<RigidBody*>::iterator it;
+    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+        (*it)->mExternalForce.setToZero();
+        (*it)->mExternalTorque.setToZero();
+    }
+}
 
 // Start the physics simulation
 inline void DynamicsWorld::start() {

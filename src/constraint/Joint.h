@@ -35,11 +35,11 @@
 namespace reactphysics3d {
 
 // Enumeration for the type of a constraint
-enum ConstraintType {CONTACT, BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
+enum JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 
 // Class declarations
 struct ConstraintSolverData;
-class Constraint;
+class Joint;
 
 // Structure JointListElement
 /**
@@ -52,7 +52,7 @@ struct JointListElement {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the actual joint
-        Constraint* joint;
+        Joint* joint;
 
         /// Next element of the list
         JointListElement* next;
@@ -60,32 +60,32 @@ struct JointListElement {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        JointListElement(Constraint* initJoint, JointListElement* initNext)
+        JointListElement(Joint* initJoint, JointListElement* initNext)
                         :joint(initJoint), next(initNext){
 
         }
 };
 
-// Structure ConstraintInfo
+// Structure JointInfo
 /**
- * This structure is used to gather the information needed to create a constraint.
+ * This structure is used to gather the information needed to create a joint.
  */
-struct ConstraintInfo {
+struct JointInfo {
 
     public :
 
         // -------------------- Attributes -------------------- //
 
-        /// First rigid body of the constraint
+        /// First rigid body of the joint
         RigidBody* body1;
 
-        /// Second rigid body of the constraint
+        /// Second rigid body of the joint
         RigidBody* body2;
 
-        /// Type of the constraint
-        ConstraintType type;
+        /// Type of the joint
+        JointType type;
 
-        /// True if the two bodies of the constraint are allowed to collide with each other
+        /// True if the two bodies of the joint are allowed to collide with each other
         bool isCollisionEnabled;
 
         /// Position correction technique used for the constraint (used for joints).
@@ -93,46 +93,41 @@ struct ConstraintInfo {
         JointsPositionCorrectionTechnique positionCorrectionTechnique;
 
         /// Constructor
-        ConstraintInfo(ConstraintType constraintType)
+        JointInfo(JointType constraintType)
                       : body1(NULL), body2(NULL), type(constraintType),
                         positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {}
 
         /// Constructor
-        ConstraintInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, ConstraintType constraintType)
+        JointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, JointType constraintType)
                       : body1(rigidBody1), body2(rigidBody2), type(constraintType),
                         positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {
         }
 
         /// Destructor
-        virtual ~ConstraintInfo() {}
+        virtual ~JointInfo() {}
 
 };
 
-// Class Constraint
+// Class Joint
 /**
- * This abstract class represents a constraint in the physics engine.
- * A constraint can be a collision contact point or a joint for
- * instance.
+ * This abstract class represents a joint between two bodies.
  */
-class Constraint {
+class Joint {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first body of the constraint
+        /// Pointer to the first body of the joint
         RigidBody* const mBody1;
 
-        /// Pointer to the second body of the constraint
+        /// Pointer to the second body of the joint
         RigidBody* const mBody2;
 
-        /// True if the constraint is active
-        bool mActive;
-
-        /// Type of the constraint
-        const ConstraintType mType;
+        /// Type of the joint
+        const JointType mType;
 
         /// Body 1 index in the velocity array to solve the constraint
         uint mIndexBody1;
@@ -152,20 +147,20 @@ class Constraint {
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
-        Constraint(const Constraint& constraint);
+        Joint(const Joint& constraint);
 
         /// Private assignment operator
-        Constraint& operator=(const Constraint& constraint);
+        Joint& operator=(const Joint& constraint);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Constraint(const ConstraintInfo& constraintInfo);
+        Joint(const JointInfo& jointInfo);
 
         /// Destructor
-        virtual ~Constraint();
+        virtual ~Joint();
 
         /// Return the reference to the body 1
         RigidBody* const getBody1() const;
@@ -177,21 +172,21 @@ class Constraint {
         bool isActive() const;
 
         /// Return the type of the constraint
-        ConstraintType getType() const;
+        JointType getType() const;
 
-        /// Return true if the collision between the two bodies of the constraint is enabled
+        /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
 
         /// Return true if the joint has already been added into an island
         bool isAlreadyInIsland() const;
 
-        /// Return the number of bytes used by the constraint
+        /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const = 0;
 
-        /// Initialize before solving the constraint
+        /// Initialize before solving the joint
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
 
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        /// Warm start the joint (apply the previous impulse at the beginning of the step)
         virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
 
         /// Solve the velocity constraint
@@ -207,32 +202,32 @@ class Constraint {
 };
 
 // Return the reference to the body 1
-inline RigidBody* const Constraint::getBody1() const {
+inline RigidBody* const Joint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
-inline RigidBody* const Constraint::getBody2() const {
+inline RigidBody* const Joint::getBody2() const {
     return mBody2;
 }
 
-// Return true if the constraint is active
-inline bool Constraint::isActive() const {
-    return mActive;
+// Return true if the joint is active
+inline bool Joint::isActive() const {
+    return (mBody1->isActive() && mBody2->isActive());
 }
 
-// Return the type of the constraint
-inline ConstraintType Constraint::getType() const {
+// Return the type of the joint
+inline JointType Joint::getType() const {
     return mType;
 }
 
-// Return true if the collision between the two bodies of the constraint is enabled
-inline bool Constraint::isCollisionEnabled() const {
+// Return true if the collision between the two bodies of the joint is enabled
+inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }
 
 // Return true if the joint has already been added into an island
-inline bool Constraint::isAlreadyInIsland() const {
+inline bool Joint::isAlreadyInIsland() const {
     return mIsAlreadyInIsland;
 }
 

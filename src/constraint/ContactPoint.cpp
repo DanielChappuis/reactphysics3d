@@ -31,7 +31,8 @@ using namespace std;
 
 // Constructor
 ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
-             : Constraint(contactInfo), mNormal(contactInfo.normal),
+             : mBody1(contactInfo.body1), mBody2(contactInfo.body2),
+               mNormal(contactInfo.normal),
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnBody1(contactInfo.localPoint1),
                mLocalPointOnBody2(contactInfo.localPoint2),
@@ -48,25 +49,5 @@ ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
 
 // Destructor
 ContactPoint::~ContactPoint() {
-
-}
-
-// Initialize before solving the constraint
-void ContactPoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Warm start the constraint (apply the previous impulse at the beginning of the step)
-void ContactPoint::warmstart(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the velocity constraint
-void ContactPoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the position constraint
-void ContactPoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
 
 }

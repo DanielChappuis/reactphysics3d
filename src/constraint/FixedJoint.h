@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_FIXED_JOINT_H
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 #include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a fixed
  * joint. This structure will be used to create the actual fixed joint.
  */
-struct FixedJointInfo : public ConstraintInfo {
+struct FixedJointInfo : public JointInfo {
 
     public :
 
@@ -49,7 +49,7 @@ struct FixedJointInfo : public ConstraintInfo {
         /// Constructor
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
-                       : ConstraintInfo(rigidBody1, rigidBody2, FIXEDJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, FIXEDJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace){}
 };
 
@@ -58,7 +58,7 @@ struct FixedJointInfo : public ConstraintInfo {
  * This class represents a fixed joint that is used to forbid any translation or rotation
  * between two bodies.
  */
-class FixedJoint : public Constraint {
+class FixedJoint : public Joint {
 
     private :
 

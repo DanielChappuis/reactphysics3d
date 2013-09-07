@@ -29,7 +29,7 @@
 // Libraries
 #include "../memory/MemoryAllocator.h"
 #include "../body/RigidBody.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "ContactManifold.h"
 
 namespace reactphysics3d {
@@ -55,7 +55,7 @@ class Island {
         ContactManifold** mContactManifolds;
 
         /// Array with all the joints between bodies of the island
-        Constraint** mJoints;
+        Joint** mJoints;
 
         /// Current number of bodies in the island
         uint mNbBodies;
@@ -104,7 +104,7 @@ class Island {
         void addContactManifold(ContactManifold* contactManifold);
 
         /// Add a joint into the island
-        void addJoint(Constraint* joint);
+        void addJoint(Joint* joint);
 
         /// Return the number of bodies in the island
         uint getNbBodies() const;
@@ -122,7 +122,7 @@ class Island {
         ContactManifold** getContactManifold();
 
         /// Return a pointer to the array of joints
-        Constraint** getJoints();
+        Joint** getJoints();
 
         // TODO : REMOVE THIS
         uint getID() const {return mID;}
@@ -146,7 +146,7 @@ inline void Island::addContactManifold(ContactManifold* contactManifold) {
 }
 
 // Add a joint into the island
-inline void Island::addJoint(Constraint* joint) {
+inline void Island::addJoint(Joint* joint) {
     mJoints[mNbJoints] = joint;
     mNbJoints++;
 }
@@ -177,7 +177,7 @@ inline ContactManifold** Island::getContactManifold() {
 }
 
 // Return a pointer to the array of joints
-inline Constraint** Island::getJoints() {
+inline Joint** Island::getJoints() {
     return mJoints;
 }
 

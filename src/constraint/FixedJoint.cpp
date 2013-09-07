@@ -34,7 +34,7 @@ const decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
 FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
-           : Constraint(jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
+           : Joint(jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();

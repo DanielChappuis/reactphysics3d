@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a slider
  * joint. This structure will be used to create the actual slider joint.
  */
-struct SliderJointInfo : public ConstraintInfo {
+struct SliderJointInfo : public JointInfo {
 
     public :
 
@@ -71,7 +71,7 @@ struct SliderJointInfo : public ConstraintInfo {
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
-                       : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
@@ -82,7 +82,7 @@ struct SliderJointInfo : public ConstraintInfo {
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
-                       : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(false),
@@ -96,7 +96,7 @@ struct SliderJointInfo : public ConstraintInfo {
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
                         decimal initMotorSpeed, decimal initMaxMotorForce)
-                       : ConstraintInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(true),
@@ -109,7 +109,7 @@ struct SliderJointInfo : public ConstraintInfo {
 /**
  * This class represents a slider joint.
  */
-class SliderJoint : public Constraint {
+class SliderJoint : public Joint {
 
     private :
 

@@ -34,7 +34,7 @@ const decimal BallAndSocketJoint::BETA = decimal(0.2);
 
 // Constructor
 BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo)
-                   : Constraint(jointInfo), mImpulse(Vector3(0, 0, 0)) {
+                   : Joint(jointInfo), mImpulse(Vector3(0, 0, 0)) {
 
     // Compute the local-space anchor point for each body
     mLocalAnchorPointBody1 = mBody1->getTransform().getInverse() * jointInfo.anchorPointWorldSpace;

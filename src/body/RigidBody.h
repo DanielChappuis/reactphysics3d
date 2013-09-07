@@ -38,7 +38,7 @@ namespace reactphysics3d {
 
 // Class declarations
 struct JointListElement;
-class Constraint;
+class Joint;
 
 // Class RigidBody
 /**
@@ -103,7 +103,7 @@ class RigidBody : public CollisionBody {
         RigidBody& operator=(const RigidBody& body);
 
         /// Remove a joint from the joints list
-        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Constraint* joint);
+        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
 
     public :
 
@@ -136,18 +136,6 @@ class RigidBody : public CollisionBody {
 
         /// Set the inverse of the mass
         void setMassInverse(decimal massInverse);
-
-        /// Return the current external force of the body
-        Vector3 getExternalForce() const;
-
-        /// Set the current external force on the body
-        void setExternalForce(const Vector3& force);
-
-        /// Return the current external torque of the body
-        Vector3 getExternalTorque() const;
-
-        /// Set the current external torque of the body
-        void setExternalTorque(const Vector3& torque);
 
         /// Return the inverse of the mass of the body
         decimal getMassInverse() const;
@@ -197,6 +185,15 @@ class RigidBody : public CollisionBody {
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
 
+        /// Apply an external force to the body at its gravity center.
+        void applyForceToCenter(const Vector3& force);
+
+        /// Apply an external force to the body at a given point (in world-coordinates).
+        void applyForce(const Vector3& force, const Vector3& point);
+
+        /// Apply an external torque to the body.
+        void applyTorque(const Vector3& torque);
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
@@ -234,26 +231,6 @@ inline void RigidBody::setMassInverse(decimal massInverse) {
 // Get the inverse of the inertia tensor
 inline Matrix3x3 RigidBody::getInertiaTensorLocalInverse() const {
     return mInertiaTensorLocalInverse;
-}
-
-// Return the external force on the body
-inline Vector3 RigidBody::getExternalForce() const {
-    return mExternalForce;
-}
-
-// Set the external force on the body
-inline void RigidBody::setExternalForce(const Vector3& force) {
-    mExternalForce = force;
-}
-
-// Return the current external torque on the body
-inline Vector3 RigidBody::getExternalTorque() const {
-    return mExternalTorque;
-}
-
- // Set the current external torque on the body
-inline void RigidBody::setExternalTorque(const Vector3& torque) {
-    mExternalTorque = torque;
 }
 
 // Return the inverse of the mass of the body
@@ -365,6 +342,62 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
     }
 
     Body::setIsSleeping(isSleeping);
+}
+
+// Apply an external force to the body at its gravity center.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyForceToCenter(const Vector3& force) {
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    mExternalForce += force;
+}
+
+// Apply an external force to the body at a given point (in world-coordinates).
+/// If the point is not at the center of gravity of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force and torque
+    mExternalForce += force;
+    mExternalTorque += (point - mTransform.getPosition()).cross(force);
+}
+
+// Apply an external torque to the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyTorque(const Vector3& torque) {
+
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the torque
+    mExternalTorque += torque;
 }
 
 }
