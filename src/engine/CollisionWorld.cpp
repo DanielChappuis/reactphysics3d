@@ -34,6 +34,7 @@ using namespace std;
 // Constructor
 CollisionWorld::CollisionWorld()
                : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0) {
+
 }
 
 // Destructor

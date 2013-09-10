@@ -48,7 +48,7 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
                 mIslands(NULL), mNbBodiesCapacity(0),
                 mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
                 mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
-                mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {
+                mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP), mEventListener(NULL) {
 
 }
 
@@ -147,10 +147,10 @@ void DynamicsWorld::update() {
 
         // Update the AABBs of the bodies
         updateRigidBodiesAABB();
-
-        // Reset the external force and torque applied to the bodies
-        resetBodiesForceAndTorque();
     }
+
+    // Reset the external force and torque applied to the bodies
+    resetBodiesForceAndTorque();
 
     // Compute and set the interpolation factor to all the bodies
     setInterpolationFactorToAllBodies();
@@ -968,6 +968,13 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
     OverlappingPair* overlappingPair = mOverlappingPairs.find(indexPair)->second;
     assert(overlappingPair != NULL);
 
+    // If it is the first contact since the pair are overlapping
+    if (overlappingPair->getNbContactPoints() == 0) {
+
+        // Trigger a callback event
+        if (mEventListener != NULL) mEventListener->beginContact(*contactInfo);
+    }
+
     // Add the contact to the contact cache of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
@@ -978,6 +985,9 @@ void DynamicsWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
     // of the two bodies involved in the contact
     addContactManifoldToBody(overlappingPair->getContactManifold(), overlappingPair->mBody1,
                              overlappingPair->mBody2);
+
+    // Trigger a callback event for the new contact
+    if (mEventListener != NULL) mEventListener->newContact(*contactInfo);
 }
 
 // Enable/Disable the sleeping technique

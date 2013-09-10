@@ -23,40 +23,40 @@
 *                                                                               *
 ********************************************************************************/
 
-
-/********************************************************************************
-* ReactPhysics3D                                                                *
-* Version 0.3.0                                                                 *
-* http://code.google.com/p/reactphysics3d/                                      *
-* Daniel Chappuis                                                               *
-********************************************************************************/
-
-#ifndef REACTPHYSICS3D_H
-#define REACTPHYSICS3D_H
+#ifndef REACTPHYSICS3D_EVENT_LISTENER_H
+#define REACTPHYSICS3D_EVENT_LISTENER_H
 
 // Libraries
-#include "configuration.h"
-#include "mathematics/mathematics.h"
-#include "body/CollisionBody.h"
-#include "body/RigidBody.h"
-#include "engine/DynamicsWorld.h"
-#include "engine/CollisionWorld.h"
-#include "engine/Material.h"
-#include "engine/EventListener.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConeShape.h"
-#include "collision/shapes/CylinderShape.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
-#include "collision/shapes/AABB.h"
-#include "constraint/BallAndSocketJoint.h"
-#include "constraint/SliderJoint.h"
-#include "constraint/HingeJoint.h"
-#include "constraint/FixedJoint.h"
+#include "../constraint/ContactPoint.h"
 
-/// Alias to the ReactPhysics3D namespace
-namespace rp3d = reactphysics3d;
+namespace reactphysics3d {
+
+// Class EventListener
+/**
+ * This class can be used to receive event callbacks from the physics engine.
+ * In order to receive callbacks, you need to create a new class that inherits from
+ * this one and you must override the methods you need. Then, you need to register your
+ * new event listener class to the physics world using the DynamicsWorld::setEventListener()
+ * method.
+ */
+class EventListener {
+
+    public :
+
+        /// Constructor
+        EventListener() {}
+
+        /// Destructor
+        virtual ~EventListener() {}
+
+        /// Called when a new contact point is found between two bodies that were separated before
+        virtual void beginContact(const ContactPointInfo& contact) {}
+
+        /// Called when a new contact point is found between two bodies
+        virtual void newContact(const ContactPointInfo& contact) {}
+
+};
+
+}
 
 #endif

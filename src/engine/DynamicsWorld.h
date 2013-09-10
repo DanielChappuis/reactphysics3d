@@ -130,6 +130,9 @@ class DynamicsWorld : public CollisionWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
+        /// Pointer to an event listener object
+        EventListener* mEventListener;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -304,6 +307,9 @@ public :
 
         /// Set the time a body is required to stay still before sleeping
         void setTimeBeforeSleep(decimal timeBeforeSleep);
+
+        /// Set an event listener object to receive events callbacks.
+        void setEventListener(EventListener* eventListener);
 
         // TODO : REMOVE THIS
         Island** getIslands() { return mIslands;}
@@ -489,6 +495,13 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
     assert(timeBeforeSleep >= decimal(0.0));
     mTimeBeforeSleep = timeBeforeSleep;
 }
+
+// Set an event listener object to receive events callbacks.
+/// If you use NULL as an argument, the events callbacks will be disabled.
+inline void DynamicsWorld::setEventListener(EventListener* eventListener) {
+    mEventListener = eventListener;
+}
+
 
 }
 
