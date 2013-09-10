@@ -26,8 +26,10 @@
 // Librairies
 #include "TextureReaderWriter.h"
 #include <string>
-#include <jpeglib.h>
-#include <jerror.h>
+#ifdef USE_JPEG_TEXTURE
+    #include <jpeglib.h>
+    #include <jerror.h>
+#endif
 
 using namespace openglframework;
 using namespace std;
@@ -59,8 +61,7 @@ typedef struct {
 
 // Load a texture from a file
 void TextureReaderWriter::loadTextureFromFile(const std::string& filename,
-                                              Texture2D& textureToCreate)
-                                              throw(runtime_error, invalid_argument){
+                                              Texture2D& textureToCreate) {
 
     // Get the extension of the file
     uint startPosExtension = filename.find_last_of(".");
@@ -70,9 +71,11 @@ void TextureReaderWriter::loadTextureFromFile(const std::string& filename,
     if (extension == "tga") {
         readTGAPicture(filename, textureToCreate);
     }
+#ifdef USE_JPEG_TEXTURE
     else if (extension == "jpg" || extension == "jpeg"){
         readJPEGPicture(filename, textureToCreate);
     }
+#endif
     else {
 
         // Display an error message and throw an exception
@@ -84,9 +87,7 @@ void TextureReaderWriter::loadTextureFromFile(const std::string& filename,
 }
 
 // Write a texture to a file
-void TextureReaderWriter::writeTextureToFile(const std::string& filename,
-                                             const Texture2D& texture)
-                                             throw(runtime_error, invalid_argument){
+void TextureReaderWriter::writeTextureToFile(const std::string& filename,const Texture2D& texture) {
 
     // Get the extension of the file
     uint startPosExtension = filename.find_last_of(".");
@@ -96,9 +97,11 @@ void TextureReaderWriter::writeTextureToFile(const std::string& filename,
     if (extension == "tga") {
         writeTGAPicture(filename, texture);
     }
+#ifdef USE_JPEG_TEXTURE
     else if (extension == "jpg" || extension == "jpeg"){
         writeJPEGPicture(filename, texture);
     }
+#endif
     else {
 
         // Display an error message and throw an exception
@@ -110,8 +113,7 @@ void TextureReaderWriter::writeTextureToFile(const std::string& filename,
 }
 
 // Load a TGA picture
-void TextureReaderWriter::readTGAPicture(const std::string &filename,
-                                         Texture2D& textureToCreate) throw(runtime_error) {
+void TextureReaderWriter::readTGAPicture(const std::string &filename, Texture2D& textureToCreate) {
 
     // Open the file
     std::ifstream stream(filename.c_str(), std::ios::binary);
@@ -156,8 +158,7 @@ void TextureReaderWriter::readTGAPicture(const std::string &filename,
 
 
 // Write a TGA picture
-void TextureReaderWriter::writeTGAPicture(const std::string& filename,
-                                          const Texture2D& texture) throw(runtime_error) {
+void TextureReaderWriter::writeTGAPicture(const std::string& filename, const Texture2D& texture) {
     assert(texture.getID() != 0);
 
     // Bind the corresponding texture
@@ -219,9 +220,10 @@ void TextureReaderWriter::writeTGAPicture(const std::string& filename,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+#ifdef USE_JPEG_TEXTURE
+
 // Read a JPEG picture
-void TextureReaderWriter::readJPEGPicture(const std::string& filename,
-                                          Texture2D& textureToCreate) throw(std::runtime_error) {
+void TextureReaderWriter::readJPEGPicture(const std::string& filename, Texture2D& textureToCreate) {
 
     struct jpeg_decompress_struct info;
     struct jpeg_error_mgr error;
@@ -276,8 +278,7 @@ void TextureReaderWriter::readJPEGPicture(const std::string& filename,
 }
 
 // Write a JPEG picture
-void TextureReaderWriter::writeJPEGPicture(const std::string& filename,
-                                           const Texture2D& texture) throw(std::runtime_error) {
+void TextureReaderWriter::writeJPEGPicture(const std::string& filename, const Texture2D& texture) {
 
     struct jpeg_compress_struct info;
     struct jpeg_error_mgr error;
@@ -327,3 +328,5 @@ void TextureReaderWriter::writeJPEGPicture(const std::string& filename,
     // Free allocated memory
     delete[] data;
 }
+
+#endif

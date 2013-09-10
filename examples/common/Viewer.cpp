@@ -48,7 +48,7 @@ void Viewer::computeFPS() {
     if(timeInterval > 1000){
 
         //  calculate the number of frames per second
-        fps = nbFrames / (timeInterval / 1000.0f);
+        fps = static_cast<int>(nbFrames / (timeInterval / 1000.0f));
 
          //  Set time
          previousTime = currentTime;

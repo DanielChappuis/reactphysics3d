@@ -40,16 +40,16 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3 &pos
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, (mHeight + 2.0 * mRadius) / 3.0, 0,0,
+                                              0, (mHeight + 2.0f * mRadius) / 3.0f, 0,0,
                                               0, 0, mRadius, 0,
-                                              0, 0, 0, 1);
+                                              0, 0, 0, 1.0f);
 
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroy right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
     const rp3d::CapsuleShape collisionShape(mRadius, mHeight);
 
     // Compute the inertia tensor of the body using its collision shape

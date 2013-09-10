@@ -65,12 +65,13 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
                                           1 + i * (BOX_SIZE.y + 0.3f),
-                                          radius * sin(angle));
+                                          0);
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , CUBE_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
         cube->getRigidBody()->setIsMotionEnabled(true);
+        mMapBodyToBox.insert(std::make_pair<rp3d::RigidBody*, Box*>(cube->getRigidBody(), cube));
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -86,6 +87,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
     // The floor must be a non-moving rigid body
     mFloor->getRigidBody()->setIsMotionEnabled(false);
+
+    mMapBodyToBox.insert(std::make_pair<rp3d::RigidBody*, Box*>(mFloor->getRigidBody(), mFloor));
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
@@ -142,6 +145,15 @@ void Scene::simulate() {
 
         mFloor->updateTransform();
 
+        // Set the color of the awake/sleeping bodies
+        for (uint i=0; i<mBoxes.size(); i++) {
+            if (mBoxes[i]->getRigidBody()->isSleeping()) {
+                mBoxes[i]->setColor(Color(1, 0, 0, 1));
+            }
+            else {
+                mBoxes[i]->setColor(Color(0, 1, 0, 1));
+            }
+        }
     }
 }
 

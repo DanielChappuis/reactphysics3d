@@ -31,6 +31,7 @@ uniform vec3 light0SpecularColor;           // Light 0 specular color
 uniform float shininess;                    // Shininess
 uniform sampler2D texture;                  // Texture
 uniform bool isTexture;                     // True if we need to use the texture
+uniform vec4 vertexColor;                   // Vertex color
 
 // Varying variables
 varying vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
@@ -40,10 +41,11 @@ varying vec2 texCoords;                     // Texture coordinates
 void main() {
 
     // Compute the ambient term
-    vec3 ambient = lightAmbientColor;
+    //vec3 ambient = lightAmbientColor;
+    vec3 ambient = vertexColor.rgb + 0.0 * lightAmbientColor;
 
     // Get the texture color
-    vec3 textureColor = vec3(1);
+    vec3 textureColor = vertexColor.rgb;
     if (isTexture) textureColor = texture2D(texture, texCoords).rgb;
 
     // Compute the surface normal vector

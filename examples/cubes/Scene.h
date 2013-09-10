@@ -34,8 +34,8 @@
 // Constants
 const int NB_SPHERES = 20;                                    // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float CUBE_MASS = 1.0f;                               // Box mass in kilograms
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
+const float BOX_MASS = 1.0f;                               // Box mass in kilograms
 const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 
 // Class Scene
@@ -65,6 +65,9 @@ class Scene {
 
         /// True if the physics simulation is running
         bool mIsRunning;
+
+        // TODO : REMOVE THIS
+        std::map<rp3d::RigidBody*, Box*> mMapBodyToBox;
 
     public:
 

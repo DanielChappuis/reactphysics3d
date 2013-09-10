@@ -57,14 +57,10 @@ class MeshReaderWriter {
         // -------------------- Methods -------------------- //
 
         // Read a mesh from a file
-        static void loadMeshFromFile(const std::string& filename,
-                                     Mesh& meshToCreate)
-                                     throw(std::invalid_argument, std::runtime_error);
+        static void loadMeshFromFile(const std::string& filename, Mesh& meshToCreate);
 
         // Write a mesh to a file
-        static void writeMeshToFile(const std::string& filename,
-                                    const Mesh& meshToWrite)
-                                    throw(std::invalid_argument, std::runtime_error);
+        static void writeMeshToFile(const std::string& filename, const Mesh& meshToWrite);
 };
 
 // Class VertexMergingData

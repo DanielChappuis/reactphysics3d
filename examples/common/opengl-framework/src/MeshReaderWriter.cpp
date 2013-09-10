@@ -41,9 +41,7 @@ MeshReaderWriter::MeshReaderWriter() {
 }
 
 // Load a mesh from a file and returns true if the mesh has been sucessfully loaded
-void MeshReaderWriter::loadMeshFromFile(const std::string& filename,
-                                        Mesh& meshToCreate)
-                                        throw(std::invalid_argument, std::runtime_error) {
+void MeshReaderWriter::loadMeshFromFile(const std::string& filename, Mesh& meshToCreate) {
 
     // Get the extension of the file
     uint startPosExtension = filename.find_last_of(".");
@@ -64,9 +62,7 @@ void MeshReaderWriter::loadMeshFromFile(const std::string& filename,
 }
 
 // Write a mesh to a file
-void MeshReaderWriter::writeMeshToFile(const std::string& filename,
-                                       const Mesh& meshToWrite)
-                                       throw(std::invalid_argument, std::runtime_error) {
+void MeshReaderWriter::writeMeshToFile(const std::string& filename, const Mesh& meshToWrite) {
 
     // Get the extension of the file
     uint startPosExtension = filename.find_last_of(".");

@@ -246,7 +246,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
@@ -262,7 +262,7 @@ void Scene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
@@ -301,7 +301,7 @@ void Scene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
@@ -339,7 +339,7 @@ void Scene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
     mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
@@ -354,7 +354,7 @@ void Scene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
     mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);

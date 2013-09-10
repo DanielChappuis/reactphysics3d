@@ -69,7 +69,7 @@ class Texture2D {
 
         // Create the texture
         void create(uint width, uint height, uint internalFormat, uint format, uint type,
-                    void* data = NULL) throw(std::invalid_argument);
+                    void* data = NULL);
 
         // Destroy the texture
         void destroy();
