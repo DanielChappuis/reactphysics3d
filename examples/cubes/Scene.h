@@ -66,9 +66,6 @@ class Scene {
         /// True if the physics simulation is running
         bool mIsRunning;
 
-        // TODO : REMOVE THIS
-        std::map<rp3d::RigidBody*, Box*> mMapBodyToBox;
-
     public:
 
         // -------------------- Methods -------------------- //

@@ -157,11 +157,6 @@ void Box::render(openglframework::Shader& shader,
     shader.unbind();
 }
 
-// Set the color of the box
-void Box::setColor(openglframework::Color& color) {
-    mColor = color;
-}
-
 // Update the transform matrix of the box
 void Box::updateTransform() {
 

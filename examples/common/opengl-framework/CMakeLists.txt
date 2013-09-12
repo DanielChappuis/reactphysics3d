@@ -8,7 +8,7 @@ PROJECT(OPENGLFRAMEWORK)
 OPTION(USE_JPEG_TEXTURES "Select this if you want to use jpeg textures (libjpeg required)" OFF)
 
 # Where to find the module to find special packages/libraries
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Find OpenGL
 FIND_PACKAGE(OpenGL REQUIRED)
@@ -26,6 +26,30 @@ else()
    MESSAGE("GLEW not found")
 endif()
 
+# Find the GLUT/FREEGLUT library
+IF(APPLE)
+	
+	# Find the GLUT library
+	FIND_PACKAGE(GLUT REQUIRED)
+	IF(GLUT_FOUND)
+   		MESSAGE("GLUT found")
+	ELSE(GLUT_FOUND)
+   		MESSAGE(SEND_ERROR "GLUT not found")
+    ENDIF(GLUT_FOUND)
+
+ELSE(APPLE)
+
+ 	# Find the FREEGLUT library
+	FIND_PACKAGE(FREEGLUT REQUIRED)
+	IF(FREEGLUT_FOUND)
+   		MESSAGE("FREEGLUT found")
+		ADD_DEFINITIONS(-DUSE_FREEGLUT)
+	ELSE(FREEGLUT_FOUND)
+   		MESSAGE(SEND_ERROR "FREEGLUT not found")
+    ENDIF(FREEGLUT_FOUND)
+
+ENDIF(APPLE)
+
 # If the user wants to use JPEG textures
 if(USE_JPEG_TEXTURES)
 
@@ -38,11 +62,8 @@ if(USE_JPEG_TEXTURES)
     endif()
 endif()
 
-# Freeglut
-add_subdirectory(freeglut)
-
 # Headers
-INCLUDE_DIRECTORIES(src freeglut ${JPEG_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(src ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_PATH} ${FREEGLUT_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${JPEG_INCLUDE_DIR})
 
 if(USE_JPEG_TEXTURES)
     add_definitions(-DUSE_JPEG_TEXTURE)
@@ -62,4 +83,4 @@ ADD_LIBRARY (
    ${OPENGLFRAMEWORK_SOURCES_FILES}
 )
 
-TARGET_LINK_LIBRARIES(openglframework ${GLEW_LIBRARIES} ${OPENGL_LIBRARY} freeglut_static)
+TARGET_LINK_LIBRARIES(openglframework ${GLEW_LIBRARIES} ${OPENGL_LIBRARY} ${FREEGLUT_LIBRARY} ${GLUT_LIBRARY})

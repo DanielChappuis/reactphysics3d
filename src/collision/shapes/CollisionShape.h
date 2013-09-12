@@ -28,6 +28,7 @@
 
 // Libraries
 #include <cassert>
+#include <typeinfo>
 #include "../../mathematics/Vector3.h"
 #include "../../mathematics/Matrix3x3.h"
 #include "AABB.h"

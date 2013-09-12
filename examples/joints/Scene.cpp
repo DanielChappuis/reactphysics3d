@@ -166,8 +166,8 @@ void Scene::render() {
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    Color& diffCol = mLight0.getDiffuseColor();
-    Color& specCol = mLight0.getSpecularColor();
+    const Color& diffCol = mLight0.getDiffuseColor();
+    const Color& specCol = mLight0.getSpecularColor();
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
