@@ -4,8 +4,11 @@ cmake_minimum_required(VERSION 2.6)
 # Project configuration
 PROJECT(Joints)
 
+# Where to build the executable
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/joints/)
+
 # Copy the shaders used for the demo into the build directory
-FILE(COPY "../common/opengl-framework/src/shaders/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
+FILE(COPY "../common/opengl-framework/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 
 # Headers
 INCLUDE_DIRECTORIES("../common/opengl-framework/src/" "../common/")
