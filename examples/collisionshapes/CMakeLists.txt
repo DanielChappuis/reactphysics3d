@@ -8,16 +8,31 @@ PROJECT(CollisionShapes)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/collisionshapes/)
 
 # Copy the shaders used for the demo into the build directory
-FILE(COPY "../common/opengl-framework/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
+FILE(COPY "${OPENGLFRAMEWORK_DIR}/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 
 # Copy the meshes used for the demo into the build directory
 FILE(COPY "../common/meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("../common/opengl-framework/src/" "../common/")
+INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/")
 
-# Create the example executable using the
-# compiled reactphysics3d static library
-ADD_EXECUTABLE(collisionshapes CollisionShapes.cpp Scene.cpp Scene.h "../common/VisualContactPoint.cpp" "../common/ConvexMesh.cpp" "../common/Capsule.cpp" "../common/Sphere.cpp" "../common/Cylinder.cpp" "../common/Cone.cpp" "../common/Box.cpp" "../common/Viewer.cpp")
+# Source files
+SET(COLLISION_SHAPES_SOURCES
+    CollisionShapes.cpp
+    Scene.cpp
+    Scene.h
+    "../common/VisualContactPoint.cpp"
+    "../common/ConvexMesh.cpp"
+    "../common/Capsule.cpp"
+    "../common/Sphere.cpp"
+    "../common/Cylinder.cpp"
+    "../common/Cone.cpp"
+    "../common/Box.cpp"
+    "../common/Viewer.cpp"
+)
 
+# Create the executable
+ADD_EXECUTABLE(collisionshapes ${COLLISION_SHAPES_SOURCES})
+
+# Link with libraries
 TARGET_LINK_LIBRARIES(collisionshapes reactphysics3d openglframework)
