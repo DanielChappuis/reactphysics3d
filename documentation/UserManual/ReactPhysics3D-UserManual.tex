@@ -9,8 +9,28 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{url}
-\usepackage{color}
+\usepackage[usenames]{xcolor}
 \usepackage[top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+
+% Path to the pictures
+\graphicspath{ {images/} }
+
+% Customized style to display c++ source code
+\lstdefinestyle{customcpp}{
+  backgroundcolor=\color{gray!15},
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C++,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+\lstset{style=customcpp}
 
 \input{title}
 
@@ -36,156 +56,603 @@
    \begin{itemize}
     \item Rigid body dynamics 
     \item Discrete collision detection 
-    \item Collision shapes (Sphere, Box, Cone, Cylinder) 
+    \item Collision shapes (Sphere, Box, Cone, Cylinder, Capsule, Convex Mesh) 
     \item Broadphase collision detection (Sweep and Prune using AABBs) 
     \item Narrowphase collision detection (GJK/EPA) 
     \item Collision response and friction (Sequential Impulses Solver)
+    \item Joints (Ball and Socket, Hinge, Slider, Fixed)
+    \item Sleeping technique for inactive bodies
+    \item Integrated Profiler 
     \item Multi-platform (Windows, Linux, Mac OS X)
     \item Documentation (User manual and Doxygen API)
+    \item Examples
     \item Unit tests
-   \end{itemize}
-
-  \section{What's new in this version}
-
-  The current version is version 0.3.0 The following things have been
-  added or improved in this new version : \\
-   
-  \begin{itemize}
-    \item The Sweep-and-Prune broad-phase collision detection
-      algorithm has been rewritten according to the technique
-      described by Pierre Terdiman at
-      \url{http://www.codercorner.com/SAP.pdf} to be much more efficient
-      than the previous naive implementation.
-    \item The contact solver has been rewritten to use the Sequential
-      Impulses technique from Erin Catto which is mathematically
-      equivalent to the Projected Gauss Seidel technique that was used
-      before. The Sequential Impulse technique is more
-      intuitive.
-    \item Implementation of a dedicated collision detection algorithm for spheres
-      against spheres instead of using GJK/EPA algorithm.
-    \item Make GJK/EPA algorithm more robust for spheres.
-    \item Make possible to use a unique instance of a collision shape
-      for multiple rigid bodies.
-    \item Change the structure of the code for a better separation
-      between the collision detection and the dynamics simulation code.
-    \item Create the API documentation using Doxygen
-    \item Add Unit tests
    \end{itemize}
 
     \section{License}
 
-    The ReactPhysics3D library is released under the ZLib license. For more information, read the "LICENSE" file.
+    The ReactPhysics3D library is released under the open-source ZLib license. For more information, read the "LICENSE" file.
 
-    \section{Compilation}
-    \label{sec:compilation}
+    \section{Building the library}
+    \label{sec:building}
 
-    You can use the CMake software to generate the makefiles or the 
+    You should use the CMake software to generate the makefiles or the 
     project files for your IDE. CMake can be downloaded at
     \url{http://www.cmake.org} or using you package-management program
     (apt, yum, \dots) on Linux. Then, you will be able to compile the library to create the static library
-    file. In order to use ReactPhysics3D in
-    your application, you can link your program with this static library.
+    file. In order to use ReactPhysics3D in your application, you can link your program with this static library.
+    If you have never runned cmake, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
+    it contains many useful information.
 
-    \subsection{Linux and Mac OS X}  
+    \subsection{CMake using the command line (Linux and Mac OS X)}  
 
-    To build the ReactPhysics3D library, create a folder into which
-    you want to build the library. Then go into that folder and run
-    the \texttt{cmake} command : \\
+    Now, we will see how to build the ReactPhysics3D library using the CMake tool on the command line.
+    First, create a folder into which you want to build the library. Then go into that folder and run
+    the \texttt{ccmake} command : \\
 
-    \texttt{cmake \textless path\_to\_library\textgreater \ -G "Unix Makefiles" -DCMAKE\_BUILD\_TYPE=Release} \\
+    \texttt{ccmake \textless path\_to\_library\_source\textgreater} \\
 
-    where \texttt{\textless path\_to\_library\textgreater} must be replaced
-    by the path to the library which is the path to the
-    \texttt{reactphysics3d-0.3.0/} folder. It is the folder that
-    contains the \texttt{CMakeLists.txt} file. This will generate the
-    makefiles into your build directory you have created before. Notice that the previous command generates the makefiles to
-    compile the library in Release mode. If you wan to generate the makefiles to
-    compile in Debug mode, you will have to use the following command : \\
+    where \texttt{\textless path\_to\_library\_source\textgreater} must be replaced
+    by the path the path to the \texttt{reactphysics3d-0.4.0/} folder. It is the folder that
+    contains the \texttt{CMakeLists.txt} file. Running this command will launch the CMake command line interface.
+    Hit the 'c' key to configure the project. There, you can also change some predefined variables (see section \ref{sec:cmakevariables} for more details)
+    and then, hit the 'c' key again. Once you have set all the values as you like, you can hit the 'g' key to generate the makefiles in the build directory
+    that you have created before and exit. \\
 
-    \texttt{cmake \textless path\_to\_library\textgreater \ -G "Unix Makefiles" -DCMAKE\_BUILD\_TYPE=Debug} \\
-
-   If you also want to build the examples at the same time, you can
-   use the following command :  \\
-
-   \texttt{cmake \textless path\_to\_library\textgreater \ -G "Unix Makefiles" -DCMAKE\_BUILD\_TYPE=Release \\
-     -DCOMPILE\_EXAMPLES=True } \\
-
-  In order to compile the examples, the GLUT or FREEGLUT library needs to be
-  installed on your system if you use Mac OS X. \\
-
-  If you want to build the unit tests, you can use the following
-  command : \\
-
-  \texttt{cmake \textless path\_to\_library\textgreater \ -G "Unix Makefiles" -DCMAKE\_BUILD\_TYPE=Debug \\
-     -DCOMPILE\_TESTS=True } \\
-
-  Now that you have generated the makefiles with the CMake software,
-  you can compile the code to build the static library in the
-  \texttt{/lib} folder with the following command in your build directory : \\
+    Now that you have generated the makefiles with the CMake software, you can compile the code to build the static library in the
+    \texttt{/lib} folder with the following command in your build directory : \\
     
-    \texttt{make}  \\
+    \texttt{make}
 
-   This will also compile the examples if you have used the above
-   option to do it.
+    \subsection{CMake using the graphical interface (Linux, Mac OS X and Windows)}
 
-    \subsection{Windows}
-
-     On Windows, you can also use the CMake software to generate the
-     files that you will be able to use in your favorite IDE to
-     compile the library and examples. \\ 
-
-     First, download the CMake
-     software for Windows and install it. Then, run the
-     \texttt{cmake-gui} program. The program will ask you for the
-     source folder which is the \texttt{reactphysics3d-0.3.0/} folder of
+     Here, we will see how to build the ReactPhysics3D library using the CMake graphical interface. 
+     First, run the \texttt{cmake-gui} program. The program will ask you for the
+     source folder which is the \texttt{reactphysics3d-0.4.0/} folder of
      the library. You will also have to select a folder where you want to
      build the library and the examples. Select any empty folder that
-     is on your system. Then, you can click on
-     \texttt{Configure}. CMake will ask you to choose an IDE that is on
-     your system. For instance, you can select Visual Studio. Then you
-     can change the compilation options. For instance, if you want to
-     generate the files to compile the examples, you have to check the option
-     \texttt{COMPILE\_EXAMPLES}. If you want to compile the unit
-     tests, you need to check the option \texttt{COMPILE\_TESTS}.
-     Note that compiling the examples
-     requires the GLUT or FREEGLUT library to be installed on your system. Once
-     this is done, you can click on \texttt{Configure} again and
-     finally on \texttt{Generate}. \\ 
+     is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to choose an IDE that is on
+     your system. For instance, you can select Visual Studio, Qt Creator, XCode, ... Then you
+     can change the compilation options. See section \ref{sec:cmakevariables} to see what are the possible options.
+     Once this is done, you can click on \texttt{Configure} again and finally on \texttt{Generate}. \\ 
     
      Now, if you go into the folder you have chosen to build the
-     library, you should be able to open the
-     Visual Studio Project that CMake has created and compile the
-     ReactPhysics3D library and the examples. 
+     library, you should be able to open the project file that corresponds to your IDE and compile
+     the library.
+
+     \subsection{CMake Variables}
+     \label{sec:cmakevariables}
+
+     You can find bellow the different CMake variables that you can set before generating the makefiles.
+
+       \begin{description}
+         \item[CMAKE\_BUILD\_TYPE] If this variable is set to DEBUG, the library will be compiled in debugging mode.
+                                                    This mode should be used during development stage to know where things might crash.
+                                                    In debugging mode, the library might run a bit slow due to all the debugging information
+                                                    that are used. However, if this variable is set to RELEASE, no debugging information is stored
+                                                    and therefore, it will run much faster. This mode must be used when you compile for the final
+                                                    release of you application.
+                                                   
+         \item[COMPILE\_EXAMPLES] If this variable is ON, the examples of the reactphysics3d library will be compiled.
+                                                    Note that you will need to have the Freeglut library installed on your system if you use
+                                                    Windows or Linux and you will need to have the Glut library on Mac OS X if you want to
+                                                    run those examples.
+
+         \item[COMPILE\_TESTS] If this variable is ON, the unit tests of the reactphysics3d library will be compiled. You will then
+                                             be able to launch the tests to make sure that they are running fine on your system.
+
+          \item[PROFILING\_ENABLED] If this variable is ON, the integrated profiler will collect data will the application is running
+                                                      and the profiling report will be display on the console at the end of the application (in the
+                                                      destructor of the DynamicsWorld). This might be useful to see what part of the reactphysics3d
+                                                      library takes time during its execution. This variable must be set to OFF when you compile
+                                                      for the final release of your application.
+
+          \item[DOUBLE\_PRECISION\_ENABLED] If this variable is ON, the reactphysics3d library will be compile with double floating point precision.
+                                                                    Otherwise, the library will be compile with single precision.
+       \end{description}
+       
 
     \section{Using ReactPhysics3D in your application}
 
     In order to use the library in your own application, first build
     the static library of ReactPhysics3d as described above to get the
-    static library file in the \texttt{/lib} folder. Then, in your code, you have to include
+    static library file in the \texttt{lib/} folder. Then, in your code, you have to include
     the ReactPhysics3D header file with the line : \\
 
-    \texttt{\#include "reactphysics3d.h"} \\
+    \begin{lstlisting}
+     // Include the ReactPhysics3D header file
+     #include "reactphysics3d.h"
+  \end{lstlisting}
+   
+    \vspace{0.6cm}
 
     Note that the \texttt{reactphysics3d.h} header file can be found in the
-    \texttt{/src} folder of the library. Do not forget to add the
-    \texttt{/src} folder in your include directories in order that the
+    \texttt{src/} folder of the library. Do not forget to add the
+    \texttt{src/} folder in your include directories in order that the
     \texttt{reactphysics3d.h} file is accessible in your code. \\
 
-    Don't forget to also link your application with the ReactPhysics3D
+    Do not forget to also link your application with the ReactPhysics3D
     static library.  \\
   
     Then, you should be able to compile your application using the
-    ReactPhysics3D library. You should also take a look at the
-    examples and the API documentation to get a better idea of how to use the
+    ReactPhysics3D library. \\
+
+    All the classes of the library are available in the \texttt{reactphysics3d} namespace or its shorter alias
+    \texttt{rp3d}. Therefore, you need to include this namespace into your code with the following declaration : \\
+
+    \begin{lstlisting}
+     // Use the ReactPhysics3D namespace
+     using namespace reactphysics3d;
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    You should also take a look at the examples and the API documentation to get a better idea of how to use the
     ReactPhysics3D library.
+
+    \section{The Physics World}
+
+    The physics world will contain the bodies that you create and simulate them across time.
+
+    \subsection{Creating the Physics World}
+
+    \subsection{Customizing the Physics World}
+
+    \subsection{Updating the Physics World}
+
+    \subsection{Destroying the Physics World}
+
+    \section{Rigid Bodies}
+
+    \subsection{Creating a Rigid Body}
+
+    \subsection{Customizing a Rigid Body}
+
+    \subsection{Updating a Rigid Body}
+
+    \subsection{Destroying a Rigid Body}
+
+    \section{Collision Shapes}
+
+    When you create a rigid body, you need to specify a collision shape. This shape will be used to test collision between the body and its environment.
+    This section describes all the collision shapes available in the ReactPhysics3D library and how to use them. \\
+
+    Every collision shapes use a \emph{collision margin} which is a small distance around the shape that is used internally in the collision detection.
+    Some collision shapes have their collision margin integrated into the shape that you define and therefore you do not have to worry about it.
+    However, for some collision shapes, the collision margin is added around the shape that you define and therefore, you might have to compensate
+    for this small margin with the way you render the object. \\
+
+    Once you have created a collision shape object, you need to used it when you create a rigid body in the physics world using the
+    \texttt{DynamicsWorld::createRigidBody()} method. Note that during the rigid body creating, the collision shape object that you gave as a parameter
+    will be copied internally. Therefore, you can destroy the collision shape object right after the rigid body creation.
+
+    \subsection{Box Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{boxshape.png}
+        \label{fig:boxshape}
+    \end{figure}
+
+    The class \texttt{BoxShape} class describes a box collision shape centered at the origin of the body local space. The box is aligned with the local x, y and z axis.
+    In order to create a box shape, you only need to specify the three half extents dimensions of the box in the three X, Y and Z directions. \\
+
+    For instance, if you want to create a box shape with dimensions of 4 meters, 6 meters and 10 meters along the X, Y and Z axis respectively, you need to use the following code : \\
+
+    \begin{lstlisting}
+     // Half extents of the box in the x, y and z directions
+     const rp3d::Vector3 halfExtents(2.0, 3.0, 5.0);
+
+     // Create the box shape
+     const rp3d::BoxShape boxShape(halfExtents);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    The \texttt{BoxShape} has a collision margin that is added to the box dimension you define. Therefore, the actual box shape will be a little bit larger that the one you define.
+    It is recommended that you use the default margin. In case, you really need to change the collision margin of your box shape (if the dimension of your box is small compared
+    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a second parameter of the BoxShape constructor. \\
+
+    For instance, if you want to use a collision margin of 1 centimeter for your box shape, you can do it like this : \\
+
+   \begin{lstlisting}
+     // Create the box shape with a custom collision margin
+     const rp3d::BoxShape boxShape(halfExtents, 0.01);
+  \end{lstlisting}
+
+    \subsection{Sphere Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{sphereshape.png}
+        \label{fig:sphereshape}
+    \end{figure}
+
+    The \texttt{SphereShape} class describes a sphere collision shape centered at the origin of the body local space. You only need to specify the radius of sphere to create it. \\
+
+    For instance, if you want to create a sphere shape with a radius of 2 meters, you need to use the following code : \\
+
+    \begin{lstlisting}
+     // Create the sphere shape with a radius of 2m
+     const rp3d::SphereShape sphereShape(2.0);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    The collision margin of the \texttt{SphereShape} is integrated into the sphere you define. Therefore, you do not need to worry about it and you cannot change it.
+
+    \subsection{Cone Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{coneshape.png}
+        \label{fig:coneshape}
+    \end{figure}
+
+    The \texttt{ConeShape} class describes a cone collision shape centered at the origin of the body local-space. The cone is aligned along the Y axis.
+    In order to create a cone shape, you need to give the radius of the base of the cone and the height of the cone (along the Y axis). \\
+
+    For instance, if you want to create a cone shape with a radius of 1 meter and the height of 3 meters, you need to use the following code : \\
+
+    \begin{lstlisting}
+     // Create the cone shape
+     const rp3d::ConeShape coneShape(1.0, 3.0);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    The \texttt{ConeShape} has a collision margin that is added to the cone dimension that you define. Therefore, the actual cone shape will be a little bit larger that the one you define.
+    It is recommended that you use the default margin. In case, you really need to change the collision margin of your cone shape (if the dimension of your cone is small compared
+    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a third parameter of the \texttt{ConeShape} constructor. \\
+
+    For instance, if you want to use a collision margin of 1 centimeter for your cone shape, you can do it like this : \\
+
+   \begin{lstlisting}
+     // Create the cone shape with a custom collision margin
+     const rp3d::ConeShape coneShape(1.0, 3.0, 0.01);
+  \end{lstlisting}
+
+    \subsection{Cylinder Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{cylindershape.png}
+        \label{fig:cylindershape}
+    \end{figure}
+
+    The \texttt{CylinderShape} class describes a cylinder collision shape centered at the origin of the body local-space. The cylinder is aligned along the Y axis.
+    In order to create a cylinder shape, you need to specify the radius of the base and the height of the cylinder (along the Y axis). \\
+
+    For instance, if you want to create a cylinder shape with a radius of 1 meter and the height of 3 meters, you need to use the following code : \\
+
+    \begin{lstlisting}
+     // Create the cylinder shape
+     const rp3d::Cylinder cylinderShape(1.0, 3.0);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    The \texttt{CylinderShape} has a collision margin that is added to the cylinder dimension that you define. Therefore, the actual cylinder shape will be a little bit larger that the one you define.
+    It is recommended that you use the default margin. In case, you really need to change the collision margin of your cylinder shape (if the dimension of your cylinder is small compared
+    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a third parameter of the \texttt{CylinderShape} constructor. \\
+
+    For instance, if you want to use a collision margin of 1 centimeter for your cylinder shape, you can do it like this : \\
+
+   \begin{lstlisting}
+     // Create the cylinder shape with a custom collision margin
+     const rp3d::CylinderShape cylinderShape(1.0, 3.0, 0.01);
+  \end{lstlisting}
+
+    \subsection{Capsule Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{capsuleshape.png}
+        \label{fig:capsuleshape}
+    \end{figure}
+
+    The \texttt{CapsuleShape} class describes a capsule collision shape around the Y axis and centered at the origin of the body local space. It is the convex hull of two
+    spheres. It can also be seen as an elongated sphere. In order to create it, you only need to specify the radius of the two spheres and the height of the
+    capsule (distance between the centers of the two spheres).  \\
+
+    For instance, if you want to create a capsule shape with a radius of 1 meter and the height of 2 meters, you need to use the following code : \\
+
+    \begin{lstlisting}
+     // Create the capsule shape
+     const rp3d::CapsuleShape capsuleShape(1.0, 2.0);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    As for the \texttt{SphereShape}, the collision margin of the \texttt{CapsuleShape} is integrated into the capsule you define.
+    Therefore, you do not need to worry about it and you cannot change it.
+
+    \subsection{Convex Mesh Shape}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics{convexshape.png}
+        \label{fig:convexshape}
+    \end{figure}
+
+    The class \texttt{ConvexMeshShape} can be used to describe the shape of a convex mesh. In order to create a convex mesh shape, you need to supply the array with the coordinates of
+    the vertices of the mesh. The array is supposed to start with the three X, Y and Z coordinates of the first vertex, then the X, Y and Z coordinates of the second vertex and so on.
+    The first parameter of the \texttt{ConvexMeshShape} constructor is a pointer to the array of vertices coordinates, the second parameter is the number of vertices in the array and
+    the third parameter is the size (in bytes) of the data needed for a single vertex in the array (data used by all the three coordinates of a single vertex).
+
+    \begin{lstlisting}
+    // Construct a convex mesh shape
+    rp3d::ConvexMeshShape shape(verticesArray, nbVertices, 3 * sizeof(float));
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    You need to make sure that the mesh you provide is indeed convex and also that the its origin of its local-space is inside the mesh. \\
+
+    The collision detection test with a convex mesh shape runs in $O(n)$ where $n$ is the number of vertices in the mesh. Collision detection can become expensive if there are
+    too many vertices in the mesh. It is possible to speed up the collision detection by providing information about the edges of the convex mesh. If you provide edges information
+    about the convex mesh, the collision detection will run in almost constant time at the cost of a little extra memory to store the edges information. In order to provide the edges
+    information, you need to call the \texttt{ConvexMeshShape::addEdge()} method for each edge of the mesh. The first parameter is the index of the first vertex of the edge and the
+    second parameter is the index of the second vertex. Do not worry about calling this method multiple times for the same edge, the edge information will be added only
+    once. \\
+
+    For instance, the following code adds the edges information into a convex mesh shape : \\
+
+    \begin{lstlisting}
+    // Add the edges information of the mesh into the shape
+    for (unsigned int i=0; i<mesh.getNbFaces(); i++) {
+
+        // Get the three vertex IDs of the vertices of the face
+        unsigned int v1 = getVertexIndexInFace(i, 0);
+        unsigned int v2 = getVertexIndexInFace(i, 1);
+        unsigned int v3 = getVertexIndexInFace(i, 2);
+
+        // Add the three edges into the collision shape
+        convexShape.addEdge(v1, v2);
+        convexShape.addEdge(v1, v3);
+        convexShape.addEdge(v2, v3);
+    }
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Do not forget to enable the fast collision detection by asking the collision shape to use the edges information you have just provided. To do this, you need to
+    call the \texttt{ConvexMeshShape::setIsEdgesInformation()} method as in the following example : \\
+
+     \begin{lstlisting}
+    // Enable the fast collision detection
+    // using the edges information
+    collisionShape.setIsEdgesInformationUsed(true);
+  \end{lstlisting}
+
+    \subsection{Inertia Tensor of a Collision Shape}
+
+    When you create a rigid body, you need to specify its inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is distributed inside the rigid body and this
+    will be used to calculate the rotation of the body. The inertia tensor depends on the mass and the shape of the body. \\
+
+    You can use the collision shape of a rigid body to compute its inertia tensor. To do that, you need to use the \texttt{CollisionShape::computeLocalInertiaTensor()} method of your collision
+    shape. This method takes two parameters. The first one if the inertia tensor matrix that need to be computed and the second one is the mass of the rigid body (in kilograms). For instance,
+    if you want to compute the inertia tensor matrix of a capsule shape with a mass of 3 kilograms, here is what the code looks like : \\
+
+    \begin{lstlisting}
+     // Compute the inertia tensor of a rigid body
+    rp3d::Matrix3x3 inertiaTensor;
+    capsuleShape.computeLocalInertiaTensor(inertiaTensor, 3.0);
+  \end{lstlisting}
+
+    \section{Joints}
+
+    Joints are used to constraint the motion of the rigid bodies between each other. A single joint represents a constraint between two rigid bodies.
+    When the motion of the first body of the joint is known, the relative motion of the second body has at most six degrees of freedom (three for the
+    translation and three for the rotation). The different joints can reduce the number of degrees of freedom between two rigid bodies. \\
+
+    Some joints have limits to control the range of motion and some joints have motors to automatically move the the bodies of the joint at a given speed. \\
+    
+    \subsection{Ball and Socket Joint}
+
+    The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot translate with respect to each other.
+    However, they can rotate freely around a common anchor point. This joint has three degrees of freedom. This joint can be used to simulate a chain of bodies for instance. \\
+
+    In order to create a ball and socket joint, you first need to create an object of the \texttt{BallAndSocketJointInfo} class with the necessary information. You need to provide the pointers to the
+    two rigid bodies and also the coordinates of the anchor point (in world-space). At the joint creation, the world-space anchor point will be converted into the local-space of the two rigid
+    bodies and then, the joint will make sure that the two local-space anchor points match in world-space. Therefore, the two bodies need to be in a correct position at the joint creation. \\
+
+    Here is the code to create the \texttt{BallAndSocketJointInfo} object : \\
+
+    \begin{lstlisting}
+     // Anchor point in world-space
+     const rp3d::Vector3 anchorPoint(2.0, 4.0, 0.0);
+
+     // Create the joint info object
+     rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPoint);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Now, it is time to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Note that this method will also return a pointer to the \texttt{BallAndSocketJoint} object that has been created internally. You will then
+    be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
+
+    Here is how to create the joint in the world : \\
+
+    \begin{lstlisting}
+     // Create the joint in the dynamics world
+     rp3d::BallAndSocketJoint* joint;
+     joint = dynamic_cast<rp3d::BallAndSocketJoint*>(world->createJoint(jointInfo));
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    \subsection{Hinge Joint}
+
+    The class \texttt{HingeJoint} describes a hinge joint (or revolute joint) between two rigid bodies. The hinge joint only allows rotation around an anchor point and
+    around a single axis (the hinge axis). This joint can be used to simulate doors or pendulums for instance. \\
+
+    In order to create a hinge joint, you first need to create a \texttt{HingeJointInfo} object with the necessary information. You need to provide the pointers to the
+    two rigid bodies, the coordinates of the anchor point (in world-space) and also the hinge rotation axis (in world-space). The two bodies need to be in a correct position
+    when the joint is created. \\
+
+    Here is the code to create the \texttt{HingeJointInfo} object : \\
+
+    \begin{lstlisting}
+     // Anchor point in world-space
+     const rp3d::Vector3 anchorPoint(2.0, 4.0, 0.0);
+
+     // Hinge rotation axis in world-space
+     const rp3d::Vector3 axis(0.0, 0.0, 1.0);
+
+     // Create the joint info object
+     rp3d::HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Now, it is time to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Note that this method will also return a pointer to the \texttt{HingeJoint} object that has been created internally. You will then
+    be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
+
+    Here is how to create the joint in the world : \\
+
+    \begin{lstlisting}
+     // Create the hinge joint in the dynamics world
+     rp3d::HingeJoint* joint;
+     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+  \end{lstlisting}
+
+     \vspace{0.6cm}
+
+     \subsubsection{Limits}
+
+     With the hinge joint, you can constraint the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of rotation allowed with respect to the initial
+     angle between the bodies when the joint is created. The limits are disabled by default. If you want to use the limits, you first need to enable them by setting the
+     \texttt{isLimitEnabled} variable of the \texttt{HingeJointInfo} object to \emph{true} before you create the joint. You also have to specify the minimum and maximum limit
+     angles (in radians) using the \texttt{minAngleLimit} and \texttt{maxAngleLimit} variables of the joint info object. Note that the minimum limit angle must be in the
+     range $[ -2 \pi; 0 ]$ and the maximum limit angle must be in the range $[ 0; 2 \pi ]$. \\
+
+     For instance, here is the way to use the limits for a hinge joint when the joint is created : \\
+
+     \begin{lstlisting}
+     // Create the joint info object
+     rp3d::HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+     // Enable the limits of the joint
+     jointInfo.isLimitEnabled = true;
+
+     // Minimum limit angle
+     jointInfo.minAngleLimit = -PI / 2.0;
+
+     // Maximum limit angle
+     jointInfo.maxAngleLimit = PI / 2.0;
+
+      // Create the hinge joint in the dynamics world
+     rp3d::HingeJoint* joint;
+     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+  \end{lstlisting}
+
+     \vspace{0.6cm}
+
+     You can also use the \texttt{HingeJoint::enableLimit()}, \texttt{HingeJoint::setMinAngleLimit()} and \texttt{HingeJoint::setMaxAngleLimit()} to specify the limits of the joint after its
+     creation. See the API documentation for more information.
+
+     \subsubsection{Motor}
+
+     A motor is also available for the hinge joint. It can be used rotate the bodies around the hinge axis at a given angular speed and such that the torque applied to
+     rotate the bodies does not exceed the maximum allowed torque. The motor is disabled by default. If you want to use it, you first have to activate it using the
+     \texttt{isMotorEnabled} boolean variable of the \texttt{HingeJointInfo} object before you create the joint. Then, you need to specify the angular motor speed (in radians/seconds)
+     using the \texttt{motorSpeed} variable and also the maximum allowed torque (in Newton $\cdot$ meters) with the \texttt{maxMotorTorque} variable. \\
+
+     For instance, here is how to enable the motor of the hinge joint when the joint is created : \\
+
+     \begin{lstlisting}
+     // Create the joint info object
+     rp3d::HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+     // Enable the motor of the joint
+     jointInfo.isMotorEnabled = true;
+
+     // Motor angular speed
+     jointInfo.motorSpeed = PI / 4.0;
+
+     // Maximum allowed torque
+     jointInfo.maxMotorTorque = 10.0;
+
+      // Create the hinge joint in the dynamics world
+     rp3d::HingeJoint* joint;
+     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+  \end{lstlisting}
+
+     \vspace{0.6cm}
+
+     You can also use the \texttt{HingeJoint::enableMotor()}, \texttt{HingeJoint::setMotorSpeed()} and \texttt{HingeJoint::setMaxMotorTorque()} to enabled the motor of the joint after its
+     creation. See the API documentation for more information.
+
+    \subsection{Slider Joint}
+
+    \subsection{Fixed Joint}
+
+    \subsection{Collision between the bodies of a Joint}
+
+    By default the two bodies involved in a joint are able to collide with each other. However, it is possible to disable the collision between the two bodies that are part
+    of the joint. To do it, you simply need to set the variable \texttt{isCollisionEnabled} of the joint info object to \emph{false} when you create the joint. \\
+
+    For instance, when you create a \texttt{HingeJointInfo} object in order to construct a hinge joint, you can disable collision between the two bodies of the joint as in the
+    following example : \\
+
+    \begin{lstlisting}
+     // Create the joint info object
+     rp3d::HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+     // Disable the collision between the bodies
+     jointInfo.isCollisionEnabled = false;
+
+     // Create the joint in the dynamics world
+     rp3d::HingeJoint* joint;
+     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+  \end{lstlisting}
+
+    \subsection{Destroying a Joint}
+
+    In order to destroy a joint, you simply need to call the \texttt{DynamicsWorld::destroyJoint()} method using the pointer to
+    a previously created joint object as argument as shown in the following code : \\
+
+    \begin{lstlisting}
+     // rp3d::BallAndSocketJoint* joint is a previously
+     // created joint
+
+     // Destroy the joint
+     world->destroyJoint(joint);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    It is important that you destroy all the joints that you have created at the end of the simulation. Also note that destroying a
+    rigid body that is involved in a joint will automatically destroy that joint.
 
     \section{Examples}
 
-    You can find some OpenGL demos in the \texttt{/examples} folder of
-    the library. Follow the instructions described in section
-    \ref{sec:compilation} to
-    compile the examples. Note that the GLUT or FREEGLUT library is required to
-    compile and run the examples.
+    You can find some demos in the \texttt{examples/} folder of
+    the reactphysics3d library. Follow the instructions described in section \ref{sec:building} to
+    compile the examples. Note that the FREEGLUT library is required on Linux and Windows
+    and the GLUT library is required on Mac OS X to run those examples. Studying the examples is a
+    good way to understand how to use the reactphysics3d library.
+
+    \subsection{Cubes}
+
+    In this examples, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
+    the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this demo,
+    the cubes are green when they are inactive and become red as they get inactive (sleeping).
+
+    \subsection{Collision Shapes}
+
+    In this example, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
+    in the reactphysics3d library like Cylinders, Capsules, Spheres, Convex Meshes and Cones. Those bodies will fall down to the floor.
+
+    \subsection{Joints}
+
+    In this example, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
+    to set the motor or limits of the joints.
+
+    \section{Profiler}
 
    \section{API Documentation}
 
