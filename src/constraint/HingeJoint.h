@@ -49,10 +49,10 @@ struct HingeJointInfo : public JointInfo {
         /// Hinge rotation axis (in world-space coordinates)
         Vector3 rotationAxisWorld;
 
-        /// True if the slider limits are enabled
+        /// True if the hinge joint limits are enabled
         bool isLimitEnabled;
 
-        /// True if the slider motor is enabled
+        /// True if the hinge joint motor is enabled
         bool isMotorEnabled;
 
         /// Minimum allowed rotation angle (in radian) if limits are enabled.
