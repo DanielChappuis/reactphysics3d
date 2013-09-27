@@ -152,6 +152,24 @@ class Joint {
         /// Private assignment operator
         Joint& operator=(const Joint& constraint);
 
+        /// Return true if the joint has already been added into an island
+        bool isAlreadyInIsland() const;
+
+        /// Return the number of bytes used by the joint
+        virtual size_t getSizeInBytes() const = 0;
+
+        /// Initialize before solving the joint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Warm start the joint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
+
+        /// Solve the position constraint
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -177,28 +195,11 @@ class Joint {
         /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
 
-        /// Return true if the joint has already been added into an island
-        bool isAlreadyInIsland() const;
-
-        /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const = 0;
-
-        /// Initialize before solving the joint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
-
-        /// Warm start the joint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
-
-        /// Solve the position constraint
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
-
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
         friend class Island;
+        friend class ConstraintSolver;
 };
 
 // Return the reference to the body 1

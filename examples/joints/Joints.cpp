@@ -119,7 +119,6 @@ void keyboard(unsigned char key, int x, int y) {
         // Escape key
         case 27:
             #ifdef USE_FREEGLUT
-                // TODO : Check if we need to call finish() here
                 glutLeaveMainLoop();
             #endif
             break;

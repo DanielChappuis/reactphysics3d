@@ -107,7 +107,9 @@ struct SliderJointInfo : public JointInfo {
 
 // Class SliderJoint
 /**
- * This class represents a slider joint.
+ * This class represents a slider joint. This joint has a one degree of freedom.
+ * It only allows relative translation of the bodies along a single direction and no
+ * rotation.
  */
 class SliderJoint : public Joint {
 
@@ -245,6 +247,21 @@ class SliderJoint : public Joint {
         /// Reset the limits
         void resetLimits();
 
+        /// Return the number of bytes used by the joint
+        virtual size_t getSizeInBytes() const;
+
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the position constraint (for position error correction)
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -296,21 +313,6 @@ class SliderJoint : public Joint {
 
         /// Return the intensity of the current force applied for the joint motor
         decimal getMotorForce(decimal timeStep) const;
-
-        /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
-
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 };
 
 // Return true if the limits or the joint are enabled

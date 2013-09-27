@@ -96,8 +96,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.indexBody2 = mMapBodyToConstrainedVelocityIndex.find(body2)->second;
         internalManifold.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         internalManifold.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
-        internalManifold.isBody1Moving = body1->getIsMotionEnabled();
-        internalManifold.isBody2Moving = body2->getIsMotionEnabled();
+        internalManifold.isBody1Moving = body1->isMotionEnabled();
+        internalManifold.isBody2Moving = body2->isMotionEnabled();
         internalManifold.massInverseBody1 = body1->getMassInverse();
         internalManifold.massInverseBody2 = body2->getMassInverse();
         internalManifold.nbContacts = externalManifold->getNbContactPoints();

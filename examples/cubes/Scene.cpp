@@ -70,7 +70,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
-        cube->getRigidBody()->setIsMotionEnabled(true);
+        cube->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -85,7 +85,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

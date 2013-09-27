@@ -83,12 +83,6 @@ class Body {
         /// Return the id of the body
         bodyindex getID() const;
 
-        /// Return true if the body has already been added in an island (for the sleeping technique)
-        bool isAlreadyInIsland() const;
-
-        /// Set the value of to know if the body has already been added into an island
-        void setIsAlreadyInIsland(bool isAlreadyInIsland);
-
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
 
@@ -124,16 +118,6 @@ class Body {
 // Return the id of the body
 inline bodyindex Body::getID() const {
     return mID;
-}
-
-// Return true if the body has already been added in an island (for the sleeping technique)
-inline bool Body::isAlreadyInIsland() const {
-    return mIsAlreadyInIsland;
-}
-
-// Set the value of to know if the body has already been added into an island
-inline void Body::setIsAlreadyInIsland(bool isAlreadyInIsland) {
-    mIsAlreadyInIsland = isAlreadyInIsland;
 }
 
 // Return whether or not the body is allowed to sleep

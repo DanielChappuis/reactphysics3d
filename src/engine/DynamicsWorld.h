@@ -194,7 +194,7 @@ class DynamicsWorld : public CollisionWorld {
         virtual void notifyNewContact(const BroadPhasePair* pair,
                                       const ContactPointInfo* contactInfo);
 
-public :
+    public :
 
         // -------------------- Methods -------------------- //
 
@@ -246,8 +246,8 @@ public :
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
 
-        //// Add a contact manifold to the linked list of contact manifolds of the two bodies involed
-        //// in the corresponding contact.
+        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
+        /// involed in the corresponding contact.
         void addContactManifoldToBody(ContactManifold* contactManifold,
                                       CollisionBody *body1, CollisionBody *body2);
 
@@ -310,12 +310,6 @@ public :
 
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
-
-        // TODO : REMOVE THIS
-        Island** getIslands() { return mIslands;}
-
-        // TODO : REMOVE THIS
-        uint getNbIslands() const {return mNbIslands;}
 };
 
 // Reset the external force and torque applied to the bodies
@@ -384,7 +378,7 @@ inline void DynamicsWorld::resetBodiesMovementVariable() {
          it != getRigidBodiesEndIterator(); it++) {
 
         // Set the hasMoved variable to false
-        (*it)->setHasMoved(false);
+        (*it)->mHasMoved = false;
     }
 }
 

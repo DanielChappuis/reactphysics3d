@@ -45,9 +45,6 @@ class Island {
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : REMOVE THIS
-        uint mID;
-
         /// Array with all the bodies of the island
         RigidBody** mBodies;
 
@@ -91,7 +88,7 @@ class Island {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Island(uint id, uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
+        Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
                MemoryAllocator& memoryAllocator);
 
         /// Destructor
@@ -123,9 +120,6 @@ class Island {
 
         /// Return a pointer to the array of joints
         Joint** getJoints();
-
-        // TODO : REMOVE THIS
-        uint getID() const {return mID;}
 
         // -------------------- Friendship -------------------- //
 

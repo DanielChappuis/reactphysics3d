@@ -105,7 +105,7 @@ const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
 
 /// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
-const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
+const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 10;
 
 /// Number of iterations when solving the position constraints of the Sequential Impulse technique
 const uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;

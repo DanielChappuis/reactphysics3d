@@ -174,7 +174,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // If the body is allowed to move
-            if (bodies[b]->getIsMotionEnabled()) {
+            if (bodies[b]->isMotionEnabled()) {
 
                 // Get the constrained velocity
                 uint indexArray = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
@@ -220,7 +220,7 @@ void DynamicsWorld::updateRigidBodiesAABB() {
     for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         // If the body has moved
-        if ((*it)->getHasMoved()) {
+        if ((*it)->mHasMoved) {
 
             // Update the AABB of the rigid body
             (*it)->updateAABB();
@@ -314,7 +314,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             assert(mSplitAngularVelocities[indexBody] == Vector3(0, 0, 0));
 
             // If the body is allowed to move
-            if (bodies[b]->getIsMotionEnabled()) {
+            if (bodies[b]->isMotionEnabled()) {
 
                 // Integrate the external force to get the new velocity of the body
                 mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
@@ -528,12 +528,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     removeCollisionShape(rigidBody->getCollisionShape());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
-    // TODO : Iterate on the mJointList of the rigid body instead over all the joints of the world
-    bodyindex idToRemove = rigidBody->getID();
-    for (std::set<Joint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
-        if ((*it)->getBody1()->getID() == idToRemove || (*it)->getBody2()->getID() == idToRemove) {
-            destroyJoint(*it);
-        }
+    JointListElement* element;
+    for (element = rigidBody->mJointsList; element != NULL; element = element->next) {
+        destroyJoint(element->joint);
     }
 
     // Reset the contact manifold list of the body
@@ -752,19 +749,17 @@ void DynamicsWorld::computeIslands() {
     size_t nbBytesStack = sizeof(RigidBody*) * nbBodies;
     RigidBody** stackBodiesToVisit = (RigidBody**)mMemoryAllocator.allocate(nbBytesStack);
 
-    uint idIsland = 0;  // TODO : REMOVE THIS
-
     // For each rigid body of the world
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         RigidBody* body = *it;
 
         // If the body has already been added to an island, we go to the next body
-        if (body->isAlreadyInIsland()) continue;
+        if (body->mIsAlreadyInIsland) continue;
 
         // If the body is not moving, we go to the next body
         // TODO : When we will use STATIC bodies, we will need to take care of this case here
-        if (!body->getIsMotionEnabled()) continue;
+        if (!body->isMotionEnabled()) continue;
 
         // If the body is sleeping or inactive, we go to the next body
         if (body->isSleeping() || !body->isActive()) continue;
@@ -777,9 +772,8 @@ void DynamicsWorld::computeIslands() {
 
         // Create the new island
         void* allocatedMemoryIsland = mMemoryAllocator.allocate(sizeof(Island));
-        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(idIsland, nbBodies,mContactManifolds.size(),
+        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies,mContactManifolds.size(),
                                                                   mJoints.size(), mMemoryAllocator);
-        idIsland++;
 
         // While there are still some bodies to visit in the stack
         while (stackIndex > 0) {
@@ -797,7 +791,7 @@ void DynamicsWorld::computeIslands() {
 
             // If the current body is not moving, we do not want to perform the DFS
             // search across that body
-            if (!bodyToVisit->getIsMotionEnabled()) continue;
+            if (!bodyToVisit->isMotionEnabled()) continue;
 
             // For each contact manifold in which the current body is involded
             ContactManifoldListElement* contactElement;
@@ -819,7 +813,7 @@ void DynamicsWorld::computeIslands() {
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
-                if (otherBody->isAlreadyInIsland()) continue;
+                if (otherBody->mIsAlreadyInIsland) continue;
 
                 // Insert the other body into the stack of bodies to visit
                 stackBodiesToVisit[stackIndex] = otherBody;
@@ -847,7 +841,7 @@ void DynamicsWorld::computeIslands() {
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
-                if (otherBody->isAlreadyInIsland()) continue;
+                if (otherBody->mIsAlreadyInIsland) continue;
 
                 // Insert the other body into the stack of bodies to visit
                 stackBodiesToVisit[stackIndex] = otherBody;
@@ -860,7 +854,7 @@ void DynamicsWorld::computeIslands() {
         // can also be included in the other islands
         for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
 
-            if (!mIslands[mNbIslands]->mBodies[i]->getIsMotionEnabled()) {
+            if (!mIslands[mNbIslands]->mBodies[i]->isMotionEnabled()) {
                 mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
             }
         }
@@ -893,7 +887,7 @@ void DynamicsWorld::updateSleepingBodies() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Skip static bodies
-            if (!bodies[b]->getIsMotionEnabled()) continue;
+            if (!bodies[b]->isMotionEnabled()) continue;
 
             // If the body is velocity is large enough to stay awake
             if (bodies[b]->getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare ||

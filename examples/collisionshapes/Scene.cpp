@@ -74,7 +74,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
         // The sphere is a moving rigid body
-        box->getRigidBody()->setIsMotionEnabled(true);
+        box->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -97,7 +97,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld);
 
         // The sphere is a moving rigid body
-        sphere->getRigidBody()->setIsMotionEnabled(true);
+        sphere->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -120,7 +120,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position , CONE_MASS, mDynamicsWorld);
 
         // The cone is a moving rigid body
-        cone->getRigidBody()->setIsMotionEnabled(true);
+        cone->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -144,7 +144,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           CYLINDER_MASS, mDynamicsWorld);
 
         // The cylinder is a moving rigid body
-        cylinder->getRigidBody()->setIsMotionEnabled(true);
+        cylinder->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
@@ -168,7 +168,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                        CAPSULE_MASS, mDynamicsWorld);
 
         // The cylinder is a moving rigid body
-        capsule->getRigidBody()->setIsMotionEnabled(true);
+        capsule->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -191,7 +191,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld);
 
         // The mesh is a moving rigid body
-        mesh->getRigidBody()->setIsMotionEnabled(true);
+        mesh->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -206,7 +206,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

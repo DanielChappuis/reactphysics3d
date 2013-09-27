@@ -91,6 +91,12 @@ class CollisionBody : public Body {
         /// Reset the contact manifold lists
         void resetContactManifoldsList(MemoryAllocator& memoryAllocator);
 
+        /// Update the old transform with the current one.
+        void updateOldTransform();
+
+        /// Update the Axis-Aligned Bounding Box coordinates
+        void updateAABB();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -100,12 +106,6 @@ class CollisionBody : public Body {
 
         /// Destructor
         virtual ~CollisionBody();
-
-        /// Return true if the body has moved during the last frame
-        bool getHasMoved() const;
-
-        /// Set the hasMoved variable (true if the body has moved during the last frame)
-        void setHasMoved(bool hasMoved);
 
         /// Return the collision shape
         CollisionShape* getCollisionShape() const;
@@ -128,23 +128,17 @@ class CollisionBody : public Body {
         /// Set the interpolation factor of the body
         void setInterpolationFactor(decimal factor);
 
-        /// Return if the rigid body can move
-        bool getIsMotionEnabled() const;
+        /// Return true if the rigid body is allowed to move
+        bool isMotionEnabled() const;
 
-        /// Set the value to true if the body can move
-        void setIsMotionEnabled(bool isMotionEnabled);
+        /// Enable/disable the motion of the body
+        void enableMotion(bool isMotionEnabled);
 
         /// Return true if the body can collide with others bodies
-        bool getIsCollisionEnabled() const;
+        bool isCollisionEnabled() const;
 
-        /// Set the isCollisionEnabled value
-        void setIsCollisionEnabled(bool isCollisionEnabled);
-
-        /// Update the old transform with the current one.
-        void updateOldTransform();
-
-        /// Update the Axis-Aligned Bounding Box coordinates
-        void updateAABB();
+        /// Enable/disable the collision with this body
+        void enableCollision(bool isCollisionEnabled);
 
         /// Return the first element of the linked list of contact manifolds involving this body
         const ContactManifoldListElement* getContactManifoldsLists() const;
@@ -152,17 +146,8 @@ class CollisionBody : public Body {
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
+        friend class CollisionDetection;
 };
-
-// Return true if the body has moved during the last frame
-inline bool CollisionBody::getHasMoved() const {
-    return mHasMoved;
-}
-
-// Set the hasMoved variable (true if the body has moved during the last frame)
-inline void CollisionBody::setHasMoved(bool hasMoved) {
-    mHasMoved = hasMoved;
-}
 
 // Return the collision shape
 inline CollisionShape* CollisionBody::getCollisionShape() const {
@@ -187,13 +172,13 @@ inline void CollisionBody::setInterpolationFactor(decimal factor) {
     mInterpolationFactor = factor;
 }
 
-// Return if the rigid body can move
-inline bool CollisionBody::getIsMotionEnabled() const {
+// Return true if the rigid body is allowed to move
+inline bool CollisionBody::isMotionEnabled() const {
     return mIsMotionEnabled;
 }
 
-// Set the value to true if the body can move
-inline void CollisionBody::setIsMotionEnabled(bool isMotionEnabled) {
+// Enable/disable the motion of the body
+inline void CollisionBody::enableMotion(bool isMotionEnabled) {
     mIsMotionEnabled = isMotionEnabled;
 }
 
@@ -219,12 +204,12 @@ inline const AABB& CollisionBody::getAABB() const {
 }
 
  // Return true if the body can collide with others bodies
-inline bool CollisionBody::getIsCollisionEnabled() const {
+inline bool CollisionBody::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }
 
-// Set the isCollisionEnabled value
-inline void CollisionBody::setIsCollisionEnabled(bool isCollisionEnabled) {
+// Enable/disable the collision with this body
+inline void CollisionBody::enableCollision(bool isCollisionEnabled) {
     mIsCollisionEnabled = isCollisionEnabled;
 }
 

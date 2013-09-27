@@ -205,8 +205,8 @@ void Scene::createBallAndSocketJoints() {
                                                    mDynamicsWorld);
 
         // The fist box cannot move
-        if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(false);
-        else mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(true);
+        if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(false);
+        else mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(true);
 
         // Add some angular velocity damping
         mBallAndSocketJointChainBoxes[i]->getRigidBody()->setAngularDamping(rp3d::decimal(0.2));
@@ -249,7 +249,7 @@ void Scene::createSliderJoint() {
     mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
+    mSliderJointBottomBox->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
@@ -265,7 +265,7 @@ void Scene::createSliderJoint() {
     mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
-    mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
+    mSliderJointTopBox->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
@@ -304,7 +304,7 @@ void Scene::createPropellerHingeJoint() {
     mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
+    mPropellerBox->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
@@ -342,7 +342,7 @@ void Scene::createFixedJoints() {
     mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
+    mFixedJointBox1->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
@@ -357,7 +357,7 @@ void Scene::createFixedJoints() {
     mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
-    mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);
+    mFixedJointBox2->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
@@ -396,7 +396,7 @@ void Scene::createFloor() {
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

@@ -29,9 +29,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-Island::Island(uint id, uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
+Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
                MemoryAllocator& memoryAllocator)
-       : mID(id), mBodies(NULL), mContactManifolds(NULL), mJoints(NULL), mNbBodies(0),
+       : mBodies(NULL), mContactManifolds(NULL), mJoints(NULL), mNbBodies(0),
          mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
 
     // Allocate memory for the arrays
