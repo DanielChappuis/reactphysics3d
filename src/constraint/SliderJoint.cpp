@@ -184,6 +184,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
+    // If the limits are enabled
     if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
@@ -212,16 +213,20 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
         }
     }
 
-    // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
-    mInverseMassMatrixMotor = 0.0;
-    if (mBody1->isMotionEnabled()) {
-        mInverseMassMatrixMotor += mBody1->getMassInverse();
+    // If the motor is enabled
+    if (mIsMotorEnabled) {
+
+        // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
+        mInverseMassMatrixMotor = 0.0;
+        if (mBody1->isMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody1->getMassInverse();
+        }
+        if (mBody2->isMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody2->getMassInverse();
+        }
+        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
+                    decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
     }
-    if (mBody2->isMotionEnabled()) {
-        mInverseMassMatrixMotor += mBody2->getMassInverse();
-    }
-    mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
-                              decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
 
     // If warm-starting is not enabled
     if (!constraintSolverData.isWarmStartingActive) {

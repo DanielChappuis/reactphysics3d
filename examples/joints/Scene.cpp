@@ -127,7 +127,7 @@ void Scene::simulate() {
     if (mIsRunning) {
 
         // Update the motor speed of the Slider Joint (to move up and down)
-        long double motorSpeed = 3 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
+        long double motorSpeed = 2 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
         mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
 
         // Take a simulation step

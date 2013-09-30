@@ -194,9 +194,10 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
         mImpulseMotor = 0.0;
     }
 
-    if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
+    // If the motor or limits are enabled
+    if (mIsMotorEnabled || (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated))) {
 
-        // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
+        // Compute the inverse of the mass matrix K=JM^-1J^t for the limits and motor (1x1 matrix)
         mInverseMassMatrixLimitMotor = 0.0;
         if (mBody1->isMotionEnabled()) {
             mInverseMassMatrixLimitMotor += mA1.dot(mI1 * mA1);
@@ -207,16 +208,19 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
         mInverseMassMatrixLimitMotor = (mInverseMassMatrixLimitMotor > 0.0) ?
                                   decimal(1.0) / mInverseMassMatrixLimitMotor : decimal(0.0);
 
-        // Compute the bias "b" of the lower limit constraint
-        mBLowerLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-            mBLowerLimit = biasFactor * lowerLimitError;
-        }
+        if (mIsLimitEnabled) {
 
-        // Compute the bias "b" of the upper limit constraint
-        mBUpperLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-            mBUpperLimit = biasFactor * upperLimitError;
+            // Compute the bias "b" of the lower limit constraint
+            mBLowerLimit = 0.0;
+            if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+                mBLowerLimit = biasFactor * lowerLimitError;
+            }
+
+            // Compute the bias "b" of the upper limit constraint
+            mBUpperLimit = 0.0;
+            if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+                mBUpperLimit = biasFactor * upperLimitError;
+            }
         }
     }
 }
@@ -423,6 +427,7 @@ void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
 
     // --------------- Motor --------------- //
 
+    // If the motor is enabled
     if (mIsMotorEnabled) {
 
         // Compute J*v for the motor

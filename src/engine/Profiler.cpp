@@ -232,7 +232,7 @@ void Profiler::printRecursiveNodeReport(ProfileNodeIterator* iterator,
                                (currentTotalTime / parentTime) * 100.0 : 0.0;
         for (int j=0; j<spacing; j++) outputStream << " ";
         outputStream << "|   " << i << " -- " << iterator->getCurrentName() << " : " <<
-                        fraction << " % | " << (currentTotalTime / long double(nbFrames)) <<
+                        fraction << " % | " << (currentTotalTime / (long double) (nbFrames)) <<
                         " ms/frame (" << iterator->getCurrentNbTotalCalls() << " calls)" <<
                         std::endl;
         totalTime += currentTotalTime;
