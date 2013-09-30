@@ -45,7 +45,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, -9.81, 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -65,16 +65,16 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
                                           1 + i * (BOX_SIZE.y + 0.3f),
-                                          radius * sin(angle));
+                                          0);
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , CUBE_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
-        cube->getRigidBody()->setIsMotionEnabled(true);
+        cube->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
-        material.setBounciness(0.4);
+        material.setBounciness(rp3d::decimal(0.4));
 
         // Add the box the list of box in the scene
         mBoxes.push_back(cube);
@@ -85,11 +85,11 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
-    material.setBounciness(0.3);
+    material.setBounciness(rp3d::decimal(0.3));
 
     // Start the simulation
     startSimulation();
@@ -142,6 +142,15 @@ void Scene::simulate() {
 
         mFloor->updateTransform();
 
+        // Set the color of the awake/sleeping bodies
+        for (uint i=0; i<mBoxes.size(); i++) {
+            if (mBoxes[i]->getRigidBody()->isSleeping()) {
+                mBoxes[i]->setColor(Color(1, 0, 0, 1));
+            }
+            else {
+                mBoxes[i]->setColor(Color(0, 1, 0, 1));
+            }
+        }
     }
 }
 
@@ -163,8 +172,8 @@ void Scene::render() {
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    Color& diffCol = mLight0.getDiffuseColor();
-    Color& specCol = mLight0.getSpecularColor();
+    const Color& diffCol = mLight0.getDiffuseColor();
+    const Color& specCol = mLight0.getSpecularColor();
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);

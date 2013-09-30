@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
     viewer = new Viewer();
     Vector2 windowsSize = Vector2(800, 600);
     Vector2 windowsPosition = Vector2(100, 100);
-    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Falling Cubes", windowsSize, windowsPosition);
+    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Collision Shapes",
+                               windowsSize, windowsPosition);
     if (!initOK) return 1;
 
     // Create the scene
@@ -66,7 +67,11 @@ int main(int argc, char** argv) {
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
     glutKeyboardFunc(keyboard);
+#ifdef USE_FREEGLUT
     glutCloseFunc(finish);
+#else
+    atexit(finish);
+#endif
 
     // Glut main looop
     glutMainLoop();
@@ -114,7 +119,9 @@ void keyboard(unsigned char key, int x, int y) {
 
         // Escape key
         case 27:
-            glutLeaveMainLoop();
+            #ifdef USE_FREEGLUT
+                glutLeaveMainLoop();
+            #endif
             break;
 
         // Space bar

@@ -30,18 +30,14 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(std::set<Constraint*>& joints,
-                                   std::vector<Vector3>& linearVelocities,
-                                   std::vector<Vector3>& angularVelocities,
-                                   std::vector<Vector3>& positions,
+ConstraintSolver::ConstraintSolver(std::vector<Vector3>& positions,
                                    std::vector<Quaternion>& orientations,
                                    const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-                 : mJoints(joints), mLinearVelocities(linearVelocities),
-                   mAngularVelocities(angularVelocities), mPositions(positions),
+                 : mLinearVelocities(NULL), mAngularVelocities(NULL), mPositions(positions),
                    mOrientations(orientations),
                    mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(true), mConstraintSolverData(linearVelocities,
-                   angularVelocities, positions, orientations, mapBodyToVelocityIndex){
+                   mIsWarmStartingActive(true), mConstraintSolverData(positions, orientations,
+                                                                      mapBodyToVelocityIndex){
 
 }
 
@@ -50,10 +46,16 @@ ConstraintSolver::~ConstraintSolver() {
 
 }
 
-// Initialize the constraint solver
-void ConstraintSolver::initialize(decimal dt) {
+// Initialize the constraint solver for a given island
+void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 
-    PROFILE("ConstraintSolver::initialize()");
+    PROFILE("ConstraintSolver::initializeForIsland()");
+
+    assert(mLinearVelocities != NULL);
+    assert(mAngularVelocities != NULL);
+    assert(island != NULL);
+    assert(island->getNbBodies() > 0);
+    assert(island->getNbJoints() > 0);
 
     // Set the current time step
     mTimeStep = dt;
@@ -62,54 +64,50 @@ void ConstraintSolver::initialize(decimal dt) {
     mConstraintSolverData.timeStep = mTimeStep;
     mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
 
-    // For each joint
-    std::set<Constraint*>::iterator it;
-    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
-
-        Constraint* joint = (*it);
-
-        // Get the rigid bodies of the joint
-        RigidBody* body1 = joint->getBody1();
-        RigidBody* body2 = joint->getBody2();
-
-        // Add the bodies to the set of constrained bodies
-        mConstraintBodies.insert(body1);
-        mConstraintBodies.insert(body2);
+    // For each joint of the island
+    Joint** joints = island->getJoints();
+    for (uint i=0; i<island->getNbJoints(); i++) {
 
         // Initialize the constraint before solving it
-        joint->initBeforeSolve(mConstraintSolverData);
+        joints[i]->initBeforeSolve(mConstraintSolverData);
 
         // Warm-start the constraint if warm-starting is enabled
         if (mIsWarmStartingActive) {
-            joint->warmstart(mConstraintSolverData);
+            joints[i]->warmstart(mConstraintSolverData);
         }
     }
 }
 
 // Solve the velocity constraints
-void ConstraintSolver::solveVelocityConstraints() {
+void ConstraintSolver::solveVelocityConstraints(Island* island) {
 
     PROFILE("ConstraintSolver::solveVelocityConstraints()");
 
-    // For each joint
-    std::set<Constraint*>::iterator it;
-    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
+    assert(island != NULL);
+    assert(island->getNbJoints() > 0);
+
+    // For each joint of the island
+    Joint** joints = island->getJoints();
+    for (uint i=0; i<island->getNbJoints(); i++) {
 
         // Solve the constraint
-        (*it)->solveVelocityConstraint(mConstraintSolverData);
+        joints[i]->solveVelocityConstraint(mConstraintSolverData);
     }
 }
 
 // Solve the position constraints
-void ConstraintSolver::solvePositionConstraints() {
+void ConstraintSolver::solvePositionConstraints(Island* island) {
 
     PROFILE("ConstraintSolver::solvePositionConstraints()");
 
-    // For each joint
-    std::set<Constraint*>::iterator it;
-    for (it = mJoints.begin(); it != mJoints.end(); ++it) {
+    assert(island != NULL);
+    assert(island->getNbJoints() > 0);
+
+    // For each joint of the island
+    Joint** joints = island->getJoints();
+    for (uint i=0; i < island->getNbJoints(); i++) {
 
         // Solve the constraint
-        (*it)->solvePositionConstraint(mConstraintSolverData);
+        joints[i]->solvePositionConstraint(mConstraintSolverData);
     }
 }

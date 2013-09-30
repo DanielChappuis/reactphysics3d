@@ -92,8 +92,8 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// Default bounciness factor for a rigid body
 const decimal DEFAULT_BOUNCINESS = decimal(0.5);
 
-/// True if the deactivation (sleeping) of inactive bodies is enabled
-const bool DEACTIVATION_ENABLED = true;
+/// True if the spleeping technique is enabled
+const bool SPLEEPING_ENABLED = true;
 
 /// Object margin for collision detection in meters (for the GJK-EPA Algorithm)
 const decimal OBJECT_MARGIN = decimal(0.04);
@@ -105,10 +105,21 @@ const decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 const decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
 
 /// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
-const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
+const uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 10;
 
 /// Number of iterations when solving the position constraints of the Sequential Impulse technique
 const uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
+
+/// Time (in seconds) that a body must stay still to be considered sleeping
+const float DEFAULT_TIME_BEFORE_SLEEP = 1.0f;
+
+/// A body with a linear velocity smaller than the sleep linear velocity (in m/s)
+/// might enter sleeping mode.
+const decimal DEFAULT_SLEEP_LINEAR_VELOCITY = decimal(0.02);
+
+/// A body with angular velocity smaller than the sleep angular velocity (in rad/s)
+/// might enter sleeping mode
+const decimal DEFAULT_SLEEP_ANGULAR_VELOCITY = decimal(3.0 * (PI / 180.0));
 
 }
 

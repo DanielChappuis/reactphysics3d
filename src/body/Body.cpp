@@ -23,7 +23,7 @@
 *                                                                               *
 ********************************************************************************/
 
- // Libraries
+// Libraries
 #include "Body.h"
 #include "../collision/shapes/CollisionShape.h"
 
@@ -31,7 +31,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-Body::Body(bodyindex id) : mID(id) {
+Body::Body(bodyindex id)
+     : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
+       mIsSleeping(false), mSleepTime(0) {
 
 }
 

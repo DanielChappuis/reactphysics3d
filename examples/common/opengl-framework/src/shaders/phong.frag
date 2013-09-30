@@ -31,6 +31,7 @@ uniform vec3 light0SpecularColor;           // Light 0 specular color
 uniform float shininess;                    // Shininess
 uniform sampler2D texture;                  // Texture
 uniform bool isTexture;                     // True if we need to use the texture
+uniform vec4 vertexColor;                   // Vertex color
 
 // Varying variables
 varying vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
@@ -43,7 +44,7 @@ void main() {
     vec3 ambient = lightAmbientColor;
 
     // Get the texture color
-    vec3 textureColor = vec3(1);
+    vec3 textureColor = vertexColor.rgb;
     if (isTexture) textureColor = texture2D(texture, texCoords).rgb;
 
     // Compute the surface normal vector
@@ -57,8 +58,8 @@ void main() {
     // Compute the specular term of light 0
     vec3 V = normalize(-vertexPosCameraSpace);
     vec3 H0 = normalize(V + L0);
-    float specularFactor = pow(max(dot(N, H0), 0), shininess);
-    if (diffuseFactor < 0) specularFactor = 0.0;
+    float specularFactor = pow(max(dot(N, H0), 0.0), shininess);
+    if (diffuseFactor < 0.0) specularFactor = 0.0;
     vec3 specular = light0SpecularColor * specularFactor;
 
     // Compute the final color

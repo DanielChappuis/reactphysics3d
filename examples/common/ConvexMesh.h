@@ -23,95 +23,50 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef CONVEX_MESH_H
+#define CONVEX_MESH_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Box.h"
 
-// Constants
-const int NB_SPHERES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
-const float CUBE_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
-
-// Class Scene
-class Scene {
+// Class ConvexMesh
+class ConvexMesh : public openglframework::Mesh {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        /// Rigid body used to simulate the dynamics of the mesh
+        rp3d::RigidBody* mRigidBody;
 
-        /// Light 0
-        openglframework::Light mLight0;
+        // -------------------- Methods -------------------- //
 
-        /// Phong shader
-        openglframework::Shader mPhongShader;
-
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
-
-        /// Box for the floor
-        Box* mFloor;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
-        /// True if the physics simulation is running
-        bool mIsRunning;
-
-    public:
+    public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        ConvexMesh(const openglframework::Vector3& position, float mass,
+                   rp3d::DynamicsWorld* dynamicsWorld);
 
         /// Destructor
-        ~Scene();
+        ~ConvexMesh();
 
-        /// Take a step for the simulation
-        void simulate();
+        /// Return a pointer to the rigid body of the mesh
+        rp3d::RigidBody* getRigidBody();
 
-        /// Stop the simulation
-        void stopSimulation();
+        /// Update the transform matrix of the mesh
+        void updateTransform();
 
-        /// Start the simulation
-        void startSimulation();
-
-        /// Pause or continue simulation
-        void pauseContinueSimulation();
-
-        /// Render the scene
-        void render();
+        /// Render the mesh at the correct position and with the correct orientation
+        void render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Stop the simulation
-inline void Scene::stopSimulation() {
-    mDynamicsWorld->stop();
-    mIsRunning = false;
-}
-
-// Start the simulation
-inline void Scene::startSimulation() {
-    mDynamicsWorld->start();
-    mIsRunning = true;
-}
-
-// Pause or continue simulation
-inline void Scene::pauseContinueSimulation() {
-    if (mIsRunning) {
-        stopSimulation();
-    }
-    else {
-        startSimulation();
-    }
+// Return a pointer to the rigid body of the mesh
+inline rp3d::RigidBody* ConvexMesh::getRigidBody() {
+    return mRigidBody;
 }
 
 #endif

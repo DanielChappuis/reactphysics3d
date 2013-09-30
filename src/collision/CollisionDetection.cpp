@@ -82,7 +82,7 @@ void CollisionDetection::computeBroadPhase() {
          it != mWorld->getBodiesEndIterator(); it++) {
 
         // If the body has moved
-        if ((*it)->getHasMoved()) {
+        if ((*it)->mHasMoved) {
 
             // Notify the broad-phase that the body has moved
             mBroadPhaseAlgorithm->updateObject(*it, (*it)->getAABB());
@@ -112,6 +112,9 @@ void CollisionDetection::computeNarrowPhase() {
 
         // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
         if (mNoCollisionPairs.count(pair->getBodiesIndexPair()) > 0) continue;
+
+        // Check if the two bodies are sleeping, if so, we do no test collision between them
+        if (body1->isSleeping() && body2->isSleeping()) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(

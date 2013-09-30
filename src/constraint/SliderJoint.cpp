@@ -33,7 +33,7 @@ const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
 SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
-            : Constraint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
+            : Joint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
               mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
               mLowerLimit(jointInfo.minTranslationLimit),
@@ -129,12 +129,12 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     Vector3 I1R1PlusUCrossN2(0, 0, 0);
     Vector3 I2R2CrossN1(0, 0, 0);
     Vector3 I2R2CrossN2(0, 0, 0);
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
         sumInverseMass += mBody1->getMassInverse();
         I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
         I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
         sumInverseMass += mBody2->getMassInverse();
         I2R2CrossN1 = mI2 * mR2CrossN1;
         I2R2CrossN2 = mI2 * mR2CrossN2;
@@ -149,7 +149,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getIsMotionEnabled() || mBody2->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -165,13 +165,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint.setToZero();
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint += mI1;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint += mI2;
     }
-    if (mBody1->getIsMotionEnabled() || mBody2->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
@@ -184,15 +184,16 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
+    // If the limits are enabled
     if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
         mInverseMassMatrixLimit = 0.0;
-        if (mBody1->getIsMotionEnabled()) {
+        if (mBody1->isMotionEnabled()) {
             mInverseMassMatrixLimit += mBody1->getMassInverse() +
                                        mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis);
         }
-        if (mBody2->getIsMotionEnabled()) {
+        if (mBody2->isMotionEnabled()) {
             mInverseMassMatrixLimit += mBody2->getMassInverse() +
                                        mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
         }
@@ -212,16 +213,20 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
         }
     }
 
-    // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
-    mInverseMassMatrixMotor = 0.0;
-    if (mBody1->getIsMotionEnabled()) {
-        mInverseMassMatrixMotor += mBody1->getMassInverse();
+    // If the motor is enabled
+    if (mIsMotorEnabled) {
+
+        // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
+        mInverseMassMatrixMotor = 0.0;
+        if (mBody1->isMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody1->getMassInverse();
+        }
+        if (mBody2->isMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody2->getMassInverse();
+        }
+        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
+                    decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
     }
-    if (mBody2->getIsMotionEnabled()) {
-        mInverseMassMatrixMotor += mBody2->getMassInverse();
-    }
-    mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
-                              decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
 
     // If warm-starting is not enabled
     if (!constraintSolverData.isWarmStartingActive) {
@@ -255,7 +260,7 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     // Compute the impulse P=J^T * lambda for the motor constraint
     Vector3 impulseMotor = mImpulseMotor * mSliderAxisWorld;
 
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         Vector3 linearImpulseBody1 = -mN1 * mImpulseTranslation.x - mN2 * mImpulseTranslation.y;
@@ -276,7 +281,7 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
         v1 += inverseMassBody1 * linearImpulseBody1;
         w1 += mI1 * angularImpulseBody1;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         Vector3 linearImpulseBody2 = mN1 * mImpulseTranslation.x + mN2 * mImpulseTranslation.y;
@@ -325,7 +330,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector2 deltaLambda = mInverseMassMatrixTranslationConstraint * (-JvTranslation -mBTranslation);
     mImpulseTranslation += deltaLambda;
 
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         const Vector3 linearImpulseBody1 = -mN1 * deltaLambda.x - mN2 * deltaLambda.y;
@@ -336,7 +341,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
         v1 += inverseMassBody1 * linearImpulseBody1;
         w1 += mI1 * angularImpulseBody1;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         const Vector3 linearImpulseBody2 = mN1 * deltaLambda.x + mN2 * deltaLambda.y;
@@ -356,7 +361,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector3 deltaLambda2 = mInverseMassMatrixRotationConstraint * (-JvRotation - mBRotation);
     mImpulseRotation += deltaLambda2;
 
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 3 rotation constraints
         const Vector3 angularImpulseBody1 = -deltaLambda2;
@@ -364,7 +369,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
         // Apply the impulse to the body
         w1 += mI1 * angularImpulseBody1;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 3 rotation constraints
         const Vector3 angularImpulseBody2 = deltaLambda2;
@@ -390,7 +395,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             mImpulseLowerLimit = std::max(mImpulseLowerLimit + deltaLambdaLower, decimal(0.0));
             deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
 
-            if (mBody1->getIsMotionEnabled()) {
+            if (mBody1->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint
                 const Vector3 linearImpulseBody1 = -deltaLambdaLower * mSliderAxisWorld;
@@ -400,7 +405,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
                 v1 += inverseMassBody1 * linearImpulseBody1;
                 w1 += mI1 * angularImpulseBody1;
             }
-            if (mBody2->getIsMotionEnabled()) {
+            if (mBody2->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint
                 const Vector3 linearImpulseBody2 = deltaLambdaLower * mSliderAxisWorld;
@@ -425,7 +430,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             mImpulseUpperLimit = std::max(mImpulseUpperLimit + deltaLambdaUpper, decimal(0.0));
             deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
 
-            if (mBody1->getIsMotionEnabled()) {
+            if (mBody1->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint
                 const Vector3 linearImpulseBody1 = deltaLambdaUpper * mSliderAxisWorld;
@@ -435,7 +440,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
                 v1 += inverseMassBody1 * linearImpulseBody1;
                 w1 += mI1 * angularImpulseBody1;
             }
-            if (mBody2->getIsMotionEnabled()) {
+            if (mBody2->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint
                 const Vector3 linearImpulseBody2 = -deltaLambdaUpper * mSliderAxisWorld;
@@ -462,7 +467,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
         mImpulseMotor = clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
         deltaLambdaMotor = mImpulseMotor - lambdaTemp;
 
-        if (mBody1->getIsMotionEnabled()) {
+        if (mBody1->isMotionEnabled()) {
 
             // Compute the impulse P=J^T * lambda for the motor
             const Vector3 linearImpulseBody1 = deltaLambdaMotor * mSliderAxisWorld;
@@ -470,7 +475,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             // Apply the impulse to the body
             v1 += inverseMassBody1 * linearImpulseBody1;
         }
-        if (mBody2->getIsMotionEnabled()) {
+        if (mBody2->isMotionEnabled()) {
 
             // Compute the impulse P=J^T * lambda for the motor
             const Vector3 linearImpulseBody2 = -deltaLambdaMotor * mSliderAxisWorld;
@@ -540,12 +545,12 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     Vector3 I1R1PlusUCrossN2(0, 0, 0);
     Vector3 I2R2CrossN1(0, 0, 0);
     Vector3 I2R2CrossN2(0, 0, 0);
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
         sumInverseMass += mBody1->getMassInverse();
         I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
         I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
         sumInverseMass += mBody2->getMassInverse();
         I2R2CrossN1 = mI2 * mR2CrossN1;
         I2R2CrossN2 = mI2 * mR2CrossN2;
@@ -560,7 +565,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getIsMotionEnabled() || mBody2->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -570,7 +575,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the Lagrange multiplier lambda for the 2 translation constraints
     Vector2 lambdaTranslation = mInverseMassMatrixTranslationConstraint * (-translationError);
 
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         const Vector3 linearImpulseBody1 = -mN1 * lambdaTranslation.x - mN2 * lambdaTranslation.y;
@@ -586,7 +591,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
         q1.normalize();
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints
         const Vector3 linearImpulseBody2 = mN1 * lambdaTranslation.x + mN2 * lambdaTranslation.y;
@@ -608,13 +613,13 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint.setToZero();
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint += mI1;
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint += mI2;
     }
-    if (mBody1->getIsMotionEnabled() || mBody2->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
@@ -627,7 +632,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
     Vector3 lambdaRotation = mInverseMassMatrixRotationConstraint * (-errorRotation);
 
-    if (mBody1->getIsMotionEnabled()) {
+    if (mBody1->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 3 rotation constraints
         const Vector3 angularImpulseBody1 = -lambdaRotation;
@@ -639,7 +644,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
         q1.normalize();
     }
-    if (mBody2->getIsMotionEnabled()) {
+    if (mBody2->isMotionEnabled()) {
 
         // Compute the impulse P=J^T * lambda for the 3 rotation constraints
         const Vector3 angularImpulseBody2 = lambdaRotation;
@@ -660,11 +665,11 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
             // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
             mInverseMassMatrixLimit = 0.0;
-            if (mBody1->getIsMotionEnabled()) {
+            if (mBody1->isMotionEnabled()) {
                 mInverseMassMatrixLimit += mBody1->getMassInverse() +
                                          mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis);
             }
-            if (mBody2->getIsMotionEnabled()) {
+            if (mBody2->isMotionEnabled()) {
                 mInverseMassMatrixLimit += mBody2->getMassInverse() +
                                            mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
             }
@@ -678,7 +683,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             // Compute the Lagrange multiplier lambda for the lower limit constraint
             decimal lambdaLowerLimit = mInverseMassMatrixLimit * (-lowerLimitError);
 
-            if (mBody1->getIsMotionEnabled()) {
+            if (mBody1->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint
                 const Vector3 linearImpulseBody1 = -lambdaLowerLimit * mSliderAxisWorld;
@@ -693,7 +698,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
                 q1.normalize();
             }
-            if (mBody2->getIsMotionEnabled()) {
+            if (mBody2->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint
                 const Vector3 linearImpulseBody2 = lambdaLowerLimit * mSliderAxisWorld;
@@ -716,7 +721,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             // Compute the Lagrange multiplier lambda for the upper limit constraint
             decimal lambdaUpperLimit = mInverseMassMatrixLimit * (-upperLimitError);
 
-            if (mBody1->getIsMotionEnabled()) {
+            if (mBody1->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint
                 const Vector3 linearImpulseBody1 = lambdaUpperLimit * mSliderAxisWorld;
@@ -731,7 +736,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
                 q1.normalize();
             }
-            if (mBody2->getIsMotionEnabled()) {
+            if (mBody2->isMotionEnabled()) {
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint
                 const Vector3 linearImpulseBody2 = -lambdaUpperLimit * mSliderAxisWorld;
@@ -768,7 +773,9 @@ void SliderJoint::enableMotor(bool isMotorEnabled) {
     mIsMotorEnabled = isMotorEnabled;
     mImpulseMotor = 0.0;
 
-    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    // Wake up the two bodies of the joint
+    mBody1->setIsSleeping(false);
+    mBody2->setIsSleeping(false);
 }
 
 // Return the current translation value of the joint
@@ -830,7 +837,9 @@ void SliderJoint::resetLimits() {
     mImpulseLowerLimit = 0.0;
     mImpulseUpperLimit = 0.0;
 
-    // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    // Wake up the two bodies of the joint
+    mBody1->setIsSleeping(false);
+    mBody2->setIsSleeping(false);
 }
 
 // Set the motor speed
@@ -840,7 +849,9 @@ void SliderJoint::setMotorSpeed(decimal motorSpeed) {
 
         mMotorSpeed = motorSpeed;
 
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        // Wake up the two bodies of the joint
+        mBody1->setIsSleeping(false);
+        mBody2->setIsSleeping(false);
     }
 }
 
@@ -852,6 +863,8 @@ void SliderJoint::setMaxMotorForce(decimal maxMotorForce) {
         assert(mMaxMotorForce >= 0.0);
         mMaxMotorForce = maxMotorForce;
 
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        // Wake up the two bodies of the joint
+        mBody1->setIsSleeping(false);
+        mBody2->setIsSleeping(false);
     }
 }

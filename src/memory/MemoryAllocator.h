@@ -27,6 +27,7 @@
 #define REACTPHYSICS3D_MEMORY_ALLOCATOR_H
 
 // Libraries
+#include <cstring>
 #include "../configuration.h"
 
 /// ReactPhysics3D namespace

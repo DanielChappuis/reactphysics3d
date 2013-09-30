@@ -47,10 +47,10 @@ class OverlappingPair {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the first body of the contact
-        CollisionBody* const mBody1;
+        CollisionBody* mBody1;
 
         /// Pointer to the second body of the contact
-        CollisionBody* const mBody2;
+        CollisionBody* mBody2;
 
         /// Persistent contact manifold
         ContactManifold mContactManifold;
@@ -100,6 +100,10 @@ class OverlappingPair {
 
         /// Return the contact manifold
         ContactManifold* getContactManifold();
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Return the pointer to first body

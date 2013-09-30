@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_BALL_AND_SOCKET_JOINT_H
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 #include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a ball-and-socket
  * joint. This structure will be used to create the actual ball-and-socket joint.
  */
-struct BallAndSocketJointInfo : public ConstraintInfo {
+struct BallAndSocketJointInfo : public JointInfo {
 
     public :
 
@@ -49,16 +49,17 @@ struct BallAndSocketJointInfo : public ConstraintInfo {
         /// Constructor
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
-                              : ConstraintInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace) {}
 };
 
 // Class BallAndSocketJoint
 /**
  * This class represents a ball-and-socket joint that allows arbitrary rotation
- * between two bodies.
+ * between two bodies. This joint has three degrees of freedom. It can be used to
+ * create a chain of bodies for instance.
  */
-class BallAndSocketJoint : public Constraint {
+class BallAndSocketJoint : public Joint {
 
     private :
 
@@ -104,16 +105,6 @@ class BallAndSocketJoint : public Constraint {
         /// Private assignment operator
         BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint);
 
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
-
-        /// Destructor
-        virtual ~BallAndSocketJoint();
-
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
 
@@ -128,6 +119,16 @@ class BallAndSocketJoint : public Constraint {
 
         /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
+
+        /// Destructor
+        virtual ~BallAndSocketJoint();
 };
 
 // Return the number of bytes used by the joint

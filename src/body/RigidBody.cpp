@@ -25,23 +25,54 @@
 
 // Libraries
 #include "RigidBody.h"
+#include "constraint/Joint.h"
 #include "../collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
- // Constructor
- RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
+// Constructor
+RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
                       CollisionShape *collisionShape, bodyindex id)
            : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
              mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true) {
+             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true),
+             mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)), mJointsList(NULL) {
 
     assert(collisionShape);
 }
 
 // Destructor
 RigidBody::~RigidBody() {
-
+    assert(mJointsList == NULL);
 }
+
+// Remove a joint from the joints list
+void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint) {
+
+    assert(joint != NULL);
+    assert(mJointsList != NULL);
+
+    // Remove the joint from the linked list of the joints of the first body
+    if (mJointsList->joint == joint) {   // If the first element is the one to remove
+        JointListElement* elementToRemove = mJointsList;
+        mJointsList = elementToRemove->next;
+        elementToRemove->JointListElement::~JointListElement();
+        memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+    }
+    else {  // If the element to remove is not the first one in the list
+        JointListElement* currentElement = mJointsList;
+        while (currentElement->next != NULL) {
+            if (currentElement->next->joint == joint) {
+                JointListElement* elementToRemove = currentElement->next;
+                currentElement->next = elementToRemove->next;
+                elementToRemove->JointListElement::~JointListElement();
+                memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+                break;
+            }
+            currentElement = currentElement->next;
+        }
+    }
+}
+
 

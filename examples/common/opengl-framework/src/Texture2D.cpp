@@ -52,7 +52,7 @@ Texture2D::~Texture2D() {
 
 // Create the texture
 void Texture2D::create(uint width, uint height, uint internalFormat, uint format, uint type,
-            void* data) throw(std::invalid_argument) {
+            void* data) {
 
     // Destroy the current texture
     destroy();

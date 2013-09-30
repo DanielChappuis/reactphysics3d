@@ -28,7 +28,7 @@
 
 // Libraries
 #include <vector>
-#include "../body/Body.h"
+#include "../body/CollisionBody.h"
 #include "../constraint/ContactPoint.h"
 #include "../memory/MemoryAllocator.h"
 
@@ -37,6 +37,35 @@ namespace reactphysics3d {
 
 // Constants
 const uint MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
+
+// Class declarations
+class ContactManifold;
+
+// Structure ContactManifoldListElement
+/**
+ * This structure represents a single element of a linked list of contact manifolds
+ */
+struct ContactManifoldListElement {
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer to the actual contact manifold
+        ContactManifold* contactManifold;
+
+        /// Next element of the list
+        ContactManifoldListElement* next;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactManifoldListElement(ContactManifold* initContactManifold,
+                                   ContactManifoldListElement* initNext)
+                                  :contactManifold(initContactManifold), next(initNext) {
+
+        }
+};
 
 // Class ContactManifold
 /**
@@ -59,11 +88,11 @@ class ContactManifold {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first body
-        Body* const mBody1;
+        /// Pointer to the first body of the contact
+        CollisionBody* mBody1;
 
-        /// Pointer to the second body
-        Body* const mBody2;
+        /// Pointer to the second body of the contact
+        CollisionBody* mBody2;
 
         /// Contact points in the manifold
         ContactPoint* mContactPoints[MAX_CONTACT_POINTS_IN_MANIFOLD];
@@ -86,6 +115,9 @@ class ContactManifold {
         /// Twist friction constraint accumulated impulse
         decimal mFrictionTwistImpulse;
 
+        /// True if the contact manifold has already been added into an island
+        bool mIsAlreadyInIsland;
+
         /// Reference to the memory allocator
         MemoryAllocator& mMemoryAllocator;
 
@@ -96,6 +128,12 @@ class ContactManifold {
 
         /// Private assignment operator
         ContactManifold& operator=(const ContactManifold& contactManifold);
+
+        /// Return a pointer to the first body of the contact manifold
+        CollisionBody* getBody1() const;
+
+        /// Return a pointer to the second body of the contact manifold
+        CollisionBody* getBody2() const;
 
         /// Return the index of maximum area
         int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;
@@ -109,15 +147,16 @@ class ContactManifold {
         /// Remove a contact point from the manifold
         void removeContactPoint(uint index);
 
-        /// Return true if two vectors are approximatively equal
-        bool isApproxEqual(const Vector3& vector1, const Vector3& vector2) const;
+        /// Return true if the contact manifold has already been added into an island
+        bool isAlreadyInIsland() const;
         
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(Body* const mBody1, Body* const mBody2, MemoryAllocator& memoryAllocator);
+        ContactManifold(CollisionBody* body1, CollisionBody* body2,
+                        MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~ContactManifold();
@@ -166,7 +205,22 @@ class ContactManifold {
 
         /// Return a contact point of the manifold
         ContactPoint* getContactPoint(uint index) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
+        friend class Island;
 };
+
+// Return a pointer to the first body of the contact manifold
+inline CollisionBody* ContactManifold::getBody1() const {
+    return mBody1;
+}
+
+// Return a pointer to the second body of the contact manifold
+inline CollisionBody* ContactManifold::getBody2() const {
+    return mBody2;
+}
 
 // Return the number of contact points in the manifold
 inline uint ContactManifold::getNbContactPoints() const {
@@ -227,6 +281,11 @@ inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpuls
 inline ContactPoint* ContactManifold::getContactPoint(uint index) const {
     assert(index >= 0 && index < mNbContactPoints);
     return mContactPoints[index];
+}
+
+// Return true if the contact manifold has already been added into an island
+inline bool ContactManifold::isAlreadyInIsland() const {
+    return mIsAlreadyInIsland;
 }
 
 }

@@ -49,7 +49,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroy right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
     const rp3d::SphereShape collisionShape(mRadius);
 
     // Compute the inertia tensor of the body using its collision shape

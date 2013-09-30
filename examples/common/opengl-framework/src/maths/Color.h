@@ -47,7 +47,7 @@ struct Color {
         // Constructor
         Color(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
 
-        // Constructor
+        // Copy-constructor
         Color(const Color& color) : r(color.r), g(color.g), b(color.b), a(color.a) {}
 
         // Destructor

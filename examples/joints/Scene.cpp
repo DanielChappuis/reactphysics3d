@@ -34,7 +34,6 @@ using namespace openglframework;
 Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                mPhongShader("shaders/phong.vert",
                                             "shaders/phong.frag"), mIsRunning(false) {
-
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
@@ -46,7 +45,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, -9.81, 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -128,8 +127,8 @@ void Scene::simulate() {
     if (mIsRunning) {
 
         // Update the motor speed of the Slider Joint (to move up and down)
-        long double motorSpeed = 3 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
-        mSliderJoint->setMotorSpeed(motorSpeed);
+        long double motorSpeed = 2 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
+        mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
 
         // Take a simulation step
         mDynamicsWorld->update();
@@ -167,8 +166,8 @@ void Scene::render() {
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    Color& diffCol = mLight0.getDiffuseColor();
-    Color& specCol = mLight0.getSpecularColor();
+    const Color& diffCol = mLight0.getDiffuseColor();
+    const Color& specCol = mLight0.getSpecularColor();
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
@@ -206,14 +205,17 @@ void Scene::createBallAndSocketJoints() {
                                                    mDynamicsWorld);
 
         // The fist box cannot move
-        if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(false);
-        else mBallAndSocketJointChainBoxes[i]->getRigidBody()->setIsMotionEnabled(true);
+        if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(false);
+        else mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(true);
+
+        // Add some angular velocity damping
+        mBallAndSocketJointChainBoxes[i]->getRigidBody()->setAngularDamping(rp3d::decimal(0.2));
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mBallAndSocketJointChainBoxes[i]->getRigidBody()->getMaterial();
-        material.setBounciness(0.4);
+        material.setBounciness(rp3d::decimal(0.4));
 
-        positionBox.y -= boxDimension.y + 0.5;
+        positionBox.y -= boxDimension.y + 0.5f;
     }
 
     // --------------- Create the joints --------------- //
@@ -240,34 +242,34 @@ void Scene::createSliderJoint() {
     // --------------- Create the first box --------------- //
 
     // Position of the box
-    openglframework::Vector3 positionBox1(0, 2.1, 0);
+    openglframework::Vector3 positionBox1(0, 2.1f, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mSliderJointBottomBox->getRigidBody()->setIsMotionEnabled(false);
+    mSliderJointBottomBox->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
-    material1.setBounciness(0.4);
+    material1.setBounciness(0.4f);
 
     // --------------- Create the second box --------------- //
 
     // Position of the box
-    openglframework::Vector3 positionBox2(0, 4.2, 0);
+    openglframework::Vector3 positionBox2(0, 4.2f, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    openglframework::Vector3 box2Dimension(1.5, 4, 1.5);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
+    openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
-    mSliderJointTopBox->getRigidBody()->setIsMotionEnabled(true);
+    mSliderJointTopBox->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
-    material2.setBounciness(0.4);
+    material2.setBounciness(0.4f);
 
     // --------------- Create the joint --------------- //
 
@@ -276,10 +278,10 @@ void Scene::createSliderJoint() {
     rp3d::RigidBody* body2 = mSliderJointTopBox->getRigidBody();
     const rp3d::Vector3& body1Position = body1->getTransform().getPosition();
     const rp3d::Vector3& body2Position = body2->getTransform().getPosition();
-    const rp3d::Vector3 anchorPointWorldSpace = 0.5 * (body2Position + body1Position);
+    const rp3d::Vector3 anchorPointWorldSpace = rp3d::decimal(0.5) * (body2Position + body1Position);
     const rp3d::Vector3 sliderAxisWorldSpace = (body2Position - body1Position);
     rp3d::SliderJointInfo jointInfo(body1, body2, anchorPointWorldSpace, sliderAxisWorldSpace,
-                                    -1.7, 1.7);
+                                    rp3d::decimal(-1.7), rp3d::decimal(1.7));
     jointInfo.isMotorEnabled = true;
     jointInfo.motorSpeed = 0.0;
     jointInfo.maxMotorForce = 10000.0;
@@ -299,14 +301,14 @@ void Scene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mPropellerBox->getRigidBody()->setIsMotionEnabled(true);
+    mPropellerBox->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
-    material.setBounciness(0.4);
+    material.setBounciness(rp3d::decimal(0.4));
 
     // --------------- Create the Hinge joint --------------- //
 
@@ -319,8 +321,8 @@ void Scene::createPropellerHingeJoint() {
     const rp3d::Vector3 hingeAxisWorldSpace(0, 1, 0);
     rp3d::HingeJointInfo jointInfo(body1, body2, anchorPointWorldSpace, hingeAxisWorldSpace);
     jointInfo.isMotorEnabled = true;
-    jointInfo.motorSpeed = -0.5 * PI;
-    jointInfo.maxMotorTorque = 60.0;
+    jointInfo.motorSpeed = - rp3d::decimal(0.5) * PI;
+    jointInfo.maxMotorTorque = rp3d::decimal(60.0);
     jointInfo.isCollisionEnabled = false;
 
     // Create the joint in the dynamics world
@@ -337,14 +339,14 @@ void Scene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , CUBE_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mFixedJointBox1->getRigidBody()->setIsMotionEnabled(true);
+    mFixedJointBox1->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
-    material1.setBounciness(0.4);
+    material1.setBounciness(rp3d::decimal(0.4));
 
     // --------------- Create the second box --------------- //
 
@@ -352,14 +354,14 @@ void Scene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , CUBE_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
 
     // The second box is allowed to move
-    mFixedJointBox2->getRigidBody()->setIsMotionEnabled(true);
+    mFixedJointBox2->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
-    material2.setBounciness(0.4);
+    material2.setBounciness(rp3d::decimal(0.4));
 
     // --------------- Create the first fixed joint --------------- //
 
@@ -394,9 +396,9 @@ void Scene::createFloor() {
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
-    material.setBounciness(0.3);
+    material.setBounciness(rp3d::decimal(0.3));
 }

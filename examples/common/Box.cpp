@@ -34,14 +34,14 @@ openglframework::VertexBufferObject Box::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Box::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
 bool Box::areVBOsCreated = false;
 VertexData Box::mCubeVertices[8] = {
- {openglframework::Vector3(1,1,1),openglframework::Vector3(1,1,1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(-1,1,1),openglframework::Vector3(-1,1,1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(-1,-1,1),openglframework::Vector3(-1,-1,1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(1,-1,1),openglframework::Vector3(1,-1,1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(1,-1,-1),openglframework::Vector3(1,-1,-1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(-1,-1,-1),openglframework::Vector3(-1,-1,-1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(-1,1,-1),openglframework::Vector3(-1,1,-1),openglframework::Color(0,0,1,1)},
- {openglframework::Vector3(1,1,-1),openglframework::Vector3(1,1,-1),openglframework::Color(0,0,1,1)}
+ {openglframework::Vector3(1,1,1),openglframework::Vector3(1,1,1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(-1,1,1),openglframework::Vector3(-1,1,1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(-1,-1,1),openglframework::Vector3(-1,-1,1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(1,-1,1),openglframework::Vector3(1,-1,1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(1,-1,-1),openglframework::Vector3(1,-1,-1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(-1,-1,-1),openglframework::Vector3(-1,-1,-1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(-1,1,-1),openglframework::Vector3(-1,1,-1),openglframework::Color(1,0,0,1)},
+ {openglframework::Vector3(1,1,-1),openglframework::Vector3(1,1,-1),openglframework::Color(1,0,0,1)}
 };
 GLuint Box::mCubeIndices[36] = { 0, 1, 2,
                                  2, 3, 0,
@@ -59,7 +59,7 @@ GLuint Box::mCubeIndices[36] = { 0, 1, 2,
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
          float mass, reactphysics3d::DynamicsWorld* dynamicsWorld)
-     : openglframework::Object3D() {
+    : openglframework::Object3D(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -77,7 +77,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroy right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
     const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     // Compute the inertia tensor of the body using its collision shape
@@ -120,6 +120,10 @@ void Box::render(openglframework::Shader& shader,
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+
+    // Set the vertex color
+    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+    shader.setVector4Uniform("vertexColor", color);
 
     // Bind the vertices VBO
     mVBOVertices.bind();

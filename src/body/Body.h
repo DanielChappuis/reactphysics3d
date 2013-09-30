@@ -47,6 +47,21 @@ class Body {
         /// ID of the body
         bodyindex mID;
 
+        /// True if the body has already been added in an island (for sleeping technique)
+        bool mIsAlreadyInIsland;
+
+        /// True if the body is allowed to go to sleep for better efficiency
+        bool mIsAllowedToSleep;
+
+        /// True if the body is active
+        bool mIsActive;
+
+        /// True if the body is sleeping (for sleeping technique)
+        bool mIsSleeping;
+
+        /// Elapsed time since the body velocity was bellow the sleep velocity
+        decimal mSleepTime;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -68,6 +83,21 @@ class Body {
         /// Return the id of the body
         bodyindex getID() const;
 
+        /// Return whether or not the body is allowed to sleep
+        bool isAllowedToSleep() const;
+
+        /// Set whether or not the body is allowed to go to sleep
+        void setIsAllowedToSleep(bool isAllowedToSleep);
+
+        /// Return whether or not the body is sleeping
+        bool isSleeping() const;
+
+        /// Return true if the body is active
+        bool isActive() const;
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 
@@ -79,11 +109,52 @@ class Body {
 
         /// Not equal operator
         bool operator!=(const Body& body2) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Return the id of the body
 inline bodyindex Body::getID() const {
     return mID;
+}
+
+// Return whether or not the body is allowed to sleep
+inline bool Body::isAllowedToSleep() const {
+    return mIsAllowedToSleep;
+}
+
+// Set whether or not the body is allowed to go to sleep
+inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
+    mIsAllowedToSleep = isAllowedToSleep;
+
+    if (!mIsAllowedToSleep) setIsSleeping(false);
+}
+
+// Return whether or not the body is sleeping
+inline bool Body::isSleeping() const {
+    return mIsSleeping;
+}
+
+// Return true if the body is active
+inline bool Body::isActive() const {
+    return mIsActive;
+}
+
+// Set the variable to know whether or not the body is sleeping
+inline void Body::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mSleepTime = decimal(0.0);
+    }
+    else {
+        if (mIsSleeping) {
+            mSleepTime = decimal(0.0);
+        }
+    }
+
+    mIsSleeping = isSleeping;
 }
 
 // Smaller than operator

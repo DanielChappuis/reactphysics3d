@@ -24,22 +24,31 @@
 ********************************************************************************/
 
 // Libraries
-#include "Constraint.h"
+#include "Island.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Constraint::Constraint(const ConstraintInfo& constraintInfo)
-           :mBody1(constraintInfo.body1), mBody2(constraintInfo.body2), mActive(true),
-            mType(constraintInfo.type),
-            mPositionCorrectionTechnique(constraintInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(constraintInfo.isCollisionEnabled){
+Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
+               MemoryAllocator& memoryAllocator)
+       : mBodies(NULL), mContactManifolds(NULL), mJoints(NULL), mNbBodies(0),
+         mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
 
-    assert(mBody1 != NULL);
-    assert(mBody2 != NULL);
+    // Allocate memory for the arrays
+    mNbAllocatedBytesBodies = sizeof(RigidBody*) * nbMaxBodies;
+    mBodies = (RigidBody**) mMemoryAllocator.allocate(mNbAllocatedBytesBodies);
+    mNbAllocatedBytesContactManifolds = sizeof(ContactManifold*) * nbMaxContactManifolds;
+    mContactManifolds = (ContactManifold**) mMemoryAllocator.allocate(
+                                                                mNbAllocatedBytesContactManifolds);
+    mNbAllocatedBytesJoints = sizeof(Joint*) * nbMaxJoints;
+    mJoints = (Joint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
 }
 
 // Destructor
-Constraint::~Constraint() {
+Island::~Island() {
 
+    // Release the memory of the arrays
+    mMemoryAllocator.release(mBodies, mNbAllocatedBytesBodies);
+    mMemoryAllocator.release(mContactManifolds, mNbAllocatedBytesContactManifolds);
+    mMemoryAllocator.release(mJoints, mNbAllocatedBytesJoints);
 }

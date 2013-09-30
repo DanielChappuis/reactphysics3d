@@ -44,7 +44,7 @@ namespace openglframework {
 // object that can be loaded from an OBJ file for instance.
 class Mesh : public Object3D {
 
-    private:
+    protected:
 
         // -------------------- Attributes -------------------- //
 

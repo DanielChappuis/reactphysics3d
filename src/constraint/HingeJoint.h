@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_HINGE_JOINT_H
 
 // Libraries
-#include "Constraint.h"
+#include "Joint.h"
 #include "../mathematics/mathematics.h"
 
 namespace reactphysics3d {
@@ -37,7 +37,7 @@ namespace reactphysics3d {
  * This structure is used to gather the information needed to create a hinge joint.
  * This structure will be used to create the actual hinge joint.
  */
-struct HingeJointInfo : public ConstraintInfo {
+struct HingeJointInfo : public JointInfo {
 
     public :
 
@@ -49,10 +49,10 @@ struct HingeJointInfo : public ConstraintInfo {
         /// Hinge rotation axis (in world-space coordinates)
         Vector3 rotationAxisWorld;
 
-        /// True if the slider limits are enabled
+        /// True if the hinge joint limits are enabled
         bool isLimitEnabled;
 
-        /// True if the slider motor is enabled
+        /// True if the hinge joint motor is enabled
         bool isMotorEnabled;
 
         /// Minimum allowed rotation angle (in radian) if limits are enabled.
@@ -74,7 +74,7 @@ struct HingeJointInfo : public ConstraintInfo {
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
                                 isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
@@ -85,7 +85,7 @@ struct HingeJointInfo : public ConstraintInfo {
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -98,7 +98,7 @@ struct HingeJointInfo : public ConstraintInfo {
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
                                decimal initMotorSpeed, decimal initMaxMotorTorque)
-                              : ConstraintInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -109,9 +109,10 @@ struct HingeJointInfo : public ConstraintInfo {
 // Class HingeJoint
 /**
  * This class represents a hinge joint that allows arbitrary rotation
- * between two bodies around a single axis.
+ * between two bodies around a single axis. This joint has one degree of freedom. It
+ * can be useful to simulate doors or pendulumns.
  */
-class HingeJoint : public Constraint {
+class HingeJoint : public Joint {
 
     private :
 
@@ -246,6 +247,21 @@ class HingeJoint : public Constraint {
         decimal computeCurrentHingeAngle(const Quaternion& orientationBody1,
                                          const Quaternion& orientationBody2);
 
+        /// Return the number of bytes used by the joint
+        virtual size_t getSizeInBytes() const;
+
+        /// Initialize before solving the constraint
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the velocity constraint
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+
+        /// Solve the position constraint (for position error correction)
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -294,21 +310,6 @@ class HingeJoint : public Constraint {
 
         /// Return the intensity of the current torque applied for the joint motor
         decimal getMotorTorque(decimal timeStep) const;
-
-        /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
-
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
 };
 
 // Return true if the limits or the joint are enabled

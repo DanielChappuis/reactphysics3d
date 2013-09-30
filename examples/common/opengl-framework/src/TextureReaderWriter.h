@@ -52,34 +52,26 @@ class TextureReaderWriter {
         TextureReaderWriter();
 
         // Read a TGA picture
-        static void readTGAPicture(const std::string& filename,
-                                   Texture2D& textureToCreate) throw(std::runtime_error);
+        static void readTGAPicture(const std::string& filename, Texture2D& textureToCreate);
 
         // Write a TGA picture
-        static void writeTGAPicture(const std::string& filename,
-                                    const Texture2D& texture) throw(std::runtime_error);
+        static void writeTGAPicture(const std::string& filename, const Texture2D& texture);
 
         // Read a JPEG picture
-        static void readJPEGPicture(const std::string& filename,
-                                    Texture2D& textureToCreate) throw(std::runtime_error);
+        static void readJPEGPicture(const std::string& filename, Texture2D& textureToCreate);
 
         // Write a JPEG picture
-        static void writeJPEGPicture(const std::string& filename,
-                                     const Texture2D& texture) throw(std::runtime_error);
+        static void writeJPEGPicture(const std::string& filename, const Texture2D& texture);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         // Load a texture from a file
-        static void loadTextureFromFile(const std::string& filename,
-                                        Texture2D& textureToCreate)
-                                        throw(std::runtime_error, std::invalid_argument);
+        static void loadTextureFromFile(const std::string& filename, Texture2D& textureToCreate);
 
         // Write a texture to a file
-        static void writeTextureToFile(const std::string& filename,
-                                       const Texture2D& texture)
-                                       throw(std::runtime_error, std::invalid_argument);
+        static void writeTextureToFile(const std::string& filename, const Texture2D& texture);
 };
 
 }
