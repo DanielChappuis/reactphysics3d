@@ -82,7 +82,7 @@ void CollisionDetection::computeBroadPhase() {
          it != mWorld->getBodiesEndIterator(); it++) {
 
         // If the body has moved
-        if ((*it)->getHasMoved()) {
+        if ((*it)->mHasMoved) {
 
             // Notify the broad-phase that the body has moved
             mBroadPhaseAlgorithm->updateObject(*it, (*it)->getAABB());

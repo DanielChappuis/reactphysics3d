@@ -121,7 +121,7 @@ void Box::render(openglframework::Shader& shader,
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
 
-    // TODO : REMOVE THIS
+    // Set the vertex color
     openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
     shader.setVector4Uniform("vertexColor", color);
 
@@ -155,11 +155,6 @@ void Box::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-}
-
-// Set the color of the box
-void Box::setColor(openglframework::Color& color) {
-    mColor = color;
 }
 
 // Update the transform matrix of the box

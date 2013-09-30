@@ -38,8 +38,6 @@
 #include <map>
 #include <set>
 #include <utility>
-#include <iostream>     // TODO : Delete this
-
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

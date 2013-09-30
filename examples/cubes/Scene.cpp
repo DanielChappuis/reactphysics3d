@@ -70,8 +70,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
-        cube->getRigidBody()->setIsMotionEnabled(true);
-        mMapBodyToBox.insert(std::make_pair<rp3d::RigidBody*, Box*>(cube->getRigidBody(), cube));
+        cube->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -86,9 +85,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->setIsMotionEnabled(false);
-
-    mMapBodyToBox.insert(std::make_pair<rp3d::RigidBody*, Box*>(mFloor->getRigidBody(), mFloor));
+    mFloor->getRigidBody()->enableMotion(false);
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
@@ -175,8 +172,8 @@ void Scene::render() {
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    Color& diffCol = mLight0.getDiffuseColor();
-    Color& specCol = mLight0.getSpecularColor();
+    const Color& diffCol = mLight0.getDiffuseColor();
+    const Color& specCol = mLight0.getSpecularColor();
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);

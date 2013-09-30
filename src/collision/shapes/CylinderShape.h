@@ -57,7 +57,7 @@ class CylinderShape : public CollisionShape {
         /// Radius of the base
         decimal mRadius;
 
-        /// Half height of the cone
+        /// Half height of the cylinder
         decimal mHalfHeight;
 
         // -------------------- Methods -------------------- //

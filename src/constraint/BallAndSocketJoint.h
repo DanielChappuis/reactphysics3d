@@ -56,7 +56,8 @@ struct BallAndSocketJointInfo : public JointInfo {
 // Class BallAndSocketJoint
 /**
  * This class represents a ball-and-socket joint that allows arbitrary rotation
- * between two bodies.
+ * between two bodies. This joint has three degrees of freedom. It can be used to
+ * create a chain of bodies for instance.
  */
 class BallAndSocketJoint : public Joint {
 
@@ -104,16 +105,6 @@ class BallAndSocketJoint : public Joint {
         /// Private assignment operator
         BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint);
 
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
-
-        /// Destructor
-        virtual ~BallAndSocketJoint();
-
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
 
@@ -128,6 +119,16 @@ class BallAndSocketJoint : public Joint {
 
         /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
+
+        /// Destructor
+        virtual ~BallAndSocketJoint();
 };
 
 // Return the number of bytes used by the joint

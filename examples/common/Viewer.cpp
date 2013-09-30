@@ -68,6 +68,7 @@ void Viewer::displayGUI() {
 // Display the FPS
 void Viewer::displayFPS() {
 
+#ifdef USE_FREEGLUT
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, mCamera.getWidth(), mCamera.getHeight(), 0, -1, 1);
@@ -80,4 +81,5 @@ void Viewer::displayFPS() {
     std::stringstream ss;
     ss << "FPS : " << fps;
     glutBitmapString(GLUT_BITMAP_HELVETICA_12, (const unsigned char*)ss.str().c_str());
+#endif
 }

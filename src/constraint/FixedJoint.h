@@ -116,16 +116,6 @@ class FixedJoint : public Joint {
         /// Private assignment operator
         FixedJoint& operator=(const FixedJoint& constraint);
 
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        FixedJoint(const FixedJointInfo& jointInfo);
-
-        /// Destructor
-        virtual ~FixedJoint();
-
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
 
@@ -140,6 +130,16 @@ class FixedJoint : public Joint {
 
         /// Solve the position constraint (for position error correction)
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        FixedJoint(const FixedJointInfo& jointInfo);
+
+        /// Destructor
+        virtual ~FixedJoint();
 };
 
 // Return the number of bytes used by the joint

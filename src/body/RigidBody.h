@@ -105,6 +105,9 @@ class RigidBody : public CollisionBody {
         /// Remove a joint from the joints list
         void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
 
+        /// Set the inverse of the mass
+        void setMassInverse(decimal massInverse);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -133,9 +136,6 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular velocity
         void setAngularVelocity(const Vector3& angularVelocity);
-
-        /// Set the inverse of the mass
-        void setMassInverse(decimal massInverse);
 
         /// Return the inverse of the mass of the body
         decimal getMassInverse() const;

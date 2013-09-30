@@ -74,7 +74,7 @@ class Box : public openglframework::Object3D {
         /// True if the VBOs have already been created
         static bool areVBOsCreated;
 
-        // TODO : REMOVE THIS
+        /// Main color of the box
         openglframework::Color mColor;
 
         // -------------------- Methods -------------------- //
@@ -103,12 +103,17 @@ class Box : public openglframework::Object3D {
         void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Set the color of the box
-        void setColor(openglframework::Color& color);
+        void setColor(const openglframework::Color& color);
 };
 
 // Return a pointer to the rigid body of the box
 inline rp3d::RigidBody* Box::getRigidBody() {
     return mRigidBody;
+}
+
+// Set the color of the box
+inline void Box::setColor(const openglframework::Color& color) {
+    mColor = color;
 }
 
 #endif

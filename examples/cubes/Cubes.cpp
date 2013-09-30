@@ -66,7 +66,12 @@ int main(int argc, char** argv) {
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
     glutKeyboardFunc(keyboard);
+
+#ifdef USE_FREEGLUT
     glutCloseFunc(finish);
+#else
+    atexit(finish);
+#endif
 
     // Glut main looop
     glutMainLoop();
@@ -114,7 +119,9 @@ void keyboard(unsigned char key, int x, int y) {
 
         // Escape key
         case 27:
-            glutLeaveMainLoop();
+            #ifdef USE_FREEGLUT
+                glutLeaveMainLoop();
+            #endif
             break;
 
         // Space bar
