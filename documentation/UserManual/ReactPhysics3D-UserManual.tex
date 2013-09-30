@@ -192,27 +192,198 @@
 
     \section{The Physics World}
 
-    The physics world will contain the bodies that you create and simulate them across time.
+    The physics world will contain the bodies and joints that you create. You will then be able run the simulation across time by updating the world.
+    The class \texttt{DynamicsWorld} represents the physics world in the ReactPhysics3D library.
 
     \subsection{Creating the Physics World}
 
+    The first thing you have to do when you want to simulate dynamics of rigid bodies in time with the ReactPhysics3D library is to create an instance
+    of the \texttt{DynamicsWorld}. You need to specify two parameters when constructing the world. The first one is the gravity acceleration  vector (in $m / s^2$) in the world and
+    the second one is the simulation time step (in seconds). Note that gravity is activated by default when you create the world. The time step is the fixed amount of time that will be simulated
+    each time a simulation step will be perform when updating the world. For real-time application, a time step of $\frac{1}{60}$ seconds (60 Hz) is usually used. Using a smaller time step
+    makes the simulation more precise but also more expensive to compute. \\
+
+    Here is how to create the world : \\
+
+    \begin{lstlisting}
+     // Gravity vector
+     rp3d::Vector3 gravity(0.0, -9.81, 0.0);
+
+     // Time step (in seconds)
+     rp3d::decimal timeStep = 1.0 / 60.0;
+
+     // Create the dynamics world
+     rp3d::DynamicsWorld world(gravity, timeStep);
+  \end{lstlisting}
+
     \subsection{Customizing the Physics World}
 
+    \subsubsection{Solver parameters}
+
+    ReactPhysics3D uses an iterative solver to solve contacts and joints. For contacts, there is a unique velocity solver and for joints there are a velocity and a
+    position solver. By default, the number of iterations of the velocity solver is 10 and the number of iterations for the position solver is 5. It is possible to
+    change the number of iterations for both solvers.
+
+    To do this, you need to use the following two methods : \\
+
+    \begin{lstlisting}
+     // Change the number of iterations of the velocity solver
+     world.setNbIterationsVelocitySolver(15);
+
+     // Change the number of iterations of the position solver
+     world.setNbIterationsPositionSolver(8);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Increasing the number of iterations of the solvers will make the simulation more precise but also more expensive to compute. Therefore, you need to change
+    those values only if needed.
+
+    \subsubsection{Sleeping}
+
+    The purpose of the sleeping technique is to deactivate resting bodies so that they are not simulated anymore. This is used to save computation because simulating many bodies is costly.
+    A body (or group of bodies) is awaken as soon as another body collides with it or a joint in which it is involed is enabled. The sleeping technique is enabled by default. You can disable it
+    using the following method : \\
+
+    \begin{lstlisting}
+     // Disable the sleeping technique
+     world.enableSleeping(false);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Note that it is not recommended to disable the sleeping technique because the simulating will become slower. It is also possible to deactivate the sleeping technique on a
+    per body basis.
+
+    // TODO : setSleepAngularVelocity and setSleepLinearVelocity, setTimeBeforeSleep()
+    
     \subsection{Updating the Physics World}
+
+    The first thing you have to do to simulate the dynamics of your world is to start the simulation using the following method : \\
+
+    \begin{lstlisting}
+     // Start the simulation
+     world.start();
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Then, each time you have to compute the next frame to render in your application, you need to update the state of the world. To do that, you simply need to call this method : \\
+
+    \begin{lstlisting}
+     // Update the world by taking a simulation step
+     world.update();
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    When the \texttt{DynamicsWorld::update()} method is called, collision detection is performed and the position and orientation of the bodies are updated accordingly.
+    After updating the world, you will be able to get the updated position and orientation of the bodies to render them in the next frame. Make sure that you call
+    the \texttt{DynamicsWorld::start()} method before calling the \texttt{DynamicsWorld::update()} method. \\
+
+    You can also use the \texttt{DynamicsWorld::stop()} method to stop the simulation. You will then be able to start it again and to continue updating it. \\
+
+    Note that you can get the elapsed time (in seconds) from the beginning of the physics simulation using the \texttt{DynamicsWorld::getPhysicsTime()} method. This can be useful to
+    create some animations.
 
     \subsection{Destroying the Physics World}
 
+    Do not forget to destroy the \texttt{DynamicsWorld} instance at the end of your program in order to release the allocated memory. If the object has been created statically, it will
+    automatically be destroy at the end of the scope in which it has been created. If the object has been created dynamically (using the \texttt{new} operator), you need to destroy
+    it with the \texttt{delete} operator.
+
     \section{Rigid Bodies}
+
+    Once the physics world has been created, you can create rigid bodies into the world. A rigid body will represent the objects you want to simulate in the physics world.
+    A rigid body has a mass, a collision shape, a position and an orientation. The physics world will compute collision between the bodies and will update their position and
+    orientation accordingly at each time step. You can also create joints between the bodies in the world. In ReactPhysics3D, the class \texttt{RigidBody} is used to describe a rigid body.
 
     \subsection{Creating a Rigid Body}
 
+    In order to create a rigid body, you need to specify a transform, its mass, its inertia tensor and a collision shape. The transform describes the initial
+    position and orientation of the body in the world. To do that, you need to create an instance of the \texttt{Transform} with a vector describing the
+    initial position and a quaternion for the initial orientation of the body. \\
+
+    In order that your rigid body can collide with other bodies in the world, you need to specify a collision shape. Take a look at section \ref{sec:collisionshapes} to learn about the
+    different collision shapes and how to create them. \\
+
+    To create a rigid body, you also need to give the mass of the body (in kilograms) and inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is
+    distributed inside the rigid body which will be used to calculate the rotation of the body. The inertia tensor can be calculate from the collision shape that you have created for the
+    body. You can find more information about this in section \ref{sec:inertiacollisionshape}. \\
+
+    You need to call the \texttt{DynamicsWorld::createRigidBody()} method to create a rigid body in the world previously created. This method will return a pointer to the instance
+    of the \texttt{RigidBody} class that has been created internally. You will then be able to use that pointer to get or set values to the body. \\
+
+    You can see in the following code how to create a rigid body with a box collision shape : \\
+
+    \begin{lstlisting}
+     // Create the collision shape of the rigid body
+     const rp3d::BoxShape collisionShape(rp3d::Vector3(1.0, 1.0, 1.0));
+
+     // Compute the inertia tensor of the body
+     rp3d::Matrix3x3 inertiaTensor;
+     collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+
+     // Initial position and orientation of the rigid body
+     rp3d::Vector3 initPosition(0.0, 3.0, 0.0);
+     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+     rp3d::Transform transform(initPosition, initOrientation);
+
+     // Create a rigid body in the world
+     rp3d::RigidBody* body;
+     body = dynamicsWorld->createRigidBody(transform, mass, inertiaTensor, collisionShape);
+  \end{lstlisting}
+
     \subsection{Customizing a Rigid Body}
+
+    TODO : Damping
 
     \subsection{Updating a Rigid Body}
 
+    When you call the \texttt{DynamicsWorld::update()} method, the collision between the bodies are computed and the joints are evaluated. Then, the bodies position and orientation
+    are updated accordingly. After calling this method, you can get the updated position and orientation of each body to render it. To do that, you simply need to use the
+    \texttt{RigidBody::getInterpolatedTransform()} method to get the interpolated transform. This transform represents the current local-to-world-space transformation. \\
+
+    Here is how to get the interpolated transform of a rigid body : \\
+
+    \begin{lstlisting}
+     // Here, body is a RigidBody* pointer previously created
+
+     // Get the interpolated transform of the rigid body
+     rp3d::Transform transform = body->getInterpolatedTransform();
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix, you can use the \texttt{Transform::getOpenGLMatrix()} method as in the following code : \\
+
+    \begin{lstlisting}
+   // Get the OpenGL matrix array of the transform
+   float matrix[16];
+   transform.getOpenGLMatrix(matrix);
+  \end{lstlisting}
+
     \subsection{Destroying a Rigid Body}
 
+    \begin{sloppypar}
+    It is really simple to destroy a rigid body. You simply need to use the \texttt{DynamicsWorld::destroyRigidBody()} method. You need to use the pointer to the body you
+    want to destroy as argument. Note that after calling that method, the pointer will not be valid anymore and therefore, you should not use it. Note that you must
+    destroy all the rigid bodies at the end of the simulation before you destroy the world. When you destroy a rigid body that was part of a joint, that joint will be automatically
+    destroyed as well. \\
+    \end{sloppypar}
+
+    Here is how to destroy a rigid body : \\
+
+    \begin{lstlisting}
+     // Here, world is an instance of the DynamicsWorld class
+     // and body is a RigidBody* pointer
+
+     // Destroy the rigid body
+    world.destroyRigidBody(body);
+  \end{lstlisting}
+
     \section{Collision Shapes}
+    \label{sec:collisionshapes}
 
     When you create a rigid body, you need to specify a collision shape. This shape will be used to test collision between the body and its environment.
     This section describes all the collision shapes available in the ReactPhysics3D library and how to use them. \\
@@ -426,8 +597,9 @@
   \end{lstlisting}
 
     \subsection{Inertia Tensor of a Collision Shape}
+    \label{sec:inertiacollisionshape}
 
-    When you create a rigid body, you need to specify its inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is distributed inside the rigid body and this
+    When you create a rigid body, you need to specify its inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is distributed inside the rigid body which
     will be used to calculate the rotation of the body. The inertia tensor depends on the mass and the shape of the body. \\
 
     You can use the collision shape of a rigid body to compute its inertia tensor. To do that, you need to use the \texttt{CollisionShape::computeLocalInertiaTensor()} method of your collision
@@ -478,7 +650,7 @@
     \begin{lstlisting}
      // Create the joint in the dynamics world
      rp3d::BallAndSocketJoint* joint;
-     joint = dynamic_cast<rp3d::BallAndSocketJoint*>(world->createJoint(jointInfo));
+     joint = dynamic_cast<rp3d::BallAndSocketJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -516,10 +688,8 @@
     \begin{lstlisting}
      // Create the hinge joint in the dynamics world
      rp3d::HingeJoint* joint;
-     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+     joint = dynamic_cast<rp3d::HingeJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
-
-     \vspace{0.6cm}
 
      \subsubsection{Limits}
 
@@ -546,18 +716,20 @@
 
       // Create the hinge joint in the dynamics world
      rp3d::HingeJoint* joint;
-     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+     joint = dynamic_cast<rp3d::HingeJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
 
      \vspace{0.6cm}
 
-     You can also use the \texttt{HingeJoint::enableLimit()}, \texttt{HingeJoint::setMinAngleLimit()} and \texttt{HingeJoint::setMaxAngleLimit()} to specify the limits of the joint after its
-     creation. See the API documentation for more information.
+     \begin{sloppypar}
+        It is also possible to use the \texttt{HingeJoint::enableLimit()}, \texttt{HingeJoint::setMinAngleLimit()} and \texttt{HingeJoint::setMaxAngleLimit()} methods to specify
+        the limits of the joint after its creation. See the API documentation for more information.
+     \end{sloppypar}
 
      \subsubsection{Motor}
 
      A motor is also available for the hinge joint. It can be used rotate the bodies around the hinge axis at a given angular speed and such that the torque applied to
-     rotate the bodies does not exceed the maximum allowed torque. The motor is disabled by default. If you want to use it, you first have to activate it using the
+     rotate the bodies does not exceed a maximum allowed torque. The motor is disabled by default. If you want to use it, you first have to activate it using the
      \texttt{isMotorEnabled} boolean variable of the \texttt{HingeJointInfo} object before you create the joint. Then, you need to specify the angular motor speed (in radians/seconds)
      using the \texttt{motorSpeed} variable and also the maximum allowed torque (in Newton $\cdot$ meters) with the \texttt{maxMotorTorque} variable. \\
 
@@ -578,17 +750,147 @@
 
       // Create the hinge joint in the dynamics world
      rp3d::HingeJoint* joint;
-     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+     joint = dynamic_cast<rp3d::HingeJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
 
      \vspace{0.6cm}
 
-     You can also use the \texttt{HingeJoint::enableMotor()}, \texttt{HingeJoint::setMotorSpeed()} and \texttt{HingeJoint::setMaxMotorTorque()} to enabled the motor of the joint after its
-     creation. See the API documentation for more information.
+     \begin{sloppypar}
+        It is also possible to use the \texttt{HingeJoint::enableMotor()}, \texttt{HingeJoint::setMotorSpeed()} and \texttt{HingeJoint::setMaxMotorTorque()} methods to
+        enable the motor of the joint after its creation. See the API documentation for more information.
+     \end{sloppypar}
 
     \subsection{Slider Joint}
 
+    The class \texttt{SliderJoint} describes a slider joint (or prismatic joint) that only allows relative translation along a single direction. It has a single degree of freedom and allows no
+    relative rotation. In order to create a slider joint, you first need to specify the anchor point (in world-space) and the slider axis direction (in world-space). The constructor of the
+    \texttt{SliderJointInfo} object needs two pointer to the bodies of the joint, the anchor point and the axis direction. Note that the two bodies have to be in a correct initial position when
+    the joint is created. \\
+
+    You can see in the following code how to specify the information to create a slider joint : \\
+
+    \begin{lstlisting}
+     // Anchor point in world-space
+     const rp3d::Vector3 anchorPoint = rp3d::decimal(0.5) * (body2Position + body1Position);
+
+     // Slider axis in world-space
+    const rp3d::Vector3 axis = (body2Position - body1Position);
+
+    // Create the joint info object
+    rp3d::SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Now, it is possible to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Note that this method will also return a pointer to the \texttt{SliderJoint} object that has been created internally. You will then
+    be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
+
+    Here is how to create the joint in the world : \\
+
+    \begin{lstlisting}
+     // Create the slider joint in the dynamics world
+     rp3d::SliderJoint* joint;
+     joint = dynamic_cast<rp3d::SliderJoint*>(world.createJoint(jointInfo));
+  \end{lstlisting}
+
+    \subsubsection{Limits}
+
+    It is also possible to control the range of the slider joint motion using limits. The limits are disabled by default. In order to use the limits when the joint is created, you first
+    need to activate them using the \texttt{isLimitEnabled} variable of the \texttt{SliderJointInfo} class. Then, you need to specify the minimum and maximum translation limits
+    (in meters) using the \texttt{minTranslationLimit} and \texttt{maxTranslation\-Limit} variables. Note that the initial position of the two bodies when the joint is created
+    corresponds to a translation of zero. Therefore, the minimum limit must be smaller or equal to zero and the maximum limit must be larger or equal to zero. \\
+
+    You can see in the following example how to set the limits when the slider joint is created : \\
+
+    \begin{lstlisting}
+     // Create the joint info object
+     rp3d::SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+     // Enable the limits of the joint
+     jointInfo.isLimitEnabled = true;
+
+     // Minimum translation limit
+     jointInfo.minTranslationLimit = -1.7;
+
+     // Maximum translation limit
+     jointInfo.maxTranslationLimit = 1.7;
+
+      // Create the hinge joint in the dynamics world
+     rp3d::SliderJoint* joint;
+     joint = dynamic_cast<rp3d::SliderJoint*>(world.createJoint(jointInfo));
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+ 
+   \begin{sloppypar}
+    You can also use the \texttt{SliderJoint::enableLimit()}, \texttt{SliderJoint::\-setMinTranslationLimit()} and \texttt{SliderJoint::setMaxTranslationLimit()} methods to enable the
+    limits of the joint after its creation. See the API documentation for more information.
+    \end{sloppypar}
+
+    \subsubsection{Motor}
+
+     The slider joint also has a motor. You can use it to translate the bodies along the slider axis at a given linear speed and such that the force applied to
+     move the bodies does not exceed a maximum allowed force. The motor is disabled by default. If you want to use it when the joint is created, you first have to activate it using the
+     \texttt{isMotorEnabled} boolean variable of the \texttt{SliderJointInfo} object before you create the joint. Then, you need to specify the linear motor speed (in meters/seconds)
+     using the \texttt{motorSpeed} variable and also the maximum allowed force (in Newtons) with the \texttt{maxMotorForce} variable. \\
+
+     For instance, here is how to enable the motor of the slider joint when the joint is created : \\
+
+     \begin{lstlisting}
+     // Create the joint info object
+     rp3d::SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+     // Enable the motor of the joint
+     jointInfo.isMotorEnabled = true;
+
+     // Motor linear speed
+     jointInfo.motorSpeed = 2.0;
+
+     // Maximum allowed force
+     jointInfo.maxMotorForce = 10.0;
+
+      // Create the slider joint in the dynamics world
+     rp3d::SliderJoint* joint;
+     joint = dynamic_cast<rp3d::SliderJoint*>(world.createJoint(jointInfo));
+  \end{lstlisting}
+
+     \vspace{0.6cm}
+
+     \begin{sloppypar}
+        It is also possible to use the \texttt{SliderJoint::enableMotor()}, \texttt{SliderJoint::setMotorSpeed()} and \texttt{SliderJoint::setMaxMotorForce()} methods to enable the
+        motor of the joint after its creation. See the API documentation for more information.
+     \end{sloppypar}
+
     \subsection{Fixed Joint}
+
+    The class \texttt{FixedJoint} describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not allowed to translate
+    or rotate with respect to each other. In order to create a fixed joint, you simply need to specify an anchor point (in world-space) to create the \texttt{FixedJointInfo}
+    object. \\
+
+    For instance, here is how to create the joint info object for a fixed joint : \\
+
+    \begin{lstlisting}
+     // Anchor point in world-space
+     rp3d::Vector3 anchorPoint(2.0, 3.0, 4.0);
+
+     // Create the joint info object
+     rp3d::FixedJointInfo jointInfo1(body1, body2, anchorPoint);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Now, it is possible to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Note that this method will also return a pointer to the \texttt{FixedJoint} object that has been created internally. You will then
+    be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
+
+    Here is how to create the joint in the world : \\
+
+    \begin{lstlisting}
+     // Create the fixed joint in the dynamics world
+     rp3d::FixedJoint* joint;
+     joint = dynamic_cast<rp3d::FixedJoint*>(world.createJoint(jointInfo));
+  \end{lstlisting}
 
     \subsection{Collision between the bodies of a Joint}
 
@@ -607,7 +909,7 @@
 
      // Create the joint in the dynamics world
      rp3d::HingeJoint* joint;
-     joint = dynamic_cast<rp3d::HingeJoint*>(world->createJoint(jointInfo));
+     joint = dynamic_cast<rp3d::HingeJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
 
     \subsection{Destroying a Joint}
@@ -620,7 +922,7 @@
      // created joint
 
      // Destroy the joint
-     world->destroyJoint(joint);
+     world.destroyJoint(joint);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -651,6 +953,10 @@
 
     In this example, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
     to set the motor or limits of the joints.
+
+    \section{Receiving Feedback}
+
+    \subsection{Contacts}
 
     \section{Profiler}
 
