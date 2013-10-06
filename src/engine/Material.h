@@ -66,13 +66,13 @@ class Material {
         /// Return the bounciness
         decimal getBounciness() const;
 
-        /// Set the bounciness
+        /// Set the bounciness.
         void setBounciness(decimal bounciness);
 
         /// Return the friction coefficient
         decimal getFrictionCoefficient() const;
 
-        /// Set the friction coefficient
+        /// Set the friction coefficient.
         void setFrictionCoefficient(decimal frictionCoefficient);
 
         /// Overloaded assignment operator
@@ -84,7 +84,9 @@ inline decimal Material::getBounciness() const {
     return mBounciness;
 }
 
-// Set the bounciness
+// Set the bounciness.
+/// The bounciness should be a value between 0 and 1. The value 1 is used for a
+/// very bouncy body and zero is used for a body that is not bouncy at all.
 inline void Material::setBounciness(decimal bounciness) {
     assert(bounciness >= decimal(0.0) && bounciness <= decimal(1.0));
     mBounciness = bounciness;
@@ -95,7 +97,9 @@ inline decimal Material::getFrictionCoefficient() const {
     return mFrictionCoefficient;
 }
 
-// Set the friction coefficient
+// Set the friction coefficient.
+/// The friction coefficient has to be a positive value. The value zero is used for no
+/// friction at all.
 inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
     assert(frictionCoefficient >= decimal(0.0));
     mFrictionCoefficient = frictionCoefficient;

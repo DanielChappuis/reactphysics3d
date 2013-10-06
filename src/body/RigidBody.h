@@ -188,7 +188,7 @@ class RigidBody : public CollisionBody {
         /// Apply an external force to the body at its gravity center.
         void applyForceToCenter(const Vector3& force);
 
-        /// Apply an external force to the body at a given point (in world-coordinates).
+        /// Apply an external force to the body at a given point (in world-space coordinates).
         void applyForce(const Vector3& force, const Vector3& point);
 
         /// Apply an external torque to the body.
@@ -361,7 +361,7 @@ inline void RigidBody::applyForceToCenter(const Vector3& force) {
     mExternalForce += force;
 }
 
-// Apply an external force to the body at a given point (in world-coordinates).
+// Apply an external force to the body at a given point (in world-space coordinates).
 /// If the point is not at the center of gravity of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
