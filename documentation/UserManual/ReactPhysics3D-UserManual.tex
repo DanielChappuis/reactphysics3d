@@ -81,8 +81,12 @@
     \url{http://www.cmake.org} or using you package-management program
     (apt, yum, \dots) on Linux. Then, you will be able to compile the library to create the static library
     file. In order to use ReactPhysics3D in your application, you can link your program with this static library.
-    If you have never runned cmake, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
-    it contains many useful information.
+    If you have never used cmake before, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
+    it contains many useful information. \\
+
+    Note that by default, the library is built in \emph{debugging} mode. In this mode, a lot of debugging information is compiled together with the code. This might cause the application to
+    run much slower that it should be in \emph{release} mode. Therefore, you should not forget to build the library in \emph{release} mode when releasing your final
+    application.
 
     \subsection{CMake using the command line (Linux and Mac OS X)}  
 
@@ -118,7 +122,11 @@
     
      Now, if you go into the folder you have chosen to build the
      library, you should be able to open the project file that corresponds to your IDE and compile
-     the library.
+     the library. \\
+
+     If your want to run the examples within the Microsoft Visual Studio IDE, you need to make sure that in the
+     \emph{Debugging} section of the \emph{Configuration Properties} of the example projects, the \emph{Working Directory} is set to \texttt{\$(OutDir)}.
+     Otherwise, you might have problems to run the examples.
 
      \subsection{CMake Variables}
      \label{sec:cmakevariables}
@@ -126,28 +134,28 @@
      You can find bellow the different CMake variables that you can set before generating the makefiles.
 
        \begin{description}
-         \item[CMAKE\_BUILD\_TYPE] If this variable is set to DEBUG, the library will be compiled in debugging mode.
+         \item[CMAKE\_BUILD\_TYPE] If this variable is set to \texttt{Debug}, the library will be compiled in debugging mode.
                                                     This mode should be used during development stage to know where things might crash.
                                                     In debugging mode, the library might run a bit slow due to all the debugging information
-                                                    that are used. However, if this variable is set to RELEASE, no debugging information is stored
+                                                    that are used. However, if this variable is set to \texttt{Release}, no debugging information is stored
                                                     and therefore, it will run much faster. This mode must be used when you compile for the final
                                                     release of you application.
                                                    
-         \item[COMPILE\_EXAMPLES] If this variable is ON, the examples of the reactphysics3d library will be compiled.
+         \item[COMPILE\_EXAMPLES] If this variable is \texttt{ON}, the examples of the reactphysics3d library will be compiled.
                                                     Note that you will need to have the Freeglut library installed on your system if you use
                                                     Windows or Linux and you will need to have the Glut library on Mac OS X if you want to
                                                     run those examples.
 
-         \item[COMPILE\_TESTS] If this variable is ON, the unit tests of the reactphysics3d library will be compiled. You will then
+         \item[COMPILE\_TESTS] If this variable is \texttt{ON}, the unit tests of the reactphysics3d library will be compiled. You will then
                                              be able to launch the tests to make sure that they are running fine on your system.
 
-          \item[PROFILING\_ENABLED] If this variable is ON, the integrated profiler will collect data will the application is running
-                                                      and the profiling report will be display on the console at the end of the application (in the
-                                                      destructor of the DynamicsWorld). This might be useful to see what part of the reactphysics3d
-                                                      library takes time during its execution. This variable must be set to OFF when you compile
+          \item[PROFILING\_ENABLED] If this variable is \texttt{ON}, the integrated profiler will collect data while the application is running
+                                                      and the profiling report will be displayed in the console at the end of the application (in the
+                                                      destructor of the \texttt{DynamicsWorld} class). This might be useful to see what part of the reactphysics3d
+                                                      library takes time during its execution. This variable must be set to \texttt{OFF} when you compile
                                                       for the final release of your application.
 
-          \item[DOUBLE\_PRECISION\_ENABLED] If this variable is ON, the reactphysics3d library will be compile with double floating point precision.
+          \item[DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the reactphysics3d library will be compile with double floating point precision.
                                                                     Otherwise, the library will be compile with single precision.
        \end{description}
        
@@ -197,7 +205,7 @@
 
     \subsection{Creating the Physics World}
 
-    The first thing you have to do when you want to simulate dynamics of rigid bodies in time with the ReactPhysics3D library is to create an instance
+    The first thing you have to do when you want to simulate the dynamics of rigid bodies in time with the ReactPhysics3D library is to create an instance
     of the \texttt{DynamicsWorld}. You need to specify two parameters when constructing the world. The first one is the gravity acceleration  vector (in $m / s^2$) in the world and
     the second one is the simulation time step (in seconds). Note that gravity is activated by default when you create the world. The time step is the fixed amount of time that will be simulated
     each time a simulation step will be perform when updating the world. For real-time application, a time step of $\frac{1}{60}$ seconds (60 Hz) is usually used. Using a smaller time step
@@ -220,9 +228,9 @@
 
     \subsubsection{Solver parameters}
 
-    ReactPhysics3D uses an iterative solver to solve contacts and joints. For contacts, there is a unique velocity solver and for joints there are a velocity and a
+    ReactPhysics3D uses an iterative solver to solve the contacts and joints. For contacts, there is a unique velocity solver and for joints there are a velocity and a
     position solver. By default, the number of iterations of the velocity solver is 10 and the number of iterations for the position solver is 5. It is possible to
-    change the number of iterations for both solvers.
+    change the number of iterations for both solvers. \\
 
     To do this, you need to use the following two methods : \\
 
@@ -240,10 +248,11 @@
     those values only if needed.
 
     \subsubsection{Sleeping}
+    \label{sec:sleeping}
 
-    The purpose of the sleeping technique is to deactivate resting bodies so that they are not simulated anymore. This is used to save computation because simulating many bodies is costly.
-    A body (or group of bodies) is awaken as soon as another body collides with it or a joint in which it is involed is enabled. The sleeping technique is enabled by default. You can disable it
-    using the following method : \\
+    The purpose of the sleeping technique is to deactivate resting bodies so that they are not simulated anymore. This is used to save computation time because simulating many bodies is costly.
+    A sleeping body (or group of sleeping bodies) is awaken as soon as another body collides with it or a joint in which it is involed is enabled. The sleeping technique is enabled by
+    default. You can disable it using the following method : \\
 
     \begin{lstlisting}
      // Disable the sleeping technique
@@ -252,10 +261,15 @@
 
     \vspace{0.6cm}
 
-    Note that it is not recommended to disable the sleeping technique because the simulating will become slower. It is also possible to deactivate the sleeping technique on a
-    per body basis.
+    Note that it is not recommended to disable the sleeping technique because the simulation will become slower. It is also possible to deactivate the sleeping technique on a
+    per body basis. See section \ref{sec:rigidbodysleeping} for more information. \\
 
-    // TODO : setSleepAngularVelocity and setSleepLinearVelocity, setTimeBeforeSleep()
+    \begin{sloppypar}
+    A body is put to sleep when its linear and angular velocity stay under a given velocity threshold for a certain amount of time (one second by default). It is possible to change the two
+    linear and angular velocity thresholds using the two methods \texttt{DynamicsWorld::setSleepLinearVelocity()} and \texttt{Dynamics::setSleepAngularVelocity()}. Note that the velocities must
+    be specified in meters per second. You can also change the amount of time (in seconds) the velocity of a body needs to stay under the threshold to be considered sleeping. To do this, use the
+    \texttt{DynamicsWorld::setTimeBeforeSleep()} method.
+   \end{sloppypar}
     
     \subsection{Updating the Physics World}
 
@@ -294,25 +308,25 @@
 
     \section{Rigid Bodies}
 
-    Once the physics world has been created, you can create rigid bodies into the world. A rigid body will represent the objects you want to simulate in the physics world.
+    Once the physics world has been created, you can create rigid bodies into the world. A rigid body will represent an object you want to simulate in the physics world.
     A rigid body has a mass, a collision shape, a position and an orientation. The physics world will compute collision between the bodies and will update their position and
     orientation accordingly at each time step. You can also create joints between the bodies in the world. In ReactPhysics3D, the class \texttt{RigidBody} is used to describe a rigid body.
 
     \subsection{Creating a Rigid Body}
 
-    In order to create a rigid body, you need to specify a transform, its mass, its inertia tensor and a collision shape. The transform describes the initial
-    position and orientation of the body in the world. To do that, you need to create an instance of the \texttt{Transform} with a vector describing the
+    In order to create a rigid body, you need to specify its transform, its mass, its inertia tensor and a collision shape. The transform describes the initial
+    position and orientation of the body in the world. You need to create an instance of the \texttt{Transform} with a vector describing the
     initial position and a quaternion for the initial orientation of the body. \\
 
     In order that your rigid body can collide with other bodies in the world, you need to specify a collision shape. Take a look at section \ref{sec:collisionshapes} to learn about the
     different collision shapes and how to create them. \\
 
-    To create a rigid body, you also need to give the mass of the body (in kilograms) and inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is
-    distributed inside the rigid body which will be used to calculate the rotation of the body. The inertia tensor can be calculate from the collision shape that you have created for the
+    To create a rigid body, you also need to give the mass of the body (in kilograms) and its inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is
+    distributed inside the rigid body which will be used to calculate the rotation of the body. The inertia tensor can be calculated from the collision shape that you have created for the
     body. You can find more information about this in section \ref{sec:inertiacollisionshape}. \\
 
     You need to call the \texttt{DynamicsWorld::createRigidBody()} method to create a rigid body in the world previously created. This method will return a pointer to the instance
-    of the \texttt{RigidBody} class that has been created internally. You will then be able to use that pointer to get or set values to the body. \\
+    of the \texttt{RigidBody} class that has been created internally. You will then be able to use that pointer to get or set values of the body. \\
 
     You can see in the following code how to create a rigid body with a box collision shape : \\
 
@@ -331,12 +345,134 @@
 
      // Create a rigid body in the world
      rp3d::RigidBody* body;
-     body = dynamicsWorld->createRigidBody(transform, mass, inertiaTensor, collisionShape);
+     body = dynamicsWorld.createRigidBody(transform, mass, inertiaTensor, collisionShape);
   \end{lstlisting}
 
     \subsection{Customizing a Rigid Body}
 
-    TODO : Damping
+    Once a rigid body has been created, you can change some of its properties.
+
+    \subsubsection{Static Rigid Body}
+
+    \begin{sloppypar}
+        By default, the bodies you create in the world are not static. If the rigid body is static and is not supposed to move, you need to specify it using the \texttt{RigidBody::enableMotion()}
+        method as follows : \\
+    \end{sloppypar}
+
+    \begin{lstlisting}
+     // Specify that the body cannot move
+     rigidBody->enableMotion(false);
+  \end{lstlisting}
+
+    \subsubsection{Gravity}
+
+    By default, all the rigid bodies with react to the gravity force of the world. If you do not want the gravity to be applied to a given body, you can disable
+    it using the \texttt{RigidBody::enableGravity()} method as in the following example : \\
+
+    \begin{lstlisting}
+     // Disable gravity for this body
+     rigidBody->enableGravity(false);
+  \end{lstlisting}
+
+    \subsubsection{Material of a Rigid Body}
+
+    The material of a rigid body is used to describe its different physical properties. The class \texttt{Material} represents the material of a body. Each body that
+    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::getMaterial()} method. Then, you will be able to change some
+    properties. \\
+
+    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy object and the value 0 means that
+    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::setBounciness()} method. \\
+
+    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be applied when the body is in contact with
+    another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
+    \texttt{Material::setFrictionCoefficient()} method. \\
+
+    Here is how to get the material of a rigid body and how to modify some of its properties : \\
+
+    \begin{lstlisting}
+     // Get the current material of the body
+     rp3d::Material& material = rigidBody->getMaterial();
+
+     // Change the bounciness of the body
+     material.setBounciness(rp3d::decimal(0.4));
+
+    // Change the friction coefficient of the body
+    material.setFrictionCoefficient(rp3d::decimal(0.2));
+  \end{lstlisting}
+
+    \subsubsection{Velocity Damping}
+
+    \begin{sloppypar}
+        Damping is the effect of reducing the velocity of the rigid body during the simulation. By default, no damping is applied. However, you can choose to damp
+        the linear or/and the angular velocity of a rigid body. For instance, without angular damping a pendulum will never come to rest. You need to use the
+        \texttt{RigidBody::setLinearDamping()} and \texttt{RigidBody::setAngularDamping()} methods to change the damping values. The damping value has to be positive and
+        a value of zero means no damping at all.
+    \end{sloppypar}
+
+    \subsubsection{Sleeping}
+    \label{sec:rigidbodysleeping}
+
+   As described in section \ref{sec:sleeping}, the sleeping technique is used to disable the simulation of the resting bodies. By default the bodies are allowed to sleep when they
+   come to rest. However, if you do not want a given body to be put to sleep, you can use the \texttt{Body::setIsAllowedToSleep()} method as in the next example : \\
+
+   \begin{lstlisting}
+    // This rigid body cannot sleep
+    rigidBody->setIsAllowedToSleep(false); 
+ \end{lstlisting}
+
+    \subsubsection{Applying Force or Torque to a Rigid Body}
+
+    During the simulation, you can apply a force or a torque to a given rigid body. First, you can apply a force to the center of mass of the rigid body using the
+    \texttt{RigidBody::applyForceToCenter()} method. You need to specifiy the force vector (in Newton) as a parameter. If the force is applied to the center of mass, no
+    torque will be created and only the linear motion of the body will be affected. \\
+
+    \begin{lstlisting}
+     // Force vector (in Newton)
+     rp3d::Vector3 force(2.0, 0.0, 0.0);
+ 
+     // Apply a force to the center of the body
+     rigidBody->applyForceToCenter(force);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    \begin{sloppypar}
+        You can also apply a force to any given point (in world-space) using the \texttt{RigidBody::applyForce()} method. You need to specify the force vector (in Newton) and the point
+        (in world-space) where to apply the given force. Note that if the point is not the center of mass of the body, applying a force will generate some torque and therefore, the
+        angular motion of the body will be affected as well. \\
+    \end{sloppypar}
+
+    \begin{lstlisting}
+     // Force vector (in Newton)
+     rp3d::Vector3 force(2.0, 0.0, 0.0);
+
+     // Point where the force is applied
+     rp3d::Vector3 point(4.0, 5.0, 6.0);
+ 
+     // Apply a force to the body
+     rigidBody->applyForce(force, point);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+     \begin{sloppypar}
+        It is also possible to apply a torque to a given body using the \texttt{RigidBody::applyTorque()} method. You simply need to specify the torque vector (in Newton $\cdot$ meter) as
+        in the following example : \\
+     \end{sloppypar}
+
+    \begin{lstlisting}
+     // Torque vector
+     rp3d::Vector3 torque(0.0, 3.0, 0.0);
+
+     // Apply a torque to the body
+     rigidBody->applyTorque(torque);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Note that when you call the previous methods, the specified force/torque will be added to the total force/torque applied to the rigid body and that at the end of each call to the
+    \texttt{DynamicsWorld::update()}, the total force/torque of all the rigid bodies will be reset to zero. Therefore, you might need to call the previous methods during several frames
+    if you want the force/torque to be applied during a certain amount of time.
 
     \subsection{Updating a Rigid Body}
 
@@ -379,7 +515,7 @@
      // and body is a RigidBody* pointer
 
      // Destroy the rigid body
-    world.destroyRigidBody(body);
+     world.destroyRigidBody(body);
   \end{lstlisting}
 
     \section{Collision Shapes}
@@ -394,7 +530,7 @@
     for this small margin with the way you render the object. \\
 
     Once you have created a collision shape object, you need to used it when you create a rigid body in the physics world using the
-    \texttt{DynamicsWorld::createRigidBody()} method. Note that during the rigid body creating, the collision shape object that you gave as a parameter
+    \texttt{DynamicsWorld::createRigidBody()} method. Note that during the rigid body creation, the collision shape object that you gave as a parameter
     will be copied internally. Therefore, you can destroy the collision shape object right after the rigid body creation.
 
     \subsection{Box Shape}
@@ -439,7 +575,7 @@
         \label{fig:sphereshape}
     \end{figure}
 
-    The \texttt{SphereShape} class describes a sphere collision shape centered at the origin of the body local space. You only need to specify the radius of sphere to create it. \\
+    The \texttt{SphereShape} class describes a sphere collision shape centered at the origin of the body local space. You only need to specify the radius of the sphere to create it. \\
 
     For instance, if you want to create a sphere shape with a radius of 2 meters, you need to use the following code : \\
 
@@ -548,7 +684,7 @@
 
     The class \texttt{ConvexMeshShape} can be used to describe the shape of a convex mesh. In order to create a convex mesh shape, you need to supply the array with the coordinates of
     the vertices of the mesh. The array is supposed to start with the three X, Y and Z coordinates of the first vertex, then the X, Y and Z coordinates of the second vertex and so on.
-    The first parameter of the \texttt{ConvexMeshShape} constructor is a pointer to the array of vertices coordinates, the second parameter is the number of vertices in the array and
+    The first parameter of the \texttt{ConvexMeshShape} constructor is a pointer to the array of the vertices coordinates, the second parameter is the number of vertices in the array and
     the third parameter is the size (in bytes) of the data needed for a single vertex in the array (data used by all the three coordinates of a single vertex).
 
     \begin{lstlisting}
@@ -558,7 +694,7 @@
 
     \vspace{0.6cm}
 
-    You need to make sure that the mesh you provide is indeed convex and also that the its origin of its local-space is inside the mesh. \\
+    You need to make sure that the mesh you provide is indeed convex and also that the origin of its local-space is inside the mesh. \\
 
     The collision detection test with a convex mesh shape runs in $O(n)$ where $n$ is the number of vertices in the mesh. Collision detection can become expensive if there are
     too many vertices in the mesh. It is possible to speed up the collision detection by providing information about the edges of the convex mesh. If you provide edges information
@@ -599,11 +735,11 @@
     \subsection{Inertia Tensor of a Collision Shape}
     \label{sec:inertiacollisionshape}
 
-    When you create a rigid body, you need to specify its inertia tensor. The inertia tensor is a $3 \times 3$ matrix decribing how the mass is distributed inside the rigid body which
+    When you create a rigid body, you need to specify its inertia tensor. The inertia tensor is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which
     will be used to calculate the rotation of the body. The inertia tensor depends on the mass and the shape of the body. \\
 
     You can use the collision shape of a rigid body to compute its inertia tensor. To do that, you need to use the \texttt{CollisionShape::computeLocalInertiaTensor()} method of your collision
-    shape. This method takes two parameters. The first one if the inertia tensor matrix that need to be computed and the second one is the mass of the rigid body (in kilograms). For instance,
+    shape. This method takes two parameters. The first one is the inertia tensor matrix that has to be computed and the second one is the mass of the rigid body (in kilograms). For instance,
     if you want to compute the inertia tensor matrix of a capsule shape with a mass of 3 kilograms, here is what the code looks like : \\
 
     \begin{lstlisting}
@@ -618,14 +754,14 @@
     When the motion of the first body of the joint is known, the relative motion of the second body has at most six degrees of freedom (three for the
     translation and three for the rotation). The different joints can reduce the number of degrees of freedom between two rigid bodies. \\
 
-    Some joints have limits to control the range of motion and some joints have motors to automatically move the the bodies of the joint at a given speed. \\
+    Some joints have limits to control the range of motion and some joints have motors to automatically move the bodies of the joint at a given speed. \\
     
     \subsection{Ball and Socket Joint}
 
     The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot translate with respect to each other.
-    However, they can rotate freely around a common anchor point. This joint has three degrees of freedom. This joint can be used to simulate a chain of bodies for instance. \\
+    However, they can rotate freely around a common anchor point. This joint has three degrees of freedom and can be used to simulate a chain of bodies for instance. \\
 
-    In order to create a ball and socket joint, you first need to create an object of the \texttt{BallAndSocketJointInfo} class with the necessary information. You need to provide the pointers to the
+    In order to create a ball and socket joint, you first need to create an instance of the \texttt{BallAndSocketJointInfo} class with the necessary information. You need to provide the pointers to the
     two rigid bodies and also the coordinates of the anchor point (in world-space). At the joint creation, the world-space anchor point will be converted into the local-space of the two rigid
     bodies and then, the joint will make sure that the two local-space anchor points match in world-space. Therefore, the two bodies need to be in a correct position at the joint creation. \\
 
@@ -728,7 +864,7 @@
 
      \subsubsection{Motor}
 
-     A motor is also available for the hinge joint. It can be used rotate the bodies around the hinge axis at a given angular speed and such that the torque applied to
+     A motor is also available for the hinge joint. It can be used to rotate the bodies around the hinge axis at a given angular speed and such that the torque applied to
      rotate the bodies does not exceed a maximum allowed torque. The motor is disabled by default. If you want to use it, you first have to activate it using the
      \texttt{isMotorEnabled} boolean variable of the \texttt{HingeJointInfo} object before you create the joint. Then, you need to specify the angular motor speed (in radians/seconds)
      using the \texttt{motorSpeed} variable and also the maximum allowed torque (in Newton $\cdot$ meters) with the \texttt{maxMotorTorque} variable. \\
@@ -764,7 +900,7 @@
 
     The class \texttt{SliderJoint} describes a slider joint (or prismatic joint) that only allows relative translation along a single direction. It has a single degree of freedom and allows no
     relative rotation. In order to create a slider joint, you first need to specify the anchor point (in world-space) and the slider axis direction (in world-space). The constructor of the
-    \texttt{SliderJointInfo} object needs two pointer to the bodies of the joint, the anchor point and the axis direction. Note that the two bodies have to be in a correct initial position when
+    \texttt{SliderJointInfo} object needs two pointers to the bodies of the joint, the anchor point and the axis direction. Note that the two bodies have to be in a correct initial position when
     the joint is created. \\
 
     You can see in the following code how to specify the information to create a slider joint : \\
@@ -897,7 +1033,7 @@
     By default the two bodies involved in a joint are able to collide with each other. However, it is possible to disable the collision between the two bodies that are part
     of the joint. To do it, you simply need to set the variable \texttt{isCollisionEnabled} of the joint info object to \emph{false} when you create the joint. \\
 
-    For instance, when you create a \texttt{HingeJointInfo} object in order to construct a hinge joint, you can disable collision between the two bodies of the joint as in the
+    For instance, when you create a \texttt{HingeJointInfo} object in order to construct a hinge joint, you can disable the collision between the two bodies of the joint as in the
     following example : \\
 
     \begin{lstlisting}
@@ -914,8 +1050,10 @@
 
     \subsection{Destroying a Joint}
 
+    \begin{sloppypar}
     In order to destroy a joint, you simply need to call the \texttt{DynamicsWorld::destroyJoint()} method using the pointer to
     a previously created joint object as argument as shown in the following code : \\
+   \end{sloppypar}
 
     \begin{lstlisting}
      // rp3d::BallAndSocketJoint* joint is a previously
@@ -940,9 +1078,9 @@
 
     \subsection{Cubes}
 
-    In this examples, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
+    In this example, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
     the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this demo,
-    the cubes are green when they are inactive and become red as they get inactive (sleeping).
+    the cubes are green when they are active and become red as they get inactive (sleeping).
 
     \subsection{Collision Shapes}
 
@@ -956,9 +1094,32 @@
 
     \section{Receiving Feedback}
 
+    Sometimes, you want to receive notifications from the physics engine when a given event happened. The \texttt{EventListener} class can be used for that purpose. In order to use
+    it, you need to create a new class that inherits from the \texttt{EventListener} class and overrides some methods that will be called by the ReactPhysics3D library when some events
+    occur. You also need to register your class in the physics world using the \texttt{DynamicsWorld::setEventListener()} as in the following code : \\
+
+    \begin{lstlisting}
+    // Here, YourEventListener is a class that inherits
+    // from the EventListener class of reactphysics3d
+    YourEventListener listener;
+
+    // Register your event listener class
+    world.setEventListener(&listener);
+  \end{lstlisting}
+
     \subsection{Contacts}
 
+   If you want to be notified when two bodies that were separated before become in contact, you need to override the \texttt{EventListener::beginContact()} method in your event
+   listener class. Then, this method will be called when the two separated bodies becomes in contact. \\
+
+   If you receive a notification when a new contact between two bodies is found, you need to override the \texttt{EventListener::newContact()} method in your event listener class. Then, this
+   method will be called when a new contact is found.
+
     \section{Profiler}
+
+    If you build the library with the \texttt{PROFILING\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}), a real-time profiler will collect information while the application
+    is running. Then, at the end of your application, when the destructor of the \texttt{DynamicsWorld} class is called, information about the running time of the library will be displayed in the
+    standard output. This can be useful to know where time is spent in the different parts of the ReactPhysics3D library in case your application is too slow.
 
    \section{API Documentation}
 
