@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TRIANGLES_STORE_H
-#define TRIANGLES_STORE_H
+#ifndef REACTPHYSICS3D_TRIANGLES_STORE_H
+#define REACTPHYSICS3D_TRIANGLES_STORE_H
 
 #include "TriangleEPA.h"
 

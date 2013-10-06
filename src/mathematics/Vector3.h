@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#ifndef REACTPHYSICS3D_VECTOR3_H
+#define REACTPHYSICS3D_VECTOR3_H
 
 // Libraries
 #include <cmath>
@@ -110,9 +110,6 @@ struct Vector3 {
 
         /// Return the axis with the maximal value
         int getMaxAxis() const;
-
-        /// Return true if two vectors are parallel
-        bool isParallelWith(const Vector3& vector) const;
 
         /// Overloaded operator for the equality condition
         bool operator== (const Vector3& vector) const;

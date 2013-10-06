@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TRIANGLE_EPA_H
-#define TRIANGLE_EPA_H
+#ifndef REACTPHYSICS3D_TRIANGLE_EPA_H
+#define REACTPHYSICS3D_TRIANGLE_EPA_H
 
 // Libraries
 #include "../../../mathematics/mathematics.h"

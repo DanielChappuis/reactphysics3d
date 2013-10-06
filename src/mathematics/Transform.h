@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TRANSFORM_H
-#define	TRANSFORM_H
+#ifndef REACTPHYSICS3D_TRANSFORM_H
+#define	REACTPHYSICS3D_TRANSFORM_H
 
 // Libraries
 #include "Matrix3x3.h"
@@ -92,7 +92,7 @@ class Transform {
         void getOpenGLMatrix(decimal* openglMatrix) const;
 
         /// Return the inverse of the transform
-        Transform inverse() const;
+        Transform getInverse() const;
 
         /// Return an interpolated transform
         static Transform interpolateTransforms(const Transform& oldTransform,
@@ -167,7 +167,7 @@ inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
 }
 
 // Return the inverse of the transform
-inline Transform Transform::inverse() const {
+inline Transform Transform::getInverse() const {
     const Quaternion& invQuaternion = mOrientation.getInverse();
     Matrix3x3 invMatrix = invQuaternion.getMatrix();
     return Transform(invMatrix * (-mPosition), invQuaternion);

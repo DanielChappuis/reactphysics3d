@@ -43,9 +43,10 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world)
-                   : mWorld(world), mNarrowPhaseGJKAlgorithm(mMemoryPoolContactInfos),
-                     mNarrowPhaseSphereVsSphereAlgorithm(mMemoryPoolContactInfos) {
+CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator)
+                   : mWorld(world), mMemoryAllocator(memoryAllocator),
+                     mNarrowPhaseGJKAlgorithm(memoryAllocator),
+                     mNarrowPhaseSphereVsSphereAlgorithm(memoryAllocator) {
 
     // Create the broad-phase algorithm that will be used (Sweep and Prune with AABB)
     mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(*this);
@@ -61,6 +62,8 @@ CollisionDetection::~CollisionDetection() {
 
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
+
+    PROFILE("CollisionDetection::computeCollisionDetection()");
 	    
     // Compute the broad-phase collision detection
     computeBroadPhase();
@@ -72,12 +75,14 @@ void CollisionDetection::computeCollisionDetection() {
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
+    PROFILE("CollisionDetection::computeBroadPhase()");
+
     // Notify the broad-phase algorithm about the bodies that have moved since last frame
     for (set<CollisionBody*>::iterator it = mWorld->getBodiesBeginIterator();
          it != mWorld->getBodiesEndIterator(); it++) {
 
         // If the body has moved
-        if ((*it)->getHasMoved()) {
+        if ((*it)->mHasMoved) {
 
             // Notify the broad-phase that the body has moved
             mBroadPhaseAlgorithm->updateObject(*it, (*it)->getAABB());
@@ -87,11 +92,14 @@ void CollisionDetection::computeBroadPhase() {
 
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
+
+    PROFILE("CollisionDetection::computeNarrowPhase()");
+
     map<bodyindexpair, BroadPhasePair*>::iterator it;
     
     // For each possible collision pair of bodies
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
-        ContactInfo* contactInfo = NULL;
+        ContactPointInfo* contactInfo = NULL;
 
         BroadPhasePair* pair = (*it).second;
         assert(pair != NULL);
@@ -101,6 +109,12 @@ void CollisionDetection::computeNarrowPhase() {
         
         // Update the contact cache of the overlapping pair
         mWorld->updateOverlappingPair(pair);
+
+        // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
+        if (mNoCollisionPairs.count(pair->getBodiesIndexPair()) > 0) continue;
+
+        // Check if the two bodies are sleeping, if so, we do no test collision between them
+        if (body1->isSleeping() && body2->isSleeping()) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(
@@ -117,12 +131,18 @@ void CollisionDetection::computeNarrowPhase() {
                                                contactInfo)) {
             assert(contactInfo != NULL);
 
+            // Set the bodies of the contact
+            contactInfo->body1 = dynamic_cast<RigidBody*>(body1);
+            contactInfo->body2 = dynamic_cast<RigidBody*>(body2);
+            assert(contactInfo->body1 != NULL);
+            assert(contactInfo->body2 != NULL);
+
             // Notify the world about the new narrow-phase contact
             mWorld->notifyNewContact(pair, contactInfo);
 
-            // Delete and remove the contact info from the memory pool
-            contactInfo->ContactInfo::~ContactInfo();
-            mMemoryPoolContactInfos.freeObject(contactInfo);
+            // Delete and remove the contact info from the memory allocator
+            contactInfo->ContactPointInfo::~ContactPointInfo();
+            mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
 }
@@ -135,7 +155,7 @@ void CollisionDetection::broadPhaseNotifyAddedOverlappingPair(BodyPair* addedPai
     bodyindexpair indexPair = addedPair->getBodiesIndexPair();
 
     // Create the corresponding broad-phase pair object
-    BroadPhasePair* broadPhasePair = new (mMemoryPoolBroadPhasePairs.allocateObject())
+    BroadPhasePair* broadPhasePair = new (mMemoryAllocator.allocate(sizeof(BroadPhasePair)))
                                              BroadPhasePair(addedPair->body1, addedPair->body2);
     assert(broadPhasePair != NULL);
 
@@ -162,8 +182,8 @@ void CollisionDetection::broadPhaseNotifyRemovedOverlappingPair(BodyPair* remove
     // Notify the world about the removed broad-phase pair
     mWorld->notifyRemovedOverlappingPair(broadPhasePair);
 
-    // Remove the overlapping pair from the memory pool
+    // Remove the overlapping pair from the memory allocator
     broadPhasePair->BroadPhasePair::~BroadPhasePair();
-    mMemoryPoolBroadPhasePairs.freeObject(broadPhasePair);
+    mMemoryAllocator.release(broadPhasePair, sizeof(BroadPhasePair));
     mOverlappingPairs.erase(indexPair);
 }

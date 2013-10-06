@@ -27,13 +27,9 @@
 #ifndef TEST_TRANSFORM_H
 #define TEST_TRANSFORM_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Transform.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -114,7 +110,7 @@ class TestTransform : public Test {
 
         /// Test the inverse
         void testInverse() {
-            Transform inverseTransform = mTransform1.inverse();
+            Transform inverseTransform = mTransform1.getInverse();
             Vector3 vector(2, 3, 4);
             Vector3 tempVector = mTransform1 * vector;
             Vector3 tempVector2 = inverseTransform * tempVector;
@@ -216,3 +212,5 @@ class TestTransform : public Test {
  };
 
 }
+
+#endif

@@ -23,16 +23,22 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef RIGID_BODY_H
-#define RIGID_BODY_H
+#ifndef REACTPHYSICS3D_RIGID_BODY_H
+#define REACTPHYSICS3D_RIGID_BODY_H
 
 // Libraries
 #include <cassert>
 #include "CollisionBody.h"
+#include "../engine/Material.h"
 #include "../mathematics/mathematics.h"
+#include "../memory/MemoryAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Class declarations
+struct JointListElement;
+class Joint;
 
 // Class RigidBody
 /**
@@ -73,11 +79,20 @@ class RigidBody : public CollisionBody {
         /// Inverse of the mass of the body
         decimal mMassInverse;
 
-        /// Coefficient of restitution (between 0 and 1) where 1 is for a very bouncy body
-        decimal mRestitution;
+        /// True if the gravity needs to be applied to this rigid body
+        bool mIsGravityEnabled;
 
-        /// Friction coefficient
-        decimal mFrictionCoefficient;
+        /// Material properties of the rigid body
+        Material mMaterial;
+
+        /// Linear velocity damping factor
+        decimal mLinearDamping;
+
+        /// Angular velocity damping factor
+        decimal mAngularDamping;
+
+        /// First element of the linked list of joints involving this body
+        JointListElement* mJointsList;        
 
         // -------------------- Methods -------------------- //
 
@@ -86,6 +101,12 @@ class RigidBody : public CollisionBody {
 
         /// Private assignment operator
         RigidBody& operator=(const RigidBody& body);
+
+        /// Remove a joint from the joints list
+        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
+
+        /// Set the inverse of the mass
+        void setMassInverse(decimal massInverse);
 
     public :
 
@@ -116,26 +137,11 @@ class RigidBody : public CollisionBody {
         /// Set the angular velocity
         void setAngularVelocity(const Vector3& angularVelocity);
 
-        /// Set the inverse of the mass
-        void setMassInverse(decimal massInverse);
-
-        /// Return the current external force of the body
-        Vector3 getExternalForce() const;
-
-        /// Set the current external force on the body
-        void setExternalForce(const Vector3& force);
-
-        /// Return the current external torque of the body
-        Vector3 getExternalTorque() const;
-
-        /// Set the current external torque of the body
-        void setExternalTorque(const Vector3& torque);
-
         /// Return the inverse of the mass of the body
         decimal getMassInverse() const;
 
         /// Return the local inertia tensor of the body (in body coordinates)
-        Matrix3x3 getInertiaTensorLocal() const;
+        const Matrix3x3& getInertiaTensorLocal() const;
 
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
@@ -148,18 +154,49 @@ class RigidBody : public CollisionBody {
 
         /// Return the inverse of the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorInverseWorld() const;
-        
-        /// Get the restitution coefficient
-        decimal getRestitution() const;
 
-        /// Set the restitution coefficient
-        void setRestitution(decimal restitution);
+        /// Return true if the gravity needs to be applied to this rigid body
+        bool isGravityEnabled() const;
 
-        /// Get the friction coefficient
-        decimal getFrictionCoefficient() const;
+        /// Set the variable to know if the gravity is applied to this rigid body
+        void enableGravity(bool isEnabled);
 
-        /// Set the friction coefficient
-        void setFrictionCoefficient(decimal frictionCoefficient);
+        /// Return a reference to the material properties of the rigid body
+        Material& getMaterial();
+
+        /// Set a new material for this rigid body
+        void setMaterial(const Material& material);
+
+        /// Return the linear velocity damping factor
+        decimal getLinearDamping() const;
+
+        /// Set the linear damping factor
+        void setLinearDamping(decimal linearDamping);
+
+        /// Return the angular velocity damping factor
+        decimal getAngularDamping() const;
+
+        /// Set the angular damping factor
+        void setAngularDamping(decimal angularDamping);
+
+        /// Return the first element of the linked list of joints involving this body
+        const JointListElement* getJointsList() const;
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
+        /// Apply an external force to the body at its gravity center.
+        void applyForceToCenter(const Vector3& force);
+
+        /// Apply an external force to the body at a given point (in world-space coordinates).
+        void applyForce(const Vector3& force, const Vector3& point);
+
+        /// Apply an external torque to the body.
+        void applyTorque(const Vector3& torque);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Method that return the mass of the body
@@ -196,33 +233,13 @@ inline Matrix3x3 RigidBody::getInertiaTensorLocalInverse() const {
     return mInertiaTensorLocalInverse;
 }
 
-// Return the external force on the body
-inline Vector3 RigidBody::getExternalForce() const {
-    return mExternalForce;
-}
-
-// Set the external force on the body
-inline void RigidBody::setExternalForce(const Vector3& force) {
-    mExternalForce = force;
-}
-
-// Return the current external torque on the body
-inline Vector3 RigidBody::getExternalTorque() const {
-    return mExternalTorque;
-}
-
- // Set the current external torque on the body
-inline void RigidBody::setExternalTorque(const Vector3& torque) {
-    mExternalTorque = torque;
-}
-
 // Return the inverse of the mass of the body
 inline decimal RigidBody::getMassInverse() const {
     return mMassInverse;
 }
 
 // Return the local inertia tensor of the body (in body coordinates)
-inline Matrix3x3 RigidBody::getInertiaTensorLocal() const {
+inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
     return mInertiaTensorLocal;
 }
 
@@ -267,25 +284,120 @@ inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     }
 }
 
-// Get the restitution coeffficient of the rigid body
-inline decimal RigidBody::getRestitution() const {
-    return mRestitution;
+// Return true if the gravity needs to be applied to this rigid body
+inline bool RigidBody::isGravityEnabled() const {
+    return mIsGravityEnabled;
 }
 
-// Set the restitution coefficient
-inline void RigidBody::setRestitution(decimal restitution) {
-    assert(restitution >= 0.0 && restitution <= 1.0);
-    mRestitution = restitution;
+// Set the variable to know if the gravity is applied to this rigid body
+inline void RigidBody::enableGravity(bool isEnabled) {
+    mIsGravityEnabled = isEnabled;
 }
 
-// Get the friction coefficient
-inline decimal RigidBody::getFrictionCoefficient() const {
-    return mFrictionCoefficient;
+// Return a reference to the material properties of the rigid body
+inline Material& RigidBody::getMaterial() {
+    return mMaterial;
 }
 
-// Set the friction coefficient
-inline void RigidBody::setFrictionCoefficient(decimal frictionCoefficient) {
-    mFrictionCoefficient = frictionCoefficient;
+// Set a new material for this rigid body
+inline void RigidBody::setMaterial(const Material& material) {
+    mMaterial = material;
+}
+
+// Return the linear velocity damping factor
+inline decimal RigidBody::getLinearDamping() const {
+    return mLinearDamping;
+}
+
+// Set the linear damping factor
+inline void RigidBody::setLinearDamping(decimal linearDamping) {
+    assert(linearDamping >= decimal(0.0));
+    mLinearDamping = linearDamping;
+}
+
+// Return the angular velocity damping factor
+inline decimal RigidBody::getAngularDamping() const {
+    return mAngularDamping;
+}
+
+// Set the angular damping factor
+inline void RigidBody::setAngularDamping(decimal angularDamping) {
+    assert(angularDamping >= decimal(0.0));
+    mAngularDamping = angularDamping;
+}
+
+// Return the first element of the linked list of joints involving this body
+inline const JointListElement* RigidBody::getJointsList() const {
+    return mJointsList;
+}
+
+// Set the variable to know whether or not the body is sleeping
+inline void RigidBody::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mLinearVelocity.setToZero();
+        mAngularVelocity.setToZero();
+        mExternalForce.setToZero();
+        mExternalTorque.setToZero();
+    }
+
+    Body::setIsSleeping(isSleeping);
+}
+
+// Apply an external force to the body at its gravity center.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyForceToCenter(const Vector3& force) {
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    mExternalForce += force;
+}
+
+// Apply an external force to the body at a given point (in world-space coordinates).
+/// If the point is not at the center of gravity of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force and torque
+    mExternalForce += force;
+    mExternalTorque += (point - mTransform.getPosition()).cross(force);
+}
+
+// Apply an external torque to the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+inline void RigidBody::applyTorque(const Vector3& torque) {
+
+    // If it is a static body, do not apply any force
+    if (!mIsMotionEnabled) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the torque
+    mExternalTorque += torque;
 }
 
 }

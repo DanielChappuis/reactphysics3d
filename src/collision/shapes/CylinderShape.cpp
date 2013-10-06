@@ -27,24 +27,20 @@
 #include "CylinderShape.h"
 #include "../../configuration.h"
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
-
 using namespace reactphysics3d;
 
 // Constructor
-CylinderShape::CylinderShape(decimal radius, decimal height)
-                 : CollisionShape(CYLINDER), mRadius(radius), mHalfHeight(height/decimal(2.0)) {
+CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
+              : CollisionShape(CYLINDER, margin), mRadius(radius),
+                mHalfHeight(height/decimal(2.0)) {
+    assert(radius > decimal(0.0));
+    assert(height > decimal(0.0));
+    assert(margin > decimal(0.0));
+}
+
+// Private copy-constructor
+CylinderShape::CylinderShape(const CylinderShape& shape)
+              : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight) {
 
 }
 
@@ -54,7 +50,7 @@ CylinderShape::~CylinderShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 
     // Compute the support point without the margin
     Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
@@ -64,13 +60,13 @@ Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) 
     if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
         unitVec = direction.getUnit();
     }
-    supportPoint += unitVec * getMargin();
+    supportPoint += unitVec * mMargin;
 
     return supportPoint;
 }
 
 // Return a local support point in a given direction without the object margin
-Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
 
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
@@ -89,15 +85,3 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 
     return supportPoint;
 }
-
-#ifdef VISUAL_DEBUG
-// Draw the cone (only for debuging purpose)
-void CylinderShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireSphere(mRadius, 50, 50);
-}
-#endif

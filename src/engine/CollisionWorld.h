@@ -23,20 +23,23 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_WORLD_H
-#define COLLISION_WORLD_H
+#ifndef REACTPHYSICS3D_COLLISION_WORLD_H
+#define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
 #include <vector>
 #include <set>
+#include <list>
 #include <algorithm>
 #include "../mathematics/mathematics.h"
+#include "Profiler.h"
 #include "../body/CollisionBody.h"
 #include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "../constraint/ContactPoint.h"
-#include "../memory/MemoryPool.h"
+#include "../memory/MemoryAllocator.h"
+#include "EventListener.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -59,17 +62,20 @@ class CollisionWorld {
         /// All the bodies (rigid and soft) of the world
         std::set<CollisionBody*> mBodies;
 
+        /// All the collision shapes of the world
+        std::list<CollisionShape*> mCollisionShapes;
+
         /// Broad-phase overlapping pairs of bodies
         std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
 
         /// Current body ID
         bodyindex mCurrentBodyID;
 
-        /// Memory pool
-        MemoryPool<CollisionBody> mMemoryPoolCollisionBodies;
-
         /// List of free ID for rigid bodies
         std::vector<luint> mFreeBodiesIDs;
+
+        /// Memory allocator
+        MemoryAllocator mMemoryAllocator;
 
         // -------------------- Methods -------------------- //
 
@@ -86,7 +92,8 @@ class CollisionWorld {
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
+        virtual void notifyNewContact(const BroadPhasePair* pair,
+                                      const ContactPointInfo* contactInfo);
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
@@ -94,9 +101,15 @@ class CollisionWorld {
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
+        /// Create a new collision shape.
+        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
+
+        /// Remove a collision shape.
+        void removeCollisionShape(CollisionShape* collisionShape);
+
     public :
 
-        // ----- Methods ----- //
+        // -------------------- Methods -------------------- //
 
         /// Constructor
         CollisionWorld();
@@ -117,7 +130,7 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        // ----- Friends ----- //
+        // -------------------- Friends -------------------- //
 
         friend class CollisionDetection;
 };

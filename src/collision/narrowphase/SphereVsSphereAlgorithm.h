@@ -23,12 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SPHERE_VS_SPHERE_ALGORITHM_H
-#define	SPHERE_VS_SPHERE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
+#define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
 
 // Libraries
 #include "../../body/Body.h"
-#include "../ContactInfo.h"
+#include "../../constraint/ContactPoint.h"
 #include "NarrowPhaseAlgorithm.h"
 
 
@@ -57,17 +57,17 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         virtual ~SphereVsSphereAlgorithm();
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const CollisionShape* collisionShape1,
+        virtual bool testCollision(CollisionShape* collisionShape1,
                                    const Transform& transform1,
-                                   const CollisionShape* collisionShape2,
+                                   CollisionShape* collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo);
+                                   ContactPointInfo*& contactInfo);
 };
 
 }

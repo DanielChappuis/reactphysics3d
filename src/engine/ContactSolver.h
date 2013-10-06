@@ -23,51 +23,21 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_SOLVER_H
-#define CONTACT_SOLVER_H
+#ifndef REACTPHYSICS3D_CONTACT_SOLVER_H
+#define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
 #include "../constraint/ContactPoint.h"
 #include "../configuration.h"
-#include "../constraint/Constraint.h"
+#include "../constraint/Joint.h"
 #include "ContactManifold.h"
+#include "Island.h"
+#include "Impulse.h"
 #include <map>
 #include <set>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Declarations
-class DynamicsWorld;
-
-// Structure Impulse
-/**
- * Represents an impulse that we can apply to bodies in the contact or constraint solver.
- */
-struct Impulse {
-
-    public:
-
-        /// Linear impulse applied to the first body
-        const Vector3 linearImpulseBody1;
-
-        /// Linear impulse applied to the second body
-        const Vector3 linearImpulseBody2;
-
-        /// Angular impulse applied to the first body
-        const Vector3 angularImpulseBody1;
-
-        /// Angular impulse applied to the second body
-        const Vector3 angularImpulseBody2;
-
-        /// Constructor
-        Impulse(const Vector3& linearImpulseBody1, const Vector3& angularImpulseBody1,
-                const Vector3& linearImpulseBody2, const Vector3& angularImpulseBody2)
-            : linearImpulseBody1(linearImpulseBody1), angularImpulseBody1(angularImpulseBody1),
-              linearImpulseBody2(linearImpulseBody2), angularImpulseBody2(angularImpulseBody2) {
-
-        }
-};
 
 
 // Class Contact Solver
@@ -85,7 +55,7 @@ struct Impulse {
  * F_c = J^t * lambda where J^t is the transpose of the Jacobian matrix and lambda is a
  * Lagrange multiplier. Therefore, finding the force F_c is equivalent to finding the Lagrange
  * multiplier lambda.
-
+ *
  * An impulse P = F * dt where F is a force and dt is the timestep. We can apply impulses a
  * body to change its velocity. The idea of the Sequential Impulse technique is to apply
  * impulses to bodies of each constraints in order to keep the constraint satisfied.
@@ -342,12 +312,6 @@ class ContactSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the world
-        DynamicsWorld& mWorld;
-
-        /// Number of iterations of the constraints solver
-        uint mNbIterations;
-
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -363,16 +327,11 @@ class ContactSolver {
         /// Number of contact constraints
         uint mNbContactManifolds;
 
-        /// Constrained bodies
-        std::set<RigidBody*> mConstraintBodies;
+        /// Array of linear velocities
+        Vector3* mLinearVelocities;
 
-        /// Pointer to the array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedLinearVelocities;
-
-        /// Pointer to the array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        std::vector<Vector3>& mConstrainedAngularVelocities;
+        /// Array of angular velocities
+        Vector3* mAngularVelocities;
 
         /// Reference to the map of rigid body to their index in the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
@@ -389,24 +348,8 @@ class ContactSolver {
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the constraint solver
-        void initialize();
-
-        /// Initialize the split impulse velocities
-        void initializeSplitImpulseVelocities();
-
         /// Initialize the contact constraints before solving the system
         void initializeContactConstraints();
-
-        /// Store the computed impulses to use them to
-        /// warm start the solver at the next iteration
-        void storeImpulses();
-
-        /// Warm start the solver.
-        void warmStart();
-
-        /// Solve the contact constraints by applying sequential impulses
-        void solveContactConstraints();
 
         /// Apply an impulse to the two bodies of a constraint
         void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
@@ -416,12 +359,12 @@ class ContactSolver {
                                const ContactManifoldSolver& manifold);
 
         /// Compute the collision restitution factor from the restitution factor of each body
-        decimal computeMixedRestitutionFactor(const RigidBody* body1,
-                                              const RigidBody* body2) const;
+        decimal computeMixedRestitutionFactor(RigidBody *body1,
+                                              RigidBody *body2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each body
-        decimal computeMixedFrictionCoefficient(const RigidBody* body1,
-                                                const RigidBody* body2)const;
+        decimal computeMixedFrictionCoefficient(RigidBody* body1,
+                                                RigidBody* body2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact point. The two vectors have to be
@@ -452,36 +395,34 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(DynamicsWorld& mWorld, std::vector<Vector3>& constrainedLinearVelocities,
-                      std::vector<Vector3>& constrainedAngularVelocities,
-                      const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
         virtual ~ContactSolver();
 
-        /// Solve the constraints
-        void solve(decimal timeStep);
+        /// Initialize the constraint solver for a given island
+        void initializeForIsland(decimal dt, Island* island);
 
-        /// Return true if the body is in at least one constraint
-        bool isConstrainedBody(RigidBody* body) const;
+        /// Set the split velocities arrays
+        void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
+                                      Vector3* splitAngularVelocities);
 
-        /// Return the constrained linear velocity of a body after solving the constraints
-        Vector3 getConstrainedLinearVelocityOfBody(RigidBody *body);
+        /// Set the constrained velocities arrays
+        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                            Vector3* constrainedAngularVelocities);
 
-        /// Return the split linear velocity
-        Vector3 getSplitLinearVelocityOfBody(RigidBody* body);
+        /// Warm start the solver.
+        void warmStart();
 
-        /// Return the constrained angular velocity of a body after solving the constraints
-        Vector3 getConstrainedAngularVelocityOfBody(RigidBody* body);
+        /// Store the computed impulses to use them to
+        /// warm start the solver at the next iteration
+        void storeImpulses();
 
-        /// Return the split angular velocity
-        Vector3 getSplitAngularVelocityOfBody(RigidBody* body);
+        /// Solve the contacts
+        void solve();
 
-        /// Clean up the constraint solver
-        void cleanup();
-
-        /// Set the number of iterations of the constraint solver
-        void setNbIterationsSolver(uint nbIterations);
+        /// Return true if the split impulses position correction technique is used for contacts
+        bool isSplitImpulseActive() const;
 
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
@@ -489,30 +430,32 @@ class ContactSolver {
         /// Activate or deactivate the solving of friction constraints at the center of
         /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
+
+        /// Clean up the constraint solver
+        void cleanup();
 };
 
-// Return true if the body is in at least one constraint
-inline bool ContactSolver::isConstrainedBody(RigidBody* body) const {
-    return mConstraintBodies.count(body) == 1;
+// Set the split velocities arrays
+inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
+                                                    Vector3* splitAngularVelocities) {
+    assert(splitLinearVelocities != NULL);
+    assert(splitAngularVelocities != NULL);
+    mSplitLinearVelocities = splitLinearVelocities;
+    mSplitAngularVelocities = splitAngularVelocities;
 }
 
-// Return the split linear velocity
-inline Vector3 ContactSolver::getSplitLinearVelocityOfBody(RigidBody* body) {
-    assert(isConstrainedBody(body));
-    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
-    return mSplitLinearVelocities[indexBody];
+// Set the constrained velocities arrays
+inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
+                                                          Vector3* constrainedAngularVelocities) {
+    assert(constrainedLinearVelocities != NULL);
+    assert(constrainedAngularVelocities != NULL);
+    mLinearVelocities = constrainedLinearVelocities;
+    mAngularVelocities = constrainedAngularVelocities;
 }
 
-// Return the split angular velocity
-inline Vector3 ContactSolver::getSplitAngularVelocityOfBody(RigidBody* body) {
-    assert(isConstrainedBody(body));
-    const uint indexBody = mMapBodyToConstrainedVelocityIndex.find(body)->second;
-    return mSplitAngularVelocities[indexBody];
-}
-
-// Set the number of iterations of the constraint solver
-inline void ContactSolver::setNbIterationsSolver(uint nbIterations) {
-    mNbIterations = nbIterations;
+// Return true if the split impulses position correction technique is used for contacts
+inline bool ContactSolver::isSplitImpulseActive() const {
+    return mIsSplitImpulseActive;
 }
 
 // Activate or Deactivate the split impulses for contacts
@@ -527,20 +470,21 @@ inline void ContactSolver::setIsSolveFrictionAtContactManifoldCenterActive(bool 
 }
 
 // Compute the collision restitution factor from the restitution factor of each body
-inline decimal ContactSolver::computeMixedRestitutionFactor(const RigidBody* body1,
-                                                               const RigidBody* body2) const {
-    decimal restitution1 = body1->getRestitution();
-    decimal restitution2 = body2->getRestitution();
+inline decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
+                                                            RigidBody* body2) const {
+    decimal restitution1 = body1->getMaterial().getBounciness();
+    decimal restitution2 = body2->getMaterial().getBounciness();
 
     // Return the largest restitution factor
     return (restitution1 > restitution2) ? restitution1 : restitution2;
 }
 
 // Compute the mixed friction coefficient from the friction coefficient of each body
-inline decimal ContactSolver::computeMixedFrictionCoefficient(const RigidBody* body1,
-                                                              const RigidBody* body2) const {
+inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
+                                                              RigidBody *body2) const {
     // Use the geometric mean to compute the mixed friction coefficient
-    return sqrt(body1->getFrictionCoefficient() * body2->getFrictionCoefficient());
+    return sqrt(body1->getMaterial().getFrictionCoefficient() *
+                body2->getMaterial().getFrictionCoefficient());
 }
 
 // Compute a penetration constraint impulse

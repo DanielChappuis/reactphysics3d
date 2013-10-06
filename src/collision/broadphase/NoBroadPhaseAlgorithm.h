@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef NO_BROAD_PHASE_ALGORITHM_H
-#define NO_BROAD_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_NO_BROAD_PHASE_ALGORITHM_H
+#define REACTPHYSICS3D_NO_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"

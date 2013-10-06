@@ -23,12 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef GJK_ALGORITHM_H
-#define GJK_ALGORITHM_H
+#ifndef REACTPHYSICS3D_GJK_ALGORITHM_H
+#define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
 #include "../NarrowPhaseAlgorithm.h"
-#include "../../ContactInfo.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../collision/shapes/CollisionShape.h"
 #include "../EPA/EPAAlgorithm.h"
 
@@ -45,12 +45,12 @@ const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
  * This class implements a narrow-phase collision detection algorithm. This
  * algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
  * implementation is based on the implementation discussed in the book
- * "Collision Detection in 3D Environments".
+ * "Collision Detection in Interactive 3D Environments" by Gino van den Bergen.
  * This method implements the Hybrid Technique for calculating the
  * penetration depth. The two objects are enlarged with a small margin. If
- * the object intersection, the penetration depth is quickly computed using
- * GJK algorithm on the original objects (without margin). If the
- * original objects (without margin) intersect, we run again the GJK
+ * the object intersects in their margins, the penetration depth is quickly
+ * computed using the GJK algorithm on the original objects (without margin).
+ * If the original objects (without margin) intersect, we run again the GJK
  * algorithm on the enlarged objects (with margin) to compute simplex
  * polytope that contains the origin and give it to the EPA (Expanding
  * Polytope Algorithm) to compute the correct penetration depth between the
@@ -74,28 +74,28 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
 
         /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(const CollisionShape* collisionShape1,
+        bool computePenetrationDepthForEnlargedObjects(CollisionShape* collisionShape1,
                                                        const Transform& transform1,
-                                                       const CollisionShape* collisionShape2,
+                                                       CollisionShape* collisionShape2,
                                                        const Transform& transform2,
-                                                       ContactInfo*& contactInfo, Vector3& v);
+                                                       ContactPointInfo*& contactInfo, Vector3& v);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        GJKAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~GJKAlgorithm();
 
         /// Return true and compute a contact info if the two bounding volumes collide.
-        virtual bool testCollision(const CollisionShape* collisionShape1,
+        virtual bool testCollision(CollisionShape *collisionShape1,
                                    const Transform& transform1,
-                                   const CollisionShape* collisionShape2,
+                                   CollisionShape *collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo);
+                                   ContactPointInfo*& contactInfo);
 };
 
 }

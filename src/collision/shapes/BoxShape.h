@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BOX_SHAPE_H
-#define BOX_SHAPE_H
+#ifndef REACTPHYSICS3D_BOX_SHAPE_H
+#define REACTPHYSICS3D_BOX_SHAPE_H
 
 // Libraries
 #include <cfloat>
@@ -40,7 +40,14 @@ namespace reactphysics3d {
  * This class represents a 3D box shape. Those axis are unit length.
  * The three extents are half-widths of the box along the three
  * axis x, y, z local axis. The "transform" of the corresponding
- * rigid body gives an orientation and a position to the box.
+ * rigid body will give an orientation and a position to the box. This
+ * collision shape uses an extra margin distance around it for collision
+ * detection purpose. The default margin is 4cm (if your units are meters,
+ * which is recommended). In case, you want to simulate small objects
+ * (smaller than the margin distance), you might want to reduce the margin by
+ * specifying your own margin distance using the "margin" parameter in the
+ * constructor of the box shape. Otherwise, it is recommended to use the
+ * default margin distance by not using the "margin" parameter in the constructor.
  */
 class BoxShape : public CollisionShape {
 
@@ -64,76 +71,84 @@ class BoxShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BoxShape(const Vector3& extent);
+        BoxShape(const Vector3& extent, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
         virtual ~BoxShape();
 
+        /// Allocate and return a copy of the object
+        virtual BoxShape* clone(void* allocatedMemory) const;
+
         /// Return the extents of the box
-        const Vector3& getExtent() const;
+        Vector3 getExtent() const;
 
-        /// Set the extents of the box
-        void setExtent(const Vector3& extent);
+        /// Return the local bounds of the shape in x, y and z directions
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
-        /// Return the local extents in x,y and z direction.
-        virtual Vector3 getLocalExtents(decimal margin=0.0) const;
-
-        /// Return the margin distance around the shape
-        virtual decimal getMargin() const;
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-#ifdef VISUAL_DEBUG
-        /// Draw the Box (only for testing purpose)
-        virtual void draw() const;
-#endif
+        /// Test equality between two box shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
+// Allocate and return a copy of the object
+inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) BoxShape(*this);
+}
+
 // Return the extents of the box
-inline const Vector3& BoxShape::getExtent() const {
-    return mExtent;
+inline Vector3 BoxShape::getExtent() const {
+    return mExtent + Vector3(mMargin, mMargin, mMargin);
 }
 
- // Set the extents of the box
-inline void BoxShape::setExtent(const Vector3& extent) {
-    this->mExtent = extent;
-}
-
-// Return the local extents of the box (half-width) in x,y and z local direction.
+// Return the local bounds of the shape in x, y and z directions
 /// This method is used to compute the AABB of the box
-inline Vector3 BoxShape::getLocalExtents(decimal margin) const {
-    return mExtent + Vector3(getMargin(), getMargin(), getMargin());
+inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
+
+    // Maximum bounds
+    max = mExtent + Vector3(mMargin, mMargin, mMargin);
+
+    // Minimum bounds
+    min = -max;
 }
 
-// Return the margin distance around the shape
-inline decimal BoxShape::getMargin() const {
-    return OBJECT_MARGIN;
+// Return the number of bytes used by the collision shape
+inline size_t BoxShape::getSizeInBytes() const {
+    return sizeof(BoxShape);
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 
-    decimal margin = getMargin();
-    assert(margin >= 0.0);
+    assert(mMargin > 0.0);
     
-    return Vector3(direction.x < 0.0 ? -mExtent.x - margin : mExtent.x + margin,
-                   direction.y < 0.0 ? -mExtent.y - margin : mExtent.y + margin,
-                   direction.z < 0.0 ? -mExtent.z - margin : mExtent.z + margin);
+    return Vector3(direction.x < 0.0 ? -mExtent.x - mMargin : mExtent.x + mMargin,
+                   direction.y < 0.0 ? -mExtent.y - mMargin : mExtent.y + mMargin,
+                   direction.z < 0.0 ? -mExtent.z - mMargin : mExtent.z + mMargin);
 }
 
 // Return a local support point in a given direction without the objec margin
-inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
 
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,
                    direction.z < 0.0 ? -mExtent.z : mExtent.z);
+}
+
+// Test equality between two box shapes
+inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
+    return (mExtent == otherShape.mExtent);
 }
 
 }

@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 
-#ifndef MATRIX3X3_H
-#define MATRIX3X3_H
+#ifndef REACTPHYSICS3D_MATRIX3X3_H
+#define REACTPHYSICS3D_MATRIX3X3_H
 
 // Libraries
 #include <cassert>
@@ -104,6 +104,10 @@ class Matrix3x3 {
 
         /// Return the 3x3 identity matrix
         static Matrix3x3 identity();
+
+        /// Return a skew-symmetric matrix using a given vector that can be used
+        /// to compute cross product with another vector using matrix multiplication
+        static Matrix3x3 computeSkewSymmetricMatrixForCrossProduct(const Vector3& vector);
 
         /// Overloaded operator for addition
         friend Matrix3x3 operator+(const Matrix3x3& matrix1, const Matrix3x3& matrix2);
@@ -213,6 +217,12 @@ inline Matrix3x3 Matrix3x3::identity() {
 
     // Return the isdentity matrix
     return Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+}
+
+// Return a skew-symmetric matrix using a given vector that can be used
+// to compute cross product with another vector using matrix multiplication
+inline Matrix3x3 Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(const Vector3& vector) {
+    return Matrix3x3(0, -vector.z, vector.y, vector.z, 0, -vector.x, -vector.y, vector.x, 0);
 }
 
 // Return the matrix with absolute values

@@ -29,24 +29,19 @@
 #include <vector>
 #include <cassert>
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
-
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
-BoxShape::BoxShape(const Vector3& extent) : CollisionShape(BOX), mExtent(extent) {
+BoxShape::BoxShape(const Vector3& extent, decimal margin)
+         : CollisionShape(BOX, margin), mExtent(extent - Vector3(margin, margin, margin)) {
+    assert(extent.x > decimal(0.0) && extent.x > margin);
+    assert(extent.y > decimal(0.0) && extent.y > margin);
+    assert(extent.z > decimal(0.0) && extent.z > margin);
+    assert(margin > decimal(0.0));
+}
+
+// Private copy-constructor
+BoxShape::BoxShape(const BoxShape& shape) : CollisionShape(shape), mExtent(shape.mExtent) {
 
 }
 
@@ -58,62 +53,11 @@ BoxShape::~BoxShape() {
 // Return the local inertia tensor of the collision shape
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    decimal xSquare = mExtent.x * mExtent.x;
-    decimal ySquare = mExtent.y * mExtent.y;
-    decimal zSquare = mExtent.z * mExtent.z;
+    Vector3 realExtent = mExtent + Vector3(mMargin, mMargin, mMargin);
+    decimal xSquare = realExtent.x * realExtent.x;
+    decimal ySquare = realExtent.y * realExtent.y;
+    decimal zSquare = realExtent.z * realExtent.z;
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));
 }
-
-#ifdef VISUAL_DEBUG
-// Draw the Box (only for testing purpose)
-void BoxShape::draw() const {
-    decimal e1 = mExtent.x;
-    decimal e2 = mExtent.y;
-    decimal e3 = mExtent.z;
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the Box
-    glBegin(GL_LINES);
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(e1, -e2, e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(e1, e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(-e1, -e2, -e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(-e1, -e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-        glVertex3f(-e1, e2, e3);
-        glVertex3f(-e1, e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, -e3);
-        glVertex3f(-e1, -e2, -e3);
-
-        glVertex3f(e1, -e2, e3);
-        glVertex3f(-e1, -e2, e3);
-
-        glVertex3f(e1, e2, e3);
-        glVertex3f(-e1, e2, e3);
-
-    glEnd();
-}
-#endif

@@ -23,13 +23,15 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef MATHEMATICS_H
-#define MATHEMATICS_H
+#ifndef REACTPHYSICS3D_MATHEMATICS_H
+#define REACTPHYSICS3D_MATHEMATICS_H
 
 // Libraries
 #include "Matrix3x3.h"
+#include "Matrix2x2.h"
 #include "Quaternion.h"
 #include "Vector3.h"
+#include "Vector2.h"
 #include "Transform.h"
 #include "../configuration.h"
 #include "mathematics_functions.h"

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef OVERLAPPING_PAIR_H
-#define	OVERLAPPING_PAIR_H
+#ifndef REACTPHYSICS3D_OVERLAPPING_PAIR_H
+#define	REACTPHYSICS3D_OVERLAPPING_PAIR_H
 
 // Libraries
 #include "ContactManifold.h"
@@ -47,10 +47,10 @@ class OverlappingPair {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the first body of the contact
-        CollisionBody* const mBody1;
+        CollisionBody* mBody1;
 
         /// Pointer to the second body of the contact
-        CollisionBody* const mBody2;
+        CollisionBody* mBody2;
 
         /// Persistent contact manifold
         ContactManifold mContactManifold;
@@ -72,7 +72,7 @@ class OverlappingPair {
 
         /// Constructor
         OverlappingPair(CollisionBody* body1, CollisionBody* body2,
-                        MemoryPool<ContactPoint>& memoryPoolContacts);
+                        MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
@@ -100,6 +100,10 @@ class OverlappingPair {
 
         /// Return the contact manifold
         ContactManifold* getContactManifold();
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
 };
 
 // Return the pointer to first body

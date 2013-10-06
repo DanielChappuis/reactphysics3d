@@ -26,13 +26,9 @@
 #ifndef TEST_VECTOR3_H
 #define TEST_VECTOR3_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Vector3.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -232,3 +228,5 @@ class TestVector3 : public Test {
  };
 
 }
+
+#endif

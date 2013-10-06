@@ -27,13 +27,9 @@
 #ifndef TEST_QUATERNION_H
 #define TEST_QUATERNION_H
 
-#endif
-
 // Libraries
 #include "../../Test.h"
 #include "../../../src/mathematics/Quaternion.h"
-
-using namespace reactphysics3d;
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -124,6 +120,12 @@ class TestQuaternion : public Test {
             quaternion.setToZero();
             test(quaternion == Quaternion(0, 0, 0, 0));
 
+            // Tes the methods to get or set to identity
+            Quaternion identity1(1, 2, 3, 4);
+            identity1.setToIdentity();
+            test(identity1 == Quaternion(0, 0, 0, 1));
+            test(Quaternion::identity() == Quaternion(0, 0, 0, 1));
+
             // Test the method to get the vector (x, y, z)
             Vector3 v = mQuaternion1.getVectorV();
             test(v.x == mQuaternion1.x);
@@ -137,9 +139,12 @@ class TestQuaternion : public Test {
             test(conjugate.z == -mQuaternion1.z);
             test(conjugate.w == mQuaternion1.w);
 
-            // Test the inverse method
-            Quaternion inverse = mQuaternion1.getInverse();
-            Quaternion product = mQuaternion1 * inverse;
+            // Test the inverse methods
+            Quaternion inverse1 = mQuaternion1.getInverse();
+            Quaternion inverse2(mQuaternion1);
+            inverse2.inverse();
+            test(inverse2 == inverse1);
+            Quaternion product = mQuaternion1 * inverse1;
             test(approxEqual(product.x, mIdentity.x, decimal(10e-6)));
             test(approxEqual(product.y, mIdentity.y, decimal(10e-6)));
             test(approxEqual(product.z, mIdentity.z, decimal(10e-6)));
@@ -192,11 +197,17 @@ class TestQuaternion : public Test {
             Quaternion quat1(4, 5, 2, 10);
             Quaternion quat2(-2, 7, 8, 3);
             Quaternion test1 = quat1 + quat2;
+            Quaternion test11(-6, 52, 2, 8);
+            test11 += quat1;
             test(test1 == Quaternion(2, 12, 10, 13));
+            test(test11 == Quaternion(-2, 57, 4, 18));
 
             // Test substraction
             Quaternion test2 = quat1 - quat2;
+            Quaternion test22(-73, 62, 25, 9);
+            test22 -= quat1;
             test(test2 == Quaternion(6, -2, -6, 7));
+            test(test22 == Quaternion(-77, 57, 23, -1));
 
             // Test multiplication with a number
             Quaternion test3 = quat1 * 3.0;
@@ -229,3 +240,5 @@ class TestQuaternion : public Test {
  };
 
 }
+
+#endif

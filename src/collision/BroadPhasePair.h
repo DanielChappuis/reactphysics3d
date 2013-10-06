@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BROAD_PHASE_PAIR_H
-#define BROAD_PHASE_PAIR_H
+#ifndef REACTPHYSICS3D_BROAD_PHASE_PAIR_H
+#define REACTPHYSICS3D_BROAD_PHASE_PAIR_H
 
 // Libraries
 #include "../body/CollisionBody.h"
@@ -61,6 +61,9 @@ struct BroadPhasePair {
         ~BroadPhasePair();
 
         /// Return the pair of bodies index
+        static bodyindexpair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
+
+        /// Return the pair of bodies index
         bodyindexpair getBodiesIndexPair() const;
 
         /// Smaller than operator
@@ -77,14 +80,20 @@ struct BroadPhasePair {
 };
 
 // Return the pair of bodies index
-inline bodyindexpair BroadPhasePair::getBodiesIndexPair() const {
-
+inline bodyindexpair BroadPhasePair::computeBodiesIndexPair(CollisionBody* body1,
+                                                            CollisionBody* body2) {
     // Construct the pair of body index
-   bodyindexpair indexPair = body1->getID() < body2->getID() ?
+    bodyindexpair indexPair = body1->getID() < body2->getID() ?
                                  std::make_pair(body1->getID(), body2->getID()) :
                                  std::make_pair(body2->getID(), body1->getID());
     assert(indexPair.first != indexPair.second);
     return indexPair;
+}
+
+// Return the pair of bodies index
+inline bodyindexpair BroadPhasePair::getBodiesIndexPair() const {
+
+    return computeBodiesIndexPair(body1, body2);
 }
 
 // Smaller than operator

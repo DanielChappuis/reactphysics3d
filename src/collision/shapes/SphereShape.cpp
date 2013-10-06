@@ -28,24 +28,16 @@
 #include "../../configuration.h"
 #include <cassert>
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
-
 using namespace reactphysics3d;
-using namespace std;
 
 // Constructor
-SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), mRadius(radius) {
+SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE, radius), mRadius(radius) {
+    assert(radius > decimal(0.0));
+}
+
+// Private copy-constructor
+SphereShape::SphereShape(const SphereShape& shape)
+            : CollisionShape(shape), mRadius(shape.mRadius) {
 
 }
 
@@ -53,15 +45,3 @@ SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE), mRadius(radiu
 SphereShape::~SphereShape() {
 
 }
-
-#ifdef VISUAL_DEBUG
-// Draw the sphere (only for testing purpose)
-void SphereShape::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the sphere
-    glutWireSphere(mRadius, 50, 50);
-}
-#endif

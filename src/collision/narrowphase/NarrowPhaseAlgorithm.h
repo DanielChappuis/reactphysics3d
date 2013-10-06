@@ -23,20 +23,20 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef NARROW_PHASE_ALGORITHM_H
-#define NARROW_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
+#define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
 #include "../../body/Body.h"
-#include "../ContactInfo.h"
+#include "../../constraint/ContactPoint.h"
 #include "../broadphase/PairManager.h"
-#include "../../memory/MemoryPool.h"
+#include "../../memory/MemoryAllocator.h"
 #include "../BroadPhasePair.h"
 
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
-    
+
 // Class NarrowPhaseAlgorithm
 /**
  * This class is an abstract class that represents an algorithm
@@ -50,8 +50,8 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory pool
-        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
         BroadPhasePair* mCurrentOverlappingPair;
@@ -69,7 +69,7 @@ class NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm(MemoryPool<ContactInfo>& memoryPool);
+        NarrowPhaseAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm();
@@ -78,11 +78,11 @@ class NarrowPhaseAlgorithm {
         void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const CollisionShape* collisionShape1,
+        virtual bool testCollision(CollisionShape* collisionShape1,
                                    const Transform& transform1,
-                                   const CollisionShape* collisionShape2,
+                                   CollisionShape* collisionShape2,
                                    const Transform& transform2,
-                                   ContactInfo*& contactInfo)=0;
+                                   ContactPointInfo*& contactInfo)=0;
 };
 
 // Set the current overlapping pair of bodies

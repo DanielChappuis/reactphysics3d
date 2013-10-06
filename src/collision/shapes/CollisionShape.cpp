@@ -30,30 +30,43 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type) : mType(type) {
+CollisionShape::CollisionShape(CollisionShapeType type, decimal margin)
+               : mType(type), mNbSimilarCreatedShapes(0), mMargin(margin) {
     
+}
+
+// Private copy-constructor
+CollisionShape::CollisionShape(const CollisionShape& shape)
+               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes),
+                 mMargin(shape.mMargin) {
+
 }
 
 // Destructor
 CollisionShape::~CollisionShape() {
-
+    assert(mNbSimilarCreatedShapes == 0);
 }
 
 // Update the AABB of a body using its collision shape
-inline void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
+void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
 
-    // Get the local extents in x,y and z direction
-    Vector3 extents = getLocalExtents(OBJECT_MARGIN);
+    // Get the local bounds in x,y and z direction
+    Vector3 minBounds;
+    Vector3 maxBounds;
+    getLocalBounds(minBounds, maxBounds);
 
-    // Rotate the local extents according to the orientation of the body
+    // Rotate the local bounds according to the orientation of the body
     Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
-    Vector3 worldExtents = Vector3(worldAxis.getColumn(0).dot(extents),
-                                   worldAxis.getColumn(1).dot(extents),
-                                   worldAxis.getColumn(2).dot(extents));
+    Vector3 worldMinBounds(worldAxis.getColumn(0).dot(minBounds),
+                           worldAxis.getColumn(1).dot(minBounds),
+                           worldAxis.getColumn(2).dot(minBounds));
+    Vector3 worldMaxBounds(worldAxis.getColumn(0).dot(maxBounds),
+                           worldAxis.getColumn(1).dot(maxBounds),
+                           worldAxis.getColumn(2).dot(maxBounds));
 
     // Compute the minimum and maximum coordinates of the rotated extents
-    Vector3 minCoordinates = transform.getPosition() - worldExtents;
-    Vector3 maxCoordinates = transform.getPosition() + worldExtents;
+    Vector3 minCoordinates = transform.getPosition() + worldMinBounds;
+    Vector3 maxCoordinates = transform.getPosition() + worldMaxBounds;
 
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(minCoordinates);

@@ -23,23 +23,21 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_DETECTION_H
-#define COLLISION_DETECTION_H
+#ifndef REACTPHYSICS3D_COLLISION_DETECTION_H
+#define REACTPHYSICS3D_COLLISION_DETECTION_H
 
 // Libraries
 #include "../body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "BroadPhasePair.h"
-#include "../memory/MemoryPool.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
-#include "ContactInfo.h"
+#include "../memory/MemoryAllocator.h"
+#include "../constraint/ContactPoint.h"
 #include <vector>
 #include <map>
 #include <set>
 #include <utility>
-#include <iostream>     // TODO : Delete this
-
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -64,6 +62,9 @@ class CollisionDetection {
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
+        /// Memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
         /// Broad-phase overlapping pairs
         std::map<bodyindexpair, BroadPhasePair*> mOverlappingPairs;
 
@@ -76,11 +77,8 @@ class CollisionDetection {
         /// Narrow-phase Sphere vs Sphere algorithm
         SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
 
-        /// Memory pool for contactinfo
-        MemoryPool<ContactInfo> mMemoryPoolContactInfos;
-
-        /// Memory pool for broad-phase pairs
-        MemoryPool<BroadPhasePair> mMemoryPoolBroadPhasePairs;
+        /// Set of pair of bodies that cannot collide between each other
+        std::set<bodyindexpair> mNoCollisionPairs;
 
         // -------------------- Methods -------------------- //
 
@@ -105,7 +103,7 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world);
+        CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~CollisionDetection();
@@ -115,6 +113,12 @@ class CollisionDetection {
 
         /// Remove a body from the collision detection
         void removeBody(CollisionBody* body);
+
+        /// Add a pair of bodies that cannot collide with each other
+        void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
+
+        /// Remove a pair of bodies that cannot collide with each other
+        void removeNoCollisionPair(CollisionBody *body1, CollisionBody *body2);
 
         /// Compute the collision detection
         void computeCollisionDetection();
@@ -151,7 +155,19 @@ inline void CollisionDetection::removeBody(CollisionBody* body) {
     
     // Remove the body from the broad-phase
     mBroadPhaseAlgorithm->removeObject(body);
-}                                                    
+}
+
+// Add a pair of bodies that cannot collide with each other
+inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
+                                                   CollisionBody* body2) {
+    mNoCollisionPairs.insert(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+}
+
+// Remove a pair of bodies that cannot collide with each other
+inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
+                                                      CollisionBody* body2) {
+    mNoCollisionPairs.erase(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+}
 
 }
 

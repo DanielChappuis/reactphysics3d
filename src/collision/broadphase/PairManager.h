@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef PAIR_MANAGER_H
-#define PAIR_MANAGER_H
+#ifndef REACTPHYSICS3D_PAIR_MANAGER_H
+#define REACTPHYSICS3D_PAIR_MANAGER_H
 
 // Libraries
 #include "../../body/CollisionBody.h"
@@ -127,9 +127,6 @@ class PairManager {
         /// This method returns an hash value for a 32 bits key.
         int computeHash32Bits(int key) const;
 
-        /// Return the next power of two
-        luint computeNextPowerOfTwo(luint number) const;
-
         /// Reallocate memory for more pairs
         void reallocatePairs();
 
@@ -170,6 +167,9 @@ class PairManager {
 
         /// Find a pair given two body IDs
         BodyPair* findPair(bodyindex id1, bodyindex id2) const;
+
+        /// Return the next power of two
+        static luint computeNextPowerOfTwo(luint number);
 
         /// Return a pointer to the first overlapping pair (used to
         /// iterate over the active pairs).
@@ -215,7 +215,7 @@ inline bool PairManager::isDifferentPair(const BodyPair& pair1, bodyindex pair2I
 }
 
 // Return the next power of two of a 32bits integer using a SWAR algorithm
-inline luint PairManager::computeNextPowerOfTwo(luint number) const {
+inline luint PairManager::computeNextPowerOfTwo(luint number) {
     number |= (number >> 1);
     number |= (number >> 2);
     number |= (number >> 4);

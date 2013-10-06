@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.3.0                                                                 *
+* Version 0.4.0                                                                 *
 * http://code.google.com/p/reactphysics3d/                                      *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
@@ -41,12 +41,20 @@
 #include "body/RigidBody.h"
 #include "engine/DynamicsWorld.h"
 #include "engine/CollisionWorld.h"
+#include "engine/Material.h"
+#include "engine/EventListener.h"
 #include "collision/shapes/CollisionShape.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/ConeShape.h"
 #include "collision/shapes/CylinderShape.h"
+#include "collision/shapes/CapsuleShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/AABB.h"
+#include "constraint/BallAndSocketJoint.h"
+#include "constraint/SliderJoint.h"
+#include "constraint/HingeJoint.h"
+#include "constraint/FixedJoint.h"
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

@@ -23,15 +23,17 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef DYNAMICS_WORLD_H
-#define DYNAMICS_WORLD_H
+#ifndef REACTPHYSICS3D_DYNAMICS_WORLD_H
+#define REACTPHYSICS3D_DYNAMICS_WORLD_H
 
 // Libraries
 #include "CollisionWorld.h"
 #include "../collision/CollisionDetection.h"
 #include "ContactSolver.h"
+#include "ConstraintSolver.h"
 #include "../body/RigidBody.h"
 #include "Timer.h"
+#include "Island.h"
 #include "../configuration.h"
 
 /// Namespace ReactPhysics3D
@@ -55,43 +57,81 @@ class DynamicsWorld : public CollisionWorld {
         /// Contact solver
         ContactSolver mContactSolver;
 
-        /// True if the deactivation (sleeping) of inactive bodies is enabled
-        bool mIsDeactivationActive;
+        /// Constraint solver
+        ConstraintSolver mConstraintSolver;
+
+        /// Number of iterations for the velocity solver of the Sequential Impulses technique
+        uint mNbVelocitySolverIterations;
+
+        /// Number of iterations for the position solver of the Sequential Impulses technique
+        uint mNbPositionSolverIterations;
+
+        /// True if the spleeping technique for inactive bodies is enabled
+        bool mIsSleepingEnabled;
 
         /// All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
         /// All the contact constraints
+        // TODO : Remove this variable (we will use the ones in the island now)
         std::vector<ContactManifold*> mContactManifolds;
 
-        /// All the constraints (except contact constraints)
-        std::vector<Constraint*> mConstraints;
+        /// All the joints of the world
+        std::set<Joint*> mJoints;
 
         /// Gravity vector of the world
         Vector3 mGravity;
 
         /// True if the gravity force is on
-        bool mIsGravityOn;
-
-        /// Memory pool for the overlapping pairs
-        MemoryPool<OverlappingPair> mMemoryPoolOverlappingPairs;
-
-        /// Memory pool for rigid bodies memory allocation
-        MemoryPool<RigidBody> mMemoryPoolRigidBodies;
-
-        /// Memory pool for the contacts
-        MemoryPool<ContactPoint> mMemoryPoolContacts;
+        bool mIsGravityEnabled;
 
         /// Array of constrained linear velocities (state of the linear velocities
         /// after solving the constraints)
-        std::vector<Vector3> mConstrainedLinearVelocities;
+        Vector3* mConstrainedLinearVelocities;
 
         /// Array of constrained angular velocities (state of the angular velocities
         /// after solving the constraints)
-        std::vector<Vector3> mConstrainedAngularVelocities;
+        Vector3* mConstrainedAngularVelocities;
+
+        /// Split linear velocities for the position contact solver (split impulse)
+        Vector3* mSplitLinearVelocities;
+
+        /// Split angular velocities for the position contact solver (split impulse)
+        Vector3* mSplitAngularVelocities;
+
+        /// Array of constrained rigid bodies position (for position error correction)
+        std::vector<Vector3> mConstrainedPositions;
+
+        /// Array of constrained rigid bodies orientation (for position error correction)
+        std::vector<Quaternion> mConstrainedOrientations;
 
         /// Map body to their index in the constrained velocities array
         std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
+
+        /// Number of islands in the world
+        uint mNbIslands;
+
+        /// Current allocated capacity for the islands
+        uint mNbIslandsCapacity;
+
+        /// Array with all the islands of awaken bodies
+        Island** mIslands;
+
+        /// Current allocated capacity for the bodies
+        uint mNbBodiesCapacity;
+
+        /// Sleep linear velocity threshold
+        decimal mSleepLinearVelocity;
+
+        /// Sleep angular velocity threshold
+        decimal mSleepAngularVelocity;
+
+        /// Time (in seconds) before a body is put to sleep if its velocity
+        /// becomes smaller than the sleep velocity.
+        decimal mTimeBeforeSleep;
+
+        /// Pointer to an event listener object
+        EventListener* mEventListener;
 
         // -------------------- Methods -------------------- //
 
@@ -101,8 +141,14 @@ class DynamicsWorld : public CollisionWorld {
         /// Private assignment operator
         DynamicsWorld& operator=(const DynamicsWorld& world);
 
-        /// Compute the motion of all bodies and update their positions and orientations
-        void updateRigidBodiesPositionAndOrientation();
+        /// Integrate the positions and orientations of rigid bodies.
+        void integrateRigidBodiesPositions();
+
+        /// Update the AABBs of the bodies
+        void updateRigidBodiesAABB();
+
+        /// Reset the external force and torque applied to the bodies
+        void resetBodiesForceAndTorque();
 
         /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
@@ -111,17 +157,29 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
 
-        /// Initialize the constrained velocities array at each step
-        void initConstrainedVelocitiesArray();
+        /// Initialize the bodies velocities arrays for the next simulation step.
+        void initVelocityArrays();
+
+        /// Integrate the velocities of rigid bodies.
+        void integrateRigidBodiesVelocities();
+
+        /// Solve the contacts and constraints
+        void solveContactsAndConstraints();
+
+        /// Solve the position error correction of the constraints
+        void solvePositionCorrection();
 
         /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
 
-        /// Apply the gravity force to all bodies
-        void applyGravity();
-
         /// Reset the boolean movement variable of each body
         void resetBodiesMovementVariable();
+
+        /// Compute the islands of awake bodies.
+        void computeIslands();
+
+        /// Put bodies to sleep if needed.
+        void updateSleepingBodies();
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
@@ -133,9 +191,10 @@ class DynamicsWorld : public CollisionWorld {
         virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair, const ContactInfo* contactInfo);
+        virtual void notifyNewContact(const BroadPhasePair* pair,
+                                      const ContactPointInfo* contactInfo);
 
-public :
+    public :
 
         // -------------------- Methods -------------------- //
 
@@ -154,69 +213,115 @@ public :
         /// Update the physics simulation
         void update();
 
-        /// Set the number of iterations of the constraint solver
-        void setNbIterationsSolver(uint nbIterations);
+        /// Set the number of iterations for the velocity constraint solver
+        void setNbIterationsVelocitySolver(uint nbIterations);
 
-        /// Activate or Deactivate the split impulses for contacts
-        void setIsSplitImpulseActive(bool isActive);
+        /// Set the number of iterations for the position constraint solver
+        void setNbIterationsPositionSolver(uint nbIterations);
+
+        /// Set the position correction technique used for contacts
+        void setContactsPositionCorrectionTechnique(ContactsPositionCorrectionTechnique technique);
+
+        /// Set the position correction technique used for joints
+        void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
 
         /// Activate or deactivate the solving of friction constraints at the center of
         /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
-        /// Set the isErrorCorrectionActive value
-        void setIsErrorCorrectionActive(bool isErrorCorrectionActive);
-
-        /// Create a rigid body into the physics world
+        /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
                                    const Matrix3x3& inertiaTensorLocal,
-                                   CollisionShape* collisionShape);
+                                   const CollisionShape& collisionShape);
 
-        /// Destroy a rigid body
+        /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
+
+        /// Create a joint between two bodies in the world and return a pointer to the new joint
+        Joint* createJoint(const JointInfo& jointInfo);
+
+        /// Destroy a joint
+        void destroyJoint(Joint* joint);
+
+        /// Add the joint to the list of joints of the two bodies involved in the joint
+        void addJointToBody(Joint* joint);
+
+        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
+        /// involed in the corresponding contact.
+        void addContactManifoldToBody(ContactManifold* contactManifold,
+                                      CollisionBody *body1, CollisionBody *body2);
+
+        /// Reset all the contact manifolds linked list of each body
+        void resetContactManifoldListsOfBodies();
 
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
         /// Return if the gravity is on
-        bool getIsGravityOn() const;
+        bool isGravityEnabled() const;
 
-        /// Set the isGravityOn attribute
-        void setIsGratityOn(bool isGravityOn);
+        /// Enable/Disable the gravity
+        void setIsGratityEnabled(bool isGravityEnabled);
 
         /// Return the number of rigid bodies in the world
         uint getNbRigidBodies() const;
 
-        /// Add a constraint
-        void addConstraint(Constraint* constraint);
+        /// Return the number of joints in the world
+        uint getNbJoints() const;
 
-        /// Remove a constraint
-        void removeConstraint(Constraint* constraint);
-
-        /// Remove all constraints and delete them (free their memory)
-        void removeAllConstraints();
-
-        /// Return the number of contact constraints in the world
+        /// Return the number of contact manifolds in the world
         uint getNbContactManifolds() const;
 
-        /// Return a start iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsBeginIterator();
-
-        /// Return a end iterator on the constraint list
-        std::vector<Constraint*>::iterator getConstraintsEndIterator();
-
-        /// Return a start iterator on the contact manifolds list
-        std::vector<ContactManifold*>::iterator getContactManifoldsBeginIterator();
-
-        /// Return a end iterator on the contact manifolds list
-        std::vector<ContactManifold*>::iterator getContactManifoldsEndIterator();
+        /// Return the current physics time (in seconds)
+        long double getPhysicsTime() const;
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
 
         /// Return an iterator to the end of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
+
+        /// Return a reference to the contact manifolds of the world
+        const std::vector<ContactManifold*>& getContactManifolds() const;
+
+        /// Return true if the sleeping technique is enabled
+        bool isSleepingEnabled() const;
+
+        /// Enable/Disable the sleeping technique
+        void enableSleeping(bool isSleepingEnabled);
+
+        /// Return the current sleep linear velocity
+        decimal getSleepLinearVelocity() const;
+
+        /// Set the sleep linear velocity.
+        void setSleepLinearVelocity(decimal sleepLinearVelocity);
+
+        /// Return the current sleep angular velocity
+        decimal getSleepAngularVelocity() const;
+
+        /// Set the sleep angular velocity.
+        void setSleepAngularVelocity(decimal sleepAngularVelocity);
+
+        /// Return the time a body is required to stay still before sleeping
+        decimal getTimeBeforeSleep() const;
+
+        /// Set the time a body is required to stay still before sleeping
+        void setTimeBeforeSleep(decimal timeBeforeSleep);
+
+        /// Set an event listener object to receive events callbacks.
+        void setEventListener(EventListener* eventListener);
 };
+
+// Reset the external force and torque applied to the bodies
+inline void DynamicsWorld::resetBodiesForceAndTorque() {
+
+    // For each body of the world
+    std::set<RigidBody*>::iterator it;
+    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+        (*it)->mExternalForce.setToZero();
+        (*it)->mExternalTorque.setToZero();
+    }
+}
 
 // Start the physics simulation
 inline void DynamicsWorld::start() {
@@ -224,18 +329,39 @@ inline void DynamicsWorld::start() {
 }
 
 inline void DynamicsWorld::stop() {
-    std::cout << "Stop Simulation" << std::endl;
     mTimer.stop();
 }                
 
-// Set the number of iterations of the constraint solver
-inline void DynamicsWorld::setNbIterationsSolver(uint nbIterations) {
-    mContactSolver.setNbIterationsSolver(nbIterations);
+// Set the number of iterations for the velocity constraint solver
+inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
+    mNbVelocitySolverIterations = nbIterations;
 }
 
-// Activate or Deactivate the split impulses for contacts
-inline void DynamicsWorld::setIsSplitImpulseActive(bool isActive) {
-    mContactSolver.setIsSplitImpulseActive(isActive);
+// Set the number of iterations for the position constraint solver
+inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
+    mNbPositionSolverIterations = nbIterations;
+}
+
+// Set the position correction technique used for contacts
+inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
+                              ContactsPositionCorrectionTechnique technique) {
+    if (technique == BAUMGARTE_CONTACTS) {
+        mContactSolver.setIsSplitImpulseActive(false);
+    }
+    else {
+        mContactSolver.setIsSplitImpulseActive(true);
+    }
+}
+
+// Set the position correction technique used for joints
+inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
+                              JointsPositionCorrectionTechnique technique) {
+    if (technique == BAUMGARTE_JOINTS) {
+        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
+    }
+    else {
+        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
+    }
 }
 
 // Activate or deactivate the solving of friction constraints at the center of
@@ -252,7 +378,7 @@ inline void DynamicsWorld::resetBodiesMovementVariable() {
          it != getRigidBodiesEndIterator(); it++) {
 
         // Set the hasMoved variable to false
-        (*it)->setHasMoved(false);
+        (*it)->mHasMoved = false;
     }
 }
 
@@ -269,42 +395,29 @@ inline void DynamicsWorld::updateOverlappingPair(const BroadPhasePair* pair) {
     overlappingPair->update();
 }
 
-
-// Add a constraint into the physics world
-inline void DynamicsWorld::addConstraint(Constraint* constraint) {
-    assert(constraint != 0);
-    mConstraints.push_back(constraint);
-}
-
-// Remove a constraint and free its memory
-inline void DynamicsWorld::removeConstraint(Constraint* constraint) {
-    std::vector<Constraint*>::iterator it;
-
-    assert(constraint != NULL);
-    it = std::find(mConstraints.begin(), mConstraints.end(), constraint);
-    assert(*it == constraint);
-    delete *it;
-    mConstraints.erase(it);
-}
-
 // Return the gravity vector of the world
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
 }
 
-// Return if the gravity is on
-inline bool DynamicsWorld::getIsGravityOn() const {
-    return mIsGravityOn;
+// Return if the gravity is enaled
+inline bool DynamicsWorld::isGravityEnabled() const {
+    return mIsGravityEnabled;
 }
 
-// Set the isGravityOn attribute
-inline void DynamicsWorld::setIsGratityOn(bool isGravityOn) {
-    mIsGravityOn = isGravityOn;
+// Enable/Disable the gravity
+inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
+    mIsGravityEnabled = isGravityEnabled;
 }
 
 // Return the number of rigid bodies in the world
 inline uint DynamicsWorld::getNbRigidBodies() const {
     return mRigidBodies.size();
+}
+
+/// Return the number of joints in the world
+inline uint DynamicsWorld::getNbJoints() const {
+    return mJoints.size();
 }
 
 // Return an iterator to the beginning of the bodies of the physics world
@@ -317,30 +430,72 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
     return mRigidBodies.end();
 }
 
+// Return a reference to the contact manifolds of the world
+inline const std::vector<ContactManifold*>& DynamicsWorld::getContactManifolds() const {
+    return mContactManifolds;
+}
+
 // Return the number of contact manifolds in the world
 inline uint DynamicsWorld::getNbContactManifolds() const {
     return mContactManifolds.size();
 }
 
-// Return a start iterator on the constraint list
-inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsBeginIterator() {
-    return mConstraints.begin();
+// Return the current physics time (in seconds)
+inline long double DynamicsWorld::getPhysicsTime() const {
+    return mTimer.getPhysicsTime();
 }
 
-// Return a end iterator on the constraint list
-inline std::vector<Constraint*>::iterator DynamicsWorld::getConstraintsEndIterator() {
-    return mConstraints.end();
+// Return true if the sleeping technique is enabled
+inline bool DynamicsWorld::isSleepingEnabled() const {
+    return mIsSleepingEnabled;
 }
 
-// Return a start iterator on the contact manifolds list
-inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsBeginIterator() {
-    return mContactManifolds.begin();
+// Return the current sleep linear velocity
+inline decimal DynamicsWorld::getSleepLinearVelocity() const {
+    return mSleepLinearVelocity;
 }
 
-// Return a end iterator on the contact manifolds list
-inline std::vector<ContactManifold*>::iterator DynamicsWorld::getContactManifoldsEndIterator() {
-    return mContactManifolds.end();
+// Set the sleep linear velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+inline void DynamicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
+    assert(sleepLinearVelocity >= decimal(0.0));
+    mSleepLinearVelocity = sleepLinearVelocity;
 }
+
+// Return the current sleep angular velocity
+inline decimal DynamicsWorld::getSleepAngularVelocity() const {
+    return mSleepAngularVelocity;
+}
+
+// Set the sleep angular velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
+    assert(sleepAngularVelocity >= decimal(0.0));
+    mSleepAngularVelocity = sleepAngularVelocity;
+}
+
+// Return the time a body is required to stay still before sleeping
+inline decimal DynamicsWorld::getTimeBeforeSleep() const {
+    return mTimeBeforeSleep;
+}
+
+
+// Set the time a body is required to stay still before sleeping
+inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
+    assert(timeBeforeSleep >= decimal(0.0));
+    mTimeBeforeSleep = timeBeforeSleep;
+}
+
+// Set an event listener object to receive events callbacks.
+/// If you use NULL as an argument, the events callbacks will be disabled.
+inline void DynamicsWorld::setEventListener(EventListener* eventListener) {
+    mEventListener = eventListener;
+}
+
 
 }
 

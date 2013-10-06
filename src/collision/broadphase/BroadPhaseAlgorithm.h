@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BROAD_PHASE_ALGORITHM_H
-#define BROAD_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_BROAD_PHASE_ALGORITHM_H
+#define REACTPHYSICS3D_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
 #include <vector>

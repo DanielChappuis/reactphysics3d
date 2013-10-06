@@ -23,19 +23,20 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SWEEP_AND_PRUNE_ALGORITHM_H
-#define SWEEP_AND_PRUNE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_SWEEP_AND_PRUNE_ALGORITHM_H
+#define REACTPHYSICS3D_SWEEP_AND_PRUNE_ALGORITHM_H
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
 #include "../../collision/shapes/AABB.h"
 #include <map>
 #include <vector>
+#include <list>
 
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
-   
+
 // Structure EndPoint
 /**
  * EndPoint structure that represent an end-point of an AABB
@@ -94,8 +95,11 @@ struct AABBInt {
         /// Maximum values on the three axis
         uint max[3];
         
-        /// Constructor
+        /// Constructor that takes an AABB as input
         AABBInt(const AABB& aabb);
+
+        /// Constructor that set all the axis with an minimum and maximum value
+        AABBInt(uint minValue, uint maxValue);
 };
 
 // Class SweepAndPruneAlgorithm
@@ -109,10 +113,15 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
     
     protected :
 
-        // -------------------- Attributes -------------------- //
+        // -------------------- Constants -------------------- //
 
         /// Invalid array index
-        static bodyindex INVALID_INDEX;
+        const static bodyindex INVALID_INDEX;
+
+        /// Number of sentinel end-points in the array of a given axis
+        const static luint NB_SENTINELS;
+
+        // -------------------- Attributes -------------------- //
 
         /// Array that contains all the AABB boxes of the broad-phase
         BoxAABB* mBoxes;
@@ -127,7 +136,7 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         bodyindex mNbMaxBoxes;
 
         /// Indices that are not used by any boxes
-        std::vector<bodyindex> mFreeBoxIndices;
+        std::list<bodyindex> mFreeBoxIndices;
 
         /// Map a body pointer to a box index
         std::map<CollisionBody*,bodyindex> mMapBodyToBoxIndex;
@@ -143,6 +152,9 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         /// Resize the boxes and end-points arrays when it's full
         void resizeArrays();
 
+        /// Shrink the boxes and end-points arrays when too much memory is allocated
+        void shrinkArrays();
+
         /// Add an overlapping pair of AABBS
         void addPair(CollisionBody* body1, CollisionBody* body2);
 
@@ -153,6 +165,9 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         /// Check for 2D box intersection.
         bool testIntersect2D(const BoxAABB& box1, const BoxAABB& box2,
                              luint axis1, uint axis2) const;
+
+        /// Notify the broad-phase that the AABB of an object has changed.
+        void updateObjectIntegerAABB(CollisionBody* body, const AABBInt& aabbInt);
         
     public :
 
@@ -211,7 +226,17 @@ inline bool SweepAndPruneAlgorithm::testIntersect2D(const BoxAABB& box1, const B
                                                     luint axis1, uint axis2) const {
     return !(box2.max[axis1] < box1.min[axis1] || box1.max[axis1] < box2.min[axis1] ||
              box2.max[axis2] < box1.min[axis2] || box1.max[axis2] < box2.min[axis2]);
-}          
+}
+
+// Notify the broad-phase that the AABB of an object has changed
+inline void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
+
+    // Compute the corresponding AABB with integer coordinates
+    AABBInt aabbInt(aabb);
+
+    // Call the update object method that uses an AABB with integer coordinates
+    updateObjectIntegerAABB(body, aabbInt);
+}
 
 }
 

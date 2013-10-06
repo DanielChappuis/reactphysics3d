@@ -30,11 +30,11 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(Body* const body1, Body* const body2,
-                                 MemoryPool<ContactPoint>& memoryPoolContacts)
+ContactManifold::ContactManifold(CollisionBody* body1, CollisionBody* body2,
+                                 MemoryAllocator& memoryAllocator)
                 : mBody1(body1), mBody2(body2), mNbContactPoints(0), mFrictionImpulse1(0.0),
-                  mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0),
-                  mMemoryPoolContacts(memoryPoolContacts) {
+                  mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
+                  mMemoryAllocator(memoryAllocator) {
     
 }
 
@@ -57,7 +57,7 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
 
             // Delete the new contact
             contact->ContactPoint::~ContactPoint();
-            mMemoryPoolContacts.freeObject(contact);
+            mMemoryAllocator.release(contact, sizeof(ContactPoint));
             //removeContact(i);
 
             return;
@@ -82,10 +82,10 @@ void ContactManifold::removeContactPoint(uint index) {
     assert(index < mNbContactPoints);
     assert(mNbContactPoints > 0);
 	
-	// Call the destructor explicitly and tell the memory pool that
+    // Call the destructor explicitly and tell the memory allocator that
 	// the corresponding memory block is now free
     mContactPoints[index]->ContactPoint::~ContactPoint();
-    mMemoryPoolContacts.freeObject(mContactPoints[index]);
+    mMemoryAllocator.release(mContactPoints[index], sizeof(ContactPoint));
 	
     // If we don't remove the last index
     if (index < mNbContactPoints - 1) {
@@ -107,9 +107,12 @@ void ContactManifold::update(const Transform& transform1, const Transform& trans
 
     // Update the world coordinates and penetration depth of the contact points in the manifold
     for (uint i=0; i<mNbContactPoints; i++) {
-        mContactPoints[i]->setWorldPointOnBody1(transform1 * mContactPoints[i]->getLocalPointOnBody1());
-        mContactPoints[i]->setWorldPointOnBody2(transform2 * mContactPoints[i]->getLocalPointOnBody2());
-        mContactPoints[i]->setPenetrationDepth((mContactPoints[i]->getWorldPointOnBody1() - mContactPoints[i]->getWorldPointOnBody2()).dot(mContactPoints[i]->getNormal()));
+        mContactPoints[i]->setWorldPointOnBody1(transform1 *
+                                                mContactPoints[i]->getLocalPointOnBody1());
+        mContactPoints[i]->setWorldPointOnBody2(transform2 *
+                                                mContactPoints[i]->getLocalPointOnBody2());
+        mContactPoints[i]->setPenetrationDepth((mContactPoints[i]->getWorldPointOnBody1() -
+                  mContactPoints[i]->getWorldPointOnBody2()).dot(mContactPoints[i]->getNormal()));
     }
 
     const decimal squarePersistentContactThreshold = PERSISTENT_CONTACT_DIST_THRESHOLD *
@@ -172,7 +175,8 @@ int ContactManifold::getIndexOfDeepestPenetration(ContactPoint* newContact) cons
 /// Area = 0.5 * | AC x BD | where AC and BD form the diagonals of the quadrilateral. Note that
 /// when we compute this area, we do not calculate it exactly but we
 /// only estimate it because we do not compute the actual diagonals of the quadrialteral. Therefore,
-/// this is only a guess that is faster to compute.
+/// this is only a guess that is faster to compute. This idea comes from the Bullet Physics library
+/// by Erwin Coumans (http://wwww.bulletphysics.org).
 int ContactManifold::getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const {
 
     assert(mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD);
@@ -185,28 +189,32 @@ int ContactManifold::getIndexToRemove(int indexMaxPenetration, const Vector3& ne
     if (indexMaxPenetration != 0) {
         // Compute the area
         Vector3 vector1 = newPoint - mContactPoints[1]->getLocalPointOnBody1();
-        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() - mContactPoints[2]->getLocalPointOnBody1();
+        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() -
+                          mContactPoints[2]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area0 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 1) {
         // Compute the area
         Vector3 vector1 = newPoint - mContactPoints[0]->getLocalPointOnBody1();
-        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() - mContactPoints[2]->getLocalPointOnBody1();
+        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() -
+                          mContactPoints[2]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area1 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 2) {
         // Compute the area
         Vector3 vector1 = newPoint - mContactPoints[0]->getLocalPointOnBody1();
-        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() - mContactPoints[1]->getLocalPointOnBody1();
+        Vector3 vector2 = mContactPoints[3]->getLocalPointOnBody1() -
+                          mContactPoints[1]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area2 = crossProduct.lengthSquare();
     }
     if (indexMaxPenetration != 3) {
         // Compute the area
         Vector3 vector1 = newPoint - mContactPoints[0]->getLocalPointOnBody1();
-        Vector3 vector2 = mContactPoints[2]->getLocalPointOnBody1() - mContactPoints[1]->getLocalPointOnBody1();
+        Vector3 vector2 = mContactPoints[2]->getLocalPointOnBody1() -
+                          mContactPoints[1]->getLocalPointOnBody1();
         Vector3 crossProduct = vector1.cross(vector2);
         area3 = crossProduct.lengthSquare();
     }
@@ -243,10 +251,10 @@ int ContactManifold::getMaxArea(decimal area0, decimal area1, decimal area2, dec
 void ContactManifold::clear() {
     for (uint i=0; i<mNbContactPoints; i++) {
 		
-		// Call the destructor explicitly and tell the memory pool that
+        // Call the destructor explicitly and tell the memory allocator that
 		// the corresponding memory block is now free
         mContactPoints[i]->ContactPoint::~ContactPoint();
-        mMemoryPoolContacts.freeObject(mContactPoints[i]);
+        mMemoryAllocator.release(mContactPoints[i], sizeof(ContactPoint));
     }
     mNbContactPoints = 0;
 }

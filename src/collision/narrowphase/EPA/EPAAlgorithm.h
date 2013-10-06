@@ -23,16 +23,16 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef EPA_ALGORITHM_H
-#define EPA_ALGORITHM_H
+#ifndef REACTPHYSICS3D_EPA_ALGORITHM_H
+#define REACTPHYSICS3D_EPA_ALGORITHM_H
 
 // Libraries
 #include "../GJK/Simplex.h"
 #include "../../shapes/CollisionShape.h"
-#include "../../ContactInfo.h"
+#include "../../../constraint/ContactPoint.h"
 #include "../../../mathematics/mathematics.h"
 #include "TriangleEPA.h"
-#include "../../../memory/MemoryPool.h"
+#include "../../../memory/MemoryAllocator.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace
@@ -85,8 +85,8 @@ class EPAAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory pool
-        MemoryPool<ContactInfo>& mMemoryPoolContactInfos;
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
 
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
@@ -112,18 +112,18 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm(MemoryPool<ContactInfo>& memoryPoolContactInfos);
+        EPAAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~EPAAlgorithm();
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                     const CollisionShape* collisionShape1,
+                                                     CollisionShape* collisionShape1,
                                                      const Transform& transform1,
-                                                     const CollisionShape* collisionShape2,
+                                                     CollisionShape* collisionShape2,
                                                      const Transform& transform2,
-                                                     Vector3& v, ContactInfo*& contactInfo);
+                                                     Vector3& v, ContactPointInfo*& contactInfo);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm

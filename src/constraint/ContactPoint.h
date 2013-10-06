@@ -23,45 +23,86 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONTACT_POINT_H
-#define CONTACT_POINT_H
+#ifndef REACTPHYSICS3D_CONTACT_POINT_H
+#define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
-#include "Constraint.h"
-#include "../collision/ContactInfo.h"
 #include "../body/RigidBody.h"
 #include "../configuration.h"
 #include "../mathematics/mathematics.h"
-#include "../memory/MemoryPool.h"
 #include "../configuration.h"
-
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-        #include <GL/freeglut.h>
-        #include <GL/gl.h>
-    #endif
-#endif
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Structure ContactPointInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
+struct ContactPointInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        ContactPointInfo(const ContactPointInfo& contactInfo);
+
+        /// Private assignment operator
+        ContactPointInfo& operator=(const ContactPointInfo& contactInfo);
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the constraint
+        RigidBody* body1;
+
+        /// Second rigid body of the constraint
+        RigidBody* body2;
+
+        /// Normal vector the the collision contact in world space
+        const Vector3 normal;
+
+        /// Penetration depth of the contact
+        const decimal penetrationDepth;
+
+        /// Contact point of body 1 in local space of body 1
+        const Vector3 localPoint1;
+
+        /// Contact point of body 2 in local space of body 2
+        const Vector3 localPoint2;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactPointInfo(const Vector3& normal, decimal penetrationDepth,
+                         const Vector3& localPoint1, const Vector3& localPoint2)
+            : normal(normal), penetrationDepth(penetrationDepth),
+              localPoint1(localPoint1), localPoint2(localPoint2) {
+
+        }
+};
+
 // Class ContactPoint
 /**
  * This class represents a collision contact point between two
- * bodies in the physics engine. The ContactPoint class inherits from
- * the Constraint class.
+ * bodies in the physics engine.
  */
-class ContactPoint : public Constraint {
+class ContactPoint {
 
-    protected :
+    private :
 
         // -------------------- Attributes -------------------- //
+
+        /// First rigid body of the contact
+        RigidBody* mBody1;
+
+        /// Second rigid body of the contact
+        RigidBody* mBody2;
 
         /// Normal vector of the contact (From body1 toward body2) in world space
         const Vector3 mNormal;
@@ -85,7 +126,16 @@ class ContactPoint : public Constraint {
         bool mIsRestingContact;
 
         /// Two orthogonal vectors that span the tangential friction plane
-        std::vector<Vector3> mFrictionVectors;
+        Vector3 mFrictionVectors[2];
+
+        /// Cached penetration impulse
+        decimal mPenetrationImpulse;
+
+        /// Cached first friction impulse
+        decimal mFrictionImpulse1;
+
+        /// Cached second friction impulse
+        decimal mFrictionImpulse2;
         
         // -------------------- Methods -------------------- //
 
@@ -100,10 +150,16 @@ class ContactPoint : public Constraint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(RigidBody* const body1, RigidBody* const body2, const ContactInfo* contactInfo);
+        ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
-        virtual ~ContactPoint();
+        ~ContactPoint();
+
+        /// Return the reference to the body 1
+        RigidBody* const getBody1() const;
+
+        /// Return the reference to the body 2
+        RigidBody* const getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -122,6 +178,24 @@ class ContactPoint : public Constraint {
 
         /// Return the contact world point on body 2
         Vector3 getWorldPointOnBody2() const;
+
+        /// Return the cached penetration impulse
+        decimal getPenetrationImpulse() const;
+
+        /// Return the cached first friction impulse
+        decimal getFrictionImpulse1() const;
+
+        /// Return the cached second friction impulse
+        decimal getFrictionImpulse2() const;
+
+        /// Set the cached penetration impulse
+        void setPenetrationImpulse(decimal impulse);
+
+        /// Set the first cached friction impulse
+        void setFrictionImpulse1(decimal impulse);
+
+        /// Set the second cached friction impulse
+        void setFrictionImpulse2(decimal impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -150,11 +224,19 @@ class ContactPoint : public Constraint {
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
 
-        #ifdef VISUAL_DEBUG
-            /// Draw the contact (for debugging)
-           void draw() const;
-        #endif
+        /// Return the number of bytes used by the contact point
+        size_t getSizeInBytes() const;
 };
+
+// Return the reference to the body 1
+inline RigidBody* const ContactPoint::getBody1() const {
+    return mBody1;
+}
+
+// Return the reference to the body 2
+inline RigidBody* const ContactPoint::getBody2() const {
+    return mBody2;
+}
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {
@@ -184,6 +266,36 @@ inline Vector3 ContactPoint::getWorldPointOnBody1() const {
 // Return the contact world point on body 2
 inline Vector3 ContactPoint::getWorldPointOnBody2() const {
     return mWorldPointOnBody2;
+}
+
+// Return the cached penetration impulse
+inline decimal ContactPoint::getPenetrationImpulse() const {
+    return mPenetrationImpulse;
+}
+
+// Return the cached first friction impulse
+inline decimal ContactPoint::getFrictionImpulse1() const {
+    return mFrictionImpulse1;
+}
+
+// Return the cached second friction impulse
+inline decimal ContactPoint::getFrictionImpulse2() const {
+    return mFrictionImpulse2;
+}
+
+// Set the cached penetration impulse
+inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
+    mPenetrationImpulse = impulse;
+}
+
+// Set the first cached friction impulse
+inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
+    mFrictionImpulse1 = impulse;
+}
+
+// Set the second cached friction impulse
+inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
+    mFrictionImpulse2 = impulse;
 }
 
 // Set the contact world point on body 1
@@ -231,13 +343,10 @@ inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
-
-#ifdef VISUAL_DEBUG
-inline void ContactPoint::draw() const {
-    glColor3f(1.0, 0.0, 0.0);
-    glutSolidSphere(0.3, 20, 20);
+// Return the number of bytes used by the contact point
+inline size_t ContactPoint::getSizeInBytes() const {
+    return sizeof(ContactPoint);
 }
-#endif 
 
 }
 

@@ -28,25 +28,12 @@
 #include "../../configuration.h"
 #include <cassert>
 
-#if defined(VISUAL_DEBUG)
-	#if defined(APPLE_OS)
-		#include <GLUT/glut.h>
-		#include <OpenGL/gl.h>
-	#elif defined(WINDOWS_OS)
-		#include <GL/glut.h>
-		#include <GL/gl.h>
-	#elif defined(LINUX_OS)
-		#include <GL/freeglut.h>
-		#include <GL/gl.h>
-	#endif
-#endif
-
 using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
 AABB::AABB() {
-    
+
 }
 
 // Constructor
@@ -59,53 +46,4 @@ AABB::AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates)
 AABB::~AABB() {
 
 }
-
-#ifdef VISUAL_DEBUG
-// Draw the AABB (only for testing purpose)
-void AABB::draw() const {
-
-    // Draw in red
-    glColor3f(1.0, 0.0, 0.0);
-
-    // Draw the AABB
-    glBegin(GL_LINES);
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMinCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMinCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMaxCoordinates.y, mMaxCoordinates.z);
-
-        glVertex3f(mMinCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-        glVertex3f(mMaxCoordinates.x, mMinCoordinates.y, mMaxCoordinates.z);
-
-    glEnd();
-}
-#endif
 
