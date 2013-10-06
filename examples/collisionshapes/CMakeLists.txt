@@ -4,8 +4,11 @@ cmake_minimum_required(VERSION 2.6)
 # Project configuration
 PROJECT(CollisionShapes)
 
-# Where to build the executable
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/collisionshapes/)
+# Where to build the executables
+SET(EXECUTABLE_OUTPUT_PATH "${OUR_EXECUTABLE_OUTPUT_PATH}/collisionshapes")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXECUTABLE_OUTPUT_PATH})
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 
 # Copy the shaders used for the demo into the build directory
 FILE(COPY "${OPENGLFRAMEWORK_DIR}/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
