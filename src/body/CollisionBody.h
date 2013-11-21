@@ -42,6 +42,17 @@ namespace reactphysics3d {
 // Class declarations
 struct ContactManifoldListElement;
 
+/// Enumeration for the type of a body
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+enum BodyType {STATIC, KINEMATIC, DYNAMIC};
+
 // Class CollisionBody
 /**
  * This class represents a body that is able to collide with others
@@ -52,6 +63,9 @@ class CollisionBody : public Body {
     protected :
 
         // -------------------- Attributes -------------------- //
+
+        /// Type of body (static, kinematic or dynamic)
+        BodyType mType;
 
         /// Collision shape of the body
         CollisionShape* mCollisionShape;
@@ -64,9 +78,6 @@ class CollisionBody : public Body {
 
         /// Interpolation factor used for the state interpolation
         decimal mInterpolationFactor;
-
-        /// True if the body is able to move
-        bool mIsMotionEnabled;
 
         /// True if the body can collide with others bodies
         bool mIsCollisionEnabled;
@@ -107,6 +118,12 @@ class CollisionBody : public Body {
         /// Destructor
         virtual ~CollisionBody();
 
+        /// Return the type of the body
+        BodyType getType() const;
+
+        /// Set the type of the body
+        void setType(BodyType type);
+
         /// Return the collision shape
         CollisionShape* getCollisionShape() const;
 
@@ -128,12 +145,6 @@ class CollisionBody : public Body {
         /// Set the interpolation factor of the body
         void setInterpolationFactor(decimal factor);
 
-        /// Return true if the rigid body is allowed to move
-        bool isMotionEnabled() const;
-
-        /// Enable/disable the motion of the body
-        void enableMotion(bool isMotionEnabled);
-
         /// Return true if the body can collide with others bodies
         bool isCollisionEnabled() const;
 
@@ -148,6 +159,16 @@ class CollisionBody : public Body {
         friend class DynamicsWorld;
         friend class CollisionDetection;
 };
+
+// Return the type of the body
+inline BodyType CollisionBody::getType() const {
+    return mType;
+}
+
+// Set the type of the body
+inline void CollisionBody::setType(BodyType type) {
+    mType = type;
+}
 
 // Return the collision shape
 inline CollisionShape* CollisionBody::getCollisionShape() const {
@@ -170,16 +191,6 @@ inline Transform CollisionBody::getInterpolatedTransform() const {
 inline void CollisionBody::setInterpolationFactor(decimal factor) {
     // Set the factor
     mInterpolationFactor = factor;
-}
-
-// Return true if the rigid body is allowed to move
-inline bool CollisionBody::isMotionEnabled() const {
-    return mIsMotionEnabled;
-}
-
-// Enable/disable the motion of the body
-inline void CollisionBody::enableMotion(bool isMotionEnabled) {
-    mIsMotionEnabled = isMotionEnabled;
 }
 
 // Return the current position and orientation

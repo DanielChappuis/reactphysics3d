@@ -80,17 +80,13 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
     const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
-    // Compute the inertia tensor of the body using its collision shape
-    rp3d::Matrix3x3 inertiaTensor;
-    collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
     // Create a rigid body corresponding to the cube in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, inertiaTensor, collisionShape);
+    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, collisionShape);
 
     // If the Vertex Buffer object has not been created yet
     if (!areVBOsCreated) {

@@ -64,6 +64,7 @@ class TestMatrix2x2 : public Test {
             testConstructors();
             testGetSet();
             testIdentity();
+            testZero();
             testOthersMethods();
             testOperators();
         }
@@ -126,6 +127,17 @@ class TestMatrix2x2 : public Test {
             test(identity[1][1] == 1);
 
             test(test1 == Matrix2x2::identity());
+        }
+
+        /// Test the zero method
+        void testZero() {
+
+            Matrix2x2 zero = Matrix2x2::zero();
+
+            test(zero[0][0] == 0);
+            test(zero[0][1] == 0);
+            test(zero[1][0] == 0);
+            test(zero[1][1] == 0);
         }
 
         /// Test others methods

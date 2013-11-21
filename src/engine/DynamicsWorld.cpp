@@ -173,39 +173,35 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
         // For each body of the island
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
-            // If the body is allowed to move
-            if (bodies[b]->isMotionEnabled()) {
+            // Get the constrained velocity
+            uint indexArray = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
+            Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
+            Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
 
-                // Get the constrained velocity
-                uint indexArray = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
-                Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
-                Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
+            // Update the linear and angular velocity of the body
+            bodies[b]->mLinearVelocity = newLinVelocity;
+            bodies[b]->mAngularVelocity = newAngVelocity;
 
-                // Update the linear and angular velocity of the body
-                bodies[b]->setLinearVelocity(newLinVelocity);
-                bodies[b]->setAngularVelocity(newAngVelocity);
+            // Add the split impulse velocity from Contact Solver (only used
+            // to update the position)
+            if (mContactSolver.isSplitImpulseActive()) {
 
-                // Add the split impulse velocity from Contact Solver (only used
-                // to update the position)
-                if (mContactSolver.isSplitImpulseActive()) {
-
-                    newLinVelocity += mSplitLinearVelocities[indexArray];
-                    newAngVelocity += mSplitAngularVelocities[indexArray];
-                }
-
-                // Get current position and orientation of the body
-                const Vector3& currentPosition = bodies[b]->getTransform().getPosition();
-                const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
-
-                // Compute the new position of the body
-                Vector3 newPosition = currentPosition + newLinVelocity * dt;
-                Quaternion newOrientation = currentOrientation + Quaternion(0, newAngVelocity) *
-                        currentOrientation * decimal(0.5) * dt;
-
-                // Update the Transform of the body
-                Transform newTransform(newPosition, newOrientation.getUnit());
-                bodies[b]->setTransform(newTransform);
+                newLinVelocity += mSplitLinearVelocities[indexArray];
+                newAngVelocity += mSplitAngularVelocities[indexArray];
             }
+
+            // Get current position and orientation of the body
+            const Vector3& currentPosition = bodies[b]->getTransform().getPosition();
+            const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
+
+            // Compute the new position of the body
+            Vector3 newPosition = currentPosition + newLinVelocity * dt;
+            Quaternion newOrientation = currentOrientation + Quaternion(0, newAngVelocity) *
+                    currentOrientation * decimal(0.5) * dt;
+
+            // Update the Transform of the body
+            Transform newTransform(newPosition, newOrientation.getUnit());
+            bodies[b]->setTransform(newTransform);
         }
     }
 }
@@ -313,51 +309,47 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             assert(mSplitLinearVelocities[indexBody] == Vector3(0, 0, 0));
             assert(mSplitAngularVelocities[indexBody] == Vector3(0, 0, 0));
 
-            // If the body is allowed to move
-            if (bodies[b]->isMotionEnabled()) {
+            // Integrate the external force to get the new velocity of the body
+            mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
+                                        dt * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
+            mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
+                                        dt * bodies[b]->getInertiaTensorInverseWorld() *
+                                        bodies[b]->mExternalTorque;
 
-                // Integrate the external force to get the new velocity of the body
-                mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
-                        dt * bodies[b]->getMassInverse() * bodies[b]->mExternalForce;
-                mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
-                        dt * bodies[b]->getInertiaTensorInverseWorld() *
-                        bodies[b]->mExternalTorque;
+            // If the gravity has to be applied to this rigid body
+            if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
 
-                // If the gravity has to be applied to this rigid body
-                if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
-
-                    // Integrate the gravity force
-                    mConstrainedLinearVelocities[indexBody] += dt * bodies[b]->getMassInverse() *
-                            bodies[b]->getMass() * mGravity;
-                }
-
-                // Apply the velocity damping
-                // Damping force : F_c = -c' * v (c=damping factor)
-                // Equation      : m * dv/dt = -c' * v
-                //                 => dv/dt = -c * v (with c=c'/m)
-                //                 => dv/dt + c * v = 0
-                // Solution      : v(t) = v0 * e^(-c * t)
-                //                 => v(t + dt) = v0 * e^(-c(t + dt))
-                //                              = v0 * e^(-ct) * e^(-c * dt)
-                //                              = v(t) * e^(-c * dt)
-                //                 => v2 = v1 * e^(-c * dt)
-                // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
-                //                              => e^(-x) ~ 1 - x
-                //                 => v2 = v1 * (1 - c * dt)
-                decimal linDampingFactor = bodies[b]->getLinearDamping();
-                decimal angDampingFactor = bodies[b]->getAngularDamping();
-                decimal linearDamping = clamp(decimal(1.0) - dt * linDampingFactor,
-                                              decimal(0.0), decimal(1.0));
-                decimal angularDamping = clamp(decimal(1.0) - dt * angDampingFactor,
-                                               decimal(0.0), decimal(1.0));
-                mConstrainedLinearVelocities[indexBody] *= clamp(linearDamping, decimal(0.0),
-                                                                 decimal(1.0));
-                mConstrainedAngularVelocities[indexBody] *= clamp(angularDamping, decimal(0.0),
-                                                                  decimal(1.0));
-
-                // Update the old Transform of the body
-                bodies[b]->updateOldTransform();
+                // Integrate the gravity force
+                mConstrainedLinearVelocities[indexBody] += dt * bodies[b]->mMassInverse *
+                        bodies[b]->getMass() * mGravity;
             }
+
+            // Apply the velocity damping
+            // Damping force : F_c = -c' * v (c=damping factor)
+            // Equation      : m * dv/dt = -c' * v
+            //                 => dv/dt = -c * v (with c=c'/m)
+            //                 => dv/dt + c * v = 0
+            // Solution      : v(t) = v0 * e^(-c * t)
+            //                 => v(t + dt) = v0 * e^(-c(t + dt))
+            //                              = v0 * e^(-ct) * e^(-c * dt)
+            //                              = v(t) * e^(-c * dt)
+            //                 => v2 = v1 * e^(-c * dt)
+            // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
+            //                              => e^(-x) ~ 1 - x
+            //                 => v2 = v1 * (1 - c * dt)
+            decimal linDampingFactor = bodies[b]->getLinearDamping();
+            decimal angDampingFactor = bodies[b]->getAngularDamping();
+            decimal linearDamping = clamp(decimal(1.0) - dt * linDampingFactor,
+                                          decimal(0.0), decimal(1.0));
+            decimal angularDamping = clamp(decimal(1.0) - dt * angDampingFactor,
+                                           decimal(0.0), decimal(1.0));
+            mConstrainedLinearVelocities[indexBody] *= clamp(linearDamping, decimal(0.0),
+                                                             decimal(1.0));
+            mConstrainedAngularVelocities[indexBody] *= clamp(angularDamping, decimal(0.0),
+                                                              decimal(1.0));
+
+            // Update the old Transform of the body
+            bodies[b]->updateOldTransform();
 
             indexBody++;
         }
@@ -484,7 +476,6 @@ void DynamicsWorld::solvePositionCorrection() {
 
 // Create a rigid body into the physics world
 RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal mass,
-                                          const Matrix3x3& inertiaTensorLocal,
                                           const CollisionShape& collisionShape) {
 
     // Compute the body ID
@@ -499,7 +490,6 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
                                                                                 mass,
-                                                                                inertiaTensorLocal,
                                                                                 newCollisionShape,
                                                                                 bodyID);
     assert(rigidBody != NULL);
@@ -757,9 +747,8 @@ void DynamicsWorld::computeIslands() {
         // If the body has already been added to an island, we go to the next body
         if (body->mIsAlreadyInIsland) continue;
 
-        // If the body is not moving, we go to the next body
-        // TODO : When we will use STATIC bodies, we will need to take care of this case here
-        if (!body->isMotionEnabled()) continue;
+        // If the body is static, we go to the next body
+        if (body->getType() == STATIC) continue;
 
         // If the body is sleeping or inactive, we go to the next body
         if (body->isSleeping() || !body->isActive()) continue;
@@ -789,9 +778,9 @@ void DynamicsWorld::computeIslands() {
             // Add the body into the island
             mIslands[mNbIslands]->addBody(bodyToVisit);
 
-            // If the current body is not moving, we do not want to perform the DFS
+            // If the current body is static, we do not want to perform the DFS
             // search across that body
-            if (!bodyToVisit->isMotionEnabled()) continue;
+            if (bodyToVisit->getType() == STATIC) continue;
 
             // For each contact manifold in which the current body is involded
             ContactManifoldListElement* contactElement;
@@ -854,7 +843,7 @@ void DynamicsWorld::computeIslands() {
         // can also be included in the other islands
         for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
 
-            if (!mIslands[mNbIslands]->mBodies[i]->isMotionEnabled()) {
+            if (mIslands[mNbIslands]->mBodies[i]->getType() == STATIC) {
                 mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
             }
         }
@@ -887,7 +876,7 @@ void DynamicsWorld::updateSleepingBodies() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Skip static bodies
-            if (!bodies[b]->isMotionEnabled()) continue;
+            if (bodies[b]->getType() == STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
             if (bodies[b]->getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare ||

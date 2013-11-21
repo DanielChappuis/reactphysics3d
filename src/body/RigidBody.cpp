@@ -32,19 +32,92 @@
 using namespace reactphysics3d;
 
 // Constructor
-RigidBody::RigidBody(const Transform& transform, decimal mass, const Matrix3x3& inertiaTensorLocal,
-                      CollisionShape *collisionShape, bodyindex id)
-           : CollisionBody(transform, collisionShape, id), mInertiaTensorLocal(inertiaTensorLocal),
-             mMass(mass), mInertiaTensorLocalInverse(inertiaTensorLocal.getInverse()),
-             mMassInverse(decimal(1.0) / mass), mIsGravityEnabled(true),
+RigidBody::RigidBody(const Transform& transform, decimal mass, CollisionShape *collisionShape,
+                     bodyindex id)
+          : CollisionBody(transform, collisionShape, id), mInitMass(mass), mIsGravityEnabled(true),
              mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)), mJointsList(NULL) {
 
     assert(collisionShape);
+
+    // If the mass is not positive, set it to one
+    if (mInitMass <= decimal(0.0)) {
+        mInitMass = decimal(1.0);
+    }
+
+    // Compute the inertia tensor using the collision shape of the body
+    mCollisionShape->computeLocalInertiaTensor(mInertiaTensorLocal, mInitMass);
+    mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+
+    // Compute the inverse mass
+    mMassInverse = decimal(1.0) / mass;
 }
 
 // Destructor
 RigidBody::~RigidBody() {
     assert(mJointsList == NULL);
+}
+
+// Set the type of the body (static, kinematic or dynamic)
+void RigidBody::setType(BodyType type) {
+
+    if (mType == type) return;
+
+    CollisionBody::setType(type);
+
+    // If it is a static body
+    if (mType == STATIC) {
+
+        // Reset the velocity to zero
+        mLinearVelocity.setToZero();
+        mAngularVelocity.setToZero();
+    }
+
+    // If it is a static or a kinematic body
+    if (mType == STATIC || mType == KINEMATIC) {
+
+        // Reset the inverse mass and inverse inertia tensor to zero
+        mMassInverse = decimal(0.0);
+        mInertiaTensorLocalInverse = Matrix3x3::zero();
+
+    }
+    else {  // If it is a dynamic body
+        mMassInverse = decimal(1.0) / mInitMass;
+        mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+    }
+
+    // Awake the body
+    setIsSleeping(false);
+}
+
+// Method that set the mass of the body
+void RigidBody::setMass(decimal mass) {
+    mInitMass = mass;
+
+    // If the mass is negative, set it to one
+    if (mInitMass <= decimal(0.0)) {
+        mInitMass = decimal(1.0);
+    }
+
+    // Recompute the inverse mass
+    if (mType == DYNAMIC) {
+        mMassInverse = decimal(1.0) / mInitMass;
+    }
+    else {
+        mMassInverse = decimal(0.0);
+    }
+}
+
+// Set the local inertia tensor of the body (in body coordinates)
+void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
+    mInertiaTensorLocal = inertiaTensorLocal;
+
+    // Recompute the inverse local inertia tensor
+    if (mType == DYNAMIC) {
+        mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+    }
+    else {
+        mInertiaTensorLocalInverse = Matrix3x3::zero();
+    }
 }
 
 // Remove a joint from the joints list

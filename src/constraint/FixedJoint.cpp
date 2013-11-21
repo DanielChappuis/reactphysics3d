@@ -80,26 +80,16 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    decimal inverseMassBodies = 0.0;
-    if (mBody1->isMotionEnabled()) {
-        inverseMassBodies += mBody1->getMassInverse();
-    }
-    if (mBody2->isMotionEnabled()) {
-        inverseMassBodies += mBody2->getMassInverse();
-    }
+    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
-                                    0, 0, inverseMassBodies);
-    if (mBody1->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose();
-    }
-    if (mBody2->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
-    }
+                                    0, 0, inverseMassBodies) +
+                           skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
+                           skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
 
     // Compute the inverse mass matrix K^-1 for the 3 translation constraints
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -112,14 +102,8 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotation.setToZero();
-    if (mBody1->isMotionEnabled()) {
-        mInverseMassMatrixRotation += mI1;
-    }
-    if (mBody2->isMotionEnabled()) {
-        mInverseMassMatrixRotation += mI2;
-    }
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    mInverseMassMatrixRotation = mI1 + mI2;
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
@@ -151,35 +135,29 @@ void FixedJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
     // Get the inverse mass of the bodies
-    const decimal inverseMassBody1 = mBody1->getMassInverse();
-    const decimal inverseMassBody2 = mBody2->getMassInverse();
+    const decimal inverseMassBody1 = mBody1->mMassInverse;
+    const decimal inverseMassBody2 = mBody2->mMassInverse;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 translation constraints for body 1
+    Vector3 linearImpulseBody1 = -mImpulseTranslation;
+    Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
 
-        // Compute the impulse P=J^T * lambda for the 3 translation constraints
-        Vector3 linearImpulseBody1 = -mImpulseTranslation;
-        Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints for body 1
+    angularImpulseBody1 += -mImpulseRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        angularImpulseBody1 += -mImpulseRotation;
+    // Apply the impulse to the body 1
+    v1 += inverseMassBody1 * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 translation constraints for body 2
+    Vector3 angularImpulseBody2 = -mImpulseTranslation.cross(mR2World);
 
-        // Compute the impulse P=J^T * lambda for the 3 translation constraints
-        Vector3 linearImpulseBody2 = mImpulseTranslation;
-        Vector3 angularImpulseBody2 = -mImpulseTranslation.cross(mR2World);
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints for body 2
+    angularImpulseBody2 += mImpulseRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        angularImpulseBody2 += mImpulseRotation;
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    v2 += inverseMassBody2 * mImpulseTranslation;
+    w2 += mI2 * angularImpulseBody2;
 }
 
 // Solve the velocity constraint
@@ -192,8 +170,8 @@ void FixedJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
     // Get the inverse mass of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
+    decimal inverseMassBody1 = mBody1->mMassInverse;
+    decimal inverseMassBody2 = mBody2->mMassInverse;
 
     // --------------- Translation Constraints --------------- //
 
@@ -205,26 +183,20 @@ void FixedJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
                                (-JvTranslation - mBiasTranslation);
     mImpulseTranslation += deltaLambda;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for body 1
+    const Vector3 linearImpulseBody1 = -deltaLambda;
+    Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
 
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody1 = -deltaLambda;
-        const Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
+    // Apply the impulse to the body 1
+    v1 += inverseMassBody1 * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda  for body 2
+    const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
 
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody2 = deltaLambda;
-        const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    v2 += inverseMassBody2 * deltaLambda;
+    w2 += mI2 * angularImpulseBody2;
 
     // --------------- Rotation Constraints --------------- //
 
@@ -235,22 +207,14 @@ void FixedJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
     Vector3 deltaLambda2 = mInverseMassMatrixRotation * (-JvRotation - mBiasRotation);
     mImpulseRotation += deltaLambda2;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints for body 1
+    angularImpulseBody1 = -deltaLambda2;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody1 = -deltaLambda2;
+    // Apply the impulse to the body 1
+    w1 += mI1 * angularImpulseBody1;
 
-         // Apply the impulse to the body
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody2 = deltaLambda2;
-
-         // Apply the impulse to the body
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    w2 += mI2 * deltaLambda2;
 }
 
 // Solve the position constraint (for position error correction)
@@ -267,8 +231,8 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
+    decimal inverseMassBody1 = mBody1->mMassInverse;
+    decimal inverseMassBody2 = mBody2->mMassInverse;
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -285,24 +249,14 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // --------------- Translation Constraints --------------- //
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    decimal inverseMassBodies = 0.0;
-    if (mBody1->isMotionEnabled()) {
-        inverseMassBodies += mBody1->getMassInverse();
-    }
-    if (mBody2->isMotionEnabled()) {
-        inverseMassBodies += mBody2->getMassInverse();
-    }
+    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
-                                    0, 0, inverseMassBodies);
-    if (mBody1->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose();
-    }
-    if (mBody2->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
-    }
+                                    0, 0, inverseMassBodies) +
+                           skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
+                           skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -312,50 +266,37 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // Compute the Lagrange multiplier lambda
     const Vector3 lambdaTranslation = mInverseMassMatrixTranslation * (-errorTranslation);
 
-    // Apply the impulse to the bodies of the joint
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse of body 1
+    Vector3 linearImpulseBody1 = -lambdaTranslation;
+    Vector3 angularImpulseBody1 = lambdaTranslation.cross(mR1World);
 
-        // Compute the impulse
-        Vector3 linearImpulseBody1 = -lambdaTranslation;
-        Vector3 angularImpulseBody1 = lambdaTranslation.cross(mR1World);
+    // Compute the pseudo velocity of body 1
+    const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
+    Vector3 w1 = mI1 * angularImpulseBody1;
 
-        // Compute the pseudo velocity
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        const Vector3 w1 = mI1 * angularImpulseBody1;
+    // Update the body position/orientation of body 1
+    x1 += v1;
+    q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+    q1.normalize();
 
-        // Update the body position/orientation
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse of body 2
+    Vector3 angularImpulseBody2 = -lambdaTranslation.cross(mR2World);
 
-        // Compute the impulse
-        Vector3 linearImpulseBody2 = lambdaTranslation;
-        Vector3 angularImpulseBody2 = -lambdaTranslation.cross(mR2World);
+    // Compute the pseudo velocity of body 2
+    const Vector3 v2 = inverseMassBody2 * lambdaTranslation;
+    Vector3 w2 = mI2 * angularImpulseBody2;
 
-        // Compute the pseudo velocity
-        const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-        const Vector3 w2 = mI2 * angularImpulseBody2;
-
-        // Update the body position/orientation
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
+    // Update the body position/orientation of body 2
+    x2 += v2;
+    q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+    q2.normalize();
 
     // --------------- Rotation Constraints --------------- //
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotation.setToZero();
-    if (mBody1->isMotionEnabled()) {
-        mInverseMassMatrixRotation += mI1;
-    }
-    if (mBody2->isMotionEnabled()) {
-        mInverseMassMatrixRotation += mI2;
-    }
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    mInverseMassMatrixRotation = mI1 + mI2;
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
@@ -368,30 +309,21 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
     Vector3 lambdaRotation = mInverseMassMatrixRotation * (-errorRotation);
 
-    // Apply the impulse to the bodies of the joint
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+    angularImpulseBody1 = -lambdaRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody1 = -lambdaRotation;
+    // Compute the pseudo velocity of body 1
+    w1 = mI1 * angularImpulseBody1;
 
-        // Compute the pseudo velocity
-        const Vector3 w1 = mI1 * angularImpulseBody1;
+    // Update the body position/orientation of body 1
+    q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+    q1.normalize();
 
-        // Update the body position/orientation
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the pseudo velocity of body 2
+    w2 = mI2 * lambdaRotation;
 
-        // Compute the impulse
-        const Vector3 angularImpulseBody2 = lambdaRotation;
-
-        // Compute the pseudo velocity
-        const Vector3 w2 = mI2 * angularImpulseBody2;
-
-        // Update the body position/orientation
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
+    // Update the body position/orientation of body 2
+    q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+    q2.normalize();
 }
 

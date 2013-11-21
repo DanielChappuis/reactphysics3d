@@ -65,6 +65,7 @@ class TestMatrix3x3 : public Test {
             testConstructors();
             testGetSet();
             testIdentity();
+            testZero();
             testOthersMethods();
             testOperators();
         }
@@ -145,6 +146,22 @@ class TestMatrix3x3 : public Test {
             test(identity[2][2] == 1);
 
             test(test1 == Matrix3x3::identity());
+        }
+
+        /// Test the zero method
+        void testZero() {
+
+            Matrix3x3 zero = Matrix3x3::zero();
+
+            test(zero[0][0] == 0);
+            test(zero[0][1] == 0);
+            test(zero[0][2] == 0);
+            test(zero[1][0] == 0);
+            test(zero[1][1] == 0);
+            test(zero[1][2] == 0);
+            test(zero[2][0] == 0);
+            test(zero[2][1] == 0);
+            test(zero[2][2] == 0);
         }
 
         /// Test others methods

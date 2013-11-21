@@ -33,12 +33,11 @@ using namespace reactphysics3d;
 // Constructor
 CollisionBody::CollisionBody(const Transform& transform, CollisionShape *collisionShape,
                              bodyindex id)
-              : Body(id), mCollisionShape(collisionShape), mTransform(transform),
+              : Body(id), mType(DYNAMIC), mCollisionShape(collisionShape), mTransform(transform),
                 mHasMoved(false), mContactManifoldsList(NULL) {
 
     assert(collisionShape);
 
-    mIsMotionEnabled = true;
     mIsCollisionEnabled = true;
     mInterpolationFactor = 0.0;
 

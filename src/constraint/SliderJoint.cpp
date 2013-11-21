@@ -124,21 +124,11 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
-    decimal sumInverseMass = 0.0;
-    Vector3 I1R1PlusUCrossN1(0, 0, 0);
-    Vector3 I1R1PlusUCrossN2(0, 0, 0);
-    Vector3 I2R2CrossN1(0, 0, 0);
-    Vector3 I2R2CrossN2(0, 0, 0);
-    if (mBody1->isMotionEnabled()) {
-        sumInverseMass += mBody1->getMassInverse();
-        I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
-        I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
-    }
-    if (mBody2->isMotionEnabled()) {
-        sumInverseMass += mBody2->getMassInverse();
-        I2R2CrossN1 = mI2 * mR2CrossN1;
-        I2R2CrossN2 = mI2 * mR2CrossN2;
-    }
+    decimal sumInverseMass = mBody1->mMassInverse + mBody2->mMassInverse;
+    Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
+    Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
+    Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
+    Vector3 I2R2CrossN2 = mI2 * mR2CrossN2;
     const decimal el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
                          mR2CrossN1.dot(I2R2CrossN1);
     const decimal el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
@@ -149,7 +139,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -164,14 +154,8 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotationConstraint.setToZero();
-    if (mBody1->isMotionEnabled()) {
-        mInverseMassMatrixRotationConstraint += mI1;
-    }
-    if (mBody2->isMotionEnabled()) {
-        mInverseMassMatrixRotationConstraint += mI2;
-    }
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    mInverseMassMatrixRotationConstraint = mI1 + mI2;
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
@@ -188,15 +172,9 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-        mInverseMassMatrixLimit = 0.0;
-        if (mBody1->isMotionEnabled()) {
-            mInverseMassMatrixLimit += mBody1->getMassInverse() +
-                                       mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis);
-        }
-        if (mBody2->isMotionEnabled()) {
-            mInverseMassMatrixLimit += mBody2->getMassInverse() +
-                                       mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
-        }
+        mInverseMassMatrixLimit = mBody1->mMassInverse + mBody2->mMassInverse +
+                                  mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
+                                  mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
         mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
                                   decimal(1.0) / mInverseMassMatrixLimit : decimal(0.0);
 
@@ -217,13 +195,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (mIsMotorEnabled) {
 
         // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
-        mInverseMassMatrixMotor = 0.0;
-        if (mBody1->isMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody1->getMassInverse();
-        }
-        if (mBody2->isMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody2->getMassInverse();
-        }
+        mInverseMassMatrixMotor = mBody1->mMassInverse + mBody2->mMassInverse;
         mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
                     decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
     }
@@ -250,58 +222,53 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    const decimal inverseMassBody1 = mBody1->getMassInverse();
-    const decimal inverseMassBody2 = mBody2->getMassInverse();
+    const decimal inverseMassBody1 = mBody1->mMassInverse;
+    const decimal inverseMassBody2 = mBody2->mMassInverse;
 
-    // Compute the impulse P=J^T * lambda for the lower and upper limits constraints
+    // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 1
     decimal impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
     Vector3 linearImpulseLimits = impulseLimits * mSliderAxisWorld;
 
-    // Compute the impulse P=J^T * lambda for the motor constraint
+    // Compute the impulse P=J^T * lambda for the motor constraint of body 1
     Vector3 impulseMotor = mImpulseMotor * mSliderAxisWorld;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
+    Vector3 linearImpulseBody1 = -mN1 * mImpulseTranslation.x - mN2 * mImpulseTranslation.y;
+    Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * mImpulseTranslation.x -
+            mR1PlusUCrossN2 * mImpulseTranslation.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        Vector3 linearImpulseBody1 = -mN1 * mImpulseTranslation.x - mN2 * mImpulseTranslation.y;
-        Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * mImpulseTranslation.x -
-                                       mR1PlusUCrossN2 * mImpulseTranslation.y;
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+    angularImpulseBody1 += -mImpulseRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        angularImpulseBody1 += -mImpulseRotation;
+    // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 1
+    linearImpulseBody1 += linearImpulseLimits;
+    angularImpulseBody1 += impulseLimits * mR1PlusUCrossSliderAxis;
 
-        // Compute the impulse P=J^T * lambda for the lower and upper limits constraints
-        linearImpulseBody1 += linearImpulseLimits;
-        angularImpulseBody1 += impulseLimits * mR1PlusUCrossSliderAxis;
+    // Compute the impulse P=J^T * lambda for the motor constraint of body 1
+    linearImpulseBody1 += impulseMotor;
 
-        // Compute the impulse P=J^T * lambda for the motor constraint
-        linearImpulseBody1 += impulseMotor;
+    // Apply the impulse to the body 1
+    v1 += inverseMassBody1 * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
+    Vector3 linearImpulseBody2 = mN1 * mImpulseTranslation.x + mN2 * mImpulseTranslation.y;
+    Vector3 angularImpulseBody2 = mR2CrossN1 * mImpulseTranslation.x +
+            mR2CrossN2 * mImpulseTranslation.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        Vector3 linearImpulseBody2 = mN1 * mImpulseTranslation.x + mN2 * mImpulseTranslation.y;
-        Vector3 angularImpulseBody2 = mR2CrossN1 * mImpulseTranslation.x +
-                                      mR2CrossN2 * mImpulseTranslation.y;
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
+    angularImpulseBody2 += mImpulseRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        angularImpulseBody2 += mImpulseRotation;
+    // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 2
+    linearImpulseBody2 += -linearImpulseLimits;
+    angularImpulseBody2 += -impulseLimits * mR2CrossSliderAxis;
 
-        // Compute the impulse P=J^T * lambda for the lower and upper limits constraints
-        linearImpulseBody2 += -linearImpulseLimits;
-        angularImpulseBody2 += -impulseLimits * mR2CrossSliderAxis;
+    // Compute the impulse P=J^T * lambda for the motor constraint of body 2
+    linearImpulseBody2 += -impulseMotor;
 
-        // Compute the impulse P=J^T * lambda for the motor constraint
-        linearImpulseBody2 += -impulseMotor;
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    v2 += inverseMassBody2 * linearImpulseBody2;
+    w2 += mI2 * angularImpulseBody2;
 }
 
 // Solve the velocity constraint
@@ -314,8 +281,8 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
+    decimal inverseMassBody1 = mBody1->mMassInverse;
+    decimal inverseMassBody2 = mBody2->mMassInverse;
 
     // --------------- Translation Constraints --------------- //
 
@@ -330,27 +297,22 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector2 deltaLambda = mInverseMassMatrixTranslationConstraint * (-JvTranslation -mBTranslation);
     mImpulseTranslation += deltaLambda;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
+    const Vector3 linearImpulseBody1 = -mN1 * deltaLambda.x - mN2 * deltaLambda.y;
+    Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * deltaLambda.x -
+            mR1PlusUCrossN2 * deltaLambda.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        const Vector3 linearImpulseBody1 = -mN1 * deltaLambda.x - mN2 * deltaLambda.y;
-        const Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * deltaLambda.x -
-                                            mR1PlusUCrossN2 * deltaLambda.y;
+    // Apply the impulse to the body 1
+    v1 += inverseMassBody1 * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
+    const Vector3 linearImpulseBody2 = mN1 * deltaLambda.x + mN2 * deltaLambda.y;
+    Vector3 angularImpulseBody2 = mR2CrossN1 * deltaLambda.x + mR2CrossN2 * deltaLambda.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        const Vector3 linearImpulseBody2 = mN1 * deltaLambda.x + mN2 * deltaLambda.y;
-        const Vector3 angularImpulseBody2 = mR2CrossN1 * deltaLambda.x + mR2CrossN2 * deltaLambda.y;
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    v2 += inverseMassBody2 * linearImpulseBody2;
+    w2 += mI2 * angularImpulseBody2;
 
     // --------------- Rotation Constraints --------------- //
 
@@ -361,22 +323,17 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector3 deltaLambda2 = mInverseMassMatrixRotationConstraint * (-JvRotation - mBRotation);
     mImpulseRotation += deltaLambda2;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+    angularImpulseBody1 = -deltaLambda2;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody1 = -deltaLambda2;
+    // Apply the impulse to the body to body 1
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
+    angularImpulseBody2 = deltaLambda2;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody2 = deltaLambda2;
-
-        // Apply the impulse to the body
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    w2 += mI2 * angularImpulseBody2;
 
     // --------------- Limits Constraints --------------- //
 
@@ -395,26 +352,21 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             mImpulseLowerLimit = std::max(mImpulseLowerLimit + deltaLambdaLower, decimal(0.0));
             deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
 
-            if (mBody1->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the lower limit constraint of body 1
+            const Vector3 linearImpulseBody1 = -deltaLambdaLower * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = -deltaLambdaLower * mR1PlusUCrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the lower limit constraint
-                const Vector3 linearImpulseBody1 = -deltaLambdaLower * mSliderAxisWorld;
-                const Vector3 angularImpulseBody1 = -deltaLambdaLower * mR1PlusUCrossSliderAxis;
+            // Apply the impulse to the body 1
+            v1 += inverseMassBody1 * linearImpulseBody1;
+            w1 += mI1 * angularImpulseBody1;
 
-                // Apply the impulse to the body
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mI1 * angularImpulseBody1;
-            }
-            if (mBody2->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
+            const Vector3 linearImpulseBody2 = deltaLambdaLower * mSliderAxisWorld;
+            const Vector3 angularImpulseBody2 = deltaLambdaLower * mR2CrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the lower limit constraint
-                const Vector3 linearImpulseBody2 = deltaLambdaLower * mSliderAxisWorld;
-                const Vector3 angularImpulseBody2 = deltaLambdaLower * mR2CrossSliderAxis;
-
-                // Apply the impulse to the body
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mI2 * angularImpulseBody2;
-            }
+            // Apply the impulse to the body 2
+            v2 += inverseMassBody2 * linearImpulseBody2;
+            w2 += mI2 * angularImpulseBody2;
         }
 
         // If the upper limit is violated
@@ -430,26 +382,21 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
             mImpulseUpperLimit = std::max(mImpulseUpperLimit + deltaLambdaUpper, decimal(0.0));
             deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
 
-            if (mBody1->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the upper limit constraint of body 1
+            const Vector3 linearImpulseBody1 = deltaLambdaUpper * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = deltaLambdaUpper * mR1PlusUCrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the upper limit constraint
-                const Vector3 linearImpulseBody1 = deltaLambdaUpper * mSliderAxisWorld;
-                const Vector3 angularImpulseBody1 = deltaLambdaUpper * mR1PlusUCrossSliderAxis;
+            // Apply the impulse to the body 1
+            v1 += inverseMassBody1 * linearImpulseBody1;
+            w1 += mI1 * angularImpulseBody1;
 
-                // Apply the impulse to the body
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mI1 * angularImpulseBody1;
-            }
-            if (mBody2->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
+            const Vector3 linearImpulseBody2 = -deltaLambdaUpper * mSliderAxisWorld;
+            const Vector3 angularImpulseBody2 = -deltaLambdaUpper * mR2CrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the upper limit constraint
-                const Vector3 linearImpulseBody2 = -deltaLambdaUpper * mSliderAxisWorld;
-                const Vector3 angularImpulseBody2 = -deltaLambdaUpper * mR2CrossSliderAxis;
-
-                // Apply the impulse to the body
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mI2 * angularImpulseBody2;
-            }
+            // Apply the impulse to the body 2
+            v2 += inverseMassBody2 * linearImpulseBody2;
+            w2 += mI2 * angularImpulseBody2;
         }
     }
 
@@ -467,22 +414,17 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
         mImpulseMotor = clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
         deltaLambdaMotor = mImpulseMotor - lambdaTemp;
 
-        if (mBody1->isMotionEnabled()) {
+        // Compute the impulse P=J^T * lambda for the motor of body 1
+        const Vector3 linearImpulseBody1 = deltaLambdaMotor * mSliderAxisWorld;
 
-            // Compute the impulse P=J^T * lambda for the motor
-            const Vector3 linearImpulseBody1 = deltaLambdaMotor * mSliderAxisWorld;
+        // Apply the impulse to the body 1
+        v1 += inverseMassBody1 * linearImpulseBody1;
 
-            // Apply the impulse to the body
-            v1 += inverseMassBody1 * linearImpulseBody1;
-        }
-        if (mBody2->isMotionEnabled()) {
+        // Compute the impulse P=J^T * lambda for the motor of body 2
+        const Vector3 linearImpulseBody2 = -deltaLambdaMotor * mSliderAxisWorld;
 
-            // Compute the impulse P=J^T * lambda for the motor
-            const Vector3 linearImpulseBody2 = -deltaLambdaMotor * mSliderAxisWorld;
-
-            // Apply the impulse to the body
-            v2 += inverseMassBody2 * linearImpulseBody2;
-        }
+        // Apply the impulse to the body 2
+        v2 += inverseMassBody2 * linearImpulseBody2;
     }
 }
 
@@ -500,8 +442,8 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
+    decimal inverseMassBody1 = mBody1->mMassInverse;
+    decimal inverseMassBody2 = mBody2->mMassInverse;
 
     // Recompute the inertia tensor of bodies
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -540,21 +482,11 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // Recompute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
-    decimal sumInverseMass = 0.0;
-    Vector3 I1R1PlusUCrossN1(0, 0, 0);
-    Vector3 I1R1PlusUCrossN2(0, 0, 0);
-    Vector3 I2R2CrossN1(0, 0, 0);
-    Vector3 I2R2CrossN2(0, 0, 0);
-    if (mBody1->isMotionEnabled()) {
-        sumInverseMass += mBody1->getMassInverse();
-        I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
-        I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
-    }
-    if (mBody2->isMotionEnabled()) {
-        sumInverseMass += mBody2->getMassInverse();
-        I2R2CrossN1 = mI2 * mR2CrossN1;
-        I2R2CrossN2 = mI2 * mR2CrossN2;
-    }
+    decimal sumInverseMass = mBody1->mMassInverse + mBody2->mMassInverse;
+    Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
+    Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
+    Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
+    Vector3 I2R2CrossN2 = mI2 * mR2CrossN2;
     const decimal el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
                          mR2CrossN1.dot(I2R2CrossN1);
     const decimal el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
@@ -565,7 +497,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -575,51 +507,40 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the Lagrange multiplier lambda for the 2 translation constraints
     Vector2 lambdaTranslation = mInverseMassMatrixTranslationConstraint * (-translationError);
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
+    const Vector3 linearImpulseBody1 = -mN1 * lambdaTranslation.x - mN2 * lambdaTranslation.y;
+    Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * lambdaTranslation.x -
+                                        mR1PlusUCrossN2 * lambdaTranslation.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        const Vector3 linearImpulseBody1 = -mN1 * lambdaTranslation.x - mN2 * lambdaTranslation.y;
-        const Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * lambdaTranslation.x -
-                                            mR1PlusUCrossN2 * lambdaTranslation.y;
+    // Apply the impulse to the body 1
+    const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
+    Vector3 w1 = mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        const Vector3 w1 = mI1 * angularImpulseBody1;
+    // Update the body position/orientation of body 1
+    x1 += v1;
+    q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+    q1.normalize();
 
-        // Update the body position/orientation
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
+    const Vector3 linearImpulseBody2 = mN1 * lambdaTranslation.x + mN2 * lambdaTranslation.y;
+    Vector3 angularImpulseBody2 = mR2CrossN1 * lambdaTranslation.x +
+            mR2CrossN2 * lambdaTranslation.y;
 
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints
-        const Vector3 linearImpulseBody2 = mN1 * lambdaTranslation.x + mN2 * lambdaTranslation.y;
-        const Vector3 angularImpulseBody2 = mR2CrossN1 * lambdaTranslation.x +
-                                            mR2CrossN2 * lambdaTranslation.y;
+    // Apply the impulse to the body 2
+    const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
+    Vector3 w2 = mI2 * angularImpulseBody2;
 
-        // Apply the impulse to the body
-        const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-        const Vector3 w2 = mI2 * angularImpulseBody2;
-
-        // Update the body position/orientation
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
+    // Update the body position/orientation of body 2
+    x2 += v2;
+    q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+    q2.normalize();
 
     // --------------- Rotation Constraints --------------- //
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotationConstraint.setToZero();
-    if (mBody1->isMotionEnabled()) {
-        mInverseMassMatrixRotationConstraint += mI1;
-    }
-    if (mBody2->isMotionEnabled()) {
-        mInverseMassMatrixRotationConstraint += mI2;
-    }
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    mInverseMassMatrixRotationConstraint = mI1 + mI2;
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
@@ -632,30 +553,25 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
     Vector3 lambdaRotation = mInverseMassMatrixRotationConstraint * (-errorRotation);
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+    angularImpulseBody1 = -lambdaRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody1 = -lambdaRotation;
+    // Apply the impulse to the body 1
+    w1 = mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        const Vector3 w1 = mI1 * angularImpulseBody1;
+    // Update the body position/orientation of body 1
+    q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+    q1.normalize();
 
-        // Update the body position/orientation
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
+    angularImpulseBody2 = lambdaRotation;
 
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints
-        const Vector3 angularImpulseBody2 = lambdaRotation;
+    // Apply the impulse to the body 2
+    w2 = mI2 * angularImpulseBody2;
 
-        // Apply the impulse to the body
-        const Vector3 w2 = mI2 * angularImpulseBody2;
-
-        // Update the body position/orientation
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
+    // Update the body position/orientation of body 2
+    q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+    q2.normalize();
 
     // --------------- Limits Constraints --------------- //
 
@@ -664,15 +580,9 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
         if (mIsLowerLimitViolated || mIsUpperLimitViolated) {
 
             // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-            mInverseMassMatrixLimit = 0.0;
-            if (mBody1->isMotionEnabled()) {
-                mInverseMassMatrixLimit += mBody1->getMassInverse() +
-                                         mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis);
-            }
-            if (mBody2->isMotionEnabled()) {
-                mInverseMassMatrixLimit += mBody2->getMassInverse() +
-                                           mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
-            }
+            mInverseMassMatrixLimit = mBody1->mMassInverse + mBody2->mMassInverse +
+                                    mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
+                                    mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
             mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
                                       decimal(1.0) / mInverseMassMatrixLimit : decimal(0.0);
         }
@@ -683,36 +593,31 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             // Compute the Lagrange multiplier lambda for the lower limit constraint
             decimal lambdaLowerLimit = mInverseMassMatrixLimit * (-lowerLimitError);
 
-            if (mBody1->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the lower limit constraint of body 1
+            const Vector3 linearImpulseBody1 = -lambdaLowerLimit * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = -lambdaLowerLimit * mR1PlusUCrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the lower limit constraint
-                const Vector3 linearImpulseBody1 = -lambdaLowerLimit * mSliderAxisWorld;
-                const Vector3 angularImpulseBody1 = -lambdaLowerLimit * mR1PlusUCrossSliderAxis;
+            // Apply the impulse to the body 1
+            const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
+            const Vector3 w1 = mI1 * angularImpulseBody1;
 
-                // Apply the impulse to the body
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mI1 * angularImpulseBody1;
+            // Update the body position/orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
 
-                // Update the body position/orientation
-                x1 += v1;
-                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-                q1.normalize();
-            }
-            if (mBody2->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
+            const Vector3 linearImpulseBody2 = lambdaLowerLimit * mSliderAxisWorld;
+            const Vector3 angularImpulseBody2 = lambdaLowerLimit * mR2CrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the lower limit constraint
-                const Vector3 linearImpulseBody2 = lambdaLowerLimit * mSliderAxisWorld;
-                const Vector3 angularImpulseBody2 = lambdaLowerLimit * mR2CrossSliderAxis;
+            // Apply the impulse to the body 2
+            const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
+            const Vector3 w2 = mI2 * angularImpulseBody2;
 
-                // Apply the impulse to the body
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mI2 * angularImpulseBody2;
-
-                // Update the body position/orientation
-                x2 += v2;
-                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-                q2.normalize();
-            }
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
 
         // If the upper limit is violated
@@ -721,36 +626,31 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             // Compute the Lagrange multiplier lambda for the upper limit constraint
             decimal lambdaUpperLimit = mInverseMassMatrixLimit * (-upperLimitError);
 
-            if (mBody1->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the upper limit constraint of body 1
+            const Vector3 linearImpulseBody1 = lambdaUpperLimit * mSliderAxisWorld;
+            const Vector3 angularImpulseBody1 = lambdaUpperLimit * mR1PlusUCrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the upper limit constraint
-                const Vector3 linearImpulseBody1 = lambdaUpperLimit * mSliderAxisWorld;
-                const Vector3 angularImpulseBody1 = lambdaUpperLimit * mR1PlusUCrossSliderAxis;
+            // Apply the impulse to the body 1
+            const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
+            const Vector3 w1 = mI1 * angularImpulseBody1;
 
-                // Apply the impulse to the body
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mI1 * angularImpulseBody1;
+            // Update the body position/orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
 
-                // Update the body position/orientation
-                x1 += v1;
-                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-                q1.normalize();
-            }
-            if (mBody2->isMotionEnabled()) {
+            // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
+            const Vector3 linearImpulseBody2 = -lambdaUpperLimit * mSliderAxisWorld;
+            const Vector3 angularImpulseBody2 = -lambdaUpperLimit * mR2CrossSliderAxis;
 
-                // Compute the impulse P=J^T * lambda for the upper limit constraint
-                const Vector3 linearImpulseBody2 = -lambdaUpperLimit * mSliderAxisWorld;
-                const Vector3 angularImpulseBody2 = -lambdaUpperLimit * mR2CrossSliderAxis;
+            // Apply the impulse to the body 2
+            const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
+            const Vector3 w2 = mI2 * angularImpulseBody2;
 
-                // Apply the impulse to the body
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mI2 * angularImpulseBody2;
-
-                // Update the body position/orientation
-                x2 += v2;
-                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-                q2.normalize();
-            }
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
     }
 }

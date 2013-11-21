@@ -105,6 +105,9 @@ class Matrix3x3 {
         /// Return the 3x3 identity matrix
         static Matrix3x3 identity();
 
+        /// Return the 3x3 zero matrix
+        static Matrix3x3 zero();
+
         /// Return a skew-symmetric matrix using a given vector that can be used
         /// to compute cross product with another vector using matrix multiplication
         static Matrix3x3 computeSkewSymmetricMatrixForCrossProduct(const Vector3& vector);
@@ -214,9 +217,12 @@ inline void Matrix3x3::setToIdentity() {
 
 // Return the 3x3 identity matrix
 inline Matrix3x3 Matrix3x3::identity() {
-
-    // Return the isdentity matrix
     return Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+}
+
+// Return the 3x3 zero matrix
+inline Matrix3x3 Matrix3x3::zero() {
+    return Matrix3x3(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
 
 // Return a skew-symmetric matrix using a given vector that can be used

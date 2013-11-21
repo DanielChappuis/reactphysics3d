@@ -218,12 +218,6 @@ class ContactSolver {
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
 
-            /// True if the body 1 is allowed to move
-            bool isBody1Moving;
-
-            /// True if the body 2 is allowed to move
-            bool isBody2Moving;
-
             /// Contact point constraints
             ContactPointSolver contacts[MAX_CONTACT_POINTS_IN_MANIFOLD];
 

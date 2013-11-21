@@ -64,13 +64,11 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         // Position of the cubes
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
-                                          1 + i * (BOX_SIZE.y + 0.3f),
+                                          10 + i * (BOX_SIZE.y + 0.3f),
                                           0);
 
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
-
-        cube->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -84,8 +82,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
-    // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->enableMotion(false);
+    // The floor must be a static rigid body
+    mFloor->getRigidBody()->setType(rp3d::STATIC);
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

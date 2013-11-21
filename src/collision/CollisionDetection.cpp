@@ -111,6 +111,7 @@ void CollisionDetection::computeNarrowPhase() {
         mWorld->updateOverlappingPair(pair);
 
         // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
+        if (pair->body1->getType() != DYNAMIC && pair->body2->getType() != DYNAMIC) continue;
         if (mNoCollisionPairs.count(pair->getBodiesIndexPair()) > 0) continue;
 
         // Check if the two bodies are sleeping, if so, we do no test collision between them

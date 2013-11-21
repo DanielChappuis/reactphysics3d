@@ -231,7 +231,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform, decimal mass,
-                                   const Matrix3x3& inertiaTensorLocal,
                                    const CollisionShape& collisionShape);
 
         /// Destroy a rigid body and all the joints which it belongs
