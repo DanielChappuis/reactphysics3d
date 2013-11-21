@@ -33,7 +33,7 @@
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
-    
+
 // Declaration
 class CollisionDetection;
 
@@ -273,7 +273,7 @@ inline BodyPair* PairManager::findPair(bodyindex id1, bodyindex id2) const {
     uint hashValue = computeHashBodies(id1, id2) & mHashMask;
     
     // Look for the pair in the set of overlapping pairs
-    lookForAPair(id1, id2, hashValue);
+    return lookForAPair(id1, id2, hashValue);
 }
 
 // Find a pair given two body IDs and an hash value.
