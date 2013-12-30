@@ -17,7 +17,7 @@ FILE(COPY "${OPENGLFRAMEWORK_DIR}/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT
 FILE(COPY "../common/meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/")
+INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/glfw/include/" "../common/")
 
 # Source files
 SET(COLLISION_SHAPES_SOURCES
@@ -38,4 +38,4 @@ SET(COLLISION_SHAPES_SOURCES
 ADD_EXECUTABLE(collisionshapes ${COLLISION_SHAPES_SOURCES})
 
 # Link with libraries
-TARGET_LINK_LIBRARIES(collisionshapes reactphysics3d openglframework)
+TARGET_LINK_LIBRARIES(collisionshapes reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

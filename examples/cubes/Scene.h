@@ -30,6 +30,7 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
+#include "Viewer.h"
 
 // Constants
 const int NB_SPHERES = 20;                                 // Number of boxes in the scene
@@ -46,7 +47,7 @@ class Scene {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        Viewer* mViewer;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -71,7 +72,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Scene(Viewer* viewer);
 
         /// Destructor
         ~Scene();

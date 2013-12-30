@@ -31,14 +31,14 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
+Scene::Scene(Viewer *viewer) : mViewer(viewer), mLight0(0),
                                mPhongShader("shaders/phong.vert",
                                             "shaders/phong.frag"), mIsRunning(false) {
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 10.0f;
+    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
