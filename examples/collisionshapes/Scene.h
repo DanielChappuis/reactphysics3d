@@ -36,6 +36,7 @@
 #include "Capsule.h"
 #include "ConvexMesh.h"
 #include "VisualContactPoint.h"
+#include "../common/Viewer.h"
 
 // Constants
 const int NB_BOXES = 3;
@@ -68,7 +69,7 @@ class Scene {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        Viewer* mViewer;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -107,7 +108,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Scene(Viewer* viewer);
 
         /// Destructor
         ~Scene();

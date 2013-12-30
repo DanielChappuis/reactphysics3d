@@ -14,7 +14,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 FILE(COPY "${OPENGLFRAMEWORK_DIR}/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 
 # Headers
-INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/")
+INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/glfw/include/" "../common/")
 
 # Source files
 SET(JOINTS_SOURCES
@@ -31,4 +31,4 @@ SET(JOINTS_SOURCES
 ADD_EXECUTABLE(joints ${JOINTS_SOURCES})
 
 # Link with libraries
-TARGET_LINK_LIBRARIES(joints reactphysics3d openglframework)
+TARGET_LINK_LIBRARIES(joints reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

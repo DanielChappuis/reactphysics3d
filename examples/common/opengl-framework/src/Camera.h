@@ -152,7 +152,7 @@ inline void Camera::setFieldOfView(float fov) {
 
 // Set the zoom of the camera (a fraction between 0 and 1)
 inline void Camera::setZoom(float fraction) {
-    Vector3 zoomVector(0, 0, mSceneRadius * fraction * 3.0f);
+    Vector3 zoomVector(0, 0, mSceneRadius * fraction);
     translateLocal(zoomVector);
 }
 

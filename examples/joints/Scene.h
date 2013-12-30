@@ -30,6 +30,7 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
+#include "../common/Viewer.h"
 
 // Constants
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
@@ -47,7 +48,7 @@ class Scene {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        Viewer* mViewer;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -125,7 +126,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Scene(Viewer* viewer);
 
         /// Destructor
         ~Scene();

@@ -26,29 +26,6 @@ ELSE()
    MESSAGE("GLEW not found")
 ENDIF()
 
-# Find the GLUT/FREEGLUT library
-IF(APPLE)
-
-    # Find the GLUT library
-    FIND_PACKAGE(GLUT REQUIRED)
-    IF(GLUT_FOUND)
-        MESSAGE("GLUT found")
-    ELSE(GLUT_FOUND)
-        MESSAGE(SEND_ERROR "GLUT not found")
-    ENDIF(GLUT_FOUND)
-
-ELSE(APPLE)
-
-    # Find the FREEGLUT library
-    FIND_PACKAGE(FREEGLUT REQUIRED)
-    IF(FREEGLUT_FOUND)
-        MESSAGE("FREEGLUT found")
-    ELSE(FREEGLUT_FOUND)
-        MESSAGE(SEND_ERROR "FREEGLUT not found")
-    ENDIF(FREEGLUT_FOUND)
-
-ENDIF(APPLE)
-
 # If the user wants to use JPEG textures
 IF(USE_JPEG_TEXTURES)
 
@@ -62,7 +39,7 @@ IF(USE_JPEG_TEXTURES)
 ENDIF()
 
 # Headers
-INCLUDE_DIRECTORIES(src ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_PATH} ${FREEGLUT_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${JPEG_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(src ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_PATH} ${JPEG_INCLUDE_DIR})
 
 # Source files
 SET(OPENGL_FRAMEWORK_SOURCES
@@ -77,8 +54,6 @@ SET(OPENGL_FRAMEWORK_SOURCES
     "src/definitions.h"
     "src/FrameBufferObject.cpp"
     "src/FrameBufferObject.h"
-    "src/GlutViewer.cpp"
-    "src/GlutViewer.h"
     "src/Light.h"
     "src/Light.cpp"
     "src/Mesh.h"
@@ -106,4 +81,4 @@ ENDIF()
 ADD_LIBRARY (openglframework STATIC ${OPENGL_FRAMEWORK_SOURCES})
 
 # Link with others libraries
-TARGET_LINK_LIBRARIES(openglframework ${GLEW_LIBRARIES} ${OPENGL_LIBRARY} ${FREEGLUT_LIBRARY} ${GLUT_LIBRARY})
+TARGET_LINK_LIBRARIES(openglframework ${GLEW_LIBRARIES} ${OPENGL_LIBRARY})
