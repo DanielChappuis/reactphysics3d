@@ -72,7 +72,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(Viewer* viewer);
+        Scene(Viewer* viewer, const std::string& shaderFolderPath);
 
         /// Destructor
         ~Scene();

@@ -53,6 +53,15 @@ int main(int argc, char** argv) {
     Vector2 windowsPosition = Vector2(100, 100);
     viewer->init(argc, argv, "ReactPhysics3D Examples - Joints", windowsSize, windowsPosition, true);
 
+    // If the shaders folder is not specified as an argument
+    if (argc < 2) {
+        std::cerr << "Error : You need to specify the shaders folder as argument !" << std::endl;
+        return 1;
+    }
+
+    // Get the path of the shaders folder
+    std::string shaderFolderPath(argv[1]);
+
     // Register callback methods
     viewer->registerUpdateFunction(update);
     viewer->registerKeyboardCallback(keyboard);
@@ -61,7 +70,7 @@ int main(int argc, char** argv) {
     viewer->registerScrollingCallback(scroll);
 
     // Create the scene
-    scene = new Scene(viewer);
+    scene = new Scene(viewer, shaderFolderPath);
 
     init();
 

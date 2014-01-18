@@ -29,11 +29,12 @@
 
 // Constructor
 Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               float mass, reactphysics3d::DynamicsWorld* dynamicsWorld)
+               float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+               const std::string& meshFolderPath)
        : openglframework::Mesh(), mRadius(radius) {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile("meshes/sphere.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
 
     // Calculate the normals of the mesh
     calculateNormals();

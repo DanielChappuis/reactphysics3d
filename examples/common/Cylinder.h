@@ -57,7 +57,7 @@ class Cylinder : public openglframework::Mesh {
 
         /// Constructor
         Cylinder(float radius, float height, const openglframework::Vector3& position,
-             float mass, rp3d::DynamicsWorld* dynamicsWorld);
+             float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string &meshFolderPath);
 
         /// Destructor
         ~Cylinder();

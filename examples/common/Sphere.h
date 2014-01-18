@@ -54,7 +54,7 @@ class Sphere : public openglframework::Mesh {
 
         /// Constructor
         Sphere(float radius, const openglframework::Vector3& position,
-               float mass, rp3d::DynamicsWorld* dynamicsWorld);
+               float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Sphere();

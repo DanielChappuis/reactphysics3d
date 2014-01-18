@@ -29,11 +29,12 @@
 
 // Constructor
 Cylinder::Cylinder(float radius, float height, const openglframework::Vector3 &position,
-           float mass, reactphysics3d::DynamicsWorld* dynamicsWorld)
+           float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+                   const std::string& meshFolderPath)
      : openglframework::Mesh(), mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile("meshes/cylinder.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cylinder.obj", *this);
 
     // Calculate the normals of the mesh
     calculateNormals();

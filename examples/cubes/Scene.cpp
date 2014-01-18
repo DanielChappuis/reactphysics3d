@@ -30,9 +30,10 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
-                               mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"), mIsRunning(false) {
+Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
+      : mViewer(viewer), mLight0(0),
+        mPhongShader(shaderFolderPath + "phong.vert", shaderFolderPath + "phong.frag"),
+        mIsRunning(false) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));

@@ -54,6 +54,17 @@ int main(int argc, char** argv) {
     viewer->init(argc, argv, "ReactPhysics3D Examples - Collision Shapes",
                  windowsSize, windowsPosition, true);
 
+    // If the shaders and meshes folders are not specified as an argument
+    if (argc < 3) {
+        std::cerr << "Error : You need to specify the shaders folder as the first argument"
+                  <<  " and the meshes folder as the second argument" << std::endl;
+        return 1;
+    }
+
+    // Get the path of the shaders folder
+    std::string shaderFolderPath(argv[1]);
+    std::string meshFolderPath(argv[2]);
+
     // Register callback methods
     viewer->registerUpdateFunction(update);
     viewer->registerKeyboardCallback(keyboard);
@@ -62,7 +73,7 @@ int main(int argc, char** argv) {
     viewer->registerScrollingCallback(scroll);
 
     // Create the scene
-    scene = new Scene(viewer);
+    scene = new Scene(viewer, shaderFolderPath, meshFolderPath);
 
     init();
 

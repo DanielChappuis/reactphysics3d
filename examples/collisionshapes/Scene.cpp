@@ -30,9 +30,10 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
-                               mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"), mIsRunning(false) {
+Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::string& meshFolderPath)
+       : mViewer(viewer), mLight0(0),
+         mPhongShader(shaderFolderPath + "phong.vert",
+                      shaderFolderPath +"phong.frag"), mIsRunning(false) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(50, 50, 50));
@@ -57,7 +58,7 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
     // Create the static data for the visual contact points
-    VisualContactPoint::createStaticData();
+    VisualContactPoint::createStaticData(meshFolderPath);
 
     float radius = 3.0f;
 
@@ -91,7 +92,8 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld);
+        Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
+                                    meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -111,7 +113,8 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a cone and a corresponding rigid in the dynamics world
-        Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position , CONE_MASS, mDynamicsWorld);
+        Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
+                              meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -132,7 +135,7 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
-                                          CYLINDER_MASS, mDynamicsWorld);
+                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
@@ -153,7 +156,7 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
-                                       CAPSULE_MASS, mDynamicsWorld);
+                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -173,7 +176,7 @@ Scene::Scene(Viewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld);
+        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();

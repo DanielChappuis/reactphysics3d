@@ -57,7 +57,7 @@ class Capsule : public openglframework::Mesh {
 
         /// Constructor
         Capsule(float radius, float height, const openglframework::Vector3& position,
-               float mass, rp3d::DynamicsWorld* dynamicsWorld);
+                float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Capsule();

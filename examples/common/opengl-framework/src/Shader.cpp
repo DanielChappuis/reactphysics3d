@@ -129,7 +129,6 @@ bool Shader::create(const std::string vertexShaderFilename,
     GLuint fragmentShaderID;
     std::ifstream fileFragmentShader;
     fileFragmentShader.open(fragmentShaderFilename.c_str(), std::ios::binary);
-    assert(fileFragmentShader.is_open());
 
     if (fileFragmentShader.is_open()) {
 

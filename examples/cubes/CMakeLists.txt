@@ -20,7 +20,6 @@ INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/glfw/include/" "../
 SET(CUBES_SOURCES
     Cubes.cpp
     Scene.cpp
-    Scene.cpp
     Scene.h
     "../common/Box.cpp"
     "../common/Box.h"

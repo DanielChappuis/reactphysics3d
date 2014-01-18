@@ -28,12 +28,13 @@
 
 
 // Constructor
-Capsule::Capsule(float radius, float height, const openglframework::Vector3 &position,
-                 float mass, reactphysics3d::DynamicsWorld* dynamicsWorld)
+Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
+                 float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+                 const std::string& meshFolderPath)
         : openglframework::Mesh(), mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile("meshes/capsule.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
 
     // Calculate the normals of the mesh
     calculateNormals();

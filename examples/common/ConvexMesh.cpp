@@ -29,11 +29,12 @@
 
 // Constructor
 ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
-                       reactphysics3d::DynamicsWorld* dynamicsWorld)
+                       reactphysics3d::DynamicsWorld* dynamicsWorld,
+                       const std::string& meshFolderPath)
            : openglframework::Mesh() {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile("meshes/convexmesh.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "convexmesh.obj", *this);
 
     // Calculate the normals of the mesh
     calculateNormals();
