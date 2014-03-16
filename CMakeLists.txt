@@ -49,6 +49,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/broadphase/PairManager.cpp"
     "src/collision/broadphase/SweepAndPruneAlgorithm.h"
     "src/collision/broadphase/SweepAndPruneAlgorithm.cpp"
+    "src/collision/broadphase/DynamicAABBTree.h"
+    "src/collision/broadphase/DynamicAABBTree.cpp"
     "src/collision/narrowphase/EPA/EdgeEPA.h"
     "src/collision/narrowphase/EPA/EdgeEPA.cpp"
     "src/collision/narrowphase/EPA/EPAAlgorithm.h"

@@ -30,6 +30,7 @@
 #include <vector>
 #include "../../body/CollisionBody.h"
 #include "PairManager.h"
+#include "DynamicAABBTree.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -39,9 +40,8 @@ class CollisionDetection;
 
 // Class BroadPhaseAlgorithm
 /**
- * This class is an abstract class that represents an algorithm
- * used to perform the broad-phase of a collision detection. The
- * goal of the broad-phase algorithm is to compute the pair of bodies
+ * This class represents an algorithm the broad-phase collision detection. The
+ * goal of the broad-phase collision detection is to compute the pair of bodies
  * that can collide. But it's important to understand that the
  * broad-phase doesn't compute only body pairs that can collide but
  * could also pairs of body that doesn't collide but are very close.
@@ -54,6 +54,9 @@ class BroadPhaseAlgorithm {
     protected :
 
         // -------------------- Attributes -------------------- //
+
+        /// Dynamic AABB tree
+        DynamicAABBTree mDynamicAABBTree;
 
         /// Pair manager containing the overlapping pairs
         PairManager mPairManager;
