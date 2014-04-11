@@ -45,8 +45,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
     "src/collision/broadphase/NoBroadPhaseAlgorithm.h"
     "src/collision/broadphase/NoBroadPhaseAlgorithm.cpp"
-    "src/collision/broadphase/PairManager.h"
-    "src/collision/broadphase/PairManager.cpp"
     "src/collision/broadphase/SweepAndPruneAlgorithm.h"
     "src/collision/broadphase/SweepAndPruneAlgorithm.cpp"
     "src/collision/broadphase/DynamicAABBTree.h"
@@ -137,6 +135,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/mathematics/Vector3.cpp"
     "src/memory/MemoryAllocator.h"
     "src/memory/MemoryAllocator.cpp"
+    "src/memory/Stack.h"
 )
 
 # Create the library
