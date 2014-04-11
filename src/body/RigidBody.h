@@ -57,6 +57,13 @@ class RigidBody : public CollisionBody {
         /// Intial mass of the body
         decimal mInitMass;
 
+        /// Center of mass of the body in local-space coordinates.
+        /// The center of mass can therefore be different from the body origin
+        Vector3 mCenterOfMassLocal;
+
+        /// Center of mass of the body in world-space coordinates
+        Vector3 mCenterOfMassWorld;
+
         /// Linear velocity of the body
         Vector3 mLinearVelocity;
 
@@ -69,7 +76,8 @@ class RigidBody : public CollisionBody {
         /// Current external torque on the body
         Vector3 mExternalTorque;
 
-        /// Local inertia tensor of the body (in local-space)
+        /// Local inertia tensor of the body (in local-space) with respect to the
+        /// center of mass of the body
         Matrix3x3 mInertiaTensorLocal;
 
         /// Inverse of the inertia tensor of the body
@@ -104,13 +112,15 @@ class RigidBody : public CollisionBody {
         /// Remove a joint from the joints list
         void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
 
+        /// Update the transform of the body after a change of the center of mass
+        void updateTransformWithCenterOfMass();
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RigidBody(const Transform& transform, decimal mass, CollisionShape* collisionShape,
-                  bodyindex id);
+        RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
         virtual ~RigidBody();
@@ -120,9 +130,6 @@ class RigidBody : public CollisionBody {
 
         /// Return the mass of the body
         decimal getMass() const;
-
-        /// Set the mass of the body
-        void setMass(decimal mass);
 
         /// Return the linear velocity
         Vector3 getLinearVelocity() const;
@@ -178,14 +185,26 @@ class RigidBody : public CollisionBody {
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
 
-        /// Apply an external force to the body at its gravity center.
-        void applyForceToCenter(const Vector3& force);
+        /// Apply an external force to the body at its center of mass.
+        void applyForceToCenterOfMass(const Vector3& force);
 
         /// Apply an external force to the body at a given point (in world-space coordinates).
         void applyForce(const Vector3& force, const Vector3& point);
 
         /// Apply an external torque to the body.
         void applyTorque(const Vector3& torque);
+
+        /// Add a collision shape to the body.
+        const CollisionShape* addCollisionShape(const CollisionShape& collisionShape,
+                                                decimal mass,
+                                                const Transform& transform = Transform::identity());
+
+        /// Remove a collision shape from the body
+        virtual void removeCollisionShape(const CollisionShape* collisionShape);
+
+        /// Recompute the center of mass, total mass and inertia tensor of the body using all
+        /// the collision shapes attached to the body.
+        void recomputeMassInformation();
 
         // -------------------- Friendship -------------------- //
 
@@ -329,12 +348,12 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
     Body::setIsSleeping(isSleeping);
 }
 
-// Apply an external force to the body at its gravity center.
+// Apply an external force to the body at its center of mass.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the DynamicsWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
-inline void RigidBody::applyForceToCenter(const Vector3& force) {
+inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
     if (mType != DYNAMIC) return;
@@ -349,7 +368,7 @@ inline void RigidBody::applyForceToCenter(const Vector3& force) {
 }
 
 // Apply an external force to the body at a given point (in world-space coordinates).
-/// If the point is not at the center of gravity of the body, it will also
+/// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
@@ -387,6 +406,13 @@ inline void RigidBody::applyTorque(const Vector3& torque) {
 
     // Add the torque
     mExternalTorque += torque;
+}
+
+/// Update the transform of the body after a change of the center of mass
+inline void RigidBody::updateTransformWithCenterOfMass() {
+
+    // Translate the body according to the translation of the center of mass position
+    mTransform.setPosition(mCenterOfMassWorld - mTransform.getOrientation() * mCenterOfMassLocal);
 }
 
 }

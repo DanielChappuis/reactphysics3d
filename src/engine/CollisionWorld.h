@@ -85,27 +85,21 @@ class CollisionWorld {
         /// Private assignment operator
         CollisionWorld& operator=(const CollisionWorld& world);
 
-        /// Notify the world about a new broad-phase overlapping pair
-        virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
-
-        /// Notify the world about a removed broad-phase overlapping pair
-        virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
-
         /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair,
+        virtual void notifyNewContact(const OverlappingPair* pair,
                                       const ContactPointInfo* contactInfo);
 
         /// Update the overlapping pair
-        virtual void updateOverlappingPair(const BroadPhasePair* pair);
+        virtual void updateOverlappingPair(const OverlappingPair* pair);
 
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
-        /// Create a new collision shape.
-        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
-
         /// Remove a collision shape.
         void removeCollisionShape(CollisionShape* collisionShape);
+
+        /// Create a new collision shape in the world.
+        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
 
     public :
 
@@ -133,6 +127,8 @@ class CollisionWorld {
         // -------------------- Friends -------------------- //
 
         friend class CollisionDetection;
+        friend class CollisionBody;
+        friend class RigidBody;
 };
 
 // Return an iterator to the beginning of the bodies of the physics world

@@ -81,7 +81,7 @@ SweepAndPruneAlgorithm::~SweepAndPruneAlgorithm() {
 
 // Notify the broad-phase about a new object in the world
 /// This method adds the AABB of the object ion to broad-phase
-void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
+void SweepAndPruneAlgorithm::addProxyCollisionShape(CollisionBody* body, const AABB& aabb) {
 
     bodyindex boxIndex;
 
@@ -144,11 +144,11 @@ void SweepAndPruneAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
     // correct position in the array. This will also create the overlapping
     // pairs in the pair manager if the new AABB is overlapping with others
     // AABBs
-    updateObject(body, aabb);
+    updateProxyCollisionShape(body, aabb);
 } 
 
 // Notify the broad-phase about an object that has been removed from the world
-void SweepAndPruneAlgorithm::removeObject(CollisionBody* body) {
+void SweepAndPruneAlgorithm::removeProxyCollisionShape(CollisionBody* body) {
 
     assert(mNbBoxes > 0);
 

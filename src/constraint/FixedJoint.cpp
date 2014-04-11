@@ -62,8 +62,8 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
     // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->getTransform().getPosition();
-    const Vector3& x2 = mBody2->getTransform().getPosition();
+    const Vector3& x1 = mBody1->mCenterOfMassWorld;
+    const Vector3& x2 = mBody2->mCenterOfMassWorld;
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 

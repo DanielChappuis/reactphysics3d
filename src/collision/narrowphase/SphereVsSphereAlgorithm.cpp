@@ -41,16 +41,22 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(CollisionShape* collisionShape1,
-                                            const Transform& transform1,
-                                            CollisionShape* collisionShape2,
-                                            const Transform& transform2,
+bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
+                                            ProxyShape* collisionShape2,
                                             ContactPointInfo*& contactInfo) {
     
     // Get the sphere collision shapes
-    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(collisionShape1);
-    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(collisionShape2);
-    
+    const CollisionShape* shape1 = collisionShape1->getCollisionShape();
+    const CollisionShape* shape2 = collisionShape2->getCollisionShape();
+    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(shape1);
+    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(shape2);
+
+    // Get the local-space to world-space transforms
+    const Transform transform1 = collisionShape1->getBody()->getTransform() *
+                                 collisionShape1->getLocalToBodyTransform();
+    const Transform transform2 = collisionShape2->getBody()->getTransform() *
+                                 collisionShape2->getLocalToBodyTransform();
+
     // Compute the distance between the centers
     Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
     decimal squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquare();

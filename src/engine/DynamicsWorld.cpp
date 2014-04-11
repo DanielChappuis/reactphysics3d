@@ -34,6 +34,14 @@
 using namespace reactphysics3d;
 using namespace std;
 
+// TODO : Check if we really need to store the contact manifolds also in mContactManifolds.
+
+// TODO : Check how to compute the initial inertia tensor now (especially when a body has multiple
+//        collision shapes.
+
+// TODO : Check the Body::setType() function in Box2D to be sure we are not missing any update
+// of the collision shapes and broad-phase modification.
+
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
               : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityEnabled(true),
@@ -128,9 +136,6 @@ void DynamicsWorld::update() {
         // Integrate the velocities
         integrateRigidBodiesVelocities();
 
-        // Reset the movement boolean variable of each body to false
-        resetBodiesMovementVariable();
-
         // Update the timer
         mTimer.nextStep();
 
@@ -199,6 +204,9 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             Quaternion newOrientation = currentOrientation + Quaternion(0, newAngVelocity) *
                     currentOrientation * decimal(0.5) * dt;
 
+            // Update the world-space center of mass
+            // TODO : IMPLEMENT THIS
+
             // Update the Transform of the body
             Transform newTransform(newPosition, newOrientation.getUnit());
             bodies[b]->setTransform(newTransform);
@@ -217,6 +225,9 @@ void DynamicsWorld::updateRigidBodiesAABB() {
 
         // If the body has moved
         if ((*it)->mHasMoved) {
+
+            // Update the transform of the body due to the change of its center of mass
+            (*it)->updateTransformWithCenterOfMass();
 
             // Update the AABB of the rigid body
             (*it)->updateAABB();
@@ -444,7 +455,7 @@ void DynamicsWorld::solvePositionCorrection() {
 
             // Get the position/orientation of the rigid body
             const Transform& transform = bodies[b]->getTransform();
-            mConstrainedPositions[index] = transform.getPosition();
+            mConstrainedPositions[index] = bodies[b]->mCenterOfMassWorld;
             mConstrainedOrientations[index]= transform.getOrientation();
         }
 
@@ -463,20 +474,20 @@ void DynamicsWorld::solvePositionCorrection() {
 
             uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
 
-            // Get the new position/orientation of the body
-            const Vector3& newPosition = mConstrainedPositions[index];
-            const Quaternion& newOrientation = mConstrainedOrientations[index];
+            // Update the position of the center of mass of the body
+            bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
 
-            // Update the Transform of the body
-            Transform newTransform(newPosition, newOrientation.getUnit());
-            bodies[b]->setTransform(newTransform);
+            // Update the orientation of the body
+            bodies[b]->mTransform.setOrientation(mConstrainedOrientations[index].getUnit());
+
+            // Update the Transform of the body (using the new center of mass and new orientation)
+            bodies[b]->updateTransformWithCenterOfMass();
         }
     }
 }
 
 // Create a rigid body into the physics world
-RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal mass,
-                                          const CollisionShape& collisionShape) {
+RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal mass) {
 
     // Compute the body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -484,22 +495,18 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
-    // Create a collision shape for the rigid body into the world
-    CollisionShape* newCollisionShape = createCollisionShape(collisionShape);
-
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
-                                                                                mass,
-                                                                                newCollisionShape,
-                                                                                bodyID);
+                                                                                mass, bodyID);
     assert(rigidBody != NULL);
 
     // Add the rigid body to the physics world
     mBodies.insert(rigidBody);
     mRigidBodies.insert(rigidBody);
 
+    // TODO : DELETE THIS
     // Add the rigid body to the collision detection
-    mCollisionDetection.addBody(rigidBody);
+    //mCollisionDetection.addProxyCollisionShape(rigidBody);
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -508,14 +515,16 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform, decimal ma
 // Destroy a rigid body and all the joints which it belongs
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
+    // TODO : DELETE THIS
     // Remove the body from the collision detection
-    mCollisionDetection.removeBody(rigidBody);
+    //mCollisionDetection.removeProxyCollisionShape(rigidBody);
 
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(rigidBody->getID());
 
+    // TODO : DELETE THIS
     // Remove the collision shape from the world
-    removeCollisionShape(rigidBody->getCollisionShape());
+    //removeCollisionShape(rigidBody->getCollisionShape());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
@@ -908,33 +917,6 @@ void DynamicsWorld::updateSleepingBodies() {
             }
         }
     }
-}
-
-// Notify the world about a new broad-phase overlapping pair
-void DynamicsWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
-
-    // Get the pair of body index
-    bodyindexpair indexPair = addedPair->getBodiesIndexPair();
-
-    // Add the pair into the set of overlapping pairs (if not there yet)
-    OverlappingPair* newPair = new (mMemoryAllocator.allocate(sizeof(OverlappingPair)))
-                              OverlappingPair(addedPair->body1, addedPair->body2, mMemoryAllocator);
-    assert(newPair != NULL);
-    std::pair<map<bodyindexpair, OverlappingPair*>::iterator, bool> check =
-            mOverlappingPairs.insert(make_pair(indexPair, newPair));
-    assert(check.second);
-}
-
-// Notify the world about a removed broad-phase overlapping pair
-void DynamicsWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
-
-    // Get the pair of body index
-    std::pair<bodyindex, bodyindex> indexPair = removedPair->getBodiesIndexPair();
-
-    // Remove the overlapping pair from the memory allocator
-    mOverlappingPairs.find(indexPair)->second->OverlappingPair::~OverlappingPair();
-    mMemoryAllocator.release(mOverlappingPairs[indexPair], sizeof(OverlappingPair));
-    mOverlappingPairs.erase(indexPair);
 }
 
 // Notify the world about a new narrow-phase contact

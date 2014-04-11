@@ -57,11 +57,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(CollisionShape* collisionShape1,
-                                 const Transform& transform1,
-                                 CollisionShape* collisionShape2,
-                                 const Transform& transform2,
-		                         ContactPointInfo*& contactInfo) {
+bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
+                                 ContactPointInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -70,6 +67,12 @@ bool GJKAlgorithm::testCollision(CollisionShape* collisionShape1,
     Vector3 pB;                // Closest point of object B
     decimal vDotw;
     decimal prevDistSquare;
+
+    // Get the local-space to world-space transforms
+    const Transform transform1 = collisionShape1->getBody()->getTransform() *
+                                 collisionShape1->getLocalToBodyTransform();
+    const Transform transform2 = collisionShape2->getBody()->getTransform() *
+                                 collisionShape2->getLocalToBodyTransform();
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
@@ -89,7 +92,7 @@ bool GJKAlgorithm::testCollision(CollisionShape* collisionShape1,
     Simplex simplex;
 
     // Get the previous point V (last cached separating axis)
-    Vector3 v = mCurrentOverlappingPair->previousSeparatingAxis;
+    Vector3 v = mCurrentOverlappingPair->getCachedSeparatingAxis();
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -110,7 +113,7 @@ bool GJKAlgorithm::testCollision(CollisionShape* collisionShape1,
         if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            mCurrentOverlappingPair->previousSeparatingAxis = v;
+            mCurrentOverlappingPair->setCachedSeparatingAxis(v);
             
             // No intersection, we return false
             return false;
@@ -259,9 +262,9 @@ bool GJKAlgorithm::testCollision(CollisionShape* collisionShape1,
 /// assumed to intersect in the original objects (without margin). Therefore such
 /// a polytope must exist. Then, we give that polytope to the EPA algorithm to
 /// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(CollisionShape* collisionShape1,
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(ProxyShape* collisionShape1,
                                                              const Transform& transform1,
-                                                             CollisionShape* collisionShape2,
+                                                             ProxyShape* collisionShape2,
                                                              const Transform& transform2,
                                                              ContactPointInfo*& contactInfo,
                                                              Vector3& v) {

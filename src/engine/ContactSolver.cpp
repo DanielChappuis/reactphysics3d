@@ -87,8 +87,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         RigidBody* body2 = externalManifold->getContactPoint(0)->getBody2();
 
         // Get the position of the two bodies
-        Vector3 x1 = body1->getTransform().getPosition();
-        Vector3 x2 = body2->getTransform().getPosition();
+        const Vector3& x1 = body1->mCenterOfMassWorld;
+        const Vector3& x2 = body2->mCenterOfMassWorld;
 
         // Initialize the internal contact manifold structure using the external
         // contact manifold

@@ -31,7 +31,7 @@
 #include "../../constraint/ContactPoint.h"
 #include "../broadphase/PairManager.h"
 #include "../../memory/MemoryAllocator.h"
-#include "../BroadPhasePair.h"
+#include "../../engine/OverlappingPair.h"
 
 
 /// Namespace ReactPhysics3D
@@ -54,7 +54,7 @@ class NarrowPhaseAlgorithm {
         MemoryAllocator& mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
-        BroadPhasePair* mCurrentOverlappingPair;
+        OverlappingPair* mCurrentOverlappingPair;
         
         // -------------------- Methods -------------------- //
 
@@ -75,18 +75,15 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();
         
         /// Set the current overlapping pair of bodies
-        void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);
+        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(CollisionShape* collisionShape1,
-                                   const Transform& transform1,
-                                   CollisionShape* collisionShape2,
-                                   const Transform& transform2,
+        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
                                    ContactPointInfo*& contactInfo)=0;
 };
 
 // Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(BroadPhasePair *overlappingPair) {
+inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
     mCurrentOverlappingPair = overlappingPair;
 }      
 

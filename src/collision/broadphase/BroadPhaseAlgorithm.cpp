@@ -31,11 +31,223 @@ using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
-                    :mPairManager(collisionDetection), mCollisionDetection(collisionDetection) {
+                    :mDynamicAABBTree(*this), mNbMovedShapes(0), mNbAllocatedMovedShapes(8),
+                     mNbNonUsedMovedShapes(0), mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
+                     mPairManager(collisionDetection), mCollisionDetection(collisionDetection) {
 
+    // Allocate memory for the array of non-static bodies IDs
+    mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
+    assert(mMovedShapes);
+
+    // Allocate memory for the array of potential overlapping pairs
+    mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+    assert(mPotentialPairs);
 }
 
 // Destructor
 BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
 
+    // Release the memory for the array of non-static bodies IDs
+    free(mMovedShapes);
+
+    // Release the memory for the array of potential overlapping pairs
+    free(mPotentialPairs);
+}
+
+// Add a collision shape in the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
+
+    // Allocate more elements in the array of bodies that have moved if necessary
+    if (mNbAllocatedMovedShapes == mNbMovedShapes) {
+        mNbAllocatedMovedShapes *= 2;
+        int* oldArray = mMovedShapes;
+        mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
+        assert(mMovedShapes);
+        memcpy(mMovedShapes, oldArray, mNbMovedShapes * sizeof(int));
+        free(oldArray);
+    }
+
+    // Store the broad-phase ID into the array of bodies that have moved
+    mMovedShapes[mNbMovedShapes] = broadPhaseID;
+    mNbMovedShapes++;
+}
+
+// Remove a collision shape from the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
+
+    assert(mNbNonUsedMovedShapes <= mNbMovedShapes);
+
+    // If less than the quarter of allocated elements of the non-static bodies IDs array
+    // are used, we release some allocated memory
+    if ((mNbMovedShapes - mNbNonUsedMovedShapes) < mNbAllocatedMovedShapes / 4 &&
+            mNbAllocatedMovedShapes > 8) {
+
+        mNbAllocatedMovedShapes /= 2;
+        int* oldArray = mMovedShapes;
+        mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
+        assert(mMovedShapes);
+        uint nbElements = 0;
+        for (uint i=0; i<mNbMovedShapes; i++) {
+            if (oldArray[i] != -1) {
+                mMovedShapes[nbElements] = oldArray[i];
+                nbElements++;
+            }
+        }
+        mNbMovedShapes = nbElements;
+        mNbNonUsedMovedShapes = 0;
+        free(oldArray);
+    }
+
+    // Remove the broad-phase ID from the array
+    for (uint i=0; i<mNbMovedShapes; i++) {
+        if (mMovedShapes[i] == broadPhaseID) {
+            mMovedShapes[i] = -1;
+            mNbNonUsedMovedShapes++;
+            break;
+        }
+    }
+}
+
+// Add a proxy collision shape into the broad-phase collision detection
+void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape) {
+
+    // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
+    mDynamicAABBTree.addObject(proxyShape);
+
+    // Add the collision shape into the array of bodies that have moved (or have been created)
+    // during the last simulation step
+    addMovedCollisionShape(proxyShape->mBroadPhaseID);
+}
+
+// Remove a proxy collision shape from the broad-phase collision detection
+void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
+
+    int broadPhaseID = proxyShape->mBroadPhaseID;
+
+    // Remove the collision shape from the dynamic AABB tree
+    mDynamicAABBTree.removeObject(broadPhaseID);
+
+    // Remove the collision shape into the array of bodies that have moved (or have been created)
+    // during the last simulation step
+    removeMovedCollisionShape(broadPhaseID);
+}
+
+// Notify the broad-phase that a collision shape has moved and need to be updated
+void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+
+    int broadPhaseID = proxyShape->mBroadPhaseID;
+
+    assert(broadPhaseID >= 0);
+
+    // Update the dynamic AABB tree according to the movement of the collision shape
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseID, aabb);
+
+    // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
+    // into the tree).
+    if (hasBeenReInserted) {
+
+        // Add the collision shape into the array of bodies that have moved (or have been created)
+        // during the last simulation step
+        addMovedCollisionShape(broadPhaseID);
+    }
+}
+
+// Compute all the overlapping pairs of collision shapes
+void BroadPhaseAlgorithm::computeOverlappingPairs() {
+
+    // Reset the potential overlapping pairs
+    mNbPotentialPairs = 0;
+
+    // For all collision shapes that have moved (or have been created) during the
+    // last simulation step
+    for (uint i=0; i<mNbMovedShapes; i++) {
+        uint shapeID = mMovedShapes[i];
+
+        if (shapeID == -1) continue;
+
+        // Get the fat AABB of the collision shape from the dynamic AABB tree
+        const AABB& shapeAABB = mDynamicAABBTree.getFatAABB(shapeID);
+
+        // Ask the dynamic AABB tree to report all collision shapes that overlap with
+        // this AABB. The method BroadPhase::notifiyOverlappingPair() will be called
+        // by the dynamic AABB tree for each potential overlapping pair.
+        mDynamicAABBTree.reportAllShapesOverlappingWith(shapeID, shapeAABB);
+    }
+
+    // Reset the array of collision shapes that have move (or have been created) during the
+    // last simulation step
+    mMovedShapes = 0;
+
+    // Sort the array of potential overlapping pairs in order to remove duplicate pairs
+    std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPair::smallerThan);
+
+    // Check all the potential overlapping pairs avoiding duplicates to report unique
+    // overlapping pairs
+    uint i=0;
+    while (i < mNbPotentialPairs) {
+
+        // Get a potential overlapping pair
+        BroadPair* pair = mPotentialPairs + i;
+        i++;
+
+        // Get the two collision shapes of the pair
+        ProxyShape* shape1 = mDynamicAABBTree.getCollisionShape(pair->collisionShape1ID);
+        ProxyShape* shape2 = mDynamicAABBTree.getCollisionShape(pair->collisionShape2ID);
+
+        // Notify the collision detection about the overlapping pair
+        mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
+
+        // Skip the duplicate overlapping pairs
+        while (i < mNbPotentialPairs) {
+
+            // Get the next pair
+            BroadPair* nextPair = mPotentialPairs + i;
+
+            // If the next pair is different from the previous one, we stop skipping pairs
+            if (nextPair->collisionShape1ID != pair->collisionShape1ID ||
+                nextPair->collisionShape2ID != pair->collisionShape2ID) {
+                break;
+            }
+            i++;
+        }
+    }
+
+    // If the number of potential overlapping pairs is less than the quarter of allocated
+    // number of overlapping pairs
+    if (mNbPotentialPairs < mNbAllocatedPotentialPairs / 4 && mNbPotentialPairs > 8) {
+
+        // Reduce the number of allocated potential overlapping pairs
+        BroadPair* oldPairs = mPotentialPairs;
+        mNbAllocatedPotentialPairs /= 2;
+        mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+        assert(mPotentialPairs);
+        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPair));
+        free(oldPairs);
+    }
+}
+
+// Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
+void BroadPhaseAlgorithm::notifyOverlappingPair(int node1ID, int node2ID) {
+
+    // If both the nodes are the same, we do not create store the overlapping pair
+    if (node1ID == node2ID) return;
+
+    // If we need to allocate more memory for the array of potential overlapping pairs
+    if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
+
+        // Allocate more memory for the array of potential pairs
+        BroadPair* oldPairs = mPotentialPairs;
+        mNbAllocatedPotentialPairs *= 2;
+        mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+        assert(mPotentialPairs);
+        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPair));
+        free(oldPairs);
+    }
+
+    // Add the new potential pair into the array of potential overlapping pairs
+    mPotentialPairs[mNbPotentialPairs].collisionShape1ID = std::min(node1ID, node2ID);
+    mPotentialPairs[mNbPotentialPairs].collisionShape2ID = std::max(node1ID, node2ID);
+    mNbPotentialPairs++;
 }

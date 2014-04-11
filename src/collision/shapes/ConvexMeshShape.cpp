@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
                                  decimal margin)
                 : CollisionShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
-                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false), mCachedSupportVertex(0) {
+                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(nbVertices > 0);
     assert(stride > 0);
     assert(margin > decimal(0.0));
@@ -58,7 +58,7 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
 /// the addVertex() method.
 ConvexMeshShape::ConvexMeshShape(decimal margin)
                 : CollisionShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
-                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false), mCachedSupportVertex(0) {
+                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(margin > decimal(0.0));
 }
 
@@ -67,8 +67,7 @@ ConvexMeshShape::ConvexMeshShape(const ConvexMeshShape& shape)
     : CollisionShape(shape), mVertices(shape.mVertices), mNbVertices(shape.mNbVertices),
       mMinBounds(shape.mMinBounds), mMaxBounds(shape.mMaxBounds),
       mIsEdgesInformationUsed(shape.mIsEdgesInformationUsed),
-      mEdgesAdjacencyList(shape.mEdgesAdjacencyList),
-      mCachedSupportVertex(shape.mCachedSupportVertex) {
+      mEdgesAdjacencyList(shape.mEdgesAdjacencyList) {
 
     assert(mNbVertices == mVertices.size());
 }
@@ -79,10 +78,11 @@ ConvexMeshShape::~ConvexMeshShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                        uint& cachedSupportVertex) const {
 
     // Get the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedSupportVertex);
 
     // Get the unit direction vector
     Vector3 unitDirection = direction;
@@ -103,7 +103,8 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction
 /// it as a start in a hill-climbing (local search) process to find the new support vertex which
 /// will be in most of the cases very close to the previous one. Using hill-climbing, this method
 /// runs in almost constant time.
-Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                           uint& cachedSupportVertex) const {
 
     assert(mNbVertices == mVertices.size());
 
@@ -112,7 +113,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 
         assert(mEdgesAdjacencyList.size() == mNbVertices);
 
-        uint maxVertex = mCachedSupportVertex;
+        uint maxVertex = cachedSupportVertex;
         decimal maxDotProduct = direction.dot(mVertices[maxVertex]);
         bool isOptimal;
 
@@ -142,7 +143,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
         } while(!isOptimal);
 
         // Cache the support vertex
-        mCachedSupportVertex = maxVertex;
+        cachedSupportVertex = maxVertex;
 
         // Return the support vertex
         return mVertices[maxVertex];
@@ -204,11 +205,7 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
 
     if (mNbVertices != otherShape.mNbVertices) return false;
 
-    // If edges information is used, it means that a collison shape object will store
-    // cached data (previous support vertex) and therefore, we should not reuse the shape
-    // for another body. Therefore, we consider that all convex mesh shape using edges
-    // information are different.
-    if (mIsEdgesInformationUsed) return false;
+    if (mIsEdgesInformationUsed != otherShape.mIsEdgesInformationUsed) return false;
 
     if (mEdgesAdjacencyList.size() != otherShape.mEdgesAdjacencyList.size()) return false;
 
@@ -225,4 +222,17 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
     }
 
     return true;
+}
+
+// Constructor
+ProxyConvexMeshShape::ProxyConvexMeshShape(const ConvexMeshShape* shape, CollisionBody* body,
+                                             const Transform& transform, decimal mass)
+                      :ProxyShape(body, transform, mass), mCollisionShape(shape),
+                       mCachedSupportVertex(0) {
+
+}
+
+// Destructor
+ProxyConvexMeshShape::~ProxyConvexMeshShape() {
+
 }

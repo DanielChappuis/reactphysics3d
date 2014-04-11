@@ -78,10 +78,10 @@ class SphereShape : public CollisionShape {
         virtual size_t getSizeInBytes() const;
 
         /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -90,10 +90,64 @@ class SphereShape : public CollisionShape {
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
         /// Update the AABB of a body using its collision shape
-        virtual void updateAABB(AABB& aabb, const Transform& transform);
+        virtual void computeAABB(AABB& aabb, const Transform& transform);
 
         /// Test equality between two sphere shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+
+        /// Create a proxy collision shape for the collision shape
+        virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
+                                             const Transform& transform, decimal mass) const;
+};
+
+
+// Class ProxySphereShape
+/**
+ * The proxy collision shape for a sphere shape.
+ */
+class ProxySphereShape : public ProxyShape {
+
+    private:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer to the actual collision shape
+        const SphereShape* mCollisionShape;
+
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy-constructor
+        ProxySphereShape(const ProxySphereShape& proxyShape);
+
+        /// Private assignment operator
+        ProxySphereShape& operator=(const ProxySphereShape& proxyShape);
+
+    public:
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ProxySphereShape(const SphereShape* shape, CollisionBody* body,
+                         const Transform& transform, decimal mass);
+
+        /// Destructor
+        ~ProxySphereShape();
+
+        /// Return the collision shape
+        virtual const CollisionShape* getCollisionShape() const;
+
+        /// Return the number of bytes used by the proxy collision shape
+        virtual size_t getSizeInBytes() const;
+
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
+
+        /// Return the current collision shape margin
+        virtual decimal getMargin() const;
 };
 
 /// Allocate and return a copy of the object
@@ -112,7 +166,7 @@ inline size_t SphereShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
     // If the direction vector is not the zero vector
     if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
@@ -127,7 +181,7 @@ inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direct
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     // Return the center of the sphere (the radius is taken into account in the object margin)
     return Vector3(0.0, 0.0, 0.0);
@@ -157,7 +211,7 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
 }
 
 // Update the AABB of a body using its collision shape
-inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
+inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 
     // Get the local extents in x,y and z direction
     Vector3 extents(mRadius, mRadius, mRadius);
@@ -171,6 +225,38 @@ inline void SphereShape::updateAABB(AABB& aabb, const Transform& transform) {
 inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius);
+}
+
+// Create a proxy collision shape for the collision shape
+inline ProxyShape* SphereShape::createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
+                                                 const Transform& transform, decimal mass) const {
+    return new (allocator.allocate(sizeof(ProxySphereShape))) ProxySphereShape(this, body,
+                                                                               transform, mass);
+}
+
+// Return the collision shape
+inline const CollisionShape* ProxySphereShape::getCollisionShape() const {
+    return mCollisionShape;
+}
+
+// Return the number of bytes used by the proxy collision shape
+inline size_t ProxySphereShape::getSizeInBytes() const {
+    return sizeof(ProxySphereShape);
+}
+
+// Return a local support point in a given direction with the object margin
+inline Vector3 ProxySphereShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+    return mCollisionShape->getLocalSupportPointWithMargin(direction);
+}
+
+// Return a local support point in a given direction without the object margin
+inline Vector3 ProxySphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+    return mCollisionShape->getLocalSupportPointWithoutMargin(direction);
+}
+
+// Return the current object margin
+inline decimal ProxySphereShape::getMargin() const {
+    return mCollisionShape->getMargin();
 }
 
 }

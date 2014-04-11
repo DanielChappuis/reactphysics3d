@@ -54,7 +54,7 @@ ConeShape::~ConeShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
     // Compute the support point without the margin
     Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
@@ -70,7 +70,7 @@ Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 }
 
 // Return a local support point in a given direction without the object margin
-Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     const Vector3& v = direction;
     decimal sinThetaTimesLengthV = mSinTheta * v.length();
@@ -91,4 +91,16 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
     }
 
     return supportPoint;
+}
+
+// Constructor
+ProxyConeShape::ProxyConeShape(const ConeShape* shape, CollisionBody* body,
+                               const Transform& transform, decimal mass)
+               :ProxyShape(body, transform, mass), mCollisionShape(shape){
+
+}
+
+// Destructor
+ProxyConeShape::~ProxyConeShape() {
+
 }

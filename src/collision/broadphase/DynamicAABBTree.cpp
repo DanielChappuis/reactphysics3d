@@ -25,6 +25,8 @@
 
 // Libraries
 #include "DynamicAABBTree.h"
+#include "BroadPhaseAlgorithm.h"
+#include "../../memory/Stack.h"
 
 using namespace reactphysics3d;
 
@@ -32,7 +34,7 @@ using namespace reactphysics3d;
 const int TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
-DynamicAABBTree::DynamicAABBTree() {
+DynamicAABBTree::DynamicAABBTree(BroadPhaseAlgorithm& broadPhase) : mBroadPhase(broadPhase){
 
     mRootNodeID = TreeNode::NULL_TREE_NODE;
     mNbNodes = 0;
@@ -92,7 +94,7 @@ int DynamicAABBTree::allocateNode() {
     mNodes[freeNodeID].parentID = TreeNode::NULL_TREE_NODE;
     mNodes[freeNodeID].leftChildID = TreeNode::NULL_TREE_NODE;
     mNodes[freeNodeID].rightChildID = TreeNode::NULL_TREE_NODE;
-    mNodes[freeNodeID].collisionShape = NULL;
+    mNodes[freeNodeID].proxyShape = NULL;
     mNodes[freeNodeID].height = 0;
     mNbNodes++;
 
@@ -134,7 +136,7 @@ void DynamicAABBTree::releaseNode(int nodeID) {
 
 // Add an object into the tree. This method creates a new leaf node in the tree and
 // returns the ID of the corresponding node.
-int DynamicAABBTree::addObject(CollisionShape* collisionShape, const AABB& aabb) {
+void DynamicAABBTree::addObject(ProxyShape* proxyShape) {
 
     // Get the next available node (or allocate new ones if necessary)
     int nodeID = allocateNode();
@@ -145,7 +147,7 @@ int DynamicAABBTree::addObject(CollisionShape* collisionShape, const AABB& aabb)
     mNodes[nodeID].aabb.setMax(mNodes[nodeID].aabb.getMax() + gap);
 
     // Set the collision shape
-    mNodes[nodeID].collisionShape = collisionShape;
+    mNodes[nodeID].proxyShape = proxyShape;
 
     // Set the height of the node in the tree
     mNodes[nodeID].height = 0;
@@ -153,8 +155,9 @@ int DynamicAABBTree::addObject(CollisionShape* collisionShape, const AABB& aabb)
     // Insert the new leaf node in the tree
     insertLeafNode(nodeID);
 
-    // Return the node ID
-    return nodeID;
+    // Set the broad-phase ID of the proxy shape
+    proxyShape->mBroadPhaseID = nodeID;
+    assert(nodeID >= 0);
 }
 
 // Remove an object from the tree
@@ -172,7 +175,7 @@ void DynamicAABBTree::removeObject(int nodeID) {
 /// If the new AABB of the object that has moved is still inside its fat AABB, then
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
 /// The method returns true if the object has been reinserted into the tree.
-bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement) {
+bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB) {
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -185,31 +188,11 @@ bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector
     // If the new AABB is outside the fat AABB, we remove the corresponding node
     removeLeafNode(nodeID);
 
-    // Compute a new fat AABB for the new AABB by taking the object displacement into account
-    AABB fatAABB = newAABB;
+    // Compute a new fat AABB for the new AABB
+    mNodes[nodeID].aabb = newAABB;
     const Vector3 gap(DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP);
-    fatAABB.mMinCoordinates -= gap;
-    fatAABB.mMaxCoordinates += gap;
-    const Vector3 displacementGap = AABB_DISPLACEMENT_MULTIPLIER * displacement;
-    if (displacementGap.x < decimal(0.0)) {
-        fatAABB.mMinCoordinates.x += displacementGap.x;
-    }
-    else {
-        fatAABB.mMaxCoordinates.x += displacementGap.x;
-    }
-    if (displacementGap.y < decimal(0.0)) {
-        fatAABB.mMinCoordinates.y += displacementGap.y;
-    }
-    else {
-        fatAABB.mMaxCoordinates.y += displacementGap.y;
-    }
-    if (displacementGap.z < decimal(0.0)) {
-        fatAABB.mMinCoordinates.z += displacementGap.z;
-    }
-    else {
-        fatAABB.mMaxCoordinates.z += displacementGap.z;
-    }
-    mNodes[nodeID].aabb = fatAABB;
+    mNodes[nodeID].aabb.mMinCoordinates -= gap;
+    mNodes[nodeID].aabb.mMaxCoordinates += gap;
 
     // Reinsert the node into the tree
     insertLeafNode(nodeID);
@@ -292,7 +275,7 @@ void DynamicAABBTree::insertLeafNode(int nodeID) {
     int oldParentNode = mNodes[siblingNode].parentID;
     int newParentNode = allocateNode();
     mNodes[newParentNode].parentID = oldParentNode;
-    mNodes[newParentNode].collisionShape = NULL;
+    mNodes[newParentNode].proxyShape = NULL;
     mNodes[newParentNode].aabb.mergeTwoAABBs(mNodes[siblingNode].aabb, newNodeAABB);
     mNodes[newParentNode].height = mNodes[siblingNode].height + 1;
 
@@ -551,4 +534,45 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 
     // If the sub-tree is balanced, return the current root node
     return nodeID;
+}
+
+// Report all shapes overlapping with the AABB given in parameter.
+/// For each overlapping shape with the AABB given in parameter, the
+/// BroadPhase::notifyOverlappingPair() method is called to store a
+/// potential overlapping pair.
+void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aabb) {
+
+    // Create a stack with the nodes to visit
+    Stack<int, 64> stack;
+    stack.push(mRootNodeID);
+
+    // While there are still nodes to visit
+    while(stack.getNbElements() > 0) {
+
+        // Get the next node ID to visit
+        int nodeIDToVisit = stack.pop();
+
+        // Skip it if it is a null node
+        if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
+
+        // Get the corresponding node
+        const TreeNode* nodeToVisit = mNodes + nodeIDToVisit;
+
+        // If the AABB in parameter overlaps with the AABB of the node to visit
+        if (aabb.testCollision(nodeToVisit->aabb)) {
+
+            // If the node is a leaf
+            if (nodeToVisit->isLeaf()) {
+
+                // Notify the broad-phase about a new potential overlapping pair
+                mBroadPhase.notifyOverlappingPair(nodeID, nodeIDToVisit);
+            }
+            else {  // If the node is not a leaf
+
+                // We need to visit its children
+                stack.push(nodeToVisit->leftChildID);
+                stack.push(nodeToVisit->rightChildID);
+            }
+        }
+    }
 }

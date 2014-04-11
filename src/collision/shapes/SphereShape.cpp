@@ -45,3 +45,15 @@ SphereShape::SphereShape(const SphereShape& shape)
 SphereShape::~SphereShape() {
 
 }
+
+// Constructor
+ProxySphereShape::ProxySphereShape(const SphereShape* shape, CollisionBody* body,
+                                   const Transform& transform, decimal mass)
+                 :ProxyShape(body, transform, mass), mCollisionShape(shape){
+
+}
+
+// Destructor
+ProxySphereShape::~ProxySphereShape() {
+
+}

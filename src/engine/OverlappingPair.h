@@ -28,15 +28,19 @@
 
 // Libraries
 #include "ContactManifold.h"
+#include "../collision/shapes/CollisionShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Type for the overlapping pair ID
+typedef std::pair<uint, uint> overlappingpairid;
+
 // Class OverlappingPair
 /**
- * This class represents a pair of two bodies that are overlapping
+ * This class represents a pair of two proxy collision shapes that are overlapping
  * during the broad-phase collision detection. It is created when
- * the two bodies start to overlap and is destroyed when they do not
+ * the two proxy collision shapes start to overlap and is destroyed when they do not
  * overlap anymore. This class contains a contact manifold that
  * store all the contact points between the two bodies.
  */
@@ -46,11 +50,11 @@ class OverlappingPair {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first body of the contact
-        CollisionBody* mBody1;
+        /// Pointer to the first proxy collision shape
+        ProxyShape* mShape1;
 
-        /// Pointer to the second body of the contact
-        CollisionBody* mBody2;
+        /// Pointer to the second proxy collision shape
+        ProxyShape* mShape2;
 
         /// Persistent contact manifold
         ContactManifold mContactManifold;
@@ -71,17 +75,16 @@ class OverlappingPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(CollisionBody* body1, CollisionBody* body2,
-                        MemoryAllocator& memoryAllocator);
+        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
         
-        /// Return the pointer to first body
-        CollisionBody* const getBody1() const;
+        /// Return the pointer to first proxy collision shape
+        ProxyShape* const getShape1() const;
 
         /// Return the pointer to second body
-        CollisionBody* const getBody2() const;
+        ProxyShape* const getShape2() const;
 
         /// Add a contact to the contact cache
         void addContact(ContactPoint* contact);
@@ -93,6 +96,7 @@ class OverlappingPair {
         Vector3 getCachedSeparatingAxis() const;
 
         /// Set the cached separating axis
+        // TODO : Check that this variable is correctly used allong the collision detection process
         void setCachedSeparatingAxis(const Vector3& axis);
 
         /// Return the number of contacts in the cache
@@ -101,19 +105,25 @@ class OverlappingPair {
         /// Return the contact manifold
         ContactManifold* getContactManifold();
 
+        /// Return the pair of bodies index
+        static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
+
+        /// Return the pair of bodies index of the pair
+        static bodyindexpair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
 };
 
 // Return the pointer to first body
-inline CollisionBody* const OverlappingPair::getBody1() const {
-    return mBody1;
+inline ProxyShape* const OverlappingPair::getShape1() const {
+    return mShape1;
 }          
 
 // Return the pointer to second body
-inline CollisionBody* const OverlappingPair::getBody2() const {
-    return mBody2;
+inline ProxyShape* const OverlappingPair::getShape2() const {
+    return mShape2;
 }                
 
 // Add a contact to the contact manifold
@@ -123,7 +133,7 @@ inline void OverlappingPair::addContact(ContactPoint* contact) {
 
 // Update the contact manifold
 inline void OverlappingPair::update() {
-    mContactManifold.update(mBody1->getTransform(), mBody2->getTransform());
+    mContactManifold.update(mShape1->getBody()->getTransform(), mShape2->getBody()->getTransform());
 }
 
 // Return the cached separating axis
@@ -145,6 +155,30 @@ inline uint OverlappingPair::getNbContactPoints() const {
 // Return the contact manifold
 inline ContactManifold* OverlappingPair::getContactManifold() {
     return &mContactManifold;
+}
+
+// Return the pair of bodies index
+inline overlappingpairid OverlappingPair::computeID(ProxyShape* shape1, ProxyShape* shape2) {
+    assert(shape1->mBroadPhaseID >= 0 && shape2->mBroadPhaseID >= 0);
+
+    // Construct the pair of body index
+    overlappingpairid pairID = shape1->mBroadPhaseID < shape2->mBroadPhaseID ?
+                             std::make_pair(shape1->mBroadPhaseID, shape2->mBroadPhaseID) :
+                             std::make_pair(shape2->mBroadPhaseID, shape1->mBroadPhaseID);
+    assert(pairID.first != pairID.second);
+    return pairID;
+}
+
+// Return the pair of bodies index
+inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body1,
+                                                             CollisionBody* body2) {
+
+    // Construct the pair of body index
+    bodyindexpair indexPair = body1->getID() < body2->getID() ?
+                                 std::make_pair(body1->getID(), body2->getID()) :
+                                 std::make_pair(body2->getID(), body1->getID());
+    assert(indexPair.first != indexPair.second);
+    return indexPair;
 }
 
 }

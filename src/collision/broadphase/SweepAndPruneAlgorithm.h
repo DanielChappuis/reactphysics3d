@@ -180,13 +180,13 @@ class SweepAndPruneAlgorithm : public BroadPhaseAlgorithm {
         virtual ~SweepAndPruneAlgorithm();
 
         /// Notify the broad-phase about a new object in the world.
-        virtual void addObject(CollisionBody* body, const AABB& aabb);
+        virtual void addProxyCollisionShape(CollisionBody* body, const AABB& aabb);
 
         /// Notify the broad-phase about a object that has been removed from the world
-        virtual void removeObject(CollisionBody* body);
+        virtual void removeProxyCollisionShape(CollisionBody* body);
 
         /// Notify the broad-phase that the AABB of an object has changed
-        virtual void updateObject(CollisionBody* body, const AABB& aabb);
+        virtual void updateProxyCollisionShape(CollisionBody* body, const AABB& aabb);
 };
 
 /// Encode a floating value into a integer value in order to
@@ -229,7 +229,7 @@ inline bool SweepAndPruneAlgorithm::testIntersect2D(const BoxAABB& box1, const B
 }
 
 // Notify the broad-phase that the AABB of an object has changed
-inline void SweepAndPruneAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
+inline void SweepAndPruneAlgorithm::updateProxyCollisionShape(CollisionBody* body, const AABB& aabb) {
 
     // Compute the corresponding AABB with integer coordinates
     AABBInt aabbInt(aabb);

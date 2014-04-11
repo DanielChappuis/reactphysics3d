@@ -74,9 +74,9 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
 
         /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(CollisionShape* collisionShape1,
+        bool computePenetrationDepthForEnlargedObjects(ProxyShape* collisionShape1,
                                                        const Transform& transform1,
-                                                       CollisionShape* collisionShape2,
+                                                       ProxyShape* collisionShape2,
                                                        const Transform& transform2,
                                                        ContactPointInfo*& contactInfo, Vector3& v);
 
@@ -91,10 +91,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         ~GJKAlgorithm();
 
         /// Return true and compute a contact info if the two bounding volumes collide.
-        virtual bool testCollision(CollisionShape *collisionShape1,
-                                   const Transform& transform1,
-                                   CollisionShape *collisionShape2,
-                                   const Transform& transform2,
+        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
                                    ContactPointInfo*& contactInfo);
 };
 

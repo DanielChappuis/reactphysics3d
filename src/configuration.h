@@ -125,11 +125,6 @@ const decimal DEFAULT_SLEEP_ANGULAR_VELOCITY = decimal(3.0 * (PI / 180.0));
 /// fatten to allow the collision shape to move a little bit without triggering
 /// a large modification of the tree which can be costly
 const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
-
-/// In the dynamic AABB tree, we multiply this factor by the displacement of
-/// an object that has moved to recompute a new fat AABB
-const decimal AABB_DISPLACEMENT_MULTIPLIER = decimal(2.0);
-
 }
 
 #endif

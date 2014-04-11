@@ -55,7 +55,7 @@ CapsuleShape::~CapsuleShape() {
 /// Therefore, in this method, we compute the support points of both top and bottom spheres of
 /// the capsule and return the point with the maximum dot product with the direction vector. Note
 /// that the object margin is implicitly the radius and height of the capsule.
-Vector3 CapsuleShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+Vector3 CapsuleShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
     // If the direction vector is not the zero vector
     if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
@@ -87,7 +87,7 @@ Vector3 CapsuleShape::getLocalSupportPointWithMargin(const Vector3& direction) {
 }
 
 // Return a local support point in a given direction without the object margin.
-Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     // If the dot product of the direction and the local Y axis (dotProduct = direction.y)
     // is positive
@@ -122,4 +122,16 @@ void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) co
     tensor.setAllValues(IxxAndzz, 0.0, 0.0,
                         0.0, Iyy, 0.0,
                         0.0, 0.0, IxxAndzz);
+}
+
+// Constructor
+ProxyCapsuleShape::ProxyCapsuleShape(const CapsuleShape* shape, CollisionBody* body,
+                                     const Transform& transform, decimal mass)
+                   :ProxyShape(body, transform, mass), mCollisionShape(shape){
+
+}
+
+// Destructor
+ProxyCapsuleShape::~ProxyCapsuleShape() {
+
 }

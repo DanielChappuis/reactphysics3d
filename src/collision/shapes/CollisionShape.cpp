@@ -47,8 +47,8 @@ CollisionShape::~CollisionShape() {
     assert(mNbSimilarCreatedShapes == 0);
 }
 
-// Update the AABB of a body using its collision shape
-void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
+// Compute the world-space AABB of the collision shape given a transform
+void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;
@@ -71,4 +71,16 @@ void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(minCoordinates);
     aabb.setMax(maxCoordinates);
+}
+
+// Constructor
+ProxyShape::ProxyShape(CollisionBody* body, const Transform& transform, decimal mass)
+           :mBody(body), mLocalToBodyTransform(transform), mMass(mass), mNext(NULL),
+            mBroadPhaseID(-1) {
+
+}
+
+// Destructor
+ProxyShape::~ProxyShape() {
+
 }

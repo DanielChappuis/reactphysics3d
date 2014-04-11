@@ -32,6 +32,7 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// TODO : DELETE THIS CLASS
 // Structure BroadPhasePair
 /**
  * This structure represents a pair of bodies
@@ -79,16 +80,7 @@ struct BroadPhasePair {
         bool operator!=(const BroadPhasePair& broadPhasePair2) const;
 };
 
-// Return the pair of bodies index
-inline bodyindexpair BroadPhasePair::computeBodiesIndexPair(CollisionBody* body1,
-                                                            CollisionBody* body2) {
-    // Construct the pair of body index
-    bodyindexpair indexPair = body1->getID() < body2->getID() ?
-                                 std::make_pair(body1->getID(), body2->getID()) :
-                                 std::make_pair(body2->getID(), body1->getID());
-    assert(indexPair.first != indexPair.second);
-    return indexPair;
-}
+
 
 // Return the pair of bodies index
 inline bodyindexpair BroadPhasePair::getBodiesIndexPair() const {

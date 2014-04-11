@@ -69,18 +69,18 @@ class NoBroadPhaseAlgorithm : public BroadPhaseAlgorithm {
         virtual ~NoBroadPhaseAlgorithm();
         
         /// Notify the broad-phase about a new object in the world
-        virtual void addObject(CollisionBody* body, const AABB& aabb);
+        virtual void addProxyCollisionShape(CollisionBody* body, const AABB& aabb);
 
         /// Notify the broad-phase about an object that has been removed from the world
-        virtual void removeObject(CollisionBody* body);
+        virtual void removeProxyCollisionShape(CollisionBody* body);
 
         /// Notify the broad-phase that the AABB of an object has changed
-        virtual void updateObject(CollisionBody* body, const AABB& aabb);
+        virtual void updateProxyCollisionShape(CollisionBody* body, const AABB& aabb);
 };
 
         
 // Notify the broad-phase about a new object in the world
-inline void NoBroadPhaseAlgorithm::addObject(CollisionBody* body, const AABB& aabb) {
+inline void NoBroadPhaseAlgorithm::addProxyCollisionShape(CollisionBody* body, const AABB& aabb) {
         
     // For each body that is already in the world
     for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
@@ -94,7 +94,7 @@ inline void NoBroadPhaseAlgorithm::addObject(CollisionBody* body, const AABB& aa
 }   
 
 // Notify the broad-phase about an object that has been removed from the world
-inline void NoBroadPhaseAlgorithm::removeObject(CollisionBody* body) {
+inline void NoBroadPhaseAlgorithm::removeProxyCollisionShape(CollisionBody* body) {
     
     // For each body that is in the world
     for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
@@ -111,7 +111,7 @@ inline void NoBroadPhaseAlgorithm::removeObject(CollisionBody* body) {
 }  
         
 // Notify the broad-phase that the AABB of an object has changed
-inline void NoBroadPhaseAlgorithm::updateObject(CollisionBody* body, const AABB& aabb) {
+inline void NoBroadPhaseAlgorithm::updateProxyCollisionShape(CollisionBody* body, const AABB& aabb) {
     // Do nothing
     return;
 }     

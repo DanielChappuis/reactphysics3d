@@ -26,6 +26,8 @@
 #ifndef REACTPHYSICS3D_PAIR_MANAGER_H
 #define REACTPHYSICS3D_PAIR_MANAGER_H
 
+// TODO : REMOVE THE PAIR MANAGER CLASS
+
 // Libraries
 #include "../../body/CollisionBody.h"
 #include <utility>

@@ -104,7 +104,7 @@ BodyPair* PairManager::addPair(CollisionBody* body1, CollisionBody* body2) {
     mHashTable[hashValue] = mNbOverlappingPairs++;
     
     // Notify the collision detection about this new overlapping pair
-    mCollisionDetection.broadPhaseNotifyAddedOverlappingPair(newPair);
+    mCollisionDetection.broadPhaseNotifyOverlappingPair(newPair);
     
     // Return a pointer to the new created pair
     return newPair;

@@ -50,7 +50,7 @@ CylinderShape::~CylinderShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
     // Compute the support point without the margin
     Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
@@ -66,7 +66,7 @@ Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) 
 }
 
 // Return a local support point in a given direction without the object margin
-Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
@@ -84,4 +84,16 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
     }
 
     return supportPoint;
+}
+
+// Constructor
+ProxyCylinderShape::ProxyCylinderShape(const CylinderShape* cylinderShape, CollisionBody* body,
+                                       const Transform& transform, decimal mass)
+                   :ProxyShape(body, transform, mass), mCollisionShape(cylinderShape){
+
+}
+
+// Destructor
+ProxyCylinderShape::~ProxyCylinderShape() {
+
 }

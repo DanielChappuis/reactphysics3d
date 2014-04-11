@@ -53,9 +53,9 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
-    // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->getTransform().getPosition();
-    const Vector3& x2 = mBody2->getTransform().getPosition();
+    // Get the bodies center of mass and orientations
+    const Vector3& x1 = mBody1->mCenterOfMassWorld;
+    const Vector3& x2 = mBody2->mCenterOfMassWorld;
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -164,7 +164,7 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     // do not execute this method
     if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
 
-    // Get the bodies positions and orientations
+    // Get the bodies center of mass and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
     Vector3& x2 = constraintSolverData.positions[mIndexBody2];
     Quaternion& q1 = constraintSolverData.orientations[mIndexBody1];
@@ -214,7 +214,7 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
     const Vector3 w1 = mI1 * angularImpulseBody1;
 
-    // Update the body position/orientation of body 1
+    // Update the body center of mass and orientation of body 1
     x1 += v1;
     q1 += Quaternion(0, w1) * q1 * decimal(0.5);
     q1.normalize();

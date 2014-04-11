@@ -154,6 +154,11 @@ class DynamicsWorld : public CollisionWorld {
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
                                                 Vector3 newAngVelocity);
 
+        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
+        /// involed in the corresponding contact.
+        void addContactManifoldToBody(ContactManifold* contactManifold,
+                                      CollisionBody *body1, CollisionBody *body2);
+
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
 
@@ -172,9 +177,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Cleanup the constrained velocities array at each step
         void cleanupConstrainedVelocitiesArray();
 
-        /// Reset the boolean movement variable of each body
-        void resetBodiesMovementVariable();
-
         /// Compute the islands of awake bodies.
         void computeIslands();
 
@@ -183,12 +185,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Update the overlapping pair
         virtual void updateOverlappingPair(const BroadPhasePair* pair);
-
-        /// Notify the world about a new broad-phase overlapping pair
-        virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
-
-        /// Notify the world about a removed broad-phase overlapping pair
-        virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
 
         /// Notify the world about a new narrow-phase contact
         virtual void notifyNewContact(const BroadPhasePair* pair,
@@ -230,8 +226,7 @@ class DynamicsWorld : public CollisionWorld {
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         /// Create a rigid body into the physics world.
-        RigidBody* createRigidBody(const Transform& transform, decimal mass,
-                                   const CollisionShape& collisionShape);
+        RigidBody* createRigidBody(const Transform& transform, decimal mass);
 
         /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
@@ -244,11 +239,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
-
-        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
-        /// involed in the corresponding contact.
-        void addContactManifoldToBody(ContactManifold* contactManifold,
-                                      CollisionBody *body1, CollisionBody *body2);
 
         /// Reset all the contact manifolds linked list of each body
         void resetContactManifoldListsOfBodies();
@@ -369,20 +359,10 @@ inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool 
     mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
-// Reset the boolean movement variable of each body
-inline void DynamicsWorld::resetBodiesMovementVariable() {
-
-    // For each rigid body
-    for (std::set<RigidBody*>::iterator it = getRigidBodiesBeginIterator();
-         it != getRigidBodiesEndIterator(); it++) {
-
-        // Set the hasMoved variable to false
-        (*it)->mHasMoved = false;
-    }
-}
-
 // Update the overlapping pair
 inline void DynamicsWorld::updateOverlappingPair(const BroadPhasePair* pair) {
+
+    // TODO : CHECK WHERE TO CALL THIS METHOD
 
     // Get the pair of body index
     std::pair<bodyindex, bodyindex> indexPair = pair->getBodiesIndexPair();

@@ -29,10 +29,13 @@
 // Libraries
 #include "../../configuration.h"
 #include "../shapes/AABB.h"
-#include "../shapes/CollisionShape.h"
+#include "../../body/CollisionBody.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+// Declarations
+class BroadPhaseAlgorithm;
 
 // Structure TreeNode
 /**
@@ -63,7 +66,7 @@ struct TreeNode {
     AABB aabb;
 
     /// Pointer to the corresponding collision shape (in case this node is a leaf)
-    CollisionShape* collisionShape;
+    ProxyShape* proxyShape;
 
     // -------------------- Methods -------------------- //
 
@@ -84,6 +87,9 @@ class DynamicAABBTree {
     private:
 
         // -------------------- Attributes -------------------- //
+
+        /// Reference to the broad-phase
+        BroadPhaseAlgorithm& mBroadPhase;
 
         /// Pointer to the memory location of the nodes of the tree
         TreeNode* mNodes;
@@ -122,24 +128,46 @@ class DynamicAABBTree {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicAABBTree();
+        DynamicAABBTree(BroadPhaseAlgorithm& broadPhase);
 
         /// Destructor
         ~DynamicAABBTree();
 
         /// Add an object into the tree
-        int addObject(CollisionShape* collisionShape, const AABB& aabb);
+        void addObject(ProxyShape* proxyShape);
 
         /// Remove an object from the tree
         void removeObject(int nodeID);
 
         /// Update the dynamic tree after an object has moved.
-        bool updateObject(int nodeID, const AABB &newAABB, const Vector3 &displacement);
+        bool updateObject(int nodeID, const AABB& newAABB);
+
+        /// Return the fat AABB corresponding to a given node ID
+        const AABB& getFatAABB(int nodeID) const;
+
+        /// Return the collision shape of a given leaf node of the tree
+        ProxyShape* getCollisionShape(int nodeID) const;
+
+        /// Report all shapes overlapping with the AABB given in parameter.
+        void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb);
 };
 
 // Return true if the node is a leaf of the tree
 inline bool TreeNode::isLeaf() const {
     return leftChildID == NULL_TREE_NODE;
+}
+
+// Return the fat AABB corresponding to a given node ID
+inline const AABB& DynamicAABBTree::getFatAABB(int nodeID) const {
+    assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
+    return mNodes[nodeID].aabb;
+}
+
+// Return the collision shape of a given leaf node of the tree
+inline ProxyShape* DynamicAABBTree::getCollisionShape(int nodeID) const {
+    assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
+    assert(mNodes[nodeID].isLeaf());
+    return mNodes[nodeID].proxyShape;
 }
 
 }

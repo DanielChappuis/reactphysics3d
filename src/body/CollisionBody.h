@@ -41,6 +41,8 @@ namespace reactphysics3d {
 
 // Class declarations
 struct ContactManifoldListElement;
+class ProxyShape;
+class CollisionWorld;
 
 /// Enumeration for the type of a body
 /// STATIC : A static body has infinite mass, zero velocity but the position can be
@@ -67,9 +69,6 @@ class CollisionBody : public Body {
         /// Type of body (static, kinematic or dynamic)
         BodyType mType;
 
-        /// Collision shape of the body
-        CollisionShape* mCollisionShape;
-
         /// Position and orientation of the body
         Transform mTransform;
 
@@ -82,14 +81,17 @@ class CollisionBody : public Body {
         /// True if the body can collide with others bodies
         bool mIsCollisionEnabled;
 
-        /// AABB for Broad-Phase collision detection
-        AABB mAabb;
+        /// First element of the linked list of proxy collision shapes of this body
+        ProxyShape* mProxyCollisionShapes;
 
-        /// True if the body has moved during the last frame
-        bool mHasMoved;
+        /// Number of collision shapes
+        uint mNbCollisionShapes;
 
         /// First element of the linked list of contact manifolds involving this body
         ContactManifoldListElement* mContactManifoldsList;
+
+        /// Reference to the world the body belongs to
+        CollisionWorld& mWorld;
 
         // -------------------- Methods -------------------- //
 
@@ -102,18 +104,21 @@ class CollisionBody : public Body {
         /// Reset the contact manifold lists
         void resetContactManifoldsList(MemoryAllocator& memoryAllocator);
 
+        /// Remove all the collision shapes
+        void removeAllCollisionShapes();
+
         /// Update the old transform with the current one.
         void updateOldTransform();
 
-        /// Update the Axis-Aligned Bounding Box coordinates
-        void updateAABB();
+        /// Update the broad-phase state for this body (because it has moved for instance)
+        void updateBroadPhaseState() const;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(const Transform& transform, CollisionShape* collisionShape, bodyindex id);
+        CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
         virtual ~CollisionBody();
@@ -124,20 +129,18 @@ class CollisionBody : public Body {
         /// Set the type of the body
         void setType(BodyType type);
 
-        /// Return the collision shape
-        CollisionShape* getCollisionShape() const;
-
-        /// Set the collision shape
-        void setCollisionShape(CollisionShape* collisionShape);
-
         /// Return the current position and orientation
         const Transform& getTransform() const;
 
         /// Set the current position and orientation
         void setTransform(const Transform& transform);
 
-        /// Return the AAABB of the body
-        const AABB& getAABB() const;
+        /// Add a collision shape to the body.
+        const ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+                                                const Transform& transform = Transform::identity());
+
+        /// Remove a collision shape from the body
+        virtual void removeCollisionShape(const CollisionShape* collisionShape);
 
         /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
@@ -158,6 +161,7 @@ class CollisionBody : public Body {
 
         friend class DynamicsWorld;
         friend class CollisionDetection;
+        friend class BroadPhaseAlgorithm;
 };
 
 // Return the type of the body
@@ -168,18 +172,12 @@ inline BodyType CollisionBody::getType() const {
 // Set the type of the body
 inline void CollisionBody::setType(BodyType type) {
     mType = type;
-}
 
-// Return the collision shape
-inline CollisionShape* CollisionBody::getCollisionShape() const {
-    assert(mCollisionShape);
-    return mCollisionShape;
-}
+    if (mType == STATIC) {
 
-// Set the collision shape
-inline void CollisionBody::setCollisionShape(CollisionShape* collisionShape) {
-    assert(collisionShape);
-    mCollisionShape = collisionShape;
+        // Update the broad-phase state of the body
+        updateBroadPhaseState();
+    }
 }
 
 // Return the interpolated transform for rendering
@@ -201,20 +199,14 @@ inline const Transform& CollisionBody::getTransform() const {
 // Set the current position and orientation
 inline void CollisionBody::setTransform(const Transform& transform) {
 
-    // Check if the body has moved
-    if (mTransform != transform) {
-        mHasMoved = true;
-    }
-
+    // Update the transform of the body
     mTransform = transform;
+
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
 }
 
-// Return the AAABB of the body
-inline const AABB& CollisionBody::getAABB() const {
-    return mAabb;
-}
-
- // Return true if the body can collide with others bodies
+// Return true if the body can collide with others bodies
 inline bool CollisionBody::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }
@@ -228,13 +220,6 @@ inline void CollisionBody::enableCollision(bool isCollisionEnabled) {
 /// This is used to compute the interpolated position and orientation of the body
 inline void CollisionBody::updateOldTransform() {
     mOldTransform = mTransform;
-}
-
-// Update the rigid body in order to reflect a change in the body state
-inline void CollisionBody::updateAABB() {
-
-    // Update the AABB
-    mCollisionShape->updateAABB(mAabb, mTransform);
 }
 
 // Return the first element of the linked list of contact manifolds involving this body
