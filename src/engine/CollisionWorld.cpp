@@ -33,7 +33,8 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0) {
+               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0),
+                 mEventListener(NULL) {
 
 }
 
@@ -43,21 +44,8 @@ CollisionWorld::~CollisionWorld() {
     assert(mBodies.empty());
 }
 
-// Notify the world about a new narrow-phase contact
-void CollisionWorld::notifyNewContact(const OverlappingPair *broadPhasePair,
-                                      const ContactPointInfo* contactInfo) {
-
-    // TODO : Implement this method
-}
-
-// Update the overlapping pair
-inline void CollisionWorld::updateOverlappingPair(const OverlappingPair *pair) {
-
-}
-
 // Create a collision body and add it to the world
-CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
-                                                   CollisionShape* collisionShape) {
+CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Get the next available body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -67,15 +55,12 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryAllocator.allocate(sizeof(CollisionBody)))
-                                        CollisionBody(transform, collisionShape, bodyID);
+                                        CollisionBody(transform, *this, bodyID);
 
     assert(collisionBody != NULL);
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
-
-    // Add the collision body to the collision detection
-    mCollisionDetection.addProxyCollisionShape(collisionBody);
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -84,8 +69,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
 // Destroy a collision body
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
-    // Remove the body from the collision detection
-    mCollisionDetection.removeProxyCollisionShape(collisionBody);
+    // Remove all the collision shapes of the body
+    collisionBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(collisionBody->getID());

@@ -47,7 +47,7 @@ SphereShape::~SphereShape() {
 }
 
 // Constructor
-ProxySphereShape::ProxySphereShape(const SphereShape* shape, CollisionBody* body,
+ProxySphereShape::ProxySphereShape(SphereShape* shape, CollisionBody* body,
                                    const Transform& transform, decimal mass)
                  :ProxyShape(body, transform, mass), mCollisionShape(shape){
 

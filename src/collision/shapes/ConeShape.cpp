@@ -94,7 +94,7 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) c
 }
 
 // Constructor
-ProxyConeShape::ProxyConeShape(const ConeShape* shape, CollisionBody* body,
+ProxyConeShape::ProxyConeShape(ConeShape* shape, CollisionBody* body,
                                const Transform& transform, decimal mass)
                :ProxyShape(body, transform, mass), mCollisionShape(shape){
 

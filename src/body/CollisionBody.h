@@ -137,10 +137,10 @@ class CollisionBody : public Body {
 
         /// Add a collision shape to the body.
         const ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
-                                                const Transform& transform = Transform::identity());
+                                            const Transform& transform = Transform::identity());
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const CollisionShape* collisionShape);
+        virtual void removeCollisionShape(const ProxyShape* proxyShape);
 
         /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
@@ -159,6 +159,7 @@ class CollisionBody : public Body {
 
         // -------------------- Friendship -------------------- //
 
+        friend class CollisionWorld;
         friend class DynamicsWorld;
         friend class CollisionDetection;
         friend class BroadPhaseAlgorithm;

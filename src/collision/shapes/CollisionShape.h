@@ -120,7 +120,7 @@ class CollisionShape {
 
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass) const=0;
+                                             const Transform& transform, decimal mass)=0;
 };
 
 
@@ -163,6 +163,9 @@ class ProxyShape {
         /// Private assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape);
 
+        /// Return the non-const collision shape
+        virtual CollisionShape* getInternalCollisionShape() const=0;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -204,6 +207,7 @@ class ProxyShape {
         friend class RigidBody;
         friend class BroadPhaseAlgorithm;
         friend class DynamicAABBTree;
+        friend class CollisionDetection;
 };
 
 // Return the type of the collision shape

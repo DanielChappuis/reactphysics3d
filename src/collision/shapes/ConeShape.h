@@ -110,7 +110,7 @@ class ConeShape : public CollisionShape {
 
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass) const;
+                                             const Transform& transform, decimal mass);
 };
 
 // Class ProxyConeShape
@@ -124,7 +124,7 @@ class ProxyConeShape : public ProxyShape {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the actual collision shape
-        const ConeShape* mCollisionShape;
+        ConeShape* mCollisionShape;
 
 
         // -------------------- Methods -------------------- //
@@ -135,12 +135,15 @@ class ProxyConeShape : public ProxyShape {
         /// Private assignment operator
         ProxyConeShape& operator=(const ProxyConeShape& proxyShape);
 
+        /// Return the non-const collision shape
+        virtual CollisionShape* getInternalCollisionShape() const;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyConeShape(const ConeShape* shape, CollisionBody* body,
+        ProxyConeShape(ConeShape* shape, CollisionBody* body,
                        const Transform& transform, decimal mass);
 
         /// Destructor
@@ -213,9 +216,14 @@ inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) cons
 
 // Create a proxy collision shape for the collision shape
 inline ProxyShape* ConeShape::createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                               const Transform& transform, decimal mass) const {
+                                               const Transform& transform, decimal mass) {
     return new (allocator.allocate(sizeof(ProxyConeShape))) ProxyConeShape(this, body,
                                                                            transform, mass);
+}
+
+// Return the non-const collision shape
+inline CollisionShape* ProxyConeShape::getInternalCollisionShape() const {
+    return mCollisionShape;
 }
 
 // Return the collision shape

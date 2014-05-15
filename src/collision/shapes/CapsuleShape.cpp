@@ -125,7 +125,7 @@ void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) co
 }
 
 // Constructor
-ProxyCapsuleShape::ProxyCapsuleShape(const CapsuleShape* shape, CollisionBody* body,
+ProxyCapsuleShape::ProxyCapsuleShape(CapsuleShape* shape, CollisionBody* body,
                                      const Transform& transform, decimal mass)
                    :ProxyShape(body, transform, mass), mCollisionShape(shape){
 

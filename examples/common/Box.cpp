@@ -85,8 +85,11 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
-    // Create a rigid body corresponding to the cube in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, collisionShape);
+    // Create a rigid body in the dynamics world
+    mRigidBody = dynamicsWorld->createRigidBody(transform);
+
+    // Add the collision shape to the body
+    mRigidBody->addCollisionShape(collisionShape, mass);
 
     // If the Vertex Buffer object has not been created yet
     if (!areVBOsCreated) {

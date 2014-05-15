@@ -80,6 +80,10 @@ class CollisionDetection {
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
 
+        /// All the contact constraints
+        // TODO : Remove this variable (we will use the ones in the island now)
+        std::vector<ContactManifold*> mContactManifolds;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -98,8 +102,13 @@ class CollisionDetection {
         NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(const CollisionShape* collisionShape1,
                                                          const CollisionShape* collisionShape2);
 
-        /// Remove an overlapping pair if it is not overlapping anymore
-        void removeOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
+        /// Create a new contact
+        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
+
+        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
+        /// involed in the corresponding contact.
+        void addContactManifoldToBody(ContactManifold* contactManifold,
+                                      CollisionBody *body1, CollisionBody *body2);
    
     public :
 
@@ -131,6 +140,11 @@ class CollisionDetection {
 
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
+
+        // -------------------- Friendship -------------------- //
+
+        // TODO : REMOVE THIS
+        friend class DynamicsWorld;
 };
 
 // Select the narrow-phase collision algorithm to use given two collision shapes

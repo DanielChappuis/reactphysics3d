@@ -29,7 +29,6 @@
 // Libraries
 #include <vector>
 #include "../../body/CollisionBody.h"
-#include "PairManager.h"
 #include "DynamicAABBTree.h"
 
 /// Namespace ReactPhysics3D
@@ -110,9 +109,6 @@ class BroadPhaseAlgorithm {
         /// Number of allocated elements for the array of potential overlapping pairs
         uint mNbAllocatedPotentialPairs;
 
-        /// Pair manager containing the overlapping pairs
-        PairManager mPairManager;
-
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
         
@@ -156,14 +152,6 @@ class BroadPhaseAlgorithm {
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs();
-
-        /// Return a pointer to the first active pair (used to iterate over the active pairs)
-        // TODO : DELETE THIS
-        BodyPair* beginOverlappingPairsPointer() const;
-
-        /// Return a pointer to the last active pair (used to iterate over the active pairs)
-        // TODO : DELETE THIS
-        BodyPair* endOverlappingPairsPointer() const;
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -175,16 +163,6 @@ inline bool BroadPair::smallerThan(const BroadPair& pair1, const BroadPair& pair
     }
     return false;
 }
-
-// Return a pointer to the first active pair (used to iterate over the overlapping pairs)
-inline BodyPair* BroadPhaseAlgorithm::beginOverlappingPairsPointer() const {
-    return mPairManager.beginOverlappingPairsPointer();
-}                                                           
-
-// Return a pointer to the last active pair (used to iterate over the overlapping pairs)
-inline BodyPair* BroadPhaseAlgorithm::endOverlappingPairsPointer() const {
-   return mPairManager.endOverlappingPairsPointer();
-}   
 
 }
 

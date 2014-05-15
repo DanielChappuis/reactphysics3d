@@ -30,14 +30,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(std::vector<Vector3>& positions,
-                                   std::vector<Quaternion>& orientations,
-                                   const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-                 : mLinearVelocities(NULL), mAngularVelocities(NULL), mPositions(positions),
-                   mOrientations(orientations),
-                   mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(true), mConstraintSolverData(positions, orientations,
-                                                                      mapBodyToVelocityIndex){
+ConstraintSolver::ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
+                 : mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
+                   mIsWarmStartingActive(true), mConstraintSolverData(mapBodyToVelocityIndex) {
 
 }
 
@@ -51,8 +46,6 @@ void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 
     PROFILE("ConstraintSolver::initializeForIsland()");
 
-    assert(mLinearVelocities != NULL);
-    assert(mAngularVelocities != NULL);
     assert(island != NULL);
     assert(island->getNbBodies() > 0);
     assert(island->getNbJoints() > 0);

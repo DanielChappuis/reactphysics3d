@@ -72,10 +72,6 @@ class DynamicsWorld : public CollisionWorld {
         /// All the rigid bodies of the physics world
         std::set<RigidBody*> mRigidBodies;
 
-        /// All the contact constraints
-        // TODO : Remove this variable (we will use the ones in the island now)
-        std::vector<ContactManifold*> mContactManifolds;
-
         /// All the joints of the world
         std::set<Joint*> mJoints;
 
@@ -100,10 +96,10 @@ class DynamicsWorld : public CollisionWorld {
         Vector3* mSplitAngularVelocities;
 
         /// Array of constrained rigid bodies position (for position error correction)
-        std::vector<Vector3> mConstrainedPositions;
+        Vector3* mConstrainedPositions;
 
         /// Array of constrained rigid bodies orientation (for position error correction)
-        std::vector<Quaternion> mConstrainedOrientations;
+        Quaternion* mConstrainedOrientations;
 
         /// Map body to their index in the constrained velocities array
         std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
@@ -130,9 +126,6 @@ class DynamicsWorld : public CollisionWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
-        /// Pointer to an event listener object
-        EventListener* mEventListener;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -153,11 +146,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Update the position and orientation of a body
         void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
                                                 Vector3 newAngVelocity);
-
-        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
-        /// involed in the corresponding contact.
-        void addContactManifoldToBody(ContactManifold* contactManifold,
-                                      CollisionBody *body1, CollisionBody *body2);
 
         /// Compute and set the interpolation factor to all bodies
         void setInterpolationFactorToAllBodies();
@@ -180,15 +168,11 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute the islands of awake bodies.
         void computeIslands();
 
+        /// Update the postion/orientation of the bodies
+        void updateBodiesState();
+
         /// Put bodies to sleep if needed.
         void updateSleepingBodies();
-
-        /// Update the overlapping pair
-        virtual void updateOverlappingPair(const BroadPhasePair* pair);
-
-        /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair,
-                                      const ContactPointInfo* contactInfo);
 
     public :
 
@@ -226,7 +210,7 @@ class DynamicsWorld : public CollisionWorld {
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         /// Create a rigid body into the physics world.
-        RigidBody* createRigidBody(const Transform& transform, decimal mass);
+        RigidBody* createRigidBody(const Transform& transform);
 
         /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
@@ -359,21 +343,6 @@ inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool 
     mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
-// Update the overlapping pair
-inline void DynamicsWorld::updateOverlappingPair(const BroadPhasePair* pair) {
-
-    // TODO : CHECK WHERE TO CALL THIS METHOD
-
-    // Get the pair of body index
-    std::pair<bodyindex, bodyindex> indexPair = pair->getBodiesIndexPair();
-
-    // Get the corresponding overlapping pair
-    OverlappingPair* overlappingPair = mOverlappingPairs[indexPair];
-
-    // Update the contact cache of the overlapping pair
-    overlappingPair->update();
-}
-
 // Return the gravity vector of the world
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
@@ -410,13 +379,15 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator()
 }
 
 // Return a reference to the contact manifolds of the world
+// TODO : DELETE THIS METHOD AND USE EVENT LISTENER IN EXAMPLES INSTEAD
 inline const std::vector<ContactManifold*>& DynamicsWorld::getContactManifolds() const {
-    return mContactManifolds;
+    return mCollisionDetection.mContactManifolds;
 }
 
 // Return the number of contact manifolds in the world
+// TODO : DELETE THIS METHOD AND USE EVENT LISTENER IN EXAMPLES INSTEAD
 inline uint DynamicsWorld::getNbContactManifolds() const {
-    return mContactManifolds.size();
+    return mCollisionDetection.mContactManifolds.size();
 }
 
 // Return the current physics time (in seconds)

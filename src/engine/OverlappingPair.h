@@ -133,7 +133,8 @@ inline void OverlappingPair::addContact(ContactPoint* contact) {
 
 // Update the contact manifold
 inline void OverlappingPair::update() {
-    mContactManifold.update(mShape1->getBody()->getTransform(), mShape2->getBody()->getTransform());
+    mContactManifold.update(mShape1->getBody()->getTransform() *mShape1->getLocalToBodyTransform(),
+                            mShape2->getBody()->getTransform() *mShape2->getLocalToBodyTransform());
 }
 
 // Return the cached separating axis

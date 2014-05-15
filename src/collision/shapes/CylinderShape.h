@@ -107,7 +107,7 @@ class CylinderShape : public CollisionShape {
 
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass) const;
+                                             const Transform& transform, decimal mass);
 
 };
 
@@ -122,8 +122,7 @@ class ProxyCylinderShape : public ProxyShape {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the actual collision shape
-        const CylinderShape* mCollisionShape;
-
+        CylinderShape* mCollisionShape;
 
         // -------------------- Methods -------------------- //
 
@@ -133,12 +132,15 @@ class ProxyCylinderShape : public ProxyShape {
         /// Private assignment operator
         ProxyCylinderShape& operator=(const ProxyCylinderShape& proxyShape);
 
+        /// Return the non-const collision shape
+        virtual CollisionShape* getInternalCollisionShape() const;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyCylinderShape(const CylinderShape* cylinderShape, CollisionBody* body,
+        ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBody* body,
                            const Transform& transform, decimal mass);
 
         /// Destructor
@@ -211,9 +213,14 @@ inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) 
 
 // Create a proxy collision shape for the collision shape
 inline ProxyShape* CylinderShape::createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                                 const Transform& transform, decimal mass) const {
+                                                 const Transform& transform, decimal mass) {
     return new (allocator.allocate(sizeof(ProxyCylinderShape))) ProxyCylinderShape(this, body,
                                                                                transform, mass);
+}
+
+// Return the non-const collision shape
+inline CollisionShape* ProxyCylinderShape::getInternalCollisionShape() const {
+    return mCollisionShape;
 }
 
 // Return the collision shape

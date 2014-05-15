@@ -97,7 +97,7 @@ class SphereShape : public CollisionShape {
 
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass) const;
+                                             const Transform& transform, decimal mass);
 };
 
 
@@ -112,7 +112,7 @@ class ProxySphereShape : public ProxyShape {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the actual collision shape
-        const SphereShape* mCollisionShape;
+        SphereShape* mCollisionShape;
 
 
         // -------------------- Methods -------------------- //
@@ -123,12 +123,15 @@ class ProxySphereShape : public ProxyShape {
         /// Private assignment operator
         ProxySphereShape& operator=(const ProxySphereShape& proxyShape);
 
+        /// Return the non-const collision shape
+        virtual CollisionShape* getInternalCollisionShape() const;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxySphereShape(const SphereShape* shape, CollisionBody* body,
+        ProxySphereShape(SphereShape* shape, CollisionBody* body,
                          const Transform& transform, decimal mass);
 
         /// Destructor
@@ -229,9 +232,14 @@ inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) co
 
 // Create a proxy collision shape for the collision shape
 inline ProxyShape* SphereShape::createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                                 const Transform& transform, decimal mass) const {
+                                                 const Transform& transform, decimal mass)  {
     return new (allocator.allocate(sizeof(ProxySphereShape))) ProxySphereShape(this, body,
                                                                                transform, mass);
+}
+
+// Return the non-const collision shape
+inline CollisionShape* ProxySphereShape::getInternalCollisionShape() const {
+    return mCollisionShape;
 }
 
 // Return the collision shape

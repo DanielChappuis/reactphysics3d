@@ -225,8 +225,8 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
 }
 
 // Constructor
-ProxyConvexMeshShape::ProxyConvexMeshShape(const ConvexMeshShape* shape, CollisionBody* body,
-                                             const Transform& transform, decimal mass)
+ProxyConvexMeshShape::ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody* body,
+                                           const Transform& transform, decimal mass)
                       :ProxyShape(body, transform, mass), mCollisionShape(shape),
                        mCachedSupportVertex(0) {
 

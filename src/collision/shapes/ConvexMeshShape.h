@@ -140,7 +140,7 @@ class ConvexMeshShape : public CollisionShape {
 
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass) const;
+                                             const Transform& transform, decimal mass);
 };
 
 
@@ -155,7 +155,7 @@ class ProxyConvexMeshShape : public ProxyShape {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the actual collision shape
-        const ConvexMeshShape* mCollisionShape;
+        ConvexMeshShape* mCollisionShape;
 
         /// Cached support vertex index (previous support vertex for hill-climbing)
         uint mCachedSupportVertex;
@@ -168,12 +168,15 @@ class ProxyConvexMeshShape : public ProxyShape {
         /// Private assignment operator
         ProxyConvexMeshShape& operator=(const ProxyConvexMeshShape& proxyShape);
 
+        /// Return the non-const collision shape
+        virtual CollisionShape* getInternalCollisionShape() const;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyConvexMeshShape(const ConvexMeshShape* shape, CollisionBody* body,
+        ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody* body,
                               const Transform& transform, decimal mass);
 
         /// Destructor
@@ -281,9 +284,14 @@ inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
 inline ProxyShape* ConvexMeshShape::createProxyShape(MemoryAllocator& allocator,
                                                            CollisionBody* body,
                                                            const Transform& transform,
-                                                           decimal mass) const {
+                                                           decimal mass) {
     return new (allocator.allocate(sizeof(ProxyConvexMeshShape))) ProxyConvexMeshShape(this, body,
                                                                                transform, mass);
+}
+
+// Return the non-const collision shape
+inline CollisionShape* ProxyConvexMeshShape::getInternalCollisionShape() const {
+    return mCollisionShape;
 }
 
 // Return the collision shape

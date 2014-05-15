@@ -130,15 +130,14 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
 /// return a pointer to the actual collision shape in the world. You can use this pointer to
 /// remove the collision from the body. Note that when the body is destroyed, all the collision
 /// shapes will also be destroyed automatically. Because an internal copy of the collision shape
-/// you provided is performed, you can delete it right after calling this method. The second
+/// you provided is performed, you can delete it right after calling this method.
+/// The second parameter is the mass of the collision shape (this will used to compute the
+/// total mass of the rigid body and its inertia tensor). The mass must be positive. The third
 /// parameter is the transformation that transform the local-space of the collision shape into
 /// the local-space of the body. By default, the second parameter is the identity transform.
-/// The third parameter is the mass of the collision shape (this will used to compute the
-/// total mass of the rigid body and its inertia tensor). The mass must be positive.
-const CollisionShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
-                                                   decimal mass,
-                                                   const Transform& transform
-                                                   ) {
+const ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
+                                               decimal mass,
+                                               const Transform& transform) {
 
     assert(mass > decimal(0.0));
 
@@ -167,15 +166,15 @@ const CollisionShape* RigidBody::addCollisionShape(const CollisionShape& collisi
     // collision shape
     recomputeMassInformation();
 
-    // Return a pointer to the collision shape
-    return newCollisionShape;
+    // Return a pointer to the proxy collision shape
+    return proxyShape;
 }
 
 // Remove a collision shape from the body
-void RigidBody::removeCollisionShape(const CollisionShape* collisionShape) {
+void RigidBody::removeCollisionShape(const ProxyShape* proxyCollisionShape) {
 
     // Remove the collision shape
-    CollisionBody::removeCollisionShape(collisionShape);
+    CollisionBody::removeCollisionShape(proxyCollisionShape);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();

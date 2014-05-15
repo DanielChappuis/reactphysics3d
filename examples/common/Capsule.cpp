@@ -58,8 +58,11 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, collisionShape);
+    // Create a rigid body corresponding in the dynamics world
+    mRigidBody = dynamicsWorld->createRigidBody(transform);
+
+    // Add a collision shape to the body and specify the mass of the shape
+    mRigidBody->addCollisionShape(collisionShape, mass);
 }
 
 // Destructor

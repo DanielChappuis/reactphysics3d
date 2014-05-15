@@ -25,6 +25,7 @@
 
 // Libraries
 #include "BroadPhaseAlgorithm.h"
+#include "../CollisionDetection.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -33,7 +34,7 @@ using namespace reactphysics3d;
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
                     :mDynamicAABBTree(*this), mNbMovedShapes(0), mNbAllocatedMovedShapes(8),
                      mNbNonUsedMovedShapes(0), mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
-                     mPairManager(collisionDetection), mCollisionDetection(collisionDetection) {
+                     mCollisionDetection(collisionDetection) {
 
     // Allocate memory for the array of non-static bodies IDs
     mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));

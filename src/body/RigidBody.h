@@ -195,12 +195,12 @@ class RigidBody : public CollisionBody {
         void applyTorque(const Vector3& torque);
 
         /// Add a collision shape to the body.
-        const CollisionShape* addCollisionShape(const CollisionShape& collisionShape,
-                                                decimal mass,
-                                                const Transform& transform = Transform::identity());
+        const ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+                                            decimal mass,
+                                            const Transform& transform = Transform::identity());
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const CollisionShape* collisionShape);
+        virtual void removeCollisionShape(const ProxyShape* proxyCollisionShape);
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.

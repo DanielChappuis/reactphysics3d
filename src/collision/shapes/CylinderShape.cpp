@@ -87,7 +87,7 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 }
 
 // Constructor
-ProxyCylinderShape::ProxyCylinderShape(const CylinderShape* cylinderShape, CollisionBody* body,
+ProxyCylinderShape::ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBody* body,
                                        const Transform& transform, decimal mass)
                    :ProxyShape(body, transform, mass), mCollisionShape(cylinderShape){
 

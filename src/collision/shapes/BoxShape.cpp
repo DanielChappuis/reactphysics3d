@@ -63,7 +63,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Constructor
-ProxyBoxShape::ProxyBoxShape(const BoxShape* shape, CollisionBody* body,
+ProxyBoxShape::ProxyBoxShape(BoxShape* shape, CollisionBody* body,
                              const Transform& transform, decimal mass)
               :ProxyShape(body, transform, mass), mCollisionShape(shape){
 

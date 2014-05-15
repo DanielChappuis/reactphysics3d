@@ -26,8 +26,6 @@
 // Libraries
 #include "CollisionDetection.h"
 #include "../engine/CollisionWorld.h"
-#include "broadphase/SweepAndPruneAlgorithm.h"
-#include "broadphase/NoBroadPhaseAlgorithm.h"
 #include "../body/Body.h"
 #include "../collision/shapes/BoxShape.h"
 #include "../body/RigidBody.h"
@@ -101,7 +99,7 @@ void CollisionDetection::computeNarrowPhase() {
         CollisionBody* const body2 = shape2->getBody();
         
         // Update the contact cache of the overlapping pair
-        mWorld->updateOverlappingPair(pair);
+        pair->update();
 
         // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
         if (body1->getType() != DYNAMIC && body2->getType() != DYNAMIC) continue;
@@ -123,9 +121,7 @@ void CollisionDetection::computeNarrowPhase() {
         // if there really is a collision
         const Transform transform1 = body1->getTransform() * shape1->getLocalToBodyTransform();
         const Transform transform2 = body2->getTransform() * shape2->getLocalToBodyTransform();
-        if (narrowPhaseAlgorithm.testCollision(shape1->getCollisionShape(), transform1,
-                                               shape2->getCollisionShape(), transform2,
-                                               contactInfo)) {
+        if (narrowPhaseAlgorithm.testCollision(shape1, shape2, contactInfo)) {
             assert(contactInfo != NULL);
 
             // Set the bodies of the contact
@@ -134,8 +130,8 @@ void CollisionDetection::computeNarrowPhase() {
             assert(contactInfo->body1 != NULL);
             assert(contactInfo->body2 != NULL);
 
-            // Notify the world about the new narrow-phase contact
-            mWorld->notifyNewContact(pair, contactInfo);
+            // Create a new contact
+            createContact(pair, contactInfo);
 
             // Delete and remove the contact info from the memory allocator
             contactInfo->ContactPointInfo::~ContactPointInfo();
@@ -185,37 +181,20 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     */
 }
 
-// Allow the broadphase to notify the collision detection about a removed overlapping pair
-void CollisionDetection::removeOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
-
-    // Compute the overlapping pair ID
-    overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
-
-    // If the overlapping
-    std::map<overlappingpairid, OverlappingPair*>::iterator it;
-    it = mOverlappingPairs.find(indexPair);
-    if ()
-
-    // Notify the world about the removed broad-phase pair
-    // TODO : DELETE THIS
-    //mWorld->notifyRemovedOverlappingPair(broadPhasePair);
-
-    // Remove the overlapping pair from the memory allocator
-    mOverlappingPairs.find(pairID)->second->OverlappingPair::~OverlappingPair();
-    mWorld->mMemoryAllocator.release(mOverlappingPairs[indexPair], sizeof(OverlappingPair));
-    mOverlappingPairs.erase(pairID);
-}
-
 // Remove a body from the collision detection
 void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     // Remove all the overlapping pairs involving this proxy shape
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
-        if (it->second->getShape1()->getBroadPhaseID() == proxyShape->getBroadPhaseID() ||
-            it->second->getShape2()->getBroadPhaseID() == proxyShape->getBroadPhaseID()) {
+        if (it->second->getShape1()->mBroadPhaseID == proxyShape->mBroadPhaseID||
+            it->second->getShape2()->mBroadPhaseID == proxyShape->mBroadPhaseID) {
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
+
+            // Destroy the overlapping pair
+            itToRemove->second->OverlappingPair::~OverlappingPair();
+            mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
         }
         else {
@@ -225,4 +204,59 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     // Remove the body from the broad-phase
     mBroadPhaseAlgorithm.removeProxyCollisionShape(proxyShape);
+}
+
+// Create a new contact
+void CollisionDetection::createContact(OverlappingPair* overlappingPair,
+                                       const ContactPointInfo* contactInfo) {
+
+    // Create a new contact
+    ContactPoint* contact = new (mWorld->mMemoryAllocator.allocate(sizeof(ContactPoint)))
+                                ContactPoint(*contactInfo);
+    assert(contact != NULL);
+
+    // If it is the first contact since the pair are overlapping
+    if (overlappingPair->getNbContactPoints() == 0) {
+
+        // Trigger a callback event
+        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(*contactInfo);
+    }
+
+    // Add the contact to the contact cache of the corresponding overlapping pair
+    overlappingPair->addContact(contact);
+
+    // Add the contact manifold to the list of contact manifolds
+    mContactManifolds.push_back(overlappingPair->getContactManifold());
+
+    // Add the contact manifold into the list of contact manifolds
+    // of the two bodies involved in the contact
+    addContactManifoldToBody(overlappingPair->getContactManifold(),
+                             overlappingPair->getShape1()->getBody(),
+                             overlappingPair->getShape2()->getBody());
+
+    // Trigger a callback event for the new contact
+    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(*contactInfo);
+}
+
+// Add a contact manifold to the linked list of contact manifolds of the two bodies involved
+// in the corresponding contact
+void CollisionDetection::addContactManifoldToBody(ContactManifold* contactManifold,
+                                                  CollisionBody* body1, CollisionBody* body2) {
+
+    assert(contactManifold != NULL);
+
+    // Add the contact manifold at the beginning of the linked
+    // list of contact manifolds of the first body
+    void* allocatedMemory1 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+    ContactManifoldListElement* listElement1 = new (allocatedMemory1)
+                                                  ContactManifoldListElement(contactManifold,
+                                                                     body1->mContactManifoldsList);
+    body1->mContactManifoldsList = listElement1;
+
+    // Add the joint at the beginning of the linked list of joints of the second body
+    void* allocatedMemory2 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+    ContactManifoldListElement* listElement2 = new (allocatedMemory2)
+                                                  ContactManifoldListElement(contactManifold,
+                                                                     body2->mContactManifoldsList);
+    body2->mContactManifoldsList = listElement2;
 }

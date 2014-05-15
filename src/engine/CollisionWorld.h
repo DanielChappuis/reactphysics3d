@@ -77,6 +77,9 @@ class CollisionWorld {
         /// Memory allocator
         MemoryAllocator mMemoryAllocator;
 
+        /// Pointer to an event listener object
+        EventListener* mEventListener;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -84,13 +87,6 @@ class CollisionWorld {
 
         /// Private assignment operator
         CollisionWorld& operator=(const CollisionWorld& world);
-
-        /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const OverlappingPair* pair,
-                                      const ContactPointInfo* contactInfo);
-
-        /// Update the overlapping pair
-        virtual void updateOverlappingPair(const OverlappingPair* pair);
 
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
@@ -118,8 +114,7 @@ class CollisionWorld {
         std::set<CollisionBody*>::iterator getBodiesEndIterator();
 
         /// Create a collision body
-        CollisionBody* createCollisionBody(const Transform& transform,
-                                           CollisionShape* collisionShape);
+        CollisionBody* createCollisionBody(const Transform& transform);
 
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
