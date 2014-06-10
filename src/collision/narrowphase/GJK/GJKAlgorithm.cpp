@@ -140,9 +140,9 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                                   penetrationDepth,
-                                                                                    pA, pB);
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                 ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                  penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -172,9 +172,9 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                                   penetrationDepth,
-                                                                                   pA, pB);
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                   ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                    penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -202,9 +202,9 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                                   penetrationDepth,
-                                                                                    pA, pB);
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                 ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                  penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;
@@ -239,9 +239,9 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                                   penetrationDepth,
-                                                                                    pA, pB);
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                   ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                    penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
             return true;

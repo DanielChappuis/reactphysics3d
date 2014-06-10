@@ -400,9 +400,9 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                             penetrationDepth,
-                                                                             pALocal, pBLocal);
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                          ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                           penetrationDepth, pALocal, pBLocal);
     
     return true;
 }

@@ -75,9 +75,10 @@ bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(
-                           vectorBetweenCenters.getUnit(), penetrationDepth,
-                           intersectionOnBody1, intersectionOnBody2);
+        contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                         ContactPointInfo(collisionShape1, collisionShape2,
+                                          vectorBetweenCenters.getUnit(), penetrationDepth,
+                                          intersectionOnBody1, intersectionOnBody2);
     
         return true;
     }

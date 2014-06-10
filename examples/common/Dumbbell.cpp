@@ -79,7 +79,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
     mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape1);
     mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape2);
-    //mRigidBody->addCollisionShape(cylinderCollisionShape, massCylinder, transformCylinderShape);
+    mRigidBody->addCollisionShape(cylinderCollisionShape, massCylinder, transformCylinderShape);
 }
 
 // Destructor

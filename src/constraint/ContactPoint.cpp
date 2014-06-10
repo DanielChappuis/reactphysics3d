@@ -31,13 +31,17 @@ using namespace std;
 
 // Constructor
 ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
-             : mBody1(contactInfo.body1), mBody2(contactInfo.body2),
+             : mBody1(contactInfo.shape1->getBody()), mBody2(contactInfo.shape2->getBody()),
                mNormal(contactInfo.normal),
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnBody1(contactInfo.localPoint1),
                mLocalPointOnBody2(contactInfo.localPoint2),
-               mWorldPointOnBody1(contactInfo.body1->getTransform() * contactInfo.localPoint1),
-               mWorldPointOnBody2(contactInfo.body2->getTransform() * contactInfo.localPoint2),
+               mWorldPointOnBody1(contactInfo.shape1->getBody()->getTransform() *
+                                  contactInfo.shape1->getLocalToBodyTransform() *
+                                  contactInfo.localPoint1),
+               mWorldPointOnBody2(contactInfo.shape2->getBody()->getTransform() *
+                                  contactInfo.shape2->getLocalToBodyTransform() *
+                                  contactInfo.localPoint2),
                mIsRestingContact(false) {
 
     mFrictionVectors[0] = Vector3(0, 0, 0);

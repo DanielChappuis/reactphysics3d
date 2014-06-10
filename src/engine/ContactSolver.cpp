@@ -83,8 +83,10 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         assert(externalManifold->getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
-        RigidBody* body1 = externalManifold->getContactPoint(0)->getBody1();
-        RigidBody* body2 = externalManifold->getContactPoint(0)->getBody2();
+        RigidBody* body1 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
+        RigidBody* body2 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
+        assert(body1 != NULL);
+        assert(body2 != NULL);
 
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
