@@ -88,13 +88,33 @@ void CollisionDetection::computeNarrowPhase() {
     
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
         ContactPointInfo* contactInfo = NULL;
 
         OverlappingPair* pair = it->second;
 
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
+
+        assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
+
+        // Check that the two shapes are overlapping. If the shapes are not overlapping
+        // anymore, we remove the overlapping pair.
+        if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+
+            std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
+            ++it;
+
+            // Destroy the overlapping pair
+            itToRemove->second->OverlappingPair::~OverlappingPair();
+            mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+            mOverlappingPairs.erase(itToRemove);
+            continue;
+        }
+        else {
+            ++it;
+        }
+
         CollisionBody* const body1 = shape1->getBody();
         CollisionBody* const body2 = shape2->getBody();
         
@@ -119,8 +139,6 @@ void CollisionDetection::computeNarrowPhase() {
         
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        const Transform transform1 = body1->getTransform() * shape1->getLocalToBodyTransform();
-        const Transform transform2 = body2->getTransform() * shape2->getLocalToBodyTransform();
         if (narrowPhaseAlgorithm.testCollision(shape1, shape2, contactInfo)) {
             assert(contactInfo != NULL);
 
@@ -141,8 +159,13 @@ void CollisionDetection::computeNarrowPhase() {
 }
 
 // Allow the broadphase to notify the collision detection about an overlapping pair.
-/// This method is called by a broad-phase collision detection algorithm
+/// This method is called by the broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
+
+    assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
+
+    // If the two proxy collision shapes are from the same body, skip it
+    if (shape1->getBody()->getID() == shape2->getBody()->getID()) return;
 
     // Compute the overlapping pair ID
     overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
@@ -157,28 +180,6 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(pairID, newPair));
     assert(check.second);
-
-    /* TODO : DELETE THIS
-    // Get the pair of body index
-    bodyindexpair indexPair = addedPair->getBodiesIndexPair();
-
-    // If the overlapping pair already exists, we don't do anything
-    if (mOverlappingPairs.count(indexPair) > 0) return;
-
-    // Create the corresponding broad-phase pair object
-    BroadPhasePair* broadPhasePair = new (mWorld->mMemoryAllocator.allocate(sizeof(BroadPhasePair)))
-                                             BroadPhasePair(addedPair->body1, addedPair->body2);
-    assert(broadPhasePair != NULL);
-
-    // Add the pair into the set of overlapping pairs (if not there yet)
-    pair<map<bodyindexpair, BroadPhasePair*>::iterator, bool> check = mOverlappingPairs.insert(
-                                                                            make_pair(indexPair,
-                                                                            broadPhasePair));
-    assert(check.second);
-
-    // Notify the world about the new broad-phase overlapping pair
-    mWorld->notifyAddedOverlappingPair(broadPhasePair);
-    */
 }
 
 // Remove a body from the collision detection

@@ -62,6 +62,25 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
 
     float radius = 3.0f;
 
+    for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          80 + i * (DUMBBELL_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Create a convex mesh and a corresponding rigid in the dynamics world
+        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
+
+        // Change the material properties of the rigid body
+        rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
+        material.setBounciness(rp3d::decimal(0.2));
+
+        // Add the mesh the list of dumbbells in the scene
+        mDumbbells.push_back(dumbbell);
+    }
+
     // Create all the boxes of the scene
     for (int i=0; i<NB_BOXES; i++) {
 
@@ -271,6 +290,17 @@ Scene::~Scene() {
         delete (*it);
     }
 
+    // Destroy all the dumbbell of the scene
+    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+         it != mDumbbells.end(); ++it) {
+
+        // Destroy the corresponding rigid body from the dynamics world
+        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
+
+        // Destroy the convex mesh
+        delete (*it);
+    }
+
     // Destroy all the visual contact points
     for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
          it != mContactPoints.end(); ++it) {
@@ -337,6 +367,14 @@ void Scene::simulate() {
         // Update the position and orientation of the convex meshes
         for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
              it != mConvexMeshes.end(); ++it) {
+
+            // Update the transform used for the rendering
+            (*it)->updateTransform();
+        }
+
+        // Update the position and orientation of the dumbbells
+        for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+             it != mDumbbells.end(); ++it) {
 
             // Update the transform used for the rendering
             (*it)->updateTransform();
@@ -419,6 +457,12 @@ void Scene::render() {
     // Render all the convex meshes of the scene
     for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
          it != mConvexMeshes.end(); ++it) {
+        (*it)->render(mPhongShader, worldToCameraMatrix);
+    }
+
+    // Render all the dumbbells of the scene
+    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+         it != mDumbbells.end(); ++it) {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
 

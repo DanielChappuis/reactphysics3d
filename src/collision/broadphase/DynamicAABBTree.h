@@ -123,6 +123,12 @@ class DynamicAABBTree {
         /// Balance the sub-tree of a given node using left or right rotations.
         int balanceSubTreeAtNode(int nodeID);
 
+        /// Check if the tree structure is valid (for debugging purpose)
+        void check() const;
+
+        /// Check if the node structure is valid (for debugging purpose)
+        void checkNode(int nodeID) const;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -134,7 +140,7 @@ class DynamicAABBTree {
         ~DynamicAABBTree();
 
         /// Add an object into the tree
-        void addObject(ProxyShape* proxyShape);
+        void addObject(ProxyShape* proxyShape, const AABB& aabb);
 
         /// Remove an object from the tree
         void removeObject(int nodeID);

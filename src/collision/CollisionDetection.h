@@ -121,7 +121,7 @@ class CollisionDetection {
         ~CollisionDetection();
 
         /// Add a proxy collision shape to the collision detection
-        void addProxyCollisionShape(ProxyShape* proxyShape);
+        void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
 
         /// Remove a proxy collision shape from the collision detection
         void removeProxyCollisionShape(ProxyShape* proxyShape);
@@ -162,10 +162,11 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
 }  
 
 // Add a body to the collision detection
-inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape) {
+inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
+                                                       const AABB& aabb) {
     
     // Add the body to the broad-phase
-    mBroadPhaseAlgorithm.addProxyCollisionShape(proxyShape);
+    mBroadPhaseAlgorithm.addProxyCollisionShape(proxyShape, aabb);
 
     mIsCollisionShapesAdded = true;
 }  

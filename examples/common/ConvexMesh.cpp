@@ -44,7 +44,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
 
     // Create the collision shape for the rigid body (convex mesh shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     rp3d::decimal* verticesArray = (rp3d::decimal*) getVerticesPointer();
     rp3d::ConvexMeshShape collisionShape(verticesArray, mVertices.size(),
                                          sizeof(openglframework::Vector3));

@@ -77,7 +77,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     // Initial position and orientation of the rigid body

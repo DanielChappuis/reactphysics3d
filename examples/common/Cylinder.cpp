@@ -28,7 +28,7 @@
 
 
 // Constructor
-Cylinder::Cylinder(float radius, float height, const openglframework::Vector3 &position,
+Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& position,
            float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                    const std::string& meshFolderPath)
      : openglframework::Mesh(), mRadius(radius), mHeight(height) {
@@ -50,7 +50,7 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3 &p
 
     // Create the collision shape for the rigid body (cylinder shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::CylinderShape collisionShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body

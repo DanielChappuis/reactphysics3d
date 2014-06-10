@@ -80,8 +80,12 @@ const ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisi
         mProxyCollisionShapes = proxyShape;
     }
 
+    // Compute the world-space AABB of the new collision shape
+    AABB aabb;
+    newCollisionShape->computeAABB(aabb, mTransform * transform);
+
     // Notify the collision detection about this new collision shape
-    mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape);
+    mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
 
     mNbCollisionShapes++;
 
@@ -180,7 +184,7 @@ void CollisionBody::updateBroadPhaseState() const {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform);
+        shape->getCollisionShape()->computeAABB(aabb, mTransform *shape->getLocalToBodyTransform());
 
         // Update the broad-phase state for the proxy collision shape
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb);

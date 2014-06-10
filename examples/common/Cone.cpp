@@ -50,7 +50,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (cone shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::ConeShape collisionShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body

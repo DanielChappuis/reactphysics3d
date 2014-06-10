@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* Copyright (c) 2010-2014 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,56 +24,73 @@
 ********************************************************************************/
 
 // Libraries
-#include "Sphere.h"
+#include "Dumbbell.h"
 
 
 // Constructor
-Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
-               const std::string& meshFolderPath)
-       : openglframework::Mesh(), mRadius(radius) {
+Dumbbell::Dumbbell(const openglframework::Vector3 &position,
+                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
+         : openglframework::Mesh() {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
 
     // Calculate the normals of the mesh
     calculateNormals();
 
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, mRadius, 0, 0,
-                                              0, 0, mRadius, 0,
-                                              0, 0, 0, 1);
+    // Identity scaling matrix
+    mScalingMatrix.setToIdentity();
 
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
-    // Create the collision shape for the rigid body (sphere shape)
+    // Create a sphere collision shape for the two ends of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::SphereShape collisionShape(mRadius);
+    const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
+    const rp3d::decimal massSphere = rp3d::decimal(2.0);
+    const rp3d::SphereShape sphereCollisionShape(radiusSphere);
+
+    // Create a cylinder collision shape for the middle of the dumbbell
+    // ReactPhysics3D will clone this object to create an internal one. Therefore,
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
+    const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
+    const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
+    const rp3d::decimal massCylinder = rp3d::decimal(1.0);
+    const rp3d::CylinderShape cylinderCollisionShape(radiusCylinder, heightCylinder);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
+    rp3d::Transform transformBody(initPosition, initOrientation);
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform);
+    // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
 
-    // Add a collision shape to the body and specify the mass of the shape
-    mRigidBody->addCollisionShape(collisionShape, mass);
+    // Initial transform of the second sphere collision shape of the dumbell (in local-space)
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -4.0, 0), rp3d::Quaternion::identity());
+
+    // Initial transform of the cylinder collision shape of the dumbell (in local-space)
+    rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
+
+    // Create a rigid body corresponding to the dumbbell in the dynamics world
+    mRigidBody = dynamicsWorld->createRigidBody(transformBody);
+
+    // Add the three collision shapes to the body and specify the mass and transform of the shapes
+    mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape1);
+    mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape2);
+    //mRigidBody->addCollisionShape(cylinderCollisionShape, massCylinder, transformCylinderShape);
 }
 
 // Destructor
-Sphere::~Sphere() {
+Dumbbell::~Dumbbell() {
 
     // Destroy the mesh
     destroy();
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Sphere::render(openglframework::Shader& shader,
+void Dumbbell::render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
@@ -118,7 +135,7 @@ void Sphere::render(openglframework::Shader& shader,
 }
 
 // Update the transform matrix of the sphere
-void Sphere::updateTransform() {
+void Dumbbell::updateTransform() {
 
     // Get the interpolated transform of the rigid body
     rp3d::Transform transform = mRigidBody->getInterpolatedTransform();
@@ -134,3 +151,4 @@ void Sphere::updateTransform() {
     // Apply the scaling matrix to have the correct sphere dimensions
     mTransformMatrix = newMatrix * mScalingMatrix;
 }
+

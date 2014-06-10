@@ -131,7 +131,7 @@ class BroadPhaseAlgorithm {
         ~BroadPhaseAlgorithm();
         
         /// Add a proxy collision shape into the broad-phase collision detection
-        void addProxyCollisionShape(ProxyShape* proxyShape);
+        void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
 
         /// Remove a proxy collision shape from the broad-phase collision detection
         void removeProxyCollisionShape(ProxyShape* proxyShape);
@@ -152,6 +152,9 @@ class BroadPhaseAlgorithm {
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs();
+
+        /// Return true if the two broad-phase collision shapes are overlapping
+        bool testOverlappingShapes(ProxyShape* shape1, ProxyShape* shape2) const;
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -162,6 +165,17 @@ inline bool BroadPair::smallerThan(const BroadPair& pair1, const BroadPair& pair
         return pair1.collisionShape2ID < pair2.collisionShape2ID;
     }
     return false;
+}
+
+// Return true if the two broad-phase collision shapes are overlapping
+inline bool BroadPhaseAlgorithm::testOverlappingShapes(ProxyShape* shape1,
+                                                       ProxyShape* shape2) const {
+    // Get the two AABBs of the collision shapes
+    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->mBroadPhaseID);
+    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->mBroadPhaseID);
+
+    // Check if the two AABBs are overlapping
+    return aabb1.testCollision(aabb2);
 }
 
 }

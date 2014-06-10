@@ -30,6 +30,7 @@ SET(COLLISION_SHAPES_SOURCES
     "../common/Sphere.cpp"
     "../common/Cylinder.cpp"
     "../common/Cone.cpp"
+    "../common/Dumbbell.cpp"
     "../common/Box.cpp"
     "../common/Viewer.cpp"
 )
