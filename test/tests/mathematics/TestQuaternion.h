@@ -77,7 +77,7 @@ class TestQuaternion : public Test {
         void testConstructors() {
 
             Quaternion quaternion1(mQuaternion1);
-            test(mQuaternion1== quaternion1);
+            test(mQuaternion1 == quaternion1);
 
             Quaternion quaternion2(4, 5, 6, 7);
             test(quaternion2 == Quaternion(4, 5, 6, 7));
@@ -90,6 +90,34 @@ class TestQuaternion : public Test {
             test(approxEqual(quaternion4.y, mQuaternion1.y));
             test(approxEqual(quaternion4.z, mQuaternion1.z));
             test(approxEqual(quaternion4.w, mQuaternion1.w));
+
+            // Test conversion from Euler angles to quaternion
+
+            const decimal PI_OVER_2 = PI * decimal(0.5);
+            const decimal PI_OVER_4 = PI_OVER_2 * decimal(0.5);
+            Quaternion quaternion5(PI_OVER_2, 0, 0);
+            Quaternion quaternionTest5(std::sin(PI_OVER_4), 0, 0, std::cos(PI_OVER_4));
+            quaternionTest5.normalize();
+            test(approxEqual(quaternion5.x, quaternionTest5.x));
+            test(approxEqual(quaternion5.y, quaternionTest5.y));
+            test(approxEqual(quaternion5.z, quaternionTest5.z));
+            test(approxEqual(quaternion5.w, quaternionTest5.w));
+
+            Quaternion quaternion6(0, PI_OVER_2, 0);
+            Quaternion quaternionTest6(0, std::sin(PI_OVER_4), 0, std::cos(PI_OVER_4));
+            quaternionTest6.normalize();
+            test(approxEqual(quaternion6.x, quaternionTest6.x));
+            test(approxEqual(quaternion6.y, quaternionTest6.y));
+            test(approxEqual(quaternion6.z, quaternionTest6.z));
+            test(approxEqual(quaternion6.w, quaternionTest6.w));
+
+            Quaternion quaternion7(Vector3(0, 0, PI_OVER_2));
+            Quaternion quaternionTest7(0, 0, std::sin(PI_OVER_4), std::cos(PI_OVER_4));
+            quaternionTest7.normalize();
+            test(approxEqual(quaternion7.x, quaternionTest7.x));
+            test(approxEqual(quaternion7.y, quaternionTest7.y));
+            test(approxEqual(quaternion7.z, quaternionTest7.z));
+            test(approxEqual(quaternion7.w, quaternionTest7.w));
         }
 
         /// Test unit, length, normalize methods

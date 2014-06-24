@@ -69,6 +69,12 @@ struct Quaternion {
         /// Constructor with the component w and the vector v=(x y z)
         Quaternion(decimal newW, const Vector3& v);
 
+        /// Constructor which convert Euler angles (in radians) to a quaternion
+        Quaternion(decimal angleX, decimal angleY, decimal angleZ);
+
+        /// Constructor which convert Euler angles (in radians) to a quaternion
+        Quaternion(const Vector3& eulerAngles);
+
         /// Copy-constructor
         Quaternion(const Quaternion& quaternion);
 
@@ -153,6 +159,11 @@ struct Quaternion {
 
         /// Overloaded operator for equality condition
         bool operator==(const Quaternion& quaternion) const;
+
+    private:
+
+        /// Initialize the quaternion using Euler angles
+        void initWithEulerAngles(decimal angleX, decimal angleY, decimal angleZ);
 };
 
 /// Set all the values

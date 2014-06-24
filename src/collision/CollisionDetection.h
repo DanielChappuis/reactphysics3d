@@ -135,6 +135,9 @@ class CollisionDetection {
         /// Remove a pair of bodies that cannot collide with each other
         void removeNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
 
+        /// Ask for a collision shape to be tested again during broad-phase.
+        void askForBroadPhaseCollisionCheck(ProxyShape* shape);
+
         /// Compute the collision detection
         void computeCollisionDetection();
 
@@ -181,6 +184,13 @@ inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
 inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
                                                       CollisionBody* body2) {
     mNoCollisionPairs.erase(OverlappingPair::computeBodiesIndexPair(body1, body2));
+}
+
+// Ask for a collision shape to be tested again during broad-phase.
+/// We simply put the shape in the list of collision shape that have moved in the
+/// previous frame so that it is tested for collision again in the broad-phase.
+inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
+    mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
 }
 
 // Update a proxy collision shape (that has moved for instance)

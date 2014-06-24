@@ -40,13 +40,13 @@
 #include "../common/Viewer.h"
 
 // Constants
-const int NB_BOXES = 4;
-const int NB_SPHERES = 2;
-const int NB_CONES = 3;
-const int NB_CYLINDERS = 1;
+const int NB_BOXES = 2;
+const int NB_SPHERES = 3;
+const int NB_CONES = 1;
+const int NB_CYLINDERS = 2;
 const int NB_CAPSULES = 1;
-const int NB_MESHES = 2;
-const int NB_COMPOUND_SHAPES = 3;
+const int NB_MESHES = 3;
+const int NB_COMPOUND_SHAPES = 1;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;

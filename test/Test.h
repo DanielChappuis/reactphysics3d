@@ -90,7 +90,7 @@ class Test {
         Test(std::ostream* stream = &std::cout);
 
         /// Destructor
-        ~Test();
+        virtual ~Test();
 
         /// Return the number of passed tests
         long getNbPassedTests() const;

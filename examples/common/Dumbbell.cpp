@@ -61,7 +61,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+    rp3d::decimal angleAroundX = rp3d::PI / 4;
+    rp3d::Quaternion initOrientation(angleAroundX, 0, 0);
     rp3d::Transform transformBody(initPosition, initOrientation);
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
@@ -77,8 +78,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mRigidBody = dynamicsWorld->createRigidBody(transformBody);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape1);
-    mRigidBody->addCollisionShape(sphereCollisionShape, massSphere, transformSphereShape2);
+    mRigidBody->addCollisionShape(sphereCollisionShape, 1, transformSphereShape1);
+    mRigidBody->addCollisionShape(sphereCollisionShape, 4, transformSphereShape2);
     mRigidBody->addCollisionShape(cylinderCollisionShape, massCylinder, transformCylinderShape);
 }
 

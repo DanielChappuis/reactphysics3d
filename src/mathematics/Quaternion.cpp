@@ -47,6 +47,16 @@ Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z),
 
 }
 
+// Constructor which convert Euler angles (in radians) to a quaternion
+Quaternion::Quaternion(decimal angleX, decimal angleY, decimal angleZ) {
+    initWithEulerAngles(angleX, angleY, angleZ);
+}
+
+// Constructor which convert Euler angles (in radians) to a quaternion
+Quaternion::Quaternion(const Vector3& eulerAngles) {
+    initWithEulerAngles(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+}
+
 // Copy-constructor
 Quaternion::Quaternion(const Quaternion& quaternion)
            :x(quaternion.x), y(quaternion.y), z(quaternion.z), w(quaternion.w) {
@@ -218,4 +228,33 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
 
     // Compute and return the interpolated quaternion
     return quaternion1 * coeff1 + quaternion2 * coeff2;
+}
+
+// Initialize the quaternion using Euler angles
+void Quaternion::initWithEulerAngles(decimal angleX, decimal angleY, decimal angleZ) {
+
+    decimal angle = angleX * decimal(0.5);
+    const decimal sinX = std::sin(angle);
+    const decimal cosX = std::cos(angle);
+
+    angle = angleY * decimal(0.5);
+    const decimal sinY = std::sin(angle);
+    const decimal cosY = std::cos(angle);
+
+    angle = angleZ * decimal(0.5);
+    const decimal sinZ = std::sin(angle);
+    const decimal cosZ = std::cos(angle);
+
+    const decimal cosYcosZ = cosY * cosZ;
+    const decimal sinYcosZ = sinY * cosZ;
+    const decimal cosYsinZ = cosY * sinZ;
+    const decimal sinYsinZ = sinY * sinZ;
+
+    x = sinX * cosYcosZ - cosX * sinYsinZ;
+    y = cosX * sinYcosZ + sinX * cosYsinZ;
+    z = cosX * cosYsinZ - sinX * sinYcosZ;
+    w = cosX * cosYcosZ + sinX * sinYsinZ;
+
+    // Normalize the quaternion
+    normalize();
 }

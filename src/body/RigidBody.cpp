@@ -82,6 +82,17 @@ void RigidBody::setType(BodyType type) {
 
     // Awake the body
     setIsSleeping(false);
+
+    // Remove all the contacts with this body
+    resetContactManifoldsList();
+
+    // Ask the broad-phase to test again the collision shapes of the body for collision
+    // detection (as if the body has moved)
+    askForBroadPhaseCollisionCheck();
+
+    // Reset the force and torque on the body
+    mExternalForce.setToZero();
+    mExternalTorque.setToZero();
 }
 
 // Set the local inertia tensor of the body (in body coordinates)

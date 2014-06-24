@@ -36,12 +36,6 @@ using namespace std;
 
 // TODO : Check if we really need to store the contact manifolds also in mContactManifolds.
 
-// TODO : Check how to compute the initial inertia tensor now (especially when a body has multiple
-//        collision shapes.
-
-// TODO : Check the Body::setType() function in Box2D to be sure we are not missing any update
-// of the collision shapes and broad-phase modification.
-
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
               : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityEnabled(true),
@@ -194,7 +188,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             }
 
             // Get current position and orientation of the body
-            const Vector3& currentPosition = bodies[b]->getTransform().getPosition();
+            const Vector3& currentPosition = bodies[b]->mCenterOfMassWorld;
             const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
 
             // Update the new constrained position and orientation of the body
@@ -202,6 +196,10 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             mConstrainedOrientations[indexArray] = currentOrientation +
                                                    Quaternion(0, newAngVelocity) *
                                                    currentOrientation * decimal(0.5) * dt;
+
+            // TODO : DELETE THIS
+            Vector3 newPos = mConstrainedPositions[indexArray];
+            Quaternion newOrientation = mConstrainedOrientations[indexArray];
         }
     }
 }
@@ -221,12 +219,19 @@ void DynamicsWorld::updateBodiesState() {
 
             uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
 
+            // TODO : Delete this
+            Vector3 linVel = mConstrainedLinearVelocities[index];
+            Vector3 angVel = mConstrainedAngularVelocities[index];
+
             // Update the linear and angular velocity of the body
             bodies[b]->mLinearVelocity = mConstrainedLinearVelocities[index];
             bodies[b]->mAngularVelocity = mConstrainedAngularVelocities[index];
 
             // Update the position of the center of mass of the body
             bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
+
+            // TODO : DELETE THIS
+            Quaternion newOrient = mConstrainedOrientations[index];
 
             // Update the orientation of the body
             bodies[b]->mTransform.setOrientation(mConstrainedOrientations[index].getUnit());
@@ -450,22 +455,8 @@ void DynamicsWorld::solvePositionCorrection() {
     // Do not continue if there is no constraints
     if (mJoints.empty()) return;
 
-    // ---------- Get the position/orientation of the rigid bodies ---------- //
-
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
-
-        // For each body of the island
-        RigidBody** bodies = mIslands[islandIndex]->getBodies();
-        for (uint b=0; b < mIslands[islandIndex]->getNbBodies(); b++) {
-
-            uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
-
-            // Get the position/orientation of the rigid body
-            const Transform& transform = bodies[b]->getTransform();
-            mConstrainedPositions[index] = bodies[b]->mCenterOfMassWorld;
-            mConstrainedOrientations[index]= transform.getOrientation();
-        }
 
         // ---------- Solve the position error correction for the constraints ---------- //
 
@@ -516,7 +507,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     }
 
     // Reset the contact manifold list of the body
-    rigidBody->resetContactManifoldsList(mMemoryAllocator);
+    rigidBody->resetContactManifoldsList();
 
     // Call the destructor of the rigid body
     rigidBody->RigidBody::~RigidBody();
@@ -655,7 +646,7 @@ void DynamicsWorld::resetContactManifoldListsOfBodies() {
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         // Reset the contact manifold list of the body
-        (*it)->resetContactManifoldsList(mMemoryAllocator);
+        (*it)->resetContactManifoldsList();
     }
 }
 

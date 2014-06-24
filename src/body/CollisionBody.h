@@ -102,7 +102,7 @@ class CollisionBody : public Body {
         CollisionBody& operator=(const CollisionBody& body);
 
         /// Reset the contact manifold lists
-        void resetContactManifoldsList(MemoryAllocator& memoryAllocator);
+        void resetContactManifoldsList();
 
         /// Remove all the collision shapes
         void removeAllCollisionShapes();
@@ -112,6 +112,10 @@ class CollisionBody : public Body {
 
         /// Update the broad-phase state for this body (because it has moved for instance)
         void updateBroadPhaseState() const;
+
+        /// Ask the broad-phase to test again the collision shapes of the body for collision
+        /// (as if the body has moved).
+        void askForBroadPhaseCollisionCheck() const;
 
     public :
 

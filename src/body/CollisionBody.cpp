@@ -158,7 +158,7 @@ void CollisionBody::removeAllCollisionShapes() {
 }
 
 // Reset the contact manifold lists
-void CollisionBody::resetContactManifoldsList(MemoryAllocator& memoryAllocator) {
+void CollisionBody::resetContactManifoldsList() {
 
     // Delete the linked list of contact manifolds of that body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
@@ -167,13 +167,11 @@ void CollisionBody::resetContactManifoldsList(MemoryAllocator& memoryAllocator) 
 
         // Delete the current element
         currentElement->ContactManifoldListElement::~ContactManifoldListElement();
-        memoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
+        mWorld.mMemoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
 
         currentElement = nextElement;
     }
     mContactManifoldsList = NULL;
-
-    assert(mContactManifoldsList == NULL);
 }
 
 // Update the broad-phase state for this body (because it has moved for instance)
@@ -188,5 +186,16 @@ void CollisionBody::updateBroadPhaseState() const {
 
         // Update the broad-phase state for the proxy collision shape
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb);
+    }
+}
+
+// Ask the broad-phase to test again the collision shapes of the body for collision
+// (as if the body has moved).
+void CollisionBody::askForBroadPhaseCollisionCheck() const {
+
+    // For all the proxy collision shapes of the body
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+        mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(shape);
     }
 }
