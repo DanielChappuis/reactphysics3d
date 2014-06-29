@@ -149,6 +149,12 @@ class RigidBody : public CollisionBody {
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
 
+        /// Set the local center of mass of the body (in local-space coordinates)
+        void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
+
+        /// Set the mass of the rigid body
+        void setMass(decimal mass);
+
         /// Return the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorWorld() const;
 
@@ -386,7 +392,7 @@ inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // Add the force and torque
     mExternalForce += force;
-    mExternalTorque += (point - mTransform.getPosition()).cross(force);
+    mExternalTorque += (point - mCenterOfMassWorld).cross(force);
 }
 
 // Apply an external torque to the body.

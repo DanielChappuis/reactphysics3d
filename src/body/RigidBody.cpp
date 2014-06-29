@@ -95,16 +95,45 @@ void RigidBody::setType(BodyType type) {
     mExternalTorque.setToZero();
 }
 
-// Set the local inertia tensor of the body (in body coordinates)
+// Set the local inertia tensor of the body (in local-space coordinates)
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
+
+    if (mType != DYNAMIC) return;
+
     mInertiaTensorLocal = inertiaTensorLocal;
 
-    // Recompute the inverse local inertia tensor
-    if (mType == DYNAMIC) {
-        mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+    // Compute the inverse local inertia tensor
+    mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+}
+
+// Set the local center of mass of the body (in local-space coordinates)
+void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
+
+    if (mType != DYNAMIC) return;
+
+    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    mCenterOfMassLocal = centerOfMassLocal;
+
+    // Compute the center of mass in world-space coordinates
+    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+
+    // Update the linear velocity of the center of mass
+    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+}
+
+// Set the mass of the rigid body
+void RigidBody::setMass(decimal mass) {
+
+    if (mType != DYNAMIC) return;
+
+    mInitMass = mass;
+
+    if (mInitMass > decimal(0.0)) {
+        mMassInverse = decimal(1.0) / mInitMass;
     }
     else {
-        mInertiaTensorLocalInverse = Matrix3x3::zero();
+        mInitMass = decimal(1.0);
+        mMassInverse = decimal(1.0);
     }
 }
 
