@@ -137,7 +137,8 @@ class BroadPhaseAlgorithm {
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
         /// Notify the broad-phase that a collision shape has moved and need to be updated
-        void updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
+        void updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
+                                       const Vector3& displacement);
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.

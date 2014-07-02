@@ -283,6 +283,10 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class RigidBody;
 };
 
 // Reset the external force and torque applied to the bodies

@@ -27,7 +27,7 @@
 #include "RigidBody.h"
 #include "constraint/Joint.h"
 #include "../collision/shapes/CollisionShape.h"
-#include "../engine/CollisionWorld.h"
+#include "../engine/DynamicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -293,5 +293,23 @@ void RigidBody::recomputeMassInformation() {
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+}
+
+// Update the broad-phase state for this body (because it has moved for instance)
+void RigidBody::updateBroadPhaseState() const {
+
+    DynamicsWorld& world = dynamic_cast<DynamicsWorld&>(mWorld);
+    const Vector3 displacement = world.mTimer.getTimeStep() * mLinearVelocity;
+
+    // For all the proxy collision shapes of the body
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+        // Recompute the world-space AABB of the collision shape
+        AABB aabb;
+        shape->getCollisionShape()->computeAABB(aabb, mTransform *shape->getLocalToBodyTransform());
+
+        // Update the broad-phase state for the proxy collision shape
+        mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
+    }
 }
 

@@ -119,7 +119,7 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        // -------------------- Friends -------------------- //
+        // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;
         friend class CollisionBody;

@@ -127,7 +127,8 @@ class CollisionDetection {
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
         /// Update a proxy collision shape (that has moved for instance)
-        void updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb);
+        void updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
+                                       const Vector3& displacement = Vector3(0, 0, 0));
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
@@ -194,8 +195,9 @@ inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape
 }
 
 // Update a proxy collision shape (that has moved for instance)
-inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb) {
-    mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb);
+inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
+                                                          const Vector3& displacement) {
+    mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
 }
 
 }

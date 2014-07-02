@@ -154,8 +154,10 @@ void DynamicAABBTree::removeObject(int nodeID) {
 // Update the dynamic tree after an object has moved.
 /// If the new AABB of the object that has moved is still inside its fat AABB, then
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
-/// The method returns true if the object has been reinserted into the tree.
-bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB) {
+/// The method returns true if the object has been reinserted into the tree. The "displacement"
+/// argument is the linear velocity of the AABB multiplied by the elapsed time between two
+/// frames.
+bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement) {
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -169,11 +171,33 @@ bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB) {
     // If the new AABB is outside the fat AABB, we remove the corresponding node
     removeLeafNode(nodeID);
 
-    // Compute a new fat AABB for the new AABB
+    // Compute the fat AABB by inflating the AABB with a constant gap
     mNodes[nodeID].aabb = newAABB;
     const Vector3 gap(DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP);
     mNodes[nodeID].aabb.mMinCoordinates -= gap;
     mNodes[nodeID].aabb.mMaxCoordinates += gap;
+
+    // Inflate the fat AABB in direction of the linear motion of the AABB
+    if (displacement.x < decimal(0.0)) {
+      mNodes[nodeID].aabb.mMinCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
+    }
+    else {
+      mNodes[nodeID].aabb.mMaxCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
+    }
+    if (displacement.y < decimal(0.0)) {
+      mNodes[nodeID].aabb.mMinCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
+    }
+    else {
+      mNodes[nodeID].aabb.mMaxCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
+    }
+    if (displacement.z < decimal(0.0)) {
+      mNodes[nodeID].aabb.mMinCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
+    }
+    else {
+      mNodes[nodeID].aabb.mMaxCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
+    }
+
+    assert(mNodes[nodeID].aabb.contains(newAABB));
 
     // Reinsert the node into the tree
     insertLeafNode(nodeID);
