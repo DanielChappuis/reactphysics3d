@@ -46,7 +46,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
+    rp3d::Vector3 gravity(0, -9.81, 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -67,7 +67,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
         // Position
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
-                                          80 + i * (DUMBBELL_HEIGHT + 0.3f),
+                                          100 + i * (DUMBBELL_HEIGHT + 0.3f),
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
