@@ -123,11 +123,15 @@ class DynamicAABBTree {
         /// Balance the sub-tree of a given node using left or right rotations.
         int balanceSubTreeAtNode(int nodeID);
 
+#ifndef NDEBUG
+
         /// Check if the tree structure is valid (for debugging purpose)
         void check() const;
 
         /// Check if the node structure is valid (for debugging purpose)
         void checkNode(int nodeID) const;
+
+#endif
 
     public:
 

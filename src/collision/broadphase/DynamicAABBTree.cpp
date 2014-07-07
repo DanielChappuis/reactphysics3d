@@ -27,6 +27,7 @@
 #include "DynamicAABBTree.h"
 #include "BroadPhaseAlgorithm.h"
 #include "../../memory/Stack.h"
+#include "../../engine/Profiler.h"
 
 using namespace reactphysics3d;
 
@@ -158,6 +159,8 @@ void DynamicAABBTree::removeObject(int nodeID) {
 /// argument is the linear velocity of the AABB multiplied by the elapsed time between two
 /// frames.
 bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement) {
+
+    PROFILE("DynamicAABBTree::updateObject()");
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -333,9 +336,6 @@ void DynamicAABBTree::insertLeafNode(int nodeID) {
     }
 
     assert(mNodes[nodeID].isLeaf());
-
-    // Check the structure of the tree
-    check();
 }
 
 // Remove a leaf node from the tree
@@ -403,9 +403,6 @@ void DynamicAABBTree::removeLeafNode(int nodeID) {
         mNodes[siblingNodeID].parentID = TreeNode::NULL_TREE_NODE;
         releaseNode(parentNodeID);
     }
-
-    // Check the structure of the tree
-    check();
 }
 
 // Balance the sub-tree of a given node using left or right rotations.
@@ -608,6 +605,8 @@ void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aab
     }
 }
 
+#ifndef NDEBUG
+
 // Check if the tree structure is valid (for debugging purpose)
 void DynamicAABBTree::check() const {
 
@@ -678,3 +677,5 @@ void DynamicAABBTree::checkNode(int nodeID) const {
         checkNode(rightChild);
     }
 }
+
+#endif
