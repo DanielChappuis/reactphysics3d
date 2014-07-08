@@ -12,8 +12,6 @@ ENDIF (NOT CMAKE_BUILD_TYPE)
 # Where to build the library
 SET(LIBRARY_OUTPUT_PATH "lib")
 
-MESSAGE("Build type is : " ${CMAKE_BUILD_TYPE})
-
 # Where to build the executables
 SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
