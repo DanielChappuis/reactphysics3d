@@ -4,11 +4,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # Project configuration
 PROJECT(REACTPHYSICS3D)
 
-# Default build type
-SET(CMAKE_BUILD_TYPE "Debug")
+# Build type
+IF (NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE "Release")
+ENDIF (NOT CMAKE_BUILD_TYPE)
 
 # Where to build the library
 SET(LIBRARY_OUTPUT_PATH "lib")
+
+MESSAGE("Build type is : " ${CMAKE_BUILD_TYPE})
 
 # Where to build the executables
 SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
