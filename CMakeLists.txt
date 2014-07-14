@@ -130,6 +130,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/mathematics/Vector2.h"
     "src/mathematics/Vector2.cpp"
     "src/mathematics/Vector3.h"
+    "src/mathematics/Ray.h"
+    "src/mathematics/Ray.cpp"
     "src/mathematics/Vector3.cpp"
     "src/memory/MemoryAllocator.h"
     "src/memory/MemoryAllocator.cpp"
