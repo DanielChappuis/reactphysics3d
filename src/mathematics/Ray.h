@@ -51,26 +51,30 @@ struct Ray {
         // -------------------- Methods -------------------- //
 
         /// Constructor with arguments
-        Ray(const Vector3& originPoint, const Vector3& directionVector);
+        Ray(const Vector3& originPoint, const Vector3& directionVector)
+           : origin(originPoint), direction(directionVector) {
+
+        }
 
         /// Copy-constructor
-        Ray(const Ray& ray);
+        Ray(const Ray& ray) : origin(ray.origin), direction(ray.direction) {
+
+        }
 
         /// Destructor
-        ~Ray();
+        ~Ray() {
+
+        }
 
         /// Overloaded assignment operator
-        Ray& operator=(const Ray& ray);
+        Ray& operator=(const Ray& ray) {
+            if (&ray != this) {
+                origin = ray.origin;
+                direction = ray.direction;
+            }
+            return *this;
+        }
 };
-
-// Assignment operator
-inline Ray& Ray::operator=(const Ray& ray) {
-    if (&ray != this) {
-        origin = ray.origin;
-        direction = ray.direction;
-    }
-    return *this;
-}
 
 }
 

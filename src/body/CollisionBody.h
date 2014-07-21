@@ -33,6 +33,7 @@
 #include "../mathematics/Transform.h"
 #include "../collision/shapes/AABB.h"
 #include "../collision/shapes/CollisionShape.h"
+#include "../collision/RaycastInfo.h"
 #include "../memory/MemoryAllocator.h"
 #include "../configuration.h"
 
@@ -160,6 +161,19 @@ class CollisionBody : public Body {
 
         /// Return the first element of the linked list of contact manifolds involving this body
         const ContactManifoldListElement* getContactManifoldsLists() const;
+
+        /// Return true if a point is inside the collision body
+        // TODO : Implement this method
+        bool testPointInside(const Vector3& worldPoint) const;
+
+        /// Raycast method
+        // TODO : Implement this method
+        bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        // TODO : Implement this method
+        bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                     decimal distance = INFINITY_DISTANCE) const;
 
         // -------------------- Friendship -------------------- //
 

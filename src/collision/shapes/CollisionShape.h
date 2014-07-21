@@ -31,7 +31,9 @@
 #include <typeinfo>
 #include "../../mathematics/Vector3.h"
 #include "../../mathematics/Matrix3x3.h"
+#include "../../mathematics/Ray.h"
 #include "AABB.h"
+#include "../RaycastInfo.h"
 #include "../../memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
@@ -199,6 +201,13 @@ class ProxyShape {
 
         /// Return the current object margin
         virtual decimal getMargin() const=0;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const=0;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = INFINITY_DISTANCE) const=0;
 
         // -------------------- Friendship -------------------- //
 

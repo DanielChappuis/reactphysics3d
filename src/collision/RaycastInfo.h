@@ -23,21 +23,62 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_RAYCAST_INFO_H
+#define REACTPHYSICS3D_RAYCAST_INFO_H
+
 // Libraries
-#include "Body.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "../mathematics/Vector3.h"
+#include "../body/CollisionBody.h"
+#include "shapes/CollisionShape.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-Body::Body(bodyindex id)
-     : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(NULL) {
+// Structure RaycastInfo
+/**
+ * This structure contains the information about a raycast hit.
+ */
+struct RaycastInfo {
+
+    private:
+
+        // -------------------- Methods -------------------- //
+
+        /// Private copy constructor
+        RaycastInfo(const RaycastInfo& raycastInfo);
+
+        /// Private assignment operator
+        RaycastInfo& operator=(const RaycastInfo& raycastInfo);
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Hit point in world-space coordinates
+        Vector3 worldPoint;
+
+        /// Distance from the ray origin to the hit point
+        decimal distance;
+
+        /// Pointer to the hit collision body
+        CollisionBody* body;
+
+        /// Pointer to the hit proxy collision shape
+        ProxyShape* proxyShape;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        RaycastInfo() : body(NULL), proxyShape(NULL) {
+
+        }
+
+        /// Destructor
+        ~RaycastInfo() {
+
+        }
+};
 
 }
 
-// Destructor
-Body::~Body() {
-
-}
+#endif

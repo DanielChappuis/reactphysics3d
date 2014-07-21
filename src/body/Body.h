@@ -62,6 +62,9 @@ class Body {
         /// Elapsed time since the body velocity was bellow the sleep velocity
         decimal mSleepTime;
 
+        /// Pointer that can be used to attach user data to the body
+        void* mUserData;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -97,6 +100,12 @@ class Body {
 
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
+
+        /// Return a pointer to the user data attached to this body
+        void* getUserData() const;
+
+        /// Attach user data to this body
+        void setUserData(void* userData);
 
         /// Smaller than operator
         bool operator<(const Body& body2) const;
@@ -155,6 +164,16 @@ inline void Body::setIsSleeping(bool isSleeping) {
     }
 
     mIsSleeping = isSleeping;
+}
+
+// Return a pointer to the user data attached to this body
+inline void* Body::getUserData() const {
+    return mUserData;
+}
+
+// Attach user data to this body
+inline void Body::setUserData(void* userData) {
+    mUserData = userData;
 }
 
 // Smaller than operator

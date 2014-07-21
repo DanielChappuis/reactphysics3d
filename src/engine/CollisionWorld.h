@@ -34,6 +34,7 @@
 #include "../mathematics/mathematics.h"
 #include "Profiler.h"
 #include "../body/CollisionBody.h"
+#include "../collision/RaycastInfo.h"
 #include "OverlappingPair.h"
 #include "../collision/CollisionDetection.h"
 #include "../constraint/Joint.h"
@@ -118,6 +119,15 @@ class CollisionWorld {
 
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
+
+        /// Raycast method
+        // TODO : Implement this method
+        bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        // TODO : Implement this method
+        bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                     decimal distance = INFINITY_DISTANCE) const;
 
         // -------------------- Friendship -------------------- //
 
