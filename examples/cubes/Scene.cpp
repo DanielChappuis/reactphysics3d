@@ -132,7 +132,7 @@ void Scene::simulate() {
     if (mIsRunning) {
 
         counter++;
-        if (counter == 800) mIsRunning = false;
+        if (counter == 1000) mIsRunning = false;
 
         // Take a simulation step
         mDynamicsWorld->update();

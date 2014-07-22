@@ -219,19 +219,12 @@ void DynamicsWorld::updateBodiesState() {
 
             uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
 
-            // TODO : Delete this
-            Vector3 linVel = mConstrainedLinearVelocities[index];
-            Vector3 angVel = mConstrainedAngularVelocities[index];
-
             // Update the linear and angular velocity of the body
             bodies[b]->mLinearVelocity = mConstrainedLinearVelocities[index];
             bodies[b]->mAngularVelocity = mConstrainedAngularVelocities[index];
 
             // Update the position of the center of mass of the body
             bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
-
-            // TODO : DELETE THIS
-            Quaternion newOrient = mConstrainedOrientations[index];
 
             // Update the orientation of the body
             bodies[b]->mTransform.setOrientation(mConstrainedOrientations[index].getUnit());

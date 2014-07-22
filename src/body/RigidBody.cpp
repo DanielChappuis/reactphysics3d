@@ -298,6 +298,8 @@ void RigidBody::recomputeMassInformation() {
 // Update the broad-phase state for this body (because it has moved for instance)
 void RigidBody::updateBroadPhaseState() const {
 
+    PROFILE("RigidBody::updateBroadPhaseState()");
+
     DynamicsWorld& world = dynamic_cast<DynamicsWorld&>(mWorld);
     const Vector3 displacement = world.mTimer.getTimeStep() * mLinearVelocity;
 

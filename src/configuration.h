@@ -129,7 +129,7 @@ const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
 /// also inflated in direction of the linear motion of the body by mutliplying the
 /// followin constant with the linear velocity and the elapsed time between two frames.
-const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(2.0);
+const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
 }
 

@@ -147,7 +147,6 @@ class CollisionDetection {
 
         // -------------------- Friendship -------------------- //
 
-        // TODO : REMOVE THIS
         friend class DynamicsWorld;
 };
 
