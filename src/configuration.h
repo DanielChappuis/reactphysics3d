@@ -131,6 +131,9 @@ const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// followin constant with the linear velocity and the elapsed time between two frames.
 const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
+/// Raycasting infinity distance constant
+const decimal RAYCAST_INFINITY_DISTANCE = decimal(-1.0);
+
 }
 
 #endif

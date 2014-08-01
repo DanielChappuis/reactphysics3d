@@ -122,18 +122,19 @@ class CollisionWorld {
 
         /// Raycast method
         // TODO : Implement this method
-        bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const;
+        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         /// Raycast method with feedback information
         // TODO : Implement this method
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = INFINITY_DISTANCE) const;
+                     decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;
         friend class CollisionBody;
         friend class RigidBody;
+        friend class ProxyConvexMeshShape;
 };
 
 // Return an iterator to the beginning of the bodies of the physics world

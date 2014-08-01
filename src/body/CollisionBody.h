@@ -141,7 +141,7 @@ class CollisionBody : public Body {
         void setTransform(const Transform& transform);
 
         /// Add a collision shape to the body.
-        const ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+        ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
                                             const Transform& transform = Transform::identity());
 
         /// Remove a collision shape from the body
@@ -163,17 +163,16 @@ class CollisionBody : public Body {
         const ContactManifoldListElement* getContactManifoldsLists() const;
 
         /// Return true if a point is inside the collision body
-        // TODO : Implement this method
         bool testPointInside(const Vector3& worldPoint) const;
 
         /// Raycast method
         // TODO : Implement this method
-        bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const;
+        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         /// Raycast method with feedback information
         // TODO : Implement this method
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = INFINITY_DISTANCE) const;
+                     decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -181,6 +180,7 @@ class CollisionBody : public Body {
         friend class DynamicsWorld;
         friend class CollisionDetection;
         friend class BroadPhaseAlgorithm;
+        friend class ProxyConvexMeshShape;
 };
 
 // Return the type of the body

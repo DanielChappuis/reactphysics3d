@@ -28,6 +28,7 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "../../body/CollisionBody.h"
 #include "../../mathematics/mathematics.h"
 
 /// ReactPhysics3D namespace
@@ -70,6 +71,9 @@ class ConeShape : public CollisionShape {
 
         /// Private assignment operator
         ConeShape& operator=(const ConeShape& shape);
+
+        /// Return true if a point is inside the collision shape
+        bool testPointInside(const Vector3& localPoint) const;
         
     public :
 
@@ -111,6 +115,17 @@ class ConeShape : public CollisionShape {
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
                                              const Transform& transform, decimal mass);
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class ProxyConeShape;
 };
 
 // Class ProxyConeShape
@@ -163,6 +178,16 @@ class ProxyConeShape : public ProxyShape {
 
         /// Return the current collision shape margin
         virtual decimal getMargin() const;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Return true if a point is inside the collision body
+        virtual bool testPointInside(const Vector3& worldPoint);
 };
 
 // Allocate and return a copy of the object
@@ -249,6 +274,13 @@ inline Vector3 ProxyConeShape::getLocalSupportPointWithoutMargin(const Vector3& 
 // Return the current object margin
 inline decimal ProxyConeShape::getMargin() const {
     return mCollisionShape->getMargin();
+}
+
+// Return true if a point is inside the collision shape
+inline bool ProxyConeShape::testPointInside(const Vector3& worldPoint) {
+    const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
+    const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
+    return mCollisionShape->testPointInside(localPoint);
 }
 
 }

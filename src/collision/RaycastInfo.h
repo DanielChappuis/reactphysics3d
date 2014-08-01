@@ -28,11 +28,14 @@
 
 // Libraries
 #include "../mathematics/Vector3.h"
-#include "../body/CollisionBody.h"
-#include "shapes/CollisionShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
+class ProxyShape;
+class CollisionShape;
 
 // Structure RaycastInfo
 /**

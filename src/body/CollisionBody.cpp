@@ -61,7 +61,7 @@ CollisionBody::~CollisionBody() {
 /// the local-space of the body. By default, the second parameter is the identity transform.
 /// This method will return a pointer to the proxy collision shape that links the body with
 /// the collision shape you have added.
-const ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
+ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
                                                    const Transform& transform) {
 
     // Create an internal copy of the collision shape into the world (if it does not exist yet)
@@ -198,4 +198,17 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
         mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(shape);
     }
+}
+
+// Return true if a point is inside the collision body
+bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
+
+    // For each collision shape of the body
+    for(ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+        // Test if the point is inside the collision shape
+        if (shape->testPointInside(worldPoint)) return true;
+    }
+
+    return false;
 }

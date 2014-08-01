@@ -62,6 +62,24 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
                         0.0, 0.0, factor * (xSquare + ySquare));
 }
 
+// Raycast method
+bool BoxShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Return true if a point is inside the collision shape
+bool BoxShape::testPointInside(const Vector3& localPoint) const {
+    // TODO : Implement this method
+    return false;
+}
+
 // Constructor
 ProxyBoxShape::ProxyBoxShape(BoxShape* shape, CollisionBody* body,
                              const Transform& transform, decimal mass)
@@ -72,4 +90,16 @@ ProxyBoxShape::ProxyBoxShape(BoxShape* shape, CollisionBody* body,
 // Destructor
 ProxyBoxShape::~ProxyBoxShape() {
 
+}
+
+// Raycast method
+bool ProxyBoxShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ProxyBoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
 }

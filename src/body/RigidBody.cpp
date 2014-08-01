@@ -175,7 +175,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
 /// total mass of the rigid body and its inertia tensor). The mass must be positive. The third
 /// parameter is the transformation that transform the local-space of the collision shape into
 /// the local-space of the body. By default, the second parameter is the identity transform.
-const ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
+ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
                                                decimal mass, const Transform& transform) {
 
     assert(mass > decimal(0.0));

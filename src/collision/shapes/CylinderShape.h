@@ -28,6 +28,7 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "../../body/CollisionBody.h"
 #include "../../mathematics/mathematics.h"
 
 
@@ -67,6 +68,9 @@ class CylinderShape : public CollisionShape {
 
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
+
+        /// Return true if a point is inside the collision shape
+        bool testPointInside(const Vector3& localPoint) const;
 
     public :
 
@@ -109,6 +113,16 @@ class CylinderShape : public CollisionShape {
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
                                              const Transform& transform, decimal mass);
 
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class ProxyCylinderShape;
 };
 
 // Class ProxyCylinderShape
@@ -160,6 +174,16 @@ class ProxyCylinderShape : public ProxyShape {
 
         /// Return the current collision shape margin
         virtual decimal getMargin() const;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& worldPoint);
 };
 
 /// Allocate and return a copy of the object
@@ -246,6 +270,13 @@ inline Vector3 ProxyCylinderShape::getLocalSupportPointWithoutMargin(const Vecto
 // Return the current object margin
 inline decimal ProxyCylinderShape::getMargin() const {
     return mCollisionShape->getMargin();
+}
+
+// Return true if a point is inside the collision shape
+inline bool ProxyCylinderShape::testPointInside(const Vector3& worldPoint) {
+    const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
+    const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
+    return mCollisionShape->testPointInside(localPoint);
 }
 
 }

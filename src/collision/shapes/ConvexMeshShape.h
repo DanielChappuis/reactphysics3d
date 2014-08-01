@@ -28,13 +28,18 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "../../engine/CollisionWorld.h"
 #include "../../mathematics/mathematics.h"
+#include "../narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
 #include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declaration
+class CollisionWorld;
 
 // Class ConvexMeshShape
 /**
@@ -141,6 +146,17 @@ class ConvexMeshShape : public CollisionShape {
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
                                              const Transform& transform, decimal mass);
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class ProxyConvexMeshShape;
 };
 
 
@@ -196,6 +212,16 @@ class ProxyConvexMeshShape : public ProxyShape {
 
         /// Return the current collision shape margin
         virtual decimal getMargin() const;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& worldPoint);
 };
 
 // Allocate and return a copy of the object
@@ -317,6 +343,11 @@ inline Vector3 ProxyConvexMeshShape::getLocalSupportPointWithoutMargin(const Vec
 // Return the current object margin
 inline decimal ProxyConvexMeshShape::getMargin() const {
     return mCollisionShape->getMargin();
+}
+
+// Return true if a point is inside the collision shape
+inline bool ProxyConvexMeshShape::testPointInside(const Vector3& worldPoint)  {
+    return mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.testPointInside(worldPoint,this);
 }
 
 }

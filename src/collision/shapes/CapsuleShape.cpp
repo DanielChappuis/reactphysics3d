@@ -124,6 +124,24 @@ void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) co
                         0.0, 0.0, IxxAndzz);
 }
 
+// Raycast method
+bool CapsuleShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Return true if a point is inside the collision shape
+bool CapsuleShape::testPointInside(const Vector3& localPoint) const {
+    // TODO : Implement this method
+    return false;
+}
+
 // Constructor
 ProxyCapsuleShape::ProxyCapsuleShape(CapsuleShape* shape, CollisionBody* body,
                                      const Transform& transform, decimal mass)
@@ -134,4 +152,16 @@ ProxyCapsuleShape::ProxyCapsuleShape(CapsuleShape* shape, CollisionBody* body,
 // Destructor
 ProxyCapsuleShape::~ProxyCapsuleShape() {
 
+}
+
+// Raycast method
+bool ProxyCapsuleShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ProxyCapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
 }

@@ -224,6 +224,18 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
     return true;
 }
 
+// Raycast method
+bool ConvexMeshShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
 // Constructor
 ProxyConvexMeshShape::ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody* body,
                                            const Transform& transform, decimal mass)
@@ -235,4 +247,17 @@ ProxyConvexMeshShape::ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody
 // Destructor
 ProxyConvexMeshShape::~ProxyConvexMeshShape() {
 
+}
+
+// Raycast method
+bool ProxyConvexMeshShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ProxyConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                                   decimal distance) const {
+    // TODO : Implement this method
+    return false;
 }

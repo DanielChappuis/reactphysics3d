@@ -93,6 +93,24 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) c
     return supportPoint;
 }
 
+// Raycast method
+bool ConeShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Return true if a point is inside the collision shape
+bool ConeShape::testPointInside(const Vector3& localPoint) const {
+    // TODO : Implement this method
+    return false;
+}
+
 // Constructor
 ProxyConeShape::ProxyConeShape(ConeShape* shape, CollisionBody* body,
                                const Transform& transform, decimal mass)
@@ -103,4 +121,16 @@ ProxyConeShape::ProxyConeShape(ConeShape* shape, CollisionBody* body,
 // Destructor
 ProxyConeShape::~ProxyConeShape() {
 
+}
+
+// Raycast method
+bool ProxyConeShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ProxyConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
 }

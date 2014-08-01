@@ -86,6 +86,24 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
     return supportPoint;
 }
 
+// Raycast method
+bool CylinderShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Return true if a point is inside the collision shape
+bool CylinderShape::testPointInside(const Vector3& localPoint) const {
+    // TODO : Implement this method
+    return false;
+}
+
 // Constructor
 ProxyCylinderShape::ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBody* body,
                                        const Transform& transform, decimal mass)
@@ -96,4 +114,16 @@ ProxyCylinderShape::ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBo
 // Destructor
 ProxyCylinderShape::~ProxyCylinderShape() {
 
+}
+
+// Raycast method
+bool ProxyCylinderShape::raycast(const Ray& ray, decimal distance) const {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool ProxyCylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+    // TODO : Implement this method
+    return false;
 }

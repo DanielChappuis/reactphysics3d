@@ -27,14 +27,13 @@
 #define TEST_POINT_INSIDE_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../src/engine/CollisionWorld.h"
-#include "../../src/collision/shapes/BoxShape.h"
-#include "../../src/collision/shapes/SphereShape.h"
-#include "../../src/collision/shapes/CapsuleShape.h"
-#include "../../src/collision/shapes/ConeShape.h"
-#include "../../src/collision/shapes/ConvexMeshShape.h"
-#include "../../src/collision/shapes/CylinderShape.h"
+#include "Test.h"
+#include "collision/shapes/BoxShape.h"
+#include "collision/shapes/SphereShape.h"
+#include "collision/shapes/CapsuleShape.h"
+#include "collision/shapes/ConeShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
+#include "collision/shapes/CylinderShape.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -50,7 +49,7 @@ class TestPointInside : public Test {
         // ---------- Atributes ---------- //
 
         // Physics world
-        DynamicsWorld* mWorld;
+        CollisionWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody;
@@ -70,7 +69,7 @@ class TestPointInside : public Test {
 
         // Collision Shapes
         ProxyBoxShape* mBoxShape;
-        ProxySphereShape* mSpherShape;
+        ProxySphereShape* mSphereShape;
         ProxyCapsuleShape* mCapsuleShape;
         ProxyConeShape* mConeShape;
         ProxyConvexMeshShape* mConvexMeshShape;
@@ -85,7 +84,7 @@ class TestPointInside : public Test {
         TestPointInside() {
 
             // Create the world
-            mWorld = new rp3d::CollisionWorld();
+            mWorld = new CollisionWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -93,13 +92,13 @@ class TestPointInside : public Test {
             mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
-            mBoxBody = mWorld->createCollisionBody(bodyTransform);
-            mSphereBody = mWorld->createCollisionBody(bodyTransform);
-            mCapsuleBody = mWorld->createCollisionBody(bodyTransform);
-            mConeBody = mWorld->createCollisionBody(bodyTransform);
-            mConvexMeshBody = mWorld->createCollisionBody(bodyTransform);
-            mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(bodyTransform);
-            mCylinderBody = mWorld->createCollisionBody(bodyTransform);
+            mBoxBody = mWorld->createCollisionBody(mBodyTransform);
+            mSphereBody = mWorld->createCollisionBody(mBodyTransform);
+            mCapsuleBody = mWorld->createCollisionBody(mBodyTransform);
+            mConeBody = mWorld->createCollisionBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
+            mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
+            mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
@@ -111,16 +110,16 @@ class TestPointInside : public Test {
 
             // Create collision shapes
             BoxShape boxShape(Vector3(2, 3, 4), 0);
-            mBoxShape = mBoxBody->addCollisionShape(boxShape, shapeTransform);
+            mBoxShape = mBoxBody->addCollisionShape(boxShape, mShapeTransform);
 
             SphereShape sphereShape(3);
-            mSphereShape = mSphereBody->addCollisionShape(sphereShape, shapeTransform);
+            mSphereShape = mSphereBody->addCollisionShape(sphereShape, mShapeTransform);
 
             CapsuleShape capsuleShape(2, 10);
-            mCapsuleShape = mCapsuleBody->addCollisionShape(capsuleShape, shapeTransform);
+            mCapsuleShape = mCapsuleBody->addCollisionShape(capsuleShape, mShapeTransform);
 
             ConeShape coneShape(2, 6, 0);
-            mConeShape = mConeBody->addCollisionShape(coneShape, shapeTransform);
+            mConeShape = mConeBody->addCollisionShape(coneShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShape(0);             // Box of dimension (2, 3, 4)
             convexMeshShape.addVertex(Vector3(-2, -3, 4));

@@ -204,7 +204,7 @@ class RigidBody : public CollisionBody {
         void applyTorque(const Vector3& torque);
 
         /// Add a collision shape to the body.
-        const ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+        ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
                                             decimal mass,
                                             const Transform& transform = Transform::identity());
 

@@ -47,7 +47,7 @@ GJKAlgorithm::~GJKAlgorithm() {
 
 }
 
-// Return true and compute a contact info if the two bounding volumes collide.
+// Return true and compute a contact info if the two collision shapes collide.
 /// This method implements the Hybrid Technique for computing the penetration depth by
 /// running the GJK algorithm on original objects (without margin).
 /// If the objects don't intersect, this method returns false. If they intersect
@@ -329,4 +329,212 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(ProxyShape* collisi
     return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, collisionShape1,
                                                             transform1, collisionShape2, transform2,
                                                             v, contactInfo);
+}
+
+// Use the GJK Algorithm to find if a point is inside a convex collision shape
+bool GJKAlgorithm::testPointInside(const Vector3& worldPoint, ProxyShape* collisionShape) {
+
+    Vector3 suppA;             // Support point of object A
+    Vector3 w;                 // Support point of Minkowski difference A-B
+    //Vector3 pA;                // Closest point of object A
+    //Vector3 pB;                // Closest point of object B
+    decimal vDotw;
+    decimal prevDistSquare;
+
+    // Get the local-space to world-space transforms
+    const Transform localToWorldTransform = collisionShape->getBody()->getTransform() *
+                                 collisionShape->getLocalToBodyTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+
+    // Support point of object B (object B is a single point)
+    const Vector3 suppB = worldToLocalTransform * worldPoint;
+
+    // Create a simplex set
+    Simplex simplex;
+
+    // Get the previous point V (last cached separating axis)
+    // TODO : Cache separating axis
+    Vector3 v(1, 1, 1);
+
+    // Initialize the upper bound for the square distance
+    decimal distSquare = DECIMAL_LARGEST;
+
+    do {
+
+        // Compute the support points for original objects (without margins) A and B
+        suppA = collisionShape->getLocalSupportPointWithoutMargin(-v);
+        //suppB = body2Tobody1 *
+        //             collisionShape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v);
+
+        // Compute the support point for the Minkowski difference A-B
+        w = suppA - suppB;
+
+        vDotw = v.dot(w);
+
+        /*
+        // If the enlarge objects (with margins) do not intersect
+        if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
+
+            // Cache the current separating axis for frame coherence
+            mCurrentOverlappingPair->setCachedSeparatingAxis(v);
+
+            // No intersection, we return false
+            return false;
+        }
+        */
+
+        /*
+        // If the objects intersect only in the margins
+        if (simplex.isPointInSimplex(w) || distSquare - vDotw <= distSquare * REL_ERROR_SQUARE) {
+
+            // Compute the closet points of both objects (without the margins)
+            simplex.computeClosestPointsOfAandB(pA, pB);
+
+            // Project those two points on the margins to have the closest points of both
+            // object with the margins
+            decimal dist = sqrt(distSquare);
+            assert(dist > 0.0);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+
+            // Compute the contact info
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            decimal penetrationDepth = margin - dist;
+
+            // Reject the contact if the penetration depth is negative (due too numerical errors)
+            if (penetrationDepth <= 0.0) return false;
+
+            // Create the contact info object
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                 ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                  penetrationDepth, pA, pB);
+
+            // There is an intersection, therefore we return true
+            return true;
+        }
+        */
+
+        // Add the new support point to the simplex
+        simplex.addPoint(w, suppA, suppB);
+
+        // If the simplex is affinely dependent
+        if (simplex.isAffinelyDependent()) {
+
+            return false;
+
+            /*
+            // Compute the closet points of both objects (without the margins)
+            simplex.computeClosestPointsOfAandB(pA, pB);
+
+            // Project those two points on the margins to have the closest points of both
+            // object with the margins
+            decimal dist = sqrt(distSquare);
+            assert(dist > 0.0);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+
+            // Compute the contact info
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            decimal penetrationDepth = margin - dist;
+
+            // Reject the contact if the penetration depth is negative (due too numerical errors)
+            if (penetrationDepth <= 0.0) return false;
+
+            // Create the contact info object
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                   ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                    penetrationDepth, pA, pB);
+
+            // There is an intersection, therefore we return true
+            return true;
+            */
+        }
+
+        // Compute the point of the simplex closest to the origin
+        // If the computation of the closest point fail
+        if (!simplex.computeClosestPoint(v)) {
+
+            return false;
+
+            /*
+            // Compute the closet points of both objects (without the margins)
+            simplex.computeClosestPointsOfAandB(pA, pB);
+
+            // Project those two points on the margins to have the closest points of both
+            // object with the margins
+            decimal dist = sqrt(distSquare);
+            assert(dist > 0.0);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+
+            // Compute the contact info
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            decimal penetrationDepth = margin - dist;
+
+            // Reject the contact if the penetration depth is negative (due too numerical errors)
+            if (penetrationDepth <= 0.0) return false;
+
+            // Create the contact info object
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                 ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                  penetrationDepth, pA, pB);
+
+            // There is an intersection, therefore we return true
+            return true;
+            */
+        }
+
+        // Store and update the squared distance of the closest point
+        prevDistSquare = distSquare;
+        distSquare = v.lengthSquare();
+
+        // If the distance to the closest point doesn't improve a lot
+        if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
+
+            return false;
+
+            /*
+            simplex.backupClosestPointInSimplex(v);
+
+            // Get the new squared distance
+            distSquare = v.lengthSquare();
+
+            // Compute the closet points of both objects (without the margins)
+            simplex.computeClosestPointsOfAandB(pA, pB);
+
+            // Project those two points on the margins to have the closest points of both
+            // object with the margins
+            decimal dist = sqrt(distSquare);
+            assert(dist > 0.0);
+            pA = (pA - (collisionShape1->getMargin() / dist) * v);
+            pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
+
+            // Compute the contact info
+            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            decimal penetrationDepth = margin - dist;
+
+            // Reject the contact if the penetration depth is negative (due too numerical errors)
+            if (penetrationDepth <= 0.0) return false;
+
+            // Create the contact info object
+            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                                   ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                                    penetrationDepth, pA, pB);
+
+            // There is an intersection, therefore we return true
+            return true;
+            */
+        }
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON *
+                                 simplex.getMaxLengthSquareOfAPoint());
+
+    // The point is inside the collision shape
+    return true;
+
+    // The objects (without margins) intersect. Therefore, we run the GJK algorithm
+    // again but on the enlarged objects to compute a simplex polytope that contains
+    // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
+    // the correct penetration depth and contact points between the enlarged objects.
+    //return computePenetrationDepthForEnlargedObjects(collisionShape1, transform1, collisionShape2,
+    //                                                 transform2, contactInfo, v);
 }

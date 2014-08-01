@@ -123,6 +123,13 @@ class CollisionShape {
         /// Create a proxy collision shape for the collision shape
         virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
                                              const Transform& transform, decimal mass)=0;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 };
 
 
@@ -138,7 +145,7 @@ class CollisionShape {
  */
 class ProxyShape {
 
-    private:
+    protected:
 
         // -------------------- Attributes -------------------- //
 
@@ -202,12 +209,15 @@ class ProxyShape {
         /// Return the current object margin
         virtual decimal getMargin() const=0;
 
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& worldPoint)=0;
+
         /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = INFINITY_DISTANCE) const=0;
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = INFINITY_DISTANCE) const=0;
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 
         // -------------------- Friendship -------------------- //
 
