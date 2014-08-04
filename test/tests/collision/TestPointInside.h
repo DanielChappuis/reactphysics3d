@@ -68,13 +68,13 @@ class TestPointInside : public Test {
         Transform mLocalShape2ToWorld;
 
         // Collision Shapes
-        ProxyBoxShape* mBoxShape;
-        ProxySphereShape* mSphereShape;
-        ProxyCapsuleShape* mCapsuleShape;
-        ProxyConeShape* mConeShape;
-        ProxyConvexMeshShape* mConvexMeshShape;
-        ProxyConvexMeshShape* mConvexMeshShapeEdgesInfo;
-        ProxyCylinderShape* mCylinderShape;
+        ProxyShape* mBoxShape;
+        ProxyShape* mSphereShape;
+        ProxyShape* mCapsuleShape;
+        ProxyShape* mConeShape;
+        ProxyShape* mConvexMeshShape;
+        ProxyShape* mConvexMeshShapeEdgesInfo;
+        ProxyShape* mCylinderShape;
 
     public :
 
@@ -130,7 +130,7 @@ class TestPointInside : public Test {
             convexMeshShape.addVertex(Vector3(2, 3, 4));
             convexMeshShape.addVertex(Vector3(-2, 3, -4));
             convexMeshShape.addVertex(Vector3(2, 3, -4));
-            mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, shapeTransform);
+            mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShapeEdgesInfo(0);
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
@@ -158,14 +158,14 @@ class TestPointInside : public Test {
                                                                      convexMeshShapeEdgesInfo);
 
             CylinderShape cylinderShape(3, 8, 0);
-            mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, shapeTransform);
+            mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, mShapeTransform);
 
             // Compound shape is a cylinder and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundBody->addCollisionShape(cylinderShape, shapeTransform);
+            mCompoundBody->addCollisionShape(cylinderShape, mShapeTransform);
             mCompoundBody->addCollisionShape(sphereShape, shapeTransform2);
         }
 

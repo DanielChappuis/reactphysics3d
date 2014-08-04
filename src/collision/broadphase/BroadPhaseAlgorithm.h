@@ -29,6 +29,7 @@
 // Libraries
 #include <vector>
 #include "../../body/CollisionBody.h"
+#include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
 
 /// Namespace ReactPhysics3D

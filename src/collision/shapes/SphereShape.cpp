@@ -63,27 +63,3 @@ bool SphereShape::testPointInside(const Vector3& localPoint) const {
     // TODO : Implement this method
     return false;
 }
-
-// Constructor
-ProxySphereShape::ProxySphereShape(SphereShape* shape, CollisionBody* body,
-                                   const Transform& transform, decimal mass)
-                 :ProxyShape(body, transform, mass), mCollisionShape(shape){
-
-}
-
-// Destructor
-ProxySphereShape::~ProxySphereShape() {
-
-}
-
-// Raycast method
-bool ProxySphereShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Raycast method with feedback information
-bool ProxySphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}

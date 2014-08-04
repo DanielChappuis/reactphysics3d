@@ -62,14 +62,15 @@ CollisionBody::~CollisionBody() {
 /// This method will return a pointer to the proxy collision shape that links the body with
 /// the collision shape you have added.
 ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
-                                                   const Transform& transform) {
+                                             const Transform& transform) {
 
     // Create an internal copy of the collision shape into the world (if it does not exist yet)
     CollisionShape* newCollisionShape = mWorld.createCollisionShape(collisionShape);
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = newCollisionShape->createProxyShape(mWorld.mMemoryAllocator,
-                                                                 this, transform, decimal(1.0));
+    ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
+                                      sizeof(ProxyShape))) ProxyShape(this, newCollisionShape,
+                                                                      transform, decimal(1));
 
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == NULL) {
@@ -102,10 +103,9 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
         mWorld.mCollisionDetection.removeProxyCollisionShape(current);
-        mWorld.removeCollisionShape(proxyShape->getInternalCollisionShape());
-        size_t sizeBytes = current->getSizeInBytes();
+        mWorld.removeCollisionShape(proxyShape->mCollisionShape);
         current->ProxyShape::~ProxyShape();
-        mWorld.mMemoryAllocator.release(current, sizeBytes);
+        mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
         mNbCollisionShapes--;
         return;
     }
@@ -120,10 +120,9 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
             mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
-            mWorld.removeCollisionShape(proxyShape->getInternalCollisionShape());
-            size_t sizeBytes = elementToRemove->getSizeInBytes();
+            mWorld.removeCollisionShape(proxyShape->mCollisionShape);
             elementToRemove->ProxyShape::~ProxyShape();
-            mWorld.mMemoryAllocator.release(elementToRemove, sizeBytes);
+            mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
             return;
         }
@@ -146,7 +145,7 @@ void CollisionBody::removeAllCollisionShapes() {
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
         mWorld.mCollisionDetection.removeProxyCollisionShape(current);
-        mWorld.removeCollisionShape(current->getInternalCollisionShape());
+        mWorld.removeCollisionShape(current->mCollisionShape);
         current->ProxyShape::~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
 
@@ -210,5 +209,17 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
         if (shape->testPointInside(worldPoint)) return true;
     }
 
+    return false;
+}
+
+// Raycast method
+bool CollisionBody::raycast(const Ray& ray, decimal distance) {
+    // TODO : Implement this method
+    return false;
+}
+
+// Raycast method with feedback information
+bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
+    // TODO : Implement this method
     return false;
 }

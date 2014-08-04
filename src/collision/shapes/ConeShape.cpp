@@ -35,7 +35,6 @@ ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
           : CollisionShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));
     assert(mHalfHeight > decimal(0.0));
-    assert(margin > decimal(0.0));
     
     // Compute the sine of the semi-angle at the apex point
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
@@ -54,10 +53,11 @@ ConeShape::~ConeShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                  void** cachedCollisionData) const {
 
     // Compute the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
 
     // Add the margin to the support point
     Vector3 unitVec(0.0, -1.0, 0.0);
@@ -70,7 +70,8 @@ Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction) cons
 }
 
 // Return a local support point in a given direction without the object margin
-Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                     void** cachedCollisionData) const {
 
     const Vector3& v = direction;
     decimal sinThetaTimesLengthV = mSinTheta * v.length();
@@ -107,30 +108,6 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distan
 
 // Return true if a point is inside the collision shape
 bool ConeShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Constructor
-ProxyConeShape::ProxyConeShape(ConeShape* shape, CollisionBody* body,
-                               const Transform& transform, decimal mass)
-               :ProxyShape(body, transform, mass), mCollisionShape(shape){
-
-}
-
-// Destructor
-ProxyConeShape::~ProxyConeShape() {
-
-}
-
-// Raycast method
-bool ProxyConeShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Raycast method with feedback information
-bool ProxyConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
     // TODO : Implement this method
     return false;
 }
