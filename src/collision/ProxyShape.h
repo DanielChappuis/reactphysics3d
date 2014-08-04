@@ -44,6 +44,9 @@ class ProxyShape {
         /// Cached collision data
         void* mCachedCollisionData;
 
+        /// Pointer to user data
+        void* mUserData;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -80,6 +83,12 @@ class ProxyShape {
 
         /// Return the mass of the collision shape
         decimal getMass() const;
+
+        /// Return a pointer to the user data attached to this body
+        void* getUserData() const;
+
+        /// Attach user data to this body
+        void setUserData(void* userData);
 
         /// Return the local to parent body transform
         const Transform& getLocalToBodyTransform() const;
@@ -119,6 +128,16 @@ inline CollisionBody* ProxyShape::getBody() const {
 // Return the mass of the collision shape
 inline decimal ProxyShape::getMass() const {
     return mMass;
+}
+
+// Return a pointer to the user data attached to this body
+inline void* ProxyShape::getUserData() const {
+    return mUserData;
+}
+
+// Attach user data to this body
+inline void ProxyShape::setUserData(void* userData) {
+    mUserData = userData;
 }
 
 // Return the local to parent body transform
