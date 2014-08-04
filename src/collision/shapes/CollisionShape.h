@@ -43,8 +43,8 @@ namespace reactphysics3d {
 enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH};
 
 // Declarations
-class CollisionBody;
 class ProxyShape;
+class CollisionBody;
 
 // Class CollisionShape
 /**
@@ -73,6 +73,24 @@ class CollisionShape {
 
         /// Private assignment operator
         CollisionShape& operator=(const CollisionShape& shape);
+
+        // Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const=0;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const=0;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& worldPoint) const=0;
+
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 
     public :
 
@@ -120,114 +138,13 @@ class CollisionShape {
         /// Test equality between two collision shapes of the same type (same derived classes).
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const=0;
 
-        /// Create a proxy collision shape for the collision shape
-        virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass)=0;
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
-};
-
-
-// Class ProxyShape
-/**
- * The CollisionShape instances are supposed to be unique for memory optimization. For instance,
- * consider two rigid bodies with the same sphere collision shape. In this situation, we will have
- * a unique instance of SphereShape but we need to differentiate between the two instances during
- * the collision detection. They do not have the same position in the world and they do not
- * belong to the same rigid body. The ProxyShape class is used for that purpose by attaching a
- * rigid body with one of its collision shape. A body can have multiple proxy shapes (one for
- * each collision shape attached to the body).
- */
-class ProxyShape {
-
-    protected:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Pointer to the parent body
-        CollisionBody* mBody;
-
-        /// Local-space to parent body-space transform (does not change over time)
-        const Transform mLocalToBodyTransform;
-
-        /// Mass (in kilogramms) of the corresponding collision shape
-        decimal mMass;
-
-        /// Pointer to the next proxy shape of the body (linked list)
-        ProxyShape* mNext;
-
-        /// Broad-phase ID (node ID in the dynamic AABB tree)
-        int mBroadPhaseID;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ProxyShape(const ProxyShape& proxyShape);
-
-        /// Private assignment operator
-        ProxyShape& operator=(const ProxyShape& proxyShape);
-
-        /// Return the non-const collision shape
-        virtual CollisionShape* getInternalCollisionShape() const=0;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ProxyShape(CollisionBody* body, const Transform& transform, decimal mass);
-
-        /// Destructor
-        ~ProxyShape();
-
-        /// Return the collision shape
-        virtual const CollisionShape* getCollisionShape() const=0;
-
-        /// Return the number of bytes used by the proxy collision shape
-        virtual size_t getSizeInBytes() const=0;
-
-        /// Return the parent body
-        CollisionBody* getBody() const;
-
-        /// Return the mass of the collision shape
-        decimal getMass() const;
-
-        /// Return the local to parent body transform
-        const Transform& getLocalToBodyTransform() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction)=0;
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction)=0;
-
-        /// Return the current object margin
-        virtual decimal getMargin() const=0;
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint)=0;
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
-
         // -------------------- Friendship -------------------- //
 
-        friend class OverlappingPair;
-        friend class CollisionBody;
-        friend class RigidBody;
-        friend class BroadPhaseAlgorithm;
-        friend class DynamicAABBTree;
-        friend class CollisionDetection;
+        friend class ProxyShape;
 };
+
+
+
 
 // Return the type of the collision shape
 inline CollisionShapeType CollisionShape::getType() const {
@@ -269,21 +186,6 @@ inline bool CollisionShape::operator==(const CollisionShape& otherCollisionShape
 
     // Check if the two shapes are equal
     return otherCollisionShape.isEqualTo(*this);
-}
-
-// Return the parent body
-inline CollisionBody* ProxyShape::getBody() const {
-    return mBody;
-}
-
-// Return the mass of the collision shape
-inline decimal ProxyShape::getMass() const {
-    return mMass;
-}
-
-// Return the local to parent body transform
-inline const Transform& ProxyShape::getLocalToBodyTransform() const {
-    return mLocalToBodyTransform;
 }
 
 }

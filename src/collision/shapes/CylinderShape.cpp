@@ -35,7 +35,6 @@ CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
                 mHalfHeight(height/decimal(2.0)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-    assert(margin > decimal(0.0));
 }
 
 // Private copy-constructor
@@ -50,10 +49,11 @@ CylinderShape::~CylinderShape() {
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
+Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                      void** cachedCollisionData) const {
 
     // Compute the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, NULL);
 
     // Add the margin to the support point
     Vector3 unitVec(0.0, 1.0, 0.0);
@@ -66,7 +66,8 @@ Vector3 CylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) 
 }
 
 // Return a local support point in a given direction without the object margin
-Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                         void** cachedCollisionData) const {
 
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
@@ -100,30 +101,6 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal di
 
 // Return true if a point is inside the collision shape
 bool CylinderShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Constructor
-ProxyCylinderShape::ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBody* body,
-                                       const Transform& transform, decimal mass)
-                   :ProxyShape(body, transform, mass), mCollisionShape(cylinderShape){
-
-}
-
-// Destructor
-ProxyCylinderShape::~ProxyCylinderShape() {
-
-}
-
-// Raycast method
-bool ProxyCylinderShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Raycast method with feedback information
-bool ProxyCylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
     // TODO : Implement this method
     return false;
 }

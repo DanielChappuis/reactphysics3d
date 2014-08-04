@@ -37,7 +37,6 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     assert(extent.x > decimal(0.0) && extent.x > margin);
     assert(extent.y > decimal(0.0) && extent.y > margin);
     assert(extent.z > decimal(0.0) && extent.z > margin);
-    assert(margin > decimal(0.0));
 }
 
 // Private copy-constructor
@@ -76,30 +75,6 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distanc
 
 // Return true if a point is inside the collision shape
 bool BoxShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Constructor
-ProxyBoxShape::ProxyBoxShape(BoxShape* shape, CollisionBody* body,
-                             const Transform& transform, decimal mass)
-              :ProxyShape(body, transform, mass), mCollisionShape(shape){
-
-}
-
-// Destructor
-ProxyBoxShape::~ProxyBoxShape() {
-
-}
-
-// Raycast method
-bool ProxyBoxShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Raycast method with feedback information
-bool ProxyBoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
     // TODO : Implement this method
     return false;
 }

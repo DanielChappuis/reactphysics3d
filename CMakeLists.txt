@@ -82,6 +82,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/BroadPhasePair.h"
     "src/collision/BroadPhasePair.cpp"
     "src/collision/RaycastInfo.h"
+    "src/collision/ProxyShape.h"
+    "src/collision/ProxyShape.cpp"
     "src/collision/CollisionDetection.h"
     "src/collision/CollisionDetection.cpp"
     "src/constraint/BallAndSocketJoint.h"

@@ -121,13 +121,11 @@ class CollisionWorld {
         void destroyCollisionBody(CollisionBody* collisionBody);
 
         /// Raycast method
-        // TODO : Implement this method
-        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE);
 
         /// Raycast method with feedback information
-        // TODO : Implement this method
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+                     decimal distance = RAYCAST_INFINITY_DISTANCE);
 
         // -------------------- Friendship -------------------- //
 

@@ -69,8 +69,16 @@ class CylinderShape : public CollisionShape {
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
         /// Return true if a point is inside the collision shape
-        bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint) const;
 
     public :
 
@@ -94,12 +102,6 @@ class CylinderShape : public CollisionShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const;
-
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -109,81 +111,12 @@ class CylinderShape : public CollisionShape {
         /// Test equality between two cylinder shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 
-        /// Create a proxy collision shape for the collision shape
-        virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass);
-
         /// Raycast method
         virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
                              decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        // -------------------- Friendship -------------------- //
-
-        friend class ProxyCylinderShape;
-};
-
-// Class ProxyCylinderShape
-/**
- * The proxy collision shape for a cylinder shape.
- */
-class ProxyCylinderShape : public ProxyShape {
-
-    private:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Pointer to the actual collision shape
-        CylinderShape* mCollisionShape;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ProxyCylinderShape(const ProxyCylinderShape& proxyShape);
-
-        /// Private assignment operator
-        ProxyCylinderShape& operator=(const ProxyCylinderShape& proxyShape);
-
-        /// Return the non-const collision shape
-        virtual CollisionShape* getInternalCollisionShape() const;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ProxyCylinderShape(CylinderShape* cylinderShape, CollisionBody* body,
-                           const Transform& transform, decimal mass);
-
-        /// Destructor
-        ~ProxyCylinderShape();
-
-        /// Return the collision shape
-        virtual const CollisionShape* getCollisionShape() const;
-
-        /// Return the number of bytes used by the proxy collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
-        /// Return the current collision shape margin
-        virtual decimal getMargin() const;
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint);
 };
 
 /// Allocate and return a copy of the object
@@ -235,49 +168,6 @@ inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) 
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
-// Create a proxy collision shape for the collision shape
-inline ProxyShape* CylinderShape::createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                                 const Transform& transform, decimal mass) {
-    return new (allocator.allocate(sizeof(ProxyCylinderShape))) ProxyCylinderShape(this, body,
-                                                                               transform, mass);
-}
-
-// Return the non-const collision shape
-inline CollisionShape* ProxyCylinderShape::getInternalCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the collision shape
-inline const CollisionShape* ProxyCylinderShape::getCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the number of bytes used by the proxy collision shape
-inline size_t ProxyCylinderShape::getSizeInBytes() const {
-    return sizeof(ProxyCylinderShape);
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 ProxyCylinderShape::getLocalSupportPointWithMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithMargin(direction);
-}
-
-// Return a local support point in a given direction without the object margin
-inline Vector3 ProxyCylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithoutMargin(direction);
-}
-
-// Return the current object margin
-inline decimal ProxyCylinderShape::getMargin() const {
-    return mCollisionShape->getMargin();
-}
-
-// Return true if a point is inside the collision shape
-inline bool ProxyCylinderShape::testPointInside(const Vector3& worldPoint) {
-    const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
-    const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
-    return mCollisionShape->testPointInside(localPoint);
-}
 
 }
 

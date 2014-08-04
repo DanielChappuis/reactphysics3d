@@ -166,4 +166,16 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
     }
 }
 
+/// Raycast method
+bool CollisionWorld::raycast(const Ray& ray, decimal distance) {
+    // TODO : Implement this method
+    return false;
+}
+
+/// Raycast method with feedback information
+bool CollisionWorld::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
+    // TODO : Implement this method
+    return false;
+}
+
 

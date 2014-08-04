@@ -166,13 +166,11 @@ class CollisionBody : public Body {
         bool testPointInside(const Vector3& worldPoint) const;
 
         /// Raycast method
-        // TODO : Implement this method
-        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE);
 
         /// Raycast method with feedback information
-        // TODO : Implement this method
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+                     decimal distance = RAYCAST_INFINITY_DISTANCE);
 
         // -------------------- Friendship -------------------- //
 

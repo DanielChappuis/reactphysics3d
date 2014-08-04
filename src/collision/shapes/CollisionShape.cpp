@@ -26,6 +26,7 @@
 // Libraries
 #include "CollisionShape.h"
 #include "../../engine/Profiler.h"
+#include "body/CollisionBody.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -74,16 +75,4 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(minCoordinates);
     aabb.setMax(maxCoordinates);
-}
-
-// Constructor
-ProxyShape::ProxyShape(CollisionBody* body, const Transform& transform, decimal mass)
-           :mBody(body), mLocalToBodyTransform(transform), mMass(mass), mNext(NULL),
-            mBroadPhaseID(-1) {
-
-}
-
-// Destructor
-ProxyShape::~ProxyShape() {
-
 }

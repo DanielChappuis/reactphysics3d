@@ -28,14 +28,14 @@
 
 // Libraries
 #include "../../Test.h"
-#include "../../src/engine/CollisionWorld.h"
-#include "../../src/body/CollisionBody.h"
-#include "../../src/collision/shapes/BoxShape.h"
-#include "../../src/collision/shapes/SphereShape.h"
-#include "../../src/collision/shapes/CapsuleShape.h"
-#include "../../src/collision/shapes/ConeShape.h"
-#include "../../src/collision/shapes/ConvexMeshShape.h"
-#include "../../src/collision/shapes/CylinderShape.h"
+#include "engine/CollisionWorld.h"
+#include "body/CollisionBody.h"
+#include "collision/shapes/BoxShape.h"
+#include "collision/shapes/SphereShape.h"
+#include "collision/shapes/CapsuleShape.h"
+#include "collision/shapes/ConeShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
+#include "collision/shapes/CylinderShape.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -51,7 +51,7 @@ class TestRaycast : public Test {
         // ---------- Atributes ---------- //
 
         // Physics world
-        DynamicsWorld* mWorld;
+        CollisionWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody;
@@ -70,13 +70,13 @@ class TestRaycast : public Test {
         Transform mLocalShape2ToWorld;
 
         // Collision Shapes
-        ProxyBoxShape* mBoxShape;
-        ProxySphereShape* mSphereShape;
-        ProxyCapsuleShape* mCapsuleShape;
-        ProxyConeShape* mConeShape;
-        ProxyConvexMeshShape* mConvexMeshShape;
-        ProxyConvexMeshShape* mConvexMeshShapeEdgesInfo;
-        ProxyCylinderShape* mCylinderShape;
+        ProxyShape* mBoxShape;
+        ProxyShape* mSphereShape;
+        ProxyShape* mCapsuleShape;
+        ProxyShape* mConeShape;
+        ProxyShape* mConvexMeshShape;
+        ProxyShape* mConvexMeshShapeEdgesInfo;
+        ProxyShape* mCylinderShape;
 
     public :
 
@@ -86,7 +86,7 @@ class TestRaycast : public Test {
         TestRaycast() {
 
             // Create the world
-            mWorld = new rp3d::CollisionWorld();
+            mWorld = new CollisionWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -94,13 +94,13 @@ class TestRaycast : public Test {
             mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
-            mBoxBody = mWorld->createCollisionBody(bodyTransform);
-            mSphereBody = mWorld->createCollisionBody(bodyTransform);
-            mCapsuleBody = mWorld->createCollisionBody(bodyTransform);
-            mConeBody = mWorld->createCollisionBody(bodyTransform);
-            mConvexMeshBody = mWorld->createCollisionBody(bodyTransform);
-            mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(bodyTransform);
-            mCylinderBody = mWorld->createCollisionBody(bodyTransform);
+            mBoxBody = mWorld->createCollisionBody(mBodyTransform);
+            mSphereBody = mWorld->createCollisionBody(mBodyTransform);
+            mCapsuleBody = mWorld->createCollisionBody(mBodyTransform);
+            mConeBody = mWorld->createCollisionBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
+            mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
+            mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
@@ -112,16 +112,16 @@ class TestRaycast : public Test {
 
             // Create collision shapes
             BoxShape boxShape(Vector3(2, 3, 4), 0);
-            mBoxShape = mBoxBody->addCollisionShape(boxShape, shapeTransform);
+            mBoxShape = mBoxBody->addCollisionShape(boxShape, mShapeTransform);
 
             SphereShape sphereShape(3);
-            mSphereShape = mSphereBody->addCollisionShape(sphereShape, shapeTransform);
+            mSphereShape = mSphereBody->addCollisionShape(sphereShape, mShapeTransform);
 
             CapsuleShape capsuleShape(2, 5);
-            mCapsuleShape = mCapsuleBody->addCollisionShape(capsuleShape, shapeTransform);
+            mCapsuleShape = mCapsuleBody->addCollisionShape(capsuleShape, mShapeTransform);
 
             ConeShape coneShape(2, 6, 0);
-            mConeShape = mConeBody->addCollisionShape(coneShape, shapeTransform);
+            mConeShape = mConeBody->addCollisionShape(coneShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShape(0);             // Box of dimension (2, 3, 4)
             convexMeshShape.addVertex(Vector3(-2, -3, 4));
@@ -132,7 +132,7 @@ class TestRaycast : public Test {
             convexMeshShape.addVertex(Vector3(2, 3, 4));
             convexMeshShape.addVertex(Vector3(-2, 3, -4));
             convexMeshShape.addVertex(Vector3(2, 3, -4));
-            mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, shapeTransform);
+            mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShapeEdgesInfo(0);
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
@@ -160,14 +160,14 @@ class TestRaycast : public Test {
                                                                      convexMeshShapeEdgesInfo);
 
             CylinderShape cylinderShape(2, 5, 0);
-            mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, shapeTransform);
+            mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, mShapeTransform);
 
             // Compound shape is a cylinder and a sphere
-            Vector3  (Vector3(4, 2, -3));
+            Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundBody->addCollisionShape(cylinderShape, shapeTransform);
+            mCompoundBody->addCollisionShape(cylinderShape, mShapeTransform);
             mCompoundBody->addCollisionShape(sphereShape, shapeTransform2);
         }
 
@@ -674,8 +674,8 @@ class TestRaycast : public Test {
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
             test(mConeBody->raycast(ray, raycastInfo2));
-            test(raycastInfo2.body == mConeShape);
-            test(raycastInfo2.proxyShape == mBoxShape);
+            test(raycastInfo2.body == mConeBody);
+            test(raycastInfo2.proxyShape == mConeShape);
             test(approxEqual(raycastInfo2.distance, 6));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y));
@@ -1174,6 +1174,9 @@ class TestRaycast : public Test {
         /// CollisionWorld::raycast() methods.
         void testCompound() {
 
+            // ----- Test feedback data ----- //
+            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
+
             // Raycast hit agains the sphere shape
             Ray ray1(mLocalShape2ToWorld * Vector3(4, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
             Ray ray2(mLocalShape2ToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
@@ -1182,34 +1185,35 @@ class TestRaycast : public Test {
             Ray ray5(mLocalShape2ToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
             Ray ray6(mLocalShape2ToWorld * Vector3(-1, 2, -11), mLocalToWorldMatrix * Vector3(0, 0, 8));
 
-            test(mCompoundBody->raycast(ray1, raycastInfo3));
-            test(mWorld->raycast(ray1, raycastInfo3));
-            test(mWorld->raycast(ray1, raycastInfo3, 2));
+            RaycastInfo raycastInfo;
+            test(mCompoundBody->raycast(ray1, raycastInfo));
+            test(mWorld->raycast(ray1, raycastInfo));
+            test(mWorld->raycast(ray1, raycastInfo, 2));
             test(mWorld->raycast(ray1));
 
-            test(mCompoundBody->raycast(ray2, raycastInfo3));
-            test(mWorld->raycast(ray2, raycastInfo3));
-            test(mWorld->raycast(ray2, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray2, raycastInfo));
+            test(mWorld->raycast(ray2, raycastInfo));
+            test(mWorld->raycast(ray2, raycastInfo, 2));
             test(mWorld->raycast(ray2));
 
-            test(mCompoundBody->raycast(ray3, raycastInfo3));
-            test(mWorld->raycast(ray3, raycastInfo3));
-            test(mWorld->raycast(ray3, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray3, raycastInfo));
+            test(mWorld->raycast(ray3, raycastInfo));
+            test(mWorld->raycast(ray3, raycastInfo, 2));
             test(mWorld->raycast(ray3));
 
-            test(mCompoundBody->raycast(ray4, raycastInfo3));
-            test(mWorld->raycast(ray4, raycastInfo3));
-            test(mWorld->raycast(ray4, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray4, raycastInfo));
+            test(mWorld->raycast(ray4, raycastInfo));
+            test(mWorld->raycast(ray4, raycastInfo, 2));
             test(mWorld->raycast(ray4));
 
-            test(mCompoundBody->raycast(ray5, raycastInfo3));
-            test(mWorld->raycast(ray5, raycastInfo3));
-            test(mWorld->raycast(ray5, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray5, raycastInfo));
+            test(mWorld->raycast(ray5, raycastInfo));
+            test(mWorld->raycast(ray5, raycastInfo, 2));
             test(mWorld->raycast(ray5));
 
-            test(mCompoundBody->raycast(ray6, raycastInfo3));
-            test(mWorld->raycast(ray6, raycastInfo3));
-            test(mWorld->raycast(ray6, raycastInfo3, 4));
+            test(mCompoundBody->raycast(ray6, raycastInfo));
+            test(mWorld->raycast(ray6, raycastInfo));
+            test(mWorld->raycast(ray6, raycastInfo, 4));
             test(mWorld->raycast(ray6));
 
             // Raycast hit agains the cylinder shape
@@ -1220,34 +1224,34 @@ class TestRaycast : public Test {
             Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
             Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
 
-            test(mCompoundBody->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray11, raycastInfo));
+            test(mWorld->raycast(ray11, raycastInfo));
+            test(mWorld->raycast(ray11, raycastInfo, 2));
             test(mWorld->raycast(ray11));
 
-            test(mCompoundBody->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray12, raycastInfo));
+            test(mWorld->raycast(ray12, raycastInfo));
+            test(mWorld->raycast(ray12, raycastInfo, 2));
             test(mWorld->raycast(ray12));
 
-            test(mCompoundBody->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray13, raycastInfo));
+            test(mWorld->raycast(ray13, raycastInfo));
+            test(mWorld->raycast(ray13, raycastInfo, 2));
             test(mWorld->raycast(ray13));
 
-            test(mCompoundBody->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray14, raycastInfo));
+            test(mWorld->raycast(ray14, raycastInfo));
+            test(mWorld->raycast(ray14, raycastInfo, 2));
             test(mWorld->raycast(ray14));
 
-            test(mCompoundBody->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
+            test(mCompoundBody->raycast(ray15, raycastInfo));
+            test(mWorld->raycast(ray15, raycastInfo));
+            test(mWorld->raycast(ray15, raycastInfo, 2));
             test(mWorld->raycast(ray15));
 
-            test(mCompoundBody->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
+            test(mCompoundBody->raycast(ray16, raycastInfo));
+            test(mWorld->raycast(ray16, raycastInfo));
+            test(mWorld->raycast(ray16, raycastInfo, 4));
             test(mWorld->raycast(ray16));
         }
  };

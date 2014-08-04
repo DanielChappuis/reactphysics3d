@@ -184,8 +184,9 @@ ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
     CollisionShape* newCollisionShape = mWorld.createCollisionShape(collisionShape);
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = newCollisionShape->createProxyShape(mWorld.mMemoryAllocator,
-                                                                 this, transform, mass);
+    ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
+                                      sizeof(ProxyShape))) ProxyShape(this, newCollisionShape,
+                                                                      transform, mass);
 
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == NULL) {

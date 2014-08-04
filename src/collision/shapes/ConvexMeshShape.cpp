@@ -38,7 +38,6 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(nbVertices > 0);
     assert(stride > 0);
-    assert(margin > decimal(0.0));
 
     const unsigned char* vertexPointer = (const unsigned char*) arrayVertices;
 
@@ -59,7 +58,7 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
 ConvexMeshShape::ConvexMeshShape(decimal margin)
                 : CollisionShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
-    assert(margin > decimal(0.0));
+
 }
 
 // Private copy-constructor
@@ -79,10 +78,10 @@ ConvexMeshShape::~ConvexMeshShape() {
 
 // Return a local support point in a given direction with the object margin
 Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                        uint& cachedSupportVertex) const {
+                                                        void** cachedCollisionData) const {
 
     // Get the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedSupportVertex);
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
 
     // Get the unit direction vector
     Vector3 unitDirection = direction;
@@ -104,16 +103,23 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction
 /// will be in most of the cases very close to the previous one. Using hill-climbing, this method
 /// runs in almost constant time.
 Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                           uint& cachedSupportVertex) const {
+                                                           void** cachedCollisionData) const {
 
     assert(mNbVertices == mVertices.size());
+    assert(cachedCollisionData != NULL);
+
+    // Allocate memory for the cached collision data if not allocated yet
+    if ((*cachedCollisionData) == NULL) {
+        *cachedCollisionData = (int*) malloc(sizeof(int));
+        *((int*)(*cachedCollisionData)) = 0;
+    }
 
     // If the edges information is used to speed up the collision detection
     if (mIsEdgesInformationUsed) {
 
         assert(mEdgesAdjacencyList.size() == mNbVertices);
 
-        uint maxVertex = cachedSupportVertex;
+        uint maxVertex = *((int*)(*cachedCollisionData));
         decimal maxDotProduct = direction.dot(mVertices[maxVertex]);
         bool isOptimal;
 
@@ -143,7 +149,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
         } while(!isOptimal);
 
         // Cache the support vertex
-        cachedSupportVertex = maxVertex;
+        *((int*)(*cachedCollisionData)) = maxVertex;
 
         // Return the support vertex
         return mVertices[maxVertex];
@@ -232,32 +238,6 @@ bool ConvexMeshShape::raycast(const Ray& ray, decimal distance) const {
 
 // Raycast method with feedback information
 bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Constructor
-ProxyConvexMeshShape::ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody* body,
-                                           const Transform& transform, decimal mass)
-                      :ProxyShape(body, transform, mass), mCollisionShape(shape),
-                       mCachedSupportVertex(0) {
-
-}
-
-// Destructor
-ProxyConvexMeshShape::~ProxyConvexMeshShape() {
-
-}
-
-// Raycast method
-bool ProxyConvexMeshShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
-}
-
-// Raycast method with feedback information
-bool ProxyConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                                   decimal distance) const {
     // TODO : Implement this method
     return false;
 }

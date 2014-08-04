@@ -93,6 +93,17 @@ class ConvexMeshShape : public CollisionShape {
         /// Recompute the bounds of the mesh
         void recalculateBounds();
 
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin.
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -112,14 +123,6 @@ class ConvexMeshShape : public CollisionShape {
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       uint& cachedSupportVertex) const;
-
-        /// Return a local support point in a given direction without the object margin.
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          uint& cachedSupportVertex) const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -143,85 +146,12 @@ class ConvexMeshShape : public CollisionShape {
         /// collision detection
         void setIsEdgesInformationUsed(bool isEdgesUsed);
 
-        /// Create a proxy collision shape for the collision shape
-        virtual ProxyShape* createProxyShape(MemoryAllocator& allocator, CollisionBody* body,
-                                             const Transform& transform, decimal mass);
-
         /// Raycast method
         virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
                              decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        // -------------------- Friendship -------------------- //
-
-        friend class ProxyConvexMeshShape;
-};
-
-
-// Class ProxyConvexMeshSphape
-/**
- * The proxy collision shape for a convex mesh shape.
- */
-class ProxyConvexMeshShape : public ProxyShape {
-
-    private:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Pointer to the actual collision shape
-        ConvexMeshShape* mCollisionShape;
-
-        /// Cached support vertex index (previous support vertex for hill-climbing)
-        uint mCachedSupportVertex;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ProxyConvexMeshShape(const ProxyConvexMeshShape& proxyShape);
-
-        /// Private assignment operator
-        ProxyConvexMeshShape& operator=(const ProxyConvexMeshShape& proxyShape);
-
-        /// Return the non-const collision shape
-        virtual CollisionShape* getInternalCollisionShape() const;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ProxyConvexMeshShape(ConvexMeshShape* shape, CollisionBody* body,
-                              const Transform& transform, decimal mass);
-
-        /// Destructor
-        ~ProxyConvexMeshShape();
-
-        /// Return the collision shape
-        virtual const CollisionShape* getCollisionShape() const;
-
-        /// Return the number of bytes used by the proxy collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
-        /// Return the current collision shape margin
-        virtual decimal getMargin() const;
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint);
 };
 
 // Allocate and return a copy of the object
@@ -306,48 +236,10 @@ inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
     mIsEdgesInformationUsed = isEdgesUsed;
 }
 
-// Create a proxy collision shape for the collision shape
-inline ProxyShape* ConvexMeshShape::createProxyShape(MemoryAllocator& allocator,
-                                                           CollisionBody* body,
-                                                           const Transform& transform,
-                                                           decimal mass) {
-    return new (allocator.allocate(sizeof(ProxyConvexMeshShape))) ProxyConvexMeshShape(this, body,
-                                                                               transform, mass);
-}
-
-// Return the non-const collision shape
-inline CollisionShape* ProxyConvexMeshShape::getInternalCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the collision shape
-inline const CollisionShape* ProxyConvexMeshShape::getCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the number of bytes used by the proxy collision shape
-inline size_t ProxyConvexMeshShape::getSizeInBytes() const {
-    return sizeof(ProxyConvexMeshShape);
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 ProxyConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithMargin(direction, mCachedSupportVertex);
-}
-
-// Return a local support point in a given direction without the object margin
-inline Vector3 ProxyConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithoutMargin(direction, mCachedSupportVertex);
-}
-
-// Return the current object margin
-inline decimal ProxyConvexMeshShape::getMargin() const {
-    return mCollisionShape->getMargin();
-}
-
 // Return true if a point is inside the collision shape
-inline bool ProxyConvexMeshShape::testPointInside(const Vector3& worldPoint)  {
-    return mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.testPointInside(worldPoint,this);
+inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint) const {
+    // TODO : Implement this
+    return false;
 }
 
 }
