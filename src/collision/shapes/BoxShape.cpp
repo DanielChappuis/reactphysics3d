@@ -25,7 +25,7 @@
 
 // Libraries
 #include "BoxShape.h"
-#include "../../configuration.h"
+#include "configuration.h"
 #include <vector>
 #include <cassert>
 

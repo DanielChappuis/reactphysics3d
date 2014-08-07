@@ -28,7 +28,7 @@
 
 // Libraries
 #include <vector>
-#include "../../body/CollisionBody.h"
+#include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
 

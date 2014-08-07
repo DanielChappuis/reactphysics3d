@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_CONSTRAINT_H
 
 // Libraries
-#include "../configuration.h"
-#include "../body/RigidBody.h"
-#include "../mathematics/mathematics.h"
+#include "configuration.h"
+#include "body/RigidBody.h"
+#include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {

@@ -25,7 +25,7 @@
 
 // Libraries
 #include <complex>
-#include "../../configuration.h"
+#include "configuration.h"
 #include "ConvexMeshShape.h"
 
 using namespace reactphysics3d;

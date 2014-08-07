@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_BROAD_PHASE_PAIR_H
 
 // Libraries
-#include "../body/CollisionBody.h"
+#include "body/CollisionBody.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

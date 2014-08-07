@@ -28,9 +28,9 @@
 
 // Libraries
 #include <vector>
-#include "../body/CollisionBody.h"
-#include "../constraint/ContactPoint.h"
-#include "../memory/MemoryAllocator.h"
+#include "body/CollisionBody.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

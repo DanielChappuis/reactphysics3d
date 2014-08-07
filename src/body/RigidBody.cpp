@@ -26,8 +26,8 @@
 // Libraries
 #include "RigidBody.h"
 #include "constraint/Joint.h"
-#include "../collision/shapes/CollisionShape.h"
-#include "../engine/DynamicsWorld.h"
+#include "collision/shapes/CollisionShape.h"
+#include "engine/DynamicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

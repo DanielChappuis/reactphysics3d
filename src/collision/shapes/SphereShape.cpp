@@ -25,7 +25,7 @@
 
 // Libraries
 #include "SphereShape.h"
-#include "../../configuration.h"
+#include "configuration.h"
 #include <cassert>
 
 using namespace reactphysics3d;

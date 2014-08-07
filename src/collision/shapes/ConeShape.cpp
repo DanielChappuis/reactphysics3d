@@ -25,7 +25,7 @@
 
 // Libraries
 #include <complex>
-#include "../../configuration.h"
+#include "configuration.h"
 #include "ConeShape.h"
 
 using namespace reactphysics3d;

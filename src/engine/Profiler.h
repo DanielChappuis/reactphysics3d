@@ -29,7 +29,7 @@
 #ifdef IS_PROFILING_ACTIVE
 
 // Libraries
-#include "../configuration.h"
+#include "configuration.h"
 #include "Timer.h"
 
 /// ReactPhysics3D namespace

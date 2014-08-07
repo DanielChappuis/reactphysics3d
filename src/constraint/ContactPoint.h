@@ -27,10 +27,10 @@
 #define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
-#include "../body/CollisionBody.h"
-#include "../configuration.h"
-#include "../mathematics/mathematics.h"
-#include "../configuration.h"
+#include "body/CollisionBody.h"
+#include "configuration.h"
+#include "mathematics/mathematics.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

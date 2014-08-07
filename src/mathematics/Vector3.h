@@ -30,7 +30,7 @@
 #include <cmath>
 #include <cassert>
 #include "mathematics_functions.h"
-#include "../decimal.h"
+#include "decimal.h"
 
 
 /// ReactPhysics3D namespace

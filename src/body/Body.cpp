@@ -25,7 +25,7 @@
 
 // Libraries
 #include "Body.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

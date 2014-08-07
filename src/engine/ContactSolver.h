@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
-#include "../constraint/ContactPoint.h"
-#include "../configuration.h"
-#include "../constraint/Joint.h"
+#include "constraint/ContactPoint.h"
+#include "configuration.h"
+#include "constraint/Joint.h"
 #include "ContactManifold.h"
 #include "Island.h"
 #include "Impulse.h"

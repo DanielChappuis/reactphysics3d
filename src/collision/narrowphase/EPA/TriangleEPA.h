@@ -27,8 +27,8 @@
 #define REACTPHYSICS3D_TRIANGLE_EPA_H
 
 // Libraries
-#include "../../../mathematics/mathematics.h"
-#include "../../../configuration.h"
+#include "mathematics/mathematics.h"
+#include "configuration.h"
 #include "EdgeEPA.h"
 #include <cassert>
 

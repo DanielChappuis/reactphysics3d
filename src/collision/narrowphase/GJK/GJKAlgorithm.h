@@ -27,10 +27,10 @@
 #define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
-#include "../NarrowPhaseAlgorithm.h"
-#include "../../../constraint/ContactPoint.h"
-#include "../../../collision/shapes/CollisionShape.h"
-#include "../EPA/EPAAlgorithm.h"
+#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
+#include "constraint/ContactPoint.h"
+#include "collision/shapes/CollisionShape.h"
+#include "collision/narrowphase/EPA/EPAAlgorithm.h"
 
 
 /// ReactPhysics3D namespace

@@ -29,9 +29,9 @@
 // Libraries
 #include <cassert>
 #include "CollisionBody.h"
-#include "../engine/Material.h"
-#include "../mathematics/mathematics.h"
-#include "../memory/MemoryAllocator.h"
+#include "engine/Material.h"
+#include "mathematics/mathematics.h"
+#include "memory/MemoryAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {

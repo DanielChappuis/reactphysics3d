@@ -27,8 +27,8 @@
 #define TEST_MATRIX3X3_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Matrix3x3.h"
+#include "Test.h"
+#include "mathematics/Matrix3x3.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

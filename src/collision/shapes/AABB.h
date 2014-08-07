@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_AABB_H
 
 // Libraries
-#include "../../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

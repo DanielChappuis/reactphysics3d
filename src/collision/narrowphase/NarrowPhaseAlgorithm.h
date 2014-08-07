@@ -27,11 +27,11 @@
 #define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
-#include "../../body/Body.h"
-#include "../../constraint/ContactPoint.h"
-#include "../broadphase/PairManager.h"
-#include "../../memory/MemoryAllocator.h"
-#include "../../engine/OverlappingPair.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "collision/broadphase/PairManager.h"
+#include "memory/MemoryAllocator.h"
+#include "engine/OverlappingPair.h"
 
 
 /// Namespace ReactPhysics3D

@@ -28,13 +28,13 @@
 
 // Libraries
 #include "CollisionWorld.h"
-#include "../collision/CollisionDetection.h"
+#include "collision/CollisionDetection.h"
 #include "ContactSolver.h"
 #include "ConstraintSolver.h"
-#include "../body/RigidBody.h"
+#include "body/RigidBody.h"
 #include "Timer.h"
 #include "Island.h"
-#include "../configuration.h"
+#include "configuration.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {

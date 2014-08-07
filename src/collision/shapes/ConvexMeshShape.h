@@ -28,9 +28,9 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../engine/CollisionWorld.h"
-#include "../../mathematics/mathematics.h"
-#include "../narrowphase/GJK/GJKAlgorithm.h"
+#include "engine/CollisionWorld.h"
+#include "mathematics/mathematics.h"
+#include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
 #include <map>

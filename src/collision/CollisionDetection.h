@@ -27,13 +27,13 @@
 #define REACTPHYSICS3D_COLLISION_DETECTION_H
 
 // Libraries
-#include "../body/CollisionBody.h"
+#include "body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
-#include "../engine/OverlappingPair.h"
+#include "engine/OverlappingPair.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
-#include "../memory/MemoryAllocator.h"
-#include "../constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
+#include "constraint/ContactPoint.h"
 #include <vector>
 #include <map>
 #include <set>

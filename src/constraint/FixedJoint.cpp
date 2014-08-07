@@ -25,7 +25,7 @@
 
 // Libraries
 #include "FixedJoint.h"
-#include "../engine/ConstraintSolver.h"
+#include "engine/ConstraintSolver.h"
 
 using namespace reactphysics3d;
 

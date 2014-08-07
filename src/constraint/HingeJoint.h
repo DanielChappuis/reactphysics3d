@@ -28,7 +28,7 @@
 
 // Libraries
 #include "Joint.h"
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 namespace reactphysics3d {
 

@@ -26,7 +26,7 @@
 // Libraries
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
-#include "../body/RigidBody.h"
+#include "body/RigidBody.h"
 #include "Profiler.h"
 #include <limits>
 

@@ -29,12 +29,12 @@
 // Libraries
 #include <cassert>
 #include <typeinfo>
-#include "../../mathematics/Vector3.h"
-#include "../../mathematics/Matrix3x3.h"
-#include "../../mathematics/Ray.h"
+#include "mathematics/Vector3.h"
+#include "mathematics/Matrix3x3.h"
+#include "mathematics/Ray.h"
 #include "AABB.h"
-#include "../RaycastInfo.h"
-#include "../../memory/MemoryAllocator.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

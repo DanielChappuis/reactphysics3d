@@ -28,8 +28,8 @@
 #define TEST_TRANSFORM_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Transform.h"
+#include "Test.h"
+#include "mathematics/Transform.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

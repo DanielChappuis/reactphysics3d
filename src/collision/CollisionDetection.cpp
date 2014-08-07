@@ -25,11 +25,11 @@
 
 // Libraries
 #include "CollisionDetection.h"
-#include "../engine/CollisionWorld.h"
-#include "../body/Body.h"
-#include "../collision/shapes/BoxShape.h"
-#include "../body/RigidBody.h"
-#include "../configuration.h"
+#include "engine/CollisionWorld.h"
+#include "body/Body.h"
+#include "collision/shapes/BoxShape.h"
+#include "body/RigidBody.h"
+#include "configuration.h"
 #include <cassert>
 #include <complex>
 #include <set>

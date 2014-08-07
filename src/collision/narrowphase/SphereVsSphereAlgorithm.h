@@ -27,8 +27,8 @@
 #define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
 
 // Libraries
-#include "../../body/Body.h"
-#include "../../constraint/ContactPoint.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
 #include "NarrowPhaseAlgorithm.h"
 
 

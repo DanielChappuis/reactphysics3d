@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cstring>
-#include "../configuration.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

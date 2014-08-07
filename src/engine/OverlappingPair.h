@@ -29,7 +29,7 @@
 // Libraries
 #include "ContactManifold.h"
 #include "collision/ProxyShape.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "collision/shapes/CollisionShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

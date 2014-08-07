@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CylinderShape.h"
-#include "../../configuration.h"
+#include "configuration.h"
 
 using namespace reactphysics3d;
 

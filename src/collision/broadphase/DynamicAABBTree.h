@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_DYNAMIC_AABB_TREE_H
 
 // Libraries
-#include "../../configuration.h"
-#include "../shapes/AABB.h"
-#include "../../body/CollisionBody.h"
+#include "configuration.h"
+#include "collision/shapes/AABB.h"
+#include "body/CollisionBody.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {

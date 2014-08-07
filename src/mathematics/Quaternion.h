@@ -30,7 +30,7 @@
 #include <cmath>
 #include "Vector3.h"
 #include "Matrix3x3.h"
-#include "../decimal.h"
+#include "decimal.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

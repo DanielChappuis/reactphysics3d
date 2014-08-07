@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_ISLAND_H
 
 // Libraries
-#include "../memory/MemoryAllocator.h"
-#include "../body/RigidBody.h"
-#include "../constraint/Joint.h"
+#include "memory/MemoryAllocator.h"
+#include "body/RigidBody.h"
+#include "constraint/Joint.h"
 #include "ContactManifold.h"
 
 namespace reactphysics3d {

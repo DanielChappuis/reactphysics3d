@@ -26,8 +26,8 @@
 // Libraries
 #include "DynamicAABBTree.h"
 #include "BroadPhaseAlgorithm.h"
-#include "../../memory/Stack.h"
-#include "../../engine/Profiler.h"
+#include "memory/Stack.h"
+#include "engine/Profiler.h"
 
 using namespace reactphysics3d;
 

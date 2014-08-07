@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_RAYCAST_INFO_H
 
 // Libraries
-#include "../mathematics/Vector3.h"
+#include "mathematics/Vector3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

@@ -25,8 +25,8 @@
 
  // Libraries
 #include "CollisionBody.h"
-#include "../engine/CollisionWorld.h"
-#include "../engine/ContactManifold.h"
+#include "engine/CollisionWorld.h"
+#include "engine/ContactManifold.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

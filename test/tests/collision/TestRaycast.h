@@ -27,7 +27,7 @@
 #define TEST_RAYCAST_H
 
 // Libraries
-#include "../../Test.h"
+#include "Test.h"
 #include "engine/CollisionWorld.h"
 #include "body/CollisionBody.h"
 #include "collision/shapes/BoxShape.h"

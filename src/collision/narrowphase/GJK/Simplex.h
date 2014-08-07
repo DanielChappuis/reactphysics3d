@@ -27,7 +27,7 @@
 #define	REACTPHYSICS3D_SIMPLEX_H
 
 // Libraries
-#include "../../../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 #include <vector>
 
 /// ReactPhysics3D namespace

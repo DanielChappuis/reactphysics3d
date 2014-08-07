@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_CONSTRAINT_SOLVER_H
 
 // Libraries
-#include "../configuration.h"
+#include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "../constraint/Joint.h"
+#include "constraint/Joint.h"
 #include "Island.h"
 #include <map>
 #include <set>

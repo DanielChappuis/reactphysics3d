@@ -29,7 +29,7 @@
 // Libraries
 #include <stdexcept>
 #include <cassert>
-#include "../configuration.h"
+#include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {

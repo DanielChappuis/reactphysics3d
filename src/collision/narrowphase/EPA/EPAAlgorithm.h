@@ -27,12 +27,12 @@
 #define REACTPHYSICS3D_EPA_ALGORITHM_H
 
 // Libraries
-#include "../GJK/Simplex.h"
-#include "../../shapes/CollisionShape.h"
-#include "../../../constraint/ContactPoint.h"
-#include "../../../mathematics/mathematics.h"
+#include "collision/narrowphase/GJK/Simplex.h"
+#include "collision/shapes/CollisionShape.h"
+#include "constraint/ContactPoint.h"
+#include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
-#include "../../../memory/MemoryAllocator.h"
+#include "memory/MemoryAllocator.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace

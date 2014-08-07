@@ -30,12 +30,12 @@
 #include <stdexcept>
 #include <cassert>
 #include "Body.h"
-#include "../mathematics/Transform.h"
-#include "../collision/shapes/AABB.h"
-#include "../collision/shapes/CollisionShape.h"
-#include "../collision/RaycastInfo.h"
-#include "../memory/MemoryAllocator.h"
-#include "../configuration.h"
+#include "mathematics/Transform.h"
+#include "collision/shapes/AABB.h"
+#include "collision/shapes/CollisionShape.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryAllocator.h"
+#include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {

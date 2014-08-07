@@ -31,15 +31,15 @@
 #include <set>
 #include <list>
 #include <algorithm>
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 #include "Profiler.h"
-#include "../body/CollisionBody.h"
-#include "../collision/RaycastInfo.h"
+#include "body/CollisionBody.h"
+#include "collision/RaycastInfo.h"
 #include "OverlappingPair.h"
-#include "../collision/CollisionDetection.h"
-#include "../constraint/Joint.h"
-#include "../constraint/ContactPoint.h"
-#include "../memory/MemoryAllocator.h"
+#include "collision/CollisionDetection.h"
+#include "constraint/Joint.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
