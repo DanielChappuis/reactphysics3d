@@ -72,9 +72,3 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distanc
     // TODO : Implement this method
     return false;
 }
-
-// Return true if a point is inside the collision shape
-bool BoxShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}

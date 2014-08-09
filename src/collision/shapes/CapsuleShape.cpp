@@ -139,7 +139,17 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal dis
 }
 
 // Return true if a point is inside the collision shape
-bool CapsuleShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
+bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+
+    const decimal diffYCenterSphere1 = localPoint.y - mHalfHeight;
+    const decimal diffYCenterSphere2 = localPoint.y + mHalfHeight;
+    const decimal xSquare = localPoint.x * localPoint.x;
+    const decimal zSquare = localPoint.z * localPoint.z;
+    const decimal squareRadius = mRadius * mRadius;
+
+    // Return true if the point is inside the cylinder or one of the two spheres of the capsule
+    return ((xSquare + zSquare) < squareRadius &&
+            localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight) ||
+            (xSquare + zSquare + diffYCenterSphere1 * diffYCenterSphere1) < squareRadius ||
+            (xSquare + zSquare + diffYCenterSphere2 * diffYCenterSphere2) < squareRadius;
 }

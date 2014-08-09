@@ -68,7 +68,7 @@ class SphereShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
     public :
 
@@ -186,6 +186,11 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius);
+}
+
+// Return true if a point is inside the collision shape
+inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    return (localPoint.lengthSquare() < mRadius * mRadius);
 }
 
 }

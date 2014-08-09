@@ -95,7 +95,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                    ContactPointInfo*& contactInfo);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
-        bool testPointInside(const Vector3& worldPoint, ProxyShape *collisionShape);
+        bool testPointInside(const Vector3& localPoint, ProxyShape *collisionShape);
 };
 
 }

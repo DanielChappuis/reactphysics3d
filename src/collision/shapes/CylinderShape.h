@@ -78,7 +78,7 @@ class CylinderShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
     public :
 
@@ -168,6 +168,11 @@ inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) 
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
+// Return true if a point is inside the collision shape
+inline bool CylinderShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const{
+    return ((localPoint.x * localPoint.x + localPoint.z * localPoint.z) < mRadius * mRadius &&
+            localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight);
+}
 
 }
 

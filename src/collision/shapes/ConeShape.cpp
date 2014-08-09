@@ -105,9 +105,3 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distan
     // TODO : Implement this method
     return false;
 }
-
-// Return true if a point is inside the collision shape
-bool ConeShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}

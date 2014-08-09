@@ -102,7 +102,7 @@ class ConvexMeshShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
     public :
 
@@ -237,9 +237,12 @@ inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
 }
 
 // Return true if a point is inside the collision shape
-inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this
-    return false;
+inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
+                                             ProxyShape* proxyShape) const {
+
+    // Use the GJK algorithm to test if the point is inside the convex mesh
+    return proxyShape->mBody->mWorld.mCollisionDetection.
+           mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
 }
 
 }

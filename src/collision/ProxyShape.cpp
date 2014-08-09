@@ -25,6 +25,6 @@ ProxyShape::~ProxyShape() {
 bool ProxyShape::testPointInside(const Vector3& worldPoint) {
     const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
-    return mCollisionShape->testPointInside(localPoint);
+    return mCollisionShape->testPointInside(localPoint, this);
 }
 

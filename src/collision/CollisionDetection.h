@@ -148,7 +148,7 @@ class CollisionDetection {
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
-        friend class ProxyConvexMeshShape;
+        friend class ConvexMeshShape;
 };
 
 // Select the narrow-phase collision algorithm to use given two collision shapes

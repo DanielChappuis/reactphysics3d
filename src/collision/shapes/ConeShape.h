@@ -81,7 +81,7 @@ class ConeShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
         
     public :
 
@@ -169,6 +169,14 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
 inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+}
+
+// Return true if a point is inside the collision shape
+inline bool ConeShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    const decimal radiusHeight = mRadius * (-localPoint.y + mHalfHeight) /
+                                          (mHalfHeight * decimal(2.0));
+    return (localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight) &&
+           (localPoint.x * localPoint.x + localPoint.z * localPoint.z < radiusHeight *radiusHeight);
 }
 
 }

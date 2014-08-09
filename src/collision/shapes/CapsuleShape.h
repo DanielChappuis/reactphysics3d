@@ -73,7 +73,7 @@ class CapsuleShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
     public :
 

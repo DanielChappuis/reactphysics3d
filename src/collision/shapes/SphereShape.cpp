@@ -57,9 +57,3 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal dist
     // TODO : Implement this method
     return false;
 }
-
-// Return true if a point is inside the collision shape
-bool SphereShape::testPointInside(const Vector3& localPoint) const {
-    // TODO : Implement this method
-    return false;
-}

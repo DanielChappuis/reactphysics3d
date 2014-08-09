@@ -132,7 +132,7 @@ class CollisionWorld {
         friend class CollisionDetection;
         friend class CollisionBody;
         friend class RigidBody;
-        friend class ProxyConvexMeshShape;
+        friend class ConvexMeshShape;
 };
 
 // Return an iterator to the beginning of the bodies of the physics world

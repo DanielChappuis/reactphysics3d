@@ -113,6 +113,7 @@ class ProxyShape {
         friend class CollisionDetection;
         friend class EPAAlgorithm;
         friend class GJKAlgorithm;
+        friend class ConvexMeshShape;
 };
 
 /// Return the collision shape

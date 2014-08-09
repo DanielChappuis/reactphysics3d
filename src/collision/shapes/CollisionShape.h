@@ -83,7 +83,7 @@ class CollisionShape {
                                                           void** cachedCollisionData) const=0;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint) const=0;
+        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
         /// Raycast method
         virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;

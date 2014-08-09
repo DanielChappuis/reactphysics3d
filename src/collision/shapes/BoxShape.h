@@ -76,7 +76,7 @@ class BoxShape : public CollisionShape {
                                                           void** cachedCollisionData) const;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
     public :
 
@@ -164,6 +164,13 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
     return (mExtent == otherShape.mExtent);
+}
+
+// Return true if a point is inside the collision shape
+inline bool BoxShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    return (localPoint.x < mExtent[0] && localPoint.x > -mExtent[0] &&
+            localPoint.y < mExtent[1] && localPoint.y > -mExtent[1] &&
+            localPoint.z < mExtent[2] && localPoint.z > -mExtent[2]);
 }
 
 }
