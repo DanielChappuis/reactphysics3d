@@ -83,7 +83,7 @@ class TestRaycast : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestRaycast() {
+        TestRaycast(const std::string& name) : Test(name) {
 
             // Create the world
             mWorld = new CollisionWorld();
@@ -101,6 +101,7 @@ class TestRaycast : public Test {
             mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
             mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
             mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
+            mCompoundBody = mWorld->createCollisionBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);

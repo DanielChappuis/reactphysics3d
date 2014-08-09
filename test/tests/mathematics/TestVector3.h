@@ -54,7 +54,7 @@ class TestVector3 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestVector3() : mVectorZero(0, 0, 0), mVector345(3, 4, 5) {}
+        TestVector3(const std::string& name): Test(name),mVectorZero(0, 0, 0),mVector345(3, 4, 5) {}
 
         /// Run the tests
         void run() {

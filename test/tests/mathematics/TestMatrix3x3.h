@@ -54,8 +54,9 @@ class TestMatrix3x3 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestMatrix3x3() : mIdentity(Matrix3x3::identity()),
-                          mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
+        TestMatrix3x3(const std::string& name)
+            : Test(name), mIdentity(Matrix3x3::identity()),
+              mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
 
 
         }

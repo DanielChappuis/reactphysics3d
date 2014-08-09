@@ -42,17 +42,17 @@ int main() {
 
     // ---------- Mathematics tests ---------- //
 
-    testSuite.addTest(new TestVector2);
-    testSuite.addTest(new TestVector3);
-    testSuite.addTest(new TestTransform);
-    testSuite.addTest(new TestQuaternion);
-    testSuite.addTest(new TestMatrix3x3);
-    testSuite.addTest(new TestMatrix2x2);
+    testSuite.addTest(new TestVector2("Vector2"));
+    testSuite.addTest(new TestVector3("Vector3"));
+    testSuite.addTest(new TestTransform("Transform"));
+    testSuite.addTest(new TestQuaternion("Quaternion"));
+    testSuite.addTest(new TestMatrix3x3("Matrix3x3"));
+    testSuite.addTest(new TestMatrix2x2("Matrix2x2"));
 
     // ---------- Collision Detection tests ---------- //
 
-    testSuite.addTest(new TestPointInside);
-    testSuite.addTest(new TestRaycast);
+    testSuite.addTest(new TestPointInside("Is Point Inside"));
+    testSuite.addTest(new TestRaycast("Raycasting"));
 
     // Run the tests
     testSuite.run();

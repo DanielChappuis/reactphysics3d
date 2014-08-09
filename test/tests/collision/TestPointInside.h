@@ -81,7 +81,7 @@ class TestPointInside : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestPointInside() {
+        TestPointInside(const std::string& name) : Test(name) {
 
             // Create the world
             mWorld = new CollisionWorld();
@@ -89,7 +89,7 @@ class TestPointInside : public Test {
             // Body transform
             Vector3 position(-3, 2, 7);
             Quaternion orientation(PI / 5, PI / 6, PI / 7);
-            mBodyTransform = Transform(position, orientation);
+            //mBodyTransform = Transform(position, orientation);  // TODO : Uncomment this
 
             // Create the bodies
             mBoxBody = mWorld->createCollisionBody(mBodyTransform);
@@ -99,11 +99,12 @@ class TestPointInside : public Test {
             mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
             mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
             mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
+            mCompoundBody = mWorld->createCollisionBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
             Quaternion shapeOrientation(3 * PI / 6 , -PI / 8, PI / 3);
-            mShapeTransform = Transform(shapePosition, shapeOrientation);
+            //mShapeTransform = Transform(shapePosition, shapeOrientation);   // TODO : Uncomment this
 
             // Compute the the transform from a local shape point to world-space
             mLocalShapeToWorld = mBodyTransform * mShapeTransform;
@@ -122,33 +123,33 @@ class TestPointInside : public Test {
             mConeShape = mConeBody->addCollisionShape(coneShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShape(0);             // Box of dimension (2, 3, 4)
-            convexMeshShape.addVertex(Vector3(-2, -3, 4));
+            convexMeshShape.addVertex(Vector3(-2, -3, -4));
+            convexMeshShape.addVertex(Vector3(2, -3, -4));
             convexMeshShape.addVertex(Vector3(2, -3, 4));
             convexMeshShape.addVertex(Vector3(-2, -3, 4));
-            convexMeshShape.addVertex(Vector3(2, -3, -4));
-            convexMeshShape.addVertex(Vector3(-2, 3, 4));
-            convexMeshShape.addVertex(Vector3(2, 3, 4));
             convexMeshShape.addVertex(Vector3(-2, 3, -4));
             convexMeshShape.addVertex(Vector3(2, 3, -4));
+            convexMeshShape.addVertex(Vector3(2, 3, 4));
+            convexMeshShape.addVertex(Vector3(-2, 3, 4));
             mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShapeEdgesInfo(0);
-            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, -4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, -4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, 4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, -4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, 4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, 4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, -4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, -4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, 4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, 4));
             convexMeshShapeEdgesInfo.addEdge(0, 1);
-            convexMeshShapeEdgesInfo.addEdge(1, 3);
+            convexMeshShapeEdgesInfo.addEdge(1, 2);
             convexMeshShapeEdgesInfo.addEdge(2, 3);
-            convexMeshShapeEdgesInfo.addEdge(0, 2);
+            convexMeshShapeEdgesInfo.addEdge(0, 3);
             convexMeshShapeEdgesInfo.addEdge(4, 5);
-            convexMeshShapeEdgesInfo.addEdge(5, 7);
+            convexMeshShapeEdgesInfo.addEdge(5, 6);
             convexMeshShapeEdgesInfo.addEdge(6, 7);
-            convexMeshShapeEdgesInfo.addEdge(4, 6);
+            convexMeshShapeEdgesInfo.addEdge(4, 7);
             convexMeshShapeEdgesInfo.addEdge(0, 4);
             convexMeshShapeEdgesInfo.addEdge(1, 5);
             convexMeshShapeEdgesInfo.addEdge(2, 6);
@@ -314,9 +315,9 @@ class TestPointInside : public Test {
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -5, 0)));
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, 0.9)));
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, -0.9)));
-            test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-1.8, -4, -1)));
+            test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -4, -0.9)));
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
-            test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.6)));
+            test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
 
             test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -7.1, 0)));
             test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 7.1, 0)));
@@ -361,9 +362,9 @@ class TestPointInside : public Test {
             test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -5, 0)));
             test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, 0.9)));
             test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, -0.9)));
-            test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(-1.8, -4, -1)));
+            test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -4, -0.9)));
             test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
-            test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.6)));
+            test(mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
 
             test(!mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(0, -7.1, 0)));
             test(!mCapsuleShape->testPointInside(mLocalShapeToWorld * Vector3(0, 7.1, 0)));
@@ -467,6 +468,8 @@ class TestPointInside : public Test {
         void testConvexMesh() {
 
             // ----- Tests without using edges information ----- //
+
+            bool value = mConvexMeshBody->testPointInside(Vector3(0, 0, 0));
 
             // Tests with CollisionBody
             test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
@@ -609,7 +612,7 @@ class TestPointInside : public Test {
             test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, 1.7)));
 
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 4.1, 0)));
-            test(!!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
+            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
@@ -617,7 +620,7 @@ class TestPointInside : public Test {
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, 2.2)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, -2.2)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, 1.7)));
+            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.3, 0, 2.8)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 3.9, 0)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 3.9, 0)));
             test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 3.1)));
@@ -665,7 +668,7 @@ class TestPointInside : public Test {
             test(mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, 1.7)));
 
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(0, 4.1, 0)));
-            test(!!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
+            test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
@@ -673,7 +676,7 @@ class TestPointInside : public Test {
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, 2.2)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, -2.2)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, -2.2)));
-            test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, 1.7)));
+            test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-1.3, 0, 2.8)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 3.9, 0)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 3.9, 0)));
             test(!mCylinderShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 3.1)));

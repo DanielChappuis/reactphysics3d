@@ -26,11 +26,13 @@
 // Libraries
 #include "Test.h"
 #include <typeinfo>
+#include <iomanip>
 
 using namespace reactphysics3d;
 
 /// Constructor
-Test::Test(std::ostream* stream) : mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
+Test::Test(const std::string& name, std::ostream* stream)
+     : mName(name), mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
 
 }
 
@@ -64,7 +66,7 @@ void Test::applyFail(const std::string& testText, const char* filename, long lin
     if (mOutputStream) {
 
         // Display the failure message
-        *mOutputStream << typeid(*this).name() << "failure : (" << testText << "), " <<
+        *mOutputStream << mName << "failure : (" << testText << "), " <<
                   filename << "(line " << lineNumber << ")" << std::endl;
     }
 
@@ -76,10 +78,11 @@ void Test::applyFail(const std::string& testText, const char* filename, long lin
 long Test::report() const {
 
     if(mOutputStream) {
-        *mOutputStream << "Test \"" <<
-         typeid(*this).name()
-               << "\":\n\tPassed: " << mNbPassedTests << "\tFailed: " <<
-                  mNbFailedTests  << std::endl;
+        *mOutputStream << std::left << std::setw(30) << std::setfill(' ')
+                       << "Test " + mName + " :" << std::setw(10) << "Passed:  "
+                       << std::setw(8) << mNbPassedTests
+                       << std::setw(13) << "Failed: "
+                       << std::setw(8) << mNbFailedTests  << std::endl;
       }
 
     // Return the number of failed tests

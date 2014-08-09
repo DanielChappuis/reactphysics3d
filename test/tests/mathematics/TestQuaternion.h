@@ -55,7 +55,7 @@ class TestQuaternion : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestQuaternion() : mIdentity(Quaternion::identity()) {
+        TestQuaternion(const std::string& name) : Test(name), mIdentity(Quaternion::identity()) {
 
             decimal sinA = sin(decimal(PI/8.0));
             decimal cosA = cos(decimal(PI/8.0));

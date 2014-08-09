@@ -58,7 +58,7 @@ class TestTransform : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestTransform() {
+        TestTransform(const std::string& name) : Test(name) {
 
             mIdentityTransform.setToIdentity();
 
