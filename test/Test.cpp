@@ -66,7 +66,7 @@ void Test::applyFail(const std::string& testText, const char* filename, long lin
     if (mOutputStream) {
 
         // Display the failure message
-        *mOutputStream << mName << "failure : (" << testText << "), " <<
+        *mOutputStream << mName << " failure : (" << testText << "), " <<
                   filename << "(line " << lineNumber << ")" << std::endl;
     }
 

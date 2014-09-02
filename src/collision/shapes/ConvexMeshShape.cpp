@@ -156,14 +156,14 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     }
     else {  // If the edges information is not used
 
-        decimal maxDotProduct = DECIMAL_SMALLEST;
+        double maxDotProduct = DECIMAL_SMALLEST;
         uint indexMaxDotProduct = 0;
 
         // For each vertex of the mesh
         for (uint i=0; i<mNbVertices; i++) {
 
             // Compute the dot product of the current vertex
-            decimal dotProduct = direction.dot(mVertices[i]);
+            double dotProduct = direction.dot(mVertices[i]);
 
             // If the current dot product is larger than the maximum one
             if (dotProduct > maxDotProduct) {
@@ -231,13 +231,15 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
 }
 
 // Raycast method
-bool ConvexMeshShape::raycast(const Ray& ray, decimal distance) const {
-    // TODO : Implement this method
-    return false;
+bool ConvexMeshShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+    RaycastInfo raycastInfo;
+    return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
+                ray, proxyShape, raycastInfo, distance);
 }
 
 // Raycast method with feedback information
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
-    // TODO : Implement this method
-    return false;
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                              decimal distance) const {
+    return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
+                ray, proxyShape, raycastInfo, distance);
 }

@@ -39,6 +39,7 @@ namespace reactphysics3d {
 // Constants
 const decimal REL_ERROR = decimal(1.0e-3);
 const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
+const int MAX_ITERATIONS_GJK_RAYCAST = 32;
 
 // Class GJKAlgorithm
 /**
@@ -95,7 +96,11 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                    ContactPointInfo*& contactInfo);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
-        bool testPointInside(const Vector3& localPoint, ProxyShape *collisionShape);
+        bool testPointInside(const Vector3& localPoint, ProxyShape* collisionShape);
+
+        /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
+        bool raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo,
+                     decimal maxDistance);
 };
 
 }

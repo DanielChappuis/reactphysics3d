@@ -93,6 +93,9 @@ class ProxyShape {
         /// Return the local to parent body transform
         const Transform& getLocalToBodyTransform() const;
 
+        /// Return the local to world transform
+        const Transform getLocalToWorldTransform() const;
+
         /// Return true if a point is inside the collision shape
         bool testPointInside(const Vector3& worldPoint);
 
@@ -146,6 +149,11 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
+// Return the local to world transform
+inline const Transform ProxyShape::getLocalToWorldTransform() const {
+    return mBody->mTransform * mLocalToBodyTransform;
+}
+
 // Return a local support point in a given direction with the object margin
 inline Vector3 ProxyShape::getLocalSupportPointWithMargin(const Vector3& direction) {
     return mCollisionShape->getLocalSupportPointWithMargin(direction, &mCachedCollisionData);
@@ -163,12 +171,12 @@ inline decimal ProxyShape::getMargin() const {
 
 // Raycast method
 inline bool ProxyShape::raycast(const Ray& ray, decimal distance) {
-    return mCollisionShape->raycast(ray, distance);
+    return mCollisionShape->raycast(ray, this, distance);
 }
 
 // Raycast method with feedback information
 inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
-    return mCollisionShape->raycast(ray, raycastInfo, distance);
+    return mCollisionShape->raycast(ray, raycastInfo, this, distance);
 }
 
 }

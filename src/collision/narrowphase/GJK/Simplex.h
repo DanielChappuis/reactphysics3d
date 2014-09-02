@@ -130,7 +130,7 @@ class Simplex {
         /// Return true if the simplex contains 4 points
         bool isFull() const;
 
-        /// Return true if the simple is empty
+        /// Return true if the simplex is empty
         bool isEmpty() const;
 
         /// Return the points of the simplex

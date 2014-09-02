@@ -88,13 +88,20 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 }
 
 // Raycast method
-bool CylinderShape::raycast(const Ray& ray, decimal distance) const {
+bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+
+    // TODO : Normalize the ray direction
+
     // TODO : Implement this method
     return false;
 }
 
 // Raycast method with feedback information
-bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                            decimal distance) const {
+
+    // TODO : Normalize the ray direction
+
     // TODO : Implement this method
     return false;
 }

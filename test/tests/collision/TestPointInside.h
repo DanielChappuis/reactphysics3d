@@ -89,7 +89,7 @@ class TestPointInside : public Test {
             // Body transform
             Vector3 position(-3, 2, 7);
             Quaternion orientation(PI / 5, PI / 6, PI / 7);
-            //mBodyTransform = Transform(position, orientation);  // TODO : Uncomment this
+            mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
             mBoxBody = mWorld->createCollisionBody(mBodyTransform);
@@ -104,7 +104,7 @@ class TestPointInside : public Test {
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
             Quaternion shapeOrientation(3 * PI / 6 , -PI / 8, PI / 3);
-            //mShapeTransform = Transform(shapePosition, shapeOrientation);   // TODO : Uncomment this
+            mShapeTransform = Transform(shapePosition, shapeOrientation);
 
             // Compute the the transform from a local shape point to world-space
             mLocalShapeToWorld = mBodyTransform * mShapeTransform;
@@ -156,7 +156,8 @@ class TestPointInside : public Test {
             convexMeshShapeEdgesInfo.addEdge(3, 7);
             convexMeshShapeEdgesInfo.setIsEdgesInformationUsed(true);
             mConvexMeshShapeEdgesInfo = mConvexMeshBodyEdgesInfo->addCollisionShape(
-                                                                     convexMeshShapeEdgesInfo);
+                                                                     convexMeshShapeEdgesInfo,
+                                                                     mShapeTransform);
 
             CylinderShape cylinderShape(3, 8, 0);
             mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, mShapeTransform);

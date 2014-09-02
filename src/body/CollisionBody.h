@@ -179,6 +179,7 @@ class CollisionBody : public Body {
         friend class CollisionDetection;
         friend class BroadPhaseAlgorithm;
         friend class ConvexMeshShape;
+        friend class ProxyShape;
 };
 
 // Return the type of the body

@@ -86,10 +86,11 @@ class CollisionShape {
         virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
         /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
+        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                              decimal distance = RAYCAST_INFINITY_DISTANCE) const=0;
 
     public :

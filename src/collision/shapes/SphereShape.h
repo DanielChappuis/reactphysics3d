@@ -70,6 +70,14 @@ class SphereShape : public CollisionShape {
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -100,13 +108,6 @@ class SphereShape : public CollisionShape {
 
         /// Test equality between two sphere shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 };
 
 /// Allocate and return a copy of the object

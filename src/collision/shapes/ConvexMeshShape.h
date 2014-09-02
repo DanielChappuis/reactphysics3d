@@ -104,6 +104,14 @@ class ConvexMeshShape : public CollisionShape {
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
+        /// Raycast method
+        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -145,13 +153,6 @@ class ConvexMeshShape : public CollisionShape {
         /// Set the variable to know if the edges information is used to speed up the
         /// collision detection
         void setIsEdgesInformationUsed(bool isEdgesUsed);
-
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE) const;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 };
 
 // Allocate and return a copy of the object

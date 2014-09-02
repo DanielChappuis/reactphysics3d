@@ -203,7 +203,7 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
     // For each collision shape of the body
-    for(ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
         // Test if the point is inside the collision shape
         if (shape->testPointInside(worldPoint)) return true;
@@ -214,12 +214,32 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
 // Raycast method
 bool CollisionBody::raycast(const Ray& ray, decimal distance) {
-    // TODO : Implement this method
+
+    // For each collision shape of the body
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+        // Test if the ray hits the collision shape
+        if (shape->raycast(ray, distance)) return true;
+    }
+
     return false;
 }
 
 // Raycast method with feedback information
+/// The method returns the closest hit among all the collision shapes of the body
 bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
-    // TODO : Implement this method
-    return false;
+
+    bool isHit = false;
+
+    // For each collision shape of the body
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+        // Test if the ray hits the collision shape
+        if (shape->raycast(ray, raycastInfo, distance)) {
+            distance = raycastInfo.distance;
+            isHit = true;
+        }
+    }
+
+    return isHit;
 }

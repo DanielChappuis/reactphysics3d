@@ -60,6 +60,9 @@ struct RaycastInfo {
         /// Hit point in world-space coordinates
         Vector3 worldPoint;
 
+        /// Surface normal at hit point in world-space coordinates
+        Vector3 worldNormal;
+
         /// Distance from the ray origin to the hit point
         decimal distance;
 

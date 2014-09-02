@@ -50,6 +50,9 @@ class TestRaycast : public Test {
 
         // ---------- Atributes ---------- //
 
+        // Epsilon
+        decimal epsilon;
+
         // Physics world
         CollisionWorld* mWorld;
 
@@ -84,6 +87,8 @@ class TestRaycast : public Test {
 
         /// Constructor
         TestRaycast(const std::string& name) : Test(name) {
+
+            epsilon = 0.0001;
 
             // Create the world
             mWorld = new CollisionWorld();
@@ -125,40 +130,41 @@ class TestRaycast : public Test {
             mConeShape = mConeBody->addCollisionShape(coneShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShape(0);             // Box of dimension (2, 3, 4)
-            convexMeshShape.addVertex(Vector3(-2, -3, 4));
+            convexMeshShape.addVertex(Vector3(-2, -3, -4));
+            convexMeshShape.addVertex(Vector3(2, -3, -4));
             convexMeshShape.addVertex(Vector3(2, -3, 4));
             convexMeshShape.addVertex(Vector3(-2, -3, 4));
-            convexMeshShape.addVertex(Vector3(2, -3, -4));
-            convexMeshShape.addVertex(Vector3(-2, 3, 4));
-            convexMeshShape.addVertex(Vector3(2, 3, 4));
             convexMeshShape.addVertex(Vector3(-2, 3, -4));
             convexMeshShape.addVertex(Vector3(2, 3, -4));
+            convexMeshShape.addVertex(Vector3(2, 3, 4));
+            convexMeshShape.addVertex(Vector3(-2, 3, 4));
             mConvexMeshShape = mConvexMeshBody->addCollisionShape(convexMeshShape, mShapeTransform);
 
             ConvexMeshShape convexMeshShapeEdgesInfo(0);
-            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, -4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, -4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, 4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, -3, 4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(2, -3, -4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, 4));
-            convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, 4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, -4));
             convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, -4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(2, 3, 4));
+            convexMeshShapeEdgesInfo.addVertex(Vector3(-2, 3, 4));
             convexMeshShapeEdgesInfo.addEdge(0, 1);
-            convexMeshShapeEdgesInfo.addEdge(1, 3);
+            convexMeshShapeEdgesInfo.addEdge(1, 2);
             convexMeshShapeEdgesInfo.addEdge(2, 3);
-            convexMeshShapeEdgesInfo.addEdge(0, 2);
+            convexMeshShapeEdgesInfo.addEdge(0, 3);
             convexMeshShapeEdgesInfo.addEdge(4, 5);
-            convexMeshShapeEdgesInfo.addEdge(5, 7);
+            convexMeshShapeEdgesInfo.addEdge(5, 6);
             convexMeshShapeEdgesInfo.addEdge(6, 7);
-            convexMeshShapeEdgesInfo.addEdge(4, 6);
+            convexMeshShapeEdgesInfo.addEdge(4, 7);
             convexMeshShapeEdgesInfo.addEdge(0, 4);
             convexMeshShapeEdgesInfo.addEdge(1, 5);
             convexMeshShapeEdgesInfo.addEdge(2, 6);
             convexMeshShapeEdgesInfo.addEdge(3, 7);
             convexMeshShapeEdgesInfo.setIsEdgesInformationUsed(true);
             mConvexMeshShapeEdgesInfo = mConvexMeshBodyEdgesInfo->addCollisionShape(
-                                                                     convexMeshShapeEdgesInfo);
+                                                                     convexMeshShapeEdgesInfo,
+                                                                     mShapeTransform);
 
             CylinderShape cylinderShape(2, 5, 0);
             mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, mShapeTransform);
@@ -823,50 +829,50 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mConvexMeshBody);
             test(raycastInfo.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo.distance, 6));
-            test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo.distance, 6, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
             test(mConvexMeshBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mConvexMeshBody);
             test(raycastInfo2.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo2.distance, 6));
-            test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo2.distance, 6, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
             // ProxyCollisionShape::raycast()
             RaycastInfo raycastInfo3;
             test(mConvexMeshBodyEdgesInfo->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mConvexMeshBodyEdgesInfo);
             test(raycastInfo3.proxyShape == mConvexMeshShapeEdgesInfo);
-            test(approxEqual(raycastInfo3.distance, 6));
-            test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo3.distance, 6, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
             // ProxyCollisionShape::raycast()
             RaycastInfo raycastInfo4;
             test(mConvexMeshShape->raycast(ray, raycastInfo4));
             test(raycastInfo4.body == mConvexMeshBody);
             test(raycastInfo4.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo4.distance, 6));
-            test(approxEqual(raycastInfo4.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo4.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo4.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo4.distance, 6, epsilon));
+            test(approxEqual(raycastInfo4.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo4.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo4.worldPoint.z, hitPoint.z, epsilon));
 
             // ProxyCollisionShape::raycast()
             RaycastInfo raycastInfo5;
             test(mConvexMeshShapeEdgesInfo->raycast(ray, raycastInfo5));
             test(raycastInfo5.body == mConvexMeshBodyEdgesInfo);
             test(raycastInfo5.proxyShape == mConvexMeshShapeEdgesInfo);
-            test(approxEqual(raycastInfo5.distance, 6));
-            test(approxEqual(raycastInfo5.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo5.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo5.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo5.distance, 6, epsilon));
+            test(approxEqual(raycastInfo5.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo5.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo5.worldPoint.z, hitPoint.z, epsilon));
 
             Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
             Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));

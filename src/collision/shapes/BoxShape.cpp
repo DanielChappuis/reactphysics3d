@@ -62,13 +62,20 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Raycast method
-bool BoxShape::raycast(const Ray& ray, decimal distance) const {
+bool BoxShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+
+    // TODO : Normalize the ray direction
+
     // TODO : Implement this method
     return false;
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                       decimal distance) const {
+
+    // TODO : Normalize the ray direction
+
     // TODO : Implement this method
     return false;
 }
