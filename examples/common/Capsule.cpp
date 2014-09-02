@@ -124,7 +124,7 @@ void Capsule::updateTransform() {
     rp3d::Transform transform = mRigidBody->getInterpolatedTransform();
 
     // Compute the transform used for rendering the sphere
-    float matrix[16];
+    rp3d::decimal matrix[16];
     transform.getOpenGLMatrix(matrix);
     openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
                                        matrix[1], matrix[5], matrix[9], matrix[13],
