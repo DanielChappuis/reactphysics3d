@@ -88,7 +88,7 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 }
 
 // Raycast method
-bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
     // TODO : Normalize the ray direction
 

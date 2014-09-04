@@ -100,7 +100,7 @@ class ProxyShape {
         bool testPointInside(const Vector3& worldPoint);
 
         /// Raycast method
-        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE);
+        bool raycast(const Ray& ray);
 
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
@@ -170,8 +170,8 @@ inline decimal ProxyShape::getMargin() const {
 }
 
 // Raycast method
-inline bool ProxyShape::raycast(const Ray& ray, decimal distance) {
-    return mCollisionShape->raycast(ray, this, distance);
+inline bool ProxyShape::raycast(const Ray& ray) {
+    return mCollisionShape->raycast(ray, this);
 }
 
 // Raycast method with feedback information

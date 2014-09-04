@@ -62,7 +62,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Raycast method
-bool BoxShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+bool BoxShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
     // TODO : Normalize the ray direction
 

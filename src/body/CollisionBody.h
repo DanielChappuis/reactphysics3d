@@ -166,7 +166,7 @@ class CollisionBody : public Body {
         bool testPointInside(const Vector3& worldPoint) const;
 
         /// Raycast method
-        bool raycast(const Ray& ray, decimal distance = RAYCAST_INFINITY_DISTANCE);
+        bool raycast(const Ray& ray);
 
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo,

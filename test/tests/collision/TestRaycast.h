@@ -361,30 +361,30 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mSphereBody);
             test(raycastInfo.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo.distance, 6));
-            test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo.distance, 5, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
             test(mSphereBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mSphereBody);
             test(raycastInfo2.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo2.distance, 6));
-            test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo2.distance, 5, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
             // ProxyCollisionShape::raycast()
             RaycastInfo raycastInfo3;
             test(mSphereShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mSphereBody);
             test(raycastInfo3.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo3.distance, 6));
-            test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x));
-            test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y));
-            test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z));
+            test(approxEqual(raycastInfo3.distance, 5, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
             Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
             Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));

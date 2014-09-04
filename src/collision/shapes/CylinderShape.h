@@ -81,8 +81,7 @@ class CylinderShape : public CollisionShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
         /// Raycast method
-        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape) const;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,

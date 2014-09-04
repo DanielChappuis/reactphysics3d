@@ -25,6 +25,7 @@
 
 // Libraries
 #include "SphereShape.h"
+#include "collision/ProxyShape.h"
 #include "configuration.h"
 #include <cassert>
 
@@ -47,21 +48,74 @@ SphereShape::~SphereShape() {
 }
 
 // Raycast method
-bool SphereShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+bool SphereShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
-    // TODO : Normalize the ray direction
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    decimal c = origin.dot(origin) - mRadius * mRadius;
 
+    // If the origin of the ray is inside the sphere, we return no intersection
+    if (c < decimal(0.0)) return false;
 
-    // TODO : Implement this method
-    return false;
+    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    decimal b = origin.dot(rayDirection);
+
+    // If the origin of the ray is outside the sphere and the ray
+    // is pointing away from the sphere and there is no intersection
+    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
+
+    // Compute the discriminant of the quadratic equation
+    decimal discriminant = b*b - c;
+
+    // If the discriminant is negative, there is no intersection
+    if (discriminant < decimal(0.0)) return false;
+
+    // There is an intersection
+    return true;
 }
 
 // Raycast method with feedback information
 bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                           decimal distance) const {
 
-    // TODO : Normalize the ray direction
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    decimal c = origin.dot(origin) - mRadius * mRadius;
 
-    // TODO : Implement this method
-    return false;
+    // If the origin of the ray is inside the sphere, we return no intersection
+    if (c < decimal(0.0)) return false;
+
+    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    decimal b = origin.dot(rayDirection);
+
+    // If the origin of the ray is outside the sphere and the ray
+    // is pointing away from the sphere and there is no intersection
+    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
+
+    // Compute the discriminant of the quadratic equation
+    decimal discriminant = b*b - c;
+
+    // If the discriminant is negative, there is no intersection
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the solution "t" closest to the origin
+    decimal t = -b - std::sqrt(discriminant);
+
+    assert(t >= decimal(0.0));
+
+    // If the intersection distance is larger than the allowed distance, return no intersection
+    if (t > distance) return false;
+
+    // Compute the intersection information
+    Vector3 localPoint = origin + t * rayDirection;
+    raycastInfo.body = proxyShape->getBody();
+    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.distance = t;
+    raycastInfo.worldPoint = localToWorldTransform * localPoint;
+    raycastInfo.worldNormal = (raycastInfo.worldPoint -
+                               localToWorldTransform.getPosition()).getUnit();
+
+    return true;
 }

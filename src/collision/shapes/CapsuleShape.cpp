@@ -143,7 +143,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 }
 
 // Raycast method
-bool CapsuleShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+bool CapsuleShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
     // TODO : Normalize the ray direction
 

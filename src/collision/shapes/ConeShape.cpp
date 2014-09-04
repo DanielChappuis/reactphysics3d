@@ -95,7 +95,7 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
 }
 
 // Raycast method
-bool ConeShape::raycast(const Ray& ray, ProxyShape* proxyShape, decimal distance) const {
+bool ConeShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
     // TODO : Normalize the ray direction
 
