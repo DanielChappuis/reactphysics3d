@@ -25,6 +25,7 @@
 
 // Libraries
 #include "BoxShape.h"
+#include "collision/ProxyShape.h"
 #include "configuration.h"
 #include <vector>
 #include <cassert>
@@ -64,18 +65,112 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 // Raycast method
 bool BoxShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
-    // TODO : Normalize the ray direction
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    decimal tMin = decimal(0.0);
+    decimal tMax = DECIMAL_LARGEST;
 
-    // TODO : Implement this method
-    return false;
+    // For each of the three slabs
+    for (int i=0; i<3; i++) {
+
+        // If ray is parallel to the slab
+        if (std::abs(rayDirection[i]) < MACHINE_EPSILON) {
+
+            // If the ray's origin is not inside the slab, there is no hit
+            if (origin[i] > mExtent[i] || origin[i] < -mExtent[i]) return false;
+        }
+        else {
+
+            // Compute the intersection of the ray with the near and far plane of the slab
+            decimal oneOverD = decimal(1.0) / rayDirection[i];
+            decimal t1 = (-mExtent[i] - origin[i]) * oneOverD;
+            decimal t2 = (mExtent[i] - origin [i]) * oneOverD;
+
+            // Swap t1 and t2 if need so that t1 is intersection with near plane and
+            // t2 with far plane
+            if (t1 > t2) swap(t1, t2);
+
+            // If t1 is negative, the origin is inside the box and therefore, there is no hit
+            if (t1 < decimal(0.0)) return false;
+
+            // Compute the intersection of the of slab intersection interval with previous slabs
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+
+            // If the slabs intersection is empty, there is no hit
+            if (tMin > tMax) return false;
+        }
+    }
+
+    // A hit has been found
+    return true;
 }
 
 // Raycast method with feedback information
 bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                        decimal distance) const {
 
-    // TODO : Normalize the ray direction
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    decimal tMin = decimal(0.0);
+    decimal tMax = DECIMAL_LARGEST;
+    Vector3 normalDirection(decimal(0), decimal(0), decimal(0));
+    Vector3 currentNormal;
 
-    // TODO : Implement this method
-    return false;
+    // For each of the three slabs
+    for (int i=0; i<3; i++) {
+
+        // If ray is parallel to the slab
+        if (std::abs(rayDirection[i]) < MACHINE_EPSILON) {
+
+            // If the ray's origin is not inside the slab, there is no hit
+            if (origin[i] > mExtent[i] || origin[i] < -mExtent[i]) return false;
+        }
+        else {
+
+            // Compute the intersection of the ray with the near and far plane of the slab
+            decimal oneOverD = decimal(1.0) / rayDirection[i];
+            decimal t1 = (-mExtent[i] - origin[i]) * oneOverD;
+            decimal t2 = (mExtent[i] - origin [i]) * oneOverD;
+            currentNormal = -mExtent;
+
+            // Swap t1 and t2 if need so that t1 is intersection with near plane and
+            // t2 with far plane
+            if (t1 > t2) {
+                swap(t1, t2);
+                currentNormal = -currentNormal;
+            }
+
+            // If t1 is negative, the origin is inside the box and therefore, there is no hit
+            if (t1 < decimal(0.0)) return false;
+
+            // Compute the intersection of the of slab intersection interval with previous slabs
+            if (t1 > tMin) {
+                tMin = t1;
+                normalDirection = currentNormal;
+            }
+            tMax = std::min(tMax, t2);
+
+            // If tMin is larger than the maximum raycasting distance, we return no hit
+            if (tMin > distance) return false;
+
+            // If the slabs intersection is empty, there is no hit
+            if (tMin > tMax) return false;
+        }
+    }
+
+    // The ray intersects the three slabs, we compute the hit point
+    Vector3 localHitPoint = origin + tMin * rayDirection;
+
+    raycastInfo.body = proxyShape->getBody();
+    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.distance = tMin;
+    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+    return true;
 }
