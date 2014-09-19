@@ -51,7 +51,7 @@ int main() {
 
     // ---------- Collision Detection tests ---------- //
 
-    testSuite.addTest(new TestPointInside("Is Point Inside"));
+    testSuite.addTest(new TestPointInside("IsPointInside"));
     testSuite.addTest(new TestRaycast("Raycasting"));
 
     // Run the tests

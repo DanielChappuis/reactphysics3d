@@ -25,6 +25,7 @@
 
 // Libraries
 #include "CylinderShape.h"
+#include "collision/ProxyShape.h"
 #include "configuration.h"
 
 using namespace reactphysics3d;
@@ -88,20 +89,260 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 }
 
 // Raycast method
+/// Algorithm based on the one described at page 194 in Real-ime Collision Detection by
+/// Morgan Kaufmann.
 bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
-    // TODO : Normalize the ray direction
+    // Transform the ray direction and origin in local-space coordinates
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 n = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
 
-    // TODO : Implement this method
-    return false;
+    const decimal epsilon = decimal(0.00001);
+    Vector3 p(decimal(0), -mHalfHeight, decimal(0));
+    Vector3 q(decimal(0), mHalfHeight, decimal(0));
+    Vector3 d = q - p;
+    Vector3 m = origin - p;
+    decimal t;
+
+    decimal mDotD = m.dot(d);
+    decimal nDotD = n.dot(d);
+    decimal dDotD = d.dot(d);
+    decimal mDotN = m.dot(n);
+
+    decimal a = dDotD - nDotD * nDotD;
+    decimal k = m.dot(m) - mRadius * mRadius;
+    decimal c = dDotD * k - mDotD * mDotD;
+
+    // If the ray is parallel to the cylinder axis
+    if (std::abs(a) < epsilon) {
+
+        // If the origin is outside the surface of the cylinder, we return no hit
+        if (c > decimal(0.0)) return false;
+
+        // Here we know that the segment intersect an endcap of the cylinder
+
+        // If the ray intersects with the "p" endcap of the cylinder
+        if (mDotD < decimal(0.0)) {
+            return true;
+        }
+        else if (mDotD > dDotD) {   // If the ray intersects with the "q" endcap of the cylinder
+            return true;
+        }
+        else {  // If the origin is inside the cylinder, we return no hit
+            return false;
+        }
+    }
+    decimal b = dDotD * mDotN - nDotD * mDotD;
+    decimal discriminant = b * b - a * c;
+
+    // If the discriminant is negative, no real roots and therfore, no hit
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the smallest root (first intersection along the ray)
+    decimal t0 = t = (-b - std::sqrt(discriminant)) / a;
+
+    // If the intersection is outside the cylinder on "p" endcap side
+    decimal value = mDotD + t * nDotD;
+    if (value < decimal(0.0)) {
+
+        // If the ray is pointing away from the "p" endcap, we return no hit
+        if (nDotD <= decimal(0.0)) return false;
+
+        // Compute the intersection against the "p" endcap (intersection agains whole plane)
+        t = -mDotD / nDotD;
+
+        // Keep the intersection if the it is inside the cylinder radius
+        return (k + t * (decimal(2.0) * mDotN + t) <= decimal(0.0));
+    }
+    else if (value > dDotD) {   // If the intersection is outside the cylinder on the "q" side
+
+        // If the ray is pointing away from the "q" endcap, we return no hit
+        if (nDotD >= decimal(0.0)) return false;
+
+        // Compute the intersection against the "q" endcap (intersection against whole plane)
+        t = (dDotD - mDotD) / nDotD;
+
+        // Keep the intersection if it is inside the cylinder radius
+        return (k + dDotD - decimal(2.0) * mDotD + t * (decimal(2.0) * (mDotN - nDotD) + t)
+            <= decimal(0.0));
+    }
+
+    t = t0;
+
+    // If the intersection is behind the origin of the ray, we return no hit
+    return (t >= decimal(0.0));
 }
 
 // Raycast method with feedback information
+/// Algorithm based on the one described at page 194 in Real-ime Collision Detection by
+/// Morgan Kaufmann.
 bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                             decimal distance) const {
 
-    // TODO : Normalize the ray direction
+    // Transform the ray direction and origin in local-space coordinates
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 n = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
 
-    // TODO : Implement this method
-    return false;
+    const decimal epsilon = decimal(0.00001);
+    Vector3 p(decimal(0), -mHalfHeight, decimal(0));
+    Vector3 q(decimal(0), mHalfHeight, decimal(0));
+    Vector3 d = q - p;
+    Vector3 m = origin - p;
+    decimal t;
+
+    decimal mDotD = m.dot(d);
+    decimal nDotD = n.dot(d);
+    decimal dDotD = d.dot(d);
+    decimal mDotN = m.dot(n);
+
+    decimal a = dDotD - nDotD * nDotD;
+    decimal k = m.dot(m) - mRadius * mRadius;
+    decimal c = dDotD * k - mDotD * mDotD;
+
+    // If the ray is parallel to the cylinder axis
+    if (std::abs(a) < epsilon) {
+
+        // If the origin is outside the surface of the cylinder, we return no hit
+        if (c > decimal(0.0)) return false;
+
+        // Here we know that the segment intersect an endcap of the cylinder
+
+        // If the ray intersects with the "p" endcap of the cylinder
+        if (mDotD < decimal(0.0)) {
+
+            t = -mDotN;
+
+            // If the intersection is behind the origin of the ray or beyond the maximum
+            // raycasting distance, we return no hit
+            if (t < decimal(0.0) || t > distance) return false;
+
+            // Compute the hit information
+            Vector3 localHitPoint = origin + t * n;
+            raycastInfo.body = proxyShape->getBody();
+            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.distance = t;
+            raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+            Vector3 v = localHitPoint - p;
+            Vector3 w = v.dot(d) * d.getUnit();
+            Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+            return true;
+        }
+        else if (mDotD > dDotD) {   // If the ray intersects with the "q" endcap of the cylinder
+
+            t = (nDotD - mDotN);
+
+            // If the intersection is behind the origin of the ray or beyond the maximum
+            // raycasting distance, we return no hit
+            if (t < decimal(0.0) || t > distance) return false;
+
+            // Compute the hit information
+            Vector3 localHitPoint = origin + t * n;
+            raycastInfo.body = proxyShape->getBody();
+            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.distance = t;
+            raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+            Vector3 v = localHitPoint - p;
+            Vector3 w = v.dot(d) * d.getUnit();
+            Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+            return true;
+        }
+        else {  // If the origin is inside the cylinder, we return no hit
+            return false;
+        }
+    }
+    decimal b = dDotD * mDotN - nDotD * mDotD;
+    decimal discriminant = b * b - a * c;
+
+    // If the discriminant is negative, no real roots and therfore, no hit
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the smallest root (first intersection along the ray)
+    decimal t0 = t = (-b - std::sqrt(discriminant)) / a;
+
+    // If the intersection is outside the cylinder on "p" endcap side
+    decimal value = mDotD + t * nDotD;
+    if (value < decimal(0.0)) {
+
+        // If the ray is pointing away from the "p" endcap, we return no hit
+        if (nDotD <= decimal(0.0)) return false;
+
+        // Compute the intersection against the "p" endcap (intersection agains whole plane)
+        t = -mDotD / nDotD;
+
+        // Keep the intersection if the it is inside the cylinder radius
+        if (k + t * (decimal(2.0) * mDotN + t) > decimal(0.0)) return false;
+
+        // If the intersection is behind the origin of the ray or beyond the maximum
+        // raycasting distance, we return no hit
+        if (t < decimal(0.0) || t > distance) return false;
+
+        // Compute the hit information
+        Vector3 localHitPoint = origin + t * n;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.distance = t;
+        raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+        Vector3 v = localHitPoint - p;
+        Vector3 w = v.dot(d) * d.getUnit();
+        Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+        raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+        return true;
+    }
+    else if (value > dDotD) {   // If the intersection is outside the cylinder on the "q" side
+
+        // If the ray is pointing away from the "q" endcap, we return no hit
+        if (nDotD >= decimal(0.0)) return false;
+
+        // Compute the intersection against the "q" endcap (intersection against whole plane)
+        t = (dDotD - mDotD) / nDotD;
+
+        // Keep the intersection if it is inside the cylinder radius
+        if (k + dDotD - decimal(2.0) * mDotD + t * (decimal(2.0) * (mDotN - nDotD) + t) >
+            decimal(0.0)) return false;
+
+        // If the intersection is behind the origin of the ray or beyond the maximum
+        // raycasting distance, we return no hit
+        if (t < decimal(0.0) || t > distance) return false;
+
+        // Compute the hit information
+        Vector3 localHitPoint = origin + t * n;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.distance = t;
+        raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+        Vector3 v = localHitPoint - p;
+        Vector3 w = v.dot(d) * d.getUnit();
+        Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+        raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+        return true;
+    }
+
+    t = t0;
+
+    // If the intersection is behind the origin of the ray or beyond the maximum
+    // raycasting distance, we return no hit
+    if (t < decimal(0.0) || t > distance) return false;
+
+    // Compute the hit information
+    Vector3 localHitPoint = origin + t * n;
+    raycastInfo.body = proxyShape->getBody();
+    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.distance = t;
+    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    Vector3 v = localHitPoint - p;
+    Vector3 w = v.dot(d) * d.getUnit();
+    Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+    return true;
 }
