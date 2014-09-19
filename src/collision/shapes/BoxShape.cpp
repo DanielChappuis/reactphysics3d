@@ -90,7 +90,7 @@ bool BoxShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
             // Swap t1 and t2 if need so that t1 is intersection with near plane and
             // t2 with far plane
-            if (t1 > t2) swap(t1, t2);
+            if (t1 > t2) std::swap(t1, t2);
 
             // If t1 is negative, the origin is inside the box and therefore, there is no hit
             if (t1 < decimal(0.0)) return false;
@@ -141,7 +141,7 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
             // Swap t1 and t2 if need so that t1 is intersection with near plane and
             // t2 with far plane
             if (t1 > t2) {
-                swap(t1, t2);
+                std::swap(t1, t2);
                 currentNormal = -currentNormal;
             }
 

@@ -51,13 +51,6 @@ inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
     return std::min(std::max(value, lowerLimit), upperLimit);
 }
 
-/// Function that swaps two values
-inline void swap(decimal& a, decimal& b) {
-    decimal temp = a;
-    a = b;
-    b = temp;
-}
-
 }
 
 
