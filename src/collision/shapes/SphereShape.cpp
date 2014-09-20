@@ -69,10 +69,7 @@ bool SphereShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
     decimal discriminant = b*b - c;
 
     // If the discriminant is negative, there is no intersection
-    if (discriminant < decimal(0.0)) return false;
-
-    // There is an intersection
-    return true;
+    return (discriminant >= decimal(0.0));
 }
 
 // Raycast method with feedback information

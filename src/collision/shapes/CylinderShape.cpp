@@ -175,10 +175,8 @@ bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
                                     (mDotN - nDotD) + t) <= decimal(0.0));
     }
 
-    t = t0;
-
     // If the intersection is behind the origin of the ray, we return no hit
-    return (t >= decimal(0.0));
+    return (t0 >= decimal(0.0));
 }
 
 // Raycast method with feedback information
