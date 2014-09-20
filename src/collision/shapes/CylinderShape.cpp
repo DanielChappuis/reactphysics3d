@@ -125,10 +125,16 @@ bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
         // If the ray intersects with the "p" endcap of the cylinder
         if (mDotD < decimal(0.0)) {
-            return true;
+
+            t = -mDotN;
+
+            return (t >= decimal(0.0));
         }
         else if (mDotD > dDotD) {   // If the ray intersects with the "q" endcap of the cylinder
-            return true;
+
+            t = (nDotD - mDotN);
+
+            return (t >= decimal(0.0));
         }
         else {  // If the origin is inside the cylinder, we return no hit
             return false;
@@ -154,7 +160,7 @@ bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
         t = -mDotD / nDotD;
 
         // Keep the intersection if the it is inside the cylinder radius
-        return (k + t * (decimal(2.0) * mDotN + t) <= decimal(0.0));
+        return (t >= decimal(0.0) && k + t * (decimal(2.0) * mDotN + t) <= decimal(0.0));
     }
     else if (value > dDotD) {   // If the intersection is outside the cylinder on the "q" side
 
@@ -165,8 +171,8 @@ bool CylinderShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
         t = (dDotD - mDotD) / nDotD;
 
         // Keep the intersection if it is inside the cylinder radius
-        return (k + dDotD - decimal(2.0) * mDotD + t * (decimal(2.0) * (mDotN - nDotD) + t)
-            <= decimal(0.0));
+        return (t >= decimal(0.0) && k + dDotD - decimal(2.0) * mDotD + t * (decimal(2.0) *
+                                    (mDotN - nDotD) + t) <= decimal(0.0));
     }
 
     t = t0;
@@ -226,9 +232,7 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.distance = t;
             raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-            Vector3 v = localHitPoint - p;
-            Vector3 w = v.dot(d) * d.getUnit();
-            Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+            Vector3 normalDirection(0, decimal(-1), 0);
             raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
             return true;
@@ -247,9 +251,7 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.distance = t;
             raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-            Vector3 v = localHitPoint - p;
-            Vector3 w = v.dot(d) * d.getUnit();
-            Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+            Vector3 normalDirection(0, decimal(1.0), 0);
             raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
             return true;
@@ -290,9 +292,7 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.distance = t;
         raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-        Vector3 v = localHitPoint - p;
-        Vector3 w = v.dot(d) * d.getUnit();
-        Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+        Vector3 normalDirection(0, decimal(-1.0), 0);
         raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
         return true;
@@ -319,9 +319,7 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.distance = t;
         raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-        Vector3 v = localHitPoint - p;
-        Vector3 w = v.dot(d) * d.getUnit();
-        Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+        Vector3 normalDirection(0, decimal(1.0), 0);
         raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
         return true;
@@ -340,7 +338,7 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     raycastInfo.distance = t;
     raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
     Vector3 v = localHitPoint - p;
-    Vector3 w = v.dot(d) * d.getUnit();
+    Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
     Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
     raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
