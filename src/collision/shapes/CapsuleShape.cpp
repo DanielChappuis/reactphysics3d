@@ -25,6 +25,7 @@
 
 // Libraries
 #include "CapsuleShape.h"
+#include "collision/ProxyShape.h"
 #include "configuration.h"
 #include <cassert>
 
@@ -145,18 +146,279 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 // Raycast method
 bool CapsuleShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
 
-    // TODO : Normalize the ray direction
+    // Transform the ray direction and origin in local-space coordinates
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 n = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
 
-    // TODO : Implement this method
-    return false;
+    const decimal epsilon = decimal(0.00001);
+    Vector3 p(decimal(0), -mHalfHeight, decimal(0));
+    Vector3 q(decimal(0), mHalfHeight, decimal(0));
+    Vector3 d = q - p;
+    Vector3 m = origin - p;
+    decimal t;
+
+    decimal mDotD = m.dot(d);
+    decimal nDotD = n.dot(d);
+    decimal dDotD = d.dot(d);
+    decimal mDotN = m.dot(n);
+
+    decimal a = dDotD - nDotD * nDotD;
+    decimal k = m.dot(m) - mRadius * mRadius;
+    decimal c = dDotD * k - mDotD * mDotD;
+
+    // If the ray is parallel to the cylinder axis
+    if (std::abs(a) < epsilon) {
+
+        // If the origin is outside the surface of the cylinder, we return no hit
+        if (c > decimal(0.0)) return false;
+
+        // Here we know that the segment intersect an endcap of the cylinder
+
+        // If the ray intersects with the "p" endcap of the capsule
+        if (mDotD < decimal(0.0)) {
+
+            // Check intersection with the sphere "p" endcap of the capsule
+            return raycastWithSphereEndCap(origin, n, p);
+        }
+        else if (mDotD > dDotD) {   // If the ray intersects with the "q" endcap of the cylinder
+
+            // Check intersection with the sphere "q" endcap of the capsule
+            return raycastWithSphereEndCap(origin, n, q);
+        }
+        else {  // If the origin is inside the cylinder, we return no hit
+            return false;
+        }
+    }
+    decimal b = dDotD * mDotN - nDotD * mDotD;
+    decimal discriminant = b * b - a * c;
+
+    // If the discriminant is negative, no real roots and therfore, no hit
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the smallest root (first intersection along the ray)
+    decimal t0 = t = (-b - std::sqrt(discriminant)) / a;
+
+    // If the intersection is outside the cylinder on "p" endcap side
+    decimal value = mDotD + t * nDotD;
+    if (value < decimal(0.0)) {
+
+        // Check intersection with the sphere "p" endcap of the capsule
+        return raycastWithSphereEndCap(origin, n, p);
+    }
+    else if (value > dDotD) {   // If the intersection is outside the cylinder on the "q" side
+
+        // Check intersection with the sphere "q" endcap of the capsule
+        return raycastWithSphereEndCap(origin, n, q);
+    }
+
+    // If the intersection is behind the origin of the ray, we return no hit
+    return (t0 >= decimal(0.0));
 }
 
 // Raycast method with feedback information
 bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                            decimal distance) const {
 
-    // TODO : Normalize the ray direction
+    // Transform the ray direction and origin in local-space coordinates
+    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Vector3 origin = worldToLocalTransform * ray.origin;
+    Vector3 n = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
 
-    // TODO : Implement this method
-    return false;
+    const decimal epsilon = decimal(0.00001);
+    Vector3 p(decimal(0), -mHalfHeight, decimal(0));
+    Vector3 q(decimal(0), mHalfHeight, decimal(0));
+    Vector3 d = q - p;
+    Vector3 m = origin - p;
+    decimal t;
+
+    decimal mDotD = m.dot(d);
+    decimal nDotD = n.dot(d);
+    decimal dDotD = d.dot(d);
+    decimal mDotN = m.dot(n);
+
+    decimal a = dDotD - nDotD * nDotD;
+    decimal k = m.dot(m) - mRadius * mRadius;
+    decimal c = dDotD * k - mDotD * mDotD;
+
+    // If the ray is parallel to the capsule axis
+    if (std::abs(a) < epsilon) {
+
+        // If the origin is outside the surface of the capusle's cylinder, we return no hit
+        if (c > decimal(0.0)) return false;
+
+        // Here we know that the segment intersect an endcap of the capsule
+
+        // If the ray intersects with the "p" endcap of the capsule
+        if (mDotD < decimal(0.0)) {
+
+            // Check intersection between the ray and the "p" sphere endcap of the capsule
+            Vector3 hitLocalPoint;
+            decimal hitDistance;
+            if (raycastWithSphereEndCap(origin, n, p, distance, hitLocalPoint, hitDistance)) {
+                raycastInfo.body = proxyShape->getBody();
+                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.distance = hitDistance;
+                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
+                Vector3 normalDirection = (hitLocalPoint - p).getUnit();
+                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+                return true;
+            }
+
+            return false;
+        }
+        else if (mDotD > dDotD) {   // If the ray intersects with the "q" endcap of the cylinder
+
+            // Check intersection between the ray and the "q" sphere endcap of the capsule
+            Vector3 hitLocalPoint;
+            decimal hitDistance;
+            if (raycastWithSphereEndCap(origin, n, q, distance, hitLocalPoint, hitDistance)) {
+                raycastInfo.body = proxyShape->getBody();
+                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.distance = hitDistance;
+                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
+                Vector3 normalDirection = (hitLocalPoint - q).getUnit();
+                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+                return true;
+            }
+
+            return false;
+        }
+        else {  // If the origin is inside the cylinder, we return no hit
+            return false;
+        }
+    }
+    decimal b = dDotD * mDotN - nDotD * mDotD;
+    decimal discriminant = b * b - a * c;
+
+    // If the discriminant is negative, no real roots and therfore, no hit
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the smallest root (first intersection along the ray)
+    decimal t0 = t = (-b - std::sqrt(discriminant)) / a;
+
+    // If the intersection is outside the finite cylinder of the capsule on "p" endcap side
+    decimal value = mDotD + t * nDotD;
+    if (value < decimal(0.0)) {
+
+        // Check intersection between the ray and the "p" sphere endcap of the capsule
+        Vector3 hitLocalPoint;
+        decimal hitDistance;
+        if (raycastWithSphereEndCap(origin, n, p, distance, hitLocalPoint, hitDistance)) {
+            raycastInfo.body = proxyShape->getBody();
+            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.distance = hitDistance;
+            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
+            Vector3 normalDirection = (hitLocalPoint - p).getUnit();
+            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+            return true;
+        }
+
+        return false;
+    }
+    else if (value > dDotD) {  // If the intersection is outside the finite cylinder on the "q" side
+
+        // Check intersection between the ray and the "q" sphere endcap of the capsule
+        Vector3 hitLocalPoint;
+        decimal hitDistance;
+        if (raycastWithSphereEndCap(origin, n, q, distance, hitLocalPoint, hitDistance)) {
+            raycastInfo.body = proxyShape->getBody();
+            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.distance = hitDistance;
+            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
+            Vector3 normalDirection = (hitLocalPoint - q).getUnit();
+            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    t = t0;
+
+    // If the intersection is behind the origin of the ray or beyond the maximum
+    // raycasting distance, we return no hit
+    if (t < decimal(0.0) || t > distance) return false;
+
+    // Compute the hit information
+    Vector3 localHitPoint = origin + t * n;
+    raycastInfo.body = proxyShape->getBody();
+    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.distance = t;
+    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    Vector3 v = localHitPoint - p;
+    Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
+    Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
+    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+
+    return true;
+}
+
+// Raycasting method between a ray one of the two spheres end cap of the capsule
+bool CapsuleShape::raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
+                                           const Vector3& sphereCenter, decimal maxDistance,
+                                           Vector3& hitLocalPoint, decimal& hitDistance) const {
+
+    Vector3 m = rayOrigin - sphereCenter;
+    decimal c = m.dot(m) - mRadius * mRadius;
+
+    // If the origin of the ray is inside the sphere, we return no intersection
+    if (c < decimal(0.0)) return false;
+
+    decimal b = m.dot(rayDirection);
+
+    // If the origin of the ray is outside the sphere and the ray
+    // is pointing away from the sphere and there is no intersection
+    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
+
+    // Compute the discriminant of the quadratic equation
+    decimal discriminant = b * b - c;
+
+    // If the discriminant is negative, there is no intersection
+    if (discriminant < decimal(0.0)) return false;
+
+    // Compute the solution "t" closest to the origin
+    decimal t = -b - std::sqrt(discriminant);
+
+    assert(t >= decimal(0.0));
+
+    // If the intersection distance is larger than the allowed distance, return no intersection
+    if (t > maxDistance) return false;
+
+    // Compute the hit point and distance
+    hitLocalPoint = rayOrigin + t * rayDirection;
+    hitDistance = t;
+
+    return true;
+}
+
+// Raycasting method between a ray one of the two spheres end cap of the capsule
+/// This method returns true if there is an intersection and false otherwise but does not
+/// compute the intersection point.
+bool CapsuleShape::raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
+                                           const Vector3& sphereCenter) const {
+
+    Vector3 m = rayOrigin - sphereCenter;
+    decimal c = m.dot(m) - mRadius * mRadius;
+
+    // If the origin of the ray is inside the sphere, we return no intersection
+    if (c < decimal(0.0)) return false;
+
+    decimal b = m.dot(rayDirection);
+
+    // If the origin of the ray is outside the sphere and the ray
+    // is pointing away from the sphere and there is no intersection
+    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
+
+    // Compute the discriminant of the quadratic equation
+    decimal discriminant = b * b - c;
+
+    // If the discriminant is negative, there is no intersection
+    return (discriminant >= decimal(0.0));
 }

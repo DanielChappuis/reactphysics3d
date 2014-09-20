@@ -82,6 +82,15 @@ class CapsuleShape : public CollisionShape {
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
                              decimal distance = RAYCAST_INFINITY_DISTANCE) const;
 
+        /// Raycasting method between a ray one of the two spheres end cap of the capsule
+        bool raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
+                                     const Vector3& sphereCenter, decimal maxDistance,
+                                     Vector3& hitLocalPoint, decimal& hitDistance) const;
+
+        // Raycasting method between a ray one of the two spheres end cap of the capsule
+        bool raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
+                                     const Vector3& sphereCenter) const;
+
     public :
 
         // -------------------- Methods -------------------- //
