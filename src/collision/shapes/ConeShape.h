@@ -88,7 +88,7 @@ class ConeShape : public CollisionShape {
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+                             decimal maxDistance = RAYCAST_INFINITY_DISTANCE) const;
         
     public :
 
