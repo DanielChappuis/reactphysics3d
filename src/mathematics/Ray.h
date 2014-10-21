@@ -34,7 +34,9 @@ namespace reactphysics3d {
 
 // Class Ray
 /**
- * This structure represents a 3D ray with a origin point and a direction.
+ * This structure represents a 3D ray represented by two points.
+ * The ray goes from point1 to point1 + maxFraction * (point2 - point1).
+ * The points are specified in world-space coordinates.
  */
 struct Ray {
 
@@ -42,22 +44,25 @@ struct Ray {
 
         // -------------------- Attributes -------------------- //
 
-        /// Origin point of the ray
-        Vector3 origin;
+        /// First point of the ray (origin)
+        Vector3 point1;
 
-        /// Direction vector of the ray
-        Vector3 direction;
+        /// Second point of the ray
+        Vector3 point2;
+
+        /// Maximum fraction value
+        decimal maxFraction;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor with arguments
-        Ray(const Vector3& originPoint, const Vector3& directionVector)
-           : origin(originPoint), direction(directionVector) {
+        Ray(const Vector3& p1, const Vector3& p2, decimal maxFrac = decimal(1.0))
+           : point1(p1), point2(p2), maxFraction(maxFrac) {
 
         }
 
         /// Copy-constructor
-        Ray(const Ray& ray) : origin(ray.origin), direction(ray.direction) {
+        Ray(const Ray& ray) : point1(ray.point1), point2(ray.point2), maxFraction(ray.maxFraction) {
 
         }
 
@@ -69,8 +74,9 @@ struct Ray {
         /// Overloaded assignment operator
         Ray& operator=(const Ray& ray) {
             if (&ray != this) {
-                origin = ray.origin;
-                direction = ray.direction;
+                point1 = ray.point1;
+                point2 = ray.point2;
+                maxFraction = ray.maxFraction;
             }
             return *this;
         }

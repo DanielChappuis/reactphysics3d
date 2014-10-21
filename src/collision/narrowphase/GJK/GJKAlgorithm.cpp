@@ -397,8 +397,7 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* collis
 // Ray casting algorithm agains a convex collision shape using the GJK Algorithm
 /// This method implements the GJK ray casting algorithm described by Gino Van Den Bergen in
 /// "Ray Casting against General Convex Objects with Application to Continuous Collision Detection".
-bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo,
-                           decimal maxDistance) {
+bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo) {
 
     Vector3 suppA;      // Current lower bound point on the ray (starting at ray's origin)
     Vector3 suppB;      // Support point on the collision shape
@@ -408,8 +407,13 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastIn
     // Convert the ray origin and direction into the local-space of the collision shape
     const Transform localToWorldTransform = collisionShape->getLocalToWorldTransform();
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 origin = worldToLocalTransform * ray.origin;
-    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    Vector3 point1 = worldToLocalTransform * ray.point1;
+    Vector3 point2 = worldToLocalTransform * ray.point2;
+    Vector3 rayDirection = point2 - point1;
+
+    // If the points of the segment are two close, return no hit
+    if (rayDirection.lengthSquare() < machineEpsilonSquare) return false;
+
     Vector3 w;
 
     // Create a simplex set
@@ -417,7 +421,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastIn
 
     Vector3 n(decimal(0.0), decimal(0.0), decimal(0.0));
     decimal lambda = decimal(0.0);
-    suppA = origin;    // Current lower bound point on the ray (starting at ray's origin)
+    suppA = point1;    // Current lower bound point on the ray (starting at ray's origin)
     suppB = collisionShape->getLocalSupportPointWithoutMargin(rayDirection);
     Vector3 v = suppA - suppB;
     decimal vDotW, vDotR;
@@ -444,7 +448,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastIn
 
                 // We have found a better lower bound for the hit point along the ray
                 lambda = lambda - vDotW / vDotR;
-                suppA = origin + lambda * rayDirection;
+                suppA = point1 + lambda * rayDirection;
                 w = suppA - suppB;
                 n = v;
             }
@@ -465,7 +469,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastIn
         }
 
         // If the current lower bound distance is larger than the maximum raycasting distance
-        if (lambda > maxDistance) return false;
+        if (lambda > ray.maxFraction) return false;
 
         nbIterations++;
     }
@@ -478,8 +482,8 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* collisionShape, RaycastIn
     Vector3 pointB;
     simplex.computeClosestPointsOfAandB(pointA, pointB);
 
-    // A raycast hit has been found, we fill in the raycast info object
-    raycastInfo.distance = lambda;
+    // A raycast hit has been found, we fill in the raycast info
+    raycastInfo.hitFraction = lambda;
     raycastInfo.worldPoint = localToWorldTransform * pointB;
     raycastInfo.body = collisionShape->getBody();
     raycastInfo.proxyShape = collisionShape;

@@ -33,6 +33,7 @@
 #include "Vector3.h"
 #include "Vector2.h"
 #include "Transform.h"
+#include "Ray.h"
 #include "configuration.h"
 #include "mathematics_functions.h"
 #include <vector>

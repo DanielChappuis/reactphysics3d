@@ -47,72 +47,51 @@ SphereShape::~SphereShape() {
 
 }
 
-// Raycast method
-bool SphereShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
-
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 origin = worldToLocalTransform * ray.origin;
-    decimal c = origin.dot(origin) - mRadius * mRadius;
-
-    // If the origin of the ray is inside the sphere, we return no intersection
-    if (c < decimal(0.0)) return false;
-
-    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
-    decimal b = origin.dot(rayDirection);
-
-    // If the origin of the ray is outside the sphere and the ray
-    // is pointing away from the sphere and there is no intersection
-    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
-
-    // Compute the discriminant of the quadratic equation
-    decimal discriminant = b*b - c;
-
-    // If the discriminant is negative, there is no intersection
-    return (discriminant >= decimal(0.0));
-}
-
 // Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
-                          decimal distance) const {
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 origin = worldToLocalTransform * ray.origin;
-    decimal c = origin.dot(origin) - mRadius * mRadius;
+    // We perform the intersection test in world-space
+
+    const Vector3 sphereCenter = proxyShape->getLocalToWorldTransform().getPosition();
+    const Vector3 m = ray.point1 - sphereCenter;
+    decimal c = m.dot(m) - mRadius * mRadius;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;
 
-    Vector3 rayDirection = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
-    decimal b = origin.dot(rayDirection);
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+    decimal b = m.dot(rayDirection);
 
     // If the origin of the ray is outside the sphere and the ray
-    // is pointing away from the sphere and there is no intersection
-    if (c >= decimal(0.0) && b > decimal(0.0)) return false;
+    // is pointing away from the sphere, there is no intersection
+    if (b > decimal(0.0)) return false;
+
+    decimal raySquareLength = rayDirection.lengthSquare();
 
     // Compute the discriminant of the quadratic equation
-    decimal discriminant = b*b - c;
+    decimal discriminant = b * b - raySquareLength * c;
 
-    // If the discriminant is negative, there is no intersection
-    if (discriminant < decimal(0.0)) return false;
+    // If the discriminant is negative or the ray length is very small, there is no intersection
+    if (discriminant < decimal(0.0) || raySquareLength < MACHINE_EPSILON) return false;
 
     // Compute the solution "t" closest to the origin
     decimal t = -b - std::sqrt(discriminant);
 
     assert(t >= decimal(0.0));
 
-    // If the intersection distance is larger than the allowed distance, return no intersection
-    if (t > distance) return false;
+    // If the hit point is withing the segment ray fraction
+    if (t < ray.maxFraction * raySquareLength) {
 
-    // Compute the intersection information
-    Vector3 localPoint = origin + t * rayDirection;
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
-    raycastInfo.distance = t;
-    raycastInfo.worldPoint = localToWorldTransform * localPoint;
-    raycastInfo.worldNormal = (raycastInfo.worldPoint -
-                               localToWorldTransform.getPosition()).getUnit();
+        // Compute the intersection information
+        t /= raySquareLength;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.hitFraction = t;
+        raycastInfo.worldPoint = ray.point1 + t * rayDirection;
+        raycastInfo.worldNormal = (raycastInfo.worldPoint - sphereCenter).getUnit();
 
-    return true;
+        return true;
+    }
+
+    return false;
 }

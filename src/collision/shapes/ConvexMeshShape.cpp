@@ -230,16 +230,8 @@ bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const
     return true;
 }
 
-// Raycast method
-bool ConvexMeshShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
-    RaycastInfo raycastInfo;
-    return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
-                ray, proxyShape, raycastInfo, RAYCAST_INFINITY_DISTANCE);
-}
-
 // Raycast method with feedback information
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
-                              decimal distance) const {
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
     return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
-                ray, proxyShape, raycastInfo, distance);
+                                     ray, proxyShape, raycastInfo);
 }

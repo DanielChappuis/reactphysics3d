@@ -99,12 +99,8 @@ class ProxyShape {
         /// Return true if a point is inside the collision shape
         bool testPointInside(const Vector3& worldPoint);
 
-        /// Raycast method
-        bool raycast(const Ray& ray);
-
         /// Raycast method with feedback information
-        bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = RAYCAST_INFINITY_DISTANCE);
+        bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
         // -------------------- Friendship -------------------- //
 
@@ -169,14 +165,9 @@ inline decimal ProxyShape::getMargin() const {
     return mCollisionShape->getMargin();
 }
 
-// Raycast method
-inline bool ProxyShape::raycast(const Ray& ray) {
-    return mCollisionShape->raycast(ray, this);
-}
-
 // Raycast method with feedback information
-inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
-    return mCollisionShape->raycast(ray, raycastInfo, this, distance);
+inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
+    return mCollisionShape->raycast(ray, raycastInfo, this);
 }
 
 }

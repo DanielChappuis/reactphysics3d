@@ -95,120 +95,18 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
     return supportPoint;
 }
 
-// Raycast method
-// This implementation is based on the technique described by David Eberly in the article
-// "Intersection of a Line and a Cone" that can be found at
-// http://www.geometrictools.com/Documentation/IntersectionLineCone.pdf
-bool ConeShape::raycast(const Ray& ray, ProxyShape* proxyShape) const {
-
-    // Transform the ray direction and origin in local-space coordinates
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 origin = worldToLocalTransform * ray.origin;
-    Vector3 r = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
-
-    const decimal epsilon = decimal(0.00001);
-    Vector3 V(0, mHalfHeight, 0);
-    Vector3 centerBase(0, -mHalfHeight, 0);
-    Vector3 axis(0, decimal(-1.0), 0);
-    decimal heightSquare = decimal(4.0) * mHalfHeight * mHalfHeight;
-    decimal cosThetaSquare = heightSquare / (heightSquare + mRadius * mRadius);
-    decimal factor = decimal(1.0) - cosThetaSquare;
-    Vector3 delta = origin - V;
-    decimal c0 = -cosThetaSquare * delta.x * delta.x  + factor * delta.y * delta.y -
-                  cosThetaSquare * delta.z * delta.z;
-    decimal c1 = -cosThetaSquare * delta.x * r.x + factor * delta.y * r.y - cosThetaSquare * delta.z * r.z;
-    decimal c2 = -cosThetaSquare * r.x * r.x  + factor * r.y * r.y - cosThetaSquare * r.z * r.z;
-    decimal tHit[] = {decimal(-1.0), decimal(-1.0), decimal(-1.0)};
-    Vector3 localHitPoint[3];
-
-    // If c2 is different from zero
-    if (std::abs(c2) > MACHINE_EPSILON) {
-        decimal gamma = c1 * c1 - c0 * c2;
-
-        // If there is no real roots in the quadratic equation
-        if (gamma < decimal(0.0)) {
-            return false;
-        }
-        else if (gamma > decimal(0.0)) {    // The equation has two real roots
-
-            // Compute two intersections
-            decimal sqrRoot = std::sqrt(gamma);
-            tHit[0] = (-c1 - sqrRoot) / c2;
-            tHit[1] = (-c1 + sqrRoot) / c2;
-        }
-        else {  // If the equation has a single real root
-
-            // Compute the intersection
-            tHit[0] = -c1 / c2;
-        }
-    }
-    else {  // If c2 == 0
-
-        // If c2 = 0 and c1 != 0
-        if (std::abs(c1) > MACHINE_EPSILON) {
-            tHit[0] = -c0 / (decimal(2.0) * c1);
-        }
-        else {  // If c2 = c1 = 0
-
-            // If c0 is different from zero, no solution and if c0 = 0, we have a
-            // degenerate case, the whole ray is contained in the cone side
-            // but we return no hit in this case
-            return false;
-        }
-    }
-
-    // If the origin of the ray is inside the cone, we return no hit
-    if (testPointInside(origin, NULL)) return false;
-
-    localHitPoint[0] = origin + tHit[0] * r;
-    localHitPoint[1] = origin + tHit[1] * r;
-
-    // Only keep hit points in one side of the double cone (the cone we are interested in)
-    if (axis.dot(localHitPoint[0] - V) < decimal(0.0)) {
-        tHit[0] = decimal(-1.0);
-    }
-    if (axis.dot(localHitPoint[1] - V) < decimal(0.0)) {
-        tHit[1] = decimal(-1.0);
-    }
-
-    // Only keep hit points that are within the correct height of the cone
-    if (localHitPoint[0].y < decimal(-mHalfHeight)) {
-        tHit[0] = decimal(-1.0);
-    }
-    if (localHitPoint[1].y < decimal(-mHalfHeight)) {
-        tHit[1] = decimal(-1.0);
-    }
-
-    if (tHit[0] >= decimal(0.0) || tHit[1] >= decimal(0.0)) return true;
-
-    // If the ray is in direction of the base plane of the cone
-    if (r.y > epsilon) {
-
-        // Compute the intersection with the base plane of the cone
-        tHit[2] = (-mHalfHeight + origin.y) / (-r.y);
-
-        // Only keep this intersection if it is inside the cone radius
-        localHitPoint[2] = origin + tHit[2] * r;
-
-        return ((localHitPoint[2] - centerBase).lengthSquare() <= mRadius * mRadius);
-    }
-
-    return false;
-}
-
 // Raycast method with feedback information
 // This implementation is based on the technique described by David Eberly in the article
 // "Intersection of a Line and a Cone" that can be found at
 // http://www.geometrictools.com/Documentation/IntersectionLineCone.pdf
-bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
-                        decimal maxDistance) const {
+bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
     // Transform the ray direction and origin in local-space coordinates
     const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 origin = worldToLocalTransform * ray.origin;
-    Vector3 r = worldToLocalTransform.getOrientation() * ray.direction.getUnit();
+    const Vector3 point1 = worldToLocalTransform * ray.point1;
+    const Vector3 point2 = worldToLocalTransform * ray.point2;
+    const Vector3 r = point2 - point1;
 
     const decimal epsilon = decimal(0.00001);
     Vector3 V(0, mHalfHeight, 0);
@@ -217,7 +115,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     decimal heightSquare = decimal(4.0) * mHalfHeight * mHalfHeight;
     decimal cosThetaSquare = heightSquare / (heightSquare + mRadius * mRadius);
     decimal factor = decimal(1.0) - cosThetaSquare;
-    Vector3 delta = origin - V;
+    Vector3 delta = point1 - V;
     decimal c0 = -cosThetaSquare * delta.x * delta.x  + factor * delta.y * delta.y -
                   cosThetaSquare * delta.z * delta.z;
     decimal c1 = -cosThetaSquare * delta.x * r.x + factor * delta.y * r.y - cosThetaSquare * delta.z * r.z;
@@ -263,10 +161,10 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     }
 
     // If the origin of the ray is inside the cone, we return no hit
-    if (testPointInside(origin, NULL)) return false;
+    if (testPointInside(point1, NULL)) return false;
 
-    localHitPoint[0] = origin + tHit[0] * r;
-    localHitPoint[1] = origin + tHit[1] * r;
+    localHitPoint[0] = point1 + tHit[0] * r;
+    localHitPoint[1] = point1 + tHit[1] * r;
 
     // Only keep hit points in one side of the double cone (the cone we are interested in)
     if (axis.dot(localHitPoint[0] - V) < decimal(0.0)) {
@@ -288,10 +186,10 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     if (r.y > epsilon) {
 
         // Compute the intersection with the base plane of the cone
-        tHit[2] = (-origin.y - mHalfHeight) / (r.y);
+        tHit[2] = (-point1.y - mHalfHeight) / (r.y);
 
         // Only keep this intersection if it is inside the cone radius
-        localHitPoint[2] = origin + tHit[2] * r;
+        localHitPoint[2] = point1 + tHit[2] * r;
 
         if ((localHitPoint[2] - centerBase).lengthSquare() > mRadius * mRadius) {
             tHit[2] = decimal(-1.0);
@@ -313,7 +211,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     }
 
     if (hitIndex < 0) return false;
-    if (t > maxDistance) return false;
+    if (t > ray.maxFraction) return false;
 
     // Compute the normal direction for hit against side of the cone
     if (hitIndex != 2) {
@@ -329,7 +227,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
 
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
-    raycastInfo.distance = t;
+    raycastInfo.hitFraction = t;
     raycastInfo.worldPoint = localToWorldTransform * localHitPoint[hitIndex];
     raycastInfo.worldNormal = localToWorldTransform.getOrientation() * localNormal[hitIndex];
 

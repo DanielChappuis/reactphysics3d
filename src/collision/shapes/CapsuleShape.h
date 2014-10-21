@@ -75,21 +75,13 @@ class CapsuleShape : public CollisionShape {
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
-        /// Raycast method
-        virtual bool raycast(const Ray& ray, ProxyShape* proxyShape) const;
-
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
-                             decimal distance = RAYCAST_INFINITY_DISTANCE) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
         /// Raycasting method between a ray one of the two spheres end cap of the capsule
-        bool raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
-                                     const Vector3& sphereCenter, decimal maxDistance,
-                                     Vector3& hitLocalPoint, decimal& hitDistance) const;
-
-        // Raycasting method between a ray one of the two spheres end cap of the capsule
-        bool raycastWithSphereEndCap(const Vector3& rayOrigin, const Vector3& rayDirection,
-                                     const Vector3& sphereCenter) const;
+        bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
+                                     const Vector3& sphereCenter, decimal maxFraction,
+                                     Vector3& hitLocalPoint, decimal& hitFraction) const;
 
     public :
 

@@ -63,8 +63,9 @@ struct RaycastInfo {
         /// Surface normal at hit point in world-space coordinates
         Vector3 worldNormal;
 
-        /// Distance from the ray origin to the hit point
-        decimal distance;
+        /// Fraction distance of the hit point between point1 and point2 of the ray
+        /// The hit point "p" is such that p = point1 + hitFraction * (point2 - point1)
+        decimal hitFraction;
 
         /// Pointer to the hit collision body
         CollisionBody* body;

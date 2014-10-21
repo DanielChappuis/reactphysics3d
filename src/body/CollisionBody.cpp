@@ -212,31 +212,19 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
     return false;
 }
 
-// Raycast method
-bool CollisionBody::raycast(const Ray& ray) {
-
-    // For each collision shape of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
-
-        // Test if the ray hits the collision shape
-        if (shape->raycast(ray)) return true;
-    }
-
-    return false;
-}
-
 // Raycast method with feedback information
 /// The method returns the closest hit among all the collision shapes of the body
-bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo, decimal distance) {
+bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     bool isHit = false;
+    Ray rayTemp(ray);
 
     // For each collision shape of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
         // Test if the ray hits the collision shape
-        if (shape->raycast(ray, raycastInfo, distance)) {
-            distance = raycastInfo.distance;
+        if (shape->raycast(rayTemp, raycastInfo)) {
+            rayTemp.maxFraction = raycastInfo.hitFraction;
             isHit = true;
         }
     }

@@ -99,8 +99,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         bool testPointInside(const Vector3& localPoint, ProxyShape* collisionShape);
 
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
-        bool raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo,
-                     decimal maxDistance);
+        bool raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo);
 };
 
 }

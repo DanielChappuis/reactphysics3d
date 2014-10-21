@@ -34,6 +34,7 @@
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
+// TODO : Make this class abstract
 // Class Body
 /**
  * This class is an abstract class to represent a body of the physics engine.
@@ -53,6 +54,7 @@ class Body {
         /// True if the body is allowed to go to sleep for better efficiency
         bool mIsAllowedToSleep;
 
+        // TODO : Use this variable to make bodies active or not
         /// True if the body is active
         bool mIsActive;
 

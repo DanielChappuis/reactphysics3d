@@ -165,12 +165,8 @@ class CollisionBody : public Body {
         /// Return true if a point is inside the collision body
         bool testPointInside(const Vector3& worldPoint) const;
 
-        /// Raycast method
-        bool raycast(const Ray& ray);
-
         /// Raycast method with feedback information
-        bool raycast(const Ray& ray, RaycastInfo& raycastInfo,
-                     decimal distance = RAYCAST_INFINITY_DISTANCE);
+        bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
         // -------------------- Friendship -------------------- //
 

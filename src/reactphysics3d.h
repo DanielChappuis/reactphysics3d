@@ -51,6 +51,8 @@
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/AABB.h"
+#include "collision/ProxyShape.h"
+#include "collision/RaycastInfo.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"

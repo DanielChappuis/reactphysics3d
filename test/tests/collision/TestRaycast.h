@@ -88,7 +88,7 @@ class TestRaycast : public Test {
         /// Constructor
         TestRaycast(const std::string& name) : Test(name) {
 
-            epsilon = 0.0001;
+            epsilon = decimal(0.0001);
 
             // Create the world
             mWorld = new CollisionWorld();
@@ -194,10 +194,9 @@ class TestRaycast : public Test {
         void testBox() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(1 , 2, 10);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(0, 0, -5);
-            Ray ray(origin, direction);
+            Vector3 point1 = mLocalShapeToWorld * Vector3(1 , 2, 10);
+            Vector3 point2 = mLocalShapeToWorld * Vector3(1, 2, -20);
+            Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
 
             // CollisionWorld::raycast()
@@ -205,7 +204,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mBoxBody);
             test(raycastInfo.proxyShape == mBoxShape);
-            test(approxEqual(raycastInfo.distance, 6, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -215,7 +214,7 @@ class TestRaycast : public Test {
             test(mBoxBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mBoxBody);
             test(raycastInfo2.proxyShape == mBoxShape);
-            test(approxEqual(raycastInfo2.distance, 6, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -225,156 +224,108 @@ class TestRaycast : public Test {
             test(mBoxShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mBoxBody);
             test(raycastInfo3.proxyShape == mBoxShape);
-            test(approxEqual(raycastInfo3.distance, 6, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 3), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(3, 1, -5), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-3, 0, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(3, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(17, 29, 28));
+            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 3), mLocalShapeToWorld * Vector3(-11, 2, 24));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(22, 28, 31));
+            Ray ray5(mLocalShapeToWorld * Vector3(3, 1, -5), mLocalShapeToWorld * Vector3(-30, 1, -5));
+            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalShapeToWorld * Vector3(4, -20, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalShapeToWorld * Vector3(1, -4, -20));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalShapeToWorld * Vector3(20, 4, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalShapeToWorld * Vector3(0, 50, -7));
+            Ray ray10(mLocalShapeToWorld * Vector3(-3, 0, -6), mLocalShapeToWorld * Vector3(-3, 0, 20));
+            Ray ray11(mLocalShapeToWorld * Vector3(3, 1, 2), mLocalShapeToWorld * Vector3(-20, 1, 2));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalShapeToWorld * Vector3(1, -20, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalShapeToWorld * Vector3(-1, 2, -20));
+            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalShapeToWorld * Vector3(20, 2, -2));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalShapeToWorld * Vector3(0, 20, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -5), mLocalShapeToWorld * Vector3(-1, 2, 20));
 
             // ----- Test raycast miss ----- //
             test(!mBoxBody->raycast(ray1, raycastInfo3));
             test(!mBoxShape->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mBoxBody->raycast(ray1));
-            test(!mBoxShape->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mBoxBody->raycast(ray2, raycastInfo3));
             test(!mBoxShape->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mBoxBody->raycast(ray2));
-            test(!mBoxShape->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mBoxBody->raycast(ray3, raycastInfo3));
             test(!mBoxShape->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mBoxBody->raycast(ray3));
-            test(!mBoxShape->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mBoxBody->raycast(ray4, raycastInfo3));
             test(!mBoxShape->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mBoxBody->raycast(ray4));
-            test(!mBoxShape->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mBoxBody->raycast(ray5, raycastInfo3));
             test(!mBoxShape->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mBoxBody->raycast(ray5));
-            test(!mBoxShape->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mBoxBody->raycast(ray6, raycastInfo3));
             test(!mBoxShape->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mBoxBody->raycast(ray6));
-            test(!mBoxShape->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mBoxBody->raycast(ray7, raycastInfo3));
             test(!mBoxShape->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mBoxBody->raycast(ray7));
-            test(!mBoxShape->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mBoxBody->raycast(ray8, raycastInfo3));
             test(!mBoxShape->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mBoxBody->raycast(ray8));
-            test(!mBoxShape->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mBoxBody->raycast(ray9, raycastInfo3));
             test(!mBoxShape->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mBoxBody->raycast(ray9));
-            test(!mBoxShape->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mBoxBody->raycast(ray10, raycastInfo3));
             test(!mBoxShape->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mBoxBody->raycast(ray10));
-            test(!mBoxShape->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mBoxBody->raycast(ray11, raycastInfo3));
             test(mBoxShape->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mBoxBody->raycast(ray11));
-            test(mBoxShape->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo3));
 
             test(mBoxBody->raycast(ray12, raycastInfo3));
             test(mBoxShape->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mBoxBody->raycast(ray12));
-            test(mBoxShape->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mBoxBody->raycast(ray13, raycastInfo3));
             test(mBoxShape->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mBoxBody->raycast(ray13));
-            test(mBoxShape->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mBoxBody->raycast(ray14, raycastInfo3));
             test(mBoxShape->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mBoxBody->raycast(ray14));
-            test(mBoxShape->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mBoxBody->raycast(ray15, raycastInfo3));
             test(mBoxShape->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mBoxBody->raycast(ray15));
-            test(mBoxShape->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mBoxBody->raycast(ray16, raycastInfo3));
             test(mBoxShape->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mBoxBody->raycast(ray16));
-            test(mBoxShape->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the ProxySphereShape::raycast(), CollisionBody::raycast() and
@@ -382,10 +333,9 @@ class TestRaycast : public Test {
         void testSphere() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(-8 , 0, 0);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(5, 0, 0);
-            Ray ray(origin, direction);
+            Vector3 point1 = mLocalShapeToWorld * Vector3(-5 , 0, 0);
+            Vector3 point2 = mLocalShapeToWorld * Vector3(5, 0, 0);
+            Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(-3, 0, 0);
 
             // CollisionWorld::raycast()
@@ -393,7 +343,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mSphereBody);
             test(raycastInfo.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo.distance, 5, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, 0.2, epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -403,7 +353,7 @@ class TestRaycast : public Test {
             test(mSphereBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mSphereBody);
             test(raycastInfo2.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo2.distance, 5, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, 0.2, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -413,156 +363,108 @@ class TestRaycast : public Test {
             test(mSphereShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mSphereBody);
             test(raycastInfo3.proxyShape == mSphereShape);
-            test(approxEqual(raycastInfo3.distance, 5, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, 0.2, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 2), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -4), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-5, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -11), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(4, 6, 7));
+            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 2), mLocalShapeToWorld * Vector3(-4, 0, 7));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(4, 6, 7));
+            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalShapeToWorld * Vector3(-30, 1, -5));
+            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalShapeToWorld * Vector3(4, -30, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalShapeToWorld * Vector3(1, -4, -30));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalShapeToWorld * Vector3(30, 4, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -4), mLocalShapeToWorld * Vector3(0, 30, -4));
+            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalShapeToWorld * Vector3(-4, 0, 30));
+            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 2), mLocalShapeToWorld * Vector3(-30, 1, 2));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalShapeToWorld * Vector3(1, -30, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalShapeToWorld * Vector3(-1, 2, -30));
+            Ray ray14(mLocalShapeToWorld * Vector3(-5, 2, -2), mLocalShapeToWorld * Vector3(30, 2, -2));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -11), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
             // ----- Test raycast miss ----- //
             test(!mSphereBody->raycast(ray1, raycastInfo3));
             test(!mSphereShape->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mSphereBody->raycast(ray1));
-            test(!mSphereShape->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mSphereBody->raycast(ray2, raycastInfo3));
             test(!mSphereShape->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mSphereBody->raycast(ray2));
-            test(!mSphereShape->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mSphereBody->raycast(ray3, raycastInfo3));
             test(!mSphereShape->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mSphereBody->raycast(ray3));
-            test(!mSphereShape->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mSphereBody->raycast(ray4, raycastInfo3));
             test(!mSphereShape->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mSphereBody->raycast(ray4));
-            test(!mSphereShape->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mSphereBody->raycast(ray5, raycastInfo3));
             test(!mSphereShape->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mSphereBody->raycast(ray5));
-            test(!mSphereShape->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mSphereBody->raycast(ray6, raycastInfo3));
             test(!mSphereShape->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mSphereBody->raycast(ray6));
-            test(!mSphereShape->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mSphereBody->raycast(ray7, raycastInfo3));
             test(!mSphereShape->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mSphereBody->raycast(ray7));
-            test(!mSphereShape->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mSphereBody->raycast(ray8, raycastInfo3));
             test(!mSphereShape->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mSphereBody->raycast(ray8));
-            test(!mSphereShape->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mSphereBody->raycast(ray9, raycastInfo3));
             test(!mSphereShape->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mSphereBody->raycast(ray9));
-            test(!mSphereShape->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mSphereBody->raycast(ray10, raycastInfo3));
             test(!mSphereShape->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mSphereBody->raycast(ray10));
-            test(!mSphereShape->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mSphereBody->raycast(ray11, raycastInfo3));
             test(mSphereShape->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mSphereBody->raycast(ray11));
-            test(mSphereShape->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo3));
 
             test(mSphereBody->raycast(ray12, raycastInfo3));
             test(mSphereShape->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mSphereBody->raycast(ray12));
-            test(mSphereShape->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mSphereBody->raycast(ray13, raycastInfo3));
             test(mSphereShape->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mSphereBody->raycast(ray13));
-            test(mSphereShape->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mSphereBody->raycast(ray14, raycastInfo3));
             test(mSphereShape->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mSphereBody->raycast(ray14));
-            test(mSphereShape->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mSphereBody->raycast(ray15, raycastInfo3));
             test(mSphereShape->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mSphereBody->raycast(ray15));
-            test(mSphereShape->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mSphereBody->raycast(ray16, raycastInfo3));
             test(mSphereShape->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mSphereBody->raycast(ray16));
-            test(mSphereShape->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the ProxyCapsuleShape::raycast(), CollisionBody::raycast() and
@@ -570,20 +472,19 @@ class TestRaycast : public Test {
         void testCapsule() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(6 , 1, 0);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(-2, 0, 0);
-            Ray ray(origin, direction);
+            Vector3 point1A = mLocalShapeToWorld * Vector3(4 , 1, 0);
+            Vector3 point1B = mLocalShapeToWorld * Vector3(-6, 1, 0);
+            Ray ray(point1A, point1B);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(2, 1, 0);
 
-            Vector3 origin2 = mLocalShapeToWorld * Vector3(0 , 10, 0);
-            Vector3 direction2 = mLocalToWorldMatrix * Vector3(0, -3, 0);
-            Ray rayTop(origin2, direction2);
+            Vector3 point2A = mLocalShapeToWorld * Vector3(0 , 6.5, 0);
+            Vector3 point2B = mLocalShapeToWorld * Vector3(0, -3.5, 0);
+            Ray rayTop(point2A, point2B);
             Vector3 hitPointTop = mLocalShapeToWorld * Vector3(0, decimal(4.5), 0);
 
-            Vector3 origin3 = mLocalShapeToWorld * Vector3(0 , -10, 0);
-            Vector3 direction3 = mLocalToWorldMatrix * Vector3(0, 3, 0);
-            Ray rayBottom(origin3, direction3);
+            Vector3 point3A = mLocalShapeToWorld * Vector3(0 , -6.5, 0);
+            Vector3 point3B = mLocalShapeToWorld * Vector3(0, 3.5, 0);
+            Ray rayBottom(point3A, point3B);
             Vector3 hitPointBottom = mLocalShapeToWorld * Vector3(0, decimal(-4.5), 0);
 
             // CollisionWorld::raycast()
@@ -591,7 +492,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mCapsuleBody);
             test(raycastInfo.proxyShape == mCapsuleShape);
-            test(approxEqual(raycastInfo.distance, 4, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -601,7 +502,7 @@ class TestRaycast : public Test {
             test(mCapsuleBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mCapsuleBody);
             test(raycastInfo2.proxyShape == mCapsuleShape);
-            test(approxEqual(raycastInfo2.distance, 4, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -611,7 +512,7 @@ class TestRaycast : public Test {
             test(mCapsuleShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mCapsuleBody);
             test(raycastInfo3.proxyShape == mCapsuleShape);
-            test(approxEqual(raycastInfo3.distance, 4, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -620,7 +521,7 @@ class TestRaycast : public Test {
             test(mCapsuleShape->raycast(rayTop, raycastInfo4));
             test(raycastInfo4.body == mCapsuleBody);
             test(raycastInfo4.proxyShape == mCapsuleShape);
-            test(approxEqual(raycastInfo4.distance, decimal(5.5), epsilon));
+            test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo4.worldPoint.x, hitPointTop.x, epsilon));
             test(approxEqual(raycastInfo4.worldPoint.y, hitPointTop.y, epsilon));
             test(approxEqual(raycastInfo4.worldPoint.z, hitPointTop.z, epsilon));
@@ -630,154 +531,108 @@ class TestRaycast : public Test {
             test(mCapsuleShape->raycast(rayBottom, raycastInfo5));
             test(raycastInfo5.body == mCapsuleBody);
             test(raycastInfo5.proxyShape == mCapsuleShape);
-            test(approxEqual(raycastInfo5.distance, decimal(5.5), epsilon));
+            test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo5.worldPoint.x, hitPointBottom.x, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.y, hitPointBottom.y, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.z, hitPointBottom.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(1, 3, -1), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(4, 9, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -9, 5), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 9, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -9, -4), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 9, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(9, 17, 14));
+            Ray ray3(mLocalShapeToWorld * Vector3(1, 3, -1), mLocalShapeToWorld * Vector3(-3, 3, 6));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(14, 16, 17));
+            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalShapeToWorld * Vector3(1, 1, -5));
+            Ray ray6(mLocalShapeToWorld * Vector3(4, 9, 1), mLocalShapeToWorld * Vector3(4, 7, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -9, 5), mLocalShapeToWorld * Vector3(1, -9, 3));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 9, 0), mLocalShapeToWorld * Vector3(-3, 9, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -9, -4), mLocalShapeToWorld * Vector3(0, -4, -4));
+            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalShapeToWorld * Vector3(-4, 0, 2));
+            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalShapeToWorld * Vector3(-30, 1, 1.5));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 9, -1), mLocalShapeToWorld * Vector3(1, -30, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalShapeToWorld * Vector3(-1, 2, -30));
+            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalShapeToWorld * Vector3(30, 2, -2));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
             // ----- Test raycast miss ----- //
             test(!mCapsuleBody->raycast(ray1, raycastInfo3));
             test(!mCapsuleShape->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mCapsuleBody->raycast(ray1));
-            test(!mCapsuleShape->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mCapsuleBody->raycast(ray2, raycastInfo3));
             test(!mCapsuleShape->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray2));
-            test(!mCapsuleShape->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mCapsuleBody->raycast(ray3, raycastInfo3));
             test(!mCapsuleShape->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray3));
-            test(!mCapsuleShape->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mCapsuleBody->raycast(ray4, raycastInfo3));
             test(!mCapsuleShape->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray4));
-            test(!mCapsuleShape->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mCapsuleBody->raycast(ray5, raycastInfo3));
             test(!mCapsuleShape->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray5));
-            test(!mCapsuleShape->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mCapsuleBody->raycast(ray6, raycastInfo3));
             test(!mCapsuleShape->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray6));
-            test(!mCapsuleShape->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mCapsuleBody->raycast(ray7, raycastInfo3));
             test(!mCapsuleShape->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray7));
-            test(!mCapsuleShape->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mCapsuleBody->raycast(ray8, raycastInfo3));
             test(!mCapsuleShape->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray8));
-            test(!mCapsuleShape->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mCapsuleBody->raycast(ray9, raycastInfo3));
             test(!mCapsuleShape->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray9));
-            test(!mCapsuleShape->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mCapsuleBody->raycast(ray10, raycastInfo3));
             test(!mCapsuleShape->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mCapsuleBody->raycast(ray10));
-            test(!mCapsuleShape->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mCapsuleBody->raycast(ray11, raycastInfo3));
             test(mCapsuleShape->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mCapsuleBody->raycast(ray11));
-            test(mCapsuleShape->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo3));
 
             test(mCapsuleBody->raycast(ray12, raycastInfo3));
             test(mCapsuleShape->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mCapsuleBody->raycast(ray12));
-            test(mCapsuleShape->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mCapsuleBody->raycast(ray13, raycastInfo3));
             test(mCapsuleShape->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mCapsuleBody->raycast(ray13));
-            test(mCapsuleShape->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mCapsuleBody->raycast(ray14, raycastInfo3));
             test(mCapsuleShape->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mCapsuleBody->raycast(ray14));
-            test(mCapsuleShape->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mCapsuleBody->raycast(ray15, raycastInfo3));
             test(mCapsuleShape->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mCapsuleBody->raycast(ray15));
-            test(mCapsuleShape->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mCapsuleBody->raycast(ray16, raycastInfo3));
             test(mCapsuleShape->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the ProxyConeShape::raycast(), CollisionBody::raycast() and
@@ -785,15 +640,14 @@ class TestRaycast : public Test {
         void testCone() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(0 , 0, 3);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(0, 0, -8);
-            Ray ray(origin, direction);
+            Vector3 point1A = mLocalShapeToWorld * Vector3(0 , 0, 3);
+            Vector3 point1B = mLocalShapeToWorld * Vector3(0, 0, -7);
+            Ray ray(point1A, point1B);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(0, 0, 1);
 
-            Vector3 origin2 = mLocalShapeToWorld * Vector3(1 , -5, 0);
-            Vector3 direction2 = mLocalToWorldMatrix * Vector3(0, 3, 0);
-            Ray rayBottom(origin2, direction2);
+            Vector3 point2A = mLocalShapeToWorld * Vector3(1 , -5, 0);
+            Vector3 point2B = mLocalShapeToWorld * Vector3(1, 5, 0);
+            Ray rayBottom(point2A, point2B);
             Vector3 hitPoint2 = mLocalShapeToWorld * Vector3(1, -3, 0);
 
             // CollisionWorld::raycast()
@@ -801,7 +655,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mConeBody);
             test(raycastInfo.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo.distance, 2, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z));
@@ -811,7 +665,7 @@ class TestRaycast : public Test {
             test(mConeBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mConeBody);
             test(raycastInfo2.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo2.distance, 2, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -821,7 +675,7 @@ class TestRaycast : public Test {
             test(mConeShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mConeBody);
             test(raycastInfo3.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo3.distance, 2, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -830,7 +684,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(rayBottom, raycastInfo4));
             test(raycastInfo4.body == mConeBody);
             test(raycastInfo4.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo4.distance, 2, epsilon));
+            test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo4.worldPoint.x, hitPoint2.x));
             test(approxEqual(raycastInfo4.worldPoint.y, hitPoint2.y));
             test(approxEqual(raycastInfo4.worldPoint.z, hitPoint2.z));
@@ -840,7 +694,7 @@ class TestRaycast : public Test {
             test(mConeBody->raycast(rayBottom, raycastInfo5));
             test(raycastInfo5.body == mConeBody);
             test(raycastInfo5.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo5.distance, 2, epsilon));
+            test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo5.worldPoint.x, hitPoint2.x, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.y, hitPoint2.y, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.z, hitPoint2.z, epsilon));
@@ -850,156 +704,108 @@ class TestRaycast : public Test {
             test(mConeShape->raycast(rayBottom, raycastInfo6));
             test(raycastInfo6.body == mConeBody);
             test(raycastInfo6.proxyShape == mConeShape);
-            test(approxEqual(raycastInfo6.distance, 2, epsilon));
+            test(approxEqual(raycastInfo6.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo6.worldPoint.x, hitPoint2.x, epsilon));
             test(approxEqual(raycastInfo6.worldPoint.y, hitPoint2.y, epsilon));
             test(approxEqual(raycastInfo6.worldPoint.z, hitPoint2.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(-1, -2, 1), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -1), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(3, 4, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 3), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-3, -2, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(3, -1, 0.5), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, -2, 3), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-2, 0, 0.8), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-0.9, 0, -4), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(17, 29, 28));
+            Ray ray3(mLocalShapeToWorld * Vector3(-1, -2, 1), mLocalShapeToWorld * Vector3(-13, -2, 22));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(22, 28, 31));
+            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -1), mLocalShapeToWorld * Vector3(-26, 1, -1));
+            Ray ray6(mLocalShapeToWorld * Vector3(3, 4, 1), mLocalShapeToWorld * Vector3(3, -16, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 3), mLocalShapeToWorld * Vector3(1, -4, -17));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalShapeToWorld * Vector3(26, 4, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalShapeToWorld * Vector3(0, 46, -7));
+            Ray ray10(mLocalShapeToWorld * Vector3(-3, -2, -6), mLocalShapeToWorld * Vector3(-3, -2, 74));
+            Ray ray11(mLocalShapeToWorld * Vector3(3, -1, 0.5), mLocalShapeToWorld * Vector3(-27, -1, 0.5));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalShapeToWorld * Vector3(1, -26, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, -2, 3), mLocalShapeToWorld * Vector3(-1, -2, -27));
+            Ray ray14(mLocalShapeToWorld * Vector3(-2, 0, 0.8), mLocalShapeToWorld * Vector3(30, 0, 0.8));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-0.9, 0, -4), mLocalShapeToWorld * Vector3(-0.9, 0, 30));
 
             // ----- Test raycast miss ----- //
             test(!mConeBody->raycast(ray1, raycastInfo3));
             test(!mConeShape->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mConeBody->raycast(ray1));
-            test(!mConeShape->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mConeBody->raycast(ray2, raycastInfo3));
             test(!mConeShape->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mConeBody->raycast(ray2));
-            test(!mConeShape->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mConeBody->raycast(ray3, raycastInfo3));
             test(!mConeShape->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mConeBody->raycast(ray3));
-            test(!mConeShape->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mConeBody->raycast(ray4, raycastInfo3));
             test(!mConeShape->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mConeBody->raycast(ray4));
-            test(!mConeShape->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mConeBody->raycast(ray5, raycastInfo3));
             test(!mConeShape->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mConeBody->raycast(ray5));
-            test(!mConeShape->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mConeBody->raycast(ray6, raycastInfo3));
             test(!mConeShape->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mConeBody->raycast(ray6));
-            test(!mConeShape->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mConeBody->raycast(ray7, raycastInfo3));
             test(!mConeShape->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mConeBody->raycast(ray7));
-            test(!mConeShape->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mConeBody->raycast(ray8, raycastInfo3));
             test(!mConeShape->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mConeBody->raycast(ray8));
-            test(!mConeShape->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mConeBody->raycast(ray9, raycastInfo3));
             test(!mConeShape->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mConeBody->raycast(ray9));
-            test(!mConeShape->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mConeBody->raycast(ray10, raycastInfo3));
             test(!mConeShape->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mConeBody->raycast(ray10));
-            test(!mConeShape->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mConeBody->raycast(ray11, raycastInfo3));
             test(mConeShape->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mConeBody->raycast(ray11));
-            test(mConeShape->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo3));
 
             test(mConeBody->raycast(ray12, raycastInfo3));
             test(mConeShape->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mConeBody->raycast(ray12));
-            test(mConeShape->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mConeBody->raycast(ray13, raycastInfo3));
             test(mConeShape->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mConeBody->raycast(ray13));
-            test(mConeShape->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mConeBody->raycast(ray14, raycastInfo3));
             test(mConeShape->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mConeBody->raycast(ray14));
-            test(mConeShape->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mConeBody->raycast(ray15, raycastInfo3));
             test(mConeShape->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mConeBody->raycast(ray15));
-            test(mConeShape->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mConeBody->raycast(ray16, raycastInfo3));
             test(mConeShape->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mConeBody->raycast(ray16));
-            test(mConeShape->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the ProxyConvexMeshShape::raycast(), CollisionBody::raycast() and
@@ -1007,10 +813,9 @@ class TestRaycast : public Test {
         void testConvexMesh() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(1 , 2, 10);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(0, 0, -5);
-            Ray ray(origin, direction);
+            Vector3 point1 = mLocalShapeToWorld * Vector3(1 , 2, 6);
+            Vector3 point2 = mLocalShapeToWorld * Vector3(1, 2, -4);
+            Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
 
             // CollisionWorld::raycast()
@@ -1018,7 +823,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mConvexMeshBody);
             test(raycastInfo.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo.distance, 6, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -1028,7 +833,7 @@ class TestRaycast : public Test {
             test(mConvexMeshBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mConvexMeshBody);
             test(raycastInfo2.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo2.distance, 6, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -1038,7 +843,7 @@ class TestRaycast : public Test {
             test(mConvexMeshBodyEdgesInfo->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mConvexMeshBodyEdgesInfo);
             test(raycastInfo3.proxyShape == mConvexMeshShapeEdgesInfo);
-            test(approxEqual(raycastInfo3.distance, 6, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -1048,7 +853,7 @@ class TestRaycast : public Test {
             test(mConvexMeshShape->raycast(ray, raycastInfo4));
             test(raycastInfo4.body == mConvexMeshBody);
             test(raycastInfo4.proxyShape == mConvexMeshShape);
-            test(approxEqual(raycastInfo4.distance, 6, epsilon));
+            test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo4.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo4.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo4.worldPoint.z, hitPoint.z, epsilon));
@@ -1058,27 +863,27 @@ class TestRaycast : public Test {
             test(mConvexMeshShapeEdgesInfo->raycast(ray, raycastInfo5));
             test(raycastInfo5.body == mConvexMeshBodyEdgesInfo);
             test(raycastInfo5.proxyShape == mConvexMeshShapeEdgesInfo);
-            test(approxEqual(raycastInfo5.distance, 6, epsilon));
+            test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo5.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.z, hitPoint.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 3), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(3, 1, -5), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-3, 0, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(3, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(17, 29, 28));
+            Ray ray3(mLocalShapeToWorld * Vector3(1, 2, 3), mLocalShapeToWorld * Vector3(-11, 2, 24));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(22, 28, 31));
+            Ray ray5(mLocalShapeToWorld * Vector3(3, 1, -5), mLocalShapeToWorld * Vector3(-30, 1, -5));
+            Ray ray6(mLocalShapeToWorld * Vector3(4, 4, 1), mLocalShapeToWorld * Vector3(4, -30, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -4, 5), mLocalShapeToWorld * Vector3(1, -4, -30));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 4, 0), mLocalShapeToWorld * Vector3(30, 4, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -4, -7), mLocalShapeToWorld * Vector3(0, 30, -7));
+            Ray ray10(mLocalShapeToWorld * Vector3(-3, 0, -6), mLocalShapeToWorld * Vector3(-3, 0, 30));
+            Ray ray11(mLocalShapeToWorld * Vector3(3, 1, 2), mLocalShapeToWorld * Vector3(-30, 0, -6));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 4, -1), mLocalShapeToWorld * Vector3(1, -30, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 5), mLocalShapeToWorld * Vector3(-1, 2, -30));
+            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalShapeToWorld * Vector3(30, 2, -2));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -4, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
             // ----- Test raycast miss ----- //
             test(!mConvexMeshBody->raycast(ray1, raycastInfo3));
@@ -1086,119 +891,69 @@ class TestRaycast : public Test {
             test(!mConvexMeshShape->raycast(ray1, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mConvexMeshBody->raycast(ray1));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray1));
-            test(!mConvexMeshShape->raycast(ray1));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mConvexMeshBody->raycast(ray2, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray2, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray2, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray2));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray2));
-            test(!mConvexMeshShape->raycast(ray2));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mConvexMeshBody->raycast(ray3, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray3, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray3, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray3));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray3));
-            test(!mConvexMeshShape->raycast(ray3));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mConvexMeshBody->raycast(ray4, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray4, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray4, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray4));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray4));
-            test(!mConvexMeshShape->raycast(ray4));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mConvexMeshBody->raycast(ray5, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray5, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray5, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray5));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray5));
-            test(!mConvexMeshShape->raycast(ray5));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mConvexMeshBody->raycast(ray6, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray6, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray6, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray6));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray6));
-            test(!mConvexMeshShape->raycast(ray6));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mConvexMeshBody->raycast(ray7, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray7, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray7, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray7));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray7));
-            test(!mConvexMeshShape->raycast(ray7));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mConvexMeshBody->raycast(ray8, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray8, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray8, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray8));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray8));
-            test(!mConvexMeshShape->raycast(ray8));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mConvexMeshBody->raycast(ray9, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray9, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray9, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray9));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray9));
-            test(!mConvexMeshShape->raycast(ray9));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mConvexMeshBody->raycast(ray10, raycastInfo3));
             test(!mConvexMeshBodyEdgesInfo->raycast(ray10, raycastInfo3));
             test(!mConvexMeshShape->raycast(ray10, raycastInfo3));
             test(!mConvexMeshShapeEdgesInfo->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mConvexMeshBody->raycast(ray10));
-            test(!mConvexMeshBodyEdgesInfo->raycast(ray10));
-            test(!mConvexMeshShape->raycast(ray10));
-            test(!mConvexMeshShapeEdgesInfo->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mConvexMeshBody->raycast(ray11, raycastInfo3));
@@ -1206,72 +961,42 @@ class TestRaycast : public Test {
             test(mConvexMeshShape->raycast(ray11, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mConvexMeshBody->raycast(ray11));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray11));
-            test(mConvexMeshShape->raycast(ray11));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo3));
 
             test(mConvexMeshBody->raycast(ray12, raycastInfo3));
             test(mConvexMeshBodyEdgesInfo->raycast(ray12, raycastInfo3));
             test(mConvexMeshShape->raycast(ray12, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mConvexMeshBody->raycast(ray12));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray12));
-            test(mConvexMeshShape->raycast(ray12));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mConvexMeshBody->raycast(ray13, raycastInfo3));
             test(mConvexMeshBodyEdgesInfo->raycast(ray13, raycastInfo3));
             test(mConvexMeshShape->raycast(ray13, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mConvexMeshBody->raycast(ray13));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray13));
-            test(mConvexMeshShape->raycast(ray13));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mConvexMeshBody->raycast(ray14, raycastInfo3));
             test(mConvexMeshBodyEdgesInfo->raycast(ray14, raycastInfo3));
             test(mConvexMeshShape->raycast(ray14, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mConvexMeshBody->raycast(ray14));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray14));
-            test(mConvexMeshShape->raycast(ray14));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mConvexMeshBody->raycast(ray15, raycastInfo3));
             test(mConvexMeshBodyEdgesInfo->raycast(ray15, raycastInfo3));
             test(mConvexMeshShape->raycast(ray15, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mConvexMeshBody->raycast(ray15));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray15));
-            test(mConvexMeshShape->raycast(ray15));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mConvexMeshBody->raycast(ray16, raycastInfo3));
             test(mConvexMeshBodyEdgesInfo->raycast(ray16, raycastInfo3));
             test(mConvexMeshShape->raycast(ray16, raycastInfo3));
             test(mConvexMeshShapeEdgesInfo->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mConvexMeshBody->raycast(ray16));
-            test(mConvexMeshBodyEdgesInfo->raycast(ray16));
-            test(mConvexMeshShape->raycast(ray16));
-            test(mConvexMeshShapeEdgesInfo->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the ProxyCylinderShape::raycast(), CollisionBody::raycast() and
@@ -1279,20 +1004,19 @@ class TestRaycast : public Test {
         void testCylinder() {
 
             // ----- Test feedback data ----- //
-            Vector3 origin = mLocalShapeToWorld * Vector3(6 , 1, 0);
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
-            Vector3 direction = mLocalToWorldMatrix * Vector3(-2, 0, 0);
-            Ray ray(origin, direction);
+            Vector3 point1A = mLocalShapeToWorld * Vector3(4 , 1, 0);
+            Vector3 point1B = mLocalShapeToWorld * Vector3(-6, 1, 0);
+            Ray ray(point1A, point1B);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(2, 1, 0);
 
-            Vector3 origin2 = mLocalShapeToWorld * Vector3(0 , 10, 0);
-            Vector3 direction2 = mLocalToWorldMatrix * Vector3(0, -3, 0);
-            Ray rayTop(origin2, direction2);
+            Vector3 point2A = mLocalShapeToWorld * Vector3(0 , 4.5, 0);
+            Vector3 point2B = mLocalShapeToWorld * Vector3(0, -5.5, 0);
+            Ray rayTop(point2A, point2B);
             Vector3 hitPointTop = mLocalShapeToWorld * Vector3(0, decimal(2.5), 0);
 
-            Vector3 origin3 = mLocalShapeToWorld * Vector3(0 , -10, 0);
-            Vector3 direction3 = mLocalToWorldMatrix * Vector3(0, 3, 0);
-            Ray rayBottom(origin3, direction3);
+            Vector3 point3A = mLocalShapeToWorld * Vector3(0 , -4.5, 0);
+            Vector3 point3B = mLocalShapeToWorld * Vector3(0, 5.5, 0);
+            Ray rayBottom(point3A, point3B);
             Vector3 hitPointBottom = mLocalShapeToWorld * Vector3(0, decimal(-2.5), 0);
 
             // CollisionWorld::raycast()
@@ -1300,7 +1024,7 @@ class TestRaycast : public Test {
             test(mWorld->raycast(ray, raycastInfo));
             test(raycastInfo.body == mCylinderBody);
             test(raycastInfo.proxyShape == mCylinderShape);
-            test(approxEqual(raycastInfo.distance, 4, epsilon));
+            test(approxEqual(raycastInfo.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -1310,7 +1034,7 @@ class TestRaycast : public Test {
             test(mCylinderBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mCylinderBody);
             test(raycastInfo2.proxyShape == mCylinderShape);
-            test(approxEqual(raycastInfo2.distance, 4, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -1320,7 +1044,7 @@ class TestRaycast : public Test {
             test(mCylinderShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mCylinderBody);
             test(raycastInfo3.proxyShape == mCylinderShape);
-            test(approxEqual(raycastInfo3.distance, 4, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -1330,7 +1054,7 @@ class TestRaycast : public Test {
             test(mCylinderShape->raycast(rayTop, raycastInfo5));
             test(raycastInfo5.body == mCylinderBody);
             test(raycastInfo5.proxyShape == mCylinderShape);
-            test(approxEqual(raycastInfo5.distance, decimal(7.5), epsilon));
+            test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo5.worldPoint.x, hitPointTop.x, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.y, hitPointTop.y, epsilon));
             test(approxEqual(raycastInfo5.worldPoint.z, hitPointTop.z, epsilon));
@@ -1340,156 +1064,108 @@ class TestRaycast : public Test {
             test(mCylinderShape->raycast(rayBottom, raycastInfo6));
             test(raycastInfo6.body == mCylinderBody);
             test(raycastInfo6.proxyShape == mCylinderShape);
-            test(approxEqual(raycastInfo6.distance, decimal(7.5), epsilon));
+            test(approxEqual(raycastInfo6.hitFraction, decimal(0.2), epsilon));
             test(approxEqual(raycastInfo6.worldPoint.x, hitPointBottom.x, epsilon));
             test(approxEqual(raycastInfo6.worldPoint.y, hitPointBottom.y, epsilon));
             test(approxEqual(raycastInfo6.worldPoint.z, hitPointBottom.z, epsilon));
 
-            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalToWorldMatrix * Vector3(5, 7, -1));
-            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray3(mLocalShapeToWorld * Vector3(1, 3, -1), mLocalToWorldMatrix * Vector3(-4, 0, 7));
-            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalToWorldMatrix * Vector3(4, 6, 7));
-            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalToWorldMatrix * Vector3(-3, 0, 0));
-            Ray ray6(mLocalShapeToWorld * Vector3(4, 9, 1), mLocalToWorldMatrix * Vector3(0, -2, 0));
-            Ray ray7(mLocalShapeToWorld * Vector3(1, -9, 5), mLocalToWorldMatrix * Vector3(0, 0, -2));
-            Ray ray8(mLocalShapeToWorld * Vector3(-4, 9, 0), mLocalToWorldMatrix * Vector3(1, 0, 0));
-            Ray ray9(mLocalShapeToWorld * Vector3(0, -9, -4), mLocalToWorldMatrix * Vector3(0, 5, 0));
-            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalToWorldMatrix * Vector3(0, 0, 8));
-            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 9, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShapeToWorld * Vector3(0, 0, 0), mLocalShapeToWorld * Vector3(5, 7, -1));
+            Ray ray2(mLocalShapeToWorld * Vector3(5, 11, 7), mLocalShapeToWorld * Vector3(17, 20, 28));
+            Ray ray3(mLocalShapeToWorld * Vector3(1, 3, -1), mLocalShapeToWorld * Vector3(-11,3, 20));
+            Ray ray4(mLocalShapeToWorld * Vector3(10, 10, 10), mLocalShapeToWorld * Vector3(22, 28, 31));
+            Ray ray5(mLocalShapeToWorld * Vector3(4, 1, -5), mLocalShapeToWorld * Vector3(-30, 1, -5));
+            Ray ray6(mLocalShapeToWorld * Vector3(4, 9, 1), mLocalShapeToWorld * Vector3(4, -30, 1));
+            Ray ray7(mLocalShapeToWorld * Vector3(1, -9, 5), mLocalShapeToWorld * Vector3(1, -9, -30));
+            Ray ray8(mLocalShapeToWorld * Vector3(-4, 9, 0), mLocalShapeToWorld * Vector3(30, 9, 0));
+            Ray ray9(mLocalShapeToWorld * Vector3(0, -9, -4), mLocalShapeToWorld * Vector3(0, 30, -4));
+            Ray ray10(mLocalShapeToWorld * Vector3(-4, 0, -6), mLocalShapeToWorld * Vector3(-4, 0, 30));
+            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalShapeToWorld * Vector3(-30, 1, 1.5));
+            Ray ray12(mLocalShapeToWorld * Vector3(1, 9, -1), mLocalShapeToWorld * Vector3(1, -30, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalShapeToWorld * Vector3(-1, 2, -30));
+            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalShapeToWorld * Vector3(30, 2, -2));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
             // ----- Test raycast miss ----- //
             test(!mCylinderBody->raycast(ray1, raycastInfo3));
             test(!mCylinderShape->raycast(ray1, raycastInfo3));
             test(!mWorld->raycast(ray1, raycastInfo3));
-            test(!mWorld->raycast(ray1, raycastInfo3, 1));
-            test(!mWorld->raycast(ray1, raycastInfo3, 100));
-            test(!mCylinderBody->raycast(ray1));
-            test(!mCylinderShape->raycast(ray1));
-            test(!mWorld->raycast(ray1));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), raycastInfo3));
 
             test(!mCylinderBody->raycast(ray2, raycastInfo3));
             test(!mCylinderShape->raycast(ray2, raycastInfo3));
             test(!mWorld->raycast(ray2, raycastInfo3));
-            test(!mCylinderBody->raycast(ray2));
-            test(!mCylinderShape->raycast(ray2));
-            test(!mWorld->raycast(ray2));
 
             test(!mCylinderBody->raycast(ray3, raycastInfo3));
             test(!mCylinderShape->raycast(ray3, raycastInfo3));
             test(!mWorld->raycast(ray3, raycastInfo3));
-            test(!mCylinderBody->raycast(ray3));
-            test(!mCylinderShape->raycast(ray3));
-            test(!mWorld->raycast(ray3));
 
             test(!mCylinderBody->raycast(ray4, raycastInfo3));
             test(!mCylinderShape->raycast(ray4, raycastInfo3));
             test(!mWorld->raycast(ray4, raycastInfo3));
-            test(!mCylinderBody->raycast(ray4));
-            test(!mCylinderShape->raycast(ray4));
-            test(!mWorld->raycast(ray4));
 
             test(!mCylinderBody->raycast(ray5, raycastInfo3));
             test(!mCylinderShape->raycast(ray5, raycastInfo3));
             test(!mWorld->raycast(ray5, raycastInfo3));
-            test(!mCylinderBody->raycast(ray5));
-            test(!mCylinderShape->raycast(ray5));
-            test(!mWorld->raycast(ray5));
 
             test(!mCylinderBody->raycast(ray6, raycastInfo3));
             test(!mCylinderShape->raycast(ray6, raycastInfo3));
             test(!mWorld->raycast(ray6, raycastInfo3));
-            test(!mCylinderBody->raycast(ray6));
-            test(!mCylinderShape->raycast(ray6));
-            test(!mWorld->raycast(ray6));
 
             test(!mCylinderBody->raycast(ray7, raycastInfo3));
             test(!mCylinderShape->raycast(ray7, raycastInfo3));
             test(!mWorld->raycast(ray7, raycastInfo3));
-            test(!mCylinderBody->raycast(ray7));
-            test(!mCylinderShape->raycast(ray7));
-            test(!mWorld->raycast(ray7));
 
             test(!mCylinderBody->raycast(ray8, raycastInfo3));
             test(!mCylinderShape->raycast(ray8, raycastInfo3));
             test(!mWorld->raycast(ray8, raycastInfo3));
-            test(!mCylinderBody->raycast(ray8));
-            test(!mCylinderShape->raycast(ray8));
-            test(!mWorld->raycast(ray8));
 
             test(!mCylinderBody->raycast(ray9, raycastInfo3));
             test(!mCylinderShape->raycast(ray9, raycastInfo3));
             test(!mWorld->raycast(ray9, raycastInfo3));
-            test(!mCylinderBody->raycast(ray9));
-            test(!mCylinderShape->raycast(ray9));
-            test(!mWorld->raycast(ray9));
 
             test(!mCylinderBody->raycast(ray10, raycastInfo3));
             test(!mCylinderShape->raycast(ray10, raycastInfo3));
             test(!mWorld->raycast(ray10, raycastInfo3));
-            test(!mCylinderBody->raycast(ray10));
-            test(!mCylinderShape->raycast(ray10));
-            test(!mWorld->raycast(ray10));
 
-            test(!mWorld->raycast(ray11, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray12, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray13, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray14, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray15, raycastInfo3, 0.5));
-            test(!mWorld->raycast(ray16, raycastInfo3, 2));
+            test(!mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), raycastInfo3));
+            test(!mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), raycastInfo3));
 
             // ----- Test raycast hits ----- //
             test(mCylinderBody->raycast(ray11, raycastInfo3));
             test(mCylinderShape->raycast(ray11, raycastInfo3));
             test(mWorld->raycast(ray11, raycastInfo3));
-            test(mWorld->raycast(ray11, raycastInfo3, 2));
-            test(mCylinderBody->raycast(ray11));
-            test(mCylinderShape->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.8)), raycastInfo3));
 
             test(mCylinderBody->raycast(ray12, raycastInfo3));
             test(mCylinderShape->raycast(ray12, raycastInfo3));
             test(mWorld->raycast(ray12, raycastInfo3));
-            test(mWorld->raycast(ray12, raycastInfo3, 2));
-            test(mCylinderBody->raycast(ray12));
-            test(mCylinderShape->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo3));
 
             test(mCylinderBody->raycast(ray13, raycastInfo3));
             test(mCylinderShape->raycast(ray13, raycastInfo3));
             test(mWorld->raycast(ray13, raycastInfo3));
-            test(mWorld->raycast(ray13, raycastInfo3, 2));
-            test(mCylinderBody->raycast(ray13));
-            test(mCylinderShape->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo3));
 
             test(mCylinderBody->raycast(ray14, raycastInfo3));
             test(mCylinderShape->raycast(ray14, raycastInfo3));
             test(mWorld->raycast(ray14, raycastInfo3));
-            test(mWorld->raycast(ray14, raycastInfo3, 2));
-            test(mCylinderBody->raycast(ray14));
-            test(mCylinderShape->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo3));
 
             test(mCylinderBody->raycast(ray15, raycastInfo3));
             test(mCylinderShape->raycast(ray15, raycastInfo3));
             test(mWorld->raycast(ray15, raycastInfo3));
-            test(mWorld->raycast(ray15, raycastInfo3, 2));
-            test(mCylinderBody->raycast(ray15));
-            test(mCylinderShape->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo3));
 
             test(mCylinderBody->raycast(ray16, raycastInfo3));
             test(mCylinderShape->raycast(ray16, raycastInfo3));
             test(mWorld->raycast(ray16, raycastInfo3));
-            test(mWorld->raycast(ray16, raycastInfo3, 4));
-            test(mCylinderBody->raycast(ray16));
-            test(mCylinderShape->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo3));
         }
 
         /// Test the CollisionBody::raycast() and
@@ -1497,96 +1173,71 @@ class TestRaycast : public Test {
         void testCompound() {
 
             // ----- Test feedback data ----- //
-            const Matrix3x3 mLocalToWorldMatrix = mLocalShapeToWorld.getOrientation().getMatrix();
 
             // Raycast hit agains the sphere shape
-            Ray ray1(mLocalShape2ToWorld * Vector3(4, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray2(mLocalShape2ToWorld * Vector3(1, 4, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray3(mLocalShape2ToWorld * Vector3(-1, 2, 5), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray4(mLocalShape2ToWorld * Vector3(-5, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray5(mLocalShape2ToWorld * Vector3(0, -4, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray6(mLocalShape2ToWorld * Vector3(-1, 2, -11), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray1(mLocalShape2ToWorld * Vector3(4, 1, 2), mLocalShape2ToWorld * Vector3(-30, 1, 2));
+            Ray ray2(mLocalShape2ToWorld * Vector3(1, 4, -1), mLocalShape2ToWorld * Vector3(1, -30, -1));
+            Ray ray3(mLocalShape2ToWorld * Vector3(-1, 2, 5), mLocalShape2ToWorld * Vector3(-1, 2, -30));
+            Ray ray4(mLocalShape2ToWorld * Vector3(-5, 2, -2), mLocalShape2ToWorld * Vector3(30, 2, -2));
+            Ray ray5(mLocalShape2ToWorld * Vector3(0, -4, 1), mLocalShape2ToWorld * Vector3(0, 30, 1));
+            Ray ray6(mLocalShape2ToWorld * Vector3(-1, 2, -11), mLocalShape2ToWorld * Vector3(-1, 2, 30));
 
             RaycastInfo raycastInfo;
             test(mCompoundBody->raycast(ray1, raycastInfo));
             test(mWorld->raycast(ray1, raycastInfo));
-            test(mWorld->raycast(ray1, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray1));
-            test(mWorld->raycast(ray1));
+            test(mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray2, raycastInfo));
             test(mWorld->raycast(ray2, raycastInfo));
-            test(mWorld->raycast(ray2, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray2));
-            test(mWorld->raycast(ray2));
+            test(mWorld->raycast(Ray(ray2.point1, ray2.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray3, raycastInfo));
             test(mWorld->raycast(ray3, raycastInfo));
-            test(mWorld->raycast(ray3, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray3));
-            test(mWorld->raycast(ray3));
+            test(mWorld->raycast(Ray(ray3.point1, ray3.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray4, raycastInfo));
             test(mWorld->raycast(ray4, raycastInfo));
-            test(mWorld->raycast(ray4, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray4));
-            test(mWorld->raycast(ray4));
+            test(mWorld->raycast(Ray(ray4.point1, ray4.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray5, raycastInfo));
             test(mWorld->raycast(ray5, raycastInfo));
-            test(mWorld->raycast(ray5, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray5));
-            test(mWorld->raycast(ray5));
+            test(mWorld->raycast(Ray(ray5.point1, ray5.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray6, raycastInfo));
             test(mWorld->raycast(ray6, raycastInfo));
-            test(mWorld->raycast(ray6, raycastInfo, 4));
-            test(mCompoundBody->raycast(ray6));
-            test(mWorld->raycast(ray6));
+            test(mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), raycastInfo));
 
             // Raycast hit agains the cylinder shape
-            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 2), mLocalToWorldMatrix * Vector3(-4, 0, 0));
-            Ray ray12(mLocalShapeToWorld * Vector3(1, 9, -1), mLocalToWorldMatrix * Vector3(0, -3, 0));
-            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalToWorldMatrix * Vector3(0, 0, -8));
-            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -2), mLocalToWorldMatrix * Vector3(4, 0, 0));
-            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalToWorldMatrix * Vector3(0, 3, 0));
-            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalToWorldMatrix * Vector3(0, 0, 8));
+            Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalShapeToWorld * Vector3(-30, 1.5, 2));
+            Ray ray12(mLocalShapeToWorld * Vector3(1.5, 9, -1), mLocalShapeToWorld * Vector3(1.5, -30, -1));
+            Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalShapeToWorld * Vector3(-1, 2, -30));
+            Ray ray14(mLocalShapeToWorld * Vector3(-3, 2, -1.5), mLocalShapeToWorld * Vector3(30, 1, -1.5));
+            Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
+            Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
             test(mCompoundBody->raycast(ray11, raycastInfo));
             test(mWorld->raycast(ray11, raycastInfo));
-            test(mWorld->raycast(ray11, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray11));
-            test(mWorld->raycast(ray11));
+            test(mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray12, raycastInfo));
             test(mWorld->raycast(ray12, raycastInfo));
-            test(mWorld->raycast(ray12, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray12));
-            test(mWorld->raycast(ray12));
+            test(mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray13, raycastInfo));
             test(mWorld->raycast(ray13, raycastInfo));
-            test(mWorld->raycast(ray13, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray13));
-            test(mWorld->raycast(ray13));
+            test(mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray14, raycastInfo));
             test(mWorld->raycast(ray14, raycastInfo));
-            test(mWorld->raycast(ray14, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray14));
-            test(mWorld->raycast(ray14));
+            test(mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray15, raycastInfo));
             test(mWorld->raycast(ray15, raycastInfo));
-            test(mWorld->raycast(ray15, raycastInfo, 2));
-            test(mCompoundBody->raycast(ray15));
-            test(mWorld->raycast(ray15));
+            test(mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), raycastInfo));
 
             test(mCompoundBody->raycast(ray16, raycastInfo));
             test(mWorld->raycast(ray16, raycastInfo));
-            test(mWorld->raycast(ray16, raycastInfo, 4));
-            test(mCompoundBody->raycast(ray16));
-            test(mWorld->raycast(ray16));
+            test(mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), raycastInfo));
         }
  };
 
