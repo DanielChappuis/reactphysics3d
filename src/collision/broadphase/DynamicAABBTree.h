@@ -36,6 +36,12 @@ namespace reactphysics3d {
 
 // Declarations
 class BroadPhaseAlgorithm;
+struct RaycastTest;
+
+// Raycast callback method pointer type
+typedef decimal (*RaycastTestCallback) (ProxyShape* shape,
+                                RaycastCallback* userCallback,
+                                const Ray& ray);
 
 // Structure TreeNode
 /**
@@ -160,6 +166,9 @@ class DynamicAABBTree {
 
         /// Report all shapes overlapping with the AABB given in parameter.
         void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb);
+
+        /// Ray casting method
+        void raycast(const Ray& ray, RaycastTest& raycastTest) const;
 };
 
 // Return true if the node is a leaf of the tree

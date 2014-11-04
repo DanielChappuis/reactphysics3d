@@ -80,8 +80,6 @@ struct BroadPhasePair {
         bool operator!=(const BroadPhasePair& broadPhasePair2) const;
 };
 
-
-
 // Return the pair of bodies index
 inline bodyindexpair BroadPhasePair::getBodiesIndexPair() const {
 

@@ -142,6 +142,9 @@ class CollisionDetection {
         /// Compute the collision detection
         void computeCollisionDetection();
 
+        /// Ray casting method
+        void raycast(RaycastCallback* raycastCallback, const Ray& ray) const;
+
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
 
@@ -198,6 +201,17 @@ inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape
 inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
                                                           const Vector3& displacement) {
     mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
+}
+
+// Ray casting method
+inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
+                                        const Ray& ray) const {
+
+    RaycastTest rayCastTest(raycastCallback);
+
+    // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
+    // callback method for each proxy shape hit by the ray in the broad-phase
+    mBroadPhaseAlgorithm.raycast(ray, rayCastTest);
 }
 
 }

@@ -132,6 +132,12 @@ struct Vector2 {
         /// Overloaded operator
         Vector2& operator=(const Vector2& vector);
 
+        /// Return a vector taking the minimum components of two vectors
+        static Vector2 min(const Vector2& vector1, const Vector2& vector2);
+
+        /// Return a vector taking the maximum components of two vectors
+        static Vector2 max(const Vector2& vector1, const Vector2& vector2);
+
         // -------------------- Friends -------------------- //
 
         friend Vector2 operator+(const Vector2& vector1, const Vector2& vector2);
@@ -289,6 +295,18 @@ inline Vector2& Vector2::operator=(const Vector2& vector) {
         y = vector.y;
     }
     return *this;
+}
+
+// Return a vector taking the minimum components of two vectors
+inline Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(std::min(vector1.x, vector2.x),
+                   std::min(vector1.y, vector2.y));
+}
+
+// Return a vector taking the maximum components of two vectors
+inline Vector2 Vector2::max(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(std::max(vector1.x, vector2.x),
+                   std::max(vector1.y, vector2.y));
 }
 
 }

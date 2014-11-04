@@ -120,8 +120,8 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        /// Raycast method with feedback information
-        bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
+        /// Ray cast method
+        void raycast(const Ray& ray, RaycastCallback* raycastCallback) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -139,6 +139,12 @@ inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator
 // Return an iterator to the end of the bodies of the physics world
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
     return mBodies.end();
+}
+
+// Ray cast method
+inline void CollisionWorld::raycast(const Ray& ray,
+                                    RaycastCallback* raycastCallback) const {
+    mCollisionDetection.raycast(raycastCallback, ray);
 }
 
 }

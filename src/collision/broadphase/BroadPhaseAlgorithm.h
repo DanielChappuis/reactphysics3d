@@ -157,6 +157,9 @@ class BroadPhaseAlgorithm {
 
         /// Return true if the two broad-phase collision shapes are overlapping
         bool testOverlappingShapes(ProxyShape* shape1, ProxyShape* shape2) const;
+
+        /// Ray casting method
+        void raycast(const Ray& ray, RaycastTest& raycastTest) const;
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -178,6 +181,12 @@ inline bool BroadPhaseAlgorithm::testOverlappingShapes(ProxyShape* shape1,
 
     // Check if the two AABBs are overlapping
     return aabb1.testCollision(aabb2);
+}
+
+// Ray casting method
+inline void BroadPhaseAlgorithm::raycast(const Ray& ray,
+                                         RaycastTest& raycastTest) const {
+    mDynamicAABBTree.raycast(ray, raycastTest);
 }
 
 }

@@ -156,6 +156,12 @@ class TestVector2 : public Test {
             test(Vector2(7, 537).getMaxAxis() == 1);
             test(Vector2(98, 23).getMaxAxis() == 0);
             test(Vector2(-53, -25).getMaxAxis() == 1);
+
+            // Test the methot that return a max/min vector
+            Vector2 vec1(-5, 4);
+            Vector2 vec2(-8, 6);
+            test(Vector2::min(vec1, vec2) == Vector2(-8, 4));
+            test(Vector2::max(vec1, vec2) == Vector2(-5, 6));
         }
 
         /// Test the operators

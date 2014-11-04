@@ -166,10 +166,4 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
     }
 }
 
-/// Raycast method with feedback information
-bool CollisionWorld::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
-    // TODO : Implement this method
-    return false;
-}
-
 

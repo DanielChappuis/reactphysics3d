@@ -222,6 +222,8 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     // For each collision shape of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
+        // TODO : Test for broad-phase hit for each shape before testing actual shape raycast
+
         // Test if the ray hits the collision shape
         if (shape->raycast(rayTemp, raycastInfo)) {
             rayTemp.maxFraction = raycastInfo.hitFraction;
