@@ -392,7 +392,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
+    v = transform1.getOrientation() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();

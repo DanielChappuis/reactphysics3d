@@ -133,7 +133,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
             pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
-            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            Vector3 normal = transform1.getOrientation() * (-v.getUnit());
             decimal penetrationDepth = margin - dist;
 			
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
@@ -165,7 +165,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
             pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
-            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            Vector3 normal = transform1.getOrientation() * (-v.getUnit());
             decimal penetrationDepth = margin - dist;
 			
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
@@ -195,7 +195,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
             pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
-            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            Vector3 normal = transform1.getOrientation() * (-v.getUnit());
             decimal penetrationDepth = margin - dist;
 			
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
@@ -232,7 +232,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
             pB = body2Tobody1.getInverse() * (pB + (collisionShape2->getMargin() / dist) * v);
 
             // Compute the contact info
-            Vector3 normal = transform1.getOrientation().getMatrix() * (-v.getUnit());
+            Vector3 normal = transform1.getOrientation() * (-v.getUnit());
             decimal penetrationDepth = margin - dist;
 			
 			// Reject the contact if the penetration depth is negative (due too numerical errors)
