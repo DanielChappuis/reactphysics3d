@@ -188,6 +188,44 @@ void CollisionBody::updateBroadPhaseState() const {
     }
 }
 
+// Set whether or not the body is active
+void CollisionBody::setIsActive(bool isActive) {
+
+    // If the state does not change
+    if (mIsActive == isActive) return;
+
+    Body::setIsActive(isActive);
+
+    // TODO : Implement this
+
+    // If we have to activate the body
+    if (isActive) {
+
+        // For each proxy shape of the body
+        for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+            // Compute the world-space AABB of the new collision shape
+            AABB aabb;
+            shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->mLocalToBodyTransform);
+
+            // Add the proxy shape to the collision detection
+            mWorld.mCollisionDetection.addProxyCollisionShape(shape, aabb);
+        }
+    }
+    else {  // If we have to deactivate the body
+
+        // For each proxy shape of the body
+        for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+
+            // Remove the proxy shape from the collision detection
+            mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+        }
+
+        // Reset the contact manifold list of the body
+        resetContactManifoldsList();
+    }
+}
+
 // Ask the broad-phase to test again the collision shapes of the body for collision
 // (as if the body has moved).
 void CollisionBody::askForBroadPhaseCollisionCheck() const {

@@ -134,6 +134,9 @@ class CollisionBody : public Body {
         /// Set the type of the body
         void setType(BodyType type);
 
+        /// Set whether or not the body is active
+        virtual void setIsActive(bool isActive);
+
         /// Return the current position and orientation
         const Transform& getTransform() const;
 

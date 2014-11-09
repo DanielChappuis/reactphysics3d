@@ -54,8 +54,14 @@ class Body {
         /// True if the body is allowed to go to sleep for better efficiency
         bool mIsAllowedToSleep;
 
-        // TODO : Use this variable to make bodies active or not
-        /// True if the body is active
+        /// True if the body is active.
+        /// An inactive body does not participate in collision detection,
+        /// is not simulated and will not be hit in a ray casting query.
+        /// A body is active by default. If you set this
+        /// value to "false", all the proxy shapes of this body will be
+        /// removed from the broad-phase. If you set this value to "true",
+        /// all the proxy shapes will be added to the broad-phase. A joint
+        /// connected to an inactive body will also be inactive.
         bool mIsActive;
 
         /// True if the body is sleeping (for sleeping technique)
@@ -99,6 +105,9 @@ class Body {
 
         /// Return true if the body is active
         bool isActive() const;
+
+        /// Set whether or not the body is active
+        virtual void setIsActive(bool isActive);
 
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
@@ -151,6 +160,11 @@ inline bool Body::isSleeping() const {
 // Return true if the body is active
 inline bool Body::isActive() const {
     return mIsActive;
+}
+
+// Set whether or not the body is active
+inline void Body::setIsActive(bool isActive) {
+    mIsActive = isActive;
 }
 
 // Set the variable to know whether or not the body is sleeping
