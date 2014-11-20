@@ -58,7 +58,7 @@ CollisionBody::~CollisionBody() {
 /// shapes will also be destroyed automatically. Because an internal copy of the collision shape
 /// you provided is performed, you can delete it right after calling this method. The second
 /// parameter is the transformation that transform the local-space of the collision shape into
-/// the local-space of the body. By default, the second parameter is the identity transform.
+/// the local-space of the body.
 /// This method will return a pointer to the proxy collision shape that links the body with
 /// the collision shape you have added.
 ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
@@ -102,11 +102,16 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
     // If the the first proxy shape is the one to remove
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
-        mWorld.mCollisionDetection.removeProxyCollisionShape(current);
+
+        if (mIsActive) {
+            mWorld.mCollisionDetection.removeProxyCollisionShape(current);
+        }
+
         mWorld.removeCollisionShape(proxyShape->mCollisionShape);
         current->ProxyShape::~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
         mNbCollisionShapes--;
+        assert(mNbCollisionShapes >= 0);
         return;
     }
 
@@ -119,7 +124,11 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             // Remove the proxy collision shape
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
-            mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
+
+            if (mIsActive) {
+                mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
+            }
+
             mWorld.removeCollisionShape(proxyShape->mCollisionShape);
             elementToRemove->ProxyShape::~ProxyShape();
             mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
@@ -137,6 +146,8 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
 // Remove all the collision shapes
 void CollisionBody::removeAllCollisionShapes() {
 
+    // TODO : Remove all the contact manifolds at the end of this call
+
     ProxyShape* current = mProxyCollisionShapes;
 
     // Look for the proxy shape that contains the collision shape in parameter
@@ -144,7 +155,11 @@ void CollisionBody::removeAllCollisionShapes() {
 
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
-        mWorld.mCollisionDetection.removeProxyCollisionShape(current);
+
+        if (mIsActive) {
+            mWorld.mCollisionDetection.removeProxyCollisionShape(current);
+        }
+
         mWorld.removeCollisionShape(current->mCollisionShape);
         current->ProxyShape::~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
@@ -195,8 +210,6 @@ void CollisionBody::setIsActive(bool isActive) {
     if (mIsActive == isActive) return;
 
     Body::setIsActive(isActive);
-
-    // TODO : Implement this
 
     // If we have to activate the body
     if (isActive) {

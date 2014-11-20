@@ -144,8 +144,8 @@ class CollisionBody : public Body {
         void setTransform(const Transform& transform);
 
         /// Add a collision shape to the body.
-        ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
-                                            const Transform& transform = Transform::identity());
+        virtual ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+                                      const Transform& transform);
 
         /// Remove a collision shape from the body
         virtual void removeCollisionShape(const ProxyShape* proxyShape);

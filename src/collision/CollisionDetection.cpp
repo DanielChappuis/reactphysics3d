@@ -142,14 +142,6 @@ void CollisionDetection::computeNarrowPhase() {
         if (narrowPhaseAlgorithm.testCollision(shape1, shape2, contactInfo)) {
             assert(contactInfo != NULL);
 
-            /*
-            // Set the bodies of the contact
-            contactInfo->body1 = dynamic_cast<RigidBody*>(body1);
-            contactInfo->body2 = dynamic_cast<RigidBody*>(body2);
-            assert(contactInfo->body1 != NULL);
-            assert(contactInfo->body2 != NULL);
-            */
-
             // Create a new contact
             createContact(pair, contactInfo);
 
@@ -256,7 +248,8 @@ void CollisionDetection::addContactManifoldToBody(ContactManifold* contactManifo
                                                                      body1->mContactManifoldsList);
     body1->mContactManifoldsList = listElement1;
 
-    // Add the joint at the beginning of the linked list of joints of the second body
+    // Add the contact manifold at the beginning of the linked
+    // list of the contact manifolds of the second body
     void* allocatedMemory2 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
     ContactManifoldListElement* listElement2 = new (allocatedMemory2)
                                                   ContactManifoldListElement(contactManifold,
