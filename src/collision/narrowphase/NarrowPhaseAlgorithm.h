@@ -29,7 +29,6 @@
 // Libraries
 #include "body/Body.h"
 #include "constraint/ContactPoint.h"
-#include "collision/broadphase/PairManager.h"
 #include "memory/MemoryAllocator.h"
 #include "engine/OverlappingPair.h"
 
