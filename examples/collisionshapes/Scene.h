@@ -41,7 +41,7 @@
 
 // Constants
 const int NB_BOXES = 2;
-const int NB_SPHERES = 1;
+const int NB_CUBES = 1;
 const int NB_CONES = 3;
 const int NB_CYLINDERS = 2;
 const int NB_CAPSULES = 1;
@@ -96,9 +96,6 @@ class Scene {
 
         /// All the dumbbell of the scene
         std::vector<Dumbbell*> mDumbbells;
-
-        /// All the visual contact points
-        std::vector<VisualContactPoint*> mContactPoints;
 
         /// Box for the floor
         Box* mFloor;

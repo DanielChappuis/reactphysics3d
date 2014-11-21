@@ -242,9 +242,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Return the number of joints in the world
         uint getNbJoints() const;
 
-        /// Return the number of contact manifolds in the world
-        uint getNbContactManifolds() const;
-
         /// Return the current physics time (in seconds)
         long double getPhysicsTime() const;
 
@@ -253,9 +250,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Return an iterator to the end of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
-
-        /// Return a reference to the contact manifolds of the world
-        const std::vector<ContactManifold*>& getContactManifolds() const;
 
         /// Return true if the sleeping technique is enabled
         bool isSleepingEnabled() const;
@@ -380,18 +374,6 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator
 // Return an iterator to the end of the bodies of the physics world
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator() {
     return mRigidBodies.end();
-}
-
-// Return a reference to the contact manifolds of the world
-// TODO : DELETE THIS METHOD AND USE EVENT LISTENER IN EXAMPLES INSTEAD
-inline const std::vector<ContactManifold*>& DynamicsWorld::getContactManifolds() const {
-    return mCollisionDetection.mContactManifolds;
-}
-
-// Return the number of contact manifolds in the world
-// TODO : DELETE THIS METHOD AND USE EVENT LISTENER IN EXAMPLES INSTEAD
-inline uint DynamicsWorld::getNbContactManifolds() const {
-    return mCollisionDetection.mContactManifolds.size();
 }
 
 // Return the current physics time (in seconds)

@@ -66,9 +66,6 @@ class CollisionWorld {
         /// All the collision shapes of the world
         std::list<CollisionShape*> mCollisionShapes;
 
-        /// Broad-phase overlapping pairs of bodies
-        std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
-
         /// Current body ID
         bodyindex mCurrentBodyID;
 

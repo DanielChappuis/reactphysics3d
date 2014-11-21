@@ -60,7 +60,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
@@ -132,7 +132,9 @@ void Scene::simulate() {
     if (mIsRunning) {
 
         counter++;
-        if (counter == 1000) mIsRunning = false;
+        if (counter == 400) {
+            //mIsRunning = false;
+        }
 
         // Take a simulation step
         mDynamicsWorld->update();

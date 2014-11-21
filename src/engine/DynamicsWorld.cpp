@@ -57,14 +57,6 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
 // Destructor
 DynamicsWorld::~DynamicsWorld() {
 
-    // Delete the remaining overlapping pairs
-    map<std::pair<bodyindex, bodyindex>, OverlappingPair*>::iterator it;
-    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); it++) {
-        // Delete the overlapping pair
-        (*it).second->OverlappingPair::~OverlappingPair();
-        mMemoryAllocator.release((*it).second, sizeof(OverlappingPair));
-    }
-
     // Release the memory allocated for the islands
     for (uint i=0; i<mNbIslands; i++) {
 
@@ -116,9 +108,6 @@ void DynamicsWorld::update() {
 
     // While the time accumulator is not empty
     while(mTimer.isPossibleToTakeStep()) {
-
-        // Remove all contact manifolds
-        mCollisionDetection.mContactManifolds.clear();
 
         // Reset all the contact manifolds lists of each body
         resetContactManifoldListsOfBodies();
@@ -676,13 +665,12 @@ void DynamicsWorld::computeIslands() {
     }
     mNbIslands = 0;
 
+    int nbContactManifolds = 0;
+
     // Reset all the isAlreadyInIsland variables of bodies, joints and contact manifolds
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-        (*it)->mIsAlreadyInIsland = false;
-    }
-    for (std::vector<ContactManifold*>::iterator it = mCollisionDetection.mContactManifolds.begin();
-         it != mCollisionDetection.mContactManifolds.end(); ++it) {
-        (*it)->mIsAlreadyInIsland = false;
+        int nbBodyManifolds = (*it)->resetIsAlreadyInIslandAndCountManifolds();
+        nbContactManifolds += nbBodyManifolds;
     }
     for (std::set<Joint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
@@ -715,7 +703,7 @@ void DynamicsWorld::computeIslands() {
         // Create the new island
         void* allocatedMemoryIsland = mMemoryAllocator.allocate(sizeof(Island));
         mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies,
-                                                                  mCollisionDetection.mContactManifolds.size(),
+                                                                  nbContactManifolds,
                                                                   mJoints.size(), mMemoryAllocator);
 
         // While there are still some bodies to visit in the stack

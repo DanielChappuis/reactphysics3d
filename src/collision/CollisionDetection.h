@@ -80,10 +80,6 @@ class CollisionDetection {
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
 
-        /// All the contact constraints
-        // TODO : Remove this variable (we will use the ones in the island now)
-        std::vector<ContactManifold*> mContactManifolds;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor

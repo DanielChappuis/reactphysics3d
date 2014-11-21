@@ -79,8 +79,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/shapes/CylinderShape.cpp"
     "src/collision/shapes/SphereShape.h"
     "src/collision/shapes/SphereShape.cpp"
-    "src/collision/BroadPhasePair.h"
-    "src/collision/BroadPhasePair.cpp"
     "src/collision/RaycastInfo.h"
     "src/collision/RaycastInfo.cpp"
     "src/collision/ProxyShape.h"

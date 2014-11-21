@@ -210,6 +210,7 @@ class ContactManifold {
 
         friend class DynamicsWorld;
         friend class Island;
+        friend class CollisionBody;
 };
 
 // Return a pointer to the first body of the contact manifold

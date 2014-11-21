@@ -118,6 +118,9 @@ class CollisionBody : public Body {
         /// (as if the body has moved).
         void askForBroadPhaseCollisionCheck() const;
 
+        /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
+        int resetIsAlreadyInIslandAndCountManifolds();
+
     public :
 
         // -------------------- Methods -------------------- //

@@ -102,7 +102,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     }
 
     // Create all the spheres of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position
         float angle = i * 35.0f;
@@ -301,15 +301,6 @@ Scene::~Scene() {
         delete (*it);
     }
 
-    // Destroy all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
-        delete (*it);
-    }
-
-    // Destroy the static data for the visual contact points
-    VisualContactPoint::destroyStaticData();
-
     // Destroy the rigid body of the floor
     mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
 
@@ -380,27 +371,6 @@ void Scene::simulate() {
             (*it)->updateTransform();
         }
 
-        // Destroy all the visual contact points
-        for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-             it != mContactPoints.end(); ++it) {
-            delete (*it);
-        }
-        mContactPoints.clear();
-
-        // Generate the new visual contact points
-        const std::vector<rp3d::ContactManifold*>& manifolds = mDynamicsWorld->getContactManifolds();
-        for (std::vector<rp3d::ContactManifold*>::const_iterator it = manifolds.begin();
-             it != manifolds.end(); ++it) {
-            for (unsigned int i=0; i<(*it)->getNbContactPoints(); i++) {
-                rp3d::ContactPoint* point = (*it)->getContactPoint(i);
-
-                const rp3d::Vector3 pos = point->getWorldPointOnBody1();
-                openglframework::Vector3 position(pos.x, pos.y, pos.z);
-                VisualContactPoint* visualPoint = new VisualContactPoint(position);
-                mContactPoints.push_back(visualPoint);
-            }
-        }
-
         mFloor->updateTransform();
     }
 }
@@ -463,12 +433,6 @@ void Scene::render() {
     // Render all the dumbbells of the scene
     for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
          it != mDumbbells.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
-    }
-
-    // Render all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
 

@@ -246,8 +246,28 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
     // For all the proxy collision shapes of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
-        mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(shape);
+        mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(shape);  
     }
+}
+
+// Reset the mIsAlreadyInIsland variable of the body and contact manifolds.
+/// This method also returns the number of contact manifolds of the body.
+int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
+
+    mIsAlreadyInIsland = false;
+
+    int nbManifolds = 0;
+
+    // Reset the mIsAlreadyInIsland variable of the contact manifolds for
+    // this body
+    ContactManifoldListElement* currentElement = mContactManifoldsList;
+    while (currentElement != NULL) {
+        currentElement->contactManifold->mIsAlreadyInIsland = false;
+        currentElement = currentElement->next;
+        nbManifolds++;
+    }
+
+    return nbManifolds;
 }
 
 // Return true if a point is inside the collision body

@@ -220,9 +220,6 @@ void CollisionDetection::createContact(OverlappingPair* overlappingPair,
     // Add the contact to the contact cache of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
-    // Add the contact manifold to the list of contact manifolds
-    mContactManifolds.push_back(overlappingPair->getContactManifold());
-
     // Add the contact manifold into the list of contact manifolds
     // of the two bodies involved in the contact
     addContactManifoldToBody(overlappingPair->getContactManifold(),
