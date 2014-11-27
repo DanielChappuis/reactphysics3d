@@ -215,14 +215,17 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
 
     // Compute the normal direction for hit against side of the cone
     if (hitIndex != 2) {
-        decimal m = std::sqrt(localHitPoint[hitIndex].x * localHitPoint[hitIndex].x +
-                              localHitPoint[hitIndex].z * localHitPoint[hitIndex].z);
         decimal h = decimal(2.0) * mHalfHeight;
-        decimal hOverR = h / mRadius;
-        decimal hOverROverM = hOverR / m;
-        localNormal[hitIndex].x = localHitPoint[hitIndex].x * hOverROverM;
-        localNormal[hitIndex].y = mRadius / h;
-        localNormal[hitIndex].z = localHitPoint[hitIndex].z * hOverROverM;
+        decimal value1 = (localHitPoint[hitIndex].x * localHitPoint[hitIndex].x +
+                          localHitPoint[hitIndex].z * localHitPoint[hitIndex].z);
+        decimal rOverH = mRadius / h;
+        decimal value2 = decimal(1.0) + rOverH * rOverH;
+        decimal factor = decimal(1.0) / std::sqrt(value1 * value2);
+        decimal x = localHitPoint[hitIndex].x * factor;
+        decimal z = localHitPoint[hitIndex].z * factor;
+        localNormal[hitIndex].x = x;
+        localNormal[hitIndex].y = std::sqrt(x * x + z * z) * rOverH;
+        localNormal[hitIndex].z = z;
     }
 
     raycastInfo.body = proxyShape->getBody();

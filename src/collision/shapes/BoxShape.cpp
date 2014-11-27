@@ -90,8 +90,10 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
             // Compute the intersection of the ray with the near and far plane of the slab
             decimal oneOverD = decimal(1.0) / rayDirection[i];
             decimal t1 = (-mExtent[i] - point1[i]) * oneOverD;
-            decimal t2 = (mExtent[i] - point1 [i]) * oneOverD;
-            currentNormal = -mExtent;
+            decimal t2 = (mExtent[i] - point1[i]) * oneOverD;
+            currentNormal[0] = (i == 0) ? -mExtent[i] : decimal(0.0);
+            currentNormal[1] = (i == 1) ? -mExtent[i] : decimal(0.0);
+            currentNormal[2] = (i == 2) ? -mExtent[i] : decimal(0.0);
 
             // Swap t1 and t2 if need so that t1 is intersection with near plane and
             // t2 with far plane
@@ -125,6 +127,7 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = tMin;
     raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    normalDirection.normalize();
     raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
 
     return true;
