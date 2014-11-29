@@ -25,7 +25,7 @@
 
 // Libraries
 #include "Body.h"
-#include "../collision/shapes/CollisionShape.h"
+#include "collision/shapes/CollisionShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 // Constructor
 Body::Body(bodyindex id)
      : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0) {
+       mIsSleeping(false), mSleepTime(0), mUserData(NULL) {
 
 }
 

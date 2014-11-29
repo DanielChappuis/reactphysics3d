@@ -46,7 +46,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-5.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -60,7 +60,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
@@ -92,6 +92,8 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
 
     // Start the simulation
     startSimulation();
+
+    counter=0;
 }
 
 // Destructor
@@ -128,6 +130,11 @@ void Scene::simulate() {
 
     // If the physics simulation is running
     if (mIsRunning) {
+
+        counter++;
+        if (counter == 400) {
+            //mIsRunning = false;
+        }
 
         // Take a simulation step
         mDynamicsWorld->update();

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* Copyright (c) 2010-2014 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,21 +23,65 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_RAY_H
+#define REACTPHYSICS3D_RAY_H
+
 // Libraries
-#include "NoBroadPhaseAlgorithm.h"
-#include "../CollisionDetection.h"
+#include "Vector3.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
-using namespace std;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-NoBroadPhaseAlgorithm::NoBroadPhaseAlgorithm(CollisionDetection& collisionDetection)
-                      : BroadPhaseAlgorithm(collisionDetection) {
+// Class Ray
+/**
+ * This structure represents a 3D ray represented by two points.
+ * The ray goes from point1 to point1 + maxFraction * (point2 - point1).
+ * The points are specified in world-space coordinates.
+ */
+struct Ray {
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// First point of the ray (origin)
+        Vector3 point1;
+
+        /// Second point of the ray
+        Vector3 point2;
+
+        /// Maximum fraction value
+        decimal maxFraction;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor with arguments
+        Ray(const Vector3& p1, const Vector3& p2, decimal maxFrac = decimal(1.0))
+           : point1(p1), point2(p2), maxFraction(maxFrac) {
+
+        }
+
+        /// Copy-constructor
+        Ray(const Ray& ray) : point1(ray.point1), point2(ray.point2), maxFraction(ray.maxFraction) {
+
+        }
+
+        /// Destructor
+        ~Ray() {
+
+        }
+
+        /// Overloaded assignment operator
+        Ray& operator=(const Ray& ray) {
+            if (&ray != this) {
+                point1 = ray.point1;
+                point2 = ray.point2;
+                maxFraction = ray.maxFraction;
+            }
+            return *this;
+        }
+};
 
 }
 
-// Destructor
-NoBroadPhaseAlgorithm::~NoBroadPhaseAlgorithm() {
-
-}
+#endif

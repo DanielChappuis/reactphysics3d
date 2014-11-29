@@ -27,8 +27,8 @@
 #define TEST_MATRIX2X2_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Matrix2x2.h"
+#include "Test.h"
+#include "mathematics/Matrix2x2.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -54,8 +54,8 @@ class TestMatrix2x2 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestMatrix2x2() : mIdentity(Matrix2x2::identity()),
-                          mMatrix1(2, 24, -4, 5) {
+        TestMatrix2x2(const std::string& name)
+               : Test(name), mIdentity(Matrix2x2::identity()), mMatrix1(2, 24, -4, 5) {
 
         }
 

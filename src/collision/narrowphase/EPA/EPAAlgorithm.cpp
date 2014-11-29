@@ -25,7 +25,7 @@
 
 // Libraries
 #include "EPAAlgorithm.h"
-#include "../GJK/GJKAlgorithm.h"
+#include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
 
 // We want to use the ReactPhysics3D namespace
@@ -83,9 +83,9 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                           CollisionShape* collisionShape1,
+                                                           ProxyShape* collisionShape1,
                                                            const Transform& transform1,
-                                                           CollisionShape* collisionShape2,
+                                                           ProxyShape* collisionShape2,
                                                            const Transform& transform2,
                                                            Vector3& v, ContactPointInfo*& contactInfo) {
 
@@ -392,7 +392,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
+    v = transform1.getOrientation() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
@@ -400,9 +400,9 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                             penetrationDepth,
-                                                                             pALocal, pBLocal);
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                          ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                           penetrationDepth, pALocal, pBLocal);
     
     return true;
 }

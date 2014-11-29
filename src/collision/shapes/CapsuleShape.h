@@ -28,7 +28,8 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -63,6 +64,25 @@ class CapsuleShape : public CollisionShape {
         /// Private assignment operator
         CapsuleShape& operator=(const CapsuleShape& shape);
 
+        /// Return a local support point in a given direction with the object margin.
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Raycasting method between a ray one of the two spheres end cap of the capsule
+        bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
+                                     const Vector3& sphereCenter, decimal maxFraction,
+                                     Vector3& hitLocalPoint, decimal& hitFraction) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -84,12 +104,6 @@ class CapsuleShape : public CollisionShape {
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin.
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;

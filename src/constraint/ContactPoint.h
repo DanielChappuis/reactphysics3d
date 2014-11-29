@@ -27,10 +27,10 @@
 #define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
-#include "../body/RigidBody.h"
-#include "../configuration.h"
-#include "../mathematics/mathematics.h"
-#include "../configuration.h"
+#include "body/CollisionBody.h"
+#include "configuration.h"
+#include "mathematics/mathematics.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -58,11 +58,11 @@ struct ContactPointInfo {
 
         // -------------------- Attributes -------------------- //
 
-        /// First rigid body of the constraint
-        RigidBody* body1;
+        /// First proxy collision shape of the contact
+        ProxyShape* shape1;
 
-        /// Second rigid body of the constraint
-        RigidBody* body2;
+        /// Second proxy collision shape of the contact
+        ProxyShape* shape2;
 
         /// Normal vector the the collision contact in world space
         const Vector3 normal;
@@ -79,10 +79,12 @@ struct ContactPointInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(const Vector3& normal, decimal penetrationDepth,
-                         const Vector3& localPoint1, const Vector3& localPoint2)
-            : normal(normal), penetrationDepth(penetrationDepth),
-              localPoint1(localPoint1), localPoint2(localPoint2) {
+        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const Vector3& normal,
+                         decimal penetrationDepth, const Vector3& localPoint1,
+                         const Vector3& localPoint2)
+            : shape1(proxyShape1), shape2(proxyShape2), normal(normal),
+              penetrationDepth(penetrationDepth), localPoint1(localPoint1),
+              localPoint2(localPoint2) {
 
         }
 };
@@ -99,10 +101,10 @@ class ContactPoint {
         // -------------------- Attributes -------------------- //
 
         /// First rigid body of the contact
-        RigidBody* mBody1;
+        CollisionBody* mBody1;
 
         /// Second rigid body of the contact
-        RigidBody* mBody2;
+        CollisionBody* mBody2;
 
         /// Normal vector of the contact (From body1 toward body2) in world space
         const Vector3 mNormal;
@@ -156,10 +158,10 @@ class ContactPoint {
         ~ContactPoint();
 
         /// Return the reference to the body 1
-        RigidBody* const getBody1() const;
+        CollisionBody* const getBody1() const;
 
         /// Return the reference to the body 2
-        RigidBody* const getBody2() const;
+        CollisionBody* const getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -229,12 +231,12 @@ class ContactPoint {
 };
 
 // Return the reference to the body 1
-inline RigidBody* const ContactPoint::getBody1() const {
+inline CollisionBody* const ContactPoint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
-inline RigidBody* const ContactPoint::getBody2() const {
+inline CollisionBody* const ContactPoint::getBody2() const {
     return mBody2;
 }
 

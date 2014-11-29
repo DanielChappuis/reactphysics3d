@@ -29,11 +29,12 @@
 // Libraries
 #include <stdexcept>
 #include <cassert>
-#include "../configuration.h"
+#include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
+// TODO : Make this class abstract
 // Class Body
 /**
  * This class is an abstract class to represent a body of the physics engine.
@@ -53,7 +54,14 @@ class Body {
         /// True if the body is allowed to go to sleep for better efficiency
         bool mIsAllowedToSleep;
 
-        /// True if the body is active
+        /// True if the body is active.
+        /// An inactive body does not participate in collision detection,
+        /// is not simulated and will not be hit in a ray casting query.
+        /// A body is active by default. If you set this
+        /// value to "false", all the proxy shapes of this body will be
+        /// removed from the broad-phase. If you set this value to "true",
+        /// all the proxy shapes will be added to the broad-phase. A joint
+        /// connected to an inactive body will also be inactive.
         bool mIsActive;
 
         /// True if the body is sleeping (for sleeping technique)
@@ -61,6 +69,9 @@ class Body {
 
         /// Elapsed time since the body velocity was bellow the sleep velocity
         decimal mSleepTime;
+
+        /// Pointer that can be used to attach user data to the body
+        void* mUserData;
 
         // -------------------- Methods -------------------- //
 
@@ -95,8 +106,17 @@ class Body {
         /// Return true if the body is active
         bool isActive() const;
 
+        /// Set whether or not the body is active
+        virtual void setIsActive(bool isActive);
+
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
+
+        /// Return a pointer to the user data attached to this body
+        void* getUserData() const;
+
+        /// Attach user data to this body
+        void setUserData(void* userData);
 
         /// Smaller than operator
         bool operator<(const Body& body2) const;
@@ -142,6 +162,11 @@ inline bool Body::isActive() const {
     return mIsActive;
 }
 
+// Set whether or not the body is active
+inline void Body::setIsActive(bool isActive) {
+    mIsActive = isActive;
+}
+
 // Set the variable to know whether or not the body is sleeping
 inline void Body::setIsSleeping(bool isSleeping) {
 
@@ -155,6 +180,16 @@ inline void Body::setIsSleeping(bool isSleeping) {
     }
 
     mIsSleeping = isSleeping;
+}
+
+// Return a pointer to the user data attached to this body
+inline void* Body::getUserData() const {
+    return mUserData;
+}
+
+// Attach user data to this body
+inline void Body::setUserData(void* userData) {
+    mUserData = userData;
 }
 
 // Smaller than operator

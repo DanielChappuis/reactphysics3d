@@ -35,16 +35,18 @@
 #include "Cylinder.h"
 #include "Capsule.h"
 #include "ConvexMesh.h"
+#include "Dumbbell.h"
 #include "VisualContactPoint.h"
 #include "../common/Viewer.h"
 
 // Constants
-const int NB_BOXES = 3;
-const int NB_SPHERES = 3;
+const int NB_BOXES = 2;
+const int NB_CUBES = 1;
 const int NB_CONES = 3;
-const int NB_CYLINDERS = 3;
-const int NB_CAPSULES = 3;
-const int NB_MESHES = 3;
+const int NB_CYLINDERS = 2;
+const int NB_CAPSULES = 1;
+const int NB_MESHES = 2;
+const int NB_COMPOUND_SHAPES = 2;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;
@@ -53,6 +55,7 @@ const float CYLINDER_RADIUS = 1.0f;
 const float CYLINDER_HEIGHT = 5.0f;
 const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
+const float DUMBBELL_HEIGHT = 1.0f;
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);        // Floor dimensions in meters
 const float BOX_MASS = 1.0f;
 const float CONE_MASS = 1.0f;
@@ -91,8 +94,8 @@ class Scene {
         /// All the convex meshes of the scene
         std::vector<ConvexMesh*> mConvexMeshes;
 
-        /// All the visual contact points
-        std::vector<VisualContactPoint*> mContactPoints;
+        /// All the dumbbell of the scene
+        std::vector<Dumbbell*> mDumbbells;
 
         /// Box for the floor
         Box* mFloor;

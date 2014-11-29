@@ -25,6 +25,8 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "engine/Profiler.h"
+#include "body/CollisionBody.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -47,8 +49,10 @@ CollisionShape::~CollisionShape() {
     assert(mNbSimilarCreatedShapes == 0);
 }
 
-// Update the AABB of a body using its collision shape
-void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
+// Compute the world-space AABB of the collision shape given a transform
+void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
+
+    PROFILE("CollisionShape::computeAABB()");
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;

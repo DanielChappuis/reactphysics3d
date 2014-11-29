@@ -27,8 +27,8 @@
 #define REACTPHYSICS3D_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
-#include "../configuration.h"
-#include "../decimal.h"
+#include "configuration.h"
+#include "decimal.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace

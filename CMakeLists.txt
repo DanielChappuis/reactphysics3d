@@ -4,8 +4,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # Project configuration
 PROJECT(REACTPHYSICS3D)
 
-# Default build type
-SET(CMAKE_BUILD_TYPE "Debug")
+# Build type
+IF (NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE "Release")
+ENDIF (NOT CMAKE_BUILD_TYPE)
 
 # Where to build the library
 SET(LIBRARY_OUTPUT_PATH "lib")
@@ -43,12 +45,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/body/RigidBody.cpp"
     "src/collision/broadphase/BroadPhaseAlgorithm.h"
     "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
-    "src/collision/broadphase/NoBroadPhaseAlgorithm.h"
-    "src/collision/broadphase/NoBroadPhaseAlgorithm.cpp"
-    "src/collision/broadphase/PairManager.h"
-    "src/collision/broadphase/PairManager.cpp"
-    "src/collision/broadphase/SweepAndPruneAlgorithm.h"
-    "src/collision/broadphase/SweepAndPruneAlgorithm.cpp"
+    "src/collision/broadphase/DynamicAABBTree.h"
+    "src/collision/broadphase/DynamicAABBTree.cpp"
     "src/collision/narrowphase/EPA/EdgeEPA.h"
     "src/collision/narrowphase/EPA/EdgeEPA.cpp"
     "src/collision/narrowphase/EPA/EPAAlgorithm.h"
@@ -81,8 +79,10 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/shapes/CylinderShape.cpp"
     "src/collision/shapes/SphereShape.h"
     "src/collision/shapes/SphereShape.cpp"
-    "src/collision/BroadPhasePair.h"
-    "src/collision/BroadPhasePair.cpp"
+    "src/collision/RaycastInfo.h"
+    "src/collision/RaycastInfo.cpp"
+    "src/collision/ProxyShape.h"
+    "src/collision/ProxyShape.cpp"
     "src/collision/CollisionDetection.h"
     "src/collision/CollisionDetection.cpp"
     "src/constraint/BallAndSocketJoint.h"
@@ -132,9 +132,11 @@ SET (REACTPHYSICS3D_SOURCES
     "src/mathematics/Vector2.h"
     "src/mathematics/Vector2.cpp"
     "src/mathematics/Vector3.h"
+    "src/mathematics/Ray.h"
     "src/mathematics/Vector3.cpp"
     "src/memory/MemoryAllocator.h"
     "src/memory/MemoryAllocator.cpp"
+    "src/memory/Stack.h"
 )
 
 # Create the library

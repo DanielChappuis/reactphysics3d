@@ -27,8 +27,8 @@
 #define REACTPHYSICS3D_SLIDER_JOINT_H
 
 // Libraries
-#include "../mathematics/mathematics.h"
-#include "../engine/ConstraintSolver.h"
+#include "mathematics/mathematics.h"
+#include "engine/ConstraintSolver.h"
 
 namespace reactphysics3d {
 

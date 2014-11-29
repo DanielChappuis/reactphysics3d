@@ -50,6 +50,9 @@ class Test {
 
         // ---------- Attributes ---------- //
 
+        /// Name of the test
+        std::string mName;
+
         /// Number of tests that passed
         long mNbPassedTests;
 
@@ -87,10 +90,10 @@ class Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        Test(std::ostream* stream = &std::cout);
+        Test(const std::string& name, std::ostream* stream = &std::cout);
 
         /// Destructor
-        ~Test();
+        virtual ~Test();
 
         /// Return the number of passed tests
         long getNbPassedTests() const;

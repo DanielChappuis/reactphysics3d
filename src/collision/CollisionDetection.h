@@ -27,13 +27,13 @@
 #define REACTPHYSICS3D_COLLISION_DETECTION_H
 
 // Libraries
-#include "../body/CollisionBody.h"
+#include "body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
-#include "BroadPhasePair.h"
+#include "engine/OverlappingPair.h"
 #include "narrowphase/GJK/GJKAlgorithm.h"
 #include "narrowphase/SphereVsSphereAlgorithm.h"
-#include "../memory/MemoryAllocator.h"
-#include "../constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
+#include "constraint/ContactPoint.h"
 #include <vector>
 #include <map>
 #include <set>
@@ -62,14 +62,11 @@ class CollisionDetection {
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
-        /// Memory allocator
-        MemoryAllocator& mMemoryAllocator;
-
         /// Broad-phase overlapping pairs
-        std::map<bodyindexpair, BroadPhasePair*> mOverlappingPairs;
+        std::map<overlappingpairid, OverlappingPair*> mOverlappingPairs;
 
         /// Broad-phase algorithm
-        BroadPhaseAlgorithm* mBroadPhaseAlgorithm;
+        BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 
         /// Narrow-phase GJK algorithm
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
@@ -79,6 +76,9 @@ class CollisionDetection {
 
         /// Set of pair of bodies that cannot collide between each other
         std::set<bodyindexpair> mNoCollisionPairs;
+
+        /// True if some collision shapes have been added previously
+        bool mIsCollisionShapesAdded;
 
         // -------------------- Methods -------------------- //
 
@@ -95,8 +95,16 @@ class CollisionDetection {
         void computeNarrowPhase();
 
         /// Select the narrow phase algorithm to use given two collision shapes
-        NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(CollisionShape* collisionShape1,
-                                                         CollisionShape* collisionShape2);
+        NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(const CollisionShape* collisionShape1,
+                                                         const CollisionShape* collisionShape2);
+
+        /// Create a new contact
+        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
+
+        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
+        /// involed in the corresponding contact.
+        void addContactManifoldToBody(ContactManifold* contactManifold,
+                                      CollisionBody *body1, CollisionBody *body2);
    
     public :
 
@@ -108,31 +116,44 @@ class CollisionDetection {
         /// Destructor
         ~CollisionDetection();
 
-        /// Add a body to the collision detection
-        void addBody(CollisionBody* body);
+        /// Add a proxy collision shape to the collision detection
+        void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
 
-        /// Remove a body from the collision detection
-        void removeBody(CollisionBody* body);
+        /// Remove a proxy collision shape from the collision detection
+        void removeProxyCollisionShape(ProxyShape* proxyShape);
+
+        /// Update a proxy collision shape (that has moved for instance)
+        void updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
+                                       const Vector3& displacement = Vector3(0, 0, 0));
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
 
         /// Remove a pair of bodies that cannot collide with each other
-        void removeNoCollisionPair(CollisionBody *body1, CollisionBody *body2);
+        void removeNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
+
+        /// Ask for a collision shape to be tested again during broad-phase.
+        void askForBroadPhaseCollisionCheck(ProxyShape* shape);
 
         /// Compute the collision detection
         void computeCollisionDetection();
 
-        /// Allow the broadphase to notify the collision detection about a new overlapping pair.
-        void broadPhaseNotifyAddedOverlappingPair(BodyPair* pair);
+        /// Ray casting method
+        void raycast(RaycastCallback* raycastCallback, const Ray& ray) const;
 
-        /// Allow the broadphase to notify the collision detection about a removed overlapping pair
-        void broadPhaseNotifyRemovedOverlappingPair(BodyPair* pair);
+        /// Allow the broadphase to notify the collision detection about an overlapping pair.
+        void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicsWorld;
+        friend class ConvexMeshShape;
 };
 
 // Select the narrow-phase collision algorithm to use given two collision shapes
 inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
-                             CollisionShape* collisionShape1, CollisionShape* collisionShape2) {
+                             const CollisionShape* collisionShape1,
+                             const CollisionShape* collisionShape2) {
     
     // Sphere vs Sphere algorithm
     if (collisionShape1->getType() == SPHERE && collisionShape2->getType() == SPHERE) {
@@ -144,29 +165,49 @@ inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
 }  
 
 // Add a body to the collision detection
-inline void CollisionDetection::addBody(CollisionBody* body) {
+inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
+                                                       const AABB& aabb) {
     
     // Add the body to the broad-phase
-    mBroadPhaseAlgorithm->addObject(body, body->getAABB());
-}  
+    mBroadPhaseAlgorithm.addProxyCollisionShape(proxyShape, aabb);
 
-// Remove a body from the collision detection
-inline void CollisionDetection::removeBody(CollisionBody* body) {
-    
-    // Remove the body from the broad-phase
-    mBroadPhaseAlgorithm->removeObject(body);
-}
+    mIsCollisionShapesAdded = true;
+}  
 
 // Add a pair of bodies that cannot collide with each other
 inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
                                                    CollisionBody* body2) {
-    mNoCollisionPairs.insert(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.insert(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Remove a pair of bodies that cannot collide with each other
 inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
                                                       CollisionBody* body2) {
-    mNoCollisionPairs.erase(BroadPhasePair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.erase(OverlappingPair::computeBodiesIndexPair(body1, body2));
+}
+
+// Ask for a collision shape to be tested again during broad-phase.
+/// We simply put the shape in the list of collision shape that have moved in the
+/// previous frame so that it is tested for collision again in the broad-phase.
+inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
+    mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
+}
+
+// Update a proxy collision shape (that has moved for instance)
+inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
+                                                          const Vector3& displacement) {
+    mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
+}
+
+// Ray casting method
+inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
+                                        const Ray& ray) const {
+
+    RaycastTest rayCastTest(raycastCallback);
+
+    // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
+    // callback method for each proxy shape hit by the ray in the broad-phase
+    mBroadPhaseAlgorithm.raycast(ray, rayCastTest);
 }
 
 }

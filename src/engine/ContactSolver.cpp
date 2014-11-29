@@ -26,7 +26,7 @@
 // Libraries
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
-#include "../body/RigidBody.h"
+#include "body/RigidBody.h"
 #include "Profiler.h"
 #include <limits>
 
@@ -83,12 +83,14 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         assert(externalManifold->getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
-        RigidBody* body1 = externalManifold->getContactPoint(0)->getBody1();
-        RigidBody* body2 = externalManifold->getContactPoint(0)->getBody2();
+        RigidBody* body1 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
+        RigidBody* body2 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
+        assert(body1 != NULL);
+        assert(body2 != NULL);
 
         // Get the position of the two bodies
-        Vector3 x1 = body1->getTransform().getPosition();
-        Vector3 x2 = body2->getTransform().getPosition();
+        const Vector3& x1 = body1->mCenterOfMassWorld;
+        const Vector3& x2 = body2->mCenterOfMassWorld;
 
         // Initialize the internal contact manifold structure using the external
         // contact manifold

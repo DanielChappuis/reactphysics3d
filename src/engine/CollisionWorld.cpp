@@ -33,7 +33,8 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0) {
+               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0),
+                 mEventListener(NULL) {
 
 }
 
@@ -43,33 +44,8 @@ CollisionWorld::~CollisionWorld() {
     assert(mBodies.empty());
 }
 
-// Notify the world about a new broad-phase overlapping pair
-void CollisionWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
-
-    // TODO : Implement this method
-}
-
-// Notify the world about a removed broad-phase overlapping pair
-void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
-
-    // TODO : Implement this method
-}
-
-// Notify the world about a new narrow-phase contact
-void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
-                                      const ContactPointInfo* contactInfo) {
-
-    // TODO : Implement this method
-}
-
-// Update the overlapping pair
-inline void CollisionWorld::updateOverlappingPair(const BroadPhasePair* pair) {
-
-}
-
 // Create a collision body and add it to the world
-CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
-                                                   CollisionShape* collisionShape) {
+CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Get the next available body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -79,15 +55,12 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryAllocator.allocate(sizeof(CollisionBody)))
-                                        CollisionBody(transform, collisionShape, bodyID);
+                                        CollisionBody(transform, *this, bodyID);
 
     assert(collisionBody != NULL);
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
-
-    // Add the collision body to the collision detection
-    mCollisionDetection.addBody(collisionBody);
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -96,8 +69,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
 // Destroy a collision body
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
-    // Remove the body from the collision detection
-    mCollisionDetection.removeBody(collisionBody);
+    // Remove all the collision shapes of the body
+    collisionBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(collisionBody->getID());
@@ -129,7 +102,7 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
     return bodyID;
 }
 
-// Create a new collision shape.
+// Create a new collision shape in the world.
 /// First, this methods checks that the new collision shape does not exist yet in the
 /// world. If it already exists, we do not allocate memory for a new one but instead
 /// we reuse the existing one. The goal is to only allocate memory for a single

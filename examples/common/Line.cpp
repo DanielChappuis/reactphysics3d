@@ -24,17 +24,36 @@
 ********************************************************************************/
 
 // Libraries
-#include "BroadPhasePair.h"
+#include "Line.h"
 
-using namespace reactphysics3d;
-
- // Constructor
-BroadPhasePair::BroadPhasePair(CollisionBody* body1, CollisionBody* body2)
-    : body1(body1), body2(body2), previousSeparatingAxis(Vector3(1,1,1)) {
+// Constructor
+Line::Line(const openglframework::Vector3& worldPoint1,
+           const openglframework::Vector3& worldPoint2)
+     : mWorldPoint1(worldPoint1), mWorldPoint2(worldPoint2) {
 
 }
 
 // Destructor
-BroadPhasePair::~BroadPhasePair() {
+Line::~Line() {
 
+
+}
+
+// Render the sphere at the correct position and with the correct orientation
+void Line::render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix) {
+
+    // Bind the shader
+    shader.bind();
+
+    // Set the model to camera matrix
+    shader.setMatrix4x4Uniform("localToCameraMatrix", worldToCameraMatrix);
+
+    glBegin(GL_LINES);
+        glVertex3f(mWorldPoint1.x, mWorldPoint1.y, mWorldPoint1.z);
+        glVertex3f(mWorldPoint2.x, mWorldPoint2.y, mWorldPoint2.z);
+    glEnd();
+
+    // Unbind the shader
+    shader.unbind();
 }

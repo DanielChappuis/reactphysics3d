@@ -27,8 +27,8 @@
 #define TEST_VECTOR3_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Vector3.h"
+#include "Test.h"
+#include "mathematics/Vector3.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -54,7 +54,7 @@ class TestVector3 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestVector3() : mVectorZero(0, 0, 0), mVector345(3, 4, 5) {}
+        TestVector3(const std::string& name): Test(name),mVectorZero(0, 0, 0),mVector345(3, 4, 5) {}
 
         /// Run the tests
         void run() {
@@ -178,6 +178,12 @@ class TestVector3 : public Test {
             test(Vector3(7, 533, 36).getMaxAxis() == 1);
             test(Vector3(98, 23, 3).getMaxAxis() == 0);
             test(Vector3(-53, -25, -63).getMaxAxis() == 1);
+
+            // Test the methot that return a max/min vector
+            Vector3 vec1(-5, 4, 2);
+            Vector3 vec2(-8, 6, -1);
+            test(Vector3::min(vec1, vec2) == Vector3(-8, 4, -1));
+            test(Vector3::max(vec1, vec2) == Vector3(-5, 6, 2));
         }
 
         /// Test the operators

@@ -28,9 +28,9 @@
 
 // Libraries
 #include <vector>
-#include "../body/CollisionBody.h"
-#include "../constraint/ContactPoint.h"
-#include "../memory/MemoryAllocator.h"
+#include "body/CollisionBody.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -210,6 +210,7 @@ class ContactManifold {
 
         friend class DynamicsWorld;
         friend class Island;
+        friend class CollisionBody;
 };
 
 // Return a pointer to the first body of the contact manifold

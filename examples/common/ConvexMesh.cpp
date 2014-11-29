@@ -26,10 +26,9 @@
 // Libraries
 #include "ConvexMesh.h"
 
-
 // Constructor
-ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
-                       reactphysics3d::DynamicsWorld* dynamicsWorld,
+ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
+                       reactphysics3d::CollisionWorld* world,
                        const std::string& meshFolderPath)
            : openglframework::Mesh() {
 
@@ -44,7 +43,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
 
     // Create the collision shape for the rigid body (convex mesh shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     rp3d::decimal* verticesArray = (rp3d::decimal*) getVerticesPointer();
     rp3d::ConvexMeshShape collisionShape(verticesArray, mVertices.size(),
                                          sizeof(openglframework::Vector3));
@@ -72,7 +71,63 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     rp3d::Transform transform(initPosition, initOrientation);
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, collisionShape);
+    mRigidBody = world->createCollisionBody(transform);
+
+    // Add a collision shape to the body and specify the mass of the collision shape
+    mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+}
+
+// Constructor
+ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
+                       reactphysics3d::DynamicsWorld* dynamicsWorld,
+                       const std::string& meshFolderPath)
+           : openglframework::Mesh() {
+
+    // Load the mesh from a file
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "convexmesh.obj", *this);
+
+    // Calculate the normals of the mesh
+    calculateNormals();
+
+    // Initialize the position where the sphere will be rendered
+    translateWorld(position);
+
+    // Create the collision shape for the rigid body (convex mesh shape)
+    // ReactPhysics3D will clone this object to create an internal one. Therefore,
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
+    rp3d::decimal* verticesArray = (rp3d::decimal*) getVerticesPointer();
+    rp3d::ConvexMeshShape collisionShape(verticesArray, mVertices.size(),
+                                         sizeof(openglframework::Vector3));
+
+    // Add the edges information of the mesh into the convex mesh collision shape.
+    // This is optional but it really speed up the convex mesh collision detection at the
+    // cost of some additional memory to store the edges inside the collision shape.
+    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
+
+        // Get the three vertex IDs of the vertices of the face
+        unsigned int v1 = getVertexIndexInFace(i, 0);
+        unsigned int v2 = getVertexIndexInFace(i, 1);
+        unsigned int v3 = getVertexIndexInFace(i, 2);
+
+        // Add the three edges into the collision shape
+        collisionShape.addEdge(v1, v2);
+        collisionShape.addEdge(v1, v3);
+        collisionShape.addEdge(v2, v3);
+    }
+    collisionShape.setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
+
+    // Initial position and orientation of the rigid body
+    rp3d::Vector3 initPosition(position.x, position.y, position.z);
+    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transform(initPosition, initOrientation);
+
+    // Create a rigid body corresponding to the sphere in the dynamics world
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
+
+    // Add a collision shape to the body and specify the mass of the collision shape
+    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+
+    mRigidBody = body;
 }
 
 // Destructor
@@ -134,7 +189,7 @@ void ConvexMesh::updateTransform() {
     rp3d::Transform transform = mRigidBody->getInterpolatedTransform();
 
     // Compute the transform used for rendering the sphere
-    float matrix[16];
+    rp3d::decimal matrix[16];
     transform.getOpenGLMatrix(matrix);
     openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
                                        matrix[1], matrix[5], matrix[9], matrix[13],

@@ -41,7 +41,7 @@ class Sphere : public openglframework::Mesh {
         float mRadius;
 
         /// Rigid body used to simulate the dynamics of the sphere
-        rp3d::RigidBody* mRigidBody;
+        rp3d::CollisionBody* mRigidBody;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -54,13 +54,20 @@ class Sphere : public openglframework::Mesh {
 
         /// Constructor
         Sphere(float radius, const openglframework::Vector3& position,
+               rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+
+        /// Constructor
+        Sphere(float radius, const openglframework::Vector3& position,
                float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Sphere();
 
-        /// Return a pointer to the rigid body of the sphere
-        rp3d::RigidBody* getRigidBody();
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
+
+        /// Return a pointer to the rigid body of the box
+        reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the sphere
         void updateTransform();
@@ -70,9 +77,14 @@ class Sphere : public openglframework::Mesh {
                     const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Return a pointer to the rigid body of the sphere
-inline rp3d::RigidBody* Sphere::getRigidBody() {
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* Sphere::getCollisionBody() {
     return mRigidBody;
+}
+
+// Return a pointer to the rigid body of the box
+inline rp3d::RigidBody* Sphere::getRigidBody() {
+    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 #endif

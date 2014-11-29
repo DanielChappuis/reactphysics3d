@@ -31,14 +31,15 @@
 #include <set>
 #include <list>
 #include <algorithm>
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 #include "Profiler.h"
-#include "../body/CollisionBody.h"
+#include "body/CollisionBody.h"
+#include "collision/RaycastInfo.h"
 #include "OverlappingPair.h"
-#include "../collision/CollisionDetection.h"
-#include "../constraint/Joint.h"
-#include "../constraint/ContactPoint.h"
-#include "../memory/MemoryAllocator.h"
+#include "collision/CollisionDetection.h"
+#include "constraint/Joint.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
@@ -65,9 +66,6 @@ class CollisionWorld {
         /// All the collision shapes of the world
         std::list<CollisionShape*> mCollisionShapes;
 
-        /// Broad-phase overlapping pairs of bodies
-        std::map<bodyindexpair, OverlappingPair*>  mOverlappingPairs;
-
         /// Current body ID
         bodyindex mCurrentBodyID;
 
@@ -77,6 +75,9 @@ class CollisionWorld {
         /// Memory allocator
         MemoryAllocator mMemoryAllocator;
 
+        /// Pointer to an event listener object
+        EventListener* mEventListener;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -85,27 +86,14 @@ class CollisionWorld {
         /// Private assignment operator
         CollisionWorld& operator=(const CollisionWorld& world);
 
-        /// Notify the world about a new broad-phase overlapping pair
-        virtual void notifyAddedOverlappingPair(const BroadPhasePair* addedPair);
-
-        /// Notify the world about a removed broad-phase overlapping pair
-        virtual void notifyRemovedOverlappingPair(const BroadPhasePair* removedPair);
-
-        /// Notify the world about a new narrow-phase contact
-        virtual void notifyNewContact(const BroadPhasePair* pair,
-                                      const ContactPointInfo* contactInfo);
-
-        /// Update the overlapping pair
-        virtual void updateOverlappingPair(const BroadPhasePair* pair);
-
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
-        /// Create a new collision shape.
-        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
-
         /// Remove a collision shape.
         void removeCollisionShape(CollisionShape* collisionShape);
+
+        /// Create a new collision shape in the world.
+        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
 
     public :
 
@@ -124,15 +112,20 @@ class CollisionWorld {
         std::set<CollisionBody*>::iterator getBodiesEndIterator();
 
         /// Create a collision body
-        CollisionBody* createCollisionBody(const Transform& transform,
-                                           CollisionShape* collisionShape);
+        CollisionBody* createCollisionBody(const Transform& transform);
 
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        // -------------------- Friends -------------------- //
+        /// Ray cast method
+        void raycast(const Ray& ray, RaycastCallback* raycastCallback) const;
+
+        // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;
+        friend class CollisionBody;
+        friend class RigidBody;
+        friend class ConvexMeshShape;
 };
 
 // Return an iterator to the beginning of the bodies of the physics world
@@ -143,6 +136,12 @@ inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator
 // Return an iterator to the end of the bodies of the physics world
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
     return mBodies.end();
+}
+
+// Ray cast method
+inline void CollisionWorld::raycast(const Ray& ray,
+                                    RaycastCallback* raycastCallback) const {
+    mCollisionDetection.raycast(raycastCallback, ray);
 }
 
 }

@@ -44,7 +44,7 @@ class Cone : public openglframework::Mesh {
         float mHeight;
 
         /// Rigid body used to simulate the dynamics of the cone
-        rp3d::RigidBody* mRigidBody;
+        rp3d::CollisionBody* mRigidBody;
 
         /// Scaling matrix (applied to a sphere to obtain the correct cone dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -57,13 +57,20 @@ class Cone : public openglframework::Mesh {
 
         /// Constructor
         Cone(float radius, float height, const openglframework::Vector3& position,
+             rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+
+        /// Constructor
+        Cone(float radius, float height, const openglframework::Vector3& position,
              float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Cone();
 
-        /// Return a pointer to the rigid body of the cone
-        rp3d::RigidBody* getRigidBody();
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
+
+        /// Return a pointer to the rigid body of the box
+        reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the cone
         void updateTransform();
@@ -73,9 +80,14 @@ class Cone : public openglframework::Mesh {
                     const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Return a pointer to the rigid body of the cone
-inline rp3d::RigidBody* Cone::getRigidBody() {
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* Cone::getCollisionBody() {
     return mRigidBody;
+}
+
+// Return a pointer to the rigid body of the box
+inline rp3d::RigidBody* Cone::getRigidBody() {
+    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 #endif

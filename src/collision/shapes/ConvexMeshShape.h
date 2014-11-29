@@ -28,13 +28,18 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "engine/CollisionWorld.h"
+#include "mathematics/mathematics.h"
+#include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
 #include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declaration
+class CollisionWorld;
 
 // Class ConvexMeshShape
 /**
@@ -77,9 +82,6 @@ class ConvexMeshShape : public CollisionShape {
         /// Adjacency list representing the edges of the mesh
         std::map<uint, std::set<uint> > mEdgesAdjacencyList;
 
-        /// Cached support vertex index (previous support vertex)
-        uint mCachedSupportVertex;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -90,6 +92,20 @@ class ConvexMeshShape : public CollisionShape {
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
+
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin.
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
     public :
 
@@ -111,19 +127,13 @@ class ConvexMeshShape : public CollisionShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin.
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Test equality between two cone shapes
+        /// Test equality between two collision shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 
         /// Add a vertex into the convex mesh
@@ -220,6 +230,15 @@ inline bool ConvexMeshShape::isEdgesInformationUsed() const {
 // collision detection
 inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
     mIsEdgesInformationUsed = isEdgesUsed;
+}
+
+// Return true if a point is inside the collision shape
+inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
+                                             ProxyShape* proxyShape) const {
+
+    // Use the GJK algorithm to test if the point is inside the convex mesh
+    return proxyShape->mBody->mWorld.mCollisionDetection.
+           mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
 }
 
 }

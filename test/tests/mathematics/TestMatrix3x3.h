@@ -27,8 +27,8 @@
 #define TEST_MATRIX3X3_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Matrix3x3.h"
+#include "Test.h"
+#include "mathematics/Matrix3x3.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -54,8 +54,9 @@ class TestMatrix3x3 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestMatrix3x3() : mIdentity(Matrix3x3::identity()),
-                          mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
+        TestMatrix3x3(const std::string& name)
+            : Test(name), mIdentity(Matrix3x3::identity()),
+              mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
 
 
         }

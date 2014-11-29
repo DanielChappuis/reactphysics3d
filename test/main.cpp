@@ -31,6 +31,8 @@
 #include "tests/mathematics/TestQuaternion.h"
 #include "tests/mathematics/TestMatrix2x2.h"
 #include "tests/mathematics/TestMatrix3x3.h"
+#include "tests/collision/TestPointInside.h"
+#include "tests/collision/TestRaycast.h"
 
 using namespace reactphysics3d;
 
@@ -40,14 +42,17 @@ int main() {
 
     // ---------- Mathematics tests ---------- //
 
-    testSuite.addTest(new TestVector2);
-    testSuite.addTest(new TestVector3);
-    testSuite.addTest(new TestTransform);
-    testSuite.addTest(new TestQuaternion);
-    testSuite.addTest(new TestMatrix3x3);
-    testSuite.addTest(new TestMatrix2x2);
+    testSuite.addTest(new TestVector2("Vector2"));
+    testSuite.addTest(new TestVector3("Vector3"));
+    testSuite.addTest(new TestTransform("Transform"));
+    testSuite.addTest(new TestQuaternion("Quaternion"));
+    testSuite.addTest(new TestMatrix3x3("Matrix3x3"));
+    testSuite.addTest(new TestMatrix2x2("Matrix2x2"));
 
-    // ----------------------------- --------- //
+    // ---------- Collision Detection tests ---------- //
+
+    testSuite.addTest(new TestPointInside("IsPointInside"));
+    testSuite.addTest(new TestRaycast("Raycasting"));
 
     // Run the tests
     testSuite.run();

@@ -26,6 +26,45 @@
 // Libraries
 #include "Capsule.h"
 
+// Constructor
+Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
+                 reactphysics3d::CollisionWorld* world,
+                 const std::string& meshFolderPath)
+        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+
+    // Load the mesh from a file
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
+
+    // Calculate the normals of the mesh
+    calculateNormals();
+
+    // Compute the scaling matrix
+    mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
+                                              0, (mHeight + 2.0f * mRadius) / 3.0f, 0,0,
+                                              0, 0, mRadius, 0,
+                                              0, 0, 0, 1.0f);
+
+    // Initialize the position where the sphere will be rendered
+    translateWorld(position);
+
+    // Create the collision shape for the rigid body (sphere shape)
+    // ReactPhysics3D will clone this object to create an internal one. Therefore,
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
+    const rp3d::CapsuleShape collisionShape(mRadius, mHeight);
+
+    // Initial position and orientation of the rigid body
+    rp3d::Vector3 initPosition(position.x, position.y, position.z);
+    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transform(initPosition, initOrientation);
+
+    // Create a rigid body corresponding in the dynamics world
+    mRigidBody = world->createCollisionBody(transform);
+
+    // Add a collision shape to the body and specify the mass of the shape
+    mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
+}
 
 // Constructor
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
@@ -50,7 +89,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling Dynamics::createRigidBody()
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::CapsuleShape collisionShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
@@ -58,8 +97,15 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform, mass, collisionShape);
+    // Create a rigid body corresponding in the dynamics world
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
+
+    // Add a collision shape to the body and specify the mass of the shape
+    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+
+    mRigidBody = body;
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
 // Destructor
@@ -121,7 +167,7 @@ void Capsule::updateTransform() {
     rp3d::Transform transform = mRigidBody->getInterpolatedTransform();
 
     // Compute the transform used for rendering the sphere
-    float matrix[16];
+    rp3d::decimal matrix[16];
     transform.getOpenGLMatrix(matrix);
     openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
                                        matrix[1], matrix[5], matrix[9], matrix[13],

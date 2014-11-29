@@ -76,8 +76,8 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
     // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->getTransform().getPosition();
-    const Vector3& x2 = mBody2->getTransform().getPosition();
+    const Vector3& x1 = mBody1->mCenterOfMassWorld;
+    const Vector3& x2 = mBody2->mCenterOfMassWorld;
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -679,6 +679,7 @@ void SliderJoint::enableMotor(bool isMotorEnabled) {
 }
 
 // Return the current translation value of the joint
+// TODO : Check if we need to compare rigid body position or center of mass here
 decimal SliderJoint::getTranslation() const {
 
     // Get the bodies positions and orientations

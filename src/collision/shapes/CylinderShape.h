@@ -28,7 +28,8 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 
 /// ReactPhysics3D namespace
@@ -68,6 +69,20 @@ class CylinderShape : public CollisionShape {
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -89,12 +104,6 @@ class CylinderShape : public CollisionShape {
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -153,6 +162,12 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
 inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+}
+
+// Return true if a point is inside the collision shape
+inline bool CylinderShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const{
+    return ((localPoint.x * localPoint.x + localPoint.z * localPoint.z) < mRadius * mRadius &&
+            localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight);
 }
 
 }
