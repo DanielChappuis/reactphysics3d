@@ -54,50 +54,48 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     // ---------- Dumbbell ---------- //
     openglframework::Vector3 position1(0, 0, 0);
 
-    // Create a convex mesh and a corresponding rigid in the dynamics world
+    // Create a convex mesh and a corresponding collision body in the dynamics world
     mDumbbell = new Dumbbell(position1, mCollisionWorld, meshFolderPath);
 
     // ---------- Box ---------- //
     openglframework::Vector3 position2(0, 0, 0);
 
-    // Create a sphere and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding collision body in the dynamics world
     mBox = new Box(BOX_SIZE, position2, mCollisionWorld);
     mBox->getCollisionBody()->setIsActive(false);
 
     // ---------- Sphere ---------- //
     openglframework::Vector3 position3(0, 0, 0);
 
-    // Create a sphere and a corresponding rigid in the dynamics world
+    // Create a sphere and a corresponding collision body in the dynamics world
     mSphere = new Sphere(SPHERE_RADIUS, position3, mCollisionWorld,
                          meshFolderPath);
 
     // ---------- Cone ---------- //
     openglframework::Vector3 position4(0, 0, 0);
 
-    // Create a cone and a corresponding rigid in the dynamics world
+    // Create a cone and a corresponding collision body in the dynamics world
     mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
                      meshFolderPath);
-    mCone->getCollisionBody()->setIsActive(false);
 
     // ---------- Cylinder ---------- //
     openglframework::Vector3 position5(0, 0, 0);
 
-    // Create a cylinder and a corresponding rigid in the dynamics world
+    // Create a cylinder and a corresponding collision body in the dynamics world
     mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
                              mCollisionWorld, meshFolderPath);
-    mCylinder->getCollisionBody()->setIsActive(false);
 
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
 
-    // Create a cylinder and a corresponding rigid in the dynamics world
+    // Create a cylinder and a corresponding collision body in the dynamics world
     mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position6 ,
                            mCollisionWorld, meshFolderPath);
 
     // ---------- Convex Mesh ---------- //
     openglframework::Vector3 position7(0, 0, 0);
 
-    // Create a convex mesh and a corresponding rigid in the dynamics world
+    // Create a convex mesh and a corresponding collision body in the dynamics world
     mConvexMesh = new ConvexMesh(position7, mCollisionWorld, meshFolderPath);
 
     // Create the lines that will be used for raycasting
