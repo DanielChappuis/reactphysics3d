@@ -58,7 +58,7 @@ GLuint Box::mCubeIndices[36] = { 0, 1, 2,
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         float mass, reactphysics3d::DynamicsWorld* dynamicsWorld)
+         reactphysics3d::CollisionWorld* world)
     : openglframework::Object3D(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Initialize the size of the box
@@ -86,16 +86,64 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     rp3d::Transform transform(initPosition, initOrientation);
 
     // Create a rigid body in the dynamics world
-    mRigidBody = dynamicsWorld->createRigidBody(transform);
+    mRigidBody = world->createCollisionBody(transform);
 
     // Add the collision shape to the body
-    mRigidBody->addCollisionShape(collisionShape, mass);
+    mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     // If the Vertex Buffer object has not been created yet
     if (!areVBOsCreated) {
         // Create the Vertex Buffer
         createVBO();
     }
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
+}
+
+// Constructor
+Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
+         float mass, reactphysics3d::DynamicsWorld* world)
+    : openglframework::Object3D(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+
+    // Initialize the size of the box
+    mSize[0] = size.x * 0.5f;
+    mSize[1] = size.y * 0.5f;
+    mSize[2] = size.z * 0.5f;
+
+    // Compute the scaling matrix
+    mScalingMatrix = openglframework::Matrix4(mSize[0], 0, 0, 0,
+                                              0, mSize[1], 0, 0,
+                                              0, 0, mSize[2], 0,
+                                              0, 0, 0, 1);
+
+    // Initialize the position where the cube will be rendered
+    translateWorld(position);
+
+    // Create the collision shape for the rigid body (box shape)
+    // ReactPhysics3D will clone this object to create an internal one. Therefore,
+    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
+    const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+
+    // Initial position and orientation of the rigid body
+    rp3d::Vector3 initPosition(position.x, position.y, position.z);
+    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transform(initPosition, initOrientation);
+
+    // Create a rigid body in the dynamics world
+    rp3d::RigidBody* body = world->createRigidBody(transform);
+
+    // Add the collision shape to the body
+    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+
+    mRigidBody = body;
+
+    // If the Vertex Buffer object has not been created yet
+    if (!areVBOsCreated) {
+        // Create the Vertex Buffer
+        createVBO();
+    }
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
 // Destructor

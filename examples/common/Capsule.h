@@ -44,7 +44,7 @@ class Capsule : public openglframework::Mesh {
         float mHeight;
 
         /// Rigid body used to simulate the dynamics of the sphere
-        rp3d::RigidBody* mRigidBody;
+        rp3d::CollisionBody* mRigidBody;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -57,13 +57,21 @@ class Capsule : public openglframework::Mesh {
 
         /// Constructor
         Capsule(float radius, float height, const openglframework::Vector3& position,
-                float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+                reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
+
+        /// Constructor
+        Capsule(float radius, float height, const openglframework::Vector3& position,
+                float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+                const std::string& meshFolderPath);
 
         /// Destructor
         ~Capsule();
 
-        /// Return a pointer to the rigid body of the sphere
-        rp3d::RigidBody* getRigidBody();
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
+
+        /// Return a pointer to the rigid body of the box
+        reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the sphere
         void updateTransform();
@@ -73,9 +81,14 @@ class Capsule : public openglframework::Mesh {
                     const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Return a pointer to the rigid body of the sphere
-inline rp3d::RigidBody* Capsule::getRigidBody() {
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* Capsule::getCollisionBody() {
     return mRigidBody;
+}
+
+// Return a pointer to the rigid body of the box
+inline rp3d::RigidBody* Capsule::getRigidBody() {
+    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 #endif

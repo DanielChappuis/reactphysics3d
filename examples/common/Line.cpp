@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2014 Daniel Chappuis                                       *
+* Copyright (c) 2010-2013 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,69 +23,37 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef DUMBBELL_H
-#define DUMBBELL_H
-
 // Libraries
-#include "openglframework.h"
-#include "reactphysics3d.h"
+#include "Line.h"
 
-// Class Sphere
-class Dumbbell : public openglframework::Mesh {
+// Constructor
+Line::Line(const openglframework::Vector3& worldPoint1,
+           const openglframework::Vector3& worldPoint2)
+     : mWorldPoint1(worldPoint1), mWorldPoint2(worldPoint2) {
 
-    private :
-
-        // -------------------- Attributes -------------------- //
-
-        /// Radius of the spheres
-        float mRadius;
-
-        /// Rigid body used to simulate the dynamics of the sphere
-        rp3d::CollisionBody* mBody;
-
-        /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
-        openglframework::Matrix4 mScalingMatrix;
-
-        // -------------------- Methods -------------------- //
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        Dumbbell(const openglframework::Vector3& position, rp3d::DynamicsWorld* dynamicsWorld,
-                 const std::string& meshFolderPath);
-
-        /// Constructor
-        Dumbbell(const openglframework::Vector3& position, rp3d::CollisionWorld* world,
-                 const std::string& meshFolderPath);
-
-
-        /// Destructor
-        ~Dumbbell();
-
-        /// Return a pointer to the rigid body
-        rp3d::RigidBody* getRigidBody();
-
-        /// Return a pointer to the body
-        rp3d::CollisionBody* getCollisionBody();
-
-        /// Update the transform matrix of the sphere
-        void updateTransform();
-
-        /// Render the sphere at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
-};
-
-// Return a pointer to the rigid body of the sphere
-inline rp3d::RigidBody* Dumbbell::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mBody);
 }
 
-// Return a pointer to the body
-inline rp3d::CollisionBody* Dumbbell::getCollisionBody() {
-    return mBody;
+// Destructor
+Line::~Line() {
+
+
 }
 
-#endif
+// Render the sphere at the correct position and with the correct orientation
+void Line::render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix) {
+
+    // Bind the shader
+    shader.bind();
+
+    // Set the model to camera matrix
+    shader.setMatrix4x4Uniform("localToCameraMatrix", worldToCameraMatrix);
+
+    glBegin(GL_LINES);
+        glVertex3f(mWorldPoint1.x, mWorldPoint1.y, mWorldPoint1.z);
+        glVertex3f(mWorldPoint2.x, mWorldPoint2.y, mWorldPoint2.z);
+    glEnd();
+
+    // Unbind the shader
+    shader.unbind();
+}
