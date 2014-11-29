@@ -167,6 +167,10 @@ inline decimal ProxyShape::getMargin() const {
 
 // Raycast method with feedback information
 inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
+
+    // If the corresponding body is not active, it cannot be hit by rays
+    if (!mBody->isActive()) return false;
+
     return mCollisionShape->raycast(ray, raycastInfo, this);
 }
 

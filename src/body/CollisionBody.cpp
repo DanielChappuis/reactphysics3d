@@ -287,13 +287,14 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 /// The method returns the closest hit among all the collision shapes of the body
 bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
+    // If the body is not active, it cannot be hit by rays
+    if (!mIsActive) return false;
+
     bool isHit = false;
     Ray rayTemp(ray);
 
     // For each collision shape of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
-
-        // TODO : Test for broad-phase hit for each shape before testing actual shape raycast
 
         // Test if the ray hits the collision shape
         if (shape->raycast(rayTemp, raycastInfo)) {
