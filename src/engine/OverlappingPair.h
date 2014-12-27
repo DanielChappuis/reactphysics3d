@@ -106,6 +106,9 @@ class OverlappingPair {
         /// Return the contact manifold
         ContactManifold* getContactManifold();
 
+        /// Clear the contact points of the contact manifold
+        void clearContactPoints();
+
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
 
@@ -181,6 +184,11 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
                                  std::make_pair(body2->getID(), body1->getID());
     assert(indexPair.first != indexPair.second);
     return indexPair;
+}
+
+// Clear the contact points of the contact manifold
+inline void OverlappingPair::clearContactPoints() {
+   mContactManifold.clear();
 }
 
 }

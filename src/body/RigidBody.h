@@ -191,6 +191,9 @@ class RigidBody : public CollisionBody {
         /// Return the first element of the linked list of joints involving this body
         const JointListElement* getJointsList() const;
 
+        /// Return the first element of the linked list of joints involving this body
+        JointListElement* getJointsList();
+
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping);
 
@@ -341,6 +344,11 @@ inline void RigidBody::setAngularDamping(decimal angularDamping) {
 
 // Return the first element of the linked list of joints involving this body
 inline const JointListElement* RigidBody::getJointsList() const {
+    return mJointsList;
+}
+
+// Return the first element of the linked list of joints involving this body
+inline JointListElement* RigidBody::getJointsList() {
     return mJointsList;
 }
 

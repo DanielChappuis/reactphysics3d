@@ -36,7 +36,6 @@ CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, 
               : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(NULL),
                 mNbCollisionShapes(0), mContactManifoldsList(NULL), mWorld(world) {
 
-    mIsCollisionEnabled = true;
     mInterpolationFactor = 0.0;
 
     // Initialize the old transform
@@ -304,4 +303,27 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     }
 
     return isHit;
+}
+
+// Compute and return the AABB of the body by merging all proxy shapes AABBs
+AABB CollisionBody::getAABB() const {
+
+    AABB bodyAABB;
+
+    if (mProxyCollisionShapes == NULL) return bodyAABB;
+
+    mProxyCollisionShapes->getCollisionShape()->computeAABB(bodyAABB, mTransform * mProxyCollisionShapes->getLocalToBodyTransform());
+
+    // For each proxy shape of the body
+    for (ProxyShape* shape = mProxyCollisionShapes->mNext; shape != NULL; shape = shape->mNext) {
+
+        // Compute the world-space AABB of the collision shape
+        AABB aabb;
+        shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
+
+        // Merge the proxy shape AABB with the current body AABB
+        bodyAABB.mergeWithAABB(aabb);
+    }
+
+    return bodyAABB;
 }

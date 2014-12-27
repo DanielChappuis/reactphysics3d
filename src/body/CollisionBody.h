@@ -79,9 +79,6 @@ class CollisionBody : public Body {
         /// Interpolation factor used for the state interpolation
         decimal mInterpolationFactor;
 
-        /// True if the body can collide with others bodies
-        bool mIsCollisionEnabled;
-
         /// First element of the linked list of proxy collision shapes of this body
         ProxyShape* mProxyCollisionShapes;
 
@@ -166,13 +163,34 @@ class CollisionBody : public Body {
         void enableCollision(bool isCollisionEnabled);
 
         /// Return the first element of the linked list of contact manifolds involving this body
-        const ContactManifoldListElement* getContactManifoldsLists() const;
+        const ContactManifoldListElement* getContactManifoldsList() const;
 
         /// Return true if a point is inside the collision body
         bool testPointInside(const Vector3& worldPoint) const;
 
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
+
+        /// Compute and return the AABB of the body by merging all proxy shapes AABBs
+        AABB getAABB() const;
+
+        /// Return the linked list of proxy shapes of that body
+        ProxyShape* getProxyShapesList();
+
+        /// Return the linked list of proxy shapes of that body
+        const ProxyShape* getProxyShapesList() const;
+
+        /// Return the world-space coordinates of a point given the local-space coordinates of the body
+        Vector3 getWorldPoint(const Vector3& localPoint) const;
+
+        /// Return the world-space vector of a vector given in local-space coordinates of the body
+        Vector3 getWorldVector(const Vector3& localVector) const;
+
+        /// Return the body local-space coordinates of a point given in the world-space coordinates
+        Vector3 getLocalPoint(const Vector3& worldPoint) const;
+
+        /// Return the body local-space coordinates of a vector given in the world-space coordinates
+        Vector3 getLocalVector(const Vector3& worldVector) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -226,16 +244,6 @@ inline void CollisionBody::setTransform(const Transform& transform) {
     updateBroadPhaseState();
 }
 
-// Return true if the body can collide with others bodies
-inline bool CollisionBody::isCollisionEnabled() const {
-    return mIsCollisionEnabled;
-}
-
-// Enable/disable the collision with this body
-inline void CollisionBody::enableCollision(bool isCollisionEnabled) {
-    mIsCollisionEnabled = isCollisionEnabled;
-}
-
 // Update the old transform with the current one.
 /// This is used to compute the interpolated position and orientation of the body
 inline void CollisionBody::updateOldTransform() {
@@ -243,8 +251,38 @@ inline void CollisionBody::updateOldTransform() {
 }
 
 // Return the first element of the linked list of contact manifolds involving this body
-inline const ContactManifoldListElement* CollisionBody::getContactManifoldsLists() const {
+inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
     return mContactManifoldsList;
+}
+
+// Return the linked list of proxy shapes of that body
+inline ProxyShape* CollisionBody::getProxyShapesList() {
+    return mProxyCollisionShapes;
+}
+
+// Return the linked list of proxy shapes of that body
+inline const ProxyShape* CollisionBody::getProxyShapesList() const {
+    return mProxyCollisionShapes;
+}
+
+// Return the world-space coordinates of a point given the local-space coordinates of the body
+inline Vector3 CollisionBody::getWorldPoint(const Vector3& localPoint) const {
+    return mTransform * localPoint;
+}
+
+// Return the world-space vector of a vector given in local-space coordinates of the body
+inline Vector3 CollisionBody::getWorldVector(const Vector3& localVector) const {
+    return mTransform.getOrientation() * localVector;
+}
+
+// Return the body local-space coordinates of a point given in the world-space coordinates
+inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
+    return mTransform.getInverse() * worldPoint;
+}
+
+// Return the body local-space coordinates of a vector given in the world-space coordinates
+inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
+    return mTransform.getOrientation().getInverse() * worldVector;
 }
 
 }

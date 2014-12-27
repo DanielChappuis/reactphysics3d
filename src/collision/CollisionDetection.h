@@ -45,6 +45,7 @@ namespace reactphysics3d {
 // Declarations
 class BroadPhaseAlgorithm;
 class CollisionWorld;
+class CollisionCallback;
 
 // Class CollisionDetection
 /**
@@ -95,7 +96,7 @@ class CollisionDetection {
         void computeNarrowPhase();
 
         /// Select the narrow phase algorithm to use given two collision shapes
-        NarrowPhaseAlgorithm& SelectNarrowPhaseAlgorithm(const CollisionShape* collisionShape1,
+        NarrowPhaseAlgorithm& selectNarrowPhaseAlgorithm(const CollisionShape* collisionShape1,
                                                          const CollisionShape* collisionShape2);
 
         /// Create a new contact
@@ -105,6 +106,9 @@ class CollisionDetection {
         /// involed in the corresponding contact.
         void addContactManifoldToBody(ContactManifold* contactManifold,
                                       CollisionBody *body1, CollisionBody *body2);
+
+        /// Delete all the contact points in the currently overlapping pairs
+        void clearContactPoints();
    
     public :
 
@@ -138,11 +142,34 @@ class CollisionDetection {
         /// Compute the collision detection
         void computeCollisionDetection();
 
+        /// Compute the collision detection
+        void testCollisionBetweenShapes(CollisionCallback* callback,
+                                        const std::set<uint>& shapes1,
+                                        const std::set<uint>& shapes2);
+
+        /// Report collision between two sets of shapes
+        void reportCollisionBetweenShapes(CollisionCallback* callback,
+                                          const std::set<uint>& shapes1,
+                                          const std::set<uint>& shapes2) ;
+
         /// Ray casting method
         void raycast(RaycastCallback* raycastCallback, const Ray& ray) const;
 
+        /// Test if the AABBs of two bodies overlap
+        bool testAABBOverlap(const CollisionBody* body1,
+                             const CollisionBody* body2) const;
+
+        /// Test if the AABBs of two proxy shapes overlap
+        bool testAABBOverlap(const ProxyShape* shape1,
+                             const ProxyShape* shape2) const;
+
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
+
+        // Compute the narrow-phase collision detection
+        void computeNarrowPhaseBetweenShapes(CollisionCallback* callback,
+                                             const std::set<uint>& shapes1,
+                                             const std::set<uint>& shapes2);
 
         // -------------------- Friendship -------------------- //
 
@@ -151,7 +178,7 @@ class CollisionDetection {
 };
 
 // Select the narrow-phase collision algorithm to use given two collision shapes
-inline NarrowPhaseAlgorithm& CollisionDetection::SelectNarrowPhaseAlgorithm(
+inline NarrowPhaseAlgorithm& CollisionDetection::selectNarrowPhaseAlgorithm(
                              const CollisionShape* collisionShape1,
                              const CollisionShape* collisionShape2) {
     
@@ -208,6 +235,18 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
     // callback method for each proxy shape hit by the ray in the broad-phase
     mBroadPhaseAlgorithm.raycast(ray, rayCastTest);
+}
+
+// Test if the AABBs of two proxy shapes overlap
+inline bool CollisionDetection::testAABBOverlap(const ProxyShape* shape1,
+                                                const ProxyShape* shape2) const {
+
+    // If one of the shape's body is not active, we return no overlap
+    if (!shape1->getBody()->isActive() || !shape2->getBody()->isActive()) {
+        return false;
+    }
+
+    return mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2);
 }
 
 }

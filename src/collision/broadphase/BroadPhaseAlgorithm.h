@@ -156,7 +156,7 @@ class BroadPhaseAlgorithm {
         void computeOverlappingPairs();
 
         /// Return true if the two broad-phase collision shapes are overlapping
-        bool testOverlappingShapes(ProxyShape* shape1, ProxyShape* shape2) const;
+        bool testOverlappingShapes(const ProxyShape* shape1, const ProxyShape* shape2) const;
 
         /// Ray casting method
         void raycast(const Ray& ray, RaycastTest& raycastTest) const;
@@ -173,8 +173,8 @@ inline bool BroadPair::smallerThan(const BroadPair& pair1, const BroadPair& pair
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
-inline bool BroadPhaseAlgorithm::testOverlappingShapes(ProxyShape* shape1,
-                                                       ProxyShape* shape2) const {
+inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
+                                                       const ProxyShape* shape2) const {
     // Get the two AABBs of the collision shapes
     const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->mBroadPhaseID);
     const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->mBroadPhaseID);

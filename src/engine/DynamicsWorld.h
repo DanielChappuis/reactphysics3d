@@ -224,9 +224,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
 
-        /// Reset all the contact manifolds linked list of each body
-        void resetContactManifoldListsOfBodies();
-
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
@@ -277,6 +274,29 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
+
+        /// Test and report collisions between a given shape and all the others
+        /// shapes of the world
+        virtual void testCollision(const ProxyShape* shape,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between two given shapes
+        virtual void testCollision(const ProxyShape* shape1,
+                                   const ProxyShape* shape2,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between a body and all
+        /// the others bodies of the world
+        virtual void testCollision(const CollisionBody* body,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between two bodies
+        virtual void testCollision(const CollisionBody* body1,
+                                   const CollisionBody* body2,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between all shapes of the world
+        virtual void testCollision(CollisionCallback* callback);
 
         // -------------------- Friendship -------------------- //
 

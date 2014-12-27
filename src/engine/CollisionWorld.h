@@ -45,6 +45,9 @@
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
+// Declarations
+class CollisionCallback;
+
 // Class CollisionWorld
 /**
  * This class represent a world where it is possible to move bodies
@@ -95,6 +98,9 @@ class CollisionWorld {
         /// Create a new collision shape in the world.
         CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
 
+        /// Reset all the contact manifolds linked list of each body
+        void resetContactManifoldListsOfBodies();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -120,6 +126,37 @@ class CollisionWorld {
         /// Ray cast method
         void raycast(const Ray& ray, RaycastCallback* raycastCallback) const;
 
+        /// Test if the AABBs of two bodies overlap
+        bool testAABBOverlap(const CollisionBody* body1,
+                             const CollisionBody* body2) const;
+
+        /// Test if the AABBs of two proxy shapes overlap
+        bool testAABBOverlap(const ProxyShape* shape1,
+                             const ProxyShape* shape2) const;
+
+        /// Test and report collisions between a given shape and all the others
+        /// shapes of the world
+        virtual void testCollision(const ProxyShape* shape,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between two given shapes
+        virtual void testCollision(const ProxyShape* shape1,
+                                   const ProxyShape* shape2,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between a body and all the others bodies of the
+        /// world
+        virtual void testCollision(const CollisionBody* body,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between two bodies
+        virtual void testCollision(const CollisionBody* body1,
+                                   const CollisionBody* body2,
+                                   CollisionCallback* callback);
+
+        /// Test and report collisions between all shapes of the world
+        virtual void testCollision(CollisionCallback* callback);
+
         // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;
@@ -143,6 +180,33 @@ inline void CollisionWorld::raycast(const Ray& ray,
                                     RaycastCallback* raycastCallback) const {
     mCollisionDetection.raycast(raycastCallback, ray);
 }
+
+// Test if the AABBs of two proxy shapes overlap
+inline bool CollisionWorld::testAABBOverlap(const ProxyShape* shape1,
+                                            const ProxyShape* shape2) const {
+
+    return mCollisionDetection.testAABBOverlap(shape1, shape2);
+}
+
+// Class CollisionCallback
+/**
+ * This class can be used to register a callback for collision test queries.
+ * You should implement your own class inherited from this one and implement
+ * the notifyRaycastHit() method. This method will be called for each ProxyShape
+ * that is hit by the ray.
+ */
+class CollisionCallback {
+
+    public:
+
+        /// Destructor
+        virtual ~CollisionCallback() {
+
+        }
+
+        /// This method will be called for contact
+        virtual void notifyContact(const ContactPointInfo& contactPointInfo)=0;
+};
 
 }
 

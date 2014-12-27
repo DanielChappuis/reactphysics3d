@@ -53,6 +53,17 @@ AABB::~AABB() {
 
 }
 
+// Merge the AABB in parameter with the current one
+void AABB::mergeWithAABB(const AABB& aabb) {
+    mMinCoordinates.x = std::min(mMinCoordinates.x, aabb.mMinCoordinates.x);
+    mMinCoordinates.y = std::min(mMinCoordinates.y, aabb.mMinCoordinates.y);
+    mMinCoordinates.z = std::min(mMinCoordinates.z, aabb.mMinCoordinates.z);
+
+    mMaxCoordinates.x = std::max(mMaxCoordinates.x, aabb.mMaxCoordinates.x);
+    mMaxCoordinates.y = std::max(mMaxCoordinates.y, aabb.mMaxCoordinates.y);
+    mMaxCoordinates.z = std::max(mMaxCoordinates.z, aabb.mMaxCoordinates.z);
+}
+
 // Replace the current AABB with a new AABB that is the union of two AABBs in parameters
 void AABB::mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2) {
     mMinCoordinates.x = std::min(aabb1.mMinCoordinates.x, aabb2.mMinCoordinates.x);

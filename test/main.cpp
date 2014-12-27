@@ -33,6 +33,7 @@
 #include "tests/mathematics/TestMatrix3x3.h"
 #include "tests/collision/TestPointInside.h"
 #include "tests/collision/TestRaycast.h"
+#include "tests/collision/TestCollisionWorld.h"
 
 using namespace reactphysics3d;
 
@@ -53,6 +54,7 @@ int main() {
 
     testSuite.addTest(new TestPointInside("IsPointInside"));
     testSuite.addTest(new TestRaycast("Raycasting"));
+    testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
 
     // Run the tests
     testSuite.run();

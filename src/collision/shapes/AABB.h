@@ -88,6 +88,9 @@ class AABB {
         /// Return the volume of the AABB
         decimal getVolume() const;
 
+        /// Merge the AABB in parameter with the current one
+        void mergeWithAABB(const AABB& aabb);
+
         /// Replace the current AABB with a new AABB that is the union of two AABBs in parameters
         void mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2);
 

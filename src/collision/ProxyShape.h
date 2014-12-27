@@ -64,6 +64,12 @@ class ProxyShape {
         /// Return the collision shape margin
         decimal getMargin() const;
 
+        /// Return the next proxy shape in the linked list of proxy shapes
+        ProxyShape* getNext();
+
+        /// Return the next proxy shape in the linked list of proxy shapes
+        const ProxyShape* getNext() const;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -110,6 +116,8 @@ class ProxyShape {
         friend class BroadPhaseAlgorithm;
         friend class DynamicAABBTree;
         friend class CollisionDetection;
+        friend class CollisionWorld;
+        friend class DynamicsWorld;
         friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
@@ -172,6 +180,16 @@ inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     if (!mBody->isActive()) return false;
 
     return mCollisionShape->raycast(ray, raycastInfo, this);
+}
+
+// Return the next proxy shape in the linked list of proxy shapes
+inline ProxyShape* ProxyShape::getNext() {
+    return mNext;
+}
+
+// Return the next proxy shape in the linked list of proxy shapes
+inline const ProxyShape* ProxyShape::getNext() const {
+    return mNext;
 }
 
 }

@@ -30,9 +30,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(CollisionBody* body1, CollisionBody* body2,
+ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& memoryAllocator)
-                : mBody1(body1), mBody2(body2), mNbContactPoints(0), mFrictionImpulse1(0.0),
+                : mShape1(shape1), mShape2(shape2), mNbContactPoints(0), mFrictionImpulse1(0.0),
                   mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
                   mMemoryAllocator(memoryAllocator) {
     
