@@ -159,7 +159,8 @@ class BroadPhaseAlgorithm {
         bool testOverlappingShapes(const ProxyShape* shape1, const ProxyShape* shape2) const;
 
         /// Ray casting method
-        void raycast(const Ray& ray, RaycastTest& raycastTest) const;
+        void raycast(const Ray& ray, RaycastTest& raycastTest,
+                     unsigned short raycastWithCategoryMaskBits) const;
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -185,8 +186,9 @@ inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
 
 // Ray casting method
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray,
-                                         RaycastTest& raycastTest) const {
-    mDynamicAABBTree.raycast(ray, raycastTest);
+                                         RaycastTest& raycastTest,
+                                         unsigned short raycastWithCategoryMaskBits) const {
+    mDynamicAABBTree.raycast(ray, raycastTest, raycastWithCategoryMaskBits);
 }
 
 }

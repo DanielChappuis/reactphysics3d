@@ -168,7 +168,8 @@ class DynamicAABBTree {
         void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb);
 
         /// Ray casting method
-        void raycast(const Ray& ray, RaycastTest& raycastTest) const;
+        void raycast(const Ray& ray, RaycastTest& raycastTest,
+                     unsigned short raycastWithCategoryMaskBits) const;
 };
 
 // Return true if the node is a leaf of the tree

@@ -47,6 +47,19 @@ class ProxyShape {
         /// Pointer to user data
         void* mUserData;
 
+        /// Bits used to define the collision category of this shape.
+        /// You can set a single bit to one to define a category value for this
+        /// shape. This value is one (0x0001) by default. This variable can be used
+        /// together with the mCollideWithMaskBits variable so that given
+        /// categories of shapes collide with each other and do not collide with
+        /// other categories.
+        unsigned short mCollisionCategoryBits;
+
+        /// Bits mask used to state which collision categories this shape can
+        /// collide with. This value is 0xFFFF by default. It means that this
+        /// proxy shape will collide with every collision categories by default.
+        unsigned short mCollideWithMaskBits;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -107,6 +120,18 @@ class ProxyShape {
 
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
+
+        /// Return the collision category bits
+        unsigned short getCollisionCategoryBits() const;
+
+        /// Set the collision category bits
+        void setCollisionCategoryBits(unsigned short collisionCategoryBits);
+
+        /// Return the collision bits mask
+        unsigned short getCollideWithMaskBits() const;
+
+        /// Set the collision bits mask
+        void setCollideWithMaskBits(unsigned short collideWithMaskBits);
 
         // -------------------- Friendship -------------------- //
 
@@ -190,6 +215,26 @@ inline ProxyShape* ProxyShape::getNext() {
 // Return the next proxy shape in the linked list of proxy shapes
 inline const ProxyShape* ProxyShape::getNext() const {
     return mNext;
+}
+
+// Return the collision category bits
+inline unsigned short ProxyShape::getCollisionCategoryBits() const {
+    return mCollisionCategoryBits;
+}
+
+// Set the collision category bits
+inline void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
+    mCollisionCategoryBits = collisionCategoryBits;
+}
+
+// Return the collision bits mask
+inline unsigned short ProxyShape::getCollideWithMaskBits() const {
+    return mCollideWithMaskBits;
+}
+
+// Set the collision bits mask
+inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
+    mCollideWithMaskBits = collideWithMaskBits;
 }
 
 }

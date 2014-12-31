@@ -124,7 +124,8 @@ class CollisionWorld {
         void destroyCollisionBody(CollisionBody* collisionBody);
 
         /// Ray cast method
-        void raycast(const Ray& ray, RaycastCallback* raycastCallback) const;
+        void raycast(const Ray& ray, RaycastCallback* raycastCallback,
+                     unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
 
         /// Test if the AABBs of two bodies overlap
         bool testAABBOverlap(const CollisionBody* body1,
@@ -177,8 +178,9 @@ inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator()
 
 // Ray cast method
 inline void CollisionWorld::raycast(const Ray& ray,
-                                    RaycastCallback* raycastCallback) const {
-    mCollisionDetection.raycast(raycastCallback, ray);
+                                    RaycastCallback* raycastCallback,
+                                    unsigned short raycastWithCategoryMaskBits) const {
+    mCollisionDetection.raycast(raycastCallback, ray, raycastWithCategoryMaskBits);
 }
 
 // Test if the AABBs of two proxy shapes overlap

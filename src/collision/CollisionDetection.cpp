@@ -171,9 +171,12 @@ void CollisionDetection::computeNarrowPhase() {
 
         assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
 
-        // Check that the two shapes are overlapping. If the shapes are not overlapping
-        // anymore, we remove the overlapping pair.
-        if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+        // Check if the collision filtering allows collision between the two shapes and
+        // that the two shapes are still overlapping. Otherwise, we destroy the
+        // overlapping pair
+        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
+             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) ||
+             !mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
@@ -252,12 +255,6 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
 
         assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
 
-        bool test1 = shapes1.count(shape1->mBroadPhaseID) == 0;
-        bool test2 = shapes2.count(shape2->mBroadPhaseID) == 0;
-        bool test3 = shapes1.count(shape2->mBroadPhaseID) == 0;
-        bool test4 = shapes2.count(shape1->mBroadPhaseID) == 0;
-        bool test5 = !shapes1.empty() && !shapes2.empty();
-
         // If both shapes1 and shapes2 sets are non-empty, we check that
         // shape1 is among on set and shape2 is among the other one
         if (!shapes1.empty() && !shapes2.empty() &&
@@ -279,9 +276,12 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
             continue;
         }
 
-        // Check that the two shapes are overlapping. If the shapes are not overlapping
-        // anymore, we remove the overlapping pair.
-        if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+        // Check if the collision filtering allows collision between the two shapes and
+        // that the two shapes are still overlapping. Otherwise, we destroy the
+        // overlapping pair
+        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
+             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) ||
+             !mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
@@ -345,6 +345,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // If the two proxy collision shapes are from the same body, skip it
     if (shape1->getBody()->getID() == shape2->getBody()->getID()) return;
 
+    // Check if the collision filtering allows collision between the two shapes
+    if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
+        (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
+
     // Compute the overlapping pair ID
     overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
 
@@ -358,6 +362,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(pairID, newPair));
     assert(check.second);
+
+    // Wake up the two bodies
+    shape1->getBody()->setIsSleeping(false);
+    shape2->getBody()->setIsSleeping(false);
 }
 
 // Remove a body from the collision detection

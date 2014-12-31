@@ -32,6 +32,13 @@
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
+// Enumeration for categories
+enum CollisionCategory {
+    CATEGORY_1 = 0x0001,
+    CATEGORY_2 = 0x0002,
+    CATEGORY_3 = 0x0004
+};
+
 // Class
 class WorldCollisionCallback : public CollisionCallback
 {
@@ -59,7 +66,6 @@ class WorldCollisionCallback : public CollisionCallback
             sphere1CollideWithCylinder = false;
             sphere1CollideWithSphere2 = false;
         }
-
 
         // This method will be called for contact
         virtual void notifyContact(const ContactPointInfo& contactPointInfo) {
@@ -144,6 +150,12 @@ class TestCollisionWorld : public Test {
             mCylinderBody = mWorld->createCollisionBody(cylinderTransform);
             CylinderShape cylinderShape(2, 5);
             mCylinderShape = mCylinderBody->addCollisionShape(cylinderShape, Transform::identity());
+
+            // Assign collision categories to proxy shapes
+            mBoxShape->setCollisionCategoryBits(CATEGORY_1);
+            mSphere1Shape->setCollisionCategoryBits(CATEGORY_1);
+            mSphere2Shape->setCollisionCategoryBits(CATEGORY_2);
+            mCylinderShape->setCollisionCategoryBits(CATEGORY_3);
 
             mCollisionCallback.boxBody = mBoxBody;
             mCollisionCallback.sphere1Body = mSphere1Body;
@@ -235,7 +247,11 @@ class TestCollisionWorld : public Test {
             test(!mCollisionCallback.sphere1CollideWithCylinder);
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
-            // Test collision with inactive bodies
+            // Move sphere 1 to collide with box
+            mSphere1Body->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
+
+            // --------- Test collision with inactive bodies --------- //
+
             mCollisionCallback.reset();
             mBoxBody->setIsActive(false);
             mCylinderBody->setIsActive(false);
@@ -261,6 +277,50 @@ class TestCollisionWorld : public Test {
             mCylinderBody->setIsActive(true);
             mSphere1Body->setIsActive(true);
             mSphere2Body->setIsActive(true);
+
+            // --------- Test collision with collision filtering -------- //
+
+            mBoxShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_3);
+            mSphere1Shape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_2);
+            mSphere2Shape->setCollideWithMaskBits(CATEGORY_1);
+            mCylinderShape->setCollideWithMaskBits(CATEGORY_1);
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+            test(mCollisionCallback.boxCollideWithSphere1);
+            test(mCollisionCallback.boxCollideWithCylinder);
+            test(!mCollisionCallback.sphere1CollideWithCylinder);
+            test(!mCollisionCallback.sphere1CollideWithSphere2);
+
+            // Move sphere 1 to collide with sphere 2
+            mSphere1Body->setTransform(Transform(Vector3(30, 15, 10), Quaternion::identity()));
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+            test(!mCollisionCallback.boxCollideWithSphere1);
+            test(mCollisionCallback.boxCollideWithCylinder);
+            test(!mCollisionCallback.sphere1CollideWithCylinder);
+            test(mCollisionCallback.sphere1CollideWithSphere2);
+
+            mBoxShape->setCollideWithMaskBits(CATEGORY_2);
+            mSphere1Shape->setCollideWithMaskBits(CATEGORY_2);
+            mSphere2Shape->setCollideWithMaskBits(CATEGORY_3);
+            mCylinderShape->setCollideWithMaskBits(CATEGORY_1);
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+            test(!mCollisionCallback.boxCollideWithSphere1);
+            test(!mCollisionCallback.boxCollideWithCylinder);
+            test(!mCollisionCallback.sphere1CollideWithCylinder);
+            test(!mCollisionCallback.sphere1CollideWithSphere2);
+
+            // Move sphere 1 to collide with box
+            mSphere1Body->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
+
+            mBoxShape->setCollideWithMaskBits(0xFFFF);
+            mSphere1Shape->setCollideWithMaskBits(0xFFFF);
+            mSphere2Shape->setCollideWithMaskBits(0xFFFF);
+            mCylinderShape->setCollideWithMaskBits(0xFFFF);
         }
  };
 

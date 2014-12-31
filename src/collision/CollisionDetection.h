@@ -153,7 +153,8 @@ class CollisionDetection {
                                           const std::set<uint>& shapes2) ;
 
         /// Ray casting method
-        void raycast(RaycastCallback* raycastCallback, const Ray& ray) const;
+        void raycast(RaycastCallback* raycastCallback, const Ray& ray,
+                     unsigned short raycastWithCategoryMaskBits) const;
 
         /// Test if the AABBs of two bodies overlap
         bool testAABBOverlap(const CollisionBody* body1,
@@ -228,13 +229,14 @@ inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, con
 
 // Ray casting method
 inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
-                                        const Ray& ray) const {
+                                        const Ray& ray,
+                                        unsigned short raycastWithCategoryMaskBits) const {
 
     RaycastTest rayCastTest(raycastCallback);
 
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
     // callback method for each proxy shape hit by the ray in the broad-phase
-    mBroadPhaseAlgorithm.raycast(ray, rayCastTest);
+    mBroadPhaseAlgorithm.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
 }
 
 // Test if the AABBs of two proxy shapes overlap

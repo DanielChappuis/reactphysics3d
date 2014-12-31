@@ -40,6 +40,12 @@
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
+// Enumeration for categories
+enum Category {
+    CATEGORY1 = 0x0001,
+    CATEGORY2 = 0x0002
+};
+
 /// Class WorldRaycastCallback
 class WorldRaycastCallback : public RaycastCallback {
 
@@ -220,6 +226,17 @@ class TestRaycast : public Test {
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
             mCompoundCylinderShape = mCompoundBody->addCollisionShape(cylinderShape, mShapeTransform);
             mCompoundSphereShape = mCompoundBody->addCollisionShape(sphereShape, shapeTransform2);
+
+            // Assign proxy shapes to the different categories
+            mBoxShape->setCollisionCategoryBits(CATEGORY1);
+            mSphereShape->setCollisionCategoryBits(CATEGORY1);
+            mCapsuleShape->setCollisionCategoryBits(CATEGORY1);
+            mConeShape->setCollisionCategoryBits(CATEGORY2);
+            mConvexMeshShape->setCollisionCategoryBits(CATEGORY2);
+            mConvexMeshShapeEdgesInfo->setCollisionCategoryBits(CATEGORY2);
+            mCylinderShape->setCollisionCategoryBits(CATEGORY2);
+            mCompoundSphereShape->setCollisionCategoryBits(CATEGORY2);
+            mCompoundCylinderShape->setCollisionCategoryBits(CATEGORY2);
         }
 
         /// Run the tests
@@ -255,6 +272,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(!callback.isHit);
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
@@ -457,6 +484,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(!callback.isHit);
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
@@ -667,6 +704,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(!callback.isHit);
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
@@ -892,6 +939,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.x, hitPoint.x));
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z));
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(!callback.isHit);
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
@@ -1124,6 +1181,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(!callback.isHit);
 
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
@@ -1389,6 +1456,16 @@ class TestRaycast : public Test {
             test(approxEqual(callback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(callback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
 
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY2);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray, &callback, CATEGORY1);
+            test(!callback.isHit);
+
             // CollisionBody::raycast()
             RaycastInfo raycastInfo2;
             test(mCylinderBody->raycast(ray, raycastInfo2));
@@ -1603,6 +1680,16 @@ class TestRaycast : public Test {
             Ray ray6(mLocalShape2ToWorld * Vector3(-1, 2, -11), mLocalShape2ToWorld * Vector3(-1, 2, 30));
 
             callback.shapeToTest = mCompoundSphereShape;
+
+            // Correct category filter mask
+            callback.reset();
+            mWorld->raycast(ray1, &callback, CATEGORY2);
+            test(callback.isHit);
+
+            // Wrong category filter mask
+            callback.reset();
+            mWorld->raycast(ray1, &callback, CATEGORY1);
+            test(!callback.isHit);
 
             RaycastInfo raycastInfo;
             test(mCompoundBody->raycast(ray1, raycastInfo));

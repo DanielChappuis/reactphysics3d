@@ -606,7 +606,8 @@ void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aab
 }
 
 // Ray casting method
-void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest) const {
+void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest,
+                              unsigned short raycastWithCategoryMaskBits) const {
 
     decimal maxFraction = ray.maxFraction;
 
@@ -638,35 +639,39 @@ void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest) const {
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
 
-            Ray rayTemp(ray.point1, ray.point2, maxFraction);
+            // Check if the raycast filtering mask allows raycast against this shape
+            if ((raycastWithCategoryMaskBits & node->proxyShape->getCollisionCategoryBits()) != 0) {
 
-            // Ask the collision detection to perform a ray cast test against
-            // the proxy shape of this node because the ray is overlapping
-            // with the shape in the broad-phase
-            decimal hitFraction = raycastTest.raycastAgainstShape(node->proxyShape,
-                                                                  rayTemp);
+                Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
-            // If the user returned a hitFraction of zero, it means that
-            // the raycasting should stop here
-            if (hitFraction == decimal(0.0)) {
-                return;
-            }
+                // Ask the collision detection to perform a ray cast test against
+                // the proxy shape of this node because the ray is overlapping
+                // with the shape in the broad-phase
+                decimal hitFraction = raycastTest.raycastAgainstShape(node->proxyShape,
+                                                                      rayTemp);
 
-            // If the user returned a positive fraction
-            if (hitFraction > decimal(0.0)) {
-
-                // We update the maxFraction value and the ray
-                // AABB using the new maximum fraction
-                if (hitFraction < maxFraction) {
-                    maxFraction = hitFraction;
+                // If the user returned a hitFraction of zero, it means that
+                // the raycasting should stop here
+                if (hitFraction == decimal(0.0)) {
+                    return;
                 }
-                endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
-                rayAABB.mMinCoordinates = Vector3::min(ray.point1, endPoint);
-                rayAABB.mMaxCoordinates = Vector3::max(ray.point1, endPoint);
-            }
 
-            // If the user returned a negative fraction, we continue
-            // the raycasting as if the proxy shape did not exist
+                // If the user returned a positive fraction
+                if (hitFraction > decimal(0.0)) {
+
+                    // We update the maxFraction value and the ray
+                    // AABB using the new maximum fraction
+                    if (hitFraction < maxFraction) {
+                        maxFraction = hitFraction;
+                    }
+                    endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
+                    rayAABB.mMinCoordinates = Vector3::min(ray.point1, endPoint);
+                    rayAABB.mMaxCoordinates = Vector3::max(ray.point1, endPoint);
+                }
+
+                // If the user returned a negative fraction, we continue
+                // the raycasting as if the proxy shape did not exist
+            }
 
         }
         else {  // If the node has children
