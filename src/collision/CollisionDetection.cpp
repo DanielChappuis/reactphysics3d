@@ -197,13 +197,14 @@ void CollisionDetection::computeNarrowPhase() {
         // Update the contact cache of the overlapping pair
         pair->update();
 
-        // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
-        if (body1->getType() != DYNAMIC && body2->getType() != DYNAMIC) continue;
+        // Check that at least one body is awake and not static
+        bool isBody1Active = !body1->isSleeping() && body1->getType() != STATIC;
+        bool isBody2Active = !body2->isSleeping() && body2->getType() != STATIC;
+        if (!isBody1Active && !isBody2Active) continue;
+
+        // Check if the bodies are in the set of bodies that cannot collide between each other
         bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
         if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
-
-        // Check if the two bodies are sleeping, if so, we do no test collision between them
-        if (body1->isSleeping() && body2->isSleeping()) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
         NarrowPhaseAlgorithm& narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(
