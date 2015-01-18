@@ -27,6 +27,7 @@
 #include "EPAAlgorithm.h"
 #include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
+#include <iostream> // TODO : DELETE THIS
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -245,13 +246,14 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 break;
             }
 
-            // If the tetrahedron contains a wrong vertex (the origin is not inside the tetrahedron)
+            // The tetrahedron contains a wrong vertex (the origin is not inside the tetrahedron)
+            // Remove the wrong vertex and continue to the next case with the
+            // three remaining vertices
             if (badVertex < 4) {
 
-                // Replace the wrong vertex with the point 5 (if it exists)
-                suppPointsA[badVertex-1] = suppPointsA[4];
-                suppPointsB[badVertex-1] = suppPointsB[4];
-                points[badVertex-1] = points[4];
+                suppPointsA[badVertex-1] = suppPointsA[3];
+                suppPointsB[badVertex-1] = suppPointsB[3];
+                points[badVertex-1] = points[3];
             }
 
             // We have removed the wrong vertex
@@ -259,9 +261,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
         }
         case 3: {
             // The GJK algorithm returned a triangle that contains the origin.
-            // We need two new vertices to obtain a hexahedron. The two new vertices
-            // are the support points in the "n" and "-n" direction where "n" is the
-            // normal of the triangle.
+            // We need two new vertices to create two tetrahedron. The two new
+            // vertices are the support points in the "n" and "-n" direction
+            // where "n" is the normal of the triangle. Then, we use only the
+            // tetrahedron that contains the origin.
 
             // Compute the normal of the triangle
             Vector3 v1 = points[1] - points[0];
@@ -278,43 +281,62 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                      collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * n);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
-            // Construct the triangle faces
-            TriangleEPA* face0 = triangleStore.newTriangle(points, 0, 1, 3);
-            TriangleEPA* face1 = triangleStore.newTriangle(points, 1, 2, 3);
-            TriangleEPA* face2 = triangleStore.newTriangle(points, 2, 0, 3);
-            TriangleEPA* face3 = triangleStore.newTriangle(points, 0, 2, 4);
-            TriangleEPA* face4 = triangleStore.newTriangle(points, 2, 1, 4);
-            TriangleEPA* face5 = triangleStore.newTriangle(points, 1, 0, 4);
+            TriangleEPA* face0;
+            TriangleEPA* face1;
+            TriangleEPA* face2;
+            TriangleEPA* face3;
 
-            // If the polytope hasn't been correctly constructed
-            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
-                  && (face4 != NULL) && (face5 != NULL) &&
-                  face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0 &&
-                  face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0 &&
-                  face4->getDistSquare() > 0.0 && face5->getDistSquare() > 0.0)) {
+            // If the origin is in the first tetrahedron
+            if (isOriginInTetrahedron(points[0], points[1],
+                                      points[2], points[3]) == 0) {
+                // The tetrahedron is a correct initial polytope for the EPA algorithm.
+                // Therefore, we construct the tetrahedron.
+
+                // Comstruct the 4 triangle faces of the tetrahedron
+                face0 = triangleStore.newTriangle(points, 0, 1, 2);
+                face1 = triangleStore.newTriangle(points, 0, 3, 1);
+                face2 = triangleStore.newTriangle(points, 0, 2, 3);
+                face3 = triangleStore.newTriangle(points, 1, 3, 2);
+            }
+            else if (isOriginInTetrahedron(points[0], points[1],
+                                           points[2], points[4]) == 0) {
+
+                // The tetrahedron is a correct initial polytope for the EPA algorithm.
+                // Therefore, we construct the tetrahedron.
+
+                // Comstruct the 4 triangle faces of the tetrahedron
+                face0 = triangleStore.newTriangle(points, 0, 1, 2);
+                face1 = triangleStore.newTriangle(points, 0, 4, 1);
+                face2 = triangleStore.newTriangle(points, 0, 2, 4);
+                face3 = triangleStore.newTriangle(points, 1, 4, 2);
+            }
+            else {
                 return false;
             }
 
-            // Associate the edges of neighbouring faces
-            link(EdgeEPA(face0, 1), EdgeEPA(face1, 2));
-            link(EdgeEPA(face1, 1), EdgeEPA(face2, 2));
-            link(EdgeEPA(face2, 1), EdgeEPA(face0, 2));
-            link(EdgeEPA(face0, 0), EdgeEPA(face5, 0));
-            link(EdgeEPA(face1, 0), EdgeEPA(face4, 0));
-            link(EdgeEPA(face2, 0), EdgeEPA(face3, 0));
-            link(EdgeEPA(face3, 1), EdgeEPA(face4, 2));
-            link(EdgeEPA(face4, 1), EdgeEPA(face5, 2));
-            link(EdgeEPA(face5, 1), EdgeEPA(face3, 2));
+            // If the constructed tetrahedron is not correct
+            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+               && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
+               && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
+                return false;
+            }
 
-            // Add the candidate faces in the heap
+            // Associate the edges of neighbouring triangle faces
+            link(EdgeEPA(face0, 0), EdgeEPA(face1, 2));
+            link(EdgeEPA(face0, 1), EdgeEPA(face3, 2));
+            link(EdgeEPA(face0, 2), EdgeEPA(face2, 0));
+            link(EdgeEPA(face1, 0), EdgeEPA(face2, 2));
+            link(EdgeEPA(face1, 1), EdgeEPA(face3, 0));
+            link(EdgeEPA(face2, 1), EdgeEPA(face3, 1));
+
+            // Add the triangle faces in the candidate heap
             addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_LARGEST);
-            addFaceCandidate(face4, triangleHeap, nbTriangles, DECIMAL_LARGEST);
-            addFaceCandidate(face5, triangleHeap, nbTriangles, DECIMAL_LARGEST);
 
-            nbVertices = 5;
+            nbVertices = 4;
+
         }
         break;
     }
