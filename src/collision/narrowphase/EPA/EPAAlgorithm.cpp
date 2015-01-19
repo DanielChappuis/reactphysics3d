@@ -103,8 +103,8 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
-                              transform1.getOrientation().getMatrix();
+    Quaternion rotateToBody2 = transform2.getOrientation().getInverse() *
+                              transform1.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -150,13 +150,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             // v2 and v3
             Quaternion rotationQuat(d.x * sin60, d.y * sin60, d.z * sin60, 0.5);
 
-            // Construct the corresponding rotation matrix
-            Matrix3x3 rotationMat = rotationQuat.getMatrix();
-
             // Compute the vector v1, v2, v3
             Vector3 v1 = d.cross(Vector3(minAxis == 0, minAxis == 1, minAxis == 2));
-            Vector3 v2 = rotationMat * v1;
-            Vector3 v3 = rotationMat * v2;
+            Vector3 v2 = rotationQuat * v1;
+            Vector3 v3 = rotationQuat * v2;
 
             // Compute the support point in the direction of v1
             suppPointsA[2] = collisionShape1->getLocalSupportPointWithMargin(v1);
@@ -281,10 +278,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                      collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * n);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
-            TriangleEPA* face0;
-            TriangleEPA* face1;
-            TriangleEPA* face2;
-            TriangleEPA* face3;
+            TriangleEPA* face0 = NULL;
+            TriangleEPA* face1 = NULL;
+            TriangleEPA* face2 = NULL;
+            TriangleEPA* face3 = NULL;
 
             // If the origin is in the first tetrahedron
             if (isOriginInTetrahedron(points[0], points[1],
