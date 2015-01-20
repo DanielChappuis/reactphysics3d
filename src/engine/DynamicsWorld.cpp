@@ -107,6 +107,9 @@ void DynamicsWorld::update() {
     // While the time accumulator is not empty
     while(mTimer.isPossibleToTakeStep()) {
 
+        // Notify the event listener about the beginning of an internal tick
+        if (mEventListener != NULL) mEventListener->beginInternalTick();
+
         // Reset all the contact manifolds lists of each body
         resetContactManifoldListsOfBodies();
 		
@@ -135,6 +138,9 @@ void DynamicsWorld::update() {
         updateBodiesState();
 
         if (mIsSleepingEnabled) updateSleepingBodies();
+
+        // Notify the event listener about the end of an internal tick
+        if (mEventListener != NULL) mEventListener->endInternalTick();
     }
 
     // Reset the external force and torque applied to the bodies
