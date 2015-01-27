@@ -27,7 +27,6 @@
 #include "EPAAlgorithm.h"
 #include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
-#include <iostream> // TODO : DELETE THIS
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

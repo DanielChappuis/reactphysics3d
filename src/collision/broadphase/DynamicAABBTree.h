@@ -129,6 +129,9 @@ class DynamicAABBTree {
         /// Balance the sub-tree of a given node using left or right rotations.
         int balanceSubTreeAtNode(int nodeID);
 
+        /// Compute the height of a given node in the tree
+        int computeHeight(int nodeID);
+
 #ifndef NDEBUG
 
         /// Check if the tree structure is valid (for debugging purpose)
@@ -170,6 +173,9 @@ class DynamicAABBTree {
         /// Ray casting method
         void raycast(const Ray& ray, RaycastTest& raycastTest,
                      unsigned short raycastWithCategoryMaskBits) const;
+
+        /// Compute the height of the tree
+        int computeHeight();
 };
 
 // Return true if the node is a leaf of the tree

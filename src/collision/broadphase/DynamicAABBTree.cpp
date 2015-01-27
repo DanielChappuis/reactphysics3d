@@ -406,7 +406,7 @@ void DynamicAABBTree::removeLeafNode(int nodeID) {
 }
 
 // Balance the sub-tree of a given node using left or right rotations.
-/// The rotation schemes are described in in the book "Introduction to Game Physics
+/// The rotation schemes are described in the book "Introduction to Game Physics
 /// with Box2D" by Ian Parberry. This method returns the new root node ID.
 int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 
@@ -754,6 +754,29 @@ void DynamicAABBTree::checkNode(int nodeID) const {
         checkNode(leftChild);
         checkNode(rightChild);
     }
+}
+
+// Compute the height of the tree
+int DynamicAABBTree::computeHeight() {
+   return computeHeight(mRootNodeID);
+}
+
+// Compute the height of a given node in the tree
+int DynamicAABBTree::computeHeight(int nodeID) {
+    assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
+    TreeNode* node = mNodes + nodeID;
+
+    // If the node is a leaf, its height is zero
+    if (node->isLeaf()) {
+        return 0;
+    }
+
+    // Compute the height of the left and right sub-tree
+    int leftHeight = computeHeight(node->leftChildID);
+    int rightHeight = computeHeight(node->rightChildID);
+
+    // Return the height of the node
+    return 1 + std::max(leftHeight, rightHeight);
 }
 
 #endif
