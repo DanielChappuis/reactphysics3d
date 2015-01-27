@@ -41,12 +41,21 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
+    // Convert the vertices array to the rp3d::decimal type
+    rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
+    for (int i=0; i < mVertices.size(); i++) {
+        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
+        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
+        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
+    }
+
     // Create the collision shape for the rigid body (convex mesh shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    rp3d::decimal* verticesArray = (rp3d::decimal*) getVerticesPointer();
-    rp3d::ConvexMeshShape collisionShape(verticesArray, mVertices.size(),
-                                         sizeof(openglframework::Vector3));
+
+    rp3d::ConvexMeshShape collisionShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
+
+    delete[] vertices;
 
     // Add the edges information of the mesh into the convex mesh collision shape.
     // This is optional but it really speed up the convex mesh collision detection at the
@@ -92,12 +101,20 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
+    // Convert the vertices array to the rp3d::decimal type
+    rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
+    for (int i=0; i < mVertices.size(); i++) {
+        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
+        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
+        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
+    }
+
     // Create the collision shape for the rigid body (convex mesh shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    rp3d::decimal* verticesArray = (rp3d::decimal*) getVerticesPointer();
-    rp3d::ConvexMeshShape collisionShape(verticesArray, mVertices.size(),
-                                         sizeof(openglframework::Vector3));
+    rp3d::ConvexMeshShape collisionShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
+
+    delete[] vertices;
 
     // Add the edges information of the mesh into the convex mesh collision shape.
     // This is optional but it really speed up the convex mesh collision detection at the
