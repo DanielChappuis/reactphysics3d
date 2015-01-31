@@ -27,6 +27,8 @@
 #include "Viewer.h"
 #include "openglframework.h"
 #include <iostream>
+#include <cstdlib>
+#include <sstream>
 
 using namespace openglframework;
 
@@ -60,7 +62,7 @@ void Viewer::init(int argc, char** argv, const std::string& windowsTitle,
 
     // Initialize the GLFW library
     if (!glfwInit()) {
-         exit(EXIT_FAILURE);
+         std::exit(EXIT_FAILURE);
     }
 
     // Active the multi-sampling by default
@@ -73,7 +75,7 @@ void Viewer::init(int argc, char** argv, const std::string& windowsTitle,
                                static_cast<int>(windowsSize.y), mWindowTitle.c_str(), NULL, NULL);
     if (!mWindow) {
         glfwTerminate();
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     glfwMakeContextCurrent(mWindow);
 
@@ -87,7 +89,7 @@ void Viewer::init(int argc, char** argv, const std::string& windowsTitle,
         // Problem: glewInit failed, something is wrong
         std::cerr << "GLEW Error : " << glewGetErrorString(errorGLEW) << std::endl;
         assert(false);
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 
     if (isMultisamplingActive) {
@@ -332,6 +334,9 @@ void Viewer::displayGUI() {
 // Display the FPS
 void Viewer::displayFPS() {
 
-    std::string windowTitle = mWindowTitle + " | FPS : " + std::to_string(mFPS);
+    std::stringstream ss;
+    ss << mFPS;
+    std::string fpsString = ss.str();
+    std::string windowTitle = mWindowTitle + " | FPS : " + fpsString;
     glfwSetWindowTitle(mWindow, windowTitle.c_str());
 }
