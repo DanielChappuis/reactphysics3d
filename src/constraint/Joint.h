@@ -85,12 +85,12 @@ struct JointInfo {
         /// Type of the joint
         JointType type;
 
-        /// True if the two bodies of the joint are allowed to collide with each other
-        bool isCollisionEnabled;
-
         /// Position correction technique used for the constraint (used for joints).
         /// By default, the BAUMGARTE technique is used
         JointsPositionCorrectionTechnique positionCorrectionTechnique;
+
+        /// True if the two bodies of the joint are allowed to collide with each other
+        bool isCollisionEnabled;
 
         /// Constructor
         JointInfo(JointType constraintType)

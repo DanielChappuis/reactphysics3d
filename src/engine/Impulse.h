@@ -51,11 +51,11 @@ struct Impulse {
         /// Linear impulse applied to the first body
         const Vector3 linearImpulseBody1;
 
-        /// Linear impulse applied to the second body
-        const Vector3 linearImpulseBody2;
-
         /// Angular impulse applied to the first body
         const Vector3 angularImpulseBody1;
+
+        /// Linear impulse applied to the second body
+        const Vector3 linearImpulseBody2;
 
         /// Angular impulse applied to the second body
         const Vector3 angularImpulseBody2;

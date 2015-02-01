@@ -43,8 +43,8 @@ MemoryAllocator::MemoryAllocator() {
     mNbCurrentMemoryBlocks = 0;
     const size_t sizeToAllocate = mNbAllocatedMemoryBlocks * sizeof(MemoryBlock);
     mMemoryBlocks = (MemoryBlock*) malloc(sizeToAllocate);
-    memset(mMemoryBlocks, NULL, sizeToAllocate);
-    memset(mFreeMemoryUnits, NULL, sizeof(mFreeMemoryUnits));
+    memset(mMemoryBlocks, 0, sizeToAllocate);
+    memset(mFreeMemoryUnits, 0, sizeof(mFreeMemoryUnits));
 
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled = 0;
@@ -55,7 +55,7 @@ MemoryAllocator::MemoryAllocator() {
 
         // Initialize the array that contains the sizes the memory units that will
         // be allocated in each different heap
-        for (uint i=0; i < NB_HEAPS; i++) {
+        for (int i=0; i < NB_HEAPS; i++) {
             mUnitSizes[i] = (i+1) * 8;
         }
 

@@ -36,16 +36,17 @@ using namespace std;
 
 // Constructor
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), mTimer(timeStep), mGravity(gravity), mIsGravityEnabled(true),
-                mConstrainedLinearVelocities(NULL), mConstrainedAngularVelocities(NULL),
-                mConstrainedPositions(NULL), mConstrainedOrientations(NULL),
+              : CollisionWorld(), mTimer(timeStep),
                 mContactSolver(mMapBodyToConstrainedVelocityIndex),
                 mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsSleepingEnabled(SPLEEPING_ENABLED), mSplitLinearVelocities(NULL),
-                mSplitAngularVelocities(NULL), mNbIslands(0), mNbIslandsCapacity(0),
-                mIslands(NULL), mNbBodiesCapacity(0),
+                mIsSleepingEnabled(SPLEEPING_ENABLED), mGravity(gravity),
+                mIsGravityEnabled(true), mConstrainedLinearVelocities(NULL),
+                mConstrainedAngularVelocities(NULL), mSplitLinearVelocities(NULL),
+                mSplitAngularVelocities(NULL), mConstrainedPositions(NULL),
+                mConstrainedOrientations(NULL), mNbIslands(0),
+                mNbIslandsCapacity(0), mIslands(NULL), mNbBodiesCapacity(0),
                 mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
                 mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
                 mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {

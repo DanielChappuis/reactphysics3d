@@ -336,7 +336,6 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* collis
 
     Vector3 suppA;             // Support point of object A
     Vector3 w;                 // Support point of Minkowski difference A-B
-    decimal vDotw;
     decimal prevDistSquare;
 
     // Support point of object B (object B is a single point)
@@ -358,8 +357,6 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* collis
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
-
-        vDotw = v.dot(w);
 
         // Add the new support point to the simplex
         simplex.addPoint(w, suppA, suppB);

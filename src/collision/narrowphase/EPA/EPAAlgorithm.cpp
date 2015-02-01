@@ -50,25 +50,25 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 
     // Check vertex 1
     Vector3 normal1 = (p2-p1).cross(p3-p1);
-    if (normal1.dot(p1) > 0.0 == normal1.dot(p4) > 0.0) {
+    if ((normal1.dot(p1) > 0.0) == (normal1.dot(p4) > 0.0)) {
         return 4;
     }
 
     // Check vertex 2
     Vector3 normal2 = (p4-p2).cross(p3-p2);
-    if (normal2.dot(p2) > 0.0 == normal2.dot(p1) > 0.0) {
+    if ((normal2.dot(p2) > 0.0) == (normal2.dot(p1) > 0.0)) {
         return 1;
     }
 
     // Check vertex 3
     Vector3 normal3 = (p4-p3).cross(p1-p3);
-    if (normal3.dot(p3) > 0.0 == normal3.dot(p2) > 0.0) {
+    if ((normal3.dot(p3) > 0.0) == (normal3.dot(p2) > 0.0)) {
         return 2;
     }
 
     // Check vertex 4
     Vector3 normal4 = (p2-p4).cross(p1-p4);
-    if (normal4.dot(p4) > 0.0 == normal4.dot(p3) > 0.0) {
+    if ((normal4.dot(p4) > 0.0) == (normal4.dot(p3) > 0.0)) {
         return 3;
     }
 

@@ -78,7 +78,7 @@ class MemoryAllocator {
         // -------------------- Constants -------------------- //
 
         /// Number of heaps
-        static const uint NB_HEAPS = 128;
+        static const int NB_HEAPS = 128;
 
         /// Maximum memory unit size. An allocation request of a size smaller or equal to
         /// this size will be handled using the small block allocator. However, for an

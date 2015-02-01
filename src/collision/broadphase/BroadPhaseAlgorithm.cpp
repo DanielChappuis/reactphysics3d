@@ -168,7 +168,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
     // For all collision shapes that have moved (or have been created) during the
     // last simulation step
     for (uint i=0; i<mNbMovedShapes; i++) {
-        uint shapeID = mMovedShapes[i];
+        int shapeID = mMovedShapes[i];
 
         if (shapeID == -1) continue;
 

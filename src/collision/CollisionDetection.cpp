@@ -117,7 +117,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
 
         // For each contact manifold of the overlapping pair
         ContactManifold* manifold = pair->getContactManifold();
-        for (int i=0; i<manifold->getNbContactPoints(); i++) {
+        for (uint i=0; i<manifold->getNbContactPoints(); i++) {
 
             ContactPoint* contactPoint = manifold->getContactPoint(i);
 
