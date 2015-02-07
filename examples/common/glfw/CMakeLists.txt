@@ -490,9 +490,7 @@ endif()
 #--------------------------------------------------------------------
 # Export GLFW library dependencies
 #--------------------------------------------------------------------
-MESSAGE(BEFORE ${glfw_LIBRARIES})
 set(GLFW_LIBRARIES ${glfw_LIBRARIES} CACHE STRING "Dependencies of GLFW")
-MESSAGE(FINAL ${GLFW_LIBRARIES})
 foreach(arg ${glfw_PKG_DEPS})
     set(GLFW_PKG_DEPS "${GLFW_PKG_DEPS} ${arg}")
 endforeach()

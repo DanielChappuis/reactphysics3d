@@ -60,7 +60,7 @@ DynamicsWorld::~DynamicsWorld() {
     for (uint i=0; i<mNbIslands; i++) {
 
         // Call the island destructor
-        mIslands[i]->Island::~Island();
+        mIslands[i]->~Island();
 
         // Release the allocated memory for the island
         mMemoryAllocator.release(mIslands[i], sizeof(Island));
@@ -497,7 +497,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->resetContactManifoldsList();
 
     // Call the destructor of the rigid body
-    rigidBody->RigidBody::~RigidBody();
+    rigidBody->~RigidBody();
 
     // Remove the rigid body from the list of rigid bodies
     mBodies.erase(rigidBody);
@@ -602,7 +602,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     size_t nbBytes = joint->getSizeInBytes();
 
     // Call the destructor of the joint
-    joint->Joint::~Joint();
+    joint->~Joint();
 
     // Release the allocated memory
     mMemoryAllocator.release(joint, nbBytes);
@@ -643,7 +643,7 @@ void DynamicsWorld::computeIslands() {
     for (uint i=0; i<mNbIslands; i++) {
 
         // Call the island destructor
-        mIslands[i]->Island::~Island();
+        mIslands[i]->~Island();
 
         // Release the allocated memory for the island
         mMemoryAllocator.release(mIslands[i], sizeof(Island));

@@ -133,7 +133,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
             if (callback != NULL) callback->notifyContact(*contactInfo);
 
             // Delete and remove the contact info from the memory allocator
-            contactInfo->ContactPointInfo::~ContactPointInfo();
+            contactInfo->~ContactPointInfo();
              mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
@@ -182,7 +182,7 @@ void CollisionDetection::computeNarrowPhase() {
             ++it;
 
             // Destroy the overlapping pair
-            itToRemove->second->OverlappingPair::~OverlappingPair();
+            itToRemove->second->~OverlappingPair();
             mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
             continue;
@@ -233,7 +233,7 @@ void CollisionDetection::computeNarrowPhase() {
             if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(*contactInfo);
 
             // Delete and remove the contact info from the memory allocator
-            contactInfo->ContactPointInfo::~ContactPointInfo();
+            contactInfo->~ContactPointInfo();
             mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
@@ -288,7 +288,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
             ++it;
 
             // Destroy the overlapping pair
-            itToRemove->second->OverlappingPair::~OverlappingPair();
+            itToRemove->second->~OverlappingPair();
             mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
             continue;
@@ -331,7 +331,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
             if (callback != NULL) callback->notifyContact(*contactInfo);
 
             // Delete and remove the contact info from the memory allocator
-            contactInfo->ContactPointInfo::~ContactPointInfo();
+            contactInfo->~ContactPointInfo();
             mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
@@ -381,7 +381,7 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
             ++it;
 
             // Destroy the overlapping pair
-            itToRemove->second->OverlappingPair::~OverlappingPair();
+            itToRemove->second->~OverlappingPair();
             mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
         }

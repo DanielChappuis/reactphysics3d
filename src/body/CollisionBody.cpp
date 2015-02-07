@@ -107,7 +107,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
         }
 
         mWorld.removeCollisionShape(proxyShape->mCollisionShape);
-        current->ProxyShape::~ProxyShape();
+        current->~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
         mNbCollisionShapes--;
         assert(mNbCollisionShapes >= 0);
@@ -129,7 +129,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             }
 
             mWorld.removeCollisionShape(proxyShape->mCollisionShape);
-            elementToRemove->ProxyShape::~ProxyShape();
+            elementToRemove->~ProxyShape();
             mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
             return;
@@ -160,7 +160,7 @@ void CollisionBody::removeAllCollisionShapes() {
         }
 
         mWorld.removeCollisionShape(current->mCollisionShape);
-        current->ProxyShape::~ProxyShape();
+        current->~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
 
         // Get the next element in the list
@@ -179,7 +179,7 @@ void CollisionBody::resetContactManifoldsList() {
         ContactManifoldListElement* nextElement = currentElement->next;
 
         // Delete the current element
-        currentElement->ContactManifoldListElement::~ContactManifoldListElement();
+        currentElement->~ContactManifoldListElement();
         mWorld.mMemoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
 
         currentElement = nextElement;

@@ -76,7 +76,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     mFreeBodiesIDs.push_back(collisionBody->getID());
 
     // Call the destructor of the collision body
-    collisionBody->CollisionBody::~CollisionBody();
+    collisionBody->~CollisionBody();
 
     // Remove the collision body from the list of bodies
     mBodies.erase(collisionBody);
@@ -159,7 +159,7 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
         size_t nbBytesShape = collisionShape->getSizeInBytes();
 
         // Call the destructor of the collision shape
-        collisionShape->CollisionShape::~CollisionShape();
+        collisionShape->~CollisionShape();
 
         // Deallocate the memory used by the collision shape
         mMemoryAllocator.release(collisionShape, nbBytesShape);

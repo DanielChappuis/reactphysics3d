@@ -147,7 +147,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
     if (mJointsList->joint == joint) {   // If the first element is the one to remove
         JointListElement* elementToRemove = mJointsList;
         mJointsList = elementToRemove->next;
-        elementToRemove->JointListElement::~JointListElement();
+        elementToRemove->~JointListElement();
         memoryAllocator.release(elementToRemove, sizeof(JointListElement));
     }
     else {  // If the element to remove is not the first one in the list
@@ -156,7 +156,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
             if (currentElement->next->joint == joint) {
                 JointListElement* elementToRemove = currentElement->next;
                 currentElement->next = elementToRemove->next;
-                elementToRemove->JointListElement::~JointListElement();
+                elementToRemove->~JointListElement();
                 memoryAllocator.release(elementToRemove, sizeof(JointListElement));
                 break;
             }

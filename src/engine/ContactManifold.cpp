@@ -56,7 +56,7 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
         if (distance <= PERSISTENT_CONTACT_DIST_THRESHOLD*PERSISTENT_CONTACT_DIST_THRESHOLD) {
 
             // Delete the new contact
-            contact->ContactPoint::~ContactPoint();
+            contact->~ContactPoint();
             mMemoryAllocator.release(contact, sizeof(ContactPoint));
             //removeContact(i);
 
@@ -84,7 +84,7 @@ void ContactManifold::removeContactPoint(uint index) {
 	
     // Call the destructor explicitly and tell the memory allocator that
 	// the corresponding memory block is now free
-    mContactPoints[index]->ContactPoint::~ContactPoint();
+    mContactPoints[index]->~ContactPoint();
     mMemoryAllocator.release(mContactPoints[index], sizeof(ContactPoint));
 	
     // If we don't remove the last index
@@ -253,7 +253,7 @@ void ContactManifold::clear() {
 		
         // Call the destructor explicitly and tell the memory allocator that
 		// the corresponding memory block is now free
-        mContactPoints[i]->ContactPoint::~ContactPoint();
+        mContactPoints[i]->~ContactPoint();
         mMemoryAllocator.release(mContactPoints[i], sizeof(ContactPoint));
     }
     mNbContactPoints = 0;
