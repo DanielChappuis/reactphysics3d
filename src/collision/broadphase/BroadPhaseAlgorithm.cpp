@@ -37,19 +37,19 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
                      mNbNonUsedMovedShapes(0), mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
                      mCollisionDetection(collisionDetection) {
 
-    // Allocate memory for the array of non-static bodies IDs
+    // Allocate memory for the array of non-static proxy shapes IDs
     mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
     assert(mMovedShapes != NULL);
 
     // Allocate memory for the array of potential overlapping pairs
-    mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+    mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
     assert(mPotentialPairs != NULL);
 }
 
 // Destructor
 BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
 
-    // Release the memory for the array of non-static bodies IDs
+    // Release the memory for the array of non-static proxy shapes IDs
     free(mMovedShapes);
 
     // Release the memory for the array of potential overlapping pairs
@@ -60,7 +60,7 @@ BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
 // and that need to be tested again for broad-phase overlapping.
 void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
 
-    // Allocate more elements in the array of bodies that have moved if necessary
+    // Allocate more elements in the array of shapes that have moved if necessary
     if (mNbAllocatedMovedShapes == mNbMovedShapes) {
         mNbAllocatedMovedShapes *= 2;
         int* oldArray = mMovedShapes;
@@ -70,7 +70,7 @@ void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
         free(oldArray);
     }
 
-    // Store the broad-phase ID into the array of bodies that have moved
+    // Store the broad-phase ID into the array of shapes that have moved
     assert(mNbMovedShapes < mNbAllocatedMovedShapes);
     assert(mMovedShapes != NULL);
     mMovedShapes[mNbMovedShapes] = broadPhaseID;
@@ -83,7 +83,7 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 
     assert(mNbNonUsedMovedShapes <= mNbMovedShapes);
 
-    // If less than the quarter of allocated elements of the non-static bodies IDs array
+    // If less than the quarter of allocated elements of the non-static shapes IDs array
     // are used, we release some allocated memory
     if ((mNbMovedShapes - mNbNonUsedMovedShapes) < mNbAllocatedMovedShapes / 4 &&
             mNbAllocatedMovedShapes > 8) {
@@ -133,7 +133,7 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);
 
-    // Remove the collision shape into the array of bodies that have moved (or have been created)
+    // Remove the collision shape into the array of shapes that have moved (or have been created)
     // during the last simulation step
     removeMovedCollisionShape(broadPhaseID);
 }
@@ -153,7 +153,7 @@ void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, cons
     // into the tree).
     if (hasBeenReInserted) {
 
-        // Add the collision shape into the array of bodies that have moved (or have been created)
+        // Add the collision shape into the array of shapes that have moved (or have been created)
         // during the last simulation step
         addMovedCollisionShape(broadPhaseID);
     }
@@ -186,7 +186,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
     mNbMovedShapes = 0;
 
     // Sort the array of potential overlapping pairs in order to remove duplicate pairs
-    std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPair::smallerThan);
+    std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPhasePair::smallerThan);
 
     // Check all the potential overlapping pairs avoiding duplicates to report unique
     // overlapping pairs
@@ -194,7 +194,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
     while (i < mNbPotentialPairs) {
 
         // Get a potential overlapping pair
-        BroadPair* pair = mPotentialPairs + i;
+        BroadPhasePair* pair = mPotentialPairs + i;
         i++;
 
         // Get the two collision shapes of the pair
@@ -208,7 +208,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
         while (i < mNbPotentialPairs) {
 
             // Get the next pair
-            BroadPair* nextPair = mPotentialPairs + i;
+            BroadPhasePair* nextPair = mPotentialPairs + i;
 
             // If the next pair is different from the previous one, we stop skipping pairs
             if (nextPair->collisionShape1ID != pair->collisionShape1ID ||
@@ -224,11 +224,11 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
     if (mNbPotentialPairs < mNbAllocatedPotentialPairs / 4 && mNbPotentialPairs > 8) {
 
         // Reduce the number of allocated potential overlapping pairs
-        BroadPair* oldPairs = mPotentialPairs;
+        BroadPhasePair* oldPairs = mPotentialPairs;
         mNbAllocatedPotentialPairs /= 2;
-        mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+        mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
         assert(mPotentialPairs);
-        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPair));
+        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
         free(oldPairs);
     }
 }
@@ -243,11 +243,11 @@ void BroadPhaseAlgorithm::notifyOverlappingPair(int node1ID, int node2ID) {
     if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
 
         // Allocate more memory for the array of potential pairs
-        BroadPair* oldPairs = mPotentialPairs;
+        BroadPhasePair* oldPairs = mPotentialPairs;
         mNbAllocatedPotentialPairs *= 2;
-        mPotentialPairs = (BroadPair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPair));
+        mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
         assert(mPotentialPairs);
-        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPair));
+        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
         free(oldPairs);
     }
 

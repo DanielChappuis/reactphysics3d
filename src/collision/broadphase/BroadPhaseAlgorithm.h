@@ -38,20 +38,12 @@ namespace reactphysics3d {
 // Declarations
 class CollisionDetection;
 
-// TODO : Check that when a kinematic or static body is manually moved, the dynamic aabb tree
-//        is correctly updated
-
-// TODO : Replace the names "body, bodies" by "collision shapes"
-
-// TODO : Remove the pair manager
-
-// TODO : RENAME THIS
-// Structure BroadPair
+// Structure BroadPhasePair
 /**
- * This structure represent a potential overlapping pair during the broad-phase collision
- * detection.
+ * This structure represent a potential overlapping pair during the
+ * broad-phase collision detection.
  */
-struct BroadPair {
+struct BroadPhasePair {
 
     // -------------------- Attributes -------------------- //
 
@@ -64,13 +56,13 @@ struct BroadPair {
     // -------------------- Methods -------------------- //
 
     /// Method used to compare two pairs for sorting algorithm
-    static bool smallerThan(const BroadPair& pair1, const BroadPair& pair2);
+    static bool smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2);
 };
 
 // Class BroadPhaseAlgorithm
 /**
  * This class represents the broad-phase collision detection. The
- * goal of the broad-phase collision detection is to compute the pairs of bodies
+ * goal of the broad-phase collision detection is to compute the pairs of proxy shapes
  * that have their AABBs overlapping. Only those pairs of bodies will be tested
  * later for collision during the narrow-phase collision detection. A dynamic AABB
  * tree data structure is used for fast broad-phase collision detection.
@@ -102,7 +94,7 @@ class BroadPhaseAlgorithm {
         uint mNbNonUsedMovedShapes;
 
         /// Temporary array of potential overlapping pairs (with potential duplicates)
-        BroadPair* mPotentialPairs;
+        BroadPhasePair* mPotentialPairs;
 
         /// Number of potential overlapping pairs
         uint mNbPotentialPairs;
@@ -164,7 +156,7 @@ class BroadPhaseAlgorithm {
 };
 
 // Method used to compare two pairs for sorting algorithm
-inline bool BroadPair::smallerThan(const BroadPair& pair1, const BroadPair& pair2) {
+inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2) {
 
     if (pair1.collisionShape1ID < pair2.collisionShape1ID) return true;
     if (pair1.collisionShape1ID == pair2.collisionShape1ID) {
@@ -185,8 +177,7 @@ inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
 }
 
 // Ray casting method
-inline void BroadPhaseAlgorithm::raycast(const Ray& ray,
-                                         RaycastTest& raycastTest,
+inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
     mDynamicAABBTree.raycast(ray, raycastTest, raycastWithCategoryMaskBits);
 }

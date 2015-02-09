@@ -158,10 +158,8 @@ inline int Shader::getUniformLocation(const std::string& variableName) const {
 
 // Clear the shader
 inline void Shader::destroy() {
-    if (mProgramObjectID != 0) {
-        glDeleteShader(mProgramObjectID);
-        mProgramObjectID = 0;
-    }
+    glDeleteProgram(mProgramObjectID);
+    mProgramObjectID = 0;
 }
 
 // Set a float uniform value to this shader (be careful if the uniform is not

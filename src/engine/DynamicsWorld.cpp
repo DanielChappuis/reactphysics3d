@@ -190,10 +190,6 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             mConstrainedOrientations[indexArray] = currentOrientation +
                                                    Quaternion(0, newAngVelocity) *
                                                    currentOrientation * decimal(0.5) * dt;
-
-            // TODO : DELETE THIS
-            Vector3 newPos = mConstrainedPositions[indexArray];
-            Quaternion newOrientation = mConstrainedOrientations[indexArray];
         }
     }
 }

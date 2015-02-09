@@ -134,7 +134,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
 
             // Delete and remove the contact info from the memory allocator
             contactInfo->~ContactPointInfo();
-             mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
+            mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
         }
     }
 }
@@ -180,6 +180,8 @@ void CollisionDetection::computeNarrowPhase() {
 
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
+
+            // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
@@ -287,6 +289,8 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
 
+            // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
+
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
             mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
@@ -379,6 +383,8 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
             it->second->getShape2()->mBroadPhaseID == proxyShape->mBroadPhaseID) {
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
+
+            // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();

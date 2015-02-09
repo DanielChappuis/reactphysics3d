@@ -97,7 +97,6 @@ class OverlappingPair {
         Vector3 getCachedSeparatingAxis() const;
 
         /// Set the cached separating axis
-        // TODO : Check that this variable is correctly used allong the collision detection process
         void setCachedSeparatingAxis(const Vector3& axis);
 
         /// Return the number of contacts in the cache
