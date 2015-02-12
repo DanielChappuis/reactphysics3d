@@ -613,6 +613,10 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
 
 
 // Enable/Disable the limits of the joint
+/**
+ * @param isLimitEnabled True if you want to enable the limits of the joint and
+ *                       false otherwise
+ */
 void HingeJoint::enableLimit(bool isLimitEnabled) {
 
     if (isLimitEnabled != mIsLimitEnabled) {
@@ -625,6 +629,10 @@ void HingeJoint::enableLimit(bool isLimitEnabled) {
 }
 
 // Enable/Disable the motor of the joint
+/**
+ * @param isMotorEnabled True if you want to enable the motor of the joint and
+ *                       false otherwise
+ */
 void HingeJoint::enableMotor(bool isMotorEnabled) {
 
     mIsMotorEnabled = isMotorEnabled;
@@ -636,6 +644,9 @@ void HingeJoint::enableMotor(bool isMotorEnabled) {
 }
 
 // Set the minimum angle limit
+/**
+ * @param lowerLimit The minimum limit angle of the joint (in radian)
+ */
 void HingeJoint::setMinAngleLimit(decimal lowerLimit) {
 
     assert(mLowerLimit <= 0 && mLowerLimit >= -2.0 * PI);
@@ -650,6 +661,9 @@ void HingeJoint::setMinAngleLimit(decimal lowerLimit) {
 }
 
 // Set the maximum angle limit
+/**
+ * @param upperLimit The maximum limit angle of the joint (in radian)
+ */
 void HingeJoint::setMaxAngleLimit(decimal upperLimit) {
 
     assert(upperLimit >= 0 && upperLimit <= 2.0 * PI);
@@ -689,6 +703,9 @@ void HingeJoint::setMotorSpeed(decimal motorSpeed) {
 }
 
 // Set the maximum motor torque
+/**
+ * @param maxMotorTorque The maximum torque (in Newtons) of the joint motor
+ */
 void HingeJoint::setMaxMotorTorque(decimal maxMotorTorque) {
 
     if (maxMotorTorque != mMaxMotorTorque) {

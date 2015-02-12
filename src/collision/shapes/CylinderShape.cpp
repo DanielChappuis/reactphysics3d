@@ -31,6 +31,11 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param radius Radius of the cylinder (in meters)
+ * @param height Height of the cylinder (in meters)
+ * @param margin Collision margin (in meters) around the collision shape
+ */
 CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
               : CollisionShape(CYLINDER, margin), mRadius(radius),
                 mHalfHeight(height/decimal(2.0)) {

@@ -35,6 +35,10 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
+/**
+ * @param gravity Gravity vector in the world (in meters per second squared)
+ * @param timeStep Time step for an internal physics tick (in seconds)
+ */
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
               : CollisionWorld(), mTimer(timeStep),
                 mContactSolver(mMapBodyToConstrainedVelocityIndex),
@@ -453,6 +457,10 @@ void DynamicsWorld::solvePositionCorrection() {
 }
 
 // Create a rigid body into the physics world
+/**
+ * @param transform Transformation from body local-space to world-space
+ * @return A pointer to the body that has been created in the world
+ */
 RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 
     // Compute the body ID
@@ -475,6 +483,9 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 }
 
 // Destroy a rigid body and all the joints which it belongs
+/**
+ * @param rigidBody Pointer to the body you want to destroy
+ */
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Remove all the collision shapes of the body
@@ -504,6 +515,10 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 }
 
 // Create a joint between two bodies in the world and return a pointer to the new joint
+/**
+ * @param jointInfo The information that is necessary to create the joint
+ * @return A pointer to the joint that has been created in the world
+ */
 Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
     Joint* newJoint = NULL;
@@ -573,6 +588,9 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 }
 
 // Destroy a joint
+/**
+ * @param joint Pointer to the joint you want to destroy
+ */
 void DynamicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != NULL);
@@ -842,7 +860,13 @@ void DynamicsWorld::updateSleepingBodies() {
     }
 }
 
-// Enable/Disable the sleeping technique
+// Enable/Disable the sleeping technique.
+/// The sleeping technique is used to put bodies that are not moving into sleep
+/// to speed up the simulation.
+/**
+ * @param isSleepingEnabled True if you want to enable the sleeping technique
+ *                          and false otherwise
+ */
 void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
     mIsSleepingEnabled = isSleepingEnabled;
 
@@ -862,6 +886,10 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
 // shapes of the world.
 /// This method should be called after calling the
 /// DynamicsWorld::update() method that will compute the collisions.
+/**
+ * @param shape Pointer to the proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
 void DynamicsWorld::testCollision(const ProxyShape* shape,
                                    CollisionCallback* callback) {
 
@@ -877,6 +905,11 @@ void DynamicsWorld::testCollision(const ProxyShape* shape,
 // Test and report collisions between two given shapes.
 /// This method should be called after calling the
 /// DynamicsWorld::update() method that will compute the collisions.
+/**
+ * @param shape1 Pointer to the first proxy shape to test
+ * @param shape2 Pointer to the second proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
 void DynamicsWorld::testCollision(const ProxyShape* shape1,
                                    const ProxyShape* shape2,
                                    CollisionCallback* callback) {
@@ -895,6 +928,10 @@ void DynamicsWorld::testCollision(const ProxyShape* shape1,
 // world.
 /// This method should be called after calling the
 /// DynamicsWorld::update() method that will compute the collisions.
+/**
+ * @param body Pointer to the first body to test
+ * @param callback Pointer to the object with the callback method
+ */
 void DynamicsWorld::testCollision(const CollisionBody* body,
                                    CollisionCallback* callback) {
 
@@ -916,6 +953,11 @@ void DynamicsWorld::testCollision(const CollisionBody* body,
 // Test and report collisions between two bodies.
 /// This method should be called after calling the
 /// DynamicsWorld::update() method that will compute the collisions.
+/**
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @param callback Pointer to the object with the callback method
+ */
 void DynamicsWorld::testCollision(const CollisionBody* body1,
                                    const CollisionBody* body2,
                                    CollisionCallback* callback) {
@@ -940,6 +982,9 @@ void DynamicsWorld::testCollision(const CollisionBody* body1,
 // Test and report collisions between all shapes of the world.
 /// This method should be called after calling the
 /// DynamicsWorld::update() method that will compute the collisions.
+/**
+ * @param callback Pointer to the object with the callback method
+ */
 void DynamicsWorld::testCollision(CollisionCallback* callback) {
 
     std::set<uint> emptySet;

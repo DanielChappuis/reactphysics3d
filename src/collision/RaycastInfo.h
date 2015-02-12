@@ -116,6 +116,10 @@ class RaycastCallback {
         /// value in the RaycastInfo object), the current ray will be clipped
         /// to this fraction in the next queries. If you return -1.0, it will
         /// ignore this ProxyShape and continue the ray cast.
+        /**
+         * @param raycastInfo Information about the raycast hit
+         * @return Value that controls the continuation of the ray after a hit
+         */
         virtual decimal notifyRaycastHit(const RaycastInfo& raycastInfo)=0;
 
 };

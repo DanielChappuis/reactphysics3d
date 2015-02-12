@@ -118,6 +118,9 @@ class CollisionBody : public Body {
         /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
         int resetIsAlreadyInIslandAndCountManifolds();
 
+        /// Set the interpolation factor of the body
+        void setInterpolationFactor(decimal factor);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -152,15 +155,6 @@ class CollisionBody : public Body {
 
         /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
-
-        /// Set the interpolation factor of the body
-        void setInterpolationFactor(decimal factor);
-
-        /// Return true if the body can collide with others bodies
-        bool isCollisionEnabled() const;
-
-        /// Enable/disable the collision with this body
-        void enableCollision(bool isCollisionEnabled);
 
         /// Return the first element of the linked list of contact manifolds involving this body
         const ContactManifoldListElement* getContactManifoldsList() const;
@@ -203,11 +197,26 @@ class CollisionBody : public Body {
 };
 
 // Return the type of the body
+/**
+ * @return the type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
 inline BodyType CollisionBody::getType() const {
     return mType;
 }
 
 // Set the type of the body
+/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+/**
+ * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
 inline void CollisionBody::setType(BodyType type) {
     mType = type;
 
@@ -219,6 +228,9 @@ inline void CollisionBody::setType(BodyType type) {
 }
 
 // Return the interpolated transform for rendering
+/**
+ * @return The current interpolated transformation (between previous and current frame)
+ */
 inline Transform CollisionBody::getInterpolatedTransform() const {
     return Transform::interpolateTransforms(mOldTransform, mTransform, mInterpolationFactor);
 }
@@ -230,11 +242,19 @@ inline void CollisionBody::setInterpolationFactor(decimal factor) {
 }
 
 // Return the current position and orientation
+/**
+ * @return The current transformation of the body that transforms the local-space
+ *         of the body into world-space
+ */
 inline const Transform& CollisionBody::getTransform() const {
     return mTransform;
 }
 
 // Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
 inline void CollisionBody::setTransform(const Transform& transform) {
 
     // Update the transform of the body
@@ -251,36 +271,64 @@ inline void CollisionBody::updateOldTransform() {
 }
 
 // Return the first element of the linked list of contact manifolds involving this body
+/**
+ * @return A pointer to the first element of the linked-list with the contact
+ *         manifolds of this body
+ */
 inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
     return mContactManifoldsList;
 }
 
 // Return the linked list of proxy shapes of that body
+/**
+* @return The pointer of the first proxy shape of the linked-list of all the
+*         proxy shapes of the body
+*/
 inline ProxyShape* CollisionBody::getProxyShapesList() {
     return mProxyCollisionShapes;
 }
 
 // Return the linked list of proxy shapes of that body
+/**
+* @return The pointer of the first proxy shape of the linked-list of all the
+*         proxy shapes of the body
+*/
 inline const ProxyShape* CollisionBody::getProxyShapesList() const {
     return mProxyCollisionShapes;
 }
 
 // Return the world-space coordinates of a point given the local-space coordinates of the body
+/**
+* @param localPoint A point in the local-space coordinates of the body
+* @return The point in world-space coordinates
+*/
 inline Vector3 CollisionBody::getWorldPoint(const Vector3& localPoint) const {
     return mTransform * localPoint;
 }
 
 // Return the world-space vector of a vector given in local-space coordinates of the body
+/**
+* @param localVector A vector in the local-space coordinates of the body
+* @return The vector in world-space coordinates
+*/
 inline Vector3 CollisionBody::getWorldVector(const Vector3& localVector) const {
     return mTransform.getOrientation() * localVector;
 }
 
 // Return the body local-space coordinates of a point given in the world-space coordinates
+/**
+* @param worldPoint A point in world-space coordinates
+* @return The point in the local-space coordinates of the body
+*/
 inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
     return mTransform.getInverse() * worldPoint;
 }
 
 // Return the body local-space coordinates of a vector given in the world-space coordinates
+/**
+* @param worldVector A vector in world-space coordinates
+* @return The vector in the local-space coordinates of the body
+*/
 inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mTransform.getOrientation().getInverse() * worldVector;
 }

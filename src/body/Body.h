@@ -37,7 +37,9 @@ namespace reactphysics3d {
 // TODO : Make this class abstract
 // Class Body
 /**
- * This class is an abstract class to represent a body of the physics engine.
+ * This class to represent a body of the physics engine. You should not
+ * instantiante this class but instantiate the CollisionBody or RigidBody
+ * classes instead.
  */
 class Body {
 
@@ -81,6 +83,9 @@ class Body {
         /// Private assignment operator
         Body& operator=(const Body& body);
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -91,7 +96,7 @@ class Body {
         /// Destructor
         virtual ~Body();
 
-        /// Return the id of the body
+        /// Return the ID of the body
         bodyindex getID() const;
 
         /// Return whether or not the body is allowed to sleep
@@ -108,9 +113,6 @@ class Body {
 
         /// Set whether or not the body is active
         virtual void setIsActive(bool isActive);
-
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
 
         /// Return a pointer to the user data attached to this body
         void* getUserData() const;
@@ -136,16 +138,25 @@ class Body {
 };
 
 // Return the id of the body
+/**
+ * @return The ID of the body
+ */
 inline bodyindex Body::getID() const {
     return mID;
 }
 
 // Return whether or not the body is allowed to sleep
+/**
+ * @return True if the body is allowed to sleep and false otherwise
+ */
 inline bool Body::isAllowedToSleep() const {
     return mIsAllowedToSleep;
 }
 
 // Set whether or not the body is allowed to go to sleep
+/**
+ * @param isAllowedToSleep True if the body is allowed to sleep
+ */
 inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
     mIsAllowedToSleep = isAllowedToSleep;
 
@@ -153,16 +164,25 @@ inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
 }
 
 // Return whether or not the body is sleeping
+/**
+ * @return True if the body is currently sleeping and false otherwise
+ */
 inline bool Body::isSleeping() const {
     return mIsSleeping;
 }
 
 // Return true if the body is active
+/**
+ * @return True if the body currently active and false otherwise
+ */
 inline bool Body::isActive() const {
     return mIsActive;
 }
 
 // Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
 inline void Body::setIsActive(bool isActive) {
     mIsActive = isActive;
 }
@@ -183,11 +203,17 @@ inline void Body::setIsSleeping(bool isSleeping) {
 }
 
 // Return a pointer to the user data attached to this body
+/**
+ * @return A pointer to the user data you have attached to the body
+ */
 inline void* Body::getUserData() const {
     return mUserData;
 }
 
 // Attach user data to this body
+/**
+ * @param userData A pointer to the user data you want to attach to the body
+ */
 inline void Body::setUserData(void* userData) {
     mUserData = userData;
 }

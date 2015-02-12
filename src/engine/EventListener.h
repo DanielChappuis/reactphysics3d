@@ -50,9 +50,15 @@ class EventListener {
         virtual ~EventListener() {}
 
         /// Called when a new contact point is found between two bodies that were separated before
+        /**
+         * @param contact Information about the contact
+         */
         virtual void beginContact(const ContactPointInfo& contact) {}
 
         /// Called when a new contact point is found between two bodies
+        /**
+         * @param contact Information about the contact
+         */
         virtual void newContact(const ContactPointInfo& contact) {}
 
         /// Called at the beginning of an internal tick of the simulation step.

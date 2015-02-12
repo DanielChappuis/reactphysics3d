@@ -32,6 +32,12 @@ using namespace reactphysics3d;
 
 // Constructor to initialize with a array of 3D vertices.
 /// This method creates an internal copy of the input vertices.
+/**
+ * @param arrayVertices Array with the vertices of the convex mesh
+ * @param nbVertices Number of vertices in the convex mesh
+ * @param stride Stride between the beginning of two elements in the vertices array
+ * @param margin Collision margin (in meters) around the collision shape
+ */
 ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
                                  decimal margin)
                 : CollisionShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),

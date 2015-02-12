@@ -33,6 +33,10 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param extent The vector with the three extents of the box (in meters)
+ * @param margin The collision margin (in meters) around the collision shape
+ */
 BoxShape::BoxShape(const Vector3& extent, decimal margin)
          : CollisionShape(BOX, margin), mExtent(extent - Vector3(margin, margin, margin)) {
     assert(extent.x > decimal(0.0) && extent.x > margin);
@@ -52,6 +56,11 @@ BoxShape::~BoxShape() {
 }
 
 // Return the local inertia tensor of the collision shape
+/**
+ * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+ *                    coordinates
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
     Vector3 realExtent = mExtent + Vector3(mMargin, mMargin, mMargin);

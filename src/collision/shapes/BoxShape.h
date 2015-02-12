@@ -81,6 +81,12 @@ class BoxShape : public CollisionShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
+        /// Allocate and return a copy of the object
+        virtual BoxShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -91,17 +97,11 @@ class BoxShape : public CollisionShape {
         /// Destructor
         virtual ~BoxShape();
 
-        /// Allocate and return a copy of the object
-        virtual BoxShape* clone(void* allocatedMemory) const;
-
         /// Return the extents of the box
         Vector3 getExtent() const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -116,12 +116,19 @@ inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
 }
 
 // Return the extents of the box
+/**
+ * @return The vector with the three extents of the box shape (in meters)
+ */
 inline Vector3 BoxShape::getExtent() const {
     return mExtent + Vector3(mMargin, mMargin, mMargin);
 }
 
 // Return the local bounds of the shape in x, y and z directions
 /// This method is used to compute the AABB of the box
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds

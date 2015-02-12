@@ -50,6 +50,11 @@ CollisionShape::~CollisionShape() {
 }
 
 // Compute the world-space AABB of the collision shape given a transform
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
 void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
     PROFILE("CollisionShape::computeAABB()");

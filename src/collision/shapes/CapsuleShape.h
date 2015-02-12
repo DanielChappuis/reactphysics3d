@@ -83,6 +83,12 @@ class CapsuleShape : public CollisionShape {
                                      const Vector3& sphereCenter, decimal maxFraction,
                                      Vector3& hitLocalPoint, decimal& hitFraction) const;
 
+        /// Allocate and return a copy of the object
+        virtual CapsuleShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -93,17 +99,11 @@ class CapsuleShape : public CollisionShape {
         /// Destructor
         virtual ~CapsuleShape();
 
-        /// Allocate and return a copy of the object
-        virtual CapsuleShape* clone(void* allocatedMemory) const;
-
         /// Return the radius of the capsule
         decimal getRadius() const;
 
         /// Return the height of the capsule
         decimal getHeight() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -121,11 +121,17 @@ inline CapsuleShape* CapsuleShape::clone(void* allocatedMemory) const {
 }
 
 // Get the radius of the capsule
+/**
+ * @return The radius of the capsule shape (in meters)
+ */
 inline decimal CapsuleShape::getRadius() const {
     return mRadius;
 }
 
 // Return the height of the capsule
+/**
+ * @return The height of the capsule shape (in meters)
+ */
 inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
 }
@@ -137,6 +143,10 @@ inline size_t CapsuleShape::getSizeInBytes() const {
 
 // Return the local bounds of the shape in x, y and z directions
 // This method is used to compute the AABB of the box
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds

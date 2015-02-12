@@ -85,6 +85,12 @@ class ConeShape : public CollisionShape {
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Allocate and return a copy of the object
+        virtual ConeShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
         
     public :
 
@@ -96,17 +102,11 @@ class ConeShape : public CollisionShape {
         /// Destructor
         virtual ~ConeShape();
 
-        /// Allocate and return a copy of the object
-        virtual ConeShape* clone(void* allocatedMemory) const;
-
         /// Return the radius
         decimal getRadius() const;
 
         /// Return the height
         decimal getHeight() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -124,11 +124,17 @@ inline ConeShape* ConeShape::clone(void* allocatedMemory) const {
 }
 
 // Return the radius
+/**
+ * @return Radius of the cone (in meters)
+ */
 inline decimal ConeShape::getRadius() const {
     return mRadius;
 }
 
 // Return the height
+/**
+ * @return Height of the cone (in meters)
+ */
 inline decimal ConeShape::getHeight() const {
     return decimal(2.0) * mHalfHeight;
 }
@@ -139,6 +145,10 @@ inline size_t ConeShape::getSizeInBytes() const {
 }
 
 // Return the local bounds of the shape in x, y and z directions
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void ConeShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
@@ -153,6 +163,11 @@ inline void ConeShape::getLocalBounds(Vector3& min, Vector3& max) const {
 }
 
 // Return the local inertia tensor of the collision shape
+/**
+ * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+ *                    coordinates
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
 inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal rSquare = mRadius * mRadius;
     decimal diagXZ = decimal(0.15) * mass * (rSquare + mHalfHeight);

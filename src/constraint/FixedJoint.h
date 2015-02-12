@@ -47,6 +47,12 @@ struct FixedJointInfo : public JointInfo {
         Vector3 anchorPointWorldSpace;
 
         /// Constructor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point of the joint in
+         *                                  world-space coordinates
+         */
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
                        : JointInfo(rigidBody1, rigidBody2, FIXEDJOINT),

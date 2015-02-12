@@ -174,6 +174,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Put bodies to sleep if needed.
         void updateSleepingBodies();
 
+        /// Add the joint to the list of joints of the two bodies involved in the joint
+        void addJointToBody(Joint* joint);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -220,9 +223,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Destroy a joint
         void destroyJoint(Joint* joint);
-
-        /// Add the joint to the list of joints of the two bodies involved in the joint
-        void addJointToBody(Joint* joint);
 
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
@@ -324,16 +324,25 @@ inline void DynamicsWorld::stop() {
 }                
 
 // Set the number of iterations for the velocity constraint solver
+/**
+ * @param nbIterations Number of iterations for the velocity solver
+ */
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
 }
 
 // Set the number of iterations for the position constraint solver
+/**
+ * @param nbIterations Number of iterations for the position solver
+ */
 inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
     mNbPositionSolverIterations = nbIterations;
 }
 
 // Set the position correction technique used for contacts
+/**
+ * @param technique Technique used for the position correction (Baumgarte or Split Impulses)
+ */
 inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
                               ContactsPositionCorrectionTechnique technique) {
     if (technique == BAUMGARTE_CONTACTS) {
@@ -345,6 +354,9 @@ inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
 }
 
 // Set the position correction technique used for joints
+/**
+ * @param technique Technique used for the joins position correction (Baumgarte or Non Linear Gauss Seidel)
+ */
 inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
                               JointsPositionCorrectionTechnique technique) {
     if (technique == BAUMGARTE_JOINTS) {
@@ -357,56 +369,91 @@ inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
 
 // Activate or deactivate the solving of friction constraints at the center of
 // the contact manifold instead of solving them at each contact point
+/**
+ * @param isActive True if you want the friction to be solved at the center of
+ *                 the contact manifold and false otherwise
+ */
 inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
     mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Return the gravity vector of the world
+/**
+ * @return The current gravity vector (in meter per seconds squared)
+ */
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
 }
 
 // Return if the gravity is enaled
+/**
+ * @return True if the gravity is enabled in the world
+ */
 inline bool DynamicsWorld::isGravityEnabled() const {
     return mIsGravityEnabled;
 }
 
 // Enable/Disable the gravity
+/**
+ * @param isGravityEnabled True if you want to enable the gravity in the world
+ *                         and false otherwise
+ */
 inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
     mIsGravityEnabled = isGravityEnabled;
 }
 
 // Return the number of rigid bodies in the world
+/**
+ * @return Number of rigid bodies in the world
+ */
 inline uint DynamicsWorld::getNbRigidBodies() const {
     return mRigidBodies.size();
 }
 
 /// Return the number of joints in the world
+/**
+ * @return Number of joints in the world
+ */
 inline uint DynamicsWorld::getNbJoints() const {
     return mJoints.size();
 }
 
 // Return an iterator to the beginning of the bodies of the physics world
+/**
+ * @return Starting iterator of the set of rigid bodies
+ */
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator() {
     return mRigidBodies.begin();
 }
 
 // Return an iterator to the end of the bodies of the physics world
+/**
+ * @return Ending iterator of the set of rigid bodies
+ */
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator() {
     return mRigidBodies.end();
 }
 
 // Return the current physics time (in seconds)
+/**
+ * @return The current physics time (in seconds)
+ */
 inline long double DynamicsWorld::getPhysicsTime() const {
     return mTimer.getPhysicsTime();
 }
 
 // Return true if the sleeping technique is enabled
+/**
+ * @return True if the sleeping technique is enabled and false otherwise
+ */
 inline bool DynamicsWorld::isSleepingEnabled() const {
     return mIsSleepingEnabled;
 }
 
 // Return the current sleep linear velocity
+/**
+ * @return The sleep linear velocity (in meters per second)
+ */
 inline decimal DynamicsWorld::getSleepLinearVelocity() const {
     return mSleepLinearVelocity;
 }
@@ -415,12 +462,18 @@ inline decimal DynamicsWorld::getSleepLinearVelocity() const {
 /// When the velocity of a body becomes smaller than the sleep linear/angular
 /// velocity for a given amount of time, the body starts sleeping and does not need
 /// to be simulated anymore.
+/**
+ * @param sleepLinearVelocity The sleep linear velocity (in meters per second)
+ */
 inline void DynamicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
     assert(sleepLinearVelocity >= decimal(0.0));
     mSleepLinearVelocity = sleepLinearVelocity;
 }
 
 // Return the current sleep angular velocity
+/**
+ * @return The sleep angular velocity (in radian per second)
+ */
 inline decimal DynamicsWorld::getSleepAngularVelocity() const {
     return mSleepAngularVelocity;
 }
@@ -429,18 +482,27 @@ inline decimal DynamicsWorld::getSleepAngularVelocity() const {
 /// When the velocity of a body becomes smaller than the sleep linear/angular
 /// velocity for a given amount of time, the body starts sleeping and does not need
 /// to be simulated anymore.
+/**
+ * @param sleepAngularVelocity The sleep angular velocity (in radian per second)
+ */
 inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
     assert(sleepAngularVelocity >= decimal(0.0));
     mSleepAngularVelocity = sleepAngularVelocity;
 }
 
 // Return the time a body is required to stay still before sleeping
+/**
+ * @return Time a body is required to stay still before sleeping (in seconds)
+ */
 inline decimal DynamicsWorld::getTimeBeforeSleep() const {
     return mTimeBeforeSleep;
 }
 
 
 // Set the time a body is required to stay still before sleeping
+/**
+ * @param timeBeforeSleep Time a body is required to stay still before sleeping (in seconds)
+ */
 inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
     assert(timeBeforeSleep >= decimal(0.0));
     mTimeBeforeSleep = timeBeforeSleep;
@@ -448,6 +510,10 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
 
 // Set an event listener object to receive events callbacks.
 /// If you use NULL as an argument, the events callbacks will be disabled.
+/**
+ * @param eventListener Pointer to the event listener object that will receive
+ *                      event callbacks during the simulation
+ */
 inline void DynamicsWorld::setEventListener(EventListener* eventListener) {
     mEventListener = eventListener;
 }

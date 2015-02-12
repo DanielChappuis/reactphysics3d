@@ -32,6 +32,11 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param transform The transform of the body
+ * @param world The physics world where the body is created
+ * @param id ID of the body
+ */
 CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id)
               : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(NULL),
                 mNbCollisionShapes(0), mContactManifoldsList(NULL), mWorld(world) {
@@ -51,15 +56,20 @@ CollisionBody::~CollisionBody() {
 }
 
 // Add a collision shape to the body.
-/// This methods will create a copy of the collision shape you provided inside the world and
-/// return a pointer to the actual collision shape in the world. You can use this pointer to
-/// remove the collision from the body. Note that when the body is destroyed, all the collision
-/// shapes will also be destroyed automatically. Because an internal copy of the collision shape
-/// you provided is performed, you can delete it right after calling this method. The second
-/// parameter is the transformation that transform the local-space of the collision shape into
-/// the local-space of the body.
-/// This method will return a pointer to the proxy collision shape that links the body with
-/// the collision shape you have added.
+/// When you add a collision shape to the body, an internal copy of this
+/// collision shape will be created internally. Therefore, you can delete it
+/// right after calling this method or use it later to add it to another body.
+/// This method will return a pointer to a new proxy shape. A proxy shape is
+/// an object that links a collision shape and a given body. You can use the
+/// returned proxy shape to get and set information about the corresponding
+/// collision shape for that body.
+/**
+ * @param collisionShape The collision shape you want to add to the body
+ * @param transform The transformation of the collision shape that transforms the
+ *        local-space of the collision shape into the local-space of the body
+ * @return A pointer to the proxy shape that has been created to link the body to
+ *         the new collision shape you have added.
+ */
 ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
                                              const Transform& transform) {
 
@@ -94,6 +104,12 @@ ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShap
 }
 
 // Remove a collision shape from the body
+/// To remove a collision shape, you need to specify the pointer to the proxy
+/// shape that has been returned when you have added the collision shape to the
+/// body
+/**
+ * @param proxyShape The pointer of the proxy shape you want to remove
+ */
 void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     ProxyShape* current = mProxyCollisionShapes;
@@ -201,6 +217,9 @@ void CollisionBody::updateBroadPhaseState() const {
 }
 
 // Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
 void CollisionBody::setIsActive(bool isActive) {
 
     // If the state does not change
@@ -268,6 +287,11 @@ int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
 }
 
 // Return true if a point is inside the collision body
+/// This method returns true if a point is inside any collision shape of the body
+/**
+ * @param worldPoint The point to test (in world-space coordinates)
+ * @return True if the point is inside the body
+ */
 bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
     // For each collision shape of the body
@@ -282,6 +306,12 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
 // Raycast method with feedback information
 /// The method returns the closest hit among all the collision shapes of the body
+/**
+* @param ray The ray used to raycast agains the body
+* @param[out] raycastInfo Structure that contains the result of the raycasting
+*                         (valid only if the method returned true)
+* @return True if the ray hit the body and false otherwise
+*/
 bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     // If the body is not active, it cannot be hit by rays
@@ -304,6 +334,9 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 }
 
 // Compute and return the AABB of the body by merging all proxy shapes AABBs
+/**
+* @return The axis-aligned bounding box (AABB) of the body in world-space coordinates
+*/
 AABB CollisionBody::getAABB() const {
 
     AABB bodyAABB;

@@ -32,6 +32,11 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param radius Radius of the cone (in meters)
+ * @param height Height of the cone (in meters)
+ * @param margin Collision margin (in meters) around the collision shape
+ */
 ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
           : CollisionShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));

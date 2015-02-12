@@ -47,6 +47,12 @@ struct BallAndSocketJointInfo : public JointInfo {
         Vector3 anchorPointWorldSpace;
 
         /// Constructor
+        /**
+         * @param rigidBody1 Pointer to the first body of the joint
+         * @param rigidBody2 Pointer to the second body of the joint
+         * @param initAnchorPointWorldSpace The anchor point in world-space
+         *                                  coordinates
+         */
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
                               : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),

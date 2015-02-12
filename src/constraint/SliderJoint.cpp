@@ -656,6 +656,10 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 }
 
 // Enable/Disable the limits of the joint
+/**
+ * @param isLimitEnabled True if you want to enable the joint limits and false
+ *                       otherwise
+ */
 void SliderJoint::enableLimit(bool isLimitEnabled) {
 
     if (isLimitEnabled != mIsLimitEnabled) {
@@ -668,6 +672,10 @@ void SliderJoint::enableLimit(bool isLimitEnabled) {
 }
 
 // Enable/Disable the motor of the joint
+/**
+ * @param isMotorEnabled True if you want to enable the joint motor and false
+ *                       otherwise
+ */
 void SliderJoint::enableMotor(bool isMotorEnabled) {
 
     mIsMotorEnabled = isMotorEnabled;
@@ -679,8 +687,12 @@ void SliderJoint::enableMotor(bool isMotorEnabled) {
 }
 
 // Return the current translation value of the joint
-// TODO : Check if we need to compare rigid body position or center of mass here
+/**
+ * @return The current translation distance of the joint (in meters)
+ */
 decimal SliderJoint::getTranslation() const {
+
+    // TODO : Check if we need to compare rigid body position or center of mass here
 
     // Get the bodies positions and orientations
     const Vector3& x1 = mBody1->getTransform().getPosition();
@@ -704,6 +716,9 @@ decimal SliderJoint::getTranslation() const {
 }
 
 // Set the minimum translation limit
+/**
+ * @param lowerLimit The minimum translation limit of the joint (in meters)
+ */
 void SliderJoint::setMinTranslationLimit(decimal lowerLimit) {
 
     assert(lowerLimit <= mUpperLimit);
@@ -718,6 +733,9 @@ void SliderJoint::setMinTranslationLimit(decimal lowerLimit) {
 }
 
 // Set the maximum translation limit
+/**
+ * @param lowerLimit The maximum translation limit of the joint (in meters)
+ */
 void SliderJoint::setMaxTranslationLimit(decimal upperLimit) {
 
     assert(mLowerLimit <= upperLimit);
@@ -744,6 +762,9 @@ void SliderJoint::resetLimits() {
 }
 
 // Set the motor speed
+/**
+ * @param motorSpeed The speed of the joint motor (in meters per second)
+ */
 void SliderJoint::setMotorSpeed(decimal motorSpeed) {
 
     if (motorSpeed != mMotorSpeed) {
@@ -757,6 +778,9 @@ void SliderJoint::setMotorSpeed(decimal motorSpeed) {
 }
 
 // Set the maximum motor force
+/**
+ * @param maxMotorForce The maximum force of the joint motor (in Newton x meters)
+ */
 void SliderJoint::setMaxMotorForce(decimal maxMotorForce) {
 
     if (maxMotorForce != mMaxMotorForce) {

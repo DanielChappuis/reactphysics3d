@@ -203,26 +203,42 @@ class Joint {
 };
 
 // Return the reference to the body 1
+/**
+ * @return The first body involved in the joint
+ */
 inline RigidBody* const Joint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
+/**
+ * @return The second body involved in the joint
+ */
 inline RigidBody* const Joint::getBody2() const {
     return mBody2;
 }
 
 // Return true if the joint is active
+/**
+ * @return True if the joint is active
+ */
 inline bool Joint::isActive() const {
     return (mBody1->isActive() && mBody2->isActive());
 }
 
 // Return the type of the joint
+/**
+ * @return The type of the joint
+ */
 inline JointType Joint::getType() const {
     return mType;
 }
 
 // Return true if the collision between the two bodies of the joint is enabled
+/**
+ * @return True if the collision is enabled between the two bodies of the joint
+ *              is enabled and false otherwise
+ */
 inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }

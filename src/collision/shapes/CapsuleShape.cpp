@@ -32,6 +32,10 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param radius The radius of the capsule (in meters)
+ * @param height The height of the capsule (in meters)
+ */
 CapsuleShape::CapsuleShape(decimal radius, decimal height)
             : CollisionShape(CAPSULE, radius), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(radius > decimal(0.0));
@@ -107,6 +111,11 @@ Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction
 }
 
 // Return the local inertia tensor of the capsule
+/**
+ * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+ *                    coordinates
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
 void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
 
 	// The inertia tensor formula for a capsule can be found in : Game Engine Gems, Volume 1

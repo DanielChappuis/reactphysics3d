@@ -88,6 +88,21 @@ class CollisionShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
 
+        /// Return the number of similar created shapes
+        uint getNbSimilarCreatedShapes() const;
+
+        /// Allocate and return a copy of the object
+        virtual CollisionShape* clone(void* allocatedMemory) const=0;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const = 0;
+
+        /// Increment the number of similar allocated collision shapes
+        void incrementNbSimilarCreatedShapes();
+
+        /// Decrement the number of similar allocated collision shapes
+        void decrementNbSimilarCreatedShapes();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -98,20 +113,11 @@ class CollisionShape {
         /// Destructor
         virtual ~CollisionShape();
 
-        /// Allocate and return a copy of the object
-        virtual CollisionShape* clone(void* allocatedMemory) const=0;
-
         /// Return the type of the collision shapes
         CollisionShapeType getType() const;
 
-        /// Return the number of similar created shapes
-        uint getNbSimilarCreatedShapes() const;
-
         /// Return the current object margin
         decimal getMargin() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const = 0;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
@@ -122,12 +128,6 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
-        /// Increment the number of similar allocated collision shapes
-        void incrementNbSimilarCreatedShapes();
-
-        /// Decrement the number of similar allocated collision shapes
-        void decrementNbSimilarCreatedShapes();
-
         /// Equality operator between two collision shapes.
         bool operator==(const CollisionShape& otherCollisionShape) const;
 
@@ -137,12 +137,16 @@ class CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class ProxyShape;
+        friend class CollisionWorld;
 };
 
 
 
 
 // Return the type of the collision shape
+/**
+ * @return The type of the collision shape (box, sphere, cylinder, ...)
+ */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
 }
@@ -152,7 +156,10 @@ inline uint CollisionShape::getNbSimilarCreatedShapes() const {
     return mNbSimilarCreatedShapes;
 }
 
-// Return the current object margin
+// Return the current collision shape margin
+/**
+ * @return The margin (in meters) around the collision shape
+ */
 inline decimal CollisionShape::getMargin() const {
     return mMargin;
 }

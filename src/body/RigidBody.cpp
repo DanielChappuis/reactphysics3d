@@ -33,6 +33,11 @@
 using namespace reactphysics3d;
 
 // Constructor
+/**
+* @param transform The transformation of the body
+* @param world The world where the body has been added
+* @param id The ID of the body
+*/
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
           : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
@@ -48,7 +53,19 @@ RigidBody::~RigidBody() {
     assert(mJointsList == NULL);
 }
 
-// Set the type of the body (static, kinematic or dynamic)
+// Set the type of the body
+/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+/**
+ * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
 void RigidBody::setType(BodyType type) {
 
     if (mType == type) return;
@@ -96,6 +113,10 @@ void RigidBody::setType(BodyType type) {
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
+/**
+ * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
+ *                           coordinates
+ */
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
     if (mType != DYNAMIC) return;
@@ -107,6 +128,10 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
+/**
+ * @param centerOfMassLocal The center of mass of the body in local-space
+ *                          coordinates
+ */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     if (mType != DYNAMIC) return;
@@ -122,6 +147,9 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 }
 
 // Set the mass of the rigid body
+/**
+ * @param mass The mass (in kilograms) of the body
+ */
 void RigidBody::setMass(decimal mass) {
 
     if (mType != DYNAMIC) return;
@@ -166,15 +194,21 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
 }
 
 // Add a collision shape to the body.
-/// This methods will create a copy of the collision shape you provided inside the world and
-/// return a pointer to the actual collision shape in the world. You can use this pointer to
-/// remove the collision from the body. Note that when the body is destroyed, all the collision
-/// shapes will also be destroyed automatically. Because an internal copy of the collision shape
-/// you provided is performed, you can delete it right after calling this method.
-/// The second parameter is the mass of the collision shape (this will used to compute the
-/// total mass of the rigid body and its inertia tensor). The mass must be positive. The third
-/// parameter is the transformation that transform the local-space of the collision shape into
-/// the local-space of the body. By default, the second parameter is the identity transform.
+/// When you add a collision shape to the body, an internal copy of this
+/// collision shape will be created internally. Therefore, you can delete it
+/// right after calling this method or use it later to add it to another body.
+/// This method will return a pointer to a new proxy shape. A proxy shape is
+/// an object that links a collision shape and a given body. You can use the
+/// returned proxy shape to get and set information about the corresponding
+/// collision shape for that body.
+/**
+ * @param collisionShape The collision shape you want to add to the body
+ * @param transform The transformation of the collision shape that transforms the
+ *        local-space of the collision shape into the local-space of the body
+ * @param mass Mass (in kilograms) of the collision shape you want to add
+ * @return A pointer to the proxy shape that has been created to link the body to
+ *         the new collision shape you have added.
+ */
 ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
@@ -216,10 +250,16 @@ ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
 }
 
 // Remove a collision shape from the body
-void RigidBody::removeCollisionShape(const ProxyShape* proxyCollisionShape) {
+/// To remove a collision shape, you need to specify the pointer to the proxy
+/// shape that has been returned when you have added the collision shape to the
+/// body
+/**
+ * @param proxyShape The pointer of the proxy shape you want to remove
+ */
+void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     // Remove the collision shape
-    CollisionBody::removeCollisionShape(proxyCollisionShape);
+    CollisionBody::removeCollisionShape(proxyShape);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();

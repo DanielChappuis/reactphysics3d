@@ -167,16 +167,28 @@ class CollisionWorld {
 };
 
 // Return an iterator to the beginning of the bodies of the physics world
+/**
+ * @return An starting iterator to the set of bodies of the world
+ */
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator() {
     return mBodies.begin();
 }
 
 // Return an iterator to the end of the bodies of the physics world
+/**
+ * @return An ending iterator to the set of bodies of the world
+ */
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
     return mBodies.end();
 }
 
 // Ray cast method
+/**
+ * @param ray Ray to use for raycasting
+ * @param raycastCallback Pointer to the class with the callback method
+ * @param raycastWithCategoryMaskBits Bits mask corresponding to the category of
+ *                                    bodies to be raycasted
+ */
 inline void CollisionWorld::raycast(const Ray& ray,
                                     RaycastCallback* raycastCallback,
                                     unsigned short raycastWithCategoryMaskBits) const {
@@ -184,6 +196,11 @@ inline void CollisionWorld::raycast(const Ray& ray,
 }
 
 // Test if the AABBs of two proxy shapes overlap
+/**
+ * @param shape1 Pointer to the first proxy shape to test
+ * @param shape2 Pointer to the second proxy shape to test
+ * @return
+ */
 inline bool CollisionWorld::testAABBOverlap(const ProxyShape* shape1,
                                             const ProxyShape* shape2) const {
 

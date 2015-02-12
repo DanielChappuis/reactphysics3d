@@ -45,6 +45,10 @@ CollisionWorld::~CollisionWorld() {
 }
 
 // Create a collision body and add it to the world
+/**
+ * @param transform Transformation mapping the local-space of the body to world-space
+ * @return A pointer to the body that has been created in the world
+ */
 CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Get the next available body ID
@@ -67,6 +71,9 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 }
 
 // Destroy a collision body
+/**
+ * @param collisionBody Pointer to the body to destroy
+ */
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     // Remove all the collision shapes of the body
@@ -178,6 +185,11 @@ void CollisionWorld::resetContactManifoldListsOfBodies() {
 }
 
 // Test if the AABBs of two bodies overlap
+/**
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @return True if the AABBs of the two bodies overlap and false otherwise
+ */
 bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
                                      const CollisionBody* body2) const {
 
@@ -194,6 +206,10 @@ bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
 
 // Test and report collisions between a given shape and all the others
 // shapes of the world.
+/**
+ * @param shape Pointer to the proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
 void CollisionWorld::testCollision(const ProxyShape* shape,
                                    CollisionCallback* callback) {
 
@@ -210,6 +226,11 @@ void CollisionWorld::testCollision(const ProxyShape* shape,
 }
 
 // Test and report collisions between two given shapes
+/**
+ * @param shape1 Pointer to the first proxy shape to test
+ * @param shape2 Pointer to the second proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
 void CollisionWorld::testCollision(const ProxyShape* shape1,
                                    const ProxyShape* shape2,
                                    CollisionCallback* callback) {
@@ -229,6 +250,10 @@ void CollisionWorld::testCollision(const ProxyShape* shape1,
 
 // Test and report collisions between a body and all the others bodies of the
 // world
+/**
+ * @param body Pointer to the first body to test
+ * @param callback Pointer to the object with the callback method
+ */
 void CollisionWorld::testCollision(const CollisionBody* body,
                                    CollisionCallback* callback) {
 
@@ -251,6 +276,11 @@ void CollisionWorld::testCollision(const CollisionBody* body,
 }
 
 // Test and report collisions between two bodies
+/**
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @param callback Pointer to the object with the callback method
+ */
 void CollisionWorld::testCollision(const CollisionBody* body1,
                                    const CollisionBody* body2,
                                    CollisionCallback* callback) {
@@ -276,6 +306,9 @@ void CollisionWorld::testCollision(const CollisionBody* body1,
 }
 
 // Test and report collisions between all shapes of the world
+/**
+ * @param callback Pointer to the object with the callback method
+ */
 void CollisionWorld::testCollision(CollisionCallback* callback) {
 
     // Reset all the contact manifolds lists of each body

@@ -77,12 +77,6 @@ class ProxyShape {
         /// Return the collision shape margin
         decimal getMargin() const;
 
-        /// Return the next proxy shape in the linked list of proxy shapes
-        ProxyShape* getNext();
-
-        /// Return the next proxy shape in the linked list of proxy shapes
-        const ProxyShape* getNext() const;
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -121,17 +115,23 @@ class ProxyShape {
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
+        /// Return the collision bits mask
+        unsigned short getCollideWithMaskBits() const;
+
+        /// Set the collision bits mask
+        void setCollideWithMaskBits(unsigned short collideWithMaskBits);
+
         /// Return the collision category bits
         unsigned short getCollisionCategoryBits() const;
 
         /// Set the collision category bits
         void setCollisionCategoryBits(unsigned short collisionCategoryBits);
 
-        /// Return the collision bits mask
-        unsigned short getCollideWithMaskBits() const;
+        /// Return the next proxy shape in the linked list of proxy shapes
+        ProxyShape* getNext();
 
-        /// Set the collision bits mask
-        void setCollideWithMaskBits(unsigned short collideWithMaskBits);
+        /// Return the next proxy shape in the linked list of proxy shapes
+        const ProxyShape* getNext() const;
 
         // -------------------- Friendship -------------------- //
 
@@ -149,36 +149,59 @@ class ProxyShape {
 };
 
 /// Return the collision shape
+/**
+ * @return Pointer to the internal collision shape
+ */
 inline const CollisionShape* ProxyShape::getCollisionShape() const {
     return mCollisionShape;
 }
 
 // Return the parent body
+/**
+ * @return Pointer to the parent body
+ */
 inline CollisionBody* ProxyShape::getBody() const {
     return mBody;
 }
 
 // Return the mass of the collision shape
+/**
+ * @return Mass of the collision shape (in kilograms)
+ */
 inline decimal ProxyShape::getMass() const {
     return mMass;
 }
 
 // Return a pointer to the user data attached to this body
+/**
+ * @return A pointer to the user data stored into the proxy shape
+ */
 inline void* ProxyShape::getUserData() const {
     return mUserData;
 }
 
 // Attach user data to this body
+/**
+ * @param userData Pointer to the user data you want to store within the proxy shape
+ */
 inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
 }
 
 // Return the local to parent body transform
+/**
+ * @return The transformation that transforms the local-space of the collision shape
+ *         to the local-space of the parent body
+ */
 inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
 // Return the local to world transform
+/**
+ * @return The transformation that transforms the local-space of the collision
+ *         shape to the world-space
+ */
 inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
 }
@@ -199,6 +222,12 @@ inline decimal ProxyShape::getMargin() const {
 }
 
 // Raycast method with feedback information
+/**
+ * @param ray Ray to use for the raycasting
+ * @param[out] raycastInfo Result of the raycasting that is valid only if the
+ *             methods returned true
+ * @return True if the ray hit the collision shape
+ */
 inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     // If the corresponding body is not active, it cannot be hit by rays
@@ -208,31 +237,49 @@ inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 }
 
 // Return the next proxy shape in the linked list of proxy shapes
+/**
+ * @return Pointer to the next proxy shape in the linked list of proxy shapes
+ */
 inline ProxyShape* ProxyShape::getNext() {
     return mNext;
 }
 
 // Return the next proxy shape in the linked list of proxy shapes
+/**
+ * @return Pointer to the next proxy shape in the linked list of proxy shapes
+ */
 inline const ProxyShape* ProxyShape::getNext() const {
     return mNext;
 }
 
 // Return the collision category bits
+/**
+ * @return The collision category bits mask of the proxy shape
+ */
 inline unsigned short ProxyShape::getCollisionCategoryBits() const {
     return mCollisionCategoryBits;
 }
 
 // Set the collision category bits
+/**
+ * @param collisionCategoryBits The collision category bits mask of the proxy shape
+ */
 inline void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
     mCollisionCategoryBits = collisionCategoryBits;
 }
 
 // Return the collision bits mask
+/**
+ * @return The bits mask that specifies with which collision category this shape will collide
+ */
 inline unsigned short ProxyShape::getCollideWithMaskBits() const {
     return mCollideWithMaskBits;
 }
 
 // Set the collision bits mask
+/**
+ * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
+ */
 inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     mCollideWithMaskBits = collideWithMaskBits;
 }

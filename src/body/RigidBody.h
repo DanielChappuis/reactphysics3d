@@ -118,6 +118,9 @@ class RigidBody : public CollisionBody {
         /// Update the broad-phase state for this body (because it has moved for instance)
         virtual void updateBroadPhaseState() const;
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -194,9 +197,6 @@ class RigidBody : public CollisionBody {
         /// Return the first element of the linked list of joints involving this body
         JointListElement* getJointsList();
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
-
         /// Apply an external force to the body at its center of mass.
         void applyForceToCenterOfMass(const Vector3& force);
 
@@ -212,7 +212,7 @@ class RigidBody : public CollisionBody {
                                               decimal mass);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyCollisionShape);
+        virtual void removeCollisionShape(const ProxyShape* proxyShape);
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.
@@ -229,16 +229,25 @@ class RigidBody : public CollisionBody {
 };
 
 // Method that return the mass of the body
+/**
+ * @return The mass (in kilograms) of the body
+ */
 inline decimal RigidBody::getMass() const {
     return mInitMass;
 }
 
 // Return the linear velocity
+/**
+ * @return The linear velocity vector of the body
+ */
 inline Vector3 RigidBody::getLinearVelocity() const {
     return mLinearVelocity;
 }
 
 // Return the angular velocity of the body
+/**
+ * @return The angular velocity vector of the body
+ */
 inline Vector3 RigidBody::getAngularVelocity() const {
     return mAngularVelocity;
 }
@@ -246,6 +255,9 @@ inline Vector3 RigidBody::getAngularVelocity() const {
 // Set the angular velocity.
 /// You should only call this method for a kinematic body. Otherwise, it
 /// will do nothing.
+/**
+* @param angularVelocity The angular velocity vector of the body
+*/
 inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     // If it is a kinematic body
@@ -254,7 +266,10 @@ inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     }
 }
 
-// Return the local inertia tensor of the body (in body coordinates)
+// Return the local inertia tensor of the body (in local-space coordinates)
+/**
+ * @return The 3x3 inertia tensor matrix of the body (in local-space coordinates)
+ */
 inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
     return mInertiaTensorLocal;
 }
@@ -265,6 +280,9 @@ inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
 /// by I_w = R * I_b * R^T
 /// where R is the rotation matrix (and R^T its transpose) of
 /// the current orientation quaternion of the body
+/**
+ * @return The 3x3 inertia tensor matrix of the body in world-space coordinates
+ */
 inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
 
     // Compute and return the inertia tensor in world coordinates
@@ -278,9 +296,14 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
 /// by I_w = R * I_b^-1 * R^T
 /// where R is the rotation matrix (and R^T its transpose) of the
 /// current orientation quaternion of the body
-// TODO : DO NOT RECOMPUTE THE MATRIX MULTIPLICATION EVERY TIME. WE NEED TO STORE THE
-//        INVERSE WORLD TENSOR IN THE CLASS AND UPLDATE IT WHEN THE ORIENTATION OF THE BODY CHANGES
+/**
+ * @return The 3x3 inverse inertia tensor matrix of the body in world-space
+ *         coordinates
+ */
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
+
+    // TODO : DO NOT RECOMPUTE THE MATRIX MULTIPLICATION EVERY TIME. WE NEED TO STORE THE
+    //        INVERSE WORLD TENSOR IN THE CLASS AND UPLDATE IT WHEN THE ORIENTATION OF THE BODY CHANGES
 
     // Compute and return the inertia tensor in world coordinates
     return mTransform.getOrientation().getMatrix() * mInertiaTensorLocalInverse *
@@ -290,6 +313,9 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 // Set the linear velocity of the rigid body.
 /// You should only call this method for a kinematic body. Otherwise, it
 /// will do nothing.
+/**
+ * @param linearVelocity Linear velocity vector of the body
+ */
 inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a kinematic body
@@ -301,53 +327,83 @@ inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 }
 
 // Return true if the gravity needs to be applied to this rigid body
+/**
+ * @return True if the gravity is applied to the body
+ */
 inline bool RigidBody::isGravityEnabled() const {
     return mIsGravityEnabled;
 }
 
 // Set the variable to know if the gravity is applied to this rigid body
+/**
+ * @param isEnabled True if you want the gravity to be applied to this body
+ */
 inline void RigidBody::enableGravity(bool isEnabled) {
     mIsGravityEnabled = isEnabled;
 }
 
 // Return a reference to the material properties of the rigid body
+/**
+ * @return A reference to the material of the body
+ */
 inline Material& RigidBody::getMaterial() {
     return mMaterial;
 }
 
 // Set a new material for this rigid body
+/**
+ * @param material The material you want to set to the body
+ */
 inline void RigidBody::setMaterial(const Material& material) {
     mMaterial = material;
 }
 
 // Return the linear velocity damping factor
+/**
+ * @return The linear damping factor of this body
+ */
 inline decimal RigidBody::getLinearDamping() const {
     return mLinearDamping;
 }
 
 // Set the linear damping factor
+/**
+ * @param linearDamping The linear damping factor of this body
+ */
 inline void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
     mLinearDamping = linearDamping;
 }
 
 // Return the angular velocity damping factor
+/**
+ * @return The angular damping factor of this body
+ */
 inline decimal RigidBody::getAngularDamping() const {
     return mAngularDamping;
 }
 
 // Set the angular damping factor
+/**
+ * @param angularDamping The angular damping factor of this body
+ */
 inline void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
     mAngularDamping = angularDamping;
 }
 
 // Return the first element of the linked list of joints involving this body
+/**
+ * @return The first element of the linked-list of all the joints involving this body
+ */
 inline const JointListElement* RigidBody::getJointsList() const {
     return mJointsList;
 }
 
 // Return the first element of the linked list of joints involving this body
+/**
+ * @return The first element of the linked-list of all the joints involving this body
+ */
 inline JointListElement* RigidBody::getJointsList() {
     return mJointsList;
 }
@@ -370,6 +426,9 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the DynamicsWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The external force to apply on the center of mass of the body
+ */
 inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
@@ -391,6 +450,10 @@ inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the DynamicsWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body
+ * @param point The point where the force is applied (in world-space coordinates)
+ */
 inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
@@ -411,6 +474,9 @@ inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 /// force will we added to the sum of the applied torques and that this sum will be
 /// reset to zero at the end of each call of the DynamicsWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param torque The external torque to apply on the body
+ */
 inline void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
