@@ -1,7 +1,5 @@
 ## ReactPhysics3D
 
-![Logo ReactPhysics3DLogo](https://github.com/DanielChappuis/reactphysics3d/blob/master/documentation/UserManual/images/ReactPhysics3DLogo.png)
-
 ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
 
 Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
@@ -36,6 +34,12 @@ The ReactPhysics3D library is released under the open-source [ZLib license](http
 ## Documentation
 
 You can find the User Manual and the Doxygen API Documentation [here](http://www.reactphysics3d.com/documentation.html)
+
+## Branches
+
+The "master" branch always contains the last released version of the library. This is the most stable version. On the other side,
+the "develop" branch is used for development. This branch is frequently updated and can be quite unstable. Therefore, if you want to use the library in
+your application, it is recommended to checkout the "master" branch.
 
 ## Issues
 
