@@ -1,8 +1,12 @@
 ## ReactPhysics3D
 
+![Logo ReactPhysics3DLogo](https://github.com/DanielChappuis/reactphysics3d/blob/master/documentation/UserManual/images/ReactPhysics3DLogo.png)
+
 ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
 
 Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
+
+Author : Daniel Chappuis
 
 ## Features
 
