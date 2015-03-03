@@ -107,7 +107,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
 // Create the raycast lines
 void Scene::createLines() {
 
-      int nbRaysOneDimension = sqrt(NB_RAYS);
+      int nbRaysOneDimension = std::sqrt(float(NB_RAYS));
 
       for (int i=0; i<nbRaysOneDimension; i++) {
           for (int j=0; j<nbRaysOneDimension; j++) {
