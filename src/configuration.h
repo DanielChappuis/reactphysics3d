@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -120,6 +120,16 @@ const decimal DEFAULT_SLEEP_LINEAR_VELOCITY = decimal(0.02);
 /// A body with angular velocity smaller than the sleep angular velocity (in rad/s)
 /// might enter sleeping mode
 const decimal DEFAULT_SLEEP_ANGULAR_VELOCITY = decimal(3.0 * (PI / 180.0));
+
+/// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
+/// inflated with a constant gap to allow the collision shape to move a little bit
+/// without triggering a large modification of the tree which can be costly
+const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
+
+/// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
+/// also inflated in direction of the linear motion of the body by mutliplying the
+/// followin constant with the linear velocity and the elapsed time between two frames.
+const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
 }
 

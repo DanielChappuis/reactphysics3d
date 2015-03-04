@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,9 +28,10 @@
 
 // Libraries
 #include <vector>
-#include "../body/CollisionBody.h"
-#include "../constraint/ContactPoint.h"
-#include "../memory/MemoryAllocator.h"
+#include "body/CollisionBody.h"
+#include "collision/ProxyShape.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -88,11 +89,11 @@ class ContactManifold {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first body of the contact
-        CollisionBody* mBody1;
+        /// Pointer to the first proxy shape of the contact
+        ProxyShape* mShape1;
 
-        /// Pointer to the second body of the contact
-        CollisionBody* mBody2;
+        /// Pointer to the second proxy shape of the contact
+        ProxyShape* mShape2;
 
         /// Contact points in the manifold
         ContactPoint* mContactPoints[MAX_CONTACT_POINTS_IN_MANIFOLD];
@@ -129,12 +130,6 @@ class ContactManifold {
         /// Private assignment operator
         ContactManifold& operator=(const ContactManifold& contactManifold);
 
-        /// Return a pointer to the first body of the contact manifold
-        CollisionBody* getBody1() const;
-
-        /// Return a pointer to the second body of the contact manifold
-        CollisionBody* getBody2() const;
-
         /// Return the index of maximum area
         int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;
 
@@ -155,11 +150,23 @@ class ContactManifold {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(CollisionBody* body1, CollisionBody* body2,
+        ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                         MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~ContactManifold();
+
+        /// Return a pointer to the first proxy shape of the contact
+        ProxyShape* getShape1() const;
+
+        /// Return a pointer to the second proxy shape of the contact
+        ProxyShape* getShape2() const;
+
+        /// Return a pointer to the first body of the contact manifold
+        CollisionBody* getBody1() const;
+
+        /// Return a pointer to the second body of the contact manifold
+        CollisionBody* getBody2() const;
 
         /// Add a contact point to the manifold
         void addContactPoint(ContactPoint* contact);
@@ -210,16 +217,27 @@ class ContactManifold {
 
         friend class DynamicsWorld;
         friend class Island;
+        friend class CollisionBody;
 };
+
+// Return a pointer to the first proxy shape of the contact
+inline ProxyShape* ContactManifold::getShape1() const {
+    return mShape1;
+}
+
+// Return a pointer to the second proxy shape of the contact
+inline ProxyShape* ContactManifold::getShape2() const {
+    return mShape2;
+}
 
 // Return a pointer to the first body of the contact manifold
 inline CollisionBody* ContactManifold::getBody1() const {
-    return mBody1;
+    return mShape1->getBody();
 }
 
 // Return a pointer to the second body of the contact manifold
 inline CollisionBody* ContactManifold::getBody2() const {
-    return mBody2;
+    return mShape2->getBody();
 }
 
 // Return the number of contact points in the manifold

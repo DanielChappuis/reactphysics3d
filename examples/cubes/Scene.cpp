@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,22 +30,23 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
-                               mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"), mIsRunning(false) {
+Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
+      : mViewer(viewer), mLight0(0),
+        mPhongShader(shaderFolderPath + "phong.vert", shaderFolderPath + "phong.frag"),
+        mIsRunning(false) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 10.0f;
+    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-5.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -59,18 +60,16 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     float radius = 2.0f;
 
     // Create all the cubes of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position of the cubes
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
-                                          1 + i * (BOX_SIZE.y + 0.3f),
+                                          10 + i * (BOX_SIZE.y + 0.3f),
                                           0);
 
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
-
-        cube->getRigidBody()->enableMotion(true);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -84,8 +83,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
-    // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->enableMotion(false);
+    // The floor must be a static rigid body
+    mFloor->getRigidBody()->setType(rp3d::STATIC);
 
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
@@ -93,6 +92,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
     // Start the simulation
     startSimulation();
+
+    counter=0;
 }
 
 // Destructor
@@ -129,6 +130,11 @@ void Scene::simulate() {
 
     // If the physics simulation is running
     if (mIsRunning) {
+
+        counter++;
+        if (counter == 400) {
+            //mIsRunning = false;
+        }
 
         // Take a simulation step
         mDynamicsWorld->update();

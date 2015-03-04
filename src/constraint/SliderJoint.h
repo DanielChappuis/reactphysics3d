@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,8 +27,8 @@
 #define REACTPHYSICS3D_SLIDER_JOINT_H
 
 // Libraries
-#include "../mathematics/mathematics.h"
-#include "../engine/ConstraintSolver.h"
+#include "mathematics/mathematics.h"
+#include "engine/ConstraintSolver.h"
 
 namespace reactphysics3d {
 
@@ -68,6 +68,12 @@ struct SliderJointInfo : public JointInfo {
         decimal maxMotorForce;
 
         /// Constructor without limits and without motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space
+         * @param initSliderAxisWorldSpace The initial slider axis in world-space
+         */
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
@@ -78,6 +84,14 @@ struct SliderJointInfo : public JointInfo {
                          maxTranslationLimit(1.0), motorSpeed(0), maxMotorForce(0) {}
 
         /// Constructor with limits and no motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space
+         * @param initSliderAxisWorldSpace The initial slider axis in world-space
+         * @param initMinTranslationLimit The initial minimum translation limit (in meters)
+         * @param initMaxTranslationLimit The initial maximum translation limit (in meters)
+         */
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
@@ -91,6 +105,16 @@ struct SliderJointInfo : public JointInfo {
                          maxMotorForce(0) {}
 
         /// Constructor with limits and motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space
+         * @param initSliderAxisWorldSpace The initial slider axis in world-space
+         * @param initMinTranslationLimit The initial minimum translation limit (in meters)
+         * @param initMaxTranslationLimit The initial maximum translation limit (in meters)
+         * @param initMotorSpeed The initial speed of the joint motor (in meters per second)
+         * @param initMaxMotorForce The initial maximum motor force of the joint (in Newtons x meters)
+         */
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
@@ -230,7 +254,7 @@ class SliderJoint : public Joint {
         /// True if the upper limit is violated
         bool mIsUpperLimitViolated;
 
-        /// Motor speed
+        /// Motor speed (in m/s)
         decimal mMotorSpeed;
 
         /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
@@ -316,36 +340,58 @@ class SliderJoint : public Joint {
 };
 
 // Return true if the limits or the joint are enabled
+/**
+ * @return True if the joint limits are enabled
+ */
 inline bool SliderJoint::isLimitEnabled() const {
     return mIsLimitEnabled;
 }
 
 // Return true if the motor of the joint is enabled
+/**
+ * @return True if the joint motor is enabled
+ */
 inline bool SliderJoint::isMotorEnabled() const {
     return mIsMotorEnabled;
 }
 
 // Return the minimum translation limit
+/**
+ * @return The minimum translation limit of the joint (in meters)
+ */
 inline decimal SliderJoint::getMinTranslationLimit() const {
     return mLowerLimit;
 }
 
 // Return the maximum translation limit
+/**
+ * @return The maximum translation limit of the joint (in meters)
+ */
 inline decimal SliderJoint::getMaxTranslationLimit() const {
     return mUpperLimit;
 }
 
 // Return the motor speed
+/**
+ * @return The current motor speed of the joint (in meters per second)
+ */
 inline decimal SliderJoint::getMotorSpeed() const {
     return mMotorSpeed;
 }
 
 // Return the maximum motor force
+/**
+ * @return The maximum force of the joint motor (in Newton x meters)
+ */
 inline decimal SliderJoint::getMaxMotorForce() const {
     return mMaxMotorForce;
 }
 
 // Return the intensity of the current force applied for the joint motor
+/**
+ * @param timeStep Time step (in seconds)
+ * @return The current force of the joint motor (in Newton x meters)
+ */
 inline decimal SliderJoint::getMotorForce(decimal timeStep) const {
     return mImpulseMotor / timeStep;
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
-#include "../constraint/ContactPoint.h"
-#include "../configuration.h"
-#include "../constraint/Joint.h"
+#include "constraint/ContactPoint.h"
+#include "configuration.h"
+#include "constraint/Joint.h"
 #include "ContactManifold.h"
 #include "Island.h"
 #include "Impulse.h"
@@ -217,12 +217,6 @@ class ContactSolver {
 
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
-
-            /// True if the body 1 is allowed to move
-            bool isBody1Moving;
-
-            /// True if the body 2 is allowed to move
-            bool isBody2Moving;
 
             /// Contact point constraints
             ContactPointSolver contacts[MAX_CONTACT_POINTS_IN_MANIFOLD];

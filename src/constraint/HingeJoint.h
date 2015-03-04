@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,7 @@
 
 // Libraries
 #include "Joint.h"
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 namespace reactphysics3d {
 
@@ -71,6 +71,14 @@ struct HingeJointInfo : public JointInfo {
         decimal maxMotorTorque;
 
         /// Constructor without limits and without motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space
+         *                                  coordinates
+         * @param initRotationAxisWorld The initial rotation axis in world-space
+         *                              coordinates
+         */
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
@@ -81,6 +89,14 @@ struct HingeJointInfo : public JointInfo {
                                 motorSpeed(0), maxMotorTorque(0) {}
 
         /// Constructor with limits but without motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space coordinates
+         * @param initRotationAxisWorld The intial rotation axis in world-space coordinates
+         * @param initMinAngleLimit The initial minimum limit angle (in radian)
+         * @param initMaxAngleLimit The initial maximum limit angle (in radian)
+         */
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
@@ -93,6 +109,16 @@ struct HingeJointInfo : public JointInfo {
                                 maxMotorTorque(0) {}
 
         /// Constructor with limits and motor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param initAnchorPointWorldSpace The initial anchor point in world-space
+         * @param initRotationAxisWorld The initial rotation axis in world-space
+         * @param initMinAngleLimit The initial minimum limit angle (in radian)
+         * @param initMaxAngleLimit The initial maximum limit angle (in radian)
+         * @param initMotorSpeed The initial motor speed of the joint (in radian per second)
+         * @param initMaxMotorTorque The initial maximum motor torque (in Newtons)
+         */
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
@@ -204,7 +230,7 @@ class HingeJoint : public Joint {
         /// True if the motor of the joint in enabled
         bool mIsMotorEnabled;
 
-        /// Lower limit (minimum allowed rotation angle in radi)
+        /// Lower limit (minimum allowed rotation angle in radian)
         decimal mLowerLimit;
 
         /// Upper limit (maximum translation distance)
@@ -216,7 +242,7 @@ class HingeJoint : public Joint {
         /// True if the upper limit is violated
         bool mIsUpperLimitViolated;
 
-        /// Motor speed
+        /// Motor speed (in rad/s)
         decimal mMotorSpeed;
 
         /// Maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
@@ -312,37 +338,59 @@ class HingeJoint : public Joint {
         decimal getMotorTorque(decimal timeStep) const;
 };
 
-// Return true if the limits or the joint are enabled
+// Return true if the limits of the joint are enabled
+/**
+ * @return True if the limits of the joint are enabled and false otherwise
+ */
 inline bool HingeJoint::isLimitEnabled() const {
     return mIsLimitEnabled;
 }
 
 // Return true if the motor of the joint is enabled
+/**
+ * @return True if the motor of joint is enabled and false otherwise
+ */
 inline bool HingeJoint::isMotorEnabled() const {
     return mIsMotorEnabled;
 }
 
 // Return the minimum angle limit
+/**
+ * @return The minimum limit angle of the joint (in radian)
+ */
 inline decimal HingeJoint::getMinAngleLimit() const {
     return mLowerLimit;
 }
 
 // Return the maximum angle limit
+/**
+ * @return The maximum limit angle of the joint (in radian)
+ */
 inline decimal HingeJoint::getMaxAngleLimit() const {
     return mUpperLimit;
 }
 
 // Return the motor speed
+/**
+ * @return The current speed of the joint motor (in radian per second)
+ */
 inline decimal HingeJoint::getMotorSpeed() const {
     return mMotorSpeed;
 }
 
 // Return the maximum motor torque
+/**
+ * @return The maximum torque of the joint motor (in Newtons)
+ */
 inline decimal HingeJoint::getMaxMotorTorque() const {
     return mMaxMotorTorque;
 }
 
 // Return the intensity of the current torque applied for the joint motor
+/**
+ * @param timeStep The current time step (in seconds)
+ * @return The intensity of the current torque (in Newtons) of the joint motor
+ */
 inline decimal HingeJoint::getMotorTorque(decimal timeStep) const {
     return mImpulseMotor / timeStep;
 }

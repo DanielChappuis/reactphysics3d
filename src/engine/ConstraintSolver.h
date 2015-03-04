@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_CONSTRAINT_SOLVER_H
 
 // Libraries
-#include "../configuration.h"
+#include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "../constraint/Joint.h"
+#include "constraint/Joint.h"
 #include "Island.h"
 #include <map>
 #include <set>
@@ -55,10 +55,10 @@ struct ConstraintSolverData {
         Vector3* angularVelocities;
 
         /// Reference to the bodies positions
-        std::vector<Vector3>& positions;
+        Vector3* positions;
 
         /// Reference to the bodies orientations
-        std::vector<Quaternion>& orientations;
+        Quaternion* orientations;
 
         /// Reference to the map that associates rigid body to their index
         /// in the constrained velocities array
@@ -68,12 +68,9 @@ struct ConstraintSolverData {
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(std::vector<Vector3>& refPositions,
-                             std::vector<Quaternion>& refOrientations,
-                             const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(NULL),
-                            angularVelocities(NULL),
-                            positions(refPositions), orientations(refOrientations),
+        ConstraintSolverData(const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
+                           :linearVelocities(NULL), angularVelocities(NULL),
+                            positions(NULL), orientations(NULL),
                             mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
 
         }
@@ -155,20 +152,6 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        Vector3* mLinearVelocities;
-
-        /// Array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        Vector3* mAngularVelocities;
-
-        /// Reference to the array of bodies positions (for position error correction)
-        std::vector<Vector3>& mPositions;
-
-        /// Reference to the array of bodies orientations (for position error correction)
-        std::vector<Quaternion>& mOrientations;
-
         /// Reference to the map that associates rigid body to their index in
         /// the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
@@ -187,8 +170,7 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(std::vector<Vector3>& positions, std::vector<Quaternion>& orientations,
-                         const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
         ~ConstraintSolver();
@@ -211,6 +193,10 @@ class ConstraintSolver {
         /// Set the constrained velocities arrays
         void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                             Vector3* constrainedAngularVelocities);
+
+        /// Set the constrained positions/orientations arrays
+        void setConstrainedPositionsArrays(Vector3* constrainedPositions,
+                                           Quaternion* constrainedOrientations);
 };
 
 // Set the constrained velocities arrays
@@ -218,10 +204,17 @@ inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constraine
                                                             Vector3* constrainedAngularVelocities) {
     assert(constrainedLinearVelocities != NULL);
     assert(constrainedAngularVelocities != NULL);
-    mLinearVelocities = constrainedLinearVelocities;
-    mAngularVelocities = constrainedAngularVelocities;
-    mConstraintSolverData.linearVelocities = mLinearVelocities;
-    mConstraintSolverData.angularVelocities = mAngularVelocities;
+    mConstraintSolverData.linearVelocities = constrainedLinearVelocities;
+    mConstraintSolverData.angularVelocities = constrainedAngularVelocities;
+}
+
+// Set the constrained positions/orientations arrays
+inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
+                                                           Quaternion* constrainedOrientations) {
+    assert(constrainedPositions != NULL);
+    assert(constrainedOrientations != NULL);
+    mConstraintSolverData.positions = constrainedPositions;
+    mConstraintSolverData.orientations = constrainedOrientations;
 }
 
 }

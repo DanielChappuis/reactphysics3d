@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,13 +28,18 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "engine/CollisionWorld.h"
+#include "mathematics/mathematics.h"
+#include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
 #include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declaration
+class CollisionWorld;
 
 // Class ConvexMeshShape
 /**
@@ -77,9 +82,6 @@ class ConvexMeshShape : public CollisionShape {
         /// Adjacency list representing the edges of the mesh
         std::map<uint, std::set<uint> > mEdgesAdjacencyList;
 
-        /// Cached support vertex index (previous support vertex)
-        uint mCachedSupportVertex;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -90,6 +92,26 @@ class ConvexMeshShape : public CollisionShape {
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
+
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin.
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Allocate and return a copy of the object
+        virtual ConvexMeshShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
 
     public :
 
@@ -105,25 +127,13 @@ class ConvexMeshShape : public CollisionShape {
         /// Destructor
         virtual ~ConvexMeshShape();
 
-        /// Allocate and return a copy of the object
-        virtual ConvexMeshShape* clone(void* allocatedMemory) const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin.
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Test equality between two cone shapes
+        /// Test equality between two collision shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 
         /// Add a vertex into the convex mesh
@@ -151,6 +161,10 @@ inline size_t ConvexMeshShape::getSizeInBytes() const {
 }
 
 // Return the local bounds of the shape in x, y and z directions
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min = mMinBounds;
     max = mMaxBounds;
@@ -159,6 +173,11 @@ inline void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 // Return the local inertia tensor of the collision shape.
 /// The local inertia tensor of the convex mesh is approximated using the inertia tensor
 /// of its bounding box.
+/**
+* @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+*                    coordinates
+* @param mass Mass to use to compute the inertia tensor of the collision shape
+*/
 inline void ConvexMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
     Vector3 realExtent = decimal(0.5) * (mMaxBounds - mMinBounds);
@@ -172,6 +191,9 @@ inline void ConvexMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decima
 }
 
 // Add a vertex into the convex mesh
+/**
+ * @param vertex Vertex to be added
+ */
 inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
 
     // Add the vertex in to vertices array
@@ -191,6 +213,10 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
 /// Note that the vertex indices start at zero and need to correspond to the order of
 /// the vertices in the vertices array in the constructor or the order of the calls
 /// of the addVertex() methods that you use to add vertices into the convex mesh.
+/**
+* @param v1 Index of the first vertex of the edge to add
+* @param v2 Index of the second vertex of the edge to add
+*/
 inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
 
     assert(v1 >= 0);
@@ -212,14 +238,30 @@ inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
 }
 
 // Return true if the edges information is used to speed up the collision detection
+/**
+ * @return True if the edges information is used and false otherwise
+ */
 inline bool ConvexMeshShape::isEdgesInformationUsed() const {
     return mIsEdgesInformationUsed;
 }
 
 // Set the variable to know if the edges information is used to speed up the
 // collision detection
+/**
+ * @param isEdgesUsed True if you want to use the edges information to speed up
+ *                    the collision detection with the convex mesh shape
+ */
 inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
     mIsEdgesInformationUsed = isEdgesUsed;
+}
+
+// Return true if a point is inside the collision shape
+inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
+                                             ProxyShape* proxyShape) const {
+
+    // Use the GJK algorithm to test if the point is inside the convex mesh
+    return proxyShape->mBody->mWorld.mCollisionDetection.
+           mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
 }
 
 }

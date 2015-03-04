@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -50,6 +50,9 @@ class Test {
 
         // ---------- Attributes ---------- //
 
+        /// Name of the test
+        std::string mName;
+
         /// Number of tests that passed
         long mNbPassedTests;
 
@@ -87,10 +90,10 @@ class Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        Test(std::ostream* stream = &std::cout);
+        Test(const std::string& name, std::ostream* stream = &std::cout);
 
         /// Destructor
-        ~Test();
+        virtual ~Test();
 
         /// Return the number of passed tests
         long getNbPassedTests() const;

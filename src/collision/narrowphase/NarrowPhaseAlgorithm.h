@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,11 +27,10 @@
 #define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
-#include "../../body/Body.h"
-#include "../../constraint/ContactPoint.h"
-#include "../broadphase/PairManager.h"
-#include "../../memory/MemoryAllocator.h"
-#include "../BroadPhasePair.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "memory/MemoryAllocator.h"
+#include "engine/OverlappingPair.h"
 
 
 /// Namespace ReactPhysics3D
@@ -54,7 +53,7 @@ class NarrowPhaseAlgorithm {
         MemoryAllocator& mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
-        BroadPhasePair* mCurrentOverlappingPair;
+        OverlappingPair* mCurrentOverlappingPair;
         
         // -------------------- Methods -------------------- //
 
@@ -75,18 +74,15 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();
         
         /// Set the current overlapping pair of bodies
-        void setCurrentOverlappingPair(BroadPhasePair* overlappingPair);
+        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(CollisionShape* collisionShape1,
-                                   const Transform& transform1,
-                                   CollisionShape* collisionShape2,
-                                   const Transform& transform2,
+        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
                                    ContactPointInfo*& contactInfo)=0;
 };
 
 // Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(BroadPhasePair *overlappingPair) {
+inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
     mCurrentOverlappingPair = overlappingPair;
 }      
 

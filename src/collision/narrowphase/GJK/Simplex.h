@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define	REACTPHYSICS3D_SIMPLEX_H
 
 // Libraries
-#include "../../../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 #include <vector>
 
 /// ReactPhysics3D namespace
@@ -130,7 +130,7 @@ class Simplex {
         /// Return true if the simplex contains 4 points
         bool isFull() const;
 
-        /// Return true if the simple is empty
+        /// Return true if the simplex is empty
         bool isEmpty() const;
 
         /// Return the points of the simplex

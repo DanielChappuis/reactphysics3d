@@ -14,12 +14,11 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 FILE(COPY "${OPENGLFRAMEWORK_DIR}/src/shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 
 # Headers
-INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/")
+INCLUDE_DIRECTORIES("${OPENGLFRAMEWORK_DIR}/src/" "../common/glfw/include/" "../common/")
 
 # Source files
 SET(CUBES_SOURCES
     Cubes.cpp
-    Scene.cpp
     Scene.cpp
     Scene.h
     "../common/Box.cpp"
@@ -32,4 +31,4 @@ SET(CUBES_SOURCES
 ADD_EXECUTABLE(cubes ${CUBES_SOURCES})
 
 # Link with libraries
-TARGET_LINK_LIBRARIES(cubes reactphysics3d openglframework)
+TARGET_LINK_LIBRARIES(cubes reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

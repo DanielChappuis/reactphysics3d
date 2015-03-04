@@ -59,6 +59,15 @@ struct Color {
         // Return the white color
         static Color white() { return Color(1.0f, 1.0f, 1.0f, 1.0f);}
 
+        // Return the red color
+        static Color red() { return Color(1.0f, 0.0f, 0.0f, 1.0f);}
+
+        // Return the green color
+        static Color green() { return Color(0.0f, 1.0f, 0.0f, 1.0f);}
+
+        // Return the blue color
+        static Color blue() { return Color(0.0f, 0.0f, 1.0f, 1.0f);}
+
         // = operator
         Color& operator=(const Color& color) {
             if (&color != this) {

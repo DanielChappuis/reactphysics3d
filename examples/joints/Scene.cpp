@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,14 +31,16 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
-                               mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"), mIsRunning(false) {
+Scene::Scene(Viewer *viewer, const std::string& shaderFolderPath)
+      : mViewer(viewer), mLight0(0), mPhongShader(shaderFolderPath + "phong.vert",
+                                                  shaderFolderPath + "phong.frag"),
+        mIsRunning(false) {
+
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 10.0f;
+    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
@@ -204,9 +206,10 @@ void Scene::createBallAndSocketJoints() {
         mBallAndSocketJointChainBoxes[i] = new Box(boxDimension, positionBox , boxMass,
                                                    mDynamicsWorld);
 
-        // The fist box cannot move
-        if (i == 0) mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(false);
-        else mBallAndSocketJointChainBoxes[i]->getRigidBody()->enableMotion(true);
+        // The fist box cannot move (static body)
+        if (i == 0) {
+            mBallAndSocketJointChainBoxes[i]->getRigidBody()->setType(rp3d::STATIC);
+        }
 
         // Add some angular velocity damping
         mBallAndSocketJointChainBoxes[i]->getRigidBody()->setAngularDamping(rp3d::decimal(0.2));
@@ -249,7 +252,7 @@ void Scene::createSliderJoint() {
     mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
     // The fist box cannot move
-    mSliderJointBottomBox->getRigidBody()->enableMotion(false);
+    mSliderJointBottomBox->getRigidBody()->setType(rp3d::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
@@ -263,9 +266,6 @@ void Scene::createSliderJoint() {
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
     mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
-
-    // The second box is allowed to move
-    mSliderJointTopBox->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
@@ -303,9 +303,6 @@ void Scene::createPropellerHingeJoint() {
     openglframework::Vector3 boxDimension(10, 1, 1);
     mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
-    // The fist box cannot move
-    mPropellerBox->getRigidBody()->enableMotion(true);
-
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.4));
@@ -341,9 +338,6 @@ void Scene::createFixedJoints() {
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
     mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
-    // The fist box cannot move
-    mFixedJointBox1->getRigidBody()->enableMotion(true);
-
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
     material1.setBounciness(rp3d::decimal(0.4));
@@ -355,9 +349,6 @@ void Scene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
-
-    // The second box is allowed to move
-    mFixedJointBox2->getRigidBody()->enableMotion(true);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
@@ -387,7 +378,6 @@ void Scene::createFixedJoints() {
     mFixedJoint2 = dynamic_cast<rp3d::FixedJoint*>(mDynamicsWorld->createJoint(jointInfo2));
 }
 
-
 // Create the floor
 void Scene::createFloor() {
 
@@ -395,8 +385,8 @@ void Scene::createFloor() {
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
-    // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->enableMotion(false);
+    // The floor must be a static rigid body
+    mFloor->getRigidBody()->setType(rp3d::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

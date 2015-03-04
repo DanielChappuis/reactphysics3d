@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_IMPULSE_H
 
 // Libraries
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 namespace reactphysics3d {
 
@@ -51,11 +51,11 @@ struct Impulse {
         /// Linear impulse applied to the first body
         const Vector3 linearImpulseBody1;
 
-        /// Linear impulse applied to the second body
-        const Vector3 linearImpulseBody2;
-
         /// Angular impulse applied to the first body
         const Vector3 angularImpulseBody1;
+
+        /// Linear impulse applied to the second body
+        const Vector3 linearImpulseBody2;
 
         /// Angular impulse applied to the second body
         const Vector3 angularImpulseBody2;

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,22 +30,23 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
-                               mPhongShader("shaders/phong.vert",
-                                            "shaders/phong.frag"), mIsRunning(false) {
+Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::string& meshFolderPath)
+       : mViewer(viewer), mLight0(0),
+         mPhongShader(shaderFolderPath + "phong.vert",
+                      shaderFolderPath +"phong.frag"), mIsRunning(false) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(50, 50, 50));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 10.0f;
+    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
     mViewer->setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
+    rp3d::Vector3 gravity(0, -9.81, 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -57,9 +58,28 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
     // Create the static data for the visual contact points
-    VisualContactPoint::createStaticData();
+    VisualContactPoint::createStaticData(meshFolderPath);
 
     float radius = 3.0f;
+
+    for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          100 + i * (DUMBBELL_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Create a convex mesh and a corresponding rigid in the dynamics world
+        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
+
+        // Change the material properties of the rigid body
+        rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
+        material.setBounciness(rp3d::decimal(0.2));
+
+        // Add the mesh the list of dumbbells in the scene
+        mDumbbells.push_back(dumbbell);
+    }
 
     // Create all the boxes of the scene
     for (int i=0; i<NB_BOXES; i++) {
@@ -73,9 +93,6 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
         // Create a sphere and a corresponding rigid in the dynamics world
         Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
-        // The sphere is a moving rigid body
-        box->getRigidBody()->enableMotion(true);
-
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -85,7 +102,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     }
 
     // Create all the spheres of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
+    for (int i=0; i<NB_CUBES; i++) {
 
         // Position
         float angle = i * 35.0f;
@@ -94,10 +111,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld);
-
-        // The sphere is a moving rigid body
-        sphere->getRigidBody()->enableMotion(true);
+        Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
+                                    meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -117,10 +132,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a cone and a corresponding rigid in the dynamics world
-        Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position , CONE_MASS, mDynamicsWorld);
-
-        // The cone is a moving rigid body
-        cone->getRigidBody()->enableMotion(true);
+        Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
+                              meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -141,10 +154,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
-                                          CYLINDER_MASS, mDynamicsWorld);
-
-        // The cylinder is a moving rigid body
-        cylinder->getRigidBody()->enableMotion(true);
+                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
@@ -165,10 +175,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
-                                       CAPSULE_MASS, mDynamicsWorld);
-
-        // The cylinder is a moving rigid body
-        capsule->getRigidBody()->enableMotion(true);
+                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -188,10 +195,7 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld);
-
-        // The mesh is a moving rigid body
-        mesh->getRigidBody()->enableMotion(true);
+        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -205,8 +209,8 @@ Scene::Scene(GlutViewer* viewer) : mViewer(viewer), mLight0(0),
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
-    // The floor must be a non-moving rigid body
-    mFloor->getRigidBody()->enableMotion(false);
+    // The floor must be a static rigid body
+    mFloor->getRigidBody()->setType(rp3d::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
@@ -286,14 +290,16 @@ Scene::~Scene() {
         delete (*it);
     }
 
-    // Destroy all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
+    // Destroy all the dumbbell of the scene
+    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+         it != mDumbbells.end(); ++it) {
+
+        // Destroy the corresponding rigid body from the dynamics world
+        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
+
+        // Destroy the convex mesh
         delete (*it);
     }
-
-    // Destroy the static data for the visual contact points
-    VisualContactPoint::destroyStaticData();
 
     // Destroy the rigid body of the floor
     mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
@@ -357,25 +363,12 @@ void Scene::simulate() {
             (*it)->updateTransform();
         }
 
-        // Destroy all the visual contact points
-        for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-             it != mContactPoints.end(); ++it) {
-            delete (*it);
-        }
-        mContactPoints.clear();
+        // Update the position and orientation of the dumbbells
+        for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+             it != mDumbbells.end(); ++it) {
 
-        // Generate the new visual contact points
-        const std::vector<rp3d::ContactManifold*>& manifolds = mDynamicsWorld->getContactManifolds();
-        for (std::vector<rp3d::ContactManifold*>::const_iterator it = manifolds.begin();
-             it != manifolds.end(); ++it) {
-            for (unsigned int i=0; i<(*it)->getNbContactPoints(); i++) {
-                rp3d::ContactPoint* point = (*it)->getContactPoint(i);
-
-                const rp3d::Vector3 pos = point->getWorldPointOnBody1();
-                openglframework::Vector3 position(pos.x, pos.y, pos.z);
-                VisualContactPoint* visualPoint = new VisualContactPoint(position);
-                mContactPoints.push_back(visualPoint);
-            }
+            // Update the transform used for the rendering
+            (*it)->updateTransform();
         }
 
         mFloor->updateTransform();
@@ -437,9 +430,9 @@ void Scene::render() {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
 
-    // Render all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
+    // Render all the dumbbells of the scene
+    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+         it != mDumbbells.end(); ++it) {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
 

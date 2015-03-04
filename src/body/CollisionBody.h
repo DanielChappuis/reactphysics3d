@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,17 +30,31 @@
 #include <stdexcept>
 #include <cassert>
 #include "Body.h"
-#include "../mathematics/Transform.h"
-#include "../collision/shapes/AABB.h"
-#include "../collision/shapes/CollisionShape.h"
-#include "../memory/MemoryAllocator.h"
-#include "../configuration.h"
+#include "mathematics/Transform.h"
+#include "collision/shapes/AABB.h"
+#include "collision/shapes/CollisionShape.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryAllocator.h"
+#include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
 // Class declarations
 struct ContactManifoldListElement;
+class ProxyShape;
+class CollisionWorld;
+
+/// Enumeration for the type of a body
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+enum BodyType {STATIC, KINEMATIC, DYNAMIC};
 
 // Class CollisionBody
 /**
@@ -53,8 +67,8 @@ class CollisionBody : public Body {
 
         // -------------------- Attributes -------------------- //
 
-        /// Collision shape of the body
-        CollisionShape* mCollisionShape;
+        /// Type of body (static, kinematic or dynamic)
+        BodyType mType;
 
         /// Position and orientation of the body
         Transform mTransform;
@@ -65,20 +79,17 @@ class CollisionBody : public Body {
         /// Interpolation factor used for the state interpolation
         decimal mInterpolationFactor;
 
-        /// True if the body is able to move
-        bool mIsMotionEnabled;
+        /// First element of the linked list of proxy collision shapes of this body
+        ProxyShape* mProxyCollisionShapes;
 
-        /// True if the body can collide with others bodies
-        bool mIsCollisionEnabled;
-
-        /// AABB for Broad-Phase collision detection
-        AABB mAabb;
-
-        /// True if the body has moved during the last frame
-        bool mHasMoved;
+        /// Number of collision shapes
+        uint mNbCollisionShapes;
 
         /// First element of the linked list of contact manifolds involving this body
         ContactManifoldListElement* mContactManifoldsList;
+
+        /// Reference to the world the body belongs to
+        CollisionWorld& mWorld;
 
         // -------------------- Methods -------------------- //
 
@@ -89,29 +100,45 @@ class CollisionBody : public Body {
         CollisionBody& operator=(const CollisionBody& body);
 
         /// Reset the contact manifold lists
-        void resetContactManifoldsList(MemoryAllocator& memoryAllocator);
+        void resetContactManifoldsList();
+
+        /// Remove all the collision shapes
+        void removeAllCollisionShapes();
 
         /// Update the old transform with the current one.
         void updateOldTransform();
 
-        /// Update the Axis-Aligned Bounding Box coordinates
-        void updateAABB();
+        /// Update the broad-phase state for this body (because it has moved for instance)
+        virtual void updateBroadPhaseState() const;
+
+        /// Ask the broad-phase to test again the collision shapes of the body for collision
+        /// (as if the body has moved).
+        void askForBroadPhaseCollisionCheck() const;
+
+        /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
+        int resetIsAlreadyInIslandAndCountManifolds();
+
+        /// Set the interpolation factor of the body
+        void setInterpolationFactor(decimal factor);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(const Transform& transform, CollisionShape* collisionShape, bodyindex id);
+        CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
         virtual ~CollisionBody();
 
-        /// Return the collision shape
-        CollisionShape* getCollisionShape() const;
+        /// Return the type of the body
+        BodyType getType() const;
 
-        /// Set the collision shape
-        void setCollisionShape(CollisionShape* collisionShape);
+        /// Set the type of the body
+        void setType(BodyType type);
+
+        /// Set whether or not the body is active
+        virtual void setIsActive(bool isActive);
 
         /// Return the current position and orientation
         const Transform& getTransform() const;
@@ -119,49 +146,91 @@ class CollisionBody : public Body {
         /// Set the current position and orientation
         void setTransform(const Transform& transform);
 
-        /// Return the AAABB of the body
-        const AABB& getAABB() const;
+        /// Add a collision shape to the body.
+        virtual ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+                                      const Transform& transform);
+
+        /// Remove a collision shape from the body
+        virtual void removeCollisionShape(const ProxyShape* proxyShape);
 
         /// Return the interpolated transform for rendering
         Transform getInterpolatedTransform() const;
 
-        /// Set the interpolation factor of the body
-        void setInterpolationFactor(decimal factor);
-
-        /// Return true if the rigid body is allowed to move
-        bool isMotionEnabled() const;
-
-        /// Enable/disable the motion of the body
-        void enableMotion(bool isMotionEnabled);
-
-        /// Return true if the body can collide with others bodies
-        bool isCollisionEnabled() const;
-
-        /// Enable/disable the collision with this body
-        void enableCollision(bool isCollisionEnabled);
-
         /// Return the first element of the linked list of contact manifolds involving this body
-        const ContactManifoldListElement* getContactManifoldsLists() const;
+        const ContactManifoldListElement* getContactManifoldsList() const;
+
+        /// Return true if a point is inside the collision body
+        bool testPointInside(const Vector3& worldPoint) const;
+
+        /// Raycast method with feedback information
+        bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
+
+        /// Compute and return the AABB of the body by merging all proxy shapes AABBs
+        AABB getAABB() const;
+
+        /// Return the linked list of proxy shapes of that body
+        ProxyShape* getProxyShapesList();
+
+        /// Return the linked list of proxy shapes of that body
+        const ProxyShape* getProxyShapesList() const;
+
+        /// Return the world-space coordinates of a point given the local-space coordinates of the body
+        Vector3 getWorldPoint(const Vector3& localPoint) const;
+
+        /// Return the world-space vector of a vector given in local-space coordinates of the body
+        Vector3 getWorldVector(const Vector3& localVector) const;
+
+        /// Return the body local-space coordinates of a point given in the world-space coordinates
+        Vector3 getLocalPoint(const Vector3& worldPoint) const;
+
+        /// Return the body local-space coordinates of a vector given in the world-space coordinates
+        Vector3 getLocalVector(const Vector3& worldVector) const;
 
         // -------------------- Friendship -------------------- //
 
+        friend class CollisionWorld;
         friend class DynamicsWorld;
         friend class CollisionDetection;
+        friend class BroadPhaseAlgorithm;
+        friend class ConvexMeshShape;
+        friend class ProxyShape;
 };
 
-// Return the collision shape
-inline CollisionShape* CollisionBody::getCollisionShape() const {
-    assert(mCollisionShape);
-    return mCollisionShape;
+// Return the type of the body
+/**
+ * @return the type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
+inline BodyType CollisionBody::getType() const {
+    return mType;
 }
 
-// Set the collision shape
-inline void CollisionBody::setCollisionShape(CollisionShape* collisionShape) {
-    assert(collisionShape);
-    mCollisionShape = collisionShape;
+// Set the type of the body
+/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+/**
+ * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
+inline void CollisionBody::setType(BodyType type) {
+    mType = type;
+
+    if (mType == STATIC) {
+
+        // Update the broad-phase state of the body
+        updateBroadPhaseState();
+    }
 }
 
 // Return the interpolated transform for rendering
+/**
+ * @return The current interpolated transformation (between previous and current frame)
+ */
 inline Transform CollisionBody::getInterpolatedTransform() const {
     return Transform::interpolateTransforms(mOldTransform, mTransform, mInterpolationFactor);
 }
@@ -172,45 +241,27 @@ inline void CollisionBody::setInterpolationFactor(decimal factor) {
     mInterpolationFactor = factor;
 }
 
-// Return true if the rigid body is allowed to move
-inline bool CollisionBody::isMotionEnabled() const {
-    return mIsMotionEnabled;
-}
-
-// Enable/disable the motion of the body
-inline void CollisionBody::enableMotion(bool isMotionEnabled) {
-    mIsMotionEnabled = isMotionEnabled;
-}
-
 // Return the current position and orientation
+/**
+ * @return The current transformation of the body that transforms the local-space
+ *         of the body into world-space
+ */
 inline const Transform& CollisionBody::getTransform() const {
     return mTransform;
 }
 
 // Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
 inline void CollisionBody::setTransform(const Transform& transform) {
 
-    // Check if the body has moved
-    if (mTransform != transform) {
-        mHasMoved = true;
-    }
-
+    // Update the transform of the body
     mTransform = transform;
-}
 
-// Return the AAABB of the body
-inline const AABB& CollisionBody::getAABB() const {
-    return mAabb;
-}
-
- // Return true if the body can collide with others bodies
-inline bool CollisionBody::isCollisionEnabled() const {
-    return mIsCollisionEnabled;
-}
-
-// Enable/disable the collision with this body
-inline void CollisionBody::enableCollision(bool isCollisionEnabled) {
-    mIsCollisionEnabled = isCollisionEnabled;
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
 }
 
 // Update the old transform with the current one.
@@ -219,16 +270,67 @@ inline void CollisionBody::updateOldTransform() {
     mOldTransform = mTransform;
 }
 
-// Update the rigid body in order to reflect a change in the body state
-inline void CollisionBody::updateAABB() {
-
-    // Update the AABB
-    mCollisionShape->updateAABB(mAabb, mTransform);
+// Return the first element of the linked list of contact manifolds involving this body
+/**
+ * @return A pointer to the first element of the linked-list with the contact
+ *         manifolds of this body
+ */
+inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
+    return mContactManifoldsList;
 }
 
-// Return the first element of the linked list of contact manifolds involving this body
-inline const ContactManifoldListElement* CollisionBody::getContactManifoldsLists() const {
-    return mContactManifoldsList;
+// Return the linked list of proxy shapes of that body
+/**
+* @return The pointer of the first proxy shape of the linked-list of all the
+*         proxy shapes of the body
+*/
+inline ProxyShape* CollisionBody::getProxyShapesList() {
+    return mProxyCollisionShapes;
+}
+
+// Return the linked list of proxy shapes of that body
+/**
+* @return The pointer of the first proxy shape of the linked-list of all the
+*         proxy shapes of the body
+*/
+inline const ProxyShape* CollisionBody::getProxyShapesList() const {
+    return mProxyCollisionShapes;
+}
+
+// Return the world-space coordinates of a point given the local-space coordinates of the body
+/**
+* @param localPoint A point in the local-space coordinates of the body
+* @return The point in world-space coordinates
+*/
+inline Vector3 CollisionBody::getWorldPoint(const Vector3& localPoint) const {
+    return mTransform * localPoint;
+}
+
+// Return the world-space vector of a vector given in local-space coordinates of the body
+/**
+* @param localVector A vector in the local-space coordinates of the body
+* @return The vector in world-space coordinates
+*/
+inline Vector3 CollisionBody::getWorldVector(const Vector3& localVector) const {
+    return mTransform.getOrientation() * localVector;
+}
+
+// Return the body local-space coordinates of a point given in the world-space coordinates
+/**
+* @param worldPoint A point in world-space coordinates
+* @return The point in the local-space coordinates of the body
+*/
+inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
+    return mTransform.getInverse() * worldPoint;
+}
+
+// Return the body local-space coordinates of a vector given in the world-space coordinates
+/**
+* @param worldVector A vector in world-space coordinates
+* @return The vector in the local-space coordinates of the body
+*/
+inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
+    return mTransform.getOrientation().getInverse() * worldVector;
 }
 
 }

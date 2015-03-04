@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,8 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -63,6 +64,31 @@ class CapsuleShape : public CollisionShape {
         /// Private assignment operator
         CapsuleShape& operator=(const CapsuleShape& shape);
 
+        /// Return a local support point in a given direction with the object margin.
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Raycasting method between a ray one of the two spheres end cap of the capsule
+        bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
+                                     const Vector3& sphereCenter, decimal maxFraction,
+                                     Vector3& hitLocalPoint, decimal& hitFraction) const;
+
+        /// Allocate and return a copy of the object
+        virtual CapsuleShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -73,23 +99,11 @@ class CapsuleShape : public CollisionShape {
         /// Destructor
         virtual ~CapsuleShape();
 
-        /// Allocate and return a copy of the object
-        virtual CapsuleShape* clone(void* allocatedMemory) const;
-
         /// Return the radius of the capsule
         decimal getRadius() const;
 
         /// Return the height of the capsule
         decimal getHeight() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin.
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -107,11 +121,17 @@ inline CapsuleShape* CapsuleShape::clone(void* allocatedMemory) const {
 }
 
 // Get the radius of the capsule
+/**
+ * @return The radius of the capsule shape (in meters)
+ */
 inline decimal CapsuleShape::getRadius() const {
     return mRadius;
 }
 
 // Return the height of the capsule
+/**
+ * @return The height of the capsule shape (in meters)
+ */
 inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
 }
@@ -123,6 +143,10 @@ inline size_t CapsuleShape::getSizeInBytes() const {
 
 // Return the local bounds of the shape in x, y and z directions
 // This method is used to compute the AABB of the box
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds

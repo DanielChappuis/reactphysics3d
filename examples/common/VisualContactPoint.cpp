@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,7 +32,7 @@ bool VisualContactPoint::mIsMeshInitialized = false;
 openglframework::Mesh VisualContactPoint::mMesh;
 
 // Constructor
-VisualContactPoint::VisualContactPoint(const openglframework::Vector3 &position) {
+VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position) {
 
     assert(mIsMeshInitialized);
 
@@ -46,12 +46,12 @@ VisualContactPoint::~VisualContactPoint() {
 }
 
 // Load and initialize the mesh for all the contact points
-void VisualContactPoint::createStaticData() {
+void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
 
     if (!mIsMeshInitialized) {
 
         // Load the mesh from a file
-        openglframework::MeshReaderWriter::loadMeshFromFile("meshes/sphere.obj", mMesh);
+        openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", mMesh);
 
         // Calculate the normals of the mesh
         mMesh.calculateNormals();

@@ -1,7 +1,6 @@
-
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,8 +27,8 @@
 #define TEST_TRANSFORM_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Transform.h"
+#include "Test.h"
+#include "mathematics/Transform.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -58,7 +57,7 @@ class TestTransform : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestTransform() {
+        TestTransform(const std::string& name) : Test(name) {
 
             mIdentityTransform.setToIdentity();
 

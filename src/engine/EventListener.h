@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_EVENT_LISTENER_H
 
 // Libraries
-#include "../constraint/ContactPoint.h"
+#include "constraint/ContactPoint.h"
 
 namespace reactphysics3d {
 
@@ -50,11 +50,28 @@ class EventListener {
         virtual ~EventListener() {}
 
         /// Called when a new contact point is found between two bodies that were separated before
+        /**
+         * @param contact Information about the contact
+         */
         virtual void beginContact(const ContactPointInfo& contact) {}
 
         /// Called when a new contact point is found between two bodies
+        /**
+         * @param contact Information about the contact
+         */
         virtual void newContact(const ContactPointInfo& contact) {}
 
+        /// Called at the beginning of an internal tick of the simulation step.
+        /// Each time the DynamicsWorld::update() method is called, the physics
+        /// engine will do several internal simulation steps. This method is
+        /// called at the beginning of each internal simulation step.
+        virtual void beginInternalTick() {}
+
+        /// Called at the end of an internal tick of the simulation step.
+        /// Each time the DynamicsWorld::update() metho is called, the physics
+        /// engine will do several internal simulation steps. This method is
+        /// called at the end of each internal simulation step.
+        virtual void endInternalTick() {}
 };
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -60,7 +60,7 @@ class VisualContactPoint : public openglframework::Object3D {
         ~VisualContactPoint();
 
         /// Load and initialize the mesh for all the contact points
-        static void createStaticData();
+        static void createStaticData(const std::string& meshFolderPath);
 
         /// Destroy the mesh for the contact points
         static void destroyStaticData();

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -33,7 +33,8 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0) {
+               : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0),
+                 mEventListener(NULL) {
 
 }
 
@@ -43,33 +44,12 @@ CollisionWorld::~CollisionWorld() {
     assert(mBodies.empty());
 }
 
-// Notify the world about a new broad-phase overlapping pair
-void CollisionWorld::notifyAddedOverlappingPair(const BroadPhasePair* addedPair) {
-
-    // TODO : Implement this method
-}
-
-// Notify the world about a removed broad-phase overlapping pair
-void CollisionWorld::notifyRemovedOverlappingPair(const BroadPhasePair* removedPair) {
-
-    // TODO : Implement this method
-}
-
-// Notify the world about a new narrow-phase contact
-void CollisionWorld::notifyNewContact(const BroadPhasePair* broadPhasePair,
-                                      const ContactPointInfo* contactInfo) {
-
-    // TODO : Implement this method
-}
-
-// Update the overlapping pair
-inline void CollisionWorld::updateOverlappingPair(const BroadPhasePair* pair) {
-
-}
-
 // Create a collision body and add it to the world
-CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
-                                                   CollisionShape* collisionShape) {
+/**
+ * @param transform Transformation mapping the local-space of the body to world-space
+ * @return A pointer to the body that has been created in the world
+ */
+CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Get the next available body ID
     bodyindex bodyID = computeNextAvailableBodyID();
@@ -79,31 +59,31 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform,
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryAllocator.allocate(sizeof(CollisionBody)))
-                                        CollisionBody(transform, collisionShape, bodyID);
+                                        CollisionBody(transform, *this, bodyID);
 
     assert(collisionBody != NULL);
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
 
-    // Add the collision body to the collision detection
-    mCollisionDetection.addBody(collisionBody);
-
     // Return the pointer to the rigid body
     return collisionBody;
 }
 
 // Destroy a collision body
+/**
+ * @param collisionBody Pointer to the body to destroy
+ */
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
-    // Remove the body from the collision detection
-    mCollisionDetection.removeBody(collisionBody);
+    // Remove all the collision shapes of the body
+    collisionBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
     mFreeBodiesIDs.push_back(collisionBody->getID());
 
     // Call the destructor of the collision body
-    collisionBody->CollisionBody::~CollisionBody();
+    collisionBody->~CollisionBody();
 
     // Remove the collision body from the list of bodies
     mBodies.erase(collisionBody);
@@ -129,7 +109,7 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
     return bodyID;
 }
 
-// Create a new collision shape.
+// Create a new collision shape in the world.
 /// First, this methods checks that the new collision shape does not exist yet in the
 /// world. If it already exists, we do not allocate memory for a new one but instead
 /// we reuse the existing one. The goal is to only allocate memory for a single
@@ -186,11 +166,157 @@ void CollisionWorld::removeCollisionShape(CollisionShape* collisionShape) {
         size_t nbBytesShape = collisionShape->getSizeInBytes();
 
         // Call the destructor of the collision shape
-        collisionShape->CollisionShape::~CollisionShape();
+        collisionShape->~CollisionShape();
 
         // Deallocate the memory used by the collision shape
         mMemoryAllocator.release(collisionShape, nbBytesShape);
     }
 }
 
+// Reset all the contact manifolds linked list of each body
+void CollisionWorld::resetContactManifoldListsOfBodies() {
+
+    // For each rigid body of the world
+    for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
+
+        // Reset the contact manifold list of the body
+        (*it)->resetContactManifoldsList();
+    }
+}
+
+// Test if the AABBs of two bodies overlap
+/**
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @return True if the AABBs of the two bodies overlap and false otherwise
+ */
+bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
+                                     const CollisionBody* body2) const {
+
+    // If one of the body is not active, we return no overlap
+    if (!body1->isActive() || !body2->isActive()) return false;
+
+    // Compute the AABBs of both bodies
+    AABB body1AABB = body1->getAABB();
+    AABB body2AABB = body2->getAABB();
+
+    // Return true if the two AABBs overlap
+    return body1AABB.testCollision(body2AABB);
+}
+
+// Test and report collisions between a given shape and all the others
+// shapes of the world.
+/**
+ * @param shape Pointer to the proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
+void CollisionWorld::testCollision(const ProxyShape* shape,
+                                   CollisionCallback* callback) {
+
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
+
+    // Create the sets of shapes
+    std::set<uint> shapes;
+    shapes.insert(shape->mBroadPhaseID);
+    std::set<uint> emptySet;
+
+    // Perform the collision detection and report contacts
+    mCollisionDetection.testCollisionBetweenShapes(callback, shapes, emptySet);
+}
+
+// Test and report collisions between two given shapes
+/**
+ * @param shape1 Pointer to the first proxy shape to test
+ * @param shape2 Pointer to the second proxy shape to test
+ * @param callback Pointer to the object with the callback method
+ */
+void CollisionWorld::testCollision(const ProxyShape* shape1,
+                                   const ProxyShape* shape2,
+                                   CollisionCallback* callback) {
+
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
+
+    // Create the sets of shapes
+    std::set<uint> shapes1;
+    shapes1.insert(shape1->mBroadPhaseID);
+    std::set<uint> shapes2;
+    shapes2.insert(shape2->mBroadPhaseID);
+
+    // Perform the collision detection and report contacts
+    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, shapes2);
+}
+
+// Test and report collisions between a body and all the others bodies of the
+// world
+/**
+ * @param body Pointer to the first body to test
+ * @param callback Pointer to the object with the callback method
+ */
+void CollisionWorld::testCollision(const CollisionBody* body,
+                                   CollisionCallback* callback) {
+
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
+
+    // Create the sets of shapes
+    std::set<uint> shapes1;
+
+    // For each shape of the body
+    for (const ProxyShape* shape=body->getProxyShapesList(); shape != NULL;
+         shape = shape->getNext()) {
+        shapes1.insert(shape->mBroadPhaseID);
+    }
+
+    std::set<uint> emptySet;
+
+    // Perform the collision detection and report contacts
+    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, emptySet);
+}
+
+// Test and report collisions between two bodies
+/**
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @param callback Pointer to the object with the callback method
+ */
+void CollisionWorld::testCollision(const CollisionBody* body1,
+                                   const CollisionBody* body2,
+                                   CollisionCallback* callback) {
+
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
+
+    // Create the sets of shapes
+    std::set<uint> shapes1;
+    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != NULL;
+         shape = shape->getNext()) {
+        shapes1.insert(shape->mBroadPhaseID);
+    }
+
+    std::set<uint> shapes2;
+    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != NULL;
+         shape = shape->getNext()) {
+        shapes2.insert(shape->mBroadPhaseID);
+    }
+
+    // Perform the collision detection and report contacts
+    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, shapes2);
+}
+
+// Test and report collisions between all shapes of the world
+/**
+ * @param callback Pointer to the object with the callback method
+ */
+void CollisionWorld::testCollision(CollisionCallback* callback) {
+
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
+
+    std::set<uint> emptySet;
+
+    // Perform the collision detection and report contacts
+    mCollisionDetection.testCollisionBetweenShapes(callback, emptySet, emptySet);
+}
 

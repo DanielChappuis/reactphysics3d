@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -100,6 +100,9 @@ class Matrix2x2 {
 
         /// Return the 2x2 identity matrix
         static Matrix2x2 identity();
+
+        /// Return the 2x2 zero matrix
+        static Matrix2x2 zero();
 
         /// Overloaded operator for addition
         friend Matrix2x2 operator+(const Matrix2x2& matrix1, const Matrix2x2& matrix2);
@@ -202,6 +205,11 @@ inline Matrix2x2 Matrix2x2::identity() {
 
     // Return the isdentity matrix
     return Matrix2x2(1.0, 0.0, 0.0, 1.0);
+}
+
+// Return the 2x2 zero matrix
+inline Matrix2x2 Matrix2x2::zero() {
+    return Matrix2x2(0.0, 0.0, 0.0, 0.0);
 }
 
 // Return the matrix with absolute values

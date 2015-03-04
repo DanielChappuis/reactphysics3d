@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,7 +31,7 @@
 #include <iostream>
 #include <ctime>
 #include <cassert>
-#include "../configuration.h"
+#include "configuration.h"
 
 #if defined(WINDOWS_OS)   // For Windows platform
    #define NOMINMAX       // This is used to avoid definition of max() and min() macros

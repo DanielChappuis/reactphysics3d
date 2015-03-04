@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,6 +30,7 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
+#include "../common/Viewer.h"
 
 // Constants
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
@@ -47,7 +48,7 @@ class Scene {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        Viewer* mViewer;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -125,7 +126,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Scene(Viewer* viewer, const std::string& shaderFolderPath);
 
         /// Destructor
         ~Scene();

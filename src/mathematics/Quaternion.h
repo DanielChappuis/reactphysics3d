@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,7 +30,7 @@
 #include <cmath>
 #include "Vector3.h"
 #include "Matrix3x3.h"
-#include "../decimal.h"
+#include "decimal.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -68,6 +68,12 @@ struct Quaternion {
 
         /// Constructor with the component w and the vector v=(x y z)
         Quaternion(decimal newW, const Vector3& v);
+
+        /// Constructor which convert Euler angles (in radians) to a quaternion
+        Quaternion(decimal angleX, decimal angleY, decimal angleZ);
+
+        /// Constructor which convert Euler angles (in radians) to a quaternion
+        Quaternion(const Vector3& eulerAngles);
 
         /// Copy-constructor
         Quaternion(const Quaternion& quaternion);
@@ -153,6 +159,11 @@ struct Quaternion {
 
         /// Overloaded operator for equality condition
         bool operator==(const Quaternion& quaternion) const;
+
+    private:
+
+        /// Initialize the quaternion using Euler angles
+        void initWithEulerAngles(decimal angleX, decimal angleY, decimal angleZ);
 };
 
 /// Set all the values

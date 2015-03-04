@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,9 +27,9 @@
 #define REACTPHYSICS3D_ISLAND_H
 
 // Libraries
-#include "../memory/MemoryAllocator.h"
-#include "../body/RigidBody.h"
-#include "../constraint/Joint.h"
+#include "memory/MemoryAllocator.h"
+#include "body/RigidBody.h"
+#include "constraint/Joint.h"
 #include "ContactManifold.h"
 
 namespace reactphysics3d {

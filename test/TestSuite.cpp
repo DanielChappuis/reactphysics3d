@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -111,9 +111,9 @@ long TestSuite::report() const {
     if (mOutputStream != NULL) {
         long nbFailedTests = 0;
 
-        *mOutputStream << "Test Suite \"" << mName << "\"\n=====";
+        *mOutputStream << "Test Suite \"" << mName << "\"\n";
         size_t i;
-        for (i=0; i < mName.size(); i++) {
+        for (i=0; i < 70; i++) {
             *mOutputStream << "=";
         }
         *mOutputStream << "=" << std::endl;
@@ -121,8 +121,7 @@ long TestSuite::report() const {
             assert(mTests[i] != NULL);
             nbFailedTests += mTests[i]->report();
         }
-        *mOutputStream << "=====";
-        for (i=0; i < mName.size(); i++) {
+        for (i=0; i < 70; i++) {
             *mOutputStream << "=";
         }
         *mOutputStream << "=" << std::endl;

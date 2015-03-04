@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,14 +27,14 @@
 #define REACTPHYSICS3D_CONSTRAINT_H
 
 // Libraries
-#include "../configuration.h"
-#include "../body/RigidBody.h"
-#include "../mathematics/mathematics.h"
+#include "configuration.h"
+#include "body/RigidBody.h"
+#include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Enumeration for the type of a constraint
+/// Enumeration for the type of a constraint
 enum JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 
 // Class declarations
@@ -85,12 +85,12 @@ struct JointInfo {
         /// Type of the joint
         JointType type;
 
-        /// True if the two bodies of the joint are allowed to collide with each other
-        bool isCollisionEnabled;
-
         /// Position correction technique used for the constraint (used for joints).
         /// By default, the BAUMGARTE technique is used
         JointsPositionCorrectionTechnique positionCorrectionTechnique;
+
+        /// True if the two bodies of the joint are allowed to collide with each other
+        bool isCollisionEnabled;
 
         /// Constructor
         JointInfo(JointType constraintType)
@@ -203,26 +203,42 @@ class Joint {
 };
 
 // Return the reference to the body 1
+/**
+ * @return The first body involved in the joint
+ */
 inline RigidBody* const Joint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
+/**
+ * @return The second body involved in the joint
+ */
 inline RigidBody* const Joint::getBody2() const {
     return mBody2;
 }
 
 // Return true if the joint is active
+/**
+ * @return True if the joint is active
+ */
 inline bool Joint::isActive() const {
     return (mBody1->isActive() && mBody2->isActive());
 }
 
 // Return the type of the joint
+/**
+ * @return The type of the joint
+ */
 inline JointType Joint::getType() const {
     return mType;
 }
 
 // Return true if the collision between the two bodies of the joint is enabled
+/**
+ * @return True if the collision is enabled between the two bodies of the joint
+ *              is enabled and false otherwise
+ */
 inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }

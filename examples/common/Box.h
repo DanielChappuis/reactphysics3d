@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -54,7 +54,7 @@ class Box : public openglframework::Object3D {
         float mSize[3];
 
         /// Rigid body used to simulate the dynamics of the box
-        rp3d::RigidBody* mRigidBody;
+        rp3d::CollisionBody* mRigidBody;
 
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -88,13 +88,20 @@ class Box : public openglframework::Object3D {
 
         /// Constructor
         Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, rp3d::DynamicsWorld* dynamicsWorld);
+            reactphysics3d::CollisionWorld* world);
+
+        /// Constructor
+        Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
+            float mass, reactphysics3d::DynamicsWorld *world);
 
         /// Destructor
         ~Box();
 
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
+
         /// Return a pointer to the rigid body of the box
-        rp3d::RigidBody* getRigidBody();
+        reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the box
         void updateTransform();
@@ -106,9 +113,14 @@ class Box : public openglframework::Object3D {
         void setColor(const openglframework::Color& color);
 };
 
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* Box::getCollisionBody() {
+    return mRigidBody;
+}
+
 // Return a pointer to the rigid body of the box
 inline rp3d::RigidBody* Box::getRigidBody() {
-    return mRigidBody;
+    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 // Set the color of the box

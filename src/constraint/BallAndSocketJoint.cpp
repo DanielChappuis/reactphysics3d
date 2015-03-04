@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,7 +25,7 @@
 
 // Libraries
 #include "BallAndSocketJoint.h"
-#include "../engine/ConstraintSolver.h"
+#include "engine/ConstraintSolver.h"
 
 using namespace reactphysics3d;
 
@@ -53,9 +53,9 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
     mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
 
-    // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->getTransform().getPosition();
-    const Vector3& x2 = mBody2->getTransform().getPosition();
+    // Get the bodies center of mass and orientations
+    const Vector3& x1 = mBody1->mCenterOfMassWorld;
+    const Vector3& x2 = mBody2->mCenterOfMassWorld;
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -72,26 +72,16 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix)
-    decimal inverseMassBodies = 0.0;
-    if (mBody1->isMotionEnabled()) {
-        inverseMassBodies += mBody1->getMassInverse();
-    }
-    if (mBody2->isMotionEnabled()) {
-        inverseMassBodies += mBody2->getMassInverse();
-    }
+    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
-                                    0, 0, inverseMassBodies);
-    if (mBody1->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose();
-    }
-    if (mBody2->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
-    }
+                                    0, 0, inverseMassBodies) +
+                           skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
+                           skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
 
     // Compute the inverse mass matrix K^-1
     mInverseMassMatrix.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrix = massMatrix.getInverse();
     }
 
@@ -119,30 +109,20 @@ void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverD
     Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
-    // Get the inverse mass of the bodies
-    const decimal inverseMassBody1 = mBody1->getMassInverse();
-    const decimal inverseMassBody2 = mBody2->getMassInverse();
+    // Compute the impulse P=J^T * lambda for the body 1
+    const Vector3 linearImpulseBody1 = -mImpulse;
+    const Vector3 angularImpulseBody1 = mImpulse.cross(mR1World);
 
-    if (mBody1->isMotionEnabled()) {
+    // Apply the impulse to the body 1
+    v1 += mBody1->mMassInverse * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody1 = -mImpulse;
-        const Vector3 angularImpulseBody1 = mImpulse.cross(mR1World);
+    // Compute the impulse P=J^T * lambda for the body 2
+    const Vector3 angularImpulseBody2 = -mImpulse.cross(mR2World);
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
-
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody2 = mImpulse;
-        const Vector3 angularImpulseBody2 = -mImpulse.cross(mR2World);
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body to the body 2
+    v2 += mBody2->mMassInverse * mImpulse;
+    w2 += mI2 * angularImpulseBody2;
 }
 
 // Solve the velocity constraint
@@ -154,10 +134,6 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
     Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
 
-    // Get the inverse mass of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
-
     // Compute J*v
     const Vector3 Jv = v2 + w2.cross(mR2World) - v1 - w1.cross(mR1World);
 
@@ -165,26 +141,20 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     const Vector3 deltaLambda = mInverseMassMatrix * (-Jv - mBiasVector);
     mImpulse += deltaLambda;
 
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the body 1
+    const Vector3 linearImpulseBody1 = -deltaLambda;
+    const Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
 
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody1 = -deltaLambda;
-        const Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
+    // Apply the impulse to the body 1
+    v1 += mBody1->mMassInverse * linearImpulseBody1;
+    w1 += mI1 * angularImpulseBody1;
 
-        // Apply the impulse to the body
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mI1 * angularImpulseBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse P=J^T * lambda for the body 2
+    const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
 
-        // Compute the impulse P=J^T * lambda
-        const Vector3 linearImpulseBody2 = deltaLambda;
-        const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
-
-        // Apply the impulse to the body
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mI2 * angularImpulseBody2;
-    }
+    // Apply the impulse to the body 2
+    v2 += mBody2->mMassInverse * deltaLambda;
+    w2 += mI2 * angularImpulseBody2;
 }
 
 // Solve the position constraint (for position error correction)
@@ -194,15 +164,15 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     // do not execute this method
     if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
 
-    // Get the bodies positions and orientations
+    // Get the bodies center of mass and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
     Vector3& x2 = constraintSolverData.positions[mIndexBody2];
     Quaternion& q1 = constraintSolverData.orientations[mIndexBody1];
     Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->getMassInverse();
-    decimal inverseMassBody2 = mBody2->getMassInverse();
+    decimal inverseMassBody1 = mBody1->mMassInverse;
+    decimal inverseMassBody2 = mBody2->mMassInverse;
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -217,24 +187,14 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Recompute the inverse mass matrix K=J^TM^-1J of of the 3 translation constraints
-    decimal inverseMassBodies = 0.0;
-    if (mBody1->isMotionEnabled()) {
-        inverseMassBodies += inverseMassBody1;
-    }
-    if (mBody2->isMotionEnabled()) {
-        inverseMassBodies += inverseMassBody2;
-    }
+    decimal inverseMassBodies = inverseMassBody1 + inverseMassBody2;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
-                                    0, 0, inverseMassBodies);
-    if (mBody1->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose();
-    }
-    if (mBody2->isMotionEnabled()) {
-        massMatrix += skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
-    }
+                                    0, 0, inverseMassBodies) +
+                           skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
+                           skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrix.setToZero();
-    if (mBody1->isMotionEnabled() || mBody2->isMotionEnabled()) {
+    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
         mInverseMassMatrix = massMatrix.getInverse();
     }
 
@@ -246,36 +206,29 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     //        right-hand side vector but instead use a method to directly solve the linear system.
     const Vector3 lambda = mInverseMassMatrix * (-constraintError);
 
-    // Apply the impulse to the bodies of the joint (directly update the position/orientation)
-    if (mBody1->isMotionEnabled()) {
+    // Compute the impulse of body 1
+    const Vector3 linearImpulseBody1 = -lambda;
+    const Vector3 angularImpulseBody1 = lambda.cross(mR1World);
 
-        // Compute the impulse
-        const Vector3 linearImpulseBody1 = -lambda;
-        const Vector3 angularImpulseBody1 = lambda.cross(mR1World);
+    // Compute the pseudo velocity of body 1
+    const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
+    const Vector3 w1 = mI1 * angularImpulseBody1;
 
-        // Compute the pseudo velocity
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        const Vector3 w1 = mI1 * angularImpulseBody1;
+    // Update the body center of mass and orientation of body 1
+    x1 += v1;
+    q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+    q1.normalize();
 
-        // Update the body position/orientation
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-    }
-    if (mBody2->isMotionEnabled()) {
+    // Compute the impulse of body 2
+    const Vector3 angularImpulseBody2 = -lambda.cross(mR2World);
 
-        // Compute the impulse
-        const Vector3 linearImpulseBody2 = lambda;
-        const Vector3 angularImpulseBody2 = -lambda.cross(mR2World);
+    // Compute the pseudo velocity of body 2
+    const Vector3 v2 = inverseMassBody2 * lambda;
+    const Vector3 w2 = mI2 * angularImpulseBody2;
 
-        // Compute the pseudo velocity
-        const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-        const Vector3 w2 = mI2 * angularImpulseBody2;
-
-        // Update the body position/orientation
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
+    // Update the body position/orientation of body 2
+    x2 += v2;
+    q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+    q2.normalize();
 }
 

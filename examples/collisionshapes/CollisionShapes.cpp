@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,16 +25,16 @@
 
 // Libraries
 #include "Scene.h"
-#include "Viewer.h"
+#include "../common/Viewer.h"
 
 // Declarations
 void simulate();
-void display();
-void finish();
-void reshape(int width, int height);
-void mouseButton(int button, int state, int x, int y);
-void mouseMotion(int x, int y);
-void keyboard(unsigned char key, int x, int y);
+void render();
+void update();
+void mouseButton(GLFWwindow* window, int button, int action, int mods);
+void mouseMotion(GLFWwindow* window, double x, double y);
+void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+void scroll(GLFWwindow* window, double xAxis, double yAxis);
 void init();
 
 // Namespaces
@@ -51,32 +51,48 @@ int main(int argc, char** argv) {
     viewer = new Viewer();
     Vector2 windowsSize = Vector2(800, 600);
     Vector2 windowsPosition = Vector2(100, 100);
-    bool initOK = viewer->init(argc, argv, "ReactPhysics3D Examples - Collision Shapes",
-                               windowsSize, windowsPosition);
-    if (!initOK) return 1;
+    viewer->init(argc, argv, "ReactPhysics3D Examples - Collision Shapes",
+                 windowsSize, windowsPosition, true);
+
+    // If the shaders and meshes folders are not specified as an argument
+    if (argc < 3) {
+        std::cerr << "Error : You need to specify the shaders folder as the first argument"
+                  <<  " and the meshes folder as the second argument" << std::endl;
+        return 1;
+    }
+
+    // Get the path of the shaders folder
+    std::string shaderFolderPath(argv[1]);
+    std::string meshFolderPath(argv[2]);
+
+    // Register callback methods
+    viewer->registerUpdateFunction(update);
+    viewer->registerKeyboardCallback(keyboard);
+    viewer->registerMouseButtonCallback(mouseButton);
+    viewer->registerMouseCursorCallback(mouseMotion);
+    viewer->registerScrollingCallback(scroll);
 
     // Create the scene
-    scene = new Scene(viewer);
+    scene = new Scene(viewer, shaderFolderPath, meshFolderPath);
 
     init();
 
-    // Glut Idle function that is continuously called
-    glutIdleFunc(simulate);
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMotion);
-    glutKeyboardFunc(keyboard);
-#ifdef USE_FREEGLUT
-    glutCloseFunc(finish);
-#else
-    atexit(finish);
-#endif
+    viewer->startMainLoop();
 
-    // Glut main looop
-    glutMainLoop();
+    delete viewer;
+    delete scene;
 
     return 0;
+}
+
+// Update function that is called each frame
+void update() {
+
+    // Take a simulation step
+    simulate();
+
+    // Render
+    render();
 }
 
 // Simulate function
@@ -86,9 +102,6 @@ void simulate() {
     scene->simulate();
 
     viewer->computeFPS();
-
-    // Ask GLUT to render the scene
-    glutPostRedisplay ();
 }
 
 // Initialization
@@ -98,49 +111,33 @@ void init() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
-// Reshape function
-void reshape(int newWidth, int newHeight) {
-    viewer->reshape(newWidth, newHeight);
-}
-
-// Called when a mouse button event occurs
-void mouseButton(int button, int state, int x, int y) {
-    viewer->mouseButtonEvent(button, state, x, y);
-}
-
-// Called when a mouse motion event occurs
-void mouseMotion(int x, int y) {
-    viewer->mouseMotionEvent(x, y);
-}
-
-// Called when the user hits a special key on the keyboard
-void keyboard(unsigned char key, int x, int y) {
-    switch(key) {
-
-        // Escape key
-        case 27:
-            #ifdef USE_FREEGLUT
-                glutLeaveMainLoop();
-            #endif
-            break;
-
-        // Space bar
-        case 32:
-            scene->pauseContinueSimulation();
-            break;
+// Callback method to receive keyboard events
+void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+    else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        scene->pauseContinueSimulation();
     }
 }
 
-// End of the application
-void finish() {
+// Callback method to receive scrolling events
+void scroll(GLFWwindow* window, double xAxis, double yAxis) {
+    viewer->scrollingEvent(static_cast<float>(yAxis));
+}
 
-    // Destroy the viewer and the scene
-    delete viewer;
-    delete scene;
+// Called when a mouse button event occurs
+void mouseButton(GLFWwindow* window, int button, int action, int mods) {
+    viewer->mouseButtonEvent(button, action);
+}
+
+// Called when a mouse motion event occurs
+void mouseMotion(GLFWwindow* window, double x, double y) {
+    viewer->mouseMotionEvent(x, y);
 }
 
 // Display the scene
-void display() {
+void render() {
 
     // Render the scene
     scene->render();
@@ -148,11 +145,8 @@ void display() {
     // Display the FPS
     viewer->displayGUI();
 
-    // Swap the buffers
-    glutSwapBuffers();
-
     // Check the OpenGL errors
-    GlutViewer::checkOpenGLErrors();
+    Viewer::checkOpenGLErrors();
 }
 
 

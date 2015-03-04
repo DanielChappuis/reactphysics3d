@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,7 +25,7 @@
 
 // Libraries
 #include "AABB.h"
-#include "../../configuration.h"
+#include "configuration.h"
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -42,8 +42,50 @@ AABB::AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates)
 
 }
 
+// Copy-constructor
+AABB::AABB(const AABB& aabb)
+     : mMinCoordinates(aabb.mMinCoordinates), mMaxCoordinates(aabb.mMaxCoordinates) {
+
+}
+
 // Destructor
 AABB::~AABB() {
 
+}
+
+// Merge the AABB in parameter with the current one
+void AABB::mergeWithAABB(const AABB& aabb) {
+    mMinCoordinates.x = std::min(mMinCoordinates.x, aabb.mMinCoordinates.x);
+    mMinCoordinates.y = std::min(mMinCoordinates.y, aabb.mMinCoordinates.y);
+    mMinCoordinates.z = std::min(mMinCoordinates.z, aabb.mMinCoordinates.z);
+
+    mMaxCoordinates.x = std::max(mMaxCoordinates.x, aabb.mMaxCoordinates.x);
+    mMaxCoordinates.y = std::max(mMaxCoordinates.y, aabb.mMaxCoordinates.y);
+    mMaxCoordinates.z = std::max(mMaxCoordinates.z, aabb.mMaxCoordinates.z);
+}
+
+// Replace the current AABB with a new AABB that is the union of two AABBs in parameters
+void AABB::mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2) {
+    mMinCoordinates.x = std::min(aabb1.mMinCoordinates.x, aabb2.mMinCoordinates.x);
+    mMinCoordinates.y = std::min(aabb1.mMinCoordinates.y, aabb2.mMinCoordinates.y);
+    mMinCoordinates.z = std::min(aabb1.mMinCoordinates.z, aabb2.mMinCoordinates.z);
+
+    mMaxCoordinates.x = std::max(aabb1.mMaxCoordinates.x, aabb2.mMaxCoordinates.x);
+    mMaxCoordinates.y = std::max(aabb1.mMaxCoordinates.y, aabb2.mMaxCoordinates.y);
+    mMaxCoordinates.z = std::max(aabb1.mMaxCoordinates.z, aabb2.mMaxCoordinates.z);
+}
+
+// Return true if the current AABB contains the AABB given in parameter
+bool AABB::contains(const AABB& aabb) {
+
+    bool isInside = true;
+    isInside = isInside && mMinCoordinates.x <= aabb.mMinCoordinates.x;
+    isInside = isInside && mMinCoordinates.y <= aabb.mMinCoordinates.y;
+    isInside = isInside && mMinCoordinates.z <= aabb.mMinCoordinates.z;
+
+    isInside = isInside && mMaxCoordinates.x >= aabb.mMaxCoordinates.x;
+    isInside = isInside && mMaxCoordinates.y >= aabb.mMaxCoordinates.y;
+    isInside = isInside && mMaxCoordinates.z >= aabb.mMaxCoordinates.z;
+    return isInside;
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,8 +27,8 @@
 #define TEST_MATRIX3X3_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Matrix3x3.h"
+#include "Test.h"
+#include "mathematics/Matrix3x3.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -54,8 +54,9 @@ class TestMatrix3x3 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestMatrix3x3() : mIdentity(Matrix3x3::identity()),
-                          mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
+        TestMatrix3x3(const std::string& name)
+            : Test(name), mIdentity(Matrix3x3::identity()),
+              mMatrix1(2, 24, 4, 5, -6, 234, -15, 11, 66) {
 
 
         }
@@ -65,6 +66,7 @@ class TestMatrix3x3 : public Test {
             testConstructors();
             testGetSet();
             testIdentity();
+            testZero();
             testOthersMethods();
             testOperators();
         }
@@ -145,6 +147,22 @@ class TestMatrix3x3 : public Test {
             test(identity[2][2] == 1);
 
             test(test1 == Matrix3x3::identity());
+        }
+
+        /// Test the zero method
+        void testZero() {
+
+            Matrix3x3 zero = Matrix3x3::zero();
+
+            test(zero[0][0] == 0);
+            test(zero[0][1] == 0);
+            test(zero[0][2] == 0);
+            test(zero[1][0] == 0);
+            test(zero[1][1] == 0);
+            test(zero[1][2] == 0);
+            test(zero[2][0] == 0);
+            test(zero[2][1] == 0);
+            test(zero[2][2] == 0);
         }
 
         /// Test others methods

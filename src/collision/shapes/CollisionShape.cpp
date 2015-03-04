@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,6 +25,8 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "engine/Profiler.h"
+#include "body/CollisionBody.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -47,8 +49,15 @@ CollisionShape::~CollisionShape() {
     assert(mNbSimilarCreatedShapes == 0);
 }
 
-// Update the AABB of a body using its collision shape
-void CollisionShape::updateAABB(AABB& aabb, const Transform& transform) {
+// Compute the world-space AABB of the collision shape given a transform
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
+void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
+
+    PROFILE("CollisionShape::computeAABB()");
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;

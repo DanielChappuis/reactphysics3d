@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cstring>
-#include "../configuration.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -78,7 +78,7 @@ class MemoryAllocator {
         // -------------------- Constants -------------------- //
 
         /// Number of heaps
-        static const uint NB_HEAPS = 128;
+        static const int NB_HEAPS = 128;
 
         /// Maximum memory unit size. An allocation request of a size smaller or equal to
         /// this size will be handled using the small block allocator. However, for an

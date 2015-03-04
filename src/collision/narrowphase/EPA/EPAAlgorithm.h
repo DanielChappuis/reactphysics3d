@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,12 +27,12 @@
 #define REACTPHYSICS3D_EPA_ALGORITHM_H
 
 // Libraries
-#include "../GJK/Simplex.h"
-#include "../../shapes/CollisionShape.h"
-#include "../../../constraint/ContactPoint.h"
-#include "../../../mathematics/mathematics.h"
+#include "collision/narrowphase/GJK/Simplex.h"
+#include "collision/shapes/CollisionShape.h"
+#include "constraint/ContactPoint.h"
+#include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
-#include "../../../memory/MemoryAllocator.h"
+#include "memory/MemoryAllocator.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace
@@ -119,9 +119,9 @@ class EPAAlgorithm {
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                     CollisionShape* collisionShape1,
+                                                     ProxyShape* collisionShape1,
                                                      const Transform& transform1,
-                                                     CollisionShape* collisionShape2,
+                                                     ProxyShape* collisionShape2,
                                                      const Transform& transform2,
                                                      Vector3& v, ContactPointInfo*& contactInfo);
 };

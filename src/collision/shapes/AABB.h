@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,13 +27,10 @@
 #define REACTPHYSICS3D_AABB_H
 
 // Libraries
-#include "../../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Declaration
-class Body;
     
 // Class AABB
 /**
@@ -54,17 +51,6 @@ class AABB {
         /// Maximum world coordinates of the AABB on the x,y and z axis
         Vector3 mMaxCoordinates;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        AABB(const AABB& aabb);
-
-        /// Private assignment operator
-        AABB& operator=(const AABB& aabb);
-
-        /// Constructor
-        AABB(const Transform& transform, const Vector3& extents);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -75,10 +61,11 @@ class AABB {
         /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
 
-
+        /// Copy-constructor
+        AABB(const AABB& aabb);
 
         /// Destructor
-        virtual ~AABB();
+        ~AABB();
 
         /// Return the center point
         Vector3 getCenter() const;
@@ -97,11 +84,30 @@ class AABB {
 
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
+
+        /// Return the volume of the AABB
+        decimal getVolume() const;
+
+        /// Merge the AABB in parameter with the current one
+        void mergeWithAABB(const AABB& aabb);
+
+        /// Replace the current AABB with a new AABB that is the union of two AABBs in parameters
+        void mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2);
+
+        /// Return true if the current AABB contains the AABB given in parameter
+        bool contains(const AABB& aabb);
+
+        /// Assignment operator
+        AABB& operator=(const AABB& aabb);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class DynamicAABBTree;
 };
 
 // Return the center point of the AABB in world coordinates
 inline Vector3 AABB::getCenter() const {
-    return (mMinCoordinates + mMaxCoordinates) * 0.5;
+    return (mMinCoordinates + mMaxCoordinates) * decimal(0.5);
 }
 
 // Return the minimum coordinates of the AABB
@@ -119,7 +125,7 @@ inline const Vector3& AABB::getMax() const {
     return mMaxCoordinates;
 }
 
-/// Set the maximum coordinates of the AABB
+// Set the maximum coordinates of the AABB
 inline void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
 }
@@ -134,6 +140,21 @@ inline bool AABB::testCollision(const AABB& aabb) const {
     if (mMaxCoordinates.z < aabb.mMinCoordinates.z||
         aabb.mMaxCoordinates.z < mMinCoordinates.z) return false;
     return true;
+}
+
+// Return the volume of the AABB
+inline decimal AABB::getVolume() const {
+    const Vector3 diff = mMaxCoordinates - mMinCoordinates;
+    return (diff.x * diff.y * diff.z);
+}
+
+// Assignment operator
+inline AABB& AABB::operator=(const AABB& aabb) {
+    if (this != &aabb) {
+        mMinCoordinates = aabb.mMinCoordinates;
+        mMaxCoordinates = aabb.mMaxCoordinates;
+    }
+    return *this;
 }
 
 }

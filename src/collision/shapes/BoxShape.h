@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,7 +29,8 @@
 // Libraries
 #include <cfloat>
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 
 /// ReactPhysics3D namespace
@@ -66,6 +67,26 @@ class BoxShape : public CollisionShape {
         /// Private assignment operator
         BoxShape& operator=(const BoxShape& shape);
 
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Allocate and return a copy of the object
+        virtual BoxShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -76,23 +97,11 @@ class BoxShape : public CollisionShape {
         /// Destructor
         virtual ~BoxShape();
 
-        /// Allocate and return a copy of the object
-        virtual BoxShape* clone(void* allocatedMemory) const;
-
         /// Return the extents of the box
         Vector3 getExtent() const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -107,12 +116,19 @@ inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
 }
 
 // Return the extents of the box
+/**
+ * @return The vector with the three extents of the box shape (in meters)
+ */
 inline Vector3 BoxShape::getExtent() const {
     return mExtent + Vector3(mMargin, mMargin, mMargin);
 }
 
 // Return the local bounds of the shape in x, y and z directions
 /// This method is used to compute the AABB of the box
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
@@ -128,7 +144,8 @@ inline size_t BoxShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction) {
+inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                        void** cachedCollisionData) const {
 
     assert(mMargin > 0.0);
     
@@ -138,7 +155,8 @@ inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction
 }
 
 // Return a local support point in a given direction without the objec margin
-inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
+inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                           void** cachedCollisionData) const {
 
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,
@@ -149,6 +167,13 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
     return (mExtent == otherShape.mExtent);
+}
+
+// Return true if a point is inside the collision shape
+inline bool BoxShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    return (localPoint.x < mExtent[0] && localPoint.x > -mExtent[0] &&
+            localPoint.y < mExtent[1] && localPoint.y > -mExtent[1] &&
+            localPoint.z < mExtent[2] && localPoint.z > -mExtent[2]);
 }
 
 }

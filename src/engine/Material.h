@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "../configuration.h"
+#include "configuration.h"
 
 namespace reactphysics3d {
 
@@ -80,6 +80,9 @@ class Material {
 };
 
 // Return the bounciness
+/**
+ * @return Bounciness factor (between 0 and 1) where 1 is very bouncy
+ */
 inline decimal Material::getBounciness() const {
     return mBounciness;
 }
@@ -87,12 +90,18 @@ inline decimal Material::getBounciness() const {
 // Set the bounciness.
 /// The bounciness should be a value between 0 and 1. The value 1 is used for a
 /// very bouncy body and zero is used for a body that is not bouncy at all.
+/**
+ * @param bounciness Bounciness factor (between 0 and 1) where 1 is very bouncy
+ */
 inline void Material::setBounciness(decimal bounciness) {
     assert(bounciness >= decimal(0.0) && bounciness <= decimal(1.0));
     mBounciness = bounciness;
 }
 
 // Return the friction coefficient
+/**
+ * @return Friction coefficient (positive value)
+ */
 inline decimal Material::getFrictionCoefficient() const {
     return mFrictionCoefficient;
 }
@@ -100,6 +109,9 @@ inline decimal Material::getFrictionCoefficient() const {
 // Set the friction coefficient.
 /// The friction coefficient has to be a positive value. The value zero is used for no
 /// friction at all.
+/**
+ * @param frictionCoefficient Friction coefficient (positive value)
+ */
 inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
     assert(frictionCoefficient >= decimal(0.0));
     mFrictionCoefficient = frictionCoefficient;

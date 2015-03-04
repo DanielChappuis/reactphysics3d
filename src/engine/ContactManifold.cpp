@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,9 +30,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(CollisionBody* body1, CollisionBody* body2,
+ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& memoryAllocator)
-                : mBody1(body1), mBody2(body2), mNbContactPoints(0), mFrictionImpulse1(0.0),
+                : mShape1(shape1), mShape2(shape2), mNbContactPoints(0), mFrictionImpulse1(0.0),
                   mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
                   mMemoryAllocator(memoryAllocator) {
     
@@ -56,7 +56,7 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
         if (distance <= PERSISTENT_CONTACT_DIST_THRESHOLD*PERSISTENT_CONTACT_DIST_THRESHOLD) {
 
             // Delete the new contact
-            contact->ContactPoint::~ContactPoint();
+            contact->~ContactPoint();
             mMemoryAllocator.release(contact, sizeof(ContactPoint));
             //removeContact(i);
 
@@ -84,7 +84,7 @@ void ContactManifold::removeContactPoint(uint index) {
 	
     // Call the destructor explicitly and tell the memory allocator that
 	// the corresponding memory block is now free
-    mContactPoints[index]->ContactPoint::~ContactPoint();
+    mContactPoints[index]->~ContactPoint();
     mMemoryAllocator.release(mContactPoints[index], sizeof(ContactPoint));
 	
     // If we don't remove the last index
@@ -253,7 +253,7 @@ void ContactManifold::clear() {
 		
         // Call the destructor explicitly and tell the memory allocator that
 		// the corresponding memory block is now free
-        mContactPoints[i]->ContactPoint::~ContactPoint();
+        mContactPoints[i]->~ContactPoint();
         mMemoryAllocator.release(mContactPoints[i], sizeof(ContactPoint));
     }
     mNbContactPoints = 0;

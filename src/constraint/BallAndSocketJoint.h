@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,7 @@
 
 // Libraries
 #include "Joint.h"
-#include "../mathematics/mathematics.h"
+#include "mathematics/mathematics.h"
 
 namespace reactphysics3d {
 
@@ -47,6 +47,12 @@ struct BallAndSocketJointInfo : public JointInfo {
         Vector3 anchorPointWorldSpace;
 
         /// Constructor
+        /**
+         * @param rigidBody1 Pointer to the first body of the joint
+         * @param rigidBody2 Pointer to the second body of the joint
+         * @param initAnchorPointWorldSpace The anchor point in world-space
+         *                                  coordinates
+         */
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
                               : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,7 +25,7 @@
 
 // Libraries
 #include "EPAAlgorithm.h"
-#include "../GJK/GJKAlgorithm.h"
+#include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
 
 // We want to use the ReactPhysics3D namespace
@@ -50,25 +50,25 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 
     // Check vertex 1
     Vector3 normal1 = (p2-p1).cross(p3-p1);
-    if (normal1.dot(p1) > 0.0 == normal1.dot(p4) > 0.0) {
+    if ((normal1.dot(p1) > 0.0) == (normal1.dot(p4) > 0.0)) {
         return 4;
     }
 
     // Check vertex 2
     Vector3 normal2 = (p4-p2).cross(p3-p2);
-    if (normal2.dot(p2) > 0.0 == normal2.dot(p1) > 0.0) {
+    if ((normal2.dot(p2) > 0.0) == (normal2.dot(p1) > 0.0)) {
         return 1;
     }
 
     // Check vertex 3
     Vector3 normal3 = (p4-p3).cross(p1-p3);
-    if (normal3.dot(p3) > 0.0 == normal3.dot(p2) > 0.0) {
+    if ((normal3.dot(p3) > 0.0) == (normal3.dot(p2) > 0.0)) {
         return 2;
     }
 
     // Check vertex 4
     Vector3 normal4 = (p2-p4).cross(p1-p4);
-    if (normal4.dot(p4) > 0.0 == normal4.dot(p3) > 0.0) {
+    if ((normal4.dot(p4) > 0.0) == (normal4.dot(p3) > 0.0)) {
         return 3;
     }
 
@@ -83,9 +83,9 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                           CollisionShape* collisionShape1,
+                                                           ProxyShape* collisionShape1,
                                                            const Transform& transform1,
-                                                           CollisionShape* collisionShape2,
+                                                           ProxyShape* collisionShape2,
                                                            const Transform& transform2,
                                                            Vector3& v, ContactPointInfo*& contactInfo) {
 
@@ -102,8 +102,8 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
-                              transform1.getOrientation().getMatrix();
+    Quaternion rotateToBody2 = transform2.getOrientation().getInverse() *
+                              transform1.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
     unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -149,13 +149,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             // v2 and v3
             Quaternion rotationQuat(d.x * sin60, d.y * sin60, d.z * sin60, 0.5);
 
-            // Construct the corresponding rotation matrix
-            Matrix3x3 rotationMat = rotationQuat.getMatrix();
-
             // Compute the vector v1, v2, v3
             Vector3 v1 = d.cross(Vector3(minAxis == 0, minAxis == 1, minAxis == 2));
-            Vector3 v2 = rotationMat * v1;
-            Vector3 v3 = rotationMat * v2;
+            Vector3 v2 = rotationQuat * v1;
+            Vector3 v3 = rotationQuat * v2;
 
             // Compute the support point in the direction of v1
             suppPointsA[2] = collisionShape1->getLocalSupportPointWithMargin(v1);
@@ -245,13 +242,14 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 break;
             }
 
-            // If the tetrahedron contains a wrong vertex (the origin is not inside the tetrahedron)
+            // The tetrahedron contains a wrong vertex (the origin is not inside the tetrahedron)
+            // Remove the wrong vertex and continue to the next case with the
+            // three remaining vertices
             if (badVertex < 4) {
 
-                // Replace the wrong vertex with the point 5 (if it exists)
-                suppPointsA[badVertex-1] = suppPointsA[4];
-                suppPointsB[badVertex-1] = suppPointsB[4];
-                points[badVertex-1] = points[4];
+                suppPointsA[badVertex-1] = suppPointsA[3];
+                suppPointsB[badVertex-1] = suppPointsB[3];
+                points[badVertex-1] = points[3];
             }
 
             // We have removed the wrong vertex
@@ -259,9 +257,10 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
         }
         case 3: {
             // The GJK algorithm returned a triangle that contains the origin.
-            // We need two new vertices to obtain a hexahedron. The two new vertices
-            // are the support points in the "n" and "-n" direction where "n" is the
-            // normal of the triangle.
+            // We need two new vertices to create two tetrahedron. The two new
+            // vertices are the support points in the "n" and "-n" direction
+            // where "n" is the normal of the triangle. Then, we use only the
+            // tetrahedron that contains the origin.
 
             // Compute the normal of the triangle
             Vector3 v1 = points[1] - points[0];
@@ -278,43 +277,62 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                      collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * n);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
-            // Construct the triangle faces
-            TriangleEPA* face0 = triangleStore.newTriangle(points, 0, 1, 3);
-            TriangleEPA* face1 = triangleStore.newTriangle(points, 1, 2, 3);
-            TriangleEPA* face2 = triangleStore.newTriangle(points, 2, 0, 3);
-            TriangleEPA* face3 = triangleStore.newTriangle(points, 0, 2, 4);
-            TriangleEPA* face4 = triangleStore.newTriangle(points, 2, 1, 4);
-            TriangleEPA* face5 = triangleStore.newTriangle(points, 1, 0, 4);
+            TriangleEPA* face0 = NULL;
+            TriangleEPA* face1 = NULL;
+            TriangleEPA* face2 = NULL;
+            TriangleEPA* face3 = NULL;
 
-            // If the polytope hasn't been correctly constructed
-            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
-                  && (face4 != NULL) && (face5 != NULL) &&
-                  face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0 &&
-                  face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0 &&
-                  face4->getDistSquare() > 0.0 && face5->getDistSquare() > 0.0)) {
+            // If the origin is in the first tetrahedron
+            if (isOriginInTetrahedron(points[0], points[1],
+                                      points[2], points[3]) == 0) {
+                // The tetrahedron is a correct initial polytope for the EPA algorithm.
+                // Therefore, we construct the tetrahedron.
+
+                // Comstruct the 4 triangle faces of the tetrahedron
+                face0 = triangleStore.newTriangle(points, 0, 1, 2);
+                face1 = triangleStore.newTriangle(points, 0, 3, 1);
+                face2 = triangleStore.newTriangle(points, 0, 2, 3);
+                face3 = triangleStore.newTriangle(points, 1, 3, 2);
+            }
+            else if (isOriginInTetrahedron(points[0], points[1],
+                                           points[2], points[4]) == 0) {
+
+                // The tetrahedron is a correct initial polytope for the EPA algorithm.
+                // Therefore, we construct the tetrahedron.
+
+                // Comstruct the 4 triangle faces of the tetrahedron
+                face0 = triangleStore.newTriangle(points, 0, 1, 2);
+                face1 = triangleStore.newTriangle(points, 0, 4, 1);
+                face2 = triangleStore.newTriangle(points, 0, 2, 4);
+                face3 = triangleStore.newTriangle(points, 1, 4, 2);
+            }
+            else {
                 return false;
             }
 
-            // Associate the edges of neighbouring faces
-            link(EdgeEPA(face0, 1), EdgeEPA(face1, 2));
-            link(EdgeEPA(face1, 1), EdgeEPA(face2, 2));
-            link(EdgeEPA(face2, 1), EdgeEPA(face0, 2));
-            link(EdgeEPA(face0, 0), EdgeEPA(face5, 0));
-            link(EdgeEPA(face1, 0), EdgeEPA(face4, 0));
-            link(EdgeEPA(face2, 0), EdgeEPA(face3, 0));
-            link(EdgeEPA(face3, 1), EdgeEPA(face4, 2));
-            link(EdgeEPA(face4, 1), EdgeEPA(face5, 2));
-            link(EdgeEPA(face5, 1), EdgeEPA(face3, 2));
+            // If the constructed tetrahedron is not correct
+            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+               && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
+               && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
+                return false;
+            }
 
-            // Add the candidate faces in the heap
+            // Associate the edges of neighbouring triangle faces
+            link(EdgeEPA(face0, 0), EdgeEPA(face1, 2));
+            link(EdgeEPA(face0, 1), EdgeEPA(face3, 2));
+            link(EdgeEPA(face0, 2), EdgeEPA(face2, 0));
+            link(EdgeEPA(face1, 0), EdgeEPA(face2, 2));
+            link(EdgeEPA(face1, 1), EdgeEPA(face3, 0));
+            link(EdgeEPA(face2, 1), EdgeEPA(face3, 1));
+
+            // Add the triangle faces in the candidate heap
             addFaceCandidate(face0, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face1, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face2, triangleHeap, nbTriangles, DECIMAL_LARGEST);
             addFaceCandidate(face3, triangleHeap, nbTriangles, DECIMAL_LARGEST);
-            addFaceCandidate(face4, triangleHeap, nbTriangles, DECIMAL_LARGEST);
-            addFaceCandidate(face5, triangleHeap, nbTriangles, DECIMAL_LARGEST);
 
-            nbVertices = 5;
+            nbVertices = 4;
+
         }
         break;
     }
@@ -392,7 +410,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = transform1.getOrientation().getMatrix() * triangle->getClosestPoint();
+    v = transform1.getOrientation() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
@@ -400,9 +418,9 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo))) ContactPointInfo(normal,
-                                                                             penetrationDepth,
-                                                                             pALocal, pBLocal);
+    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+                          ContactPointInfo(collisionShape1, collisionShape2, normal,
+                                           penetrationDepth, pALocal, pBLocal);
     
     return true;
 }

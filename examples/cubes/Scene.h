@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,13 +30,14 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
+#include "Viewer.h"
 
 // Constants
-const int NB_SPHERES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
+const int NB_CUBES = 200;                                  // Number of boxes in the scene
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
 
 // Class Scene
 class Scene {
@@ -45,8 +46,10 @@ class Scene {
 
         // -------------------- Attributes -------------------- //
 
+        int counter;
+
         /// Pointer to the viewer
-        openglframework::GlutViewer* mViewer;
+        Viewer* mViewer;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -71,7 +74,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(openglframework::GlutViewer* viewer);
+        Scene(Viewer* viewer, const std::string& shaderFolderPath);
 
         /// Destructor
         ~Scene();

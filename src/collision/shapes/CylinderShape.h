@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,8 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 
 /// ReactPhysics3D namespace
@@ -68,6 +69,26 @@ class CylinderShape : public CollisionShape {
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Allocate and return a copy of the object
+        virtual CylinderShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -78,23 +99,11 @@ class CylinderShape : public CollisionShape {
         /// Destructor
         virtual ~CylinderShape();
 
-        /// Allocate and return a copy of the object
-        virtual CylinderShape* clone(void* allocatedMemory) const;
-
         /// Return the radius
         decimal getRadius() const;
 
         /// Return the height
         decimal getHeight() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -112,11 +121,17 @@ inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
 }
 
 // Return the radius
+/**
+ * @return Radius of the cylinder (in meters)
+ */
 inline decimal CylinderShape::getRadius() const {
     return mRadius;
 }
 
 // Return the height
+/**
+ * @return Height of the cylinder (in meters)
+ */
 inline decimal CylinderShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
 }
@@ -127,6 +142,10 @@ inline size_t CylinderShape::getSizeInBytes() const {
 }
 
 // Return the local bounds of the shape in x, y and z directions
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void CylinderShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
@@ -141,6 +160,11 @@ inline void CylinderShape::getLocalBounds(Vector3& min, Vector3& max) const {
 }
 
 // Return the local inertia tensor of the cylinder
+/**
+ * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+ *                    coordinates
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
 inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal height = decimal(2.0) * mHalfHeight;
     decimal diag = (decimal(1.0) / decimal(12.0)) * mass * (3 * mRadius * mRadius + height * height);
@@ -153,6 +177,12 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
 inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+}
+
+// Return true if a point is inside the collision shape
+inline bool CylinderShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const{
+    return ((localPoint.x * localPoint.x + localPoint.z * localPoint.z) < mRadius * mRadius &&
+            localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight);
 }
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,8 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "../../mathematics/mathematics.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -70,6 +71,26 @@ class ConeShape : public CollisionShape {
 
         /// Private assignment operator
         ConeShape& operator=(const ConeShape& shape);
+
+        /// Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+
+        /// Allocate and return a copy of the object
+        virtual ConeShape* clone(void* allocatedMemory) const;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const;
         
     public :
 
@@ -81,23 +102,11 @@ class ConeShape : public CollisionShape {
         /// Destructor
         virtual ~ConeShape();
 
-        /// Allocate and return a copy of the object
-        virtual ConeShape* clone(void* allocatedMemory) const;
-
         /// Return the radius
         decimal getRadius() const;
 
         /// Return the height
         decimal getHeight() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -115,11 +124,17 @@ inline ConeShape* ConeShape::clone(void* allocatedMemory) const {
 }
 
 // Return the radius
+/**
+ * @return Radius of the cone (in meters)
+ */
 inline decimal ConeShape::getRadius() const {
     return mRadius;
 }
 
 // Return the height
+/**
+ * @return Height of the cone (in meters)
+ */
 inline decimal ConeShape::getHeight() const {
     return decimal(2.0) * mHalfHeight;
 }
@@ -130,6 +145,10 @@ inline size_t ConeShape::getSizeInBytes() const {
 }
 
 // Return the local bounds of the shape in x, y and z directions
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
 inline void ConeShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
@@ -144,6 +163,11 @@ inline void ConeShape::getLocalBounds(Vector3& min, Vector3& max) const {
 }
 
 // Return the local inertia tensor of the collision shape
+/**
+ * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
+ *                    coordinates
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
 inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal rSquare = mRadius * mRadius;
     decimal diagXZ = decimal(0.15) * mass * (rSquare + mHalfHeight);
@@ -156,6 +180,14 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
 inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
     const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+}
+
+// Return true if a point is inside the collision shape
+inline bool ConeShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    const decimal radiusHeight = mRadius * (-localPoint.y + mHalfHeight) /
+                                          (mHalfHeight * decimal(2.0));
+    return (localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight) &&
+           (localPoint.x * localPoint.x + localPoint.z * localPoint.z < radiusHeight *radiusHeight);
 }
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 // Libraries
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
-#include "../body/RigidBody.h"
+#include "body/RigidBody.h"
 #include "Profiler.h"
 #include <limits>
 
@@ -83,12 +83,14 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         assert(externalManifold->getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
-        RigidBody* body1 = externalManifold->getContactPoint(0)->getBody1();
-        RigidBody* body2 = externalManifold->getContactPoint(0)->getBody2();
+        RigidBody* body1 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
+        RigidBody* body2 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
+        assert(body1 != NULL);
+        assert(body2 != NULL);
 
         // Get the position of the two bodies
-        Vector3 x1 = body1->getTransform().getPosition();
-        Vector3 x2 = body2->getTransform().getPosition();
+        const Vector3& x1 = body1->mCenterOfMassWorld;
+        const Vector3& x2 = body2->mCenterOfMassWorld;
 
         // Initialize the internal contact manifold structure using the external
         // contact manifold
@@ -96,10 +98,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.indexBody2 = mMapBodyToConstrainedVelocityIndex.find(body2)->second;
         internalManifold.inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         internalManifold.inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
-        internalManifold.isBody1Moving = body1->isMotionEnabled();
-        internalManifold.isBody2Moving = body2->isMotionEnabled();
-        internalManifold.massInverseBody1 = body1->getMassInverse();
-        internalManifold.massInverseBody2 = body2->getMassInverse();
+        internalManifold.massInverseBody1 = body1->mMassInverse;
+        internalManifold.massInverseBody2 = body2->mMassInverse;
         internalManifold.nbContacts = externalManifold->getNbContactPoints();
         internalManifold.restitutionFactor = computeMixedRestitutionFactor(body1, body2);
         internalManifold.frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
@@ -211,15 +211,9 @@ void ContactSolver::initializeContactConstraints() {
             contactPoint.r2CrossN = contactPoint.r2.cross(contactPoint.normal);
 
             // Compute the inverse mass matrix K for the penetration constraint
-            decimal massPenetration = 0.0;
-            if (manifold.isBody1Moving) {
-                massPenetration += manifold.massInverseBody1 +
-                    ((I1 * contactPoint.r1CrossN).cross(contactPoint.r1)).dot(contactPoint.normal);
-            }
-            if (manifold.isBody2Moving) {
-                massPenetration += manifold.massInverseBody2 +
+            decimal massPenetration = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                    ((I1 * contactPoint.r1CrossN).cross(contactPoint.r1)).dot(contactPoint.normal) +
                     ((I2 * contactPoint.r2CrossN).cross(contactPoint.r2)).dot(contactPoint.normal);
-            }
             massPenetration > 0.0 ? contactPoint.inversePenetrationMass = decimal(1.0) /
                                                                           massPenetration :
                                                                           decimal(0.0);
@@ -237,24 +231,16 @@ void ContactSolver::initializeContactConstraints() {
 
                 // Compute the inverse mass matrix K for the friction
                 // constraints at each contact point
-                decimal friction1Mass = 0.0;
-                decimal friction2Mass = 0.0;
-                if (manifold.isBody1Moving) {
-                    friction1Mass += manifold.massInverseBody1 +
-                      ((I1 * contactPoint.r1CrossT1).cross(contactPoint.r1)).dot(
-                             contactPoint.frictionVector1);
-                    friction2Mass += manifold.massInverseBody1 +
-                            ((I1 * contactPoint.r1CrossT2).cross(contactPoint.r1)).dot(
-                            contactPoint.frictionVector2);
-                }
-                if (manifold.isBody2Moving) {
-                    friction1Mass += manifold.massInverseBody2 +
-                            ((I2 * contactPoint.r2CrossT1).cross(contactPoint.r2)).dot(
-                                   contactPoint.frictionVector1);
-                    friction2Mass += manifold.massInverseBody2 +
-                            ((I2 * contactPoint.r2CrossT2).cross(contactPoint.r2)).dot(
-                                   contactPoint.frictionVector2);
-                }
+                decimal friction1Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                        ((I1 * contactPoint.r1CrossT1).cross(contactPoint.r1)).dot(
+                                        contactPoint.frictionVector1) +
+                                        ((I2 * contactPoint.r2CrossT1).cross(contactPoint.r2)).dot(
+                                        contactPoint.frictionVector1);
+                decimal friction2Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                        ((I1 * contactPoint.r1CrossT2).cross(contactPoint.r1)).dot(
+                                        contactPoint.frictionVector2) +
+                                        ((I2 * contactPoint.r2CrossT2).cross(contactPoint.r2)).dot(
+                                        contactPoint.frictionVector2);
                 friction1Mass > 0.0 ? contactPoint.inverseFriction1Mass = decimal(1.0) /
                                                                           friction1Mass :
                                                                           decimal(0.0);
@@ -308,29 +294,19 @@ void ContactSolver::initializeContactConstraints() {
             manifold.r1CrossT2 = manifold.r1Friction.cross(manifold.frictionVector2);
             manifold.r2CrossT1 = manifold.r2Friction.cross(manifold.frictionVector1);
             manifold.r2CrossT2 = manifold.r2Friction.cross(manifold.frictionVector2);
-            decimal friction1Mass = 0.0;
-            decimal friction2Mass = 0.0;
-            if (manifold.isBody1Moving) {
-                friction1Mass += manifold.massInverseBody1 +
-                        ((I1 * manifold.r1CrossT1).cross(manifold.r1Friction)).dot(
-                               manifold.frictionVector1);
-                friction2Mass += manifold.massInverseBody1 +
-                        ((I1 * manifold.r1CrossT2).cross(manifold.r1Friction)).dot(
-                               manifold.frictionVector2);
-            }
-            if (manifold.isBody2Moving) {
-                friction1Mass += manifold.massInverseBody2 +
-                        ((I2 * manifold.r2CrossT1).cross(manifold.r2Friction)).dot(
-                               manifold.frictionVector1);
-                friction2Mass += manifold.massInverseBody2 +
-                        ((I2 * manifold.r2CrossT2).cross(manifold.r2Friction)).dot(
-                               manifold.frictionVector2);
-            }
-            decimal frictionTwistMass = manifold.normal.dot(
-                                           manifold.inverseInertiaTensorBody1 *
+            decimal friction1Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                    ((I1 * manifold.r1CrossT1).cross(manifold.r1Friction)).dot(
+                                    manifold.frictionVector1) +
+                                    ((I2 * manifold.r2CrossT1).cross(manifold.r2Friction)).dot(
+                                    manifold.frictionVector1);
+            decimal friction2Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                    ((I1 * manifold.r1CrossT2).cross(manifold.r1Friction)).dot(
+                                    manifold.frictionVector2) +
+                                    ((I2 * manifold.r2CrossT2).cross(manifold.r2Friction)).dot(
+                                    manifold.frictionVector2);
+            decimal frictionTwistMass = manifold.normal.dot(manifold.inverseInertiaTensorBody1 *
                                            manifold.normal) +
-                                        manifold.normal.dot(
-                                           manifold.inverseInertiaTensorBody2 *
+                                        manifold.normal.dot(manifold.inverseInertiaTensorBody2 *
                                            manifold.normal);
             friction1Mass > 0.0 ? manifold.inverseFriction1Mass = decimal(1.0)/friction1Mass
                                                                          : decimal(0.0);
@@ -749,38 +725,34 @@ void ContactSolver::storeImpulses() {
 void ContactSolver::applyImpulse(const Impulse& impulse,
                                  const ContactManifoldSolver& manifold) {
 
-    // Update the velocities of the bodies by applying the impulse P
-    if (manifold.isBody1Moving) {
-        mLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
-                                                    impulse.linearImpulseBody1;
-        mAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
-                                                     impulse.angularImpulseBody1;
-    }
-    if (manifold.isBody2Moving) {
-        mLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
-                                                    impulse.linearImpulseBody2;
-        mAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
-                                                     impulse.angularImpulseBody2;
-    }
+    // Update the velocities of the body 1 by applying the impulse P
+    mLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
+                                              impulse.linearImpulseBody1;
+    mAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
+                                               impulse.angularImpulseBody1;
+
+    // Update the velocities of the body 1 by applying the impulse P
+    mLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
+                                              impulse.linearImpulseBody2;
+    mAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
+                                               impulse.angularImpulseBody2;
 }
 
 // Apply an impulse to the two bodies of a constraint
 void ContactSolver::applySplitImpulse(const Impulse& impulse,
                                       const ContactManifoldSolver& manifold) {
 
-    // Update the velocities of the bodies by applying the impulse P
-    if (manifold.isBody1Moving) {
-        mSplitLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
-                                                    impulse.linearImpulseBody1;
-        mSplitAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
-                                                     impulse.angularImpulseBody1;
-    }
-    if (manifold.isBody2Moving) {
-        mSplitLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
-                                                              impulse.linearImpulseBody2;
-        mSplitAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
-                                                     impulse.angularImpulseBody2;
-    }
+    // Update the velocities of the body 1 by applying the impulse P
+    mSplitLinearVelocities[manifold.indexBody1] += manifold.massInverseBody1 *
+                                                   impulse.linearImpulseBody1;
+    mSplitAngularVelocities[manifold.indexBody1] += manifold.inverseInertiaTensorBody1 *
+                                                    impulse.angularImpulseBody1;
+
+    // Update the velocities of the body 1 by applying the impulse P
+    mSplitLinearVelocities[manifold.indexBody2] += manifold.massInverseBody2 *
+                                                   impulse.linearImpulseBody2;
+    mSplitAngularVelocities[manifold.indexBody2] += manifold.inverseInertiaTensorBody2 *
+                                                    impulse.angularImpulseBody2;
 }
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane

@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,12 +25,16 @@
 
 // Libraries
 #include "SphereShape.h"
-#include "../../configuration.h"
+#include "collision/ProxyShape.h"
+#include "configuration.h"
 #include <cassert>
 
 using namespace reactphysics3d;
 
 // Constructor
+/**
+ * @param radius Radius of the sphere (in meters)
+ */
 SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE, radius), mRadius(radius) {
     assert(radius > decimal(0.0));
 }
@@ -44,4 +48,53 @@ SphereShape::SphereShape(const SphereShape& shape)
 // Destructor
 SphereShape::~SphereShape() {
 
+}
+
+// Raycast method with feedback information
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+
+    // We perform the intersection test in world-space
+
+    const Vector3 sphereCenter = proxyShape->getLocalToWorldTransform().getPosition();
+    const Vector3 m = ray.point1 - sphereCenter;
+    decimal c = m.dot(m) - mRadius * mRadius;
+
+    // If the origin of the ray is inside the sphere, we return no intersection
+    if (c < decimal(0.0)) return false;
+
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+    decimal b = m.dot(rayDirection);
+
+    // If the origin of the ray is outside the sphere and the ray
+    // is pointing away from the sphere, there is no intersection
+    if (b > decimal(0.0)) return false;
+
+    decimal raySquareLength = rayDirection.lengthSquare();
+
+    // Compute the discriminant of the quadratic equation
+    decimal discriminant = b * b - raySquareLength * c;
+
+    // If the discriminant is negative or the ray length is very small, there is no intersection
+    if (discriminant < decimal(0.0) || raySquareLength < MACHINE_EPSILON) return false;
+
+    // Compute the solution "t" closest to the origin
+    decimal t = -b - std::sqrt(discriminant);
+
+    assert(t >= decimal(0.0));
+
+    // If the hit point is withing the segment ray fraction
+    if (t < ray.maxFraction * raySquareLength) {
+
+        // Compute the intersection information
+        t /= raySquareLength;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.hitFraction = t;
+        raycastInfo.worldPoint = ray.point1 + t * rayDirection;
+        raycastInfo.worldNormal = (raycastInfo.worldPoint - sphereCenter).getUnit();
+
+        return true;
+    }
+
+    return false;
 }

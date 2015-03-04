@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,9 +29,12 @@
 // Libraries
 #include <cassert>
 #include <typeinfo>
-#include "../../mathematics/Vector3.h"
-#include "../../mathematics/Matrix3x3.h"
+#include "mathematics/Vector3.h"
+#include "mathematics/Matrix3x3.h"
+#include "mathematics/Ray.h"
 #include "AABB.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -40,7 +43,8 @@ namespace reactphysics3d {
 enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH};
 
 // Declarations
-class Body;
+class ProxyShape;
+class CollisionBody;
 
 // Class CollisionShape
 /**
@@ -70,6 +74,35 @@ class CollisionShape {
         /// Private assignment operator
         CollisionShape& operator=(const CollisionShape& shape);
 
+        // Return a local support point in a given direction with the object margin
+        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
+                                                       void** cachedCollisionData) const=0;
+
+        /// Return a local support point in a given direction without the object margin
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                          void** cachedCollisionData) const=0;
+
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
+
+        /// Raycast method with feedback information
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
+
+        /// Return the number of similar created shapes
+        uint getNbSimilarCreatedShapes() const;
+
+        /// Allocate and return a copy of the object
+        virtual CollisionShape* clone(void* allocatedMemory) const=0;
+
+        /// Return the number of bytes used by the collision shape
+        virtual size_t getSizeInBytes() const = 0;
+
+        /// Increment the number of similar allocated collision shapes
+        void incrementNbSimilarCreatedShapes();
+
+        /// Decrement the number of similar allocated collision shapes
+        void decrementNbSimilarCreatedShapes();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -80,26 +113,11 @@ class CollisionShape {
         /// Destructor
         virtual ~CollisionShape();
 
-        /// Allocate and return a copy of the object
-        virtual CollisionShape* clone(void* allocatedMemory) const=0;
-
         /// Return the type of the collision shapes
         CollisionShapeType getType() const;
 
-        /// Return the number of similar created shapes
-        uint getNbSimilarCreatedShapes() const;
-
         /// Return the current object margin
         decimal getMargin() const;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const = 0;
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction)=0;
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction)=0;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
@@ -107,23 +125,28 @@ class CollisionShape {
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
 
-        /// Update the AABB of a body using its collision shape
-        virtual void updateAABB(AABB& aabb, const Transform& transform);
-
-        /// Increment the number of similar allocated collision shapes
-        void incrementNbSimilarCreatedShapes();
-
-        /// Decrement the number of similar allocated collision shapes
-        void decrementNbSimilarCreatedShapes();
+        /// Compute the world-space AABB of the collision shape given a transform
+        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
         /// Equality operator between two collision shapes.
         bool operator==(const CollisionShape& otherCollisionShape) const;
 
         /// Test equality between two collision shapes of the same type (same derived classes).
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const=0;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class ProxyShape;
+        friend class CollisionWorld;
 };
 
+
+
+
 // Return the type of the collision shape
+/**
+ * @return The type of the collision shape (box, sphere, cylinder, ...)
+ */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
 }
@@ -133,7 +156,10 @@ inline uint CollisionShape::getNbSimilarCreatedShapes() const {
     return mNbSimilarCreatedShapes;
 }
 
-// Return the current object margin
+// Return the current collision shape margin
+/**
+ * @return The margin (in meters) around the collision shape
+ */
 inline decimal CollisionShape::getMargin() const {
     return mMargin;
 }

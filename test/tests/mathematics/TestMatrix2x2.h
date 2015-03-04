@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,8 +27,8 @@
 #define TEST_MATRIX2X2_H
 
 // Libraries
-#include "../../Test.h"
-#include "../../../src/mathematics/Matrix2x2.h"
+#include "Test.h"
+#include "mathematics/Matrix2x2.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -54,8 +54,8 @@ class TestMatrix2x2 : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestMatrix2x2() : mIdentity(Matrix2x2::identity()),
-                          mMatrix1(2, 24, -4, 5) {
+        TestMatrix2x2(const std::string& name)
+               : Test(name), mIdentity(Matrix2x2::identity()), mMatrix1(2, 24, -4, 5) {
 
         }
 
@@ -64,6 +64,7 @@ class TestMatrix2x2 : public Test {
             testConstructors();
             testGetSet();
             testIdentity();
+            testZero();
             testOthersMethods();
             testOperators();
         }
@@ -126,6 +127,17 @@ class TestMatrix2x2 : public Test {
             test(identity[1][1] == 1);
 
             test(test1 == Matrix2x2::identity());
+        }
+
+        /// Test the zero method
+        void testZero() {
+
+            Matrix2x2 zero = Matrix2x2::zero();
+
+            test(zero[0][0] == 0);
+            test(zero[0][1] == 0);
+            test(zero[1][0] == 0);
+            test(zero[1][1] == 0);
         }
 
         /// Test others methods

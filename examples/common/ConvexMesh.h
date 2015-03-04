@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/      *
-* Copyright (c) 2010-2013 Daniel Chappuis                                       *
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -38,7 +38,7 @@ class ConvexMesh : public openglframework::Mesh {
         // -------------------- Attributes -------------------- //
 
         /// Rigid body used to simulate the dynamics of the mesh
-        rp3d::RigidBody* mRigidBody;
+        rp3d::CollisionBody* mRigidBody;
 
         // -------------------- Methods -------------------- //
 
@@ -47,14 +47,21 @@ class ConvexMesh : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         /// Constructor
+        ConvexMesh(const openglframework::Vector3& position,
+                   rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+
+        /// Constructor
         ConvexMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld);
+                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~ConvexMesh();
 
-        /// Return a pointer to the rigid body of the mesh
-        rp3d::RigidBody* getRigidBody();
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
+
+        /// Return a pointer to the rigid body of the box
+        reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the mesh
         void updateTransform();
@@ -64,9 +71,14 @@ class ConvexMesh : public openglframework::Mesh {
                     const openglframework::Matrix4& worldToCameraMatrix);
 };
 
-// Return a pointer to the rigid body of the mesh
-inline rp3d::RigidBody* ConvexMesh::getRigidBody() {
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* ConvexMesh::getCollisionBody() {
     return mRigidBody;
+}
+
+// Return a pointer to the rigid body of the box
+inline rp3d::RigidBody* ConvexMesh::getRigidBody() {
+    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 #endif
