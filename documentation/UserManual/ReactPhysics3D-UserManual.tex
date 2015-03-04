@@ -1438,25 +1438,36 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     You can find some demos in the \texttt{examples/} folder of
     the ReactPhysics3D library. Follow the instructions described in section \ref{sec:building} to
     compile the examples. Note that OpenGL and the GLEW library are required to run those examples. Studying the examples is a
-    good way to understand how to use the ReactPhysics3D library.
+    good way to understand how to use the ReactPhysics3D library. \\
+
+    All the examples require some command line arguments to be able to run them. Do not forget to set them in your IDE (Visual Studio, XCode, \dots) or to
+    specify them when you run the example in command line. You can find the command line arguments to use for each example bellow.
 
     \subsection{Cubes}
+
+    Command line arguments: shaders/ \\
 
     In this example, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
     the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this demo,
     the cubes are green when they are active and become red as they get inactive (sleeping).
 
     \subsection{Collision Shapes}
-
+    
+    Command line arguments: shaders/ meshes/ \\
+    
     In this example, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
     in the ReactPhysics3D library like Cylinders, Capsules, Spheres, Convex Meshes and Cones. Those bodies will fall down to the floor.
 
     \subsection{Joints}
 
+    Command line arguments: shaders/ \\
+
     In this example, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
     to set the motor or limits of the joints.
 
     \subsection{Raycast}
+
+    Command line arguments: shaders/ meshes/ \\
 
     In this example, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
     It is possible to switch from a collision shape to another using the space key.
