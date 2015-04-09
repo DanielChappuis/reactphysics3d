@@ -37,7 +37,7 @@ You can find the User Manual and the Doxygen API Documentation [here](http://www
 
 ## Branches
 
-The "master" branch always contains the last released version of the library. This is the most stable version. On the other side,
+The "master" branch always contains the last released version of the library and some possible bug fixes. This is the most stable version. On the other side,
 the "develop" branch is used for development. This branch is frequently updated and can be quite unstable. Therefore, if you want to use the library in
 your application, it is recommended to checkout the "master" branch.
 

@@ -288,8 +288,7 @@ void DynamicsWorld::initVelocityArrays() {
     for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         // Add the body into the map
-        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*,
-                                                  uint>(*it, indexBody));
+        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair(*it, indexBody));
         indexBody++;
     }
 }
