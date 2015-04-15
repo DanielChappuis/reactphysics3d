@@ -25,11 +25,17 @@
 
 // Libraries
 #include "Scene.h"
+#include <GLFW/glfw3.h>
 
 using namespace openglframework;
 
 // Constructor
 Scene::Scene(const std::string& name) : mName(name) {
+
+}
+
+// Destructor
+Scene::~Scene() {
 
 }
 
@@ -59,15 +65,12 @@ void Scene::resetCameraToViewAll() {
 }
 
 // Map the mouse x,y coordinates to a point on a sphere
-bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse, Vector3& spherePoint) const {
+bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse,
+                                        Vector3& spherePoint) const {
 
-    // Get the window dimension
-    int width, height;
-    glfwGetWindowSize(mWindow, &width, &height);
-
-    if ((xMouse >= 0) && (xMouse <= width) && (yMouse >= 0) && (yMouse <= height)) {
-        float x = float(xMouse - 0.5f * width) / float(width);
-        float y = float(0.5f * height - yMouse) / float(height);
+    if ((xMouse >= 0) && (xMouse <= mWindowWidth) && (yMouse >= 0) && (yMouse <= mWindowHeight)) {
+        float x = float(xMouse - 0.5f * mWindowWidth) / float(mWindowWidth);
+        float y = float(0.5f * mWindowHeight - yMouse) / float(mWindowHeight);
         float sinx = sin(PI * x * 0.5f);
         float siny = sin(PI * y * 0.5f);
         float sinx2siny2 = sinx * sinx + siny * siny;
@@ -84,17 +87,14 @@ bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse, Vector3& s
 }
 
 // Called when a mouse button event occurs
-void Scene::mouseButtonEvent(int button, int action, int mods) {
-
-    // Get the mouse cursor position
-    double x, y;
-    glfwGetCursorPos(mWindow, &x, &y);
+void Scene::mouseButtonEvent(int button, int action, int mods,
+                             double mousePosX, double mousePosY) {
 
     // If the mouse button is pressed
     if (action == GLFW_PRESS) {
-        mLastMouseX = x;
-        mLastMouseY = y;
-        mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(x, y, mLastPointOnSphere);
+        mLastMouseX = mousePosX;
+        mLastMouseY = mousePosY;
+        mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(mousePosX, mousePosY, mLastPointOnSphere);
     }
     else {  // If the mouse button is released
         mIsLastPointOnSphereValid = false;
@@ -102,22 +102,15 @@ void Scene::mouseButtonEvent(int button, int action, int mods) {
 }
 
 // Called when a mouse motion event occurs
-void Scene::mouseMotionEvent(double xMouse, double yMouse) {
-
-    int leftButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT);
-    int rightButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT);
-    int middleButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_MIDDLE);
-    int altKeyState = glfwGetKey(mWindow, GLFW_KEY_LEFT_ALT);
+void Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
+                             int rightButtonState, int middleButtonState,
+                             int altKeyState) {
 
     // Zoom
     if (leftButtonState == GLFW_PRESS && altKeyState == GLFW_PRESS) {
 
-        // Get the window dimension
-        int width, height;
-        glfwGetWindowSize(mWindow, &width, &height);
-
         float dy = static_cast<float>(yMouse - mLastMouseY);
-        float h = static_cast<float>(height);
+        float h = static_cast<float>(mWindowHeight);
 
         // Zoom the camera
         zoom(-dy / h);
@@ -139,8 +132,8 @@ void Scene::mouseMotionEvent(double xMouse, double yMouse) {
 }
 
 // Called when a scrolling event occurs
-void Scene::scrollingEvent(float xAxis, float yAxis) {
-    zoom(yAxis * SCROLL_SENSITIVITY);
+void Scene::scrollingEvent(float xAxis, float yAxis, float scrollSensitivy) {
+    zoom(yAxis * scrollSensitivy);
 }
 
 // Zoom the camera

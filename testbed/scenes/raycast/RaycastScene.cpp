@@ -24,16 +24,18 @@
 ********************************************************************************/
 
 // Libraries
-#include "Scene.h"
+#include "RaycastScene.h"
 
 // Namespaces
 using namespace openglframework;
+using namespace raycastscene;
 
 // Constructor
-Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::string& meshFolderPath)
-       : mViewer(viewer), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
-         mPhongShader(shaderFolderPath + "phong.vert",
-                      shaderFolderPath +"phong.frag") {
+RaycastScene::RaycastScene(const std::string& name)
+       : Scene(name), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
+         mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
+
+    std::string meshFolderPath("meshes/");
 
     // Move the light 0
     mLight0.translateWorld(Vector3(50, 50, 50));
@@ -43,7 +45,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     openglframework::Vector3 center(0, 0, 0);
 
     // Set the center of the scene
-    mViewer->setScenePosition(center, radiusScene);
+    setScenePosition(center, radiusScene);
 
     // Create the dynamics world for the physics simulation
     mCollisionWorld = new rp3d::CollisionWorld();
@@ -105,7 +107,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
 }
 
 // Create the raycast lines
-void Scene::createLines() {
+void RaycastScene::createLines() {
 
       int nbRaysOneDimension = std::sqrt(float(NB_RAYS));
 
@@ -131,7 +133,7 @@ void Scene::createLines() {
 }
 
 // Change the body to raycast and to display
-void Scene::changeBody() {
+void RaycastScene::changeBody() {
 
     mCurrentBodyIndex++;
     if (mCurrentBodyIndex >= NB_BODIES) mCurrentBodyIndex = 0;
@@ -163,8 +165,13 @@ void Scene::changeBody() {
     }
 }
 
+// Reset the scene
+void RaycastScene::reset() {
+
+}
+
 // Destructor
-Scene::~Scene() {
+RaycastScene::~RaycastScene() {
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -221,7 +228,7 @@ Scene::~Scene() {
 }
 
 // Take a step for the simulation
-void Scene::simulate() {
+void RaycastScene::update() {
 
     mRaycastManager.resetPoints();
 
@@ -246,15 +253,14 @@ void Scene::simulate() {
 }
 
 // Render the scene
-void Scene::render() {
+void RaycastScene::render() {
 
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
     // Get the world-space to camera-space matrix
-    const Camera& camera = mViewer->getCamera();
-    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Bind the shader
     mPhongShader.bind();
@@ -263,7 +269,7 @@ void Scene::render() {
     mPhongShader.setVector4Uniform("vertexColor", grey);
 
     // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
+    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     const Color& diffColLight0 = mLight0.getDiffuseColor();

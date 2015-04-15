@@ -23,14 +23,15 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef RAYCAST_SCENE_H
+#define RAYCAST_SCENE_H
 
 // Libraries
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "Scene.h"
 #include "Sphere.h"
 #include "Box.h"
 #include "Cone.h"
@@ -41,6 +42,8 @@
 #include "Dumbbell.h"
 #include "VisualContactPoint.h"
 #include "../common/Viewer.h"
+
+namespace raycastscene {
 
 // Constants
 const openglframework::Vector3 BOX_SIZE(4, 2, 1);
@@ -122,15 +125,12 @@ class RaycastManager : public rp3d::RaycastCallback {
         }
 };
 
-// Class Scene
-class Scene {
+// Class RaycastScene
+class RaycastScene : public Scene {
 
     private :
 
         // -------------------- Attributes -------------------- //
-
-        /// Pointer to the viewer
-        Viewer* mViewer;
 
         /// Raycast manager
         RaycastManager mRaycastManager;
@@ -172,17 +172,19 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(Viewer* viewer, const std::string& shaderFolderPath,
-                              const std::string& meshFolderPath);
+        RaycastScene(const std::string& name);
 
         /// Destructor
-        ~Scene();
+        virtual ~RaycastScene();
 
         /// Take a step for the simulation
-        void simulate();
+        virtual void update();
 
         /// Render the scene
-        void render();
+        virtual void render();
+
+        /// Reset the scene
+        virtual void reset();
 
         /// Change the body to raycast
         void changeBody();
@@ -192,9 +194,10 @@ class Scene {
 };
 
 // Display or not the surface normals at hit points
-inline void Scene::showHideNormals() {
+inline void RaycastScene::showHideNormals() {
     mAreNormalsDisplayed = !mAreNormalsDisplayed;
 }
 
+}
 
 #endif

@@ -24,16 +24,17 @@
 ********************************************************************************/
 
 // Libraries
-#include "Scene.h"
+#include "CollisionShapesScene.h"
 
 // Namespaces
 using namespace openglframework;
+using namespace collisionshapesscene;
 
 // Constructor
-Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::string& meshFolderPath)
-       : mViewer(viewer), mLight0(0),
-         mPhongShader(shaderFolderPath + "phong.vert",
-                      shaderFolderPath +"phong.frag"), mIsRunning(false) {
+CollisionShapesScene::CollisionShapesScene(const std::string& name)
+       : Scene(name), mLight0(0), mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
+
+    std::string meshFolderPath("meshes/");
 
     // Move the light 0
     mLight0.translateWorld(Vector3(50, 50, 50));
@@ -43,7 +44,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    mViewer->setScenePosition(center, radiusScene);
+    setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, -9.81, 0);
@@ -217,14 +218,11 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath, const std::str
     material.setBounciness(rp3d::decimal(0.2));
 
     // Start the simulation
-    startSimulation();
+    mDynamicsWorld->start();
 }
 
 // Destructor
-Scene::~Scene() {
-
-    // Stop the physics simulation
-    stopSimulation();
+CollisionShapesScene::~CollisionShapesScene() {
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -312,85 +310,81 @@ Scene::~Scene() {
 }
 
 // Take a step for the simulation
-void Scene::simulate() {
+void CollisionShapesScene::update() {
 
-    // If the physics simulation is running
-    if (mIsRunning) {
 
-        // Take a simulation step
-        mDynamicsWorld->update();
+    // Take a simulation step
+    mDynamicsWorld->update();
 
-        // Update the position and orientation of the boxes
-        for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+    // Update the position and orientation of the boxes
+    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the sphere
-        for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the cones
-        for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the cylinders
-        for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the capsules
-        for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the convex meshes
-        for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
-             it != mConvexMeshes.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        // Update the position and orientation of the dumbbells
-        for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
-             it != mDumbbells.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        mFloor->updateTransform();
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
     }
+
+    // Update the position and orientation of the sphere
+    for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    // Update the position and orientation of the cones
+    for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    // Update the position and orientation of the cylinders
+    for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    // Update the position and orientation of the capsules
+    for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    // Update the position and orientation of the convex meshes
+    for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
+         it != mConvexMeshes.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    // Update the position and orientation of the dumbbells
+    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
+         it != mDumbbells.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    mFloor->updateTransform();
 }
 
 // Render the scene
-void Scene::render() {
+void CollisionShapesScene::render() {
 
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
     // Get the world-space to camera-space matrix
-    const Camera& camera = mViewer->getCamera();
-    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Bind the shader
     mPhongShader.bind();
 
     // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
+    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     const Color& diffColLight0 = mLight0.getDiffuseColor();
@@ -441,4 +435,9 @@ void Scene::render() {
 
     // Unbind the shader
     mPhongShader.unbind();
+}
+
+/// Reset the scene
+void CollisionShapesScene::reset() {
+
 }

@@ -16,23 +16,59 @@ ADD_SUBDIRECTORY(glfw/)
 # Copy the shaders used for the demo into the build directory
 FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 
-# Headers
-MESSAGE("Test" "${OPENGLFRAMEWORK_DIR}")
-INCLUDE_DIRECTORIES("opengl-framework/src/" "glfw/include/" "common/")
+# Copy the meshes used for the demo into the build directory
+FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
-# Source files
+# Headers
+INCLUDE_DIRECTORIES("src" "opengl-framework/src/" "glfw/include/" "common/" "scenes/")
+
+# Testbed source files
 SET(TESTBED_SOURCES
-    Main.cpp
-    TestbedApplication.h
-    TestbedApplication.cpp
-    Gui.h
-    Gui.cpp
-    Scene.h
-    Scene.cpp
+    src/Main.cpp
+    src/TestbedApplication.h
+    src/TestbedApplication.cpp
+    src/Gui.h
+    src/Gui.cpp
+    src/Scene.h
+    src/Scene.cpp
+)
+
+# Common source files
+SET(COMMON_SOURCES
+    common/Box.h
+    common/Box.cpp
+    common/Cone.h
+    common/Cone.cpp
+    common/Sphere.h
+    common/Sphere.cpp
+    common/Line.h
+    common/Line.cpp
+    common/Capsule.h
+    common/Capsule.cpp
+    common/ConvexMesh.h
+    common/ConvexMesh.cpp
+    common/Cylinder.h
+    common/Cylinder.cpp
+    common/Dumbbell.h
+    common/Dumbbell.cpp
+    common/VisualContactPoint.h
+    common/VisualContactPoint.cpp
+)
+
+# Examples scenes source files
+SET(SCENES_SOURCES
+    scenes/cubes/CubesScene.h
+    scenes/cubes/CubesScene.cpp
+    scenes/joints/JointsScene.h
+    scenes/joints/JointsScene.cpp
+    scenes/raycast/RaycastScene.h
+    scenes/raycast/RaycastScene.cpp
+    scenes/collisionshapes/CollisionShapesScene.h
+    scenes/collisionshapes/CollisionShapesScene.cpp
 )
 
 # Create the executable
-ADD_EXECUTABLE(testbed ${TESTBED_SOURCES})
+ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES})
 
 # Link with libraries
 TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

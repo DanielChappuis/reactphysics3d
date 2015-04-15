@@ -29,8 +29,16 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include "cubes/CubesScene.h"
+#include "joints/JointsScene.h"
+#include "collisionshapes/CollisionShapesScene.h"
+#include "raycast/RaycastScene.h"
 
 using namespace openglframework;
+using namespace jointsscene;
+using namespace cubesscene;
+using namespace raycastscene;
+using namespace collisionshapesscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
@@ -53,6 +61,9 @@ TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(
 TestbedApplication::~TestbedApplication() {
 
     // TODO : Check that this method is called at the end
+
+    // Destroy all the scenes
+    destroyScenes();
 
     // Destroy the window
     glfwDestroyWindow(mWindow);
@@ -110,6 +121,42 @@ void TestbedApplication::init() {
 
     // Define the background color (black)
     glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    // Create all the scenes
+    createScenes();
+}
+
+// Create all the scenes
+void TestbedApplication::createScenes() {
+
+    // Cubes scene
+    CubesScene* cubeScene = new CubesScene("Cubes");
+    mScenes.push_back(cubeScene);
+
+    // Joints scene
+    JointsScene* jointsScene = new JointsScene("Joints");
+    mScenes.push_back(jointsScene);
+
+    // Collision shapes scene
+    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");
+    mScenes.push_back(collisionShapesScene);
+
+    // Raycast scene
+    RaycastScene* raycastScene = new RaycastScene("Raycast");
+    mScenes.push_back(raycastScene);
+
+    assert(mScenes.size() > 0);
+    mCurrentScene = mScenes[0];
+}
+
+// Remove all the scenes
+void TestbedApplication::destroyScenes() {
+
+    for (int i=0; i<mScenes.size(); i++) {
+        delete mScenes[i];
+    }
+
+    mCurrentScene = NULL;
 }
 
 void TestbedApplication::update() {
@@ -141,10 +188,16 @@ void TestbedApplication::reshape() {
     int width, height;
     glfwGetFramebufferSize(mWindow, &width, &height);
 
-    // Resize the camera viewport of the current scene
+    // Resize the camera viewport
     mCurrentScene->reshape(width, height);
 
+    // Resize the OpenGL viewport
     glViewport(0, 0, width, height);
+
+    // Update the window size of the scene
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+    mCurrentScene->setWindowDimension(windowWidth, windowHeight);
 }
 
 // Start the main loop where rendering occur
@@ -158,6 +211,9 @@ void TestbedApplication::startMainLoop() {
 
         // Call the update function
         update();
+
+        // Render the application
+        render();
 
         // Swap front and back buffers
         glfwSwapBuffers(mWindow);
@@ -249,15 +305,27 @@ void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
 
 // Callback method to receive scrolling events
 void TestbedApplication::scroll(GLFWwindow* window, double xAxis, double yAxis) {
-    getInstance().mCurrentScene->scrollingEvent(xAxis, yAxis);
+    getInstance().mCurrentScene->scrollingEvent(xAxis, yAxis, SCROLL_SENSITIVITY);
 }
 
 // Called when a mouse button event occurs
 void TestbedApplication::mouseButton(GLFWwindow* window, int button, int action, int mods) {
-    getInstance().mCurrentScene->mouseButtonEvent(button, action, mods);
+
+    // Get the mouse cursor position
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+
+    getInstance().mCurrentScene->mouseButtonEvent(button, action, mods, x, y);
 }
 
 // Called when a mouse motion event occurs
 void TestbedApplication::mouseMotion(GLFWwindow* window, double x, double y) {
-    getInstance().mCurrentScene->mouseMotionEvent(x, y);
+
+    int leftButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    int rightButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+    int middleButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+    int altKeyState = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
+
+    getInstance().mCurrentScene->mouseMotionEvent(x, y, leftButtonState, rightButtonState,
+                                                  middleButtonState, altKeyState);
 }

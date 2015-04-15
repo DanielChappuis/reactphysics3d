@@ -26,6 +26,16 @@
 // Libraries
 #include "Gui.h"
 
+// Constructor
+Gui::Gui() {
+
+}
+
+// Destructor
+Gui::~Gui() {
+
+}
+
 // Display the GUI
 void Gui::display() {
 

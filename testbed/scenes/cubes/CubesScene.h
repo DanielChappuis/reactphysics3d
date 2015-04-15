@@ -23,56 +23,32 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef SCENE_H
-#define SCENE_H
+#ifndef CUBES_SCENE_H
+#define CUBES_SCENE_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
-#include "Capsule.h"
-#include "ConvexMesh.h"
-#include "Dumbbell.h"
-#include "VisualContactPoint.h"
-#include "../common/Viewer.h"
+#include "Scene.h"
+
+namespace cubesscene {
 
 // Constants
-const int NB_BOXES = 2;
-const int NB_CUBES = 1;
-const int NB_CONES = 3;
-const int NB_CYLINDERS = 2;
-const int NB_CAPSULES = 1;
-const int NB_MESHES = 2;
-const int NB_COMPOUND_SHAPES = 2;
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);
-const float SPHERE_RADIUS = 1.5f;
-const float CONE_RADIUS = 2.0f;
-const float CONE_HEIGHT = 3.0f;
-const float CYLINDER_RADIUS = 1.0f;
-const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 1.0f;
-const float CAPSULE_HEIGHT = 1.0f;
-const float DUMBBELL_HEIGHT = 1.0f;
-const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);        // Floor dimensions in meters
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+const int NB_CUBES = 200;                                  // Number of boxes in the scene
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
+const float BOX_MASS = 1.0f;                               // Box mass in kilograms
+const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
 
-// Class Scene
-class Scene {
+// Class CubesScene
+class CubesScene : public Scene {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the viewer
-        Viewer* mViewer;
+        int counter;
 
         /// Light 0
         openglframework::Light mLight0;
@@ -80,22 +56,8 @@ class Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
-        /// All the spheres of the scene
+        /// All the boxes of the scene
         std::vector<Box*> mBoxes;
-
-        std::vector<Sphere*> mSpheres;
-
-        std::vector<Cone*> mCones;
-
-        std::vector<Cylinder*> mCylinders;
-
-        std::vector<Capsule*> mCapsules;
-
-        /// All the convex meshes of the scene
-        std::vector<ConvexMesh*> mConvexMeshes;
-
-        /// All the dumbbell of the scene
-        std::vector<Dumbbell*> mDumbbells;
 
         /// Box for the floor
         Box* mFloor;
@@ -103,56 +65,26 @@ class Scene {
         /// Dynamics world used for the physics simulation
         rp3d::DynamicsWorld* mDynamicsWorld;
 
-        /// True if the physics simulation is running
-        bool mIsRunning;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(Viewer* viewer, const std::string& shaderFolderPath,
-                              const std::string& meshFolderPath);
+        CubesScene(const std::string& name);
 
         /// Destructor
-        ~Scene();
+        virtual ~CubesScene();
 
-        /// Take a step for the simulation
-        void simulate();
-
-        /// Stop the simulation
-        void stopSimulation();
-
-        /// Start the simulation
-        void startSimulation();
-
-        /// Pause or continue simulation
-        void pauseContinueSimulation();
+        /// Update the scene (take a simulation step)
+        virtual void update();
 
         /// Render the scene
-        void render();
+        virtual void render();
+
+        /// Reset the scene
+        virtual void reset();
 };
 
-// Stop the simulation
-inline void Scene::stopSimulation() {
-    mDynamicsWorld->stop();
-    mIsRunning = false;
-}
-
-// Start the simulation
-inline void Scene::startSimulation() {
-    mDynamicsWorld->start();
-    mIsRunning = true;
-}
-
-// Pause or continue simulation
-inline void Scene::pauseContinueSimulation() {
-    if (mIsRunning) {
-        stopSimulation();
-    }
-    else {
-        startSimulation();
-    }
 }
 
 #endif

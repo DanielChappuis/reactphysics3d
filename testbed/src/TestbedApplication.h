@@ -121,6 +121,12 @@ class TestbedApplication {
         /// Called when a mouse motion event occurs
         static void mouseMotion(GLFWwindow* window, double x, double y);
 
+        /// Initialize all the scenes
+        void createScenes();
+
+        /// Remove all the scenes
+        void destroyScenes() ;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -131,7 +137,7 @@ class TestbedApplication {
         /// Destructor
         ~TestbedApplication();
 
-        /// Initialize the viewer
+        /// Initialize the application
         void init();
 
         /// Start the main loop where rendering occur

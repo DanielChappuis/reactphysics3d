@@ -24,17 +24,17 @@
 ********************************************************************************/
 
 // Libraries
-#include "Scene.h"
+#include "JointsScene.h"
 #include <cmath>
 
 // Namespaces
 using namespace openglframework;
+using namespace jointsscene;
 
 // Constructor
-Scene::Scene(Viewer *viewer, const std::string& shaderFolderPath)
-      : mViewer(viewer), mLight0(0), mPhongShader(shaderFolderPath + "phong.vert",
-                                                  shaderFolderPath + "phong.frag"),
-        mIsRunning(false) {
+JointsScene::JointsScene(const std::string& name)
+      : Scene(name), mLight0(0), mPhongShader("shaders/phong.vert",
+                                              "shaders/phong.frag") {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
@@ -44,7 +44,7 @@ Scene::Scene(Viewer *viewer, const std::string& shaderFolderPath)
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    mViewer->setScenePosition(center, radiusScene);
+    setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
@@ -74,14 +74,14 @@ Scene::Scene(Viewer *viewer, const std::string& shaderFolderPath)
     createFloor();
 
     // Start the simulation
-    startSimulation();
+    mDynamicsWorld->start();
 }
 
 // Destructor
-Scene::~Scene() {
+JointsScene::~JointsScene() {
 
     // Stop the physics simulation
-    stopSimulation();
+    mDynamicsWorld->stop();
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -123,50 +123,45 @@ Scene::~Scene() {
 }
 
 // Take a step for the simulation
-void Scene::simulate() {
+void JointsScene::update() {
 
-    // If the physics simulation is running
-    if (mIsRunning) {
+    // Update the motor speed of the Slider Joint (to move up and down)
+    long double motorSpeed = 2 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
+    mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
 
-        // Update the motor speed of the Slider Joint (to move up and down)
-        long double motorSpeed = 2 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
-        mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
+    // Take a simulation step
+    mDynamicsWorld->update();
 
-        // Take a simulation step
-        mDynamicsWorld->update();
-
-        // Update the position and orientation of the boxes
-        mSliderJointBottomBox->updateTransform();
-        mSliderJointTopBox->updateTransform();
-        mPropellerBox->updateTransform();
-        mFixedJointBox1->updateTransform();
-        mFixedJointBox2->updateTransform();
-        for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-            mBallAndSocketJointChainBoxes[i]->updateTransform();
-        }
-
-        // Update the position and orientation of the floor
-        mFloor->updateTransform();
+    // Update the position and orientation of the boxes
+    mSliderJointBottomBox->updateTransform();
+    mSliderJointTopBox->updateTransform();
+    mPropellerBox->updateTransform();
+    mFixedJointBox1->updateTransform();
+    mFixedJointBox2->updateTransform();
+    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
+        mBallAndSocketJointChainBoxes[i]->updateTransform();
     }
+
+    // Update the position and orientation of the floor
+    mFloor->updateTransform();
 }
 
 // Render the scene
-void Scene::render() {
+void JointsScene::render() {
 
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
     // Get the world-space to camera-space matrix
-    const Camera& camera = mViewer->getCamera();
-    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Bind the shader
     mPhongShader.bind();
 
     // Set the variables of the shader
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
+    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     const Color& diffCol = mLight0.getDiffuseColor();
     const Color& specCol = mLight0.getSpecularColor();
@@ -191,8 +186,13 @@ void Scene::render() {
     mPhongShader.unbind();
 }
 
+// Reset the scene
+void JointsScene::reset() {
+
+}
+
 // Create the boxes and joints for the Ball-and-Socket joint example
-void Scene::createBallAndSocketJoints() {
+void JointsScene::createBallAndSocketJoints() {
 
     // --------------- Create the boxes --------------- //
 
@@ -240,7 +240,7 @@ void Scene::createBallAndSocketJoints() {
 }
 
 /// Create the boxes and joint for the Slider joint example
-void Scene::createSliderJoint() {
+void JointsScene::createSliderJoint() {
 
     // --------------- Create the first box --------------- //
 
@@ -292,7 +292,7 @@ void Scene::createSliderJoint() {
 }
 
 /// Create the boxes and joint for the Hinge joint example
-void Scene::createPropellerHingeJoint() {
+void JointsScene::createPropellerHingeJoint() {
 
     // --------------- Create the propeller box --------------- //
 
@@ -327,7 +327,7 @@ void Scene::createPropellerHingeJoint() {
 }
 
 /// Create the boxes and joints for the fixed joints
-void Scene::createFixedJoints() {
+void JointsScene::createFixedJoints() {
 
     // --------------- Create the first box --------------- //
 
@@ -379,7 +379,7 @@ void Scene::createFixedJoints() {
 }
 
 // Create the floor
-void Scene::createFloor() {
+void JointsScene::createFloor() {
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);

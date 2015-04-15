@@ -49,6 +49,9 @@ class Scene {
         /// Last mouse coordinates on the windows
         double mLastMouseX, mLastMouseY;
 
+        /// Window dimension
+        int mWindowWidth, mWindowHeight;
+
         /// Last point computed on a sphere (for camera rotation)
         openglframework::Vector3 mLastPointOnSphere;
 
@@ -87,9 +90,6 @@ class Scene {
         /// Destructor
         virtual ~Scene();
 
-        /// Initialize the scene
-        virtual void init()=0;
-
         /// Reshape the view
         virtual void reshape(int width, int height);
 
@@ -106,13 +106,18 @@ class Scene {
         virtual void keyboardEvent(int key, int scancode, int action, int mods);
 
         /// Called when a mouse button event occurs
-        virtual void mouseButtonEvent(int button, int action, int mods);
+        virtual void mouseButtonEvent(int button, int action, int mods,
+                                      double mousePosX, double mousePosY);
 
         /// Called when a mouse motion event occurs
-        virtual void mouseMotionEvent(double xMouse, double yMouse);
+        virtual void mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
+                                      int rightButtonState, int middleButtonState, int altKeyState);
 
         /// Called when a scrolling event occurs
-        virtual void scrollingEvent(float xAxis, float yAxis);
+        virtual void scrollingEvent(float xAxis, float yAxis, float scrollSensitivy);
+
+        /// Set the window dimension
+        void setWindowDimension(int width, int height);
 
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
@@ -131,6 +136,12 @@ inline void Scene::reshape(int width, int height) {
 // Return a reference to the camera
 inline const openglframework::Camera& Scene::getCamera() const  {
     return mCamera;
+}
+
+// Set the window dimension
+inline void Scene::setWindowDimension(int width, int height) {
+    mWindowWidth = width;
+    mWindowHeight = height;
 }
 
 

@@ -24,16 +24,16 @@
 ********************************************************************************/
 
 // Libraries
-#include "Scene.h"
+#include "CubesScene.h"
 
 // Namespaces
 using namespace openglframework;
+using namespace cubesscene;
 
 // Constructor
-Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
-      : mViewer(viewer), mLight0(0),
-        mPhongShader(shaderFolderPath + "phong.vert", shaderFolderPath + "phong.frag"),
-        mIsRunning(false) {
+CubesScene::CubesScene(const std::string& name)
+      : Scene(name), mLight0(0),
+        mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
@@ -43,7 +43,7 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    mViewer->setScenePosition(center, radiusScene);
+    setScenePosition(center, radiusScene);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-5.81), 0);
@@ -91,16 +91,15 @@ Scene::Scene(Viewer* viewer, const std::string& shaderFolderPath)
     material.setBounciness(rp3d::decimal(0.3));
 
     // Start the simulation
-    startSimulation();
+    mDynamicsWorld->start();
 
     counter=0;
 }
 
 // Destructor
-Scene::~Scene() {
+CubesScene::~CubesScene() {
 
-    // Stop the physics simulation
-    stopSimulation();
+    mDynamicsWorld->stop();
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -126,56 +125,51 @@ Scene::~Scene() {
 }
 
 // Take a step for the simulation
-void Scene::simulate() {
+void CubesScene::update() {
 
-    // If the physics simulation is running
-    if (mIsRunning) {
+    counter++;
+    if (counter == 400) {
+        //mIsRunning = false;
+    }
 
-        counter++;
-        if (counter == 400) {
-            //mIsRunning = false;
+    // Take a simulation step
+    mDynamicsWorld->update();
+
+    // Update the position and orientation of the boxes
+    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+
+        // Update the transform used for the rendering
+        (*it)->updateTransform();
+    }
+
+    mFloor->updateTransform();
+
+    // Set the color of the awake/sleeping bodies
+    for (uint i=0; i<mBoxes.size(); i++) {
+        if (mBoxes[i]->getRigidBody()->isSleeping()) {
+            mBoxes[i]->setColor(Color(1, 0, 0, 1));
         }
-
-        // Take a simulation step
-        mDynamicsWorld->update();
-
-        // Update the position and orientation of the boxes
-        for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-
-            // Update the transform used for the rendering
-            (*it)->updateTransform();
-        }
-
-        mFloor->updateTransform();
-
-        // Set the color of the awake/sleeping bodies
-        for (uint i=0; i<mBoxes.size(); i++) {
-            if (mBoxes[i]->getRigidBody()->isSleeping()) {
-                mBoxes[i]->setColor(Color(1, 0, 0, 1));
-            }
-            else {
-                mBoxes[i]->setColor(Color(0, 1, 0, 1));
-            }
+        else {
+            mBoxes[i]->setColor(Color(0, 1, 0, 1));
         }
     }
 }
 
 // Render the scene
-void Scene::render() {
+void CubesScene::render() {
 
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
     // Get the world-space to camera-space matrix
-    const Camera& camera = mViewer->getCamera();
-    const openglframework::Matrix4 worldToCameraMatrix = camera.getTransformMatrix().getInverse();
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Bind the shader
     mPhongShader.bind();
 
     // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", camera.getProjectionMatrix());
+    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     const Color& diffCol = mLight0.getDiffuseColor();
@@ -194,4 +188,9 @@ void Scene::render() {
 
     // Unbind the shader
     mPhongShader.unbind();
+}
+
+// Reset the scene
+void CubesScene::reset() {
+
 }
