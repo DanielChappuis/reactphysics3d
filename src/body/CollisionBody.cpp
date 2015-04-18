@@ -41,8 +41,6 @@ CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, 
               : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(NULL),
                 mNbCollisionShapes(0), mContactManifoldsList(NULL), mWorld(world) {
 
-    mInterpolationFactor = 0.0;
-
     // Initialize the old transform
     mOldTransform = transform;
 }

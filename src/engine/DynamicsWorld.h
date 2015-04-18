@@ -32,7 +32,6 @@
 #include "ContactSolver.h"
 #include "ConstraintSolver.h"
 #include "body/RigidBody.h"
-#include "Timer.h"
 #include "Island.h"
 #include "configuration.h"
 
@@ -50,9 +49,6 @@ class DynamicsWorld : public CollisionWorld {
     protected :
 
         // -------------------- Attributes -------------------- //
-
-        /// Timer of the physics engine
-        Timer mTimer;
 
         /// Contact solver
         ContactSolver mContactSolver;
@@ -77,6 +73,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Gravity vector of the world
         Vector3 mGravity;
+
+        /// Current frame time step (in seconds)
+        decimal mTimeStep;
 
         /// True if the gravity force is on
         bool mIsGravityEnabled;
@@ -182,7 +181,7 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity, decimal timeStep);
+        DynamicsWorld(const Vector3& mGravity);
 
         /// Destructor
         virtual ~DynamicsWorld();
@@ -194,7 +193,7 @@ class DynamicsWorld : public CollisionWorld {
         void stop();
 
         /// Update the physics simulation
-        void update();
+        void update(decimal timeStep);
 
         /// Set the number of iterations for the velocity constraint solver
         void setNbIterationsVelocitySolver(uint nbIterations);
@@ -312,16 +311,7 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
         (*it)->mExternalForce.setToZero();
         (*it)->mExternalTorque.setToZero();
     }
-}
-
-// Start the physics simulation
-inline void DynamicsWorld::start() {
-    mTimer.start();
-}
-
-inline void DynamicsWorld::stop() {
-    mTimer.stop();
-}                
+}             
 
 // Set the number of iterations for the velocity constraint solver
 /**
@@ -432,14 +422,6 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator
  */
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator() {
     return mRigidBodies.end();
-}
-
-// Return the current physics time (in seconds)
-/**
- * @return The current physics time (in seconds)
- */
-inline long double DynamicsWorld::getPhysicsTime() const {
-    return mTimer.getPhysicsTime();
 }
 
 // Return true if the sleeping technique is enabled
