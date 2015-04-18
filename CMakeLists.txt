@@ -117,8 +117,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/OverlappingPair.cpp"
     "src/engine/Profiler.h"
     "src/engine/Profiler.cpp"
-    "src/engine/Timer.h"
-    "src/engine/Timer.cpp"
     "src/mathematics/mathematics.h"
     "src/mathematics/mathematics_functions.h"
     "src/mathematics/Matrix2x2.h"

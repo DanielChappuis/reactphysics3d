@@ -224,12 +224,12 @@ inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
 
     // If the entry for vertex v1 does not exist in the adjacency list
     if (mEdgesAdjacencyList.count(v1) == 0) {
-        mEdgesAdjacencyList.insert(std::make_pair<uint, std::set<uint> >(v1, std::set<uint>()));
+        mEdgesAdjacencyList.insert(std::make_pair(v1, std::set<uint>()));
     }
 
     // If the entry for vertex v2 does not exist in the adjacency list
     if (mEdgesAdjacencyList.count(v2) == 0) {
-        mEdgesAdjacencyList.insert(std::make_pair<uint, std::set<uint> >(v2, std::set<uint>()));
+        mEdgesAdjacencyList.insert(std::make_pair(v2, std::set<uint>()));
     }
 
     // Add the edge in the adjacency list

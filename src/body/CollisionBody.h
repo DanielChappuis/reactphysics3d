@@ -76,9 +76,6 @@ class CollisionBody : public Body {
         /// Last position and orientation of the body
         Transform mOldTransform;
 
-        /// Interpolation factor used for the state interpolation
-        decimal mInterpolationFactor;
-
         /// First element of the linked list of proxy collision shapes of this body
         ProxyShape* mProxyCollisionShapes;
 
@@ -118,9 +115,6 @@ class CollisionBody : public Body {
         /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
         int resetIsAlreadyInIslandAndCountManifolds();
 
-        /// Set the interpolation factor of the body
-        void setInterpolationFactor(decimal factor);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -152,9 +146,6 @@ class CollisionBody : public Body {
 
         /// Remove a collision shape from the body
         virtual void removeCollisionShape(const ProxyShape* proxyShape);
-
-        /// Return the interpolated transform for rendering
-        Transform getInterpolatedTransform() const;
 
         /// Return the first element of the linked list of contact manifolds involving this body
         const ContactManifoldListElement* getContactManifoldsList() const;
@@ -225,20 +216,6 @@ inline void CollisionBody::setType(BodyType type) {
         // Update the broad-phase state of the body
         updateBroadPhaseState();
     }
-}
-
-// Return the interpolated transform for rendering
-/**
- * @return The current interpolated transformation (between previous and current frame)
- */
-inline Transform CollisionBody::getInterpolatedTransform() const {
-    return Transform::interpolateTransforms(mOldTransform, mTransform, mInterpolationFactor);
-}
-
-// Set the interpolation factor of the body
-inline void CollisionBody::setInterpolationFactor(decimal factor) {
-    // Set the factor
-    mInterpolationFactor = factor;
 }
 
 // Return the current position and orientation

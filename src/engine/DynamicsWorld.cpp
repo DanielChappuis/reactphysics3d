@@ -37,10 +37,9 @@ using namespace std;
 // Constructor
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
- * @param timeStep Time step for an internal physics tick (in seconds)
  */
-DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), mTimer(timeStep),
+DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
+              : CollisionWorld(),
                 mContactSolver(mMapBodyToConstrainedVelocityIndex),
                 mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
@@ -95,7 +94,10 @@ DynamicsWorld::~DynamicsWorld() {
 }
 
 // Update the physics simulation
-void DynamicsWorld::update() {
+/**
+ * @param timeStep The amount of time to step the simulation by (in seconds)
+ */
+void DynamicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
@@ -104,49 +106,39 @@ void DynamicsWorld::update() {
 
     PROFILE("DynamicsWorld::update()");
 
-    assert(mTimer.getIsRunning());
-    
-    // Compute the time since the last update() call and update the timer
-    mTimer.update();
+    mTimeStep = timeStep;
 
-    // While the time accumulator is not empty
-    while(mTimer.isPossibleToTakeStep()) {
+    // Notify the event listener about the beginning of an internal tick
+    if (mEventListener != NULL) mEventListener->beginInternalTick();
 
-        // Notify the event listener about the beginning of an internal tick
-        if (mEventListener != NULL) mEventListener->beginInternalTick();
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
 
-        // Reset all the contact manifolds lists of each body
-        resetContactManifoldListsOfBodies();
-		
-        // Compute the collision detection
-        mCollisionDetection.computeCollisionDetection();
+    // Compute the collision detection
+    mCollisionDetection.computeCollisionDetection();
 
-        // Compute the islands (separate groups of bodies with constraints between each others)
-        computeIslands();
+    // Compute the islands (separate groups of bodies with constraints between each others)
+    computeIslands();
 
-        // Integrate the velocities
-        integrateRigidBodiesVelocities();
+    // Integrate the velocities
+    integrateRigidBodiesVelocities();
 
-        // Update the timer
-        mTimer.nextStep();
+    // Solve the contacts and constraints
+    solveContactsAndConstraints();
 
-        // Solve the contacts and constraints
-        solveContactsAndConstraints();
+    // Integrate the position and orientation of each body
+    integrateRigidBodiesPositions();
 
-        // Integrate the position and orientation of each body
-        integrateRigidBodiesPositions();
+    // Solve the position correction for constraints
+    solvePositionCorrection();
 
-        // Solve the position correction for constraints
-        solvePositionCorrection();
+    // Update the state (positions and velocities) of the bodies
+    updateBodiesState();
 
-        // Update the state (positions and velocities) of the bodies
-        updateBodiesState();
+    if (mIsSleepingEnabled) updateSleepingBodies();
 
-        if (mIsSleepingEnabled) updateSleepingBodies();
-
-        // Notify the event listener about the end of an internal tick
-        if (mEventListener != NULL) mEventListener->endInternalTick();
-    }
+    // Notify the event listener about the end of an internal tick
+    if (mEventListener != NULL) mEventListener->endInternalTick();
 
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
@@ -161,8 +153,6 @@ void DynamicsWorld::update() {
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
     PROFILE("DynamicsWorld::integrateRigidBodiesPositions()");
-
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -190,10 +180,10 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
 
             // Update the new constrained position and orientation of the body
-            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * dt;
+            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * mTimeStep;
             mConstrainedOrientations[indexArray] = currentOrientation +
                                                    Quaternion(0, newAngVelocity) *
-                                                   currentOrientation * decimal(0.5) * dt;
+                                                   currentOrientation * decimal(0.5) * mTimeStep;
         }
     }
 }
@@ -229,23 +219,6 @@ void DynamicsWorld::updateBodiesState() {
             // Update the broad-phase state of the body
             bodies[b]->updateBroadPhaseState();
         }
-    }
-}
-
-// Compute and set the interpolation factor to all bodies
-void DynamicsWorld::setInterpolationFactorToAllBodies() {
-
-    PROFILE("DynamicsWorld::setInterpolationFactorToAllBodies()");
-    
-    // Compute the interpolation factor
-    decimal factor = mTimer.computeInterpolationFactor();
-    assert(factor >= 0.0 && factor <= 1.0);
-
-    // Set the factor to all bodies
-    set<RigidBody*>::iterator it;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-
-        (*it)->setInterpolationFactor(factor);
     }
 }
 
@@ -288,8 +261,7 @@ void DynamicsWorld::initVelocityArrays() {
     for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         // Add the body into the map
-        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*,
-                                                  uint>(*it, indexBody));
+        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair(*it, indexBody));
         indexBody++;
     }
 }
@@ -305,8 +277,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     // Initialize the bodies velocity arrays
     initVelocityArrays();
-
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -324,16 +294,16 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
             // Integrate the external force to get the new velocity of the body
             mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
-                                        dt * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
+                                        mTimeStep * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
             mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
-                                        dt * bodies[b]->getInertiaTensorInverseWorld() *
+                                        mTimeStep * bodies[b]->getInertiaTensorInverseWorld() *
                                         bodies[b]->mExternalTorque;
 
             // If the gravity has to be applied to this rigid body
             if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
 
                 // Integrate the gravity force
-                mConstrainedLinearVelocities[indexBody] += dt * bodies[b]->mMassInverse *
+                mConstrainedLinearVelocities[indexBody] += mTimeStep * bodies[b]->mMassInverse *
                         bodies[b]->getMass() * mGravity;
             }
 
@@ -352,9 +322,9 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             //                 => v2 = v1 * (1 - c * dt)
             decimal linDampingFactor = bodies[b]->getLinearDamping();
             decimal angDampingFactor = bodies[b]->getAngularDamping();
-            decimal linearDamping = clamp(decimal(1.0) - dt * linDampingFactor,
+            decimal linearDamping = clamp(decimal(1.0) - mTimeStep * linDampingFactor,
                                           decimal(0.0), decimal(1.0));
-            decimal angularDamping = clamp(decimal(1.0) - dt * angDampingFactor,
+            decimal angularDamping = clamp(decimal(1.0) - mTimeStep * angDampingFactor,
                                            decimal(0.0), decimal(1.0));
             mConstrainedLinearVelocities[indexBody] *= clamp(linearDamping, decimal(0.0),
                                                              decimal(1.0));
@@ -373,9 +343,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 void DynamicsWorld::solveContactsAndConstraints() {
 
     PROFILE("DynamicsWorld::solveContactsAndConstraints()");
-
-    // Get the current time step
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
@@ -400,7 +367,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
         if (isContactsToSolve) {
 
             // Initialize the solver
-            mContactSolver.initializeForIsland(dt, mIslands[islandIndex]);
+            mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
 
             // Warm start the contact solver
             mContactSolver.warmStart();
@@ -410,7 +377,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
         if (isConstraintsToSolve) {
 
             // Initialize the constraint solver
-            mConstraintSolver.initializeForIsland(dt, mIslands[islandIndex]);
+            mConstraintSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
         }
 
         // For each iteration of the velocity solver
@@ -812,7 +779,6 @@ void DynamicsWorld::updateSleepingBodies() {
 
     PROFILE("DynamicsWorld::updateSleepingBodies()");
 
-    const decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
 
@@ -840,7 +806,7 @@ void DynamicsWorld::updateSleepingBodies() {
             else {  // If the body velocity is bellow the sleeping velocity threshold
 
                 // Increase the sleep time
-                bodies[b]->mSleepTime += dt;
+                bodies[b]->mSleepTime += mTimeStep;
                 if (bodies[b]->mSleepTime < minSleepTime) {
                     minSleepTime = bodies[b]->mSleepTime;
                 }
