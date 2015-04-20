@@ -142,9 +142,6 @@ void DynamicsWorld::update(decimal timeStep) {
 
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
-
-    // Compute and set the interpolation factor to all the bodies
-    setInterpolationFactorToAllBodies();
 }
 
 // Integrate position and orientation of the rigid bodies.

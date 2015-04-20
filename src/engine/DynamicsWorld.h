@@ -186,12 +186,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Destructor
         virtual ~DynamicsWorld();
 
-        /// Start the physics simulation
-        void start();
-
-        /// Stop the physics simulation
-        void stop();
-
         /// Update the physics simulation
         void update(decimal timeStep);
 
@@ -237,9 +231,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Return the number of joints in the world
         uint getNbJoints() const;
-
-        /// Return the current physics time (in seconds)
-        long double getPhysicsTime() const;
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
