@@ -85,6 +85,8 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
+    mPreviousTransform = transform;
+
     // Create a rigid body in the dynamics world
     mRigidBody = world->createCollisionBody(transform);
 
@@ -205,14 +207,19 @@ void Box::render(openglframework::Shader& shader,
 }
 
 // Update the transform matrix of the box
-void Box::updateTransform() {
+void Box::updateTransform(float interpolationFactor) {
 
-    // Get the interpolated transform of the rigid body
-    rp3d::Transform transform = mRigidBody->getInterpolatedTransform();
+    // Get the transform of the rigid body
+    rp3d::Transform transform = mRigidBody->getTransform();
+
+    // Interpolate the transform between the previous one and the new one
+    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
+                                                                                  transform,
+                                                                                  interpolationFactor);
 
     // Compute the transform used for rendering the box
     rp3d::decimal matrix[16];
-    transform.getOpenGLMatrix(matrix);
+    interpolatedTransform.getOpenGLMatrix(matrix);
     openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
                                        matrix[1], matrix[5], matrix[9], matrix[13],
                                        matrix[2], matrix[6], matrix[10], matrix[14],

@@ -177,6 +177,10 @@ class RaycastScene : public Scene {
         /// Destructor
         virtual ~RaycastScene();
 
+        /// Update the physics world (take a simulation step)
+        /// Can be called several times per frame
+        virtual void updatePhysics();
+
         /// Take a step for the simulation
         virtual void update();
 

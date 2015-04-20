@@ -52,7 +52,7 @@ CubesScene::CubesScene(const std::string& name)
     rp3d::decimal timeStep = 1.0f / 60.0f;
 
     // Create the dynamics world for the physics simulation
-    mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
+    mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
@@ -89,17 +89,10 @@ CubesScene::CubesScene(const std::string& name)
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.3));
-
-    // Start the simulation
-    mDynamicsWorld->start();
-
-    counter=0;
 }
 
 // Destructor
 CubesScene::~CubesScene() {
-
-    mDynamicsWorld->stop();
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -124,25 +117,24 @@ CubesScene::~CubesScene() {
     delete mDynamicsWorld;
 }
 
-// Take a step for the simulation
-void CubesScene::update() {
-
-    counter++;
-    if (counter == 400) {
-        //mIsRunning = false;
-    }
+// Update the physics world (take a simulation step)
+void CubesScene::updatePhysics() {
 
     // Take a simulation step
-    mDynamicsWorld->update();
+    mDynamicsWorld->update(mEngineSettings.timeStep);
+}
+
+// Update the scene
+void CubesScene::update() {
 
     // Update the position and orientation of the boxes
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
-    mFloor->updateTransform();
+    mFloor->updateTransform(mInterpolationFactor);
 
     // Set the color of the awake/sleeping bodies
     for (uint i=0; i<mBoxes.size(); i++) {

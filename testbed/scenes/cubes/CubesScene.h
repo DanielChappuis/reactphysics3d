@@ -48,8 +48,6 @@ class CubesScene : public Scene {
 
         // -------------------- Attributes -------------------- //
 
-        int counter;
-
         /// Light 0
         openglframework::Light mLight0;
 
@@ -74,6 +72,10 @@ class CubesScene : public Scene {
 
         /// Destructor
         virtual ~CubesScene();
+
+        /// Update the physics world (take a simulation step)
+        /// Can be called several times per frame
+        virtual void updatePhysics();
 
         /// Update the scene (take a simulation step)
         virtual void update();

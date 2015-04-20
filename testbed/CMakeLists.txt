@@ -20,7 +20,7 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src" "opengl-framework/src/" "glfw/include/" "common/" "scenes/")
+INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/")
 
 # Testbed source files
 SET(TESTBED_SOURCES
@@ -31,6 +31,8 @@ SET(TESTBED_SOURCES
     src/Gui.cpp
     src/Scene.h
     src/Scene.cpp
+    src/Timer.h
+    src/Timer.cpp
 )
 
 # Common source files

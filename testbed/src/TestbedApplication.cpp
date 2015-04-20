@@ -124,6 +124,8 @@ void TestbedApplication::init() {
 
     // Create all the scenes
     createScenes();
+
+    mTimer.start();
 }
 
 // Create all the scenes
@@ -159,9 +161,40 @@ void TestbedApplication::destroyScenes() {
     mCurrentScene = NULL;
 }
 
+// Update the physics of the current scene
+void TestbedApplication::updatePhysics() {
+
+    // Set the engine settings
+    mEngineSettings.elapsedTime = mTimer.getPhysicsTime();
+    mCurrentScene->setEngineSettings(mEngineSettings);
+
+    if (mTimer.isRunning()) {
+
+        // Compute the time since the last update() call and update the timer
+        mTimer.update();
+
+        // While the time accumulator is not empty
+        while(mTimer.isPossibleToTakeStep()) {
+
+            // Take a physics simulation step
+            mCurrentScene->updatePhysics();
+
+            // Update the timer
+            mTimer.nextStep();
+        }
+    }
+}
+
 void TestbedApplication::update() {
 
-    // Physics simulation
+    // Compute the interpolation factor
+    float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
+    assert(factor >= 0.0f && factor <= 1.0f);
+
+    // Notify the scene about the interpolation factor
+    mCurrentScene->setInterpolationFactor(factor);
+
+    // Update the scene
     mCurrentScene->update();
 
     // Compute the current framerate

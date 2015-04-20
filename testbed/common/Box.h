@@ -56,6 +56,9 @@ class Box : public openglframework::Object3D {
         /// Rigid body used to simulate the dynamics of the box
         rp3d::CollisionBody* mRigidBody;
 
+        /// Previous transform of the body (for interpolation)
+        rp3d::Transform mPreviousTransform;
+
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
@@ -104,7 +107,7 @@ class Box : public openglframework::Object3D {
         reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the box
-        void updateTransform();
+        void updateTransform(float interpolationFactor);
 
         /// Render the cube at the correct position and with the correct orientation
         void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);

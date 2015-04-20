@@ -53,7 +53,7 @@ JointsScene::JointsScene(const std::string& name)
     rp3d::decimal timeStep = 1.0f / 60.0f;
 
     // Create the dynamics world for the physics simulation
-    mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
+    mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
@@ -72,16 +72,10 @@ JointsScene::JointsScene(const std::string& name)
 
     // Create the floor
     createFloor();
-
-    // Start the simulation
-    mDynamicsWorld->start();
 }
 
 // Destructor
 JointsScene::~JointsScene() {
-
-    // Stop the physics simulation
-    mDynamicsWorld->stop();
 
     // Destroy the shader
     mPhongShader.destroy();
@@ -122,28 +116,32 @@ JointsScene::~JointsScene() {
     delete mDynamicsWorld;
 }
 
-// Take a step for the simulation
-void JointsScene::update() {
+// Update the physics world (take a simulation step)
+void JointsScene::updatePhysics() {
 
     // Update the motor speed of the Slider Joint (to move up and down)
-    long double motorSpeed = 2 * cos(mDynamicsWorld->getPhysicsTime() * 1.5);
+    long double motorSpeed = 2 * cos(mEngineSettings.elapsedTime * 1.5);
     mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
 
     // Take a simulation step
-    mDynamicsWorld->update();
+    mDynamicsWorld->update(mEngineSettings.timeStep);
+}
+
+// Take a step for the simulation
+void JointsScene::update() {
 
     // Update the position and orientation of the boxes
-    mSliderJointBottomBox->updateTransform();
-    mSliderJointTopBox->updateTransform();
-    mPropellerBox->updateTransform();
-    mFixedJointBox1->updateTransform();
-    mFixedJointBox2->updateTransform();
+    mSliderJointBottomBox->updateTransform(mInterpolationFactor);
+    mSliderJointTopBox->updateTransform(mInterpolationFactor);
+    mPropellerBox->updateTransform(mInterpolationFactor);
+    mFixedJointBox1->updateTransform(mInterpolationFactor);
+    mFixedJointBox2->updateTransform(mInterpolationFactor);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mBallAndSocketJointChainBoxes[i]->updateTransform();
+        mBallAndSocketJointChainBoxes[i]->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the floor
-    mFloor->updateTransform();
+    mFloor->updateTransform(mInterpolationFactor);
 }
 
 // Render the scene

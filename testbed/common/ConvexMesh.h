@@ -40,6 +40,9 @@ class ConvexMesh : public openglframework::Mesh {
         /// Rigid body used to simulate the dynamics of the mesh
         rp3d::CollisionBody* mRigidBody;
 
+        /// Previous transform (for interpolation)
+        rp3d::Transform mPreviousTransform;
+
         // -------------------- Methods -------------------- //
 
     public :
@@ -64,7 +67,7 @@ class ConvexMesh : public openglframework::Mesh {
         reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the mesh
-        void updateTransform();
+        void updateTransform(float interpolationFactor);
 
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,

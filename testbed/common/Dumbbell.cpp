@@ -64,6 +64,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::Quaternion initOrientation(angleAroundX, 0, 0);
     rp3d::Transform transformBody(initPosition, initOrientation);
 
+    mPreviousTransform = transformBody;
+
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
     rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
 
@@ -197,14 +199,19 @@ void Dumbbell::render(openglframework::Shader& shader,
 }
 
 // Update the transform matrix of the sphere
-void Dumbbell::updateTransform() {
+void Dumbbell::updateTransform(float interpolationFactor) {
 
-    // Get the interpolated transform of the rigid body
-    rp3d::Transform transform = mBody->getInterpolatedTransform();
+    // Get the transform of the rigid body
+    rp3d::Transform transform = mBody->getTransform();
+
+    // Interpolate the transform between the previous one and the new one
+    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
+                                                                                  transform,
+                                                                                  interpolationFactor);
 
     // Compute the transform used for rendering the sphere
     rp3d::decimal matrix[16];
-    transform.getOpenGLMatrix(matrix);
+    interpolatedTransform.getOpenGLMatrix(matrix);
     openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
                                        matrix[1], matrix[5], matrix[9], matrix[13],
                                        matrix[2], matrix[6], matrix[10], matrix[14],

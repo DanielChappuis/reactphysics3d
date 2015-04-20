@@ -29,6 +29,16 @@
 // Libraries
 #include "openglframework.h"
 
+/// Structure EngineSettings
+/// This structure contains several physics engine parameters
+struct EngineSettings {
+
+    public:
+
+       float elapsedTime;       // Elapsed time (in seconds)
+       float timeStep;          // Current time step (in seconds)
+};
+
 // Class Scene
 // Abstract class that represents a 3D scene.
 class Scene {
@@ -39,6 +49,9 @@ class Scene {
 
         /// Scene name
         std::string mName;
+
+        /// Physics engine settings
+        EngineSettings mEngineSettings;
 
         /// Camera
         openglframework::Camera mCamera;
@@ -57,6 +70,9 @@ class Scene {
 
         /// True if the last point computed on a sphere (for camera rotation) is valid
         bool mIsLastPointOnSphereValid;
+
+        /// Interpolation factor for the bodies in the current frame
+        float mInterpolationFactor;
 
         // -------------------- Methods -------------------- //
 
@@ -93,7 +109,11 @@ class Scene {
         /// Reshape the view
         virtual void reshape(int width, int height);
 
-        /// Update the scene (take a simulation step)
+        /// Update the physics world (take a simulation step)
+        /// Can be called several times per frame
+        virtual void updatePhysics()=0;
+
+        /// Update the scene
         virtual void update()=0;
 
         /// Render the scene
@@ -121,6 +141,12 @@ class Scene {
 
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
+
+        /// Set the engine settings
+        void setEngineSettings(const EngineSettings& settings);
+
+        /// Set the interpolation factor
+        void setInterpolationFactor(float interpolationFactor);
 };
 
 // Called when a keyboard event occurs
@@ -144,5 +170,14 @@ inline void Scene::setWindowDimension(int width, int height) {
     mWindowHeight = height;
 }
 
+// Set the engine settings
+inline void Scene::setEngineSettings(const EngineSettings& settings) {
+   mEngineSettings = settings;
+}
+
+// Set the interpolation factor
+inline void Scene::setInterpolationFactor(float interpolationFactor) {
+    mInterpolationFactor = interpolationFactor;
+}
 
 #endif

@@ -30,6 +30,7 @@
 #include "openglframework.h"
 #include "GUI.h"
 #include "Scene.h"
+#include "Timer.h"
 #include <GLFW/glfw3.h>
 
 /// Class TestbedApplication
@@ -50,11 +51,17 @@ class TestbedApplication {
         /// Graphical User Interface
         Gui mGUI;
 
+        /// Timer
+        Timer mTimer;
+
         /// List of 3D scenes
         std::vector<Scene*> mScenes;
 
         /// Current 3D scene
         Scene* mCurrentScene;
+
+        /// Physics engine settings
+        EngineSettings mEngineSettings;
 
         /// Current number of frames per seconds
         double mFPS;
@@ -84,6 +91,9 @@ class TestbedApplication {
 
         /// Private assignment operator (for the singleton class)
         void operator=(TestbedApplication const&);
+
+        /// Update the physics of the current scene
+        void updatePhysics();
 
         /// Update
         void update();

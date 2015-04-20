@@ -53,7 +53,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     rp3d::decimal timeStep = 1.0f / 60.0f;
 
     // Create the dynamics world for the physics simulation
-    mDynamicsWorld = new rp3d::DynamicsWorld(gravity, timeStep);
+    mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
@@ -216,9 +216,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
-
-    // Start the simulation
-    mDynamicsWorld->start();
 }
 
 // Destructor
@@ -309,46 +306,49 @@ CollisionShapesScene::~CollisionShapesScene() {
     delete mDynamicsWorld;
 }
 
-// Take a step for the simulation
-void CollisionShapesScene::update() {
-
+// Update the physics world (take a simulation step)
+void CollisionShapesScene::updatePhysics() {
 
     // Take a simulation step
-    mDynamicsWorld->update();
+    mDynamicsWorld->update(mEngineSettings.timeStep);
+}
+
+// Take a step for the simulation
+void CollisionShapesScene::update() {
 
     // Update the position and orientation of the boxes
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the sphere
     for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the cones
     for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the cylinders
     for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the capsules
     for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the convex meshes
@@ -356,7 +356,7 @@ void CollisionShapesScene::update() {
          it != mConvexMeshes.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
     // Update the position and orientation of the dumbbells
@@ -364,10 +364,10 @@ void CollisionShapesScene::update() {
          it != mDumbbells.end(); ++it) {
 
         // Update the transform used for the rendering
-        (*it)->updateTransform();
+        (*it)->updateTransform(mInterpolationFactor);
     }
 
-    mFloor->updateTransform();
+    mFloor->updateTransform(mInterpolationFactor);
 }
 
 // Render the scene

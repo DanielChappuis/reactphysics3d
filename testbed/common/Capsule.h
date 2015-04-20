@@ -49,6 +49,9 @@ class Capsule : public openglframework::Mesh {
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
+        /// Previous transform (for interpolation)
+        rp3d::Transform mPreviousTransform;
+
         // -------------------- Methods -------------------- //
 
     public :
@@ -74,7 +77,7 @@ class Capsule : public openglframework::Mesh {
         reactphysics3d::RigidBody* getRigidBody();
 
         /// Update the transform matrix of the sphere
-        void updateTransform();
+        void updateTransform(float interpolationFactor);
 
         /// Render the sphere at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
