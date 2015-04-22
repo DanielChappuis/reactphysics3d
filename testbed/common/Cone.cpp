@@ -173,6 +173,8 @@ void Cone::updateTransform(float interpolationFactor) {
                                                                                   transform,
                                                                                   interpolationFactor);
 
+    mPreviousTransform = transform;
+
     // Compute the transform used for rendering the cone
     rp3d::decimal matrix[16];
     interpolatedTransform.getOpenGLMatrix(matrix);

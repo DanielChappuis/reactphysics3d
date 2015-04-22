@@ -50,8 +50,10 @@ TestbedApplication& TestbedApplication::getInstance() {
 }
 
 // Constructor
-TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0) {
+TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0){
 
+    mCurrentScene = NULL;
+    mEngineSettings.timeStep = DEFAULT_TIMESTEP;
     mIsMultisamplingActive = true;
     mWidth = 1000;
     mHeight = 800;
@@ -174,22 +176,26 @@ void TestbedApplication::updatePhysics() {
         mTimer.update();
 
         // While the time accumulator is not empty
-        while(mTimer.isPossibleToTakeStep()) {
+        while(mTimer.isPossibleToTakeStep(mEngineSettings.timeStep)) {
 
             // Take a physics simulation step
             mCurrentScene->updatePhysics();
 
             // Update the timer
-            mTimer.nextStep();
+            mTimer.nextStep(mEngineSettings.timeStep);
         }
     }
 }
 
 void TestbedApplication::update() {
 
+    // Update the physics
+    updatePhysics();
+
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
     assert(factor >= 0.0f && factor <= 1.0f);
+    std::cout << "Factor : " << factor << std::endl;
 
     // Notify the scene about the interpolation factor
     mCurrentScene->setInterpolationFactor(factor);

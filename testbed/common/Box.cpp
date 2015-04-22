@@ -216,6 +216,7 @@ void Box::updateTransform(float interpolationFactor) {
     rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
                                                                                   transform,
                                                                                   interpolationFactor);
+    mPreviousTransform = transform;
 
     // Compute the transform used for rendering the box
     rp3d::decimal matrix[16];

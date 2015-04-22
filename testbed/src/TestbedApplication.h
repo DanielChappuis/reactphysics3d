@@ -33,6 +33,9 @@
 #include "Timer.h"
 #include <GLFW/glfw3.h>
 
+// Constants
+const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
+
 /// Class TestbedApplication
 /// Singleton class representing the application.
 class TestbedApplication {

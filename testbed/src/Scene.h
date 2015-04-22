@@ -37,6 +37,11 @@ struct EngineSettings {
 
        float elapsedTime;       // Elapsed time (in seconds)
        float timeStep;          // Current time step (in seconds)
+
+       /// Constructor
+       EngineSettings() : elapsedTime(0.0f), timeStep(0.0f) {
+
+       }
 };
 
 // Class Scene

@@ -52,9 +52,6 @@ class Timer {
 
         // -------------------- Attributes -------------------- //
 
-        /// Timestep dt of the physics engine (timestep > 0.0)
-        double mTimeStep;
-
         /// Last time the timer has been updated
         long double mLastUpdateTime;
 
@@ -98,13 +95,13 @@ class Timer {
         bool isRunning() const;
 
         /// True if it's possible to take a new step
-        bool isPossibleToTakeStep() const;
+        bool isPossibleToTakeStep(float timeStep) const;
 
         /// Compute the time since the last update() call and add it to the accumulator
         void update();
 
         /// Take a new step => update the timer by adding the timeStep value to the current time
-        void nextStep();
+        void nextStep(float timeStep);
 
         /// Compute the interpolation factor
         float computeInterpolationFactor(float timeStep);
@@ -141,16 +138,16 @@ inline void Timer::stop() {
 }
 
 // True if it's possible to take a new step
-inline bool Timer::isPossibleToTakeStep() const {
-    return (mAccumulator >= mTimeStep);
+inline bool Timer::isPossibleToTakeStep(float timeStep) const {
+    return (mAccumulator >= timeStep);
 }
 
 // Take a new step => update the timer by adding the timeStep value to the current time
-inline void Timer::nextStep() {
+inline void Timer::nextStep(float timeStep) {
     assert(mIsRunning);
 
     // Update the accumulator value
-    mAccumulator -= mTimeStep;
+    mAccumulator -= timeStep;
 }
 
 // Compute the interpolation factor
