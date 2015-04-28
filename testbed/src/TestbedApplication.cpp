@@ -103,6 +103,7 @@ void TestbedApplication::init() {
     glfwSwapInterval(0);
 
     // Initialize the GLEW library
+    glewExperimental = GL_TRUE;
     GLenum errorGLEW = glewInit();
     if (errorGLEW != GLEW_OK) {
 
@@ -126,6 +127,11 @@ void TestbedApplication::init() {
 
     // Create all the scenes
     createScenes();
+
+    Gui::getInstance().setWindow(mWindow);
+
+    // Init the GUI
+    Gui::getInstance().init();
 
     mTimer.start();
 }
@@ -214,7 +220,7 @@ void TestbedApplication::render() {
     mCurrentScene->render();
 
     // Display the GUI
-    mGUI.display();
+    Gui::getInstance().render();
 
     // Check the OpenGL errors
     checkOpenGLErrors();

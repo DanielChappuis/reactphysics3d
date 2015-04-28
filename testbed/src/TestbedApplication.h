@@ -51,9 +51,6 @@ class TestbedApplication {
         /// GLFW window
         GLFWwindow* mWindow;
 
-        /// Graphical User Interface
-        Gui mGUI;
-
         /// Timer
         Timer mTimer;
 

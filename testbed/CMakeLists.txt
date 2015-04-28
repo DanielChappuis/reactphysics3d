@@ -20,7 +20,7 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/")
+INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
 # Testbed source files
 SET(TESTBED_SOURCES
@@ -33,6 +33,16 @@ SET(TESTBED_SOURCES
     src/Scene.cpp
     src/Timer.h
     src/Timer.cpp
+)
+
+# IMGUI source files
+SET(IMGUI_SOURCES
+    imgui/imgui.h
+    imgui/imgui.cpp
+    imgui/imconfig.h
+    imgui/stb_rect_pack.h
+    imgui/stb_textedit.h
+    imgui/stb_truetype.h
 )
 
 # Common source files
@@ -70,7 +80,7 @@ SET(SCENES_SOURCES
 )
 
 # Create the executable
-ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES})
+ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${IMGUI_SOURCES})
 
 # Link with libraries
 TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

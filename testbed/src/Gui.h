@@ -27,21 +27,47 @@
 #define	GUI_H
 
 // Libraries
-
+#include <imgui.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 // Class Gui
 class Gui {
 
-    private :
+    protected :
 
         // -------------------- Constants -------------------- //
 
 
         // -------------------- Attributes -------------------- //
 
+        // TODO : Delete this
+        static GLFWwindow* mWindow;
+
+        static double       g_Time;
+        static bool         g_MousePressed[3];
+        static float        g_MouseWheel;
+        static GLuint       g_FontTexture;
+        static int          g_ShaderHandle, g_VertHandle, g_FragHandle;
+        static int          g_AttribLocationTex, g_AttribLocationProjMtx;
+        static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
+        static size_t       g_VboSize;
+        static unsigned int g_VboHandle, g_VaoHandle;
+
 
         // -------------------- Methods -------------------- //
 
+        void createDeviceObjects();
+
+        void createFontTextures();
+
+        void beginNewFrame();
+
+        static void renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
+
+        static const char* getClipboardText();
+
+        static void setClipboardText(const char* text);
 
     public :
 
@@ -53,11 +79,20 @@ class Gui {
         /// Destructor
         ~Gui();
 
+        /// Create and return the singleton instance of this class
+        static Gui& getInstance();
+
+        /// Initialize the GUI
+        void init();
+
         /// Display the GUI
-        void display();
+        void render();
 
-        // -------------------- Methods -------------------- //
-
+        static void setWindow(GLFWwindow* window);
 };
+
+inline void Gui::setWindow(GLFWwindow* window) {
+    mWindow = window;
+}
 
 #endif
