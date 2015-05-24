@@ -1,6 +1,8 @@
+#version 330
+
 /********************************************************************************
 * OpenGL-Framework                                                              *
-* Copyright (c) 2013 Daniel Chappuis                                            *
+* Copyright (c) 2015 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,22 +30,27 @@ uniform mat4 localToCameraMatrix;       // Local-space to camera-space matrix
 uniform mat4 projectionMatrix;          // Projection matrix
 uniform mat3 normalMatrix;              // Normal matrix
 
-// Varying variables
-varying vec3 vertexPosCameraSpace;      // Camera-space position of the vertex
-varying vec3 vertexNormalCameraSpace;   // Vertex normal in camera-space
-varying vec2 texCoords;                 // Texture coordinates
+// In variables
+in vec4 vertexPosition;
+in vec3 vertexNormal;
+in vec2 textureCoords;
+
+// Out variables
+out vec3 vertexPosCameraSpace;      // Camera-space position of the vertex
+out vec3 vertexNormalCameraSpace;   // Vertex normal in camera-space
+out vec2 texCoords;                 // Texture coordinates
 
 void main() {
 
     // Compute the vertex position
-    vec4 positionCameraSpace = localToCameraMatrix * gl_Vertex;
+    vec4 positionCameraSpace = localToCameraMatrix * vertexPosition;
     vertexPosCameraSpace = positionCameraSpace.xyz;
 
     // Compute the world surface normal
-    vertexNormalCameraSpace = normalMatrix * gl_Normal;
+    vertexNormalCameraSpace = normalMatrix * vertexNormal;
 
     // Get the texture coordinates
-    texCoords = gl_MultiTexCoord0.xy;
+    texCoords = textureCoords;
 
     // Compute the clip-space vertex coordinates
     gl_Position = projectionMatrix * positionCameraSpace;

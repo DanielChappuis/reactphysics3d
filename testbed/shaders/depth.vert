@@ -1,6 +1,6 @@
 /********************************************************************************
 * OpenGL-Framework                                                              *
-* Copyright (c) 2013 Daniel Chappuis                                            *
+* Copyright (c) 2015 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *

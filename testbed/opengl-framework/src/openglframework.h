@@ -36,6 +36,7 @@
 #include "Texture2D.h"
 #include "FrameBufferObject.h"
 #include "VertexBufferObject.h"
+#include "VertexArrayObject.h"
 #include "Shader.h"
 #include "maths/Color.h"
 #include "maths/Vector2.h"

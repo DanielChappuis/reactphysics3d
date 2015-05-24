@@ -112,7 +112,7 @@ bool Shader::create(const std::string vertexShaderFilename,
             glGetShaderInfoLog(vertexShaderID, lengthLog, NULL, str);
 
             // Display the log of the compilation
-            std::cerr << "Vertex Shader Error : " << str << std::endl;
+            std::cerr << "Vertex Shader Error (in " << vertexShaderFilename << ") : " << str << std::endl;
             delete[] str;
             assert(false);
             return false;
@@ -165,7 +165,7 @@ bool Shader::create(const std::string vertexShaderFilename,
             glGetShaderInfoLog(fragmentShaderID, lengthLog, NULL, str);
 
             // Display the log of the compilation
-            std::cerr << "Fragment Shader Error : " << str << std::endl;
+            std::cerr << "Fragment Shader Error (in " << fragmentShaderFilename << ") : " << str << std::endl;
             delete[] str;
             assert(false);
             return false;

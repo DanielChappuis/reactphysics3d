@@ -69,7 +69,7 @@ CubesScene::CubesScene(const std::string& name)
                                           0);
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld, mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -81,7 +81,7 @@ CubesScene::CubesScene(const std::string& name)
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mPhongShader);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
@@ -150,6 +150,8 @@ void CubesScene::update() {
 // Render the scene
 void CubesScene::render() {
 
+    checkOpenGLErrors();
+
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
@@ -170,19 +172,49 @@ void CubesScene::render() {
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
+    checkOpenGLErrors();
+
     // Render all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
+
+    checkOpenGLErrors();
 
     // Render the floor
     mFloor->render(mPhongShader, worldToCameraMatrix);
 
     // Unbind the shader
     mPhongShader.unbind();
+
+    checkOpenGLErrors();
 }
 
 // Reset the scene
 void CubesScene::reset() {
 
+}
+
+// Check the OpenGL errors
+void CubesScene::checkOpenGLErrors() {
+    GLenum glError;
+
+    // Get the OpenGL errors
+    glError = glGetError();
+
+    // While there are errors
+    while (glError != GL_NO_ERROR) {
+
+        // Get the error string
+        const GLubyte* stringError = gluErrorString(glError);
+
+        // Display the error
+        if (stringError)
+            std::cerr << "OpenGL Error #" << glError << "(" << gluErrorString(glError) << ")" << std::endl;
+        else
+            std::cerr << "OpenGL Error #" << glError << " (no message available)" << std::endl;
+
+        // Get the next error
+        glError = glGetError();
+    }
 }

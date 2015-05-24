@@ -30,6 +30,9 @@
 #include <imgui.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "openglframework.h"
+
+using namespace openglframework;
 
 // Class Gui
 class Gui {
@@ -44,11 +47,13 @@ class Gui {
         // TODO : Delete this
         static GLFWwindow* mWindow;
 
+        static Shader mShader;
+
         static double       g_Time;
         static bool         g_MousePressed[3];
         static float        g_MouseWheel;
         static GLuint       g_FontTexture;
-        static int          g_ShaderHandle, g_VertHandle, g_FragHandle;
+        //static int          g_ShaderHandle, g_VertHandle, g_FragHandle;
         static int          g_AttribLocationTex, g_AttribLocationProjMtx;
         static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
         static size_t       g_VboSize;

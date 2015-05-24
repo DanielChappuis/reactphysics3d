@@ -1,6 +1,8 @@
+#version 330
+
 /********************************************************************************
 * OpenGL-Framework                                                              *
-* Copyright (c) 2013 Daniel Chappuis                                            *
+* Copyright (c) 2015 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,14 +31,17 @@ uniform vec3 light0PosCameraSpace;          // Camera-space position of the ligh
 uniform vec3 light0DiffuseColor;            // Light 0 diffuse color
 uniform vec3 light0SpecularColor;           // Light 0 specular color
 uniform float shininess;                    // Shininess
-uniform sampler2D texture;                  // Texture
+uniform sampler2D textureSampler;           // Texture
 uniform bool isTexture;                     // True if we need to use the texture
 uniform vec4 vertexColor;                   // Vertex color
 
-// Varying variables
-varying vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
-varying vec3 vertexNormalCameraSpace;       // Vertex normal in camera-space
-varying vec2 texCoords;                     // Texture coordinates
+// In variables
+in vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
+in vec3 vertexNormalCameraSpace;       // Vertex normal in camera-space
+in vec2 texCoords;                     // Texture coordinates
+
+// Out variable
+out vec4 color;                        // Output color
 
 void main() {
 
@@ -45,7 +50,7 @@ void main() {
 
     // Get the texture color
     vec3 textureColor = vertexColor.rgb;
-    if (isTexture) textureColor = texture2D(texture, texCoords).rgb;
+    if (isTexture) textureColor = texture(textureSampler, texCoords).rgb;
 
     // Compute the surface normal vector
     vec3 N = normalize(vertexNormalCameraSpace);
@@ -63,5 +68,5 @@ void main() {
     vec3 specular = light0SpecularColor * specularFactor;
 
     // Compute the final color
-    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
+    color = vec4(ambient + diffuse + specular, 1.0);
 }

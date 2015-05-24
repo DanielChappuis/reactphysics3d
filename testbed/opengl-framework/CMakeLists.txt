@@ -71,6 +71,8 @@ SET(OPENGL_FRAMEWORK_SOURCES
     "src/TextureReaderWriter.cpp"
     "src/VertexBufferObject.h"
     "src/VertexBufferObject.cpp"
+    "src/VertexArrayObject.h"
+    "src/VertexArrayObject.cpp"
 )
 
 IF(USE_JPEG_TEXTURES)

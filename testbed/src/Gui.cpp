@@ -32,17 +32,12 @@ double Gui::g_Time = 0.0f;
 bool Gui::g_MousePressed[3] = {false, false, false};
 float Gui::g_MouseWheel = 0.0f;
 GLuint Gui::g_FontTexture = 0;
-int Gui::g_ShaderHandle = 0;
-int Gui::g_VertHandle = 0;
-int Gui::g_FragHandle = 0;
-int Gui::g_AttribLocationTex = 0;
-int Gui::g_AttribLocationProjMtx = 0;
-int Gui::g_AttribLocationPosition = 0;
-int Gui::g_AttribLocationUV = 0;
-int Gui::g_AttribLocationColor = 0;
 size_t Gui::g_VboSize = 0;
 unsigned int Gui::g_VboHandle = 0;
 unsigned int Gui::g_VaoHandle = 0;
+int Gui::g_AttribLocationTex = 0, Gui::g_AttribLocationProjMtx = 0;
+int Gui::g_AttribLocationPosition = 0, Gui::g_AttribLocationUV = 0, Gui::g_AttribLocationColor = 0;
+Shader Gui::mShader;
 
 // Constructor
 Gui::Gui() {
@@ -52,9 +47,6 @@ Gui::Gui() {
     g_MousePressed[2] = false;
     g_MouseWheel = 0.0f;
     g_FontTexture = 0;
-    g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-    g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
-    g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
     g_VboSize = 0;
     g_VboHandle = 0, g_VaoHandle = 0;
 }
@@ -67,16 +59,7 @@ Gui::~Gui() {
     g_VaoHandle = 0;
     g_VboHandle = 0;
 
-    glDetachShader(g_ShaderHandle, g_VertHandle);
-    glDeleteShader(g_VertHandle);
-    g_VertHandle = 0;
-
-    glDetachShader(g_ShaderHandle, g_FragHandle);
-    glDeleteShader(g_FragHandle);
-    g_FragHandle = 0;
-
-    glDeleteProgram(g_ShaderHandle);
-    g_ShaderHandle = 0;
+    mShader.destroy();
 
     if (g_FontTexture)
     {
@@ -122,48 +105,15 @@ void Gui::init() {
 
 void Gui::createDeviceObjects() {
 
-    const GLchar *vertex_shader =
-            "#version 330\n"
-            "uniform mat4 ProjMtx;\n"
-            "in vec2 Position;\n"
-            "in vec2 UV;\n"
-            "in vec4 Color;\n"
-            "out vec2 Frag_UV;\n"
-            "out vec4 Frag_Color;\n"
-            "void main()\n"
-            "{\n"
-            "	Frag_UV = UV;\n"
-            "	Frag_Color = Color;\n"
-            "	gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-            "}\n";
+    /*
+    mShader.create("shaders/gui.vert", "shaders/gui.frag");
 
-        const GLchar* fragment_shader =
-            "#version 330\n"
-            "uniform sampler2D Texture;\n"
-            "in vec2 Frag_UV;\n"
-            "in vec4 Frag_Color;\n"
-            "out vec4 Out_Color;\n"
-            "void main()\n"
-            "{\n"
-            "	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
-            "}\n";
-
-        g_ShaderHandle = glCreateProgram();
-        g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
-        g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-        glShaderSource(g_FragHandle, 1, &fragment_shader, 0);
-        glCompileShader(g_VertHandle);
-        glCompileShader(g_FragHandle);
-        glAttachShader(g_ShaderHandle, g_VertHandle);
-        glAttachShader(g_ShaderHandle, g_FragHandle);
-        glLinkProgram(g_ShaderHandle);
-
-        g_AttribLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
-        g_AttribLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
-        g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
-        g_AttribLocationUV = glGetAttribLocation(g_ShaderHandle, "UV");
-        g_AttribLocationColor = glGetAttribLocation(g_ShaderHandle, "Color");
+        GLuint shaderID = mShader.getProgramObjectId();
+        g_AttribLocationTex = glGetUniformLocation(shaderID, "Texture");
+        g_AttribLocationProjMtx = glGetUniformLocation(shaderID, "ProjMtx");
+        g_AttribLocationPosition = glGetAttribLocation(shaderID, "Position");
+        g_AttribLocationUV = glGetAttribLocation(shaderID, "UV");
+        g_AttribLocationColor = glGetAttribLocation(shaderID, "Color");
 
         glGenBuffers(1, &g_VboHandle);
 
@@ -173,7 +123,6 @@ void Gui::createDeviceObjects() {
         glEnableVertexAttribArray(g_AttribLocationPosition);
         glEnableVertexAttribArray(g_AttribLocationUV);
         glEnableVertexAttribArray(g_AttribLocationColor);
-
     #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
         glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
         glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
@@ -183,55 +132,40 @@ void Gui::createDeviceObjects() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         createFontTextures();
+        */
 }
 
 // Display the GUI
 void Gui::render() {
 
+/*
     ImGuiIO& io = ImGui::GetIO();
     //glfwPollEvents();
     beginNewFrame();
 
+
     bool show_test_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImColor(114, 144, 154);
+    ImVec4 clear_color = ImColor(255, 255, 255);
 
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
     {
-        static float f = 0.0f;
         ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
-        if (ImGui::Button("Test Window")) int test = 1;
-        if (ImGui::Button("Another Window")) int test = 1;
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
 
-    // 2. Show another simple window, this time using an explicit Begin/End pair
-    //if (show_another_window)
-    {
-        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-        ImGui::Begin("Another Window", &show_another_window);
-        ImGui::Text("Hello");
-        ImGui::End();
-    }
-
-    // 3. Show the ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-    //if (show_test_window)
-    {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-        ImGui::ShowTestWindow(&show_test_window);
-    }
 
     // Render the GUI
     ImGui::Render();
+    */
 }
 
 void Gui::beginNewFrame() {
 
+    /*
     if (!g_FontTexture)
         createDeviceObjects();
+
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -276,6 +210,7 @@ void Gui::beginNewFrame() {
 
     // Start the frame
     ImGui::NewFrame();
+    */
 }
 
 void Gui::createFontTextures()
@@ -301,6 +236,7 @@ void Gui::createFontTextures()
 // - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
 void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
 {
+    std::cout << "OpenGLVersion : " << glGetString(GL_VERSION) << std::endl;
     if (cmd_lists_count == 0)
         return;
 
@@ -316,9 +252,14 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
     glEnable(GL_SCISSOR_TEST);
     glActiveTexture(GL_TEXTURE0);
 
+    /*
     // Setup orthographic projection matrix
     const float width = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
+    Matrix4 orthoProj(2.0f / width, 0.0f, 0.0f, 0.0f,
+                      0.0f, 2.0/-height, 0.0f, 0.0f,
+                      0.0f, 0.0f, -1.0f, 0.0f,
+                      -1.0f, 1.0f, 0.0f, 1.0f);
     const float ortho_projection[4][4] =
     {
         { 2.0f/width,	0.0f,			0.0f,		0.0f },
@@ -326,7 +267,11 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
         { 0.0f,			0.0f,			-1.0f,		0.0f },
         { -1.0f,		1.0f,			0.0f,		1.0f },
     };
-    glUseProgram(g_ShaderHandle);
+
+    mShader.bind();
+    //mShader.setIntUniform("Texture", 0);
+    //mShader.setMatrix4x4Uniform("ProjMtx", orthoProj);
+    ///glUseProgram(g_ShaderHandle);
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 
@@ -379,11 +324,14 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
         cmd_offset = vtx_offset;
     }
 
+
+
     // Restore modified state
     glBindVertexArray(0);
     glUseProgram(last_program);
     glDisable(GL_SCISSOR_TEST);
     glBindTexture(GL_TEXTURE_2D, last_texture);
+    */
 }
 
 const char* Gui::getClipboardText() {

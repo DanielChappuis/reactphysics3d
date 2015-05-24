@@ -78,7 +78,10 @@ class Shader {
         void unbind() const;
 
         // Return the location of a uniform variable inside a shader program
-        int getUniformLocation(const std::string& variableName) const;
+        GLint getUniformLocation(const std::string& variableName) const;
+
+        // Return the location of an attribute variable inside a shader program
+        GLint getAttribLocation(const std::string& variableName) const;
 
         // Set a float uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
@@ -127,6 +130,9 @@ class Shader {
         // to set it, an assert will occur)
         void setMatrix4x4Uniform(const std::string& variableName, const Matrix4& matrix) const;
 
+        // Return the shader object program ID
+        GLuint getProgramObjectId() const;
+
         // Return true if the needed OpenGL extensions are available
         static bool checkOpenGLExtensions();
 };
@@ -144,9 +150,22 @@ inline void Shader::unbind() const {
 }
 
 // Return the location of a uniform variable inside a shader program
-inline int Shader::getUniformLocation(const std::string& variableName) const {
+inline GLint Shader::getUniformLocation(const std::string& variableName) const {
     assert(mProgramObjectID != 0);
-    int location = glGetUniformLocation(mProgramObjectID, variableName.c_str());
+    GLint location = glGetUniformLocation(mProgramObjectID, variableName.c_str());
+    if (location == -1) {
+        std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
+                  << mFilenameFragmentShader << " : No Uniform variable : " << variableName
+                  << std::endl;
+    }
+    assert(location != -1);
+    return location;
+}
+
+// Return the location of an attribute variable inside a shader program
+inline GLint Shader::getAttribLocation(const std::string& variableName) const {
+    assert(mProgramObjectID != 0);
+    GLint location = glGetAttribLocation(mProgramObjectID, variableName.c_str());
     if (location == -1) {
         std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
                   << mFilenameFragmentShader << " : No Uniform variable : " << variableName
@@ -246,6 +265,11 @@ inline void Shader::setMatrix4x4Uniform(const std::string& variableName, const M
         }
     }
     glUniformMatrix4fv(getUniformLocation(variableName), 1, true, mat);
+}
+
+// Return the shader object program ID
+inline GLuint Shader::getProgramObjectId() const {
+   return mProgramObjectID;
 }
 
 // Return true if the needed OpenGL extensions are available for shaders

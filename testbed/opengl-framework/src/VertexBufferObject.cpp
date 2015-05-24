@@ -63,14 +63,8 @@ bool VertexBufferObject::create() {
 // Copy data into the VBO
 void VertexBufferObject::copyDataIntoVBO(GLsizei size, const void* data, GLenum usage) {
 
-    // Bind the VBO
-    bind();
-
     // Copy the data into the VBO
     glBufferData(mTargetData, size, data, usage);
-
-    // Unbind the VBO
-    unbind();
 }
 
 // Destroy the VBO

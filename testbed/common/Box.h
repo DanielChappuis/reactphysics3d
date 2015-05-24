@@ -68,6 +68,9 @@ class Box : public openglframework::Object3D {
         /// Vertex Buffer Object for the indices used to render the box with OpenGL
         static openglframework::VertexBufferObject mVBOIndices;
 
+        /// Vertex Array Object for the vertex data
+        static openglframework::VertexArrayObject mVAO;
+
         /// Vertex data for each vertex of the cube (used to render the box)
         static VertexData mCubeVertices[8];
 
@@ -82,8 +85,8 @@ class Box : public openglframework::Object3D {
 
         // -------------------- Methods -------------------- //
 
-        /// Create a Vertex Buffer Object to render to box with OpenGL
-        static void createVBO();
+        /// Create a the VAO and VBOs to render to box with OpenGL
+        static void createVBOAndVAO(openglframework::Shader &shader);
 
     public :
 
@@ -91,11 +94,11 @@ class Box : public openglframework::Object3D {
 
         /// Constructor
         Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            reactphysics3d::CollisionWorld* world);
+            reactphysics3d::CollisionWorld* world, openglframework::Shader &shader);
 
         /// Constructor
         Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, reactphysics3d::DynamicsWorld *world);
+            float mass, reactphysics3d::DynamicsWorld *world, openglframework::Shader& shader);
 
         /// Destructor
         ~Box();

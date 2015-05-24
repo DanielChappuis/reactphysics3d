@@ -85,6 +85,9 @@ class CubesScene : public Scene {
 
         /// Reset the scene
         virtual void reset();
+
+        // Check the OpenGL errors
+        static void checkOpenGLErrors();
 };
 
 }

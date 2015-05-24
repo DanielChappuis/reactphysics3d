@@ -29,8 +29,10 @@
 // Constructor
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  reactphysics3d::CollisionWorld* world,
-                 const std::string& meshFolderPath)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+                 const std::string& meshFolderPath, openglframework::Shader& shader)
+        : openglframework::Mesh(), mRadius(radius), mHeight(height), mVBOVertices(GL_ARRAY_BUFFER),
+          mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
+          mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(1.0f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
@@ -66,13 +68,19 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
+
+    // Create the VBOs and VAO
+    createVBOAndVAO(shader);
 }
 
 // Constructor
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
-                 const std::string& meshFolderPath)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+                 const std::string& meshFolderPath, openglframework::Shader &shader)
+        : openglframework::Mesh(), mRadius(radius), mHeight(height),
+          mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER),
+          mVBOTextureCoords(GL_ARRAY_BUFFER), mVBOIndices(GL_ELEMENT_ARRAY_BUFFER),
+          mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
@@ -108,6 +116,9 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mRigidBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
+
+    // Create the VBOs and VAO
+    createVBOAndVAO(shader);
 }
 
 // Destructor
@@ -115,6 +126,13 @@ Capsule::~Capsule() {
 
     // Destroy the mesh
     destroy();
+
+    // Destroy the VBOs and VAO
+    mVBOIndices.destroy();
+    mVBOVertices.destroy();
+    mVBONormals.destroy();
+    mVBOTextureCoords.destroy();
+    mVAO.destroy();
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -134,29 +152,20 @@ void Capsule::render(openglframework::Shader& shader,
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    if (hasTexture()) {
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    }
+    // Set the vertex color
+    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+    shader.setVector4Uniform("vertexColor", color);
 
-    glVertexPointer(3, GL_FLOAT, 0, getVerticesPointer());
-    glNormalPointer(GL_FLOAT, 0, getNormalsPointer());
-    if(hasTexture()) {
-        glTexCoordPointer(2, GL_FLOAT, 0, getUVTextureCoordinatesPointer());
-    }
+    // Bind the VAO
+    mVAO.bind();
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3,
-                       GL_UNSIGNED_INT, getIndicesPointer());
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
     }
 
-    glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    if (hasTexture()) {
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    }
+    // Unbind the VAO
+    mVAO.unbind();
 
     // Unbind the shader
     shader.unbind();
@@ -184,4 +193,77 @@ void Capsule::updateTransform(float interpolationFactor) {
 
     // Apply the scaling matrix to have the correct sphere dimensions
     mTransformMatrix = newMatrix * mScalingMatrix;
+}
+
+// Create the Vertex Buffer Objects used to render with OpenGL.
+/// We create two VBOs (one for vertices and one for indices)
+void Capsule::createVBOAndVAO(openglframework::Shader& shader) {
+
+    // Bind the shader
+    shader.bind();
+
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal");
+    GLint vertexTexCoordLoc = shader.getAttribLocation("textureCoords");
+
+    // Create the VBO for the vertices data
+    mVBOVertices.create();
+    mVBOVertices.bind();
+    size_t sizeVertices = mVertices.size() * sizeof(openglframework::Vector3);
+    mVBOVertices.copyDataIntoVBO(sizeVertices, getVerticesPointer(), GL_STATIC_DRAW);
+    mVBOVertices.unbind();
+
+    // Create the VBO for the normals data
+    mVBONormals.create();
+    mVBONormals.bind();
+    size_t sizeNormals = mNormals.size() * sizeof(openglframework::Vector3);
+    mVBONormals.copyDataIntoVBO(sizeNormals, getNormalsPointer(), GL_STATIC_DRAW);
+    mVBONormals.unbind();
+
+    if (hasTexture()) {
+        // Create the VBO for the texture co data
+        mVBOTextureCoords.create();
+        mVBOTextureCoords.bind();
+        size_t sizeTextureCoords = mUVs.size() * sizeof(openglframework::Vector2);
+        mVBOTextureCoords.copyDataIntoVBO(sizeTextureCoords, getUVTextureCoordinatesPointer(), GL_STATIC_DRAW);
+        mVBOTextureCoords.unbind();
+    }
+
+    // Create th VBO for the indices data
+    mVBOIndices.create();
+    mVBOIndices.bind();
+    size_t sizeIndices = mIndices[0].size() * sizeof(uint);
+    mVBOIndices.copyDataIntoVBO(sizeIndices, getIndicesPointer(), GL_STATIC_DRAW);
+    mVBOIndices.unbind();
+
+    // Create the VAO for both VBOs
+    mVAO.create();
+    mVAO.bind();
+
+    // Bind the VBO of vertices
+    mVBOVertices.bind();
+    glEnableVertexAttribArray(vertexPositionLoc);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    // Bind the VBO of normals
+    mVBONormals.bind();
+    glEnableVertexAttribArray(vertexNormalLoc);
+    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    if (hasTexture()) {
+        // Bind the VBO of texture coords
+        mVBOTextureCoords.bind();
+        glEnableVertexAttribArray(vertexTexCoordLoc);
+        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    }
+
+    // Bind the VBO of indices
+    mVBOIndices.bind();
+
+    // Unbind the VAO
+    mVAO.unbind();
+
+    // Unbind the shader
+    shader.unbind();
 }

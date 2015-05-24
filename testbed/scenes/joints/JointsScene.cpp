@@ -202,7 +202,7 @@ void JointsScene::createBallAndSocketJoints() {
 
         // Create a box and a corresponding rigid in the dynamics world
         mBallAndSocketJointChainBoxes[i] = new Box(boxDimension, positionBox , boxMass,
-                                                   mDynamicsWorld);
+                                                   mDynamicsWorld, mPhongShader);
 
         // The fist box cannot move (static body)
         if (i == 0) {
@@ -247,7 +247,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld, mPhongShader);
 
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setType(rp3d::STATIC);
@@ -263,7 +263,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2 , BOX_MASS, mDynamicsWorld);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2, BOX_MASS, mDynamicsWorld, mPhongShader);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
@@ -299,7 +299,7 @@ void JointsScene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld, mPhongShader);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
@@ -334,7 +334,7 @@ void JointsScene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld, mPhongShader);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
@@ -346,7 +346,7 @@ void JointsScene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld, mPhongShader);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
@@ -381,7 +381,7 @@ void JointsScene::createFloor() {
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mPhongShader);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);

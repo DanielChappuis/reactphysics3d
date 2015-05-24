@@ -55,8 +55,8 @@ TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(
     mCurrentScene = NULL;
     mEngineSettings.timeStep = DEFAULT_TIMESTEP;
     mIsMultisamplingActive = true;
-    mWidth = 1000;
-    mHeight = 800;
+    mWidth = 1280;
+    mHeight = 720;
 }
 
 // Destructor
@@ -84,6 +84,12 @@ void TestbedApplication::init() {
     if (!glfwInit()) {
          std::exit(EXIT_FAILURE);
     }
+
+    // OpenGL version required
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Active the multi-sampling by default
     if (mIsMultisamplingActive) {
@@ -131,7 +137,7 @@ void TestbedApplication::init() {
     Gui::getInstance().setWindow(mWindow);
 
     // Init the GUI
-    Gui::getInstance().init();
+    //Gui::getInstance().init();
 
     mTimer.start();
 }
@@ -143,20 +149,24 @@ void TestbedApplication::createScenes() {
     CubesScene* cubeScene = new CubesScene("Cubes");
     mScenes.push_back(cubeScene);
 
+    /*
     // Joints scene
     JointsScene* jointsScene = new JointsScene("Joints");
     mScenes.push_back(jointsScene);
+    */
 
     // Collision shapes scene
     CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");
     mScenes.push_back(collisionShapesScene);
 
+    /*
     // Raycast scene
     RaycastScene* raycastScene = new RaycastScene("Raycast");
     mScenes.push_back(raycastScene);
+    */
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[0];
+    mCurrentScene = mScenes[1];
 }
 
 // Remove all the scenes
@@ -201,7 +211,6 @@ void TestbedApplication::update() {
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
     assert(factor >= 0.0f && factor <= 1.0f);
-    std::cout << "Factor : " << factor << std::endl;
 
     // Notify the scene about the interpolation factor
     mCurrentScene->setInterpolationFactor(factor);
@@ -220,7 +229,7 @@ void TestbedApplication::render() {
     mCurrentScene->render();
 
     // Display the GUI
-    Gui::getInstance().render();
+    //Gui::getInstance().render();
 
     // Check the OpenGL errors
     checkOpenGLErrors();
@@ -251,6 +260,8 @@ void TestbedApplication::startMainLoop() {
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(mWindow)) {
 
+        checkOpenGLErrors();
+
         // Reshape the viewport
         reshape();
 
@@ -265,6 +276,8 @@ void TestbedApplication::startMainLoop() {
 
         // Process events
         glfwPollEvents();
+
+        checkOpenGLErrors();
     }
 }
 
@@ -283,7 +296,7 @@ void TestbedApplication::checkOpenGLErrors() {
 
         // Display the error
         if (stringError)
-            std::cerr << "OpenGL Error #" << glError << "(" << gluErrorString(glError) << std::endl;
+            std::cerr << "OpenGL Error #" << glError << "(" << gluErrorString(glError) << ")" << std::endl;
         else
             std::cerr << "OpenGL Error #" << glError << " (no message available)" << std::endl;
 

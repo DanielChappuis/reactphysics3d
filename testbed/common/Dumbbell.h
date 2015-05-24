@@ -49,7 +49,28 @@ class Dumbbell : public openglframework::Mesh {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
+        /// Vertex Buffer Object for the vertices data
+        openglframework::VertexBufferObject mVBOVertices;
+
+        /// Vertex Buffer Object for the normals data
+        openglframework::VertexBufferObject mVBONormals;
+
+        /// Vertex Buffer Object for the texture coords
+        openglframework::VertexBufferObject mVBOTextureCoords;
+
+        /// Vertex Buffer Object for the indices
+        openglframework::VertexBufferObject mVBOIndices;
+
+        /// Vertex Array Object for the vertex data
+        openglframework::VertexArrayObject mVAO;
+
+        /// Color
+        openglframework::Color mColor;
+
         // -------------------- Methods -------------------- //
+
+        // Create the Vertex Buffer Objects used to render with OpenGL.
+        void createVBOAndVAO(openglframework::Shader& shader);
 
     public :
 
@@ -57,11 +78,11 @@ class Dumbbell : public openglframework::Mesh {
 
         /// Constructor
         Dumbbell(const openglframework::Vector3& position, rp3d::DynamicsWorld* dynamicsWorld,
-                 const std::string& meshFolderPath);
+                 const std::string& meshFolderPath, openglframework::Shader &shader);
 
         /// Constructor
         Dumbbell(const openglframework::Vector3& position, rp3d::CollisionWorld* world,
-                 const std::string& meshFolderPath);
+                 const std::string& meshFolderPath, openglframework::Shader& shader);
 
 
         /// Destructor

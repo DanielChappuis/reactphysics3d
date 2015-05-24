@@ -72,7 +72,8 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath,
+                                          mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
@@ -92,7 +93,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld, mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -113,7 +114,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a sphere and a corresponding rigid in the dynamics world
         Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
-                                    meshFolderPath);
+                                    meshFolderPath, mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -134,7 +135,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cone and a corresponding rigid in the dynamics world
         Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
-                              meshFolderPath);
+                              meshFolderPath, mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -155,7 +156,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
-                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
+                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath, mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
@@ -176,7 +177,8 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
-                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
+                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath,
+                                       mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -196,7 +198,8 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
+        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath,
+                                          mPhongShader);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -208,7 +211,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mPhongShader);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
