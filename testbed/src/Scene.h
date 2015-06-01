@@ -152,6 +152,9 @@ class Scene {
 
         /// Set the interpolation factor
         void setInterpolationFactor(float interpolationFactor);
+
+        /// Return the name of the scene
+        std::string getName() const;
 };
 
 // Called when a keyboard event occurs
@@ -183,6 +186,11 @@ inline void Scene::setEngineSettings(const EngineSettings& settings) {
 // Set the interpolation factor
 inline void Scene::setInterpolationFactor(float interpolationFactor) {
     mInterpolationFactor = interpolationFactor;
+}
+
+// Return the name of the scene
+inline std::string Scene::getName() const {
+    return mName;
 }
 
 #endif

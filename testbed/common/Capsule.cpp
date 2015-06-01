@@ -32,7 +32,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
                  const std::string& meshFolderPath, openglframework::Shader& shader)
         : openglframework::Mesh(), mRadius(radius), mHeight(height), mVBOVertices(GL_ARRAY_BUFFER),
           mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-          mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(1.0f, 0.5f, 0.5f, 1.0f) {
+          mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);

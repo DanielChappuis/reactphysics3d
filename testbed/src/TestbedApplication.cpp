@@ -137,7 +137,7 @@ void TestbedApplication::init() {
     Gui::getInstance().setWindow(mWindow);
 
     // Init the GUI
-    //Gui::getInstance().init();
+    Gui::getInstance().init();
 
     mTimer.start();
 }
@@ -149,21 +149,17 @@ void TestbedApplication::createScenes() {
     CubesScene* cubeScene = new CubesScene("Cubes");
     mScenes.push_back(cubeScene);
 
-    /*
     // Joints scene
     JointsScene* jointsScene = new JointsScene("Joints");
     mScenes.push_back(jointsScene);
-    */
 
     // Collision shapes scene
     CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");
     mScenes.push_back(collisionShapesScene);
 
-    /*
     // Raycast scene
     RaycastScene* raycastScene = new RaycastScene("Raycast");
     mScenes.push_back(raycastScene);
-    */
 
     assert(mScenes.size() > 0);
     mCurrentScene = mScenes[1];
@@ -225,11 +221,22 @@ void TestbedApplication::update() {
 // Render
 void TestbedApplication::render() {
 
+    // Get the framebuffer dimension
+    int width, height;
+    glfwGetFramebufferSize(mWindow, &width, &height);
+
+    // Resize the OpenGL viewport
+    glViewport(LEFT_PANE_WIDTH, HEADER_HEIGHT,
+               width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
+
     // Render the scene
     mCurrentScene->render();
 
+    // Resize the OpenGL viewport
+    glViewport(0, 0, width, height);
+
     // Display the GUI
-    //Gui::getInstance().render();
+    Gui::getInstance().render();
 
     // Check the OpenGL errors
     checkOpenGLErrors();
@@ -243,10 +250,11 @@ void TestbedApplication::reshape() {
     glfwGetFramebufferSize(mWindow, &width, &height);
 
     // Resize the camera viewport
-    mCurrentScene->reshape(width, height);
+    mCurrentScene->reshape(width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
 
     // Resize the OpenGL viewport
-    glViewport(0, 0, width, height);
+    //glViewport(LEFT_PANE_WIDTH, HEADER_HEIGHT,
+    //           width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
 
     // Update the window size of the scene
     int windowWidth, windowHeight;
@@ -279,6 +287,17 @@ void TestbedApplication::startMainLoop() {
 
         checkOpenGLErrors();
     }
+}
+
+// Change the current scene
+void TestbedApplication::switchScene(Scene* newScene) {
+
+    if (newScene == mCurrentScene) return;
+
+    mCurrentScene = newScene;
+
+    // Reset the scene
+    mCurrentScene->reset();
 }
 
 // Check the OpenGL errors

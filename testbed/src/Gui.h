@@ -32,12 +32,24 @@
 #include <GLFW/glfw3.h>
 #include "openglframework.h"
 
+// Constants
+const float GUI_SCALING = 2.0f;
+const int HEADER_HEIGHT = 80;
+const int LEFT_PANE_WIDTH = 700;
+const int LEFT_PANE_HEADER_HEIGHT = 60;
+const ImColor BACKGROUND_COLOR = ImColor(41, 41, 41, 255);
+
 using namespace openglframework;
+
+// Declarations
+class TestbedApplication;
 
 // Class Gui
 class Gui {
 
     protected :
+
+        enum LeftPane {SCENES, PHYSICS, RENDERING, PROFILING};
 
         // -------------------- Constants -------------------- //
 
@@ -48,7 +60,6 @@ class Gui {
         static GLFWwindow* mWindow;
 
         static Shader mShader;
-
         static double       g_Time;
         static bool         g_MousePressed[3];
         static float        g_MouseWheel;
@@ -57,7 +68,9 @@ class Gui {
         static int          g_AttribLocationTex, g_AttribLocationProjMtx;
         static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
         static size_t       g_VboSize;
-        static unsigned int g_VboHandle, g_VaoHandle;
+        static openglframework::VertexBufferObject mVBO;
+        static openglframework::VertexArrayObject mVAO;
+        static LeftPane mLeftPane;
 
 
         // -------------------- Methods -------------------- //
@@ -73,6 +86,16 @@ class Gui {
         static const char* getClipboardText();
 
         static void setClipboardText(const char* text);
+
+        static void displayHeader();
+        static void displayLeftPane();
+
+        /// Display the list of scenes
+        static void displayScenesPane();
+
+        static void displayPhysicsPane();
+        static void displayRenderingPane();
+        static void displayProfilingPane();
 
     public :
 

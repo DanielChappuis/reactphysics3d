@@ -60,7 +60,7 @@ GLuint Box::mCubeIndices[36] = { 0, 1, 2,
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
          reactphysics3d::CollisionWorld* world, openglframework::Shader& shader)
-    : openglframework::Object3D(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+    : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -107,7 +107,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
          float mass, reactphysics3d::DynamicsWorld* world, openglframework::Shader& shader)
-    : openglframework::Object3D(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+    : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;

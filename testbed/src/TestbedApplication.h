@@ -135,7 +135,10 @@ class TestbedApplication {
         void createScenes();
 
         /// Remove all the scenes
-        void destroyScenes() ;
+        void destroyScenes();
+
+        /// Return the list of the scenes
+        std::vector<Scene*> getScenes();
 
     public :
 
@@ -152,8 +155,19 @@ class TestbedApplication {
 
         /// Start the main loop where rendering occur
         void startMainLoop();
+
+        /// Change the current scene
+        void switchScene(Scene* newScene);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class Gui;
 };
 
+// Return the list of the scenes
+inline std::vector<Scene*> TestbedApplication::getScenes() {
+    return mScenes;
+}
 
 
 #endif

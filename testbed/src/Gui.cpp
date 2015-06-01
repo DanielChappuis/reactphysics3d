@@ -26,6 +26,7 @@
 // Libraries
 #include "Gui.h"
 #include <GLFW/glfw3.h>
+#include "TestbedApplication.h"
 
 GLFWwindow* Gui::mWindow = NULL;
 double Gui::g_Time = 0.0f;
@@ -33,14 +34,16 @@ bool Gui::g_MousePressed[3] = {false, false, false};
 float Gui::g_MouseWheel = 0.0f;
 GLuint Gui::g_FontTexture = 0;
 size_t Gui::g_VboSize = 0;
-unsigned int Gui::g_VboHandle = 0;
-unsigned int Gui::g_VaoHandle = 0;
 int Gui::g_AttribLocationTex = 0, Gui::g_AttribLocationProjMtx = 0;
 int Gui::g_AttribLocationPosition = 0, Gui::g_AttribLocationUV = 0, Gui::g_AttribLocationColor = 0;
 Shader Gui::mShader;
+openglframework::VertexBufferObject Gui::mVBO(GL_ARRAY_BUFFER);
+openglframework::VertexArrayObject Gui::mVAO;
+Gui::LeftPane Gui::mLeftPane = SCENES;
 
 // Constructor
 Gui::Gui() {
+
     g_Time = 0.0f;
     g_MousePressed[0] = false;
     g_MousePressed[1] = false;
@@ -48,16 +51,13 @@ Gui::Gui() {
     g_MouseWheel = 0.0f;
     g_FontTexture = 0;
     g_VboSize = 0;
-    g_VboHandle = 0, g_VaoHandle = 0;
 }
 
 // Destructor
 Gui::~Gui() {
 
-    if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
-    if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
-    g_VaoHandle = 0;
-    g_VboHandle = 0;
+    mVAO.destroy();
+    mVBO.destroy();
 
     mShader.destroy();
 
@@ -101,71 +101,163 @@ void Gui::init() {
     io.RenderDrawListsFn = renderDrawLists;
     io.SetClipboardTextFn = setClipboardText;
     io.GetClipboardTextFn = getClipboardText;
+
+    io.FontGlobalScale = GUI_SCALING;
+}
+
+void Gui::displayHeader() {
+
+    ImVec2 buttonSize(120, 40);
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
+
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar;
+    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_NoMove;
+
+    ImGui::PushID("Header");
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, BACKGROUND_COLOR);
+
+        ImGui::Begin("Header", NULL, ImVec2(display_w, HEADER_HEIGHT), 1.0f, window_flags);
+        ImGui::SetWindowPos(ImVec2(0, 0));
+        ImGui::Button("Play", buttonSize); ImGui::SameLine();
+        ImGui::Button("Pause", buttonSize); ImGui::SameLine();
+        ImGui::Button("Step", buttonSize); ImGui::SameLine();
+        ImGui::Button("Restart", buttonSize); ImGui::SameLine();
+        ImGui::End();
+
+    ImGui::PopStyleColor(1);
+    ImGui::PopID();
+}
+
+void Gui::displayLeftPane() {
+
+    const int nbButtonsHeader = 4;
+    ImVec2 buttonSize(LEFT_PANE_WIDTH / nbButtonsHeader - 9, LEFT_PANE_HEADER_HEIGHT);
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
+
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar;
+    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_NoMove;
+
+    ImGui::PushID("LeftPane");
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, BACKGROUND_COLOR);
+
+        ImGui::Begin("LeftPane", NULL, ImVec2(LEFT_PANE_WIDTH, display_h - HEADER_HEIGHT), 1.0f, window_flags);
+        ImGui::SetWindowPos(ImVec2(0, HEADER_HEIGHT));
+
+        // ----- Left Pane Header ----- //
+        ImGui::Button("Scenes", buttonSize); ImGui::SameLine();
+        ImGui::Button("Physics", buttonSize); ImGui::SameLine();
+        ImGui::Button("Rendering", buttonSize); ImGui::SameLine();
+        ImGui::Button("Profiling", buttonSize);
+
+        // Display the left pane content
+        switch(mLeftPane) {
+            case SCENES: displayScenesPane(); break;
+            case PHYSICS: displayPhysicsPane(); break;
+            case RENDERING: displayRenderingPane(); break;
+            case PROFILING: displayProfilingPane(); break;
+        }
+
+        ImGui::End();
+
+    ImGui::PopStyleColor(1);
+    ImGui::PopID();
+}
+
+// Display the list of scenes
+void Gui::displayScenesPane() {
+
+    static int choice = 0;
+    int startChoice = choice;
+    TestbedApplication& app = TestbedApplication::getInstance();
+    std::vector<Scene*> scenes = app.getScenes();
+
+    // For each scene
+    for (int i=0; i<scenes.size(); i++) {
+
+        // Display a radio button
+        ImGui::RadioButton(scenes[i]->getName().c_str(), &choice, i);
+    }
+
+    // If the user changed scene
+    if (choice != startChoice) {
+        app.switchScene(scenes[choice]);
+    }
+}
+
+void Gui::displayPhysicsPane() {
+
+}
+
+void Gui::displayRenderingPane() {
+
+}
+
+void Gui::displayProfilingPane() {
+
 }
 
 void Gui::createDeviceObjects() {
 
-    /*
     mShader.create("shaders/gui.vert", "shaders/gui.frag");
 
-        GLuint shaderID = mShader.getProgramObjectId();
-        g_AttribLocationTex = glGetUniformLocation(shaderID, "Texture");
-        g_AttribLocationProjMtx = glGetUniformLocation(shaderID, "ProjMtx");
-        g_AttribLocationPosition = glGetAttribLocation(shaderID, "Position");
-        g_AttribLocationUV = glGetAttribLocation(shaderID, "UV");
-        g_AttribLocationColor = glGetAttribLocation(shaderID, "Color");
+    GLuint shaderID = mShader.getProgramObjectId();
+    g_AttribLocationTex = glGetUniformLocation(shaderID, "Texture");
+    g_AttribLocationProjMtx = glGetUniformLocation(shaderID, "ProjMtx");
+    g_AttribLocationPosition = glGetAttribLocation(shaderID, "Position");
+    g_AttribLocationUV = glGetAttribLocation(shaderID, "UV");
+    g_AttribLocationColor = glGetAttribLocation(shaderID, "Color");
 
-        glGenBuffers(1, &g_VboHandle);
+    mVBO.create();
 
-        glGenVertexArrays(1, &g_VaoHandle);
-        glBindVertexArray(g_VaoHandle);
-        glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
-        glEnableVertexAttribArray(g_AttribLocationPosition);
-        glEnableVertexAttribArray(g_AttribLocationUV);
-        glEnableVertexAttribArray(g_AttribLocationColor);
-    #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-        glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-        glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-        glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
-    #undef OFFSETOF
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    mVAO.create();
+    mVAO.bind();
+    mVBO.bind();
+    glEnableVertexAttribArray(g_AttribLocationPosition);
+    glEnableVertexAttribArray(g_AttribLocationUV);
+    glEnableVertexAttribArray(g_AttribLocationColor);
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+    glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
+    glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
+    glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
+#undef OFFSETOF
+    mVAO.unbind();
+    mVBO.unbind();
 
-        createFontTextures();
-        */
+    createFontTextures();
 }
 
 // Display the GUI
 void Gui::render() {
 
-/*
     ImGuiIO& io = ImGui::GetIO();
     //glfwPollEvents();
     beginNewFrame();
-
 
     bool show_test_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(255, 255, 255);
 
-    // 1. Show a simple window
-    // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-    {
-        ImGui::Text("Hello, world!");
-    }
+    displayHeader();
+    displayLeftPane();
 
+    ImGui::ShowTestWindow();
 
     // Render the GUI
     ImGui::Render();
-    */
 }
 
 void Gui::beginNewFrame() {
 
-    /*
     if (!g_FontTexture)
         createDeviceObjects();
-
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -210,7 +302,6 @@ void Gui::beginNewFrame() {
 
     // Start the frame
     ImGui::NewFrame();
-    */
 }
 
 void Gui::createFontTextures()
@@ -236,7 +327,6 @@ void Gui::createFontTextures()
 // - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
 void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
 {
-    std::cout << "OpenGLVersion : " << glGetString(GL_VERSION) << std::endl;
     if (cmd_lists_count == 0)
         return;
 
@@ -252,7 +342,7 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
     glEnable(GL_SCISSOR_TEST);
     glActiveTexture(GL_TEXTURE0);
 
-    /*
+
     // Setup orthographic projection matrix
     const float width = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
@@ -279,12 +369,13 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
     size_t total_vtx_count = 0;
     for (int n = 0; n < cmd_lists_count; n++)
         total_vtx_count += cmd_lists[n]->vtx_buffer.size();
-    glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
+    mVBO.bind();
     size_t needed_vtx_size = total_vtx_count * sizeof(ImDrawVert);
     if (g_VboSize < needed_vtx_size)
     {
         g_VboSize = needed_vtx_size + 5000 * sizeof(ImDrawVert);  // Grow buffer
-        glBufferData(GL_ARRAY_BUFFER, g_VboSize, NULL, GL_STREAM_DRAW);
+        mVBO.copyDataIntoVBO(g_VboSize, NULL, GL_STREAM_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, g_VboSize, NULL, GL_STREAM_DRAW);
     }
 
     // Copy and convert all vertices into a single contiguous buffer
@@ -298,8 +389,8 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
         buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(g_VaoHandle);
+    mVBO.unbind();
+    mVAO.bind();
 
     int cmd_offset = 0;
     for (int n = 0; n < cmd_lists_count; n++)
@@ -324,14 +415,11 @@ void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
         cmd_offset = vtx_offset;
     }
 
-
-
     // Restore modified state
-    glBindVertexArray(0);
+    mVAO.unbind();
     glUseProgram(last_program);
     glDisable(GL_SCISSOR_TEST);
     glBindTexture(GL_TEXTURE_2D, last_texture);
-    */
 }
 
 const char* Gui::getClipboardText() {
