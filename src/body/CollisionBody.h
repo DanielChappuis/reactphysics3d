@@ -73,9 +73,6 @@ class CollisionBody : public Body {
         /// Position and orientation of the body
         Transform mTransform;
 
-        /// Last position and orientation of the body
-        Transform mOldTransform;
-
         /// First element of the linked list of proxy collision shapes of this body
         ProxyShape* mProxyCollisionShapes;
 
@@ -101,9 +98,6 @@ class CollisionBody : public Body {
 
         /// Remove all the collision shapes
         void removeAllCollisionShapes();
-
-        /// Update the old transform with the current one.
-        void updateOldTransform();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
         virtual void updateBroadPhaseState() const;
@@ -239,12 +233,6 @@ inline void CollisionBody::setTransform(const Transform& transform) {
 
     // Update the broad-phase state of the body
     updateBroadPhaseState();
-}
-
-// Update the old transform with the current one.
-/// This is used to compute the interpolated position and orientation of the body
-inline void CollisionBody::updateOldTransform() {
-    mOldTransform = mTransform;
 }
 
 // Return the first element of the linked list of contact manifolds involving this body

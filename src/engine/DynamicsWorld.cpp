@@ -328,9 +328,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             mConstrainedAngularVelocities[indexBody] *= clamp(angularDamping, decimal(0.0),
                                                               decimal(1.0));
 
-            // Update the old Transform of the body
-            bodies[b]->updateOldTransform();
-
             indexBody++;
         }
     }
