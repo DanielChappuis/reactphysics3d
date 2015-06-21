@@ -46,7 +46,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
 
     // Convert the vertices array to the rp3d::decimal type
     rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
+    for (uint i = 0u; i < mVertices.size(); i++) {
         vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
         vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
         vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
@@ -63,12 +63,12 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     // Add the edges information of the mesh into the convex mesh collision shape.
     // This is optional but it really speed up the convex mesh collision detection at the
     // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
+    for (uint i = 0u; i < getNbFaces(); i++) { // For each triangle face of the mesh
 
         // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
+        uint v1 = getVertexIndexInFace(i, 0);
+        uint v2 = getVertexIndexInFace(i, 1);
+        uint v3 = getVertexIndexInFace(i, 2);
 
         // Add the three edges into the collision shape
         collisionShape.addEdge(v1, v2);
@@ -113,7 +113,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
 
     // Convert the vertices array to the rp3d::decimal type
     rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
+    for (uint i = 0u; i < mVertices.size(); i++) {
         vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
         vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
         vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
@@ -129,12 +129,12 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     // Add the edges information of the mesh into the convex mesh collision shape.
     // This is optional but it really speed up the convex mesh collision detection at the
     // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
+    for (uint i = 0u; i < getNbFaces(); i++) { // For each triangle face of the mesh
 
         // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
+        uint v1 = getVertexIndexInFace(i, 0);
+        uint v2 = getVertexIndexInFace(i, 1);
+        uint v3 = getVertexIndexInFace(i, 2);
 
         // Add the three edges into the collision shape
         collisionShape.addEdge(v1, v2);
@@ -199,8 +199,8 @@ void ConvexMesh::render(openglframework::Shader& shader,
     mVAO.bind();
 
     // For each part of the mesh
-    for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
+    for (uint i = 0u; i < getNbParts(); i++) {
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, NULL);
     }
 
     // Unbind the VAO
@@ -283,18 +283,18 @@ void ConvexMesh::createVBOAndVAO(openglframework::Shader& shader) {
     // Bind the VBO of vertices
     mVBOVertices.bind();
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     // Bind the VBO of normals
     mVBONormals.bind();
     glEnableVertexAttribArray(vertexNormalLoc);
-    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     if (hasTexture()) {
         // Bind the VBO of texture coords
         mVBOTextureCoords.bind();
         glEnableVertexAttribArray(vertexTexCoordLoc);
-        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
     }
 
     // Bind the VBO of indices

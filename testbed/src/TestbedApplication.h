@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "GUI.h"
+#include "Gui.h"
 #include "Scene.h"
 #include "Timer.h"
 #include <GLFW/glfw3.h>

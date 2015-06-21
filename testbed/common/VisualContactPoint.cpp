@@ -94,12 +94,12 @@ void VisualContactPoint::render(openglframework::Shader& shader,
 
     glVertexPointer(3, GL_FLOAT, 0, mMesh.getVerticesPointer());
     glNormalPointer(GL_FLOAT, 0, mMesh.getNormalsPointer());
-    if(mMesh.hasTexture()) {
+    if (mMesh.hasTexture()) {
         glTexCoordPointer(2, GL_FLOAT, 0, mMesh.getUVTextureCoordinatesPointer());
     }
 
     // For each part of the mesh
-    for (unsigned int i=0; i<mMesh.getNbParts(); i++) {
+    for (uint i = 0u; i < mMesh.getNbParts(); i++) {
         glDrawElements(GL_TRIANGLES, mMesh.getNbFaces(i) * 3,
                        GL_UNSIGNED_INT, mMesh.getIndicesPointer());
     }
