@@ -4,6 +4,12 @@ cmake_minimum_required(VERSION 2.6)
 # Project configuration
 PROJECT(Testbed)
 
+IF (CMAKE_BUILD_TYPE MATCHES "Debug")
+    IF (CMAKE_COMPILER_IS_GNUCXX)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
+    ENDIF (CMAKE_COMPILER_IS_GNUCXX)
+ENDIF (CMAKE_BUILD_TYPE MATCHES "Debug")
+
 # Where to build the executables
 SET(EXECUTABLE_OUTPUT_PATH "${OUR_EXECUTABLE_OUTPUT_PATH}/testbed")
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
