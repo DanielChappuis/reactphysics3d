@@ -26,7 +26,8 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
+INCLUDE_DIRECTORIES("../include/reactphysics3d" "src" "opengl-framework/src/"
+                    "glfw/include/" "common/" "scenes/" "imgui/")
 
 # Testbed source files
 SET(TESTBED_SOURCES
