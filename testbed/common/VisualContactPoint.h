@@ -28,6 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
+#include "reactphysics3d.h"
 
 const float VISUAL_CONTACT_POINT_RADIUS = 0.1f;
 

@@ -122,7 +122,6 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
         current->~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
         mNbCollisionShapes--;
-        assert(mNbCollisionShapes >= 0);
         return;
     }
 
@@ -150,8 +149,6 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
         // Get the next element in the list
         current = current->mNext;
     }
-
-    assert(mNbCollisionShapes >= 0);
 }
 
 // Remove all the collision shapes

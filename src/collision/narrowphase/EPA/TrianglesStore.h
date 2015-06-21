@@ -36,7 +36,7 @@
 namespace reactphysics3d {
 
 // Constants
-const unsigned int MAX_TRIANGLES = 200;     // Maximum number of triangles
+const unsigned int MAX_TRIANGLES = 200u;     // Maximum number of triangles
 
 // Class TriangleStore
 /**

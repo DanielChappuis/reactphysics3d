@@ -162,8 +162,8 @@ void Cylinder::render(openglframework::Shader& shader,
     mVAO.bind();
 
     // For each part of the mesh
-    for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
+    for (uint i=0; i<getNbParts(); i++) {
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, NULL);
     }
 
     // Unbind the VAO
@@ -246,18 +246,18 @@ void Cylinder::createVBOAndVAO(openglframework::Shader& shader) {
     // Bind the VBO of vertices
     mVBOVertices.bind();
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     // Bind the VBO of normals
     mVBONormals.bind();
     glEnableVertexAttribArray(vertexNormalLoc);
-    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     if (hasTexture()) {
         // Bind the VBO of texture coords
         mVBOTextureCoords.bind();
         glEnableVertexAttribArray(vertexTexCoordLoc);
-        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
     }
 
     // Bind the VBO of indices

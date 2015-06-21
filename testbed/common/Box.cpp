@@ -189,7 +189,7 @@ void Box::render(openglframework::Shader& shader,
     mVAO.bind();
 
     // Draw the geometry of the box
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (char*)NULL);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
 
     // Unbind the VAO
     mVAO.unbind();

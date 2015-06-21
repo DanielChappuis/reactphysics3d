@@ -158,10 +158,10 @@ class ContactPoint {
         ~ContactPoint();
 
         /// Return the reference to the body 1
-        CollisionBody* const getBody1() const;
+        CollisionBody* getBody1() const;
 
         /// Return the reference to the body 2
-        CollisionBody* const getBody2() const;
+        CollisionBody* getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -231,12 +231,12 @@ class ContactPoint {
 };
 
 // Return the reference to the body 1
-inline CollisionBody* const ContactPoint::getBody1() const {
+inline CollisionBody* ContactPoint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
-inline CollisionBody* const ContactPoint::getBody2() const {
+inline CollisionBody* ContactPoint::getBody2() const {
     return mBody2;
 }
 

@@ -57,7 +57,7 @@ void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Ve
         mLastFoundBit <<= 1;
     }
 
-    assert(mLastFound >= 0 && mLastFound < 4);
+    assert(mLastFound < 4u);
 
     // Add the point into the simplex
     mPoints[mLastFound] = point;
@@ -112,9 +112,9 @@ void Simplex::updateCache() {
 }
 
 // Return the points of the simplex
-unsigned int Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB,
-                                 Vector3* points) const {
-    unsigned int nbVertices = 0;
+uint Simplex::getSimplex(Vector3* suppPointsA, Vector3* suppPointsB,
+                         Vector3* points) const {
+    uint nbVertices = 0u;
     int i;
     Bits bit;
 

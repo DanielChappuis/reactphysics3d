@@ -168,7 +168,7 @@ void TestbedApplication::createScenes() {
 // Remove all the scenes
 void TestbedApplication::destroyScenes() {
 
-    for (int i=0; i<mScenes.size(); i++) {
+    for (uint i = 0u; i < mScenes.size(); i++) {
         delete mScenes[i];
     }
 

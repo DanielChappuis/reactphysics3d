@@ -180,7 +180,7 @@ void Gui::displayScenesPane() {
     std::vector<Scene*> scenes = app.getScenes();
 
     // For each scene
-    for (int i=0; i<scenes.size(); i++) {
+    for (uint i = 0u; i < scenes.size(); i++) {
 
         // Display a radio button
         ImGui::RadioButton(scenes[i]->getName().c_str(), &choice, i);

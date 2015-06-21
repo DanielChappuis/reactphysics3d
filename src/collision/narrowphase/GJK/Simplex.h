@@ -134,8 +134,8 @@ class Simplex {
         bool isEmpty() const;
 
         /// Return the points of the simplex
-        unsigned int getSimplex(Vector3* mSuppPointsA, Vector3* mSuppPointsB,
-                                Vector3* mPoints) const;
+        uint getSimplex(Vector3* mSuppPointsA, Vector3* mSuppPointsB,
+                        Vector3* mPoints) const;
 
         /// Return the maximum squared length of a point
         decimal getMaxLengthSquareOfAPoint() const;

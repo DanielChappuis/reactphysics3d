@@ -106,13 +106,13 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                               transform1.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
-    unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
+    uint nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
 
     // Compute the tolerance
     decimal tolerance = MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
 
     // Number of triangles in the polytope
-    unsigned int nbTriangles = 0;
+    uint nbTriangles = 0u;
 
     // Clear the storing of triangles
     triangleStore.clear();

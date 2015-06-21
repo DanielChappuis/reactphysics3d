@@ -219,16 +219,13 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
 */
 inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
 
-    assert(v1 >= 0);
-    assert(v2 >= 0);
-
     // If the entry for vertex v1 does not exist in the adjacency list
-    if (mEdgesAdjacencyList.count(v1) == 0) {
+    if (mEdgesAdjacencyList.count(v1) == 0u) {
         mEdgesAdjacencyList.insert(std::make_pair(v1, std::set<uint>()));
     }
 
     // If the entry for vertex v2 does not exist in the adjacency list
-    if (mEdgesAdjacencyList.count(v2) == 0) {
+    if (mEdgesAdjacencyList.count(v2) == 0u) {
         mEdgesAdjacencyList.insert(std::make_pair(v2, std::set<uint>()));
     }
 

@@ -297,7 +297,7 @@ inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpuls
 
 // Return a contact point of the manifold
 inline ContactPoint* ContactManifold::getContactPoint(uint index) const {
-    assert(index >= 0 && index < mNbContactPoints);
+    assert(index < mNbContactPoints);
     return mContactPoints[index];
 }
 

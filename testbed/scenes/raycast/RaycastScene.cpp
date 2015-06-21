@@ -32,8 +32,8 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
-       : Scene(name), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
-         mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
+       : Scene(name), mLight0(0), mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
+         mCurrentBodyIndex(-1), mAreNormalsDisplayed(false) {
 
     std::string meshFolderPath("meshes/");
 

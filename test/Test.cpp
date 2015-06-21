@@ -32,7 +32,7 @@ using namespace reactphysics3d;
 
 /// Constructor
 Test::Test(const std::string& name, std::ostream* stream)
-     : mName(name), mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
+     : mName(name), mNbPassedTests(0), mNbFailedTests(0), mOutputStream(stream) {
 
 }
 
