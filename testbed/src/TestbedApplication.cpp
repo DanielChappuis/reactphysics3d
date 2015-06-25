@@ -162,7 +162,7 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(raycastScene);
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[1];
+    mCurrentScene = mScenes[0];
 }
 
 // Remove all the scenes

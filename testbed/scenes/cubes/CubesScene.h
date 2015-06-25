@@ -35,7 +35,7 @@
 namespace cubesscene {
 
 // Constants
-const int NB_CUBES = 200;                                  // Number of boxes in the scene
+const int NB_CUBES = 20;                                  // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                               // Box mass in kilograms
@@ -85,9 +85,6 @@ class CubesScene : public Scene {
 
         /// Reset the scene
         virtual void reset();
-
-        // Check the OpenGL errors
-        static void checkOpenGLErrors();
 };
 
 }

@@ -26,13 +26,18 @@
 // Libraries
 #include "Capsule.h"
 
+openglframework::VertexBufferObject Capsule::mVBOVertices(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Capsule::mVBONormals(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Capsule::mVBOTextureCoords(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Capsule::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
+openglframework::VertexArrayObject Capsule::mVAO;
+int Capsule::totalNbCapsules = 0;
+
 // Constructor
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  reactphysics3d::CollisionWorld* world,
                  const std::string& meshFolderPath, openglframework::Shader& shader)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height), mVBOVertices(GL_ARRAY_BUFFER),
-          mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-          mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
@@ -70,7 +75,11 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbCapsules == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbCapsules++;
 }
 
 // Constructor
@@ -78,8 +87,6 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
                  float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                  const std::string& meshFolderPath, openglframework::Shader &shader)
         : openglframework::Mesh(), mRadius(radius), mHeight(height),
-          mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER),
-          mVBOTextureCoords(GL_ARRAY_BUFFER), mVBOIndices(GL_ELEMENT_ARRAY_BUFFER),
           mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
@@ -118,21 +125,30 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbCapsules == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbCapsules++;
 }
 
 // Destructor
 Capsule::~Capsule() {
 
-    // Destroy the mesh
-    destroy();
+    if (totalNbCapsules == 1) {
 
-    // Destroy the VBOs and VAO
-    mVBOIndices.destroy();
-    mVBOVertices.destroy();
-    mVBONormals.destroy();
-    mVBOTextureCoords.destroy();
-    mVAO.destroy();
+        // Destroy the mesh
+        destroy();
+
+        // Destroy the VBOs and VAO
+        mVBOIndices.destroy();
+        mVBOVertices.destroy();
+        mVBONormals.destroy();
+        mVBOTextureCoords.destroy();
+        mVAO.destroy();
+    }
+
+    totalNbCapsules--;
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -266,4 +282,22 @@ void Capsule::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the shader
     shader.unbind();
+}
+
+// Reset the transform
+void Capsule::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mRigidBody->setTransform(transform);
+
+    mRigidBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }

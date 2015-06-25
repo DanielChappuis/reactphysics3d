@@ -94,6 +94,9 @@ class ConvexMesh : public openglframework::Mesh {
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
+
+        /// Set the position of the box
+        void resetTransform(const rp3d::Transform& transform);
 };
 
 // Return a pointer to the collision body of the box

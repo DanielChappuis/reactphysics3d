@@ -187,6 +187,72 @@ void JointsScene::render() {
 // Reset the scene
 void JointsScene::reset() {
 
+    openglframework::Vector3 positionBox(0, 15, 5);
+    openglframework::Vector3 boxDimension(1, 1, 1);
+
+    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(positionBox.x, positionBox.y, positionBox.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Create a box and a corresponding rigid in the dynamics world
+        mBallAndSocketJointChainBoxes[i]->resetTransform(transform);
+
+        positionBox.y -= boxDimension.y + 0.5f;
+    }
+
+    // --------------- Slider Joint --------------- //
+
+    // Position of the box
+    openglframework::Vector3 positionBox1(0, 2.1f, 0);
+    rp3d::Vector3 initPosition(positionBox1.x, positionBox1.y, positionBox1.z);
+    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transformBottomBox(initPosition, initOrientation);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mSliderJointBottomBox->resetTransform(transformBottomBox);
+
+    // Position of the box
+    openglframework::Vector3 positionBox2(0, 4.2f, 0);
+    initPosition = rp3d::Vector3(positionBox2.x, positionBox2.y, positionBox2.z);
+    initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transformTopBox(initPosition, initOrientation);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mSliderJointTopBox->resetTransform(transformTopBox);
+
+    // --------------- Propeller Hinge joint --------------- //
+
+    // Position of the box
+    positionBox1 = openglframework::Vector3(0, 7, 0);
+    initPosition = rp3d::Vector3(positionBox1.x, positionBox1.y, positionBox1.z);
+    initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transformHingeBox(initPosition, initOrientation);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mPropellerBox->resetTransform(transformHingeBox);
+
+    // --------------- Fixed joint --------------- //
+
+    // Position of the box
+    positionBox1 = openglframework::Vector3(5, 7, 0);
+    initPosition = rp3d::Vector3(positionBox1.x, positionBox1.y, positionBox1.z);
+    initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transformFixedBox1(initPosition, initOrientation);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mFixedJointBox1->resetTransform(transformFixedBox1);
+
+    // Position of the box
+    positionBox2 = openglframework::Vector3(-5, 7, 0);
+    initPosition = rp3d::Vector3(positionBox2.x, positionBox2.y, positionBox2.z);
+    initOrientation = rp3d::Quaternion::identity();
+    rp3d::Transform transformFixedBox2(initPosition, initOrientation);
+
+    // Create a box and a corresponding rigid in the dynamics world
+    mFixedJointBox2->resetTransform(transformFixedBox2);
 }
 
 // Create the boxes and joints for the Ball-and-Socket joint example

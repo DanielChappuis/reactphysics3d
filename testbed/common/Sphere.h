@@ -50,19 +50,22 @@ class Sphere : public openglframework::Mesh {
         rp3d::Transform mPreviousTransform;
 
         /// Vertex Buffer Object for the vertices data
-        openglframework::VertexBufferObject mVBOVertices;
+        static openglframework::VertexBufferObject mVBOVertices;
 
         /// Vertex Buffer Object for the normals data
-        openglframework::VertexBufferObject mVBONormals;
+        static openglframework::VertexBufferObject mVBONormals;
 
         /// Vertex Buffer Object for the texture coords
-        openglframework::VertexBufferObject mVBOTextureCoords;
+        static openglframework::VertexBufferObject mVBOTextureCoords;
 
         /// Vertex Buffer Object for the indices
-        openglframework::VertexBufferObject mVBOIndices;
+        static openglframework::VertexBufferObject mVBOIndices;
 
         /// Vertex Array Object for the vertex data
-        openglframework::VertexArrayObject mVAO;
+        static openglframework::VertexArrayObject mVAO;
+
+        // Total number of capsules created
+        static int totalNbSpheres;
 
         /// Color
         openglframework::Color mColor;
@@ -101,6 +104,9 @@ class Sphere : public openglframework::Mesh {
         /// Render the sphere at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
+
+        /// Set the position of the box
+        void resetTransform(const rp3d::Transform& transform);
 };
 
 // Return a pointer to the collision body of the box

@@ -70,12 +70,24 @@ class RaycastManager : public rp3d::RaycastCallback {
         /// All the normals at hit points
         std::vector<Line*> mNormals;
 
+        /// Shader
+        openglframework::Shader& mShader;
+
+        /// Contact point mesh folder path
+        std::string mMeshFolderPath;
+
    public:
+
+        RaycastManager(openglframework::Shader& shader,
+                       const std::string& meshFolderPath)
+            : mShader(shader), mMeshFolderPath(meshFolderPath) {
+
+        }
 
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            VisualContactPoint* point = new VisualContactPoint(position);
+            VisualContactPoint* point = new VisualContactPoint(position, mShader, mMeshFolderPath);
             mHitPoints.push_back(point);
 
             // Create a line to display the normal at hit point
@@ -87,14 +99,13 @@ class RaycastManager : public rp3d::RaycastCallback {
             return raycastInfo.hitFraction;
         }
 
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix,
+        void render(const openglframework::Matrix4& worldToCameraMatrix,
                     bool showNormals) {
 
             // Render all the raycast hit points
             for (std::vector<VisualContactPoint*>::iterator it = mHitPoints.begin();
                  it != mHitPoints.end(); ++it) {
-                (*it)->render(shader, worldToCameraMatrix);
+                (*it)->render(mShader, worldToCameraMatrix);
             }
 
             if (showNormals) {
@@ -102,7 +113,7 @@ class RaycastManager : public rp3d::RaycastCallback {
                 // Render all the normals at hit points
                 for (std::vector<Line*>::iterator it = mNormals.begin();
                      it != mNormals.end(); ++it) {
-                    (*it)->render(shader, worldToCameraMatrix);
+                    (*it)->render(mShader, worldToCameraMatrix);
                 }
             }
         }
@@ -132,14 +143,17 @@ class RaycastScene : public Scene {
 
         // -------------------- Attributes -------------------- //
 
-        /// Raycast manager
-        RaycastManager mRaycastManager;
-
         /// Light 0
         openglframework::Light mLight0;
 
         /// Phong shader
         openglframework::Shader mPhongShader;
+
+        /// Contact point mesh folder path
+        std::string mMeshFolderPath;
+
+        /// Raycast manager
+        RaycastManager mRaycastManager;
 
         /// All the raycast lines
         std::vector<Line*> mLines;
@@ -164,8 +178,21 @@ class RaycastScene : public Scene {
         /// Collision world used for the physics simulation
         rp3d::CollisionWorld* mCollisionWorld;
 
+        /// All the points to render the lines
+        std::vector<openglframework::Vector3> mLinePoints;
+
+        /// Vertex Buffer Object for the vertices data
+        openglframework::VertexBufferObject mVBOVertices;
+
+        /// Vertex Array Object for the vertex data
+        openglframework::VertexArrayObject mVAO;
+
         /// Create the raycast lines
         void createLines();
+
+        // Create the Vertex Buffer Objects used to render with OpenGL.
+        void createVBOAndVAO(openglframework::Shader& shader);
+
 
     public:
 
@@ -195,6 +222,9 @@ class RaycastScene : public Scene {
 
         /// Display or not the surface normals at hit points
         void showHideNormals();
+
+        /// Called when a keyboard event occurs
+        virtual void keyboardEvent(int key, int scancode, int action, int mods);
 };
 
 // Display or not the surface normals at hit points

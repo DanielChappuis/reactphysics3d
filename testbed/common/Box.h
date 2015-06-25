@@ -77,8 +77,8 @@ class Box : public openglframework::Object3D {
         /// Indices of the cube (used to render the box)
         static GLuint mCubeIndices[36];
 
-        /// True if the VBOs have already been created
-        static bool areVBOsCreated;
+        /// Total number of boxes created
+        static int totalNbBoxes;
 
         /// Main color of the box
         openglframework::Color mColor;
@@ -117,6 +117,9 @@ class Box : public openglframework::Object3D {
 
         /// Set the color of the box
         void setColor(const openglframework::Color& color);
+
+        /// Set the position of the box
+        void resetTransform(const rp3d::Transform& transform);
 };
 
 // Return a pointer to the collision body of the box

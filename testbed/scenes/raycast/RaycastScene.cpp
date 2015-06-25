@@ -33,9 +33,9 @@ using namespace raycastscene;
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
        : Scene(name), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
-         mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
-
-    std::string meshFolderPath("meshes/");
+         mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
+         mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
+         mVBOVertices(GL_ARRAY_BUFFER) {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(50, 50, 50));
@@ -50,14 +50,11 @@ RaycastScene::RaycastScene(const std::string& name)
     // Create the dynamics world for the physics simulation
     mCollisionWorld = new rp3d::CollisionWorld();
 
-    // Create the static data for the visual contact points
-    VisualContactPoint::createStaticData(meshFolderPath);
-
     // ---------- Dumbbell ---------- //
     openglframework::Vector3 position1(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mDumbbell = new Dumbbell(position1, mCollisionWorld, meshFolderPath, mPhongShader);
+    mDumbbell = new Dumbbell(position1, mCollisionWorld, mMeshFolderPath, mPhongShader);
 
     // ---------- Box ---------- //
     openglframework::Vector3 position2(0, 0, 0);
@@ -71,37 +68,40 @@ RaycastScene::RaycastScene(const std::string& name)
 
     // Create a sphere and a corresponding collision body in the dynamics world
     mSphere = new Sphere(SPHERE_RADIUS, position3, mCollisionWorld,
-                         meshFolderPath, mPhongShader);
+                         mMeshFolderPath, mPhongShader);
 
     // ---------- Cone ---------- //
     openglframework::Vector3 position4(0, 0, 0);
 
     // Create a cone and a corresponding collision body in the dynamics world
     mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
-                     meshFolderPath, mPhongShader);
+                     mMeshFolderPath, mPhongShader);
 
     // ---------- Cylinder ---------- //
     openglframework::Vector3 position5(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
-                             mCollisionWorld, meshFolderPath, mPhongShader);
+                             mCollisionWorld, mMeshFolderPath, mPhongShader);
 
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position6 ,
-                           mCollisionWorld, meshFolderPath, mPhongShader);
+                           mCollisionWorld, mMeshFolderPath, mPhongShader);
 
     // ---------- Convex Mesh ---------- //
     openglframework::Vector3 position7(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, meshFolderPath, mPhongShader);
+    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath, mPhongShader);
 
     // Create the lines that will be used for raycasting
     createLines();
+
+    // Create the VBO and VAO to render the lines
+    createVBOAndVAO(mPhongShader);
 
     changeBody();
 }
@@ -128,6 +128,9 @@ void RaycastScene::createLines() {
               openglframework::Vector3 point2(0.0f, 0.0f, 0.0f);
               Line* line = new Line(point1, point2);
               mLines.push_back(line);
+
+              mLinePoints.push_back(point1);
+              mLinePoints.push_back(point2);
           }
       }
 }
@@ -225,6 +228,10 @@ RaycastScene::~RaycastScene() {
          ++it) {
         delete (*it);
     }
+
+    // Destroy the VBOs and VAO
+    mVBOVertices.destroy();
+    mVAO.destroy();
 }
 
 // Update the physics world (take a simulation step)
@@ -264,25 +271,48 @@ void RaycastScene::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
-
     // Bind the shader
     mPhongShader.bind();
 
-    openglframework::Vector4 grey(0.7, 0.7, 0.7, 1);
-    mPhongShader.setVector4Uniform("vertexColor", grey);
+    // Get the world-space to camera-space matrix
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Set the variables of the shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
+    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    const Color& diffColLight0 = mLight0.getDiffuseColor();
-    const Color& specColLight0 = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffColLight0.r, diffColLight0.g, diffColLight0.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specColLight0.r, specColLight0.g, specColLight0.b));
-    mPhongShader.setFloatUniform("shininess", 200.0f);
+    const Color& diffCol = mLight0.getDiffuseColor();
+    const Color& specCol = mLight0.getSpecularColor();
+    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
+    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
+    mPhongShader.setFloatUniform("shininess", 60.0f);
 
+    // Set the model to camera matrix
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix;
+    mPhongShader.setMatrix4x4Uniform("localToCameraMatrix", localToCameraMatrix);
+
+    // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
+    // model-view matrix)
+    const openglframework::Matrix3 normalMatrix =
+                       localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
+    mPhongShader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+
+    // Set the vertex color
+    openglframework::Vector4 color(1, 0, 0, 1);
+    mPhongShader.setVector4Uniform("vertexColor", color);
+
+    // Bind the VAO
+    mVAO.bind();
+
+    // Draw the lines
+    glDrawArrays(GL_LINES, 0, NB_RAYS);
+
+    // Unbind the VAO
+    mVAO.unbind();
+
+    mPhongShader.unbind();
+
+    // Render the shapes
     if (mBox->getCollisionBody()->isActive()) mBox->render(mPhongShader, worldToCameraMatrix);
     if (mSphere->getCollisionBody()->isActive()) mSphere->render(mPhongShader, worldToCameraMatrix);
     if (mCone->getCollisionBody()->isActive()) mCone->render(mPhongShader, worldToCameraMatrix);
@@ -291,7 +321,7 @@ void RaycastScene::render() {
     if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(mPhongShader, worldToCameraMatrix);
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(mPhongShader, worldToCameraMatrix);
 
-    mPhongShader.unbind();
+    //mPhongShader.unbind();
     mPhongShader.bind();
 
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(0, 0, 0));
@@ -299,7 +329,7 @@ void RaycastScene::render() {
     mPhongShader.setVector4Uniform("vertexColor", redColor);
 
     // Render all the raycast hit points
-    mRaycastManager.render(mPhongShader, worldToCameraMatrix, mAreNormalsDisplayed);
+    mRaycastManager.render(worldToCameraMatrix, mAreNormalsDisplayed);
 
     mPhongShader.unbind();
     mPhongShader.bind();
@@ -315,4 +345,46 @@ void RaycastScene::render() {
 
     // Unbind the shader
     mPhongShader.unbind();
+}
+
+// Create the Vertex Buffer Objects used to render with OpenGL.
+/// We create two VBOs (one for vertices and one for indices)
+void RaycastScene::createVBOAndVAO(openglframework::Shader& shader) {
+
+    // Bind the shader
+    shader.bind();
+
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+
+    // Create the VBO for the vertices data
+    mVBOVertices.create();
+    mVBOVertices.bind();
+    size_t sizeVertices = mLinePoints.size() * sizeof(openglframework::Vector3);
+    mVBOVertices.copyDataIntoVBO(sizeVertices, &mLinePoints[0], GL_STATIC_DRAW);
+    mVBOVertices.unbind();
+
+    // Create the VAO for both VBOs
+    mVAO.create();
+    mVAO.bind();
+
+    // Bind the VBO of vertices
+    mVBOVertices.bind();
+    glEnableVertexAttribArray(vertexPositionLoc);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    // Unbind the VAO
+    mVAO.unbind();
+
+    // Unbind the shader
+    shader.unbind();
+}
+
+// Called when a keyboard event occurs
+void RaycastScene::keyboardEvent(int key, int scancode, int action, int mods) {
+
+    // If the space key has been pressed
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        changeBody();
+    }
 }

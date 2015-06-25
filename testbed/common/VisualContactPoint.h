@@ -44,8 +44,26 @@ class VisualContactPoint : public openglframework::Object3D {
         /// Sphere mesh for the visual contact point
         static openglframework::Mesh mMesh;
 
-        /// True if the mesh has been initialized
-        static bool mIsMeshInitialized;
+        /// Vertex Buffer Object for the vertices data
+        static openglframework::VertexBufferObject mVBOVertices;
+
+        /// Vertex Buffer Object for the normals data
+        static openglframework::VertexBufferObject mVBONormals;
+
+        /// Vertex Buffer Object for the indices
+        static openglframework::VertexBufferObject mVBOIndices;
+
+        /// Vertex Array Object for the vertex data
+        static openglframework::VertexArrayObject mVAO;
+
+        /// Total number of points created
+        static int totalNbBoxes;
+
+        /// Color
+        openglframework::Color mColor;
+
+        // Create the Vertex Buffer Objects used to render with OpenGL.
+        static void createVBOAndVAO(openglframework::Shader& shader);
 
         // -------------------- Methods -------------------- //
 
@@ -54,7 +72,9 @@ class VisualContactPoint : public openglframework::Object3D {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        VisualContactPoint(const openglframework::Vector3& position);
+        VisualContactPoint(const openglframework::Vector3& position,
+                           openglframework::Shader &shader,
+                           const std::string &meshFolderPath);
 
         /// Destructor
         ~VisualContactPoint();

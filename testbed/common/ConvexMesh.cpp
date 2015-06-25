@@ -306,3 +306,21 @@ void ConvexMesh::createVBOAndVAO(openglframework::Shader& shader) {
     // Unbind the shader
     shader.unbind();
 }
+
+// Reset the transform
+void ConvexMesh::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mRigidBody->setTransform(transform);
+
+    mRigidBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
+}

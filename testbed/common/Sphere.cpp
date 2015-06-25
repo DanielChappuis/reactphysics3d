@@ -26,13 +26,18 @@
 // Libraries
 #include "Sphere.h"
 
+openglframework::VertexBufferObject Sphere::mVBOVertices(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Sphere::mVBONormals(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Sphere::mVBOTextureCoords(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Sphere::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
+openglframework::VertexArrayObject Sphere::mVAO;
+int Sphere::totalNbSpheres = 0;
+
 // Constructor
 Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                reactphysics3d::CollisionWorld* world,
                const std::string& meshFolderPath, openglframework::Shader& shader)
-       : openglframework::Mesh(), mRadius(radius), mVBOVertices(GL_ARRAY_BUFFER),
-         mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-         mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+       : openglframework::Mesh(), mRadius(radius), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
@@ -70,16 +75,18 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbSpheres == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbSpheres++;
 }
 
 // Constructor
 Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                float mass, reactphysics3d::DynamicsWorld* world,
                const std::string& meshFolderPath, openglframework::Shader& shader)
-       : openglframework::Mesh(), mRadius(radius), mVBOVertices(GL_ARRAY_BUFFER),
-         mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-         mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+       : openglframework::Mesh(), mRadius(radius), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
@@ -117,21 +124,29 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbSpheres == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbSpheres++;
 }
 
 // Destructor
 Sphere::~Sphere() {
 
-    // Destroy the mesh
-    destroy();
+    if (totalNbSpheres == 1) {
+        // Destroy the mesh
+        destroy();
 
-    // Destroy the VBOs and VAO
-    mVBOIndices.destroy();
-    mVBOVertices.destroy();
-    mVBONormals.destroy();
-    mVBOTextureCoords.destroy();
-    mVAO.destroy();
+        // Destroy the VBOs and VAO
+        mVBOIndices.destroy();
+        mVBOVertices.destroy();
+        mVBONormals.destroy();
+        mVBOTextureCoords.destroy();
+        mVAO.destroy();
+    }
+
+    totalNbSpheres--;
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -265,4 +280,22 @@ void Sphere::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the shader
     shader.unbind();
+}
+
+// Reset the transform
+void Sphere::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mRigidBody->setTransform(transform);
+
+    mRigidBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }

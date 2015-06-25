@@ -65,7 +65,7 @@ CubesScene::CubesScene(const std::string& name)
         // Position of the cubes
         float angle = i * 30.0f;
         openglframework::Vector3 position(radius * cos(angle),
-                                          10 + i * (BOX_SIZE.y + 0.3f),
+                                          30 + i * (BOX_SIZE.y + 0.3f),
                                           0);
 
         // Create a cube and a corresponding rigid in the dynamics world
@@ -150,8 +150,6 @@ void CubesScene::update() {
 // Render the scene
 void CubesScene::render() {
 
-    checkOpenGLErrors();
-
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
@@ -172,49 +170,36 @@ void CubesScene::render() {
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
-    checkOpenGLErrors();
-
     // Render all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
         (*it)->render(mPhongShader, worldToCameraMatrix);
     }
-
-    checkOpenGLErrors();
 
     // Render the floor
     mFloor->render(mPhongShader, worldToCameraMatrix);
 
     // Unbind the shader
     mPhongShader.unbind();
-
-    checkOpenGLErrors();
 }
 
 // Reset the scene
 void CubesScene::reset() {
 
-}
+    float radius = 2.0f;
 
-// Check the OpenGL errors
-void CubesScene::checkOpenGLErrors() {
-    GLenum glError;
+    for (int i=0; i<NB_CUBES; i++) {
 
-    // Get the OpenGL errors
-    glError = glGetError();
+        // Position of the cubes
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          10 + i * (BOX_SIZE.y + 0.3f),
+                                          0);
 
-    // While there are errors
-    while (glError != GL_NO_ERROR) {
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
 
-        // Get the error string
-        const GLubyte* stringError = gluErrorString(glError);
-
-        // Display the error
-        if (stringError)
-            std::cerr << "OpenGL Error #" << glError << "(" << gluErrorString(glError) << ")" << std::endl;
-        else
-            std::cerr << "OpenGL Error #" << glError << " (no message available)" << std::endl;
-
-        // Get the next error
-        glError = glGetError();
+        mBoxes[i]->resetTransform(transform);
     }
 }

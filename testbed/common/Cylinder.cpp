@@ -26,14 +26,19 @@
 // Libraries
 #include "Cylinder.h"
 
+openglframework::VertexBufferObject Cylinder::mVBOVertices(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Cylinder::mVBONormals(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Cylinder::mVBOTextureCoords(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Cylinder::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
+openglframework::VertexArrayObject Cylinder::mVAO;
+int Cylinder::totalNbCylinders = 0;
+
 // Constructor
 Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& position,
                    reactphysics3d::CollisionWorld* world,
                    const std::string& meshFolderPath,
                    openglframework::Shader& shader)
      : openglframework::Mesh(), mRadius(radius), mHeight(height),
-       mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER),
-       mVBOTextureCoords(GL_ARRAY_BUFFER), mVBOIndices(GL_ELEMENT_ARRAY_BUFFER),
        mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
@@ -72,7 +77,11 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbCylinders == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbCylinders++;
 }
 
 // Constructor
@@ -80,8 +89,6 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
            float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                    const std::string& meshFolderPath, openglframework::Shader& shader)
      : openglframework::Mesh(), mRadius(radius), mHeight(height),
-       mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER),
-       mVBOTextureCoords(GL_ARRAY_BUFFER), mVBOIndices(GL_ELEMENT_ARRAY_BUFFER),
        mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
@@ -120,21 +127,30 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     mRigidBody = body;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbCylinders == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbCylinders++;
 }
 
 // Destructor
 Cylinder::~Cylinder() {
 
-    // Destroy the mesh
-    destroy();
+    if (totalNbCylinders == 1) {
 
-    // Destroy the VBOs and VAO
-    mVBOIndices.destroy();
-    mVBOVertices.destroy();
-    mVBONormals.destroy();
-    mVBOTextureCoords.destroy();
-    mVAO.destroy();
+        // Destroy the mesh
+        destroy();
+
+        // Destroy the VBOs and VAO
+        mVBOIndices.destroy();
+        mVBOVertices.destroy();
+        mVBONormals.destroy();
+        mVBOTextureCoords.destroy();
+        mVAO.destroy();
+    }
+
+    totalNbCylinders--;
 }
 
 // Render the cylinder at the correct position and with the correct orientation
@@ -268,4 +284,22 @@ void Cylinder::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the shader
     shader.unbind();
+}
+
+// Reset the transform
+void Cylinder::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mRigidBody->setTransform(transform);
+
+    mRigidBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }

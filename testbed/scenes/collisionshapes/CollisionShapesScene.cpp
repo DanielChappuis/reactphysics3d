@@ -58,9 +58,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
-    // Create the static data for the visual contact points
-    VisualContactPoint::createStaticData(meshFolderPath);
-
     float radius = 3.0f;
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
@@ -443,4 +440,130 @@ void CollisionShapesScene::render() {
 /// Reset the scene
 void CollisionShapesScene::reset() {
 
+    float radius = 3.0f;
+
+    for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          100 + i * (DUMBBELL_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mDumbbells[i]->resetTransform(transform);
+    }
+
+    // Create all the boxes of the scene
+    for (int i=0; i<NB_BOXES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          60 + i * (BOX_SIZE.y + 0.8f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mBoxes[i]->resetTransform(transform);
+    }
+
+    // Create all the spheres of the scene
+    for (int i=0; i<NB_CUBES; i++) {
+
+        // Position
+        float angle = i * 35.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          50 + i * (SPHERE_RADIUS + 0.8f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mSpheres[i]->resetTransform(transform);
+    }
+
+    // Create all the cones of the scene
+    for (int i=0; i<NB_CONES; i++) {
+
+        // Position
+        float angle = i * 50.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          35 + i * (CONE_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mCones[i]->resetTransform(transform);
+    }
+
+    // Create all the cylinders of the scene
+    for (int i=0; i<NB_CYLINDERS; i++) {
+
+        // Position
+        float angle = i * 35.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          25 + i * (CYLINDER_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mCylinders[i]->resetTransform(transform);
+    }
+
+    // Create all the capsules of the scene
+    for (int i=0; i<NB_CAPSULES; i++) {
+
+        // Position
+        float angle = i * 45.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          15 + i * (CAPSULE_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mCapsules[i]->resetTransform(transform);
+    }
+
+    // Create all the convex meshes of the scene
+    for (int i=0; i<NB_MESHES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        openglframework::Vector3 position(radius * cos(angle),
+                                          5 + i * (CAPSULE_HEIGHT + 0.3f),
+                                          radius * sin(angle));
+
+        // Initial position and orientation of the rigid body
+        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+        rp3d::Transform transform(initPosition, initOrientation);
+
+        // Reset the transform
+        mConvexMeshes[i]->resetTransform(transform);
+    }
 }

@@ -33,7 +33,7 @@
 openglframework::VertexBufferObject Box::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Box::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
 openglframework::VertexArrayObject Box::mVAO;
-bool Box::areVBOsCreated = false;
+int Box::totalNbBoxes = 0;
 VertexData Box::mCubeVertices[8] = {
  {openglframework::Vector3(1,1,1),openglframework::Vector3(1,1,1),openglframework::Color(1,0,0,1)},
  {openglframework::Vector3(-1,1,1),openglframework::Vector3(-1,1,1),openglframework::Color(1,0,0,1)},
@@ -95,11 +95,13 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     // If the Vertex Buffer object has not been created yet
-    if (!areVBOsCreated) {
+    if (totalNbBoxes == 0) {
 
         // Create the Vertex Buffer
         createVBOAndVAO(shader);
     }
+
+    totalNbBoxes++;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
@@ -142,10 +144,13 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     mRigidBody = body;
 
     // If the Vertex Buffer object has not been created yet
-    if (!areVBOsCreated) {
+    if (totalNbBoxes == 0) {
+
         // Create the Vertex Buffer
         createVBOAndVAO(shader);
     }
+
+    totalNbBoxes++;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
@@ -153,15 +158,15 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 // Destructor
 Box::~Box() {
 
-    if (areVBOsCreated) {
+    if (totalNbBoxes == 1) {
 
         // Destroy the VBOs and VAO
         mVBOIndices.destroy();
         mVBOVertices.destroy();
         mVAO.destroy();
-
-        areVBOsCreated = false;
     }
+
+    totalNbBoxes--;
 }
 
 // Render the cube at the correct position and with the correct orientation
@@ -239,7 +244,6 @@ void Box::createVBOAndVAO(openglframework::Shader& shader) {
     mVBOVertices.bind();
     mVBOVertices.copyDataIntoVBO(sizeof(mCubeVertices), mCubeVertices, GL_STATIC_DRAW);
     mVBOVertices.unbind();
-    size_t test = sizeof(mCubeVertices);
 
     // Create th VBO for the indices data
     mVBOIndices.create();
@@ -268,6 +272,22 @@ void Box::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the shader
     shader.unbind();
+}
 
-    areVBOsCreated = true;
+// Reset the transform
+void Box::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mRigidBody->setTransform(transform);
+
+    mRigidBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }

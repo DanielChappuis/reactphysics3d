@@ -49,6 +49,10 @@ void Line::render(openglframework::Shader& shader,
     // Set the model to camera matrix
     shader.setMatrix4x4Uniform("localToCameraMatrix", worldToCameraMatrix);
 
+    // Set the vertex color
+    openglframework::Vector4 color(1, 0, 0, 1);
+    shader.setVector4Uniform("vertexColor", color);
+
     glBegin(GL_LINES);
         glVertex3f(mWorldPoint1.x, mWorldPoint1.y, mWorldPoint1.z);
         glVertex3f(mWorldPoint2.x, mWorldPoint2.y, mWorldPoint2.z);

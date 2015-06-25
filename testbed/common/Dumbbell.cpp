@@ -26,13 +26,18 @@
 // Libraries
 #include "Dumbbell.h"
 
+openglframework::VertexBufferObject Dumbbell::mVBOVertices(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Dumbbell::mVBONormals(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Dumbbell::mVBOTextureCoords(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Dumbbell::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
+openglframework::VertexArrayObject Dumbbell::mVAO;
+int Dumbbell::totalNbDumbbells = 0;
+
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
                    reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath,
                    openglframework::Shader& shader)
-         : openglframework::Mesh(),mVBOVertices(GL_ARRAY_BUFFER),
-           mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-           mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+         : openglframework::Mesh(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
@@ -91,16 +96,18 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbDumbbells == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbDumbbells++;
 }
 
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
                    reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath,
                    openglframework::Shader& shader)
-         : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
-           mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-           mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+         : openglframework::Mesh(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
@@ -155,21 +162,30 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    if (totalNbDumbbells == 0) {
+        createVBOAndVAO(shader);
+    }
+
+    totalNbDumbbells++;
 }
 
 // Destructor
 Dumbbell::~Dumbbell() {
 
-    // Destroy the mesh
-    destroy();
+    if (totalNbDumbbells == 1) {
 
-    // Destroy the VBOs and VAO
-    mVBOIndices.destroy();
-    mVBOVertices.destroy();
-    mVBONormals.destroy();
-    mVBOTextureCoords.destroy();
-    mVAO.destroy();
+        // Destroy the mesh
+        destroy();
+
+        // Destroy the VBOs and VAO
+        mVBOIndices.destroy();
+        mVBOVertices.destroy();
+        mVBONormals.destroy();
+        mVBOTextureCoords.destroy();
+        mVAO.destroy();
+    }
+
+    totalNbDumbbells--;
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -303,4 +319,22 @@ void Dumbbell::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the shader
     shader.unbind();
+}
+
+// Reset the transform
+void Dumbbell::resetTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mBody->setTransform(transform);
+
+    mBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (rigidBody != NULL) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }
