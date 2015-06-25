@@ -132,7 +132,7 @@ class CollisionBody : public Body {
         const Transform& getTransform() const;
 
         /// Set the current position and orientation
-        void setTransform(const Transform& transform);
+        virtual void setTransform(const Transform& transform);
 
         /// Add a collision shape to the body.
         virtual ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
