@@ -220,6 +220,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
+        /// Set the gravity vector of the world
+        void setGravity(Vector3& gravity);
+
         /// Return if the gravity is on
         bool isGravityEnabled() const;
 
@@ -364,6 +367,14 @@ inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool 
  */
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
+}
+
+// Set the gravity vector of the world
+/**
+ * @param gravity The gravity vector (in meter per seconds squared)
+ */
+inline Vector3 DynamicsWorld::setGravity(Vector3& gravity) {
+    mGravity = gravity;
 }
 
 // Return if the gravity is enaled
