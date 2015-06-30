@@ -81,6 +81,12 @@ class TestbedApplication {
         /// Width and height of the window
         int mWidth, mHeight;
 
+        /// True if the next simulation update is a single physics step
+        bool mSinglePhysicsStepEnabled;
+
+        /// True if the single physics step has been taken already
+        bool mSinglePhysicsStepDone;
+
         // -------------------- Methods -------------------- //
 
         /// Private constructor (for the singleton class)
@@ -97,6 +103,9 @@ class TestbedApplication {
 
         /// Update
         void update();
+
+        /// Update the simulation by taking a single physics step
+        void updateSinglePhysicsStep();
 
         /// Called when the windows is reshaped
         void reshape();
@@ -140,6 +149,15 @@ class TestbedApplication {
         /// Return the list of the scenes
         std::vector<Scene*> getScenes();
 
+        /// Start/stop the simulation
+        void togglePlayPauseSimulation();
+
+        /// Restart the simulation
+        void restartSimulation();
+
+        /// Set the variable to know if we need to take a single physics step
+        void toggleTakeSinglePhysicsStep();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -169,5 +187,31 @@ inline std::vector<Scene*> TestbedApplication::getScenes() {
     return mScenes;
 }
 
+// Start the simulation
+inline void TestbedApplication::togglePlayPauseSimulation() {
+
+    if (mTimer.isRunning()) {
+        mTimer.stop();
+    }
+    else {
+        mTimer.start();
+    }
+}
+
+// Restart the simulation
+inline void TestbedApplication::restartSimulation() {
+    mCurrentScene->reset();
+    mTimer.start();
+}
+
+// Take a single step of simulation
+inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
+    mSinglePhysicsStepEnabled = true;
+    mSinglePhysicsStepDone = false;
+
+    if (mTimer.isRunning()) {
+        mSinglePhysicsStepEnabled = false;
+    }
+}
 
 #endif

@@ -35,8 +35,16 @@ struct EngineSettings {
 
     public:
 
-       float elapsedTime;       // Elapsed time (in seconds)
-       float timeStep;          // Current time step (in seconds)
+       float elapsedTime;                   // Elapsed time (in seconds)
+       float timeStep;                      // Current time step (in seconds)
+       int nbVelocitySolverIterations;      // Nb of velocity solver iterations
+       int nbPositionSolverIterations;      // Nb of position solver iterations
+       bool isSleepingEnabled;              // True if sleeping technique is enabled
+       float timeBeforeSleep;               // Time of inactivity before a body sleep
+       float sleepLinearVelocity;           // Sleep linear velocity
+       float sleepAngularVelocity;          // Sleep angular velocity
+       bool isGravityEnabled;               // True if gravity is enabled
+       openglframework::Vector3 gravity;    // Gravity vector
 
        /// Constructor
        EngineSettings() : elapsedTime(0.0f), timeStep(0.0f) {

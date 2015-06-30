@@ -373,7 +373,7 @@ inline Vector3 DynamicsWorld::getGravity() const {
 /**
  * @param gravity The gravity vector (in meter per seconds squared)
  */
-inline Vector3 DynamicsWorld::setGravity(Vector3& gravity) {
+inline void DynamicsWorld::setGravity(Vector3& gravity) {
     mGravity = gravity;
 }
 

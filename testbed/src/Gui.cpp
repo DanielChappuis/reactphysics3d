@@ -107,6 +107,8 @@ void Gui::init() {
 
 void Gui::displayHeader() {
 
+    TestbedApplication& app = TestbedApplication::getInstance();
+
     ImVec2 buttonSize(120, 40);
 
     int display_w, display_h;
@@ -122,10 +124,23 @@ void Gui::displayHeader() {
 
         ImGui::Begin("Header", NULL, ImVec2(display_w, HEADER_HEIGHT), 1.0f, window_flags);
         ImGui::SetWindowPos(ImVec2(0, 0));
-        ImGui::Button("Play", buttonSize); ImGui::SameLine();
-        ImGui::Button("Pause", buttonSize); ImGui::SameLine();
-        ImGui::Button("Step", buttonSize); ImGui::SameLine();
-        ImGui::Button("Restart", buttonSize); ImGui::SameLine();
+
+        bool isRunning = app.mTimer.isRunning();
+        if (ImGui::Button(isRunning ? "Pause" : "Play", buttonSize)) {
+            app.togglePlayPauseSimulation();
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Step", buttonSize)) {
+            app.toggleTakeSinglePhysicsStep();
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Restart", buttonSize)) {
+            app.restartSimulation();
+        }
+        ImGui::SameLine();
+
         ImGui::End();
 
     ImGui::PopStyleColor(1);
@@ -152,8 +167,16 @@ void Gui::displayLeftPane() {
         ImGui::SetWindowPos(ImVec2(0, HEADER_HEIGHT));
 
         // ----- Left Pane Header ----- //
-        ImGui::Button("Scenes", buttonSize); ImGui::SameLine();
-        ImGui::Button("Physics", buttonSize); ImGui::SameLine();
+        if (ImGui::Button("Scenes", buttonSize)) {
+            mLeftPane = SCENES;
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Physics", buttonSize)) {
+            mLeftPane = PHYSICS;
+        }
+        ImGui::SameLine();
+
         ImGui::Button("Rendering", buttonSize); ImGui::SameLine();
         ImGui::Button("Profiling", buttonSize);
 
@@ -194,6 +217,11 @@ void Gui::displayScenesPane() {
 
 void Gui::displayPhysicsPane() {
 
+    TestbedApplication& app = TestbedApplication::getInstance();
+
+    // Physics time step
+    //float timestep = app.ge;
+    //ImGui::InputFloat("Timestep", &timestep, 0.01f, 1.0f);
 }
 
 void Gui::displayRenderingPane() {
@@ -240,10 +268,6 @@ void Gui::render() {
     ImGuiIO& io = ImGui::GetIO();
     //glfwPollEvents();
     beginNewFrame();
-
-    bool show_test_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImColor(255, 255, 255);
 
     displayHeader();
     displayLeftPane();

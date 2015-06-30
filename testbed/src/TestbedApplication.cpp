@@ -50,13 +50,15 @@ TestbedApplication& TestbedApplication::getInstance() {
 }
 
 // Constructor
-TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0){
+TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0) {
 
     mCurrentScene = NULL;
     mEngineSettings.timeStep = DEFAULT_TIMESTEP;
     mIsMultisamplingActive = true;
     mWidth = 1280;
     mHeight = 720;
+    mSinglePhysicsStepEnabled = false;
+    mSinglePhysicsStepDone = false;
 }
 
 // Destructor
@@ -175,6 +177,13 @@ void TestbedApplication::destroyScenes() {
     mCurrentScene = NULL;
 }
 
+void TestbedApplication::updateSinglePhysicsStep() {
+
+    assert(!mTimer.isRunning());
+
+    mCurrentScene->updatePhysics();
+}
+
 // Update the physics of the current scene
 void TestbedApplication::updatePhysics() {
 
@@ -202,7 +211,13 @@ void TestbedApplication::updatePhysics() {
 void TestbedApplication::update() {
 
     // Update the physics
-    updatePhysics();
+    if (mSinglePhysicsStepEnabled && !mSinglePhysicsStepDone) {
+        updateSinglePhysicsStep();
+        mSinglePhysicsStepDone = true;
+    }
+    else {
+        updatePhysics();
+    }
 
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
