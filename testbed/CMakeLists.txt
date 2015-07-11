@@ -19,6 +19,14 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 # Copy the meshes used for the demo into the build directory
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
+# Copy the fonts used for the GUI into the build directory
+FILE(COPY "imgui/DroidSans.ttf" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
+
+# Enable C++11 features
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
+#ADD_DEFINITIONS(-DGL3)
+
 # Headers
 INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
@@ -37,11 +45,10 @@ SET(TESTBED_SOURCES
 
 # IMGUI source files
 SET(IMGUI_SOURCES
-    imgui/imgui.h
     imgui/imgui.cpp
-    imgui/imconfig.h
-    imgui/stb_rect_pack.h
-    imgui/stb_textedit.h
+    imgui/imgui.h
+    imgui/imguiRenderGL3.h
+    imgui/imguiRenderGL3.cpp
     imgui/stb_truetype.h
 )
 

@@ -40,6 +40,8 @@ Shader Gui::mShader;
 openglframework::VertexBufferObject Gui::mVBO(GL_ARRAY_BUFFER);
 openglframework::VertexArrayObject Gui::mVAO;
 Gui::LeftPane Gui::mLeftPane = SCENES;
+double Gui::mScrollX = 0.0;
+double Gui::mScrollY = 0.0;
 
 // Constructor
 Gui::Gui() {
@@ -61,13 +63,7 @@ Gui::~Gui() {
 
     mShader.destroy();
 
-    if (g_FontTexture)
-    {
-        glDeleteTextures(1, &g_FontTexture);
-        ImGui::GetIO().Fonts->TexID = 0;
-        g_FontTexture = 0;
-    }
-    ImGui::Shutdown();
+    imguiRenderGLDestroy();
 }
 
 // Create and return the singleton instance of this class
@@ -79,149 +75,196 @@ Gui& Gui::getInstance() {
 /// Initialize the GUI
 void Gui::init() {
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
-    io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
-    io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
-    io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
-    io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
-    io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
-    io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
-    io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
-    io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
-    io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
-    io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
-    io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
-
-    io.RenderDrawListsFn = renderDrawLists;
-    io.SetClipboardTextFn = setClipboardText;
-    io.GetClipboardTextFn = getClipboardText;
-
-    io.FontGlobalScale = GUI_SCALING;
+    // Init UI
+    if (!imguiRenderGLInit("DroidSans.ttf")) {
+        fprintf(stderr, "Could not init GUI renderer.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void Gui::displayHeader() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
 
-    ImVec2 buttonSize(120, 40);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
 
-    int display_w, display_h;
-    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
+    const int button_width = 150;
 
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoResize;
-    window_flags |= ImGuiWindowFlags_NoMove;
+    int scrollarea = 0;
+    imguiBeginScrollArea(NULL, 0, app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT),
+                         app.mWindowToFramebufferRatio.x * windowWidth,
+                         app.mWindowToFramebufferRatio.y * HEADER_HEIGHT, &scrollarea);
 
-    ImGui::PushID("Header");
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, BACKGROUND_COLOR);
+    imguiStartLineOfItems();
 
-        ImGui::Begin("Header", NULL, ImVec2(display_w, HEADER_HEIGHT), 1.0f, window_flags);
-        ImGui::SetWindowPos(ImVec2(0, 0));
+    // ----- Left Pane Header ----- //
 
-        bool isRunning = app.mTimer.isRunning();
-        if (ImGui::Button(isRunning ? "Pause" : "Play", buttonSize)) {
-            app.togglePlayPauseSimulation();
-        }
-        ImGui::SameLine();
+    // Play/Pause
+    if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width)) {
+        app.togglePlayPauseSimulation();
+    }
 
-        if (ImGui::Button("Step", buttonSize)) {
-            app.toggleTakeSinglePhysicsStep();
-        }
-        ImGui::SameLine();
+    // Step
+    if (imguiButton("Step", !app.mTimer.isRunning(), button_width)) {
+        app.toggleTakeSinglePhysicsStep();
+    }
 
-        if (ImGui::Button("Restart", buttonSize)) {
-            app.restartSimulation();
-        }
-        ImGui::SameLine();
+    // Restart
+    if (imguiButton("Restart", true, button_width)) {
+        app.restartSimulation();
+    }
 
-        ImGui::End();
-
-    ImGui::PopStyleColor(1);
-    ImGui::PopID();
+    imguiEndLineOfItems();
+    imguiEndScrollArea();
 }
 
 void Gui::displayLeftPane() {
 
-    const int nbButtonsHeader = 4;
-    ImVec2 buttonSize(LEFT_PANE_WIDTH / nbButtonsHeader - 9, LEFT_PANE_HEADER_HEIGHT);
+    TestbedApplication& app = TestbedApplication::getInstance();
 
-    int display_w, display_h;
-    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
 
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoResize;
-    window_flags |= ImGuiWindowFlags_NoMove;
+    int scrollarea = 0;
+    imguiBeginScrollArea(NULL, 0, app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+                         app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                         app.mWindowToFramebufferRatio.y * LEFT_PANE_HEADER_HEIGHT, &scrollarea);
 
-    ImGui::PushID("LeftPane");
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, BACKGROUND_COLOR);
+    imguiStartLineOfItems();
 
-        ImGui::Begin("LeftPane", NULL, ImVec2(LEFT_PANE_WIDTH, display_h - HEADER_HEIGHT), 1.0f, window_flags);
-        ImGui::SetWindowPos(ImVec2(0, HEADER_HEIGHT));
+    // ----- Left Pane Header ----- //
+    int widthButton = app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH / 5;
+    if (imguiButton("Scenes", true, widthButton)) {
+        mLeftPane = SCENES;
+    }
 
-        // ----- Left Pane Header ----- //
-        if (ImGui::Button("Scenes", buttonSize)) {
-            mLeftPane = SCENES;
-        }
-        ImGui::SameLine();
+    if (imguiButton("Physics", true, widthButton)) {
+        mLeftPane = PHYSICS;
+    }
 
-        if (ImGui::Button("Physics", buttonSize)) {
-            mLeftPane = PHYSICS;
-        }
-        ImGui::SameLine();
+    imguiButton("Rendering", true, widthButton);
+    imguiButton("Profiling", true, widthButton);
+    imguiEndLineOfItems();
+    imguiEndScrollArea();
 
-        ImGui::Button("Rendering", buttonSize); ImGui::SameLine();
-        ImGui::Button("Profiling", buttonSize);
-
-        // Display the left pane content
-        switch(mLeftPane) {
-            case SCENES: displayScenesPane(); break;
-            case PHYSICS: displayPhysicsPane(); break;
-            case RENDERING: displayRenderingPane(); break;
-            case PROFILING: displayProfilingPane(); break;
-        }
-
-        ImGui::End();
-
-    ImGui::PopStyleColor(1);
-    ImGui::PopID();
+    // Display the left pane content
+    switch(mLeftPane) {
+        case SCENES: displayScenesPane(); break;
+        case PHYSICS: displayPhysicsPane(); break;
+        case RENDERING: displayRenderingPane(); break;
+        case PROFILING: displayProfilingPane(); break;
+    }
 }
 
 // Display the list of scenes
 void Gui::displayScenesPane() {
 
+    TestbedApplication& app = TestbedApplication::getInstance();
+
     static int choice = 0;
     int startChoice = choice;
-    TestbedApplication& app = TestbedApplication::getInstance();
+    int scrollarea = 1;
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
     std::vector<Scene*> scenes = app.getScenes();
+
+    imguiBeginScrollArea("Scenes", 0, 0,
+                         app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                         app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+                         &scrollarea);
 
     // For each scene
     for (int i=0; i<scenes.size(); i++) {
 
         // Display a radio button
-        ImGui::RadioButton(scenes[i]->getName().c_str(), &choice, i);
+        if (imguiCheck(scenes[i]->getName().c_str(), choice == i)) {
+            choice = i;
+        }
     }
-
-    // If the user changed scene
     if (choice != startChoice) {
         app.switchScene(scenes[choice]);
     }
+
+    imguiEndScrollArea();
 }
 
 void Gui::displayPhysicsPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
 
-    // Physics time step
-    //float timestep = app.ge;
-    //ImGui::InputFloat("Timestep", &timestep, 0.01f, 1.0f);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
+    int scrollarea = 2;
+    imguiBeginScrollArea("Physics Engine Parameters", 0, 0,
+                         app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                         app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+                         &scrollarea);
+
+    // Enabled/Disable Sleeping
+    bool toggle = imguiCheck("Sleeping enabled", app.mEngineSettings.isSleepingEnabled);
+    if (toggle) {
+        app.mEngineSettings.isSleepingEnabled = !app.mEngineSettings.isSleepingEnabled;
+    }
+
+    // Enabled/Disable Gravity
+    toggle = imguiCheck("Gravity enabled", app.mEngineSettings.isGravityEnabled);
+    if (toggle) {
+        app.mEngineSettings.isGravityEnabled = !app.mEngineSettings.isGravityEnabled;
+    }
+
+    // Timestep
+    float timeStep = app.mEngineSettings.timeStep;
+    if (imguiSlider("Timestep", &timeStep, 0.001f, 1.0f, 0.001f)) {
+        app.mEngineSettings.timeStep = timeStep;
+    }
+
+    // Nb velocity solver iterations
+    float nbVelocityIterations = static_cast<float>(app.mEngineSettings.nbVelocitySolverIterations);
+    if (imguiSlider("Velocity Solver Iterations", &nbVelocityIterations, 1.0f, 100.0f, 1.0f)) {
+        app.mEngineSettings.nbVelocitySolverIterations = static_cast<int>(nbVelocityIterations);
+    }
+
+    // Nb position solver iterations
+    float nbPositionIterations = static_cast<float>(app.mEngineSettings.nbPositionSolverIterations);
+    if (imguiSlider("Position Solver Iterations", &nbPositionIterations, 1.0f, 100.0f, 1.0f)) {
+        app.mEngineSettings.nbPositionSolverIterations = static_cast<int>(nbPositionIterations);
+    }
+
+    // Time before sleep
+    float timeBeforeSleep = app.mEngineSettings.timeBeforeSleep;
+    if (imguiSlider("Time before sleep", &timeBeforeSleep, 0.0f, 60.0f, 0.5f)) {
+        app.mEngineSettings.timeBeforeSleep = timeBeforeSleep;
+    }
+
+    // Sleep linear velocity
+    float sleepLinearVelocity = app.mEngineSettings.sleepLinearVelocity;
+    if (imguiSlider("Sleep linear velocity", &sleepLinearVelocity, 0.0f, 30.0f, 0.5f)) {
+        app.mEngineSettings.sleepLinearVelocity = sleepLinearVelocity;
+    }
+
+    // Sleep angular velocity
+    float sleepAngularVelocity = app.mEngineSettings.sleepAngularVelocity;
+    if (imguiSlider("Sleep angular velocity", &sleepAngularVelocity, 0.0f, 30.0f, 0.5f)) {
+        app.mEngineSettings.sleepAngularVelocity = sleepAngularVelocity;
+    }
+
+    // Gravity vector
+    openglframework::Vector3 gravity = app.mEngineSettings.gravity;
+    float gravityX = gravity.x, gravityY = gravity.y, gravityZ = gravity.z;
+    if (imguiSlider("Gravity X", &gravityX, -50.0f, 50.0f, 0.5f)) {
+        app.mEngineSettings.gravity.x = gravityX;
+    }
+    if (imguiSlider("Gravity Y", &gravityY, -50.0f, 50.0f, 0.5f)) {
+        app.mEngineSettings.gravity.y = gravityY;
+    }
+    if (imguiSlider("Gravity Z", &gravityZ, -50.0f, 50.0f, 0.5f)) {
+        app.mEngineSettings.gravity.z = gravityZ;
+    }
+
+    imguiEndScrollArea();
 }
 
 void Gui::displayRenderingPane() {
@@ -232,224 +275,40 @@ void Gui::displayProfilingPane() {
 
 }
 
-void Gui::createDeviceObjects() {
-
-    mShader.create("shaders/gui.vert", "shaders/gui.frag");
-
-    GLuint shaderID = mShader.getProgramObjectId();
-    g_AttribLocationTex = glGetUniformLocation(shaderID, "Texture");
-    g_AttribLocationProjMtx = glGetUniformLocation(shaderID, "ProjMtx");
-    g_AttribLocationPosition = glGetAttribLocation(shaderID, "Position");
-    g_AttribLocationUV = glGetAttribLocation(shaderID, "UV");
-    g_AttribLocationColor = glGetAttribLocation(shaderID, "Color");
-
-    mVBO.create();
-
-    mVAO.create();
-    mVAO.bind();
-    mVBO.bind();
-    glEnableVertexAttribArray(g_AttribLocationPosition);
-    glEnableVertexAttribArray(g_AttribLocationUV);
-    glEnableVertexAttribArray(g_AttribLocationColor);
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-    glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-    glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-    glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
-#undef OFFSETOF
-    mVAO.unbind();
-    mVBO.unbind();
-
-    createFontTextures();
-}
-
 // Display the GUI
 void Gui::render() {
 
-    ImGuiIO& io = ImGui::GetIO();
-    //glfwPollEvents();
-    beginNewFrame();
+    TestbedApplication& app = TestbedApplication::getInstance();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
+    // Mouse position
+    double mouseX, mouseY;
+    glfwGetCursorPos(mWindow, &mouseX, &mouseY);
+
+    // Mouse buttons
+    int leftButton = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT);
+    unsigned char mousebutton = 0;
+    if(leftButton == GLFW_PRESS ) {
+        mousebutton |= IMGUI_MBUT_LEFT;
+    }
+
+    imguiBeginFrame(app.mWindowToFramebufferRatio.x * mouseX,
+                    app.mWindowToFramebufferRatio.y * (windowHeight - mouseY), mousebutton, -mScrollY);
+    resetScroll();
 
     displayHeader();
     displayLeftPane();
 
-    ImGui::ShowTestWindow();
+    imguiEndFrame();
 
-    // Render the GUI
-    ImGui::Render();
-}
-
-void Gui::beginNewFrame() {
-
-    if (!g_FontTexture)
-        createDeviceObjects();
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Setup display size (every frame to accommodate for window resizing)
-    int w, h;
-    int display_w, display_h;
-    glfwGetWindowSize(mWindow, &w, &h);
-    glfwGetFramebufferSize(mWindow, &display_w, &display_h);
-    io.DisplaySize = ImVec2((float)display_w, (float)display_h);
-
-    // Setup time step
-    double current_time =  glfwGetTime();
-    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
-    g_Time = current_time;
-
-    // Setup inputs
-    // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-    if (glfwGetWindowAttrib(mWindow, GLFW_FOCUSED))
-    {
-        double mouse_x, mouse_y;
-        glfwGetCursorPos(mWindow, &mouse_x, &mouse_y);
-        mouse_x *= (float)display_w / w;                        // Convert mouse coordinates to pixels
-        mouse_y *= (float)display_h / h;
-        io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
-    }
-    else
-    {
-        io.MousePos = ImVec2(-1,-1);
-    }
-
-    for (int i = 0; i < 3; i++)
-    {
-        io.MouseDown[i] = g_MousePressed[i] || glfwGetMouseButton(mWindow, i) != 0;    // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-        g_MousePressed[i] = false;
-    }
-
-    io.MouseWheel = g_MouseWheel;
-    g_MouseWheel = 0.0f;
-
-    // Hide/show hardware mouse cursor
-    glfwSetInputMode(mWindow, GLFW_CURSOR, io.MouseDrawCursor ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
-
-    // Start the frame
-    ImGui::NewFrame();
-}
-
-void Gui::createFontTextures()
-{
-    ImGuiIO& io = ImGui::GetIO();
-
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
-
-    glGenTextures(1, &g_FontTexture);
-    glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-    // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
-}
-
-// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
-// If text or lines are blurry when integrating ImGui in your engine:
-// - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-void Gui::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
-{
-    if (cmd_lists_count == 0)
-        return;
-
-    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
-    GLint last_program, last_texture;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_SCISSOR_TEST);
-    glActiveTexture(GL_TEXTURE0);
-
-
-    // Setup orthographic projection matrix
-    const float width = ImGui::GetIO().DisplaySize.x;
-    const float height = ImGui::GetIO().DisplaySize.y;
-    Matrix4 orthoProj(2.0f / width, 0.0f, 0.0f, 0.0f,
-                      0.0f, 2.0/-height, 0.0f, 0.0f,
-                      0.0f, 0.0f, -1.0f, 0.0f,
-                      -1.0f, 1.0f, 0.0f, 1.0f);
-    const float ortho_projection[4][4] =
-    {
-        { 2.0f/width,	0.0f,			0.0f,		0.0f },
-        { 0.0f,			2.0f/-height,	0.0f,		0.0f },
-        { 0.0f,			0.0f,			-1.0f,		0.0f },
-        { -1.0f,		1.0f,			0.0f,		1.0f },
-    };
-
-    mShader.bind();
-    //mShader.setIntUniform("Texture", 0);
-    //mShader.setMatrix4x4Uniform("ProjMtx", orthoProj);
-    ///glUseProgram(g_ShaderHandle);
-    glUniform1i(g_AttribLocationTex, 0);
-    glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
-
-    // Grow our buffer according to what we need
-    size_t total_vtx_count = 0;
-    for (int n = 0; n < cmd_lists_count; n++)
-        total_vtx_count += cmd_lists[n]->vtx_buffer.size();
-    mVBO.bind();
-    size_t needed_vtx_size = total_vtx_count * sizeof(ImDrawVert);
-    if (g_VboSize < needed_vtx_size)
-    {
-        g_VboSize = needed_vtx_size + 5000 * sizeof(ImDrawVert);  // Grow buffer
-        mVBO.copyDataIntoVBO(g_VboSize, NULL, GL_STREAM_DRAW);
-        //glBufferData(GL_ARRAY_BUFFER, g_VboSize, NULL, GL_STREAM_DRAW);
-    }
-
-    // Copy and convert all vertices into a single contiguous buffer
-    unsigned char* buffer_data = (unsigned char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    if (!buffer_data)
-        return;
-    for (int n = 0; n < cmd_lists_count; n++)
-    {
-        const ImDrawList* cmd_list = cmd_lists[n];
-        memcpy(buffer_data, &cmd_list->vtx_buffer[0], cmd_list->vtx_buffer.size() * sizeof(ImDrawVert));
-        buffer_data += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    mVBO.unbind();
-    mVAO.bind();
-
-    int cmd_offset = 0;
-    for (int n = 0; n < cmd_lists_count; n++)
-    {
-        const ImDrawList* cmd_list = cmd_lists[n];
-        int vtx_offset = cmd_offset;
-        const ImDrawCmd* pcmd_end = cmd_list->commands.end();
-        for (const ImDrawCmd* pcmd = cmd_list->commands.begin(); pcmd != pcmd_end; pcmd++)
-        {
-            if (pcmd->user_callback)
-            {
-                pcmd->user_callback(cmd_list, pcmd);
-            }
-            else
-            {
-                glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->texture_id);
-                glScissor((int)pcmd->clip_rect.x, (int)(height - pcmd->clip_rect.w), (int)(pcmd->clip_rect.z - pcmd->clip_rect.x), (int)(pcmd->clip_rect.w - pcmd->clip_rect.y));
-                glDrawArrays(GL_TRIANGLES, vtx_offset, pcmd->vtx_count);
-            }
-            vtx_offset += pcmd->vtx_count;
-        }
-        cmd_offset = vtx_offset;
-    }
-
-    // Restore modified state
-    mVAO.unbind();
-    glUseProgram(last_program);
-    glDisable(GL_SCISSOR_TEST);
-    glBindTexture(GL_TEXTURE_2D, last_texture);
-}
-
-const char* Gui::getClipboardText() {
-    return glfwGetClipboardString(mWindow);
-}
-
-void Gui::setClipboardText(const char* text) {
-    glfwSetClipboardString(mWindow, text);
+    imguiRenderGLDraw(display_w, display_h);
 }

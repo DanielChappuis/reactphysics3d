@@ -72,6 +72,17 @@ JointsScene::JointsScene(const std::string& name)
 
     // Create the floor
     createFloor();
+
+    // Get the physics engine parameters
+    mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
+    rp3d::Vector3 gravityVector = mDynamicsWorld->getGravity();
+    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
+    mEngineSettings.isSleepingEnabled = mDynamicsWorld->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = mDynamicsWorld->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = mDynamicsWorld->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = mDynamicsWorld->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = mDynamicsWorld->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = mDynamicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
@@ -118,6 +129,18 @@ JointsScene::~JointsScene() {
 
 // Update the physics world (take a simulation step)
 void JointsScene::updatePhysics() {
+
+    // Update the physics engine parameters
+    mDynamicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
+                                     mEngineSettings.gravity.z);
+    mDynamicsWorld->setGravity(gravity);
+    mDynamicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+    mDynamicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+    mDynamicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+    mDynamicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+    mDynamicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+    mDynamicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
 
     // Update the motor speed of the Slider Joint (to move up and down)
     long double motorSpeed = 2 * cos(mEngineSettings.elapsedTime * 1.5);

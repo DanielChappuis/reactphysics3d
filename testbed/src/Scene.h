@@ -155,6 +155,9 @@ class Scene {
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
 
+        /// Get the engine settings
+        EngineSettings getEngineSettings() const;
+
         /// Set the engine settings
         void setEngineSettings(const EngineSettings& settings);
 
@@ -184,6 +187,11 @@ inline const openglframework::Camera& Scene::getCamera() const  {
 inline void Scene::setWindowDimension(int width, int height) {
     mWindowWidth = width;
     mWindowHeight = height;
+}
+
+// Get the engine settings
+inline EngineSettings Scene::getEngineSettings() const {
+    return mEngineSettings;
 }
 
 // Set the engine settings

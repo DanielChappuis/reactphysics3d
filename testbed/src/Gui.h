@@ -27,7 +27,8 @@
 #define	GUI_H
 
 // Libraries
-#include <imgui.h>
+#include "imgui.h"
+#include "imguiRenderGL3.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "openglframework.h"
@@ -35,9 +36,8 @@
 // Constants
 const float GUI_SCALING = 2.0f;
 const int HEADER_HEIGHT = 80;
-const int LEFT_PANE_WIDTH = 700;
+const int LEFT_PANE_WIDTH = 300;
 const int LEFT_PANE_HEADER_HEIGHT = 60;
-const ImColor BACKGROUND_COLOR = ImColor(41, 41, 41, 255);
 
 using namespace openglframework;
 
@@ -72,20 +72,9 @@ class Gui {
         static openglframework::VertexArrayObject mVAO;
         static LeftPane mLeftPane;
 
+        static double mScrollX, mScrollY;
 
         // -------------------- Methods -------------------- //
-
-        void createDeviceObjects();
-
-        void createFontTextures();
-
-        void beginNewFrame();
-
-        static void renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
-
-        static const char* getClipboardText();
-
-        static void setClipboardText(const char* text);
 
         static void displayHeader();
         static void displayLeftPane();
@@ -96,6 +85,9 @@ class Gui {
         static void displayPhysicsPane();
         static void displayRenderingPane();
         static void displayProfilingPane();
+
+        static void resetScroll();
+
 
     public :
 
@@ -117,10 +109,22 @@ class Gui {
         void render();
 
         static void setWindow(GLFWwindow* window);
+
+        static void setScroll(double scrollX, double scrollY);
 };
 
 inline void Gui::setWindow(GLFWwindow* window) {
     mWindow = window;
+}
+
+inline void Gui::resetScroll() {
+    mScrollX = 0.0;
+    mScrollY = 0.0;
+}
+
+inline void Gui::setScroll(double scrollX, double scrollY) {
+    mScrollX = scrollX;
+    mScrollY = scrollY;
 }
 
 #endif

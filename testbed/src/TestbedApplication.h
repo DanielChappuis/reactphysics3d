@@ -87,6 +87,8 @@ class TestbedApplication {
         /// True if the single physics step has been taken already
         bool mSinglePhysicsStepDone;
 
+        openglframework::Vector2 mWindowToFramebufferRatio;
+
         // -------------------- Methods -------------------- //
 
         /// Private constructor (for the singleton class)

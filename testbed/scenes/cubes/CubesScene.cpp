@@ -89,6 +89,17 @@ CubesScene::CubesScene(const std::string& name)
     // Change the material properties of the floor rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.3));
+
+    // Get the physics engine parameters
+    mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
+    rp3d::Vector3 gravityVector = mDynamicsWorld->getGravity();
+    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
+    mEngineSettings.isSleepingEnabled = mDynamicsWorld->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = mDynamicsWorld->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = mDynamicsWorld->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = mDynamicsWorld->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = mDynamicsWorld->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = mDynamicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
@@ -119,6 +130,19 @@ CubesScene::~CubesScene() {
 
 // Update the physics world (take a simulation step)
 void CubesScene::updatePhysics() {
+
+
+    // Update the physics engine parameters
+    mDynamicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
+                                     mEngineSettings.gravity.z);
+    mDynamicsWorld->setGravity(gravity);
+    mDynamicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+    mDynamicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+    mDynamicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+    mDynamicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+    mDynamicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+    mDynamicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
 
     // Take a simulation step
     mDynamicsWorld->update(mEngineSettings.timeStep);

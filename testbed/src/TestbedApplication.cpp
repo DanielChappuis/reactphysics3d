@@ -53,12 +53,12 @@ TestbedApplication& TestbedApplication::getInstance() {
 TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0) {
 
     mCurrentScene = NULL;
-    mEngineSettings.timeStep = DEFAULT_TIMESTEP;
     mIsMultisamplingActive = true;
     mWidth = 1280;
     mHeight = 720;
     mSinglePhysicsStepEnabled = false;
     mSinglePhysicsStepDone = false;
+    mWindowToFramebufferRatio = Vector2(1, 1);
 }
 
 // Destructor
@@ -164,7 +164,11 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(raycastScene);
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[0];
+    mCurrentScene = mScenes[1];
+
+    // Get the engine settings from the scene
+    mEngineSettings = mCurrentScene->getEngineSettings();
+    mEngineSettings.timeStep = DEFAULT_TIMESTEP;
 }
 
 // Remove all the scenes
@@ -236,19 +240,24 @@ void TestbedApplication::update() {
 // Render
 void TestbedApplication::render() {
 
-    // Get the framebuffer dimension
-    int width, height;
-    glfwGetFramebufferSize(mWindow, &width, &height);
+    int bufferWidth, bufferHeight;
+    glfwGetFramebufferSize(mWindow, &bufferWidth, &bufferHeight);
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
+    // Compute the window to framebuffer ratio
+    mWindowToFramebufferRatio.x = float(bufferWidth) / float(windowWidth);
+    mWindowToFramebufferRatio.y = float(bufferHeight) / float(windowHeight);
 
     // Resize the OpenGL viewport
-    glViewport(LEFT_PANE_WIDTH, HEADER_HEIGHT,
-               width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
+    glViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+               0,
+               bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+               bufferHeight - mWindowToFramebufferRatio.y * HEADER_HEIGHT);
 
     // Render the scene
     mCurrentScene->render();
-
-    // Resize the OpenGL viewport
-    glViewport(0, 0, width, height);
 
     // Display the GUI
     Gui::getInstance().render();
@@ -310,6 +319,11 @@ void TestbedApplication::switchScene(Scene* newScene) {
     if (newScene == mCurrentScene) return;
 
     mCurrentScene = newScene;
+
+    // Get the engine settings of the scene
+    float currentTimeStep = mEngineSettings.timeStep;
+    mEngineSettings = mCurrentScene->getEngineSettings();
+    mEngineSettings.timeStep = currentTimeStep;
 
     // Reset the scene
     mCurrentScene->reset();
@@ -397,6 +411,10 @@ void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
 
 // Callback method to receive scrolling events
 void TestbedApplication::scroll(GLFWwindow* window, double xAxis, double yAxis) {
+
+    // Update scroll on the GUI
+    Gui::getInstance().setScroll(xAxis, yAxis);
+
     getInstance().mCurrentScene->scrollingEvent(xAxis, yAxis, SCROLL_SENSITIVITY);
 }
 
