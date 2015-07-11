@@ -189,8 +189,14 @@ class DynamicsWorld : public CollisionWorld {
         /// Update the physics simulation
         void update(decimal timeStep);
 
+        /// Get the number of iterations for the velocity constraint solver
+        uint getNbIterationsVelocitySolver() const;
+
         /// Set the number of iterations for the velocity constraint solver
         void setNbIterationsVelocitySolver(uint nbIterations);
+
+        /// Get the number of iterations for the position constraint solver
+        uint getNbIterationsPositionSolver() const;
 
         /// Set the number of iterations for the position constraint solver
         void setNbIterationsPositionSolver(uint nbIterations);
@@ -305,7 +311,12 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
         (*it)->mExternalForce.setToZero();
         (*it)->mExternalTorque.setToZero();
     }
-}             
+}
+
+// Get the number of iterations for the velocity constraint solver
+inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
+    return mNbVelocitySolverIterations;
+}
 
 // Set the number of iterations for the velocity constraint solver
 /**
@@ -313,6 +324,11 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
  */
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
+}
+
+// Get the number of iterations for the position constraint solver
+inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
+    return mNbPositionSolverIterations;
 }
 
 // Set the number of iterations for the position constraint solver
