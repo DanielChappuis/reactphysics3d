@@ -149,7 +149,8 @@ struct GuiState
                 mx(-1), my(-1), scroll(0),
                 active(0), hot(0), hotToBe(0), isHot(false), isActive(false), wentActive(false),
                 dragX(0), dragY(0), dragOrig(0), widgetX(0), widgetY(0), widgetW(100),
-                insideCurrentScroll(false),  nextItemSameLine(false), areaId(0), widgetId(0)
+                insideCurrentScroll(false),  nextItemSameLine(false), newLinePreviousX(0),
+                areaId(0), widgetId(0)
         {
         }
 
@@ -168,6 +169,7 @@ struct GuiState
         int widgetX, widgetY, widgetW;
         bool insideCurrentScroll;
         bool nextItemSameLine;
+        int newLinePreviousX;
 
         unsigned int areaId;
         unsigned int widgetId;
@@ -324,7 +326,7 @@ bool imguiBeginScrollArea(const char* name, int x, int y, int w, int h, int* scr
         const int areaHeading = name ? AREA_HEADER : 0;
 
         g_state.widgetX = x + SCROLL_AREA_PADDING;
-        g_state.widgetY = y+h-areaHeading + (*scroll);
+        g_state.widgetY = y+h-areaHeading + (*scroll) - SCROll_AREA_TOP_PADDING;
         g_state.widgetW = w - SCROLL_AREA_PADDING*4;
         g_scrollTop = y-areaHeading+h;
         g_scrollBottom = y+SCROLL_AREA_PADDING;
@@ -339,7 +341,7 @@ bool imguiBeginScrollArea(const char* name, int x, int y, int w, int h, int* scr
         g_insideScrollArea = inRect(x, y, w, h, false);
         g_state.insideCurrentScroll = g_insideScrollArea;
 
-        addGfxCmdRoundedRect((float)x, (float)y, (float)w, (float)h, 6, imguiRGBA(0,0,0,192));
+        addGfxCmdRoundedRect((float)x, (float)y, (float)w, (float)h, 6, imguiRGBA(40,40,40,192));
 
         if (name) addGfxCmdText(x+areaHeading/2, y+h-areaHeading/2-TEXT_HEIGHT/2, IMGUI_ALIGN_LEFT, name, imguiRGBA(255,255,255,128));
 
@@ -430,10 +432,10 @@ bool imguiButton(const char* text, bool enabled, int width)
         int w = width > 0 ? width : g_state.widgetW;
         int h = BUTTON_HEIGHT;
         if (g_state.nextItemSameLine) {
-            g_state.widgetX += width + DEFAULT_HORIZONTAL_SPACING;
+            g_state.widgetX += width;
         }
         else {
-            g_state.widgetY -= BUTTON_HEIGHT + DEFAULT_VERTICAL_SPACING;
+            g_state.widgetY -= BUTTON_HEIGHT;
         }
 
         bool over = enabled && inRect(x, y, w, h);
@@ -482,7 +484,12 @@ bool imguiCheck(const char* text, bool checked, bool enabled)
         int y = g_state.widgetY - BUTTON_HEIGHT;
         int w = g_state.widgetW;
         int h = BUTTON_HEIGHT;
-        g_state.widgetY -= BUTTON_HEIGHT + DEFAULT_VERTICAL_SPACING;
+        if (g_state.nextItemSameLine) {
+            g_state.widgetX += w;
+        }
+        else {
+            g_state.widgetY -= BUTTON_HEIGHT;
+        }
 
         bool over = enabled && inRect(x, y, w, h);
         bool res = buttonLogic(id, over);
@@ -626,40 +633,35 @@ bool imguiSlider(const char* text, float* val, float vmin, float vmax, float vin
         return res || valChanged;
 }
 
-void imguiStartLineOfItems() {
+void imguiStartLine() {
     g_state.nextItemSameLine = true;
+    g_state.newLinePreviousX = g_state.widgetX;
 }
 
-void imguiEndLineOfItems() {
+void imguiEndLine() {
     g_state.nextItemSameLine = false;
+    g_state.widgetX = g_state.newLinePreviousX;
+    g_state.newLinePreviousX = 0;
 }
 
-void imguiIndent()
+void imguiVerticalSpace(int spaceY)
 {
-        g_state.widgetX += INDENT_SIZE;
-        g_state.widgetW -= INDENT_SIZE;
+    g_state.widgetY -= spaceY;
 }
 
-void imguiUnindent()
-{
-        g_state.widgetX -= INDENT_SIZE;
-        g_state.widgetW += INDENT_SIZE;
-}
-
-void imguiSeparator()
-{
-        g_state.widgetY -= DEFAULT_VERTICAL_SPACING*3;
+void imguiHorizontalSpace(int spaceX) {
+    g_state.widgetX += spaceX;
 }
 
 void imguiSeparatorLine()
 {
         int x = g_state.widgetX;
-        int y = g_state.widgetY - DEFAULT_VERTICAL_SPACING*2;
+        int y = g_state.widgetY;
         int w = g_state.widgetW;
-        int h = 1;
-        g_state.widgetY -= DEFAULT_VERTICAL_SPACING*4;
+        int h = SEPARATOR_LINE_WIDTH;
+        g_state.widgetY -= SEPARATOR_LINE_WIDTH;
 
-        addGfxCmdRect((float)x, (float)y, (float)w, (float)h, imguiRGBA(255,255,255,32));
+        addGfxCmdRect((float)x, (float)y, (float)w, (float)h, imguiRGBA(255,255,255,70));
 }
 
 void imguiDrawText(int x, int y, int align, const char* text, unsigned int color)

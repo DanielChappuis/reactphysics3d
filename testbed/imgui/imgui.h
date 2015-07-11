@@ -23,16 +23,18 @@
 #define IMGUI_H
 
 static const int BUTTON_HEIGHT = 40;
-static const int SLIDER_HEIGHT = 20;
+static const int SLIDER_HEIGHT = 30;
 static const int SLIDER_MARKER_WIDTH = 10;
 static const int CHECK_SIZE = 18;
 static const int DEFAULT_VERTICAL_SPACING = 14;
 static const int DEFAULT_HORIZONTAL_SPACING = 14;
 static const int TEXT_HEIGHT = 16;
 static const int FONT_HEIGHT = 30;
-static const int SCROLL_AREA_PADDING = 6;
+static const int SCROll_AREA_TOP_PADDING = 5;
+static const int SCROLL_AREA_PADDING = 5;
 static const int INDENT_SIZE = 16;
-static const int AREA_HEADER = 28;
+static const int AREA_HEADER = 20;
+static const int SEPARATOR_LINE_WIDTH = 2;
 
 enum imguiMouseButton
 {
@@ -58,11 +60,12 @@ void imguiEndFrame();
 bool imguiBeginScrollArea(const char* name, int x, int y, int w, int h, int* scroll);
 void imguiEndScrollArea();
 
-void imguiStartLineOfItems();
-void imguiEndLineOfItems();
+void imguiStartLine();
+void imguiEndLine();
 void imguiIndent();
 void imguiUnindent();
-void imguiSeparator();
+void imguiVerticalSpace(int spaceY);
+void imguiHorizontalSpace(int spaceX);
 void imguiSeparatorLine();
 
 bool imguiButton(const char* text, bool enabled = true, int width = -1);

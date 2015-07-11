@@ -37,7 +37,7 @@
 const float GUI_SCALING = 2.0f;
 const int HEADER_HEIGHT = 80;
 const int LEFT_PANE_WIDTH = 300;
-const int LEFT_PANE_HEADER_HEIGHT = 60;
+const int LEFT_PANE_HEADER_HEIGHT = 50;
 
 using namespace openglframework;
 

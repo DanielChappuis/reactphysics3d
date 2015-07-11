@@ -96,7 +96,9 @@ void Gui::displayHeader() {
                          app.mWindowToFramebufferRatio.x * windowWidth,
                          app.mWindowToFramebufferRatio.y * HEADER_HEIGHT, &scrollarea);
 
-    imguiStartLineOfItems();
+    imguiHorizontalSpace(10);
+    imguiVerticalSpace(20);
+    imguiStartLine();
 
     // ----- Left Pane Header ----- //
 
@@ -104,18 +106,20 @@ void Gui::displayHeader() {
     if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width)) {
         app.togglePlayPauseSimulation();
     }
+    imguiHorizontalSpace(5);
 
     // Step
     if (imguiButton("Step", !app.mTimer.isRunning(), button_width)) {
         app.toggleTakeSinglePhysicsStep();
     }
+    imguiHorizontalSpace(5);
 
     // Restart
     if (imguiButton("Restart", true, button_width)) {
         app.restartSimulation();
     }
 
-    imguiEndLineOfItems();
+    imguiEndLine();
     imguiEndScrollArea();
 }
 
@@ -131,21 +135,30 @@ void Gui::displayLeftPane() {
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
                          app.mWindowToFramebufferRatio.y * LEFT_PANE_HEADER_HEIGHT, &scrollarea);
 
-    imguiStartLineOfItems();
+    imguiSeparatorLine();
+    imguiVerticalSpace(5);
+    imguiStartLine();
 
     // ----- Left Pane Header ----- //
-    int widthButton = app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH / 5;
+    int widthButton = app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH / 4.3;
     if (imguiButton("Scenes", true, widthButton)) {
         mLeftPane = SCENES;
     }
+    imguiHorizontalSpace(5);
 
     if (imguiButton("Physics", true, widthButton)) {
         mLeftPane = PHYSICS;
     }
+    imguiHorizontalSpace(5);
 
     imguiButton("Rendering", true, widthButton);
+    imguiHorizontalSpace(5);
+
     imguiButton("Profiling", true, widthButton);
-    imguiEndLineOfItems();
+
+    imguiEndLine();
+    imguiVerticalSpace(BUTTON_HEIGHT + 8);
+    imguiSeparatorLine();
     imguiEndScrollArea();
 
     // Display the left pane content
@@ -175,6 +188,8 @@ void Gui::displayScenesPane() {
                          app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
                          &scrollarea);
 
+    imguiVerticalSpace(15);
+
     // For each scene
     for (int i=0; i<scenes.size(); i++) {
 
@@ -202,6 +217,8 @@ void Gui::displayPhysicsPane() {
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
                          app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
                          &scrollarea);
+
+    imguiVerticalSpace(15);
 
     // Enabled/Disable Sleeping
     bool toggle = imguiCheck("Sleeping enabled", app.mEngineSettings.isSleepingEnabled);
@@ -302,7 +319,8 @@ void Gui::render() {
     }
 
     imguiBeginFrame(app.mWindowToFramebufferRatio.x * mouseX,
-                    app.mWindowToFramebufferRatio.y * (windowHeight - mouseY), mousebutton, -mScrollY);
+                    app.mWindowToFramebufferRatio.y * (windowHeight - mouseY), mousebutton,
+                    - app.mWindowToFramebufferRatio.y * mScrollY);
     resetScroll();
 
     displayHeader();

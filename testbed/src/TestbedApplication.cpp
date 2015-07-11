@@ -131,7 +131,7 @@ void TestbedApplication::init() {
     glfwSetScrollCallback(mWindow, scroll);
 
     // Define the background color (black)
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0, 0, 0, 1.0);
 
     // Create all the scenes
     createScenes();
@@ -164,7 +164,7 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(raycastScene);
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[1];
+    mCurrentScene = mScenes[0];
 
     // Get the engine settings from the scene
     mEngineSettings = mCurrentScene->getEngineSettings();
