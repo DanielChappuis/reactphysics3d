@@ -1,3 +1,6 @@
+[![Travis Build Status](https://travis-ci.org/DanielChappuis/reactphysics3d.svg?branch=master)](https://travis-ci.org/DanielChappuis/reactphysics3d)
+
+
 ## ReactPhysics3D
 
 ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
