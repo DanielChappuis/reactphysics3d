@@ -15,6 +15,8 @@ SET(LIBRARY_OUTPUT_PATH "lib")
 # Where to build the executables
 SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
+ENABLE_TESTING()
+
 # Options
 OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
