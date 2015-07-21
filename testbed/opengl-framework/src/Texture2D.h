@@ -71,6 +71,10 @@ class Texture2D {
         void create(uint width, uint height, uint internalFormat, uint format, uint type,
                     void* data = NULL);
 
+        // Create the texture
+        void create(uint width, uint height, uint internalFormat, uint format, uint type,
+                    uint minFilter, uint maxFilter, uint wrapS, uint wrapT, void* data);
+
         // Destroy the texture
         void destroy();
 

@@ -60,7 +60,7 @@ RaycastScene::RaycastScene(const std::string& name)
     openglframework::Vector3 position2(0, 0, 0);
 
     // Create a box and a corresponding collision body in the dynamics world
-    mBox = new Box(BOX_SIZE, position2, mCollisionWorld, mPhongShader);
+    mBox = new Box(BOX_SIZE, position2, mCollisionWorld);
     mBox->getCollisionBody()->setIsActive(false);
 
     // ---------- Sphere ---------- //

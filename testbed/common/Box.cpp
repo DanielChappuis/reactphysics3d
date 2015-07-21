@@ -59,7 +59,7 @@ GLuint Box::mCubeIndices[36] = { 0, 1, 2,
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         reactphysics3d::CollisionWorld* world, openglframework::Shader& shader)
+         reactphysics3d::CollisionWorld* world)
     : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
 
     // Initialize the size of the box
@@ -98,7 +98,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     if (totalNbBoxes == 0) {
 
         // Create the Vertex Buffer
-        createVBOAndVAO(shader);
+        createVBOAndVAO();
     }
 
     totalNbBoxes++;
@@ -107,8 +107,8 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 }
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         float mass, reactphysics3d::DynamicsWorld* world, openglframework::Shader& shader)
+Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
+         float mass, reactphysics3d::DynamicsWorld* world)
     : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
 
     // Initialize the size of the box
@@ -147,7 +147,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     if (totalNbBoxes == 0) {
 
         // Create the Vertex Buffer
-        createVBOAndVAO(shader);
+        createVBOAndVAO();
     }
 
     totalNbBoxes++;
@@ -173,8 +173,13 @@ Box::~Box() {
 void Box::render(openglframework::Shader& shader,
                  const openglframework::Matrix4& worldToCameraMatrix) {
 
+    // Bind the VAO
+    mVAO.bind();
+
     // Bind the shader
     shader.bind();
+
+    mVBOVertices.bind();
 
     // Set the model to camera matrix
     const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
@@ -184,17 +189,29 @@ void Box::render(openglframework::Shader& shader,
     // model-view matrix)
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
     openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
-    shader.setVector4Uniform("vertexColor", color);
+    shader.setVector4Uniform("vertexColor", color, false);
 
-    // Bind the VAO
-    mVAO.bind();
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
+
+    glEnableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
+
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, position));
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, normal));
 
     // Draw the geometry of the box
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (char*)NULL);
+
+    glDisableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
+
+    mVBOVertices.unbind();
 
     // Unbind the VAO
     mVAO.unbind();
@@ -230,14 +247,7 @@ void Box::updateTransform(float interpolationFactor) {
 // Create the Vertex Buffer Objects used to render to box with OpenGL.
 /// We create two VBOs (one for vertices and one for indices) to render all the boxes
 /// in the simulation.
-void Box::createVBOAndVAO(openglframework::Shader& shader) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Get the location of shader attribute variables
-    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
-    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal");
+void Box::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -258,20 +268,11 @@ void Box::createVBOAndVAO(openglframework::Shader& shader) {
     // Bind the VBO of vertices
     mVBOVertices.bind();
 
-    glEnableVertexAttribArray(vertexPositionLoc);
-    glEnableVertexAttribArray(vertexNormalLoc);
-
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, position));
-    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, normal));
-
     // Bind the VBO of indices
     mVBOIndices.bind();
 
     // Unbind the VAO
     mVAO.unbind();
-
-    // Unbind the shader
-    shader.unbind();
 }
 
 // Reset the transform

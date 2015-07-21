@@ -23,65 +23,72 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CUBES_SCENE_H
-#define CUBES_SCENE_H
+#ifndef SCENEDEMO_H
+#define SCENEDEMO_H
 
 // Libraries
-#include "openglframework.h"
-#include "reactphysics3d.h"
-#include "Box.h"
-#include "SceneDemo.h"
-
-namespace cubesscene {
+#include "Scene.h"
 
 // Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
+const int SHADOWMAP_WIDTH = 1024;
+const int SHADOWMAP_HEIGHT = 1024;
 
-// Class CubesScene
-class CubesScene : public SceneDemo {
+// Class SceneDemo
+// Abstract class that represents a 3D scene for the ReactPhysics3D examples.
+// This scene has a single light source with shadow mapping.
+class SceneDemo : public Scene {
 
-    protected :
+    protected:
 
         // -------------------- Attributes -------------------- //
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Light 0
+        openglframework::Light mLight0;
 
-        /// Box for the floor
-        Box* mFloor;
+        /// FBO for the shadow map
+        openglframework::FrameBufferObject mFBOShadowMap;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
+        /// Shadow map texture
+        openglframework::Texture2D mShadowMapTexture;
+
+        /// Camera at light0 position for the shadow map
+        openglframework::Camera mShadowMapLightCamera;
+
+        /// Bias matrix for the shadow map
+        openglframework::Matrix4 mShadowMapBiasMatrix;
+
+        /// Depth shader to render the shadow map
+        openglframework::Shader mDepthShader;
+
+        /// Phong shader
+        openglframework::Shader mPhongShader;
+
+
+        // -------------------- Methods -------------------- //
+
+        // Create the Shadow map FBO and texture
+        void createShadowMapFBOAndTexture();
+
+        // Render the shadow map
+        void renderShadowMap();
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CubesScene(const std::string& name);
+        SceneDemo(const std::string& name, float sceneRadius);
 
         /// Destructor
-        virtual ~CubesScene();
+        virtual ~SceneDemo();
 
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
-
-        /// Update the scene (take a simulation step)
-        virtual void update();
+        /// Render the scene (possibly in multiple passes for shadow mapping)
+        virtual void render();
 
         /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader);
-
-        /// Reset the scene
-        virtual void reset();
+        virtual void renderSinglePass(openglframework::Shader& shader)=0;
 };
 
-}
-
 #endif
+
+

@@ -39,6 +39,8 @@ SET(TESTBED_SOURCES
     src/Gui.cpp
     src/Scene.h
     src/Scene.cpp
+    src/SceneDemo.h
+    src/SceneDemo.cpp
     src/Timer.h
     src/Timer.cpp
 )

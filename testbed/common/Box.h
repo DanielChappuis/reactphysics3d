@@ -86,7 +86,7 @@ class Box : public openglframework::Object3D {
         // -------------------- Methods -------------------- //
 
         /// Create a the VAO and VBOs to render to box with OpenGL
-        static void createVBOAndVAO(openglframework::Shader &shader);
+        static void createVBOAndVAO();
 
     public :
 
@@ -94,11 +94,11 @@ class Box : public openglframework::Object3D {
 
         /// Constructor
         Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            reactphysics3d::CollisionWorld* world, openglframework::Shader &shader);
+            reactphysics3d::CollisionWorld* world);
 
         /// Constructor
         Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-            float mass, reactphysics3d::DynamicsWorld *world, openglframework::Shader& shader);
+            float mass, reactphysics3d::DynamicsWorld *world);
 
         /// Destructor
         ~Box();

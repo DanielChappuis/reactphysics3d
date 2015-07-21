@@ -90,7 +90,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld, mPhongShader);
+        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -208,7 +208,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mPhongShader);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);

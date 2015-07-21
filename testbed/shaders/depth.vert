@@ -1,3 +1,5 @@
+#version 330
+
 /********************************************************************************
 * OpenGL-Framework                                                              *
 * Copyright (c) 2015 Daniel Chappuis                                            *
@@ -24,13 +26,14 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform mat4 modelToWorldMatrix;        // Model too world coordinates matrix
-uniform mat4 worldToCameraMatrix;       // World to camera coordinates matrix
+uniform mat4 localToCameraMatrix;       // Local-space to camera-space matrix
 uniform mat4 projectionMatrix;          // Projection matrix
 
-void main(void) {
+// In variables
+in vec4 vertexPosition;
+
+void main() {
 
     // Compute the clip-space vertex coordinates
-    gl_Position = projectionMatrix * worldToCameraMatrix *
-                  modelToWorldMatrix * gl_Vertex;
+    gl_Position = projectionMatrix * localToCameraMatrix * vertexPosition;
 }

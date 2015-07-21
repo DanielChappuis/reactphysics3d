@@ -32,18 +32,13 @@ using namespace cubesscene;
 
 // Constructor
 CubesScene::CubesScene(const std::string& name)
-      : Scene(name), mLight0(0),
-        mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
-
-    // Move the light 0
-    mLight0.translateWorld(Vector3(7, 15, 15));
+      : SceneDemo(name, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
-    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    setScenePosition(center, radiusScene);
+    setScenePosition(center, SCENE_RADIUS);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-5.81), 0);
@@ -69,7 +64,7 @@ CubesScene::CubesScene(const std::string& name)
                                           0);
 
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld, mPhongShader);
+        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -81,7 +76,7 @@ CubesScene::CubesScene(const std::string& name)
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mPhongShader);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
@@ -171,39 +166,25 @@ void CubesScene::update() {
     }
 }
 
-// Render the scene
-void CubesScene::render() {
-
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_CULL_FACE);
+// Render the scene in a single pass
+void CubesScene::renderSinglePass(Shader& shader) {
 
     // Get the world-space to camera-space matrix
     const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     // Bind the shader
-    mPhongShader.bind();
-
-    // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    const Color& diffCol = mLight0.getDiffuseColor();
-    const Color& specCol = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
-    mPhongShader.setFloatUniform("shininess", 60.0f);
+    shader.bind();
 
     // Render all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render the floor
-    mFloor->render(mPhongShader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix);
 
     // Unbind the shader
-    mPhongShader.unbind();
+    shader.unbind();
 }
 
 // Reset the scene

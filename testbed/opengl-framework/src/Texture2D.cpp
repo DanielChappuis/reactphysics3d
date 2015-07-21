@@ -72,6 +72,28 @@ void Texture2D::create(uint width, uint height, uint internalFormat, uint format
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+// Create the texture
+void Texture2D::create(uint width, uint height, uint internalFormat, uint format, uint type,
+                       uint minFilter, uint maxFilter, uint wrapS, uint wrapT, void* data) {
+
+    // Destroy the current texture
+    destroy();
+
+    mWidth = width;
+    mHeight = height;
+
+    // Create the OpenGL texture
+    glGenTextures(1, &mID);
+    assert(mID != 0);
+    glBindTexture(GL_TEXTURE_2D, mID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, maxFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mWidth, mHeight, 0, format, type, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 // Destroy the texture
 void Texture2D::destroy() {
     if (mID != 0) {
