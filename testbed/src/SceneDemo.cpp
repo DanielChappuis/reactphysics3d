@@ -37,20 +37,15 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), 
                      mVBOQuad(GL_ARRAY_BUFFER) {
 
     // Move the light0
-    mLight0.translateWorld(Vector3(20, 20, 20));
+    mLight0.translateWorld(Vector3(0, 60, 00));
 
     // Camera at light0 postion for the shadow map
     mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
+    mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 2.0f);
     mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-    mShadowMapLightCamera.setFieldOfView(45.0f);
-    mShadowMapLightCamera.setSceneRadius(sceneRadius);
-    mShadowMapLightCamera.setZoom(1.0);
-
-    // Bias matrix for the shadow map
-    mShadowMapBiasMatrix.setAllValues(0.5f, 0.0f, 0.0f, 0.5f,
-                                      0.0f, 0.5f, 0.5f, 0.5f,
-                                      0.0f, 0.0f, 0.0f, 0.5f,
-                                      0.0f, 0.0f, 0.0f, 1.0f);
+    mShadowMapLightCamera.setFieldOfView(70.0f);
+    mShadowMapLightCamera.setSceneRadius(200);
+    //mShadowMapLightCamera.setZoom(1.0);
 
     // Create the Shadow map FBO and texture
     createShadowMapFBOAndTexture();
@@ -73,6 +68,11 @@ void SceneDemo::render() {
 
     // ---------- Render the scene to generate the shadow map (first pass) ----------- //
 
+    // Culling switching, rendering only backface, this is done to avoid self-shadowing
+    glCullFace(GL_FRONT);
+
+    Matrix4 shadowMapProjMatrix = mShadowMapLightCamera.getProjectionMatrix();
+
     // Get the world-space to camera-space matrix
     const openglframework::Matrix4 worldToLightCameraMatrix = mShadowMapLightCamera.getTransformMatrix().getInverse();
 
@@ -82,7 +82,7 @@ void SceneDemo::render() {
     mDepthShader.bind();
 
     // Set the variables of the shader
-    mDepthShader.setMatrix4x4Uniform("projectionMatrix", mShadowMapBiasMatrix * mShadowMapLightCamera.getProjectionMatrix());
+    mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix);
 
     // Set the viewport to render into the shadow map texture
     glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
@@ -104,21 +104,27 @@ void SceneDemo::render() {
 
     // ---------- Render the scene for final rendering (second pass) ----------- //
 
+    glCullFace(GL_BACK);
+
     // Get the world-space to camera-space matrix
     const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
-
     mPhongShader.bind();
+
+    mShadowMapTexture.bind();
 
     // Set the variables of the shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
+    mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", shadowMapProjMatrix);
+    mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix);
+    mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
     const Color& diffCol = mLight0.getDiffuseColor();
     const Color& specCol = mLight0.getSpecularColor();
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
+    mPhongShader.setIntUniform("shadowMapSampler", mShadowMapTexture.getID());
 
     // Set the viewport to render the scene
     glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
@@ -132,10 +138,10 @@ void SceneDemo::render() {
     // Render the objects of the scene
     renderSinglePass(mPhongShader, worldToCameraMatrix);
 
+    mShadowMapTexture.unbind();
     mPhongShader.unbind();
 
-
-   // drawTextureQuad();
+   //drawTextureQuad();
 }
 
 // Create the Shadow map FBO and texture

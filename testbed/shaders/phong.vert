@@ -26,9 +26,12 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform mat4 localToCameraMatrix;       // Local-space to camera-space matrix
+uniform mat4 localToWorldMatrix;        // Local-space to world-space matrix
+uniform mat4 worldToCameraMatrix;       // World-space to camera-space matrix
+uniform mat4 worldToLight0CameraMatrix; // World-space to light0 camera-space matrix (for shadow mapping)
 uniform mat4 projectionMatrix;          // Projection matrix
 uniform mat3 normalMatrix;              // Normal matrix
+uniform mat4 shadowMapProjectionMatrix; // Shadow map projection matrix
 
 // In variables
 in vec4 vertexPosition;
@@ -39,11 +42,12 @@ in vec2 textureCoords;
 out vec3 vertexPosCameraSpace;      // Camera-space position of the vertex
 out vec3 vertexNormalCameraSpace;   // Vertex normal in camera-space
 out vec2 texCoords;                 // Texture coordinates
+out vec4 shadowMapCoords;           // Shadow map texture coords
 
 void main() {
 
     // Compute the vertex position
-    vec4 positionCameraSpace = localToCameraMatrix * vertexPosition;
+    vec4 positionCameraSpace = worldToCameraMatrix * localToWorldMatrix * vertexPosition;
     vertexPosCameraSpace = positionCameraSpace.xyz;
 
     // Compute the world surface normal
@@ -51,6 +55,9 @@ void main() {
 
     // Get the texture coordinates
     texCoords = textureCoords;
+
+    // Compute the texture coords of the vertex in the shadow map
+    shadowMapCoords = shadowMapProjectionMatrix * worldToLight0CameraMatrix * localToWorldMatrix * vertexPosition;
 
     // Compute the clip-space vertex coordinates
     gl_Position = projectionMatrix * positionCameraSpace;

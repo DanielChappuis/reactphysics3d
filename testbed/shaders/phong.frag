@@ -32,6 +32,7 @@ uniform vec3 light0DiffuseColor;            // Light 0 diffuse color
 uniform vec3 light0SpecularColor;           // Light 0 specular color
 uniform float shininess;                    // Shininess
 uniform sampler2D textureSampler;           // Texture
+uniform sampler2D shadowMapSampler;         // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
 uniform vec4 vertexColor;                   // Vertex color
 
@@ -39,6 +40,7 @@ uniform vec4 vertexColor;                   // Vertex color
 in vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
 in vec3 vertexNormalCameraSpace;       // Vertex normal in camera-space
 in vec2 texCoords;                     // Texture coordinates
+in vec4 shadowMapCoords;                // Shadow map texture coords
 
 // Out variable
 out vec4 color;                        // Output color
@@ -67,6 +69,17 @@ void main() {
     if (diffuseFactor < 0.0) specularFactor = 0.0;
     vec3 specular = light0SpecularColor * specularFactor;
 
+    // Compute shadow factor
+    vec4 shadowMapCoordsOverW = shadowMapCoords / shadowMapCoords.w ;
+    shadowMapCoordsOverW += 0.0005;
+    vec2 shadowMapCoordsWithBias = (shadowMapCoordsOverW.xy + vec2(1, 1)) * 0.5;
+    float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsWithBias).r;
+    float shadow = 0.0;
+    if (shadowMapCoords.w > 0) {
+        shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.0 : 1.0;
+    }
+
     // Compute the final color
-    color = vec4(ambient + diffuse + specular, 1.0);
+    color = vec4(ambient + shadow * vertexColor.rgb, 1.0);
+    //color = vec4(distanceInShadowMap, distanceInShadowMap, distanceInShadowMap, 1.0);
 }

@@ -54,9 +54,6 @@ class SceneDemo : public Scene {
         /// Camera at light0 position for the shadow map
         openglframework::Camera mShadowMapLightCamera;
 
-        /// Bias matrix for the shadow map
-        openglframework::Matrix4 mShadowMapBiasMatrix;
-
         /// Depth shader to render the shadow map
         openglframework::Shader mDepthShader;
 
