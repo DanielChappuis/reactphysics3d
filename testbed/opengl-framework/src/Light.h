@@ -31,7 +31,6 @@
 #include "maths/Vector3.h"
 #include "Object3D.h"
 #include "Texture2D.h"
-#include "FrameBufferObject.h"
 #include "Shader.h"
 #include <GL/glew.h>
 
@@ -55,15 +54,6 @@ class Light : public Object3D {
 
         // True if the light is active
         bool mIsActive;
-
-        // Shadow map associated with this light
-        Texture2D mShadowMap;
-
-        // Framebuffer object to render the shadow map
-        FrameBufferObject mFBOShadowMap;
-
-        // Shader to render the depth of the scene into a texture
-        Shader mDepthShader;
 
     public:
 
@@ -101,18 +91,6 @@ class Light : public Object3D {
 
         // Disable the light
         void disable();
-
-        // Create a shadow map associated with this light
-        bool createShadowMap(uint width, uint height);
-
-        // Call this method before rendering the scene for the shadow map computation
-        void startRenderingShadowMap();
-
-        // Call this method after having rendered the scene for the shadow map computation
-        void stopRenderingShadowMap();
-
-        // Destroy the shadow map associated with this light
-        void destroyShadowMap();
 };
 
 // Return the diffuse color
@@ -157,23 +135,6 @@ inline void Light::disable() {
 
     // Disable the light
     glDisable(GL_LIGHT0 + mLightID);
-}
-
-// Destroy the shadow map associated with this light
-inline void Light::destroyShadowMap() {
-    mShadowMap.destroy();
-    mFBOShadowMap.destroy();
-    mDepthShader.destroy();
-}
-
-// Call this method before rendering the scene for the shadow map computation
-inline void Light::startRenderingShadowMap() {
-    assert(mShadowMap.getID());
-}
-
-// Call this method after having rendered the scene for the shadow map computation
-inline void Light::stopRenderingShadowMap() {
-    assert(mShadowMap.getID());
 }
 
 }

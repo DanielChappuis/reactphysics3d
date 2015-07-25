@@ -250,11 +250,11 @@ void TestbedApplication::render() {
     mWindowToFramebufferRatio.x = float(bufferWidth) / float(windowWidth);
     mWindowToFramebufferRatio.y = float(bufferHeight) / float(windowHeight);
 
-    // Resize the OpenGL viewport
-    glViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-               0,
-               bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-               bufferHeight - mWindowToFramebufferRatio.y * HEADER_HEIGHT);
+    // Set the viewport of the scene
+    mCurrentScene->setViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                               0,
+                               bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                               bufferHeight - mWindowToFramebufferRatio.y * HEADER_HEIGHT);
 
     // Render the scene
     mCurrentScene->render();

@@ -103,7 +103,6 @@ class Texture2D {
 // Bind the texture
 inline void Texture2D::bind() const {
     assert(mID != 0);
-    glEnable(GL_TEXTURE_2D);
     glActiveTexture(GL_TEXTURE0 + mLayer);
     glBindTexture(GL_TEXTURE_2D, mID);
 }
@@ -113,7 +112,6 @@ inline void Texture2D::unbind() const {
     assert(mID != 0);
     glActiveTexture(GL_TEXTURE0 + mLayer);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
 }
 
 // Get the OpenGL texture ID

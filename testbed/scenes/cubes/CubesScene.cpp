@@ -167,10 +167,7 @@ void CubesScene::update() {
 }
 
 // Render the scene in a single pass
-void CubesScene::renderSinglePass(Shader& shader) {
-
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
+void CubesScene::renderSinglePass(Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();

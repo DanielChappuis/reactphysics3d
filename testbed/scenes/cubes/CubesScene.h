@@ -76,7 +76,8 @@ class CubesScene : public SceneDemo {
         virtual void update();
 
         /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader);
+        virtual void renderSinglePass(openglframework::Shader& shader,
+                                      const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Reset the scene
         virtual void reset();

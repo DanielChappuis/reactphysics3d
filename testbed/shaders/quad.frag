@@ -1,12 +1,14 @@
+#version 330
+
 /********************************************************************************
 * OpenGL-Framework                                                              *
-* Copyright (c) 2013 Daniel Chappuis                                            *
+* Copyright (c) 2015 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
 * In no event will the authors be held liable for any damages arising from the  *
 * use of this software.                                                         *
-*                                                                               *
+*                                                                                *
 * Permission is granted to anyone to use this software for any purpose,         *
 * including commercial applications, and to alter it and redistribute it        *
 * freely, subject to the following restrictions:                                *
@@ -23,40 +25,18 @@
 *                                                                               *
 ********************************************************************************/
 
-// Libraries
-#include "Light.h"
+// Uniform variables
+uniform sampler2D textureSampler;           // Texture
 
-// Namespaces
-using namespace openglframework;
+// In variables
+in vec2 texCoords;                     // Texture coordinates
 
-// Constructor
-Light::Light(GLuint id)
-      : mLightID(id), mDiffuseColor(Color::white()),
-        mSpecularColor(Color::white()), mIsActive(false) {
+// Out variable
+out vec4 color;                        // Output color
 
-}
+void main() {
 
-// Constructor
-Light::Light(GLuint id, Color diffuseColor, Color specularColor)
-      : mLightID(id), mDiffuseColor(diffuseColor),
-        mSpecularColor(specularColor), mIsActive(false) {
-
-}
-
-// Destructor
-Light::~Light() {
-
-}
-
-// Initialize the light
-void Light::init() {
-
-    // Enable the light
-    enable();
-
-    // Set the diffuse and specular color
-    GLfloat diffuseColor[] = {mDiffuseColor.r, mDiffuseColor.g, mDiffuseColor.b, mDiffuseColor.a};
-    GLfloat specularColor[] = {mSpecularColor.r,mSpecularColor.g,mSpecularColor.b,mSpecularColor.a};
-    glLightfv(mLightID, GL_DIFFUSE, diffuseColor);
-    glLightfv(mLightID, GL_SPECULAR, specularColor);
+    // Get the texture color
+    float depthColor = texture(textureSampler, texCoords).r;
+    color = vec4(depthColor, depthColor, depthColor, 1);
 }

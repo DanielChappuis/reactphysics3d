@@ -87,6 +87,9 @@ class Scene {
         /// Interpolation factor for the bodies in the current frame
         float mInterpolationFactor;
 
+        /// Viewport x,y, width and height values
+        int mViewportX, mViewportY, mViewportWidth, mViewportHeight;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -152,6 +155,9 @@ class Scene {
         /// Set the window dimension
         void setWindowDimension(int width, int height);
 
+        /// Set the viewport to render the scene
+        void setViewport(int x, int y, int width, int height);
+
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
 
@@ -187,6 +193,14 @@ inline const openglframework::Camera& Scene::getCamera() const  {
 inline void Scene::setWindowDimension(int width, int height) {
     mWindowWidth = width;
     mWindowHeight = height;
+}
+
+// Set the viewport to render the scene
+inline void Scene::setViewport(int x, int y, int width, int height) {
+    mViewportX = x;
+    mViewportY = y;
+    mViewportWidth = width;
+    mViewportHeight = height;
 }
 
 // Get the engine settings

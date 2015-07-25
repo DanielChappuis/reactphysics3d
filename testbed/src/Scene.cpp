@@ -30,7 +30,9 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(const std::string& name) : mName(name), mInterpolationFactor(0.0f) {
+Scene::Scene(const std::string& name)
+      : mName(name), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
+        mViewportWidth(0), mViewportHeight(0) {
 
 }
 

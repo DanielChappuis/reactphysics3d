@@ -32,10 +32,12 @@ using namespace openglframework;
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), mLight0(0),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
-                     mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
+                     mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
+                     mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
+                     mVBOQuad(GL_ARRAY_BUFFER) {
 
     // Move the light0
-    mLight0.translateWorld(Vector3(7, 15, 15));
+    mLight0.translateWorld(Vector3(20, 20, 20));
 
     // Camera at light0 postion for the shadow map
     mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
@@ -52,6 +54,8 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), 
 
     // Create the Shadow map FBO and texture
     createShadowMapFBOAndTexture();
+
+    createQuadVBO();
 }
 
 // Destructor
@@ -65,27 +69,44 @@ SceneDemo::~SceneDemo() {
 void SceneDemo::render() {
 
     glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
-
     // ---------- Render the scene to generate the shadow map (first pass) ----------- //
+
+    // Get the world-space to camera-space matrix
+    const openglframework::Matrix4 worldToLightCameraMatrix = mShadowMapLightCamera.getTransformMatrix().getInverse();
+
+    mFBOShadowMap.bind();
 
     // Bind the shader
     mDepthShader.bind();
 
     // Set the variables of the shader
-    mDepthShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
+    mDepthShader.setMatrix4x4Uniform("projectionMatrix", mShadowMapBiasMatrix * mShadowMapLightCamera.getProjectionMatrix());
+
+    // Set the viewport to render into the shadow map texture
+    glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+
+    // Clear previous frame values
+    glClear( GL_DEPTH_BUFFER_BIT);
+
+    // Disable color rendering, we only want to write to the Z-Buffer
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     // Render the objects of the scene
-    renderSinglePass(mDepthShader);
+    renderSinglePass(mDepthShader, worldToLightCameraMatrix);
 
     // Unbind the shader
     mDepthShader.unbind();
 
+    mFBOShadowMap.unbind();
+
+
     // ---------- Render the scene for final rendering (second pass) ----------- //
+
+    // Get the world-space to camera-space matrix
+    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
+
 
     mPhongShader.bind();
 
@@ -99,10 +120,22 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
     mPhongShader.setFloatUniform("shininess", 60.0f);
 
+    // Set the viewport to render the scene
+    glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
+
+    //Enabling color write (previously disabled for light POV z-buffer rendering)
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    // Clear previous frame values
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Render the objects of the scene
-    renderSinglePass(mPhongShader);
+    renderSinglePass(mPhongShader, worldToCameraMatrix);
 
     mPhongShader.unbind();
+
+
+   // drawTextureQuad();
 }
 
 // Create the Shadow map FBO and texture
@@ -111,14 +144,77 @@ void SceneDemo::createShadowMapFBOAndTexture() {
     // Create the texture for the depth values
     mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT,
                              GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP, NULL);
+    mShadowMapTexture.setLayer(1);
 
     // Create the FBO for the shadow map
     mFBOShadowMap.create(0, 0, false);
-    mFBOShadowMap.bind(GL_NONE);
+    mFBOShadowMap.bind();
+
+    // Tell OpenGL that we won't bind a color texture with the currently binded FBO
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
     mFBOShadowMap.attachTexture(GL_DEPTH_ATTACHMENT_EXT, mShadowMapTexture.getID());
+    mFBOShadowMap.unbind();
 }
 
-// Render the shadow map
-void SceneDemo::renderShadowMap() {
+// TODO : Delete this
+void SceneDemo::createQuadVBO() {
 
+    mVAOQuad.create();
+    mVAOQuad.bind();
+
+    static const GLfloat quadVertexData[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,
+    };
+
+    mVBOQuad.create();
+    mVBOQuad.bind();
+    mVBOQuad.copyDataIntoVBO(sizeof(quadVertexData), quadVertexData, GL_STATIC_DRAW);
+    mVBOQuad.unbind();
+
+    mVAOQuad.unbind();
+}
+
+// TODO : Delete this
+void SceneDemo::drawTextureQuad() {
+
+    glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    // Clear previous frame values
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    mVAOQuad.bind();
+    mQuadShader.bind();
+    mShadowMapTexture.bind();
+    mQuadShader.setIntUniform("textureSampler", mShadowMapTexture.getID());
+    mVBOQuad.bind();
+
+    GLint vertexPositionLoc = mQuadShader.getAttribLocation("vertexPosition");
+    glEnableVertexAttribArray(vertexPositionLoc);
+
+    glVertexAttribPointer(
+            vertexPositionLoc,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+    );
+
+    // Draw the triangles !
+    glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+    glDisableVertexAttribArray(vertexPositionLoc);
+
+    mVBOQuad.unbind();
+    mShadowMapTexture.unbind();
+    mQuadShader.unbind();
+    mVAOQuad.unbind();
 }

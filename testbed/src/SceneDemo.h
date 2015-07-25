@@ -63,14 +63,25 @@ class SceneDemo : public Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
+        // TODO : Delete this
+        openglframework::Shader mQuadShader;
+
+        // TODO : Delete this
+        openglframework::VertexArrayObject mVAOQuad;
+
+        openglframework::VertexBufferObject mVBOQuad;
+
 
         // -------------------- Methods -------------------- //
 
         // Create the Shadow map FBO and texture
         void createShadowMapFBOAndTexture();
 
-        // Render the shadow map
-        void renderShadowMap();
+        // TODO : Delete this
+        void createQuadVBO();
+
+        // TODO : Delete this
+        void drawTextureQuad();
 
     public:
 
@@ -86,7 +97,8 @@ class SceneDemo : public Scene {
         virtual void render();
 
         /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader)=0;
+        virtual void renderSinglePass(openglframework::Shader& shader,
+                                      const openglframework::Matrix4& worldToCameraMatrix)=0;
 };
 
 #endif

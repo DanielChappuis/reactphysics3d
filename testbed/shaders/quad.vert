@@ -1,6 +1,8 @@
+#version 330
+
 /********************************************************************************
 * OpenGL-Framework                                                              *
-* Copyright (c) 2013 Daniel Chappuis                                            *
+* Copyright (c) 2015 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,79 +25,17 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef FRAME_BUFFER_OBJECT_H
-#define FRAME_BUFFER_OBJECT_H
+// In variables
+in vec4 vertexPosition;
 
-// Libraries
-#include "definitions.h"
-#include <GL/glew.h>
-#include <cassert>
-#include <iostream>
+// Out variables
+out vec2 texCoords;                 // Texture coordinates
 
-namespace openglframework {
+void main() {
 
+    // Compute the texture coordinates
+    texCoords = (vertexPosition.xy + vec2(1, 1)) / 2.0;
 
-// Class FrameBufferObject
-class FrameBufferObject {
-
-    private:
-
-        // -------------------- Attributes -------------------- //
-
-        // Frame buffer ID
-        uint mFrameBufferID;
-
-        // Render buffer ID
-        uint mRenderBufferID;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        // Constructor
-        FrameBufferObject();
-
-        // Destructor
-        ~FrameBufferObject();
-
-        // Create the frame buffer object
-        bool create(uint width, uint height, bool needRenderBuffer = true);
-
-        // Attach a texture to the frame buffer object
-        void attachTexture(uint position, uint textureID);
-
-        // Bind the FBO
-        void bind() const;
-
-        // Unbind the FBO
-        void unbind() const;
-
-        // Return true if the needed OpenGL extensions are available for FBO
-        static bool checkOpenGLExtensions();
-
-        // Destroy the FBO
-        void destroy();
-};
-
-// Bind the FBO
-inline void FrameBufferObject::bind() const {
-    assert(mFrameBufferID != 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferID);
+    // Compute the clip-space vertex coordinates
+    gl_Position = vec4(vertexPosition.xyz, 1);
 }
-
-// Unbind the FBO
-inline void FrameBufferObject::unbind() const {
-    assert(mFrameBufferID != 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-// Return true if the needed OpenGL extensions are available for FBO
-inline bool FrameBufferObject::checkOpenGLExtensions() {
-
-    // Check that OpenGL version is at least 3.0 or there the framebuffer object extension exists
-    return (GLEW_VERSION_3_0 || GLEW_ARB_framebuffer_object);
-}
-
-}
-
-#endif
