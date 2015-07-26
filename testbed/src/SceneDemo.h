@@ -51,6 +51,9 @@ class SceneDemo : public Scene {
         /// Shadow map texture
         openglframework::Texture2D mShadowMapTexture;
 
+        /// Shadow map bias matrix
+        openglframework::Matrix4 mShadowMapBiasMatrix;
+
         /// Camera at light0 position for the shadow map
         openglframework::Camera mShadowMapLightCamera;
 

@@ -47,6 +47,12 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), 
     mShadowMapLightCamera.setSceneRadius(200);
     //mShadowMapLightCamera.setZoom(1.0);
 
+
+    mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
+                                      0.0, 0.5, 0.0, 0.5,
+                                      0.0, 0.0, 0.5, 0.5,
+                                      0.0, 0.0, 0.0, 1.0);
+
     // Create the Shadow map FBO and texture
     createShadowMapFBOAndTexture();
 
@@ -115,7 +121,7 @@ void SceneDemo::render() {
 
     // Set the variables of the shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", shadowMapProjMatrix);
+    mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix);
     mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix);
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
@@ -148,7 +154,7 @@ void SceneDemo::render() {
 void SceneDemo::createShadowMapFBOAndTexture() {
 
     // Create the texture for the depth values
-    mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT,
+    mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
                              GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP, NULL);
     mShadowMapTexture.setLayer(1);
 

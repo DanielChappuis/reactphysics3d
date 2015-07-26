@@ -27,7 +27,7 @@
 #define MATRIX4_H
 
 // Libraries
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <iostream>
 #include "Vector3.h"
@@ -376,6 +376,15 @@ class Matrix4 {
 
         // Return a 4x4 rotation matrix
         static Matrix4 rotationMatrix(const Vector3& axis, float angle);
+
+        // Return a 4x4 perspective projection matrix
+        static Matrix4 perspectiveProjectionMatrix(float near, float far,
+                                                   int width, int height,
+                                                   float fieldOfView);
+
+        // Return a 4x4 orthographic projection matrix
+        static Matrix4 orthoProjectionMatrix(float near, float far, int width,
+                                             int height);
 };
 
 // * operator
@@ -420,6 +429,53 @@ inline Matrix4 Matrix4::rotationMatrix(const Vector3& axis, float angle) {
     rotationMatrix.m[3][3] = 1.f;
 
     return rotationMatrix;
+}
+
+// Return a 4x4 perspective projection matrix
+inline Matrix4 Matrix4::perspectiveProjectionMatrix(float near, float far, int width, int height,
+                                                    float fieldOfView) {
+
+    // Compute the aspect ratio
+    float aspect = float(width) / float(height);
+
+    float top = near * tan((fieldOfView / 2.0f) * (float(M_PI) / 180.0f));
+    float bottom = -top;
+    float left = bottom * aspect;
+    float right = top * aspect;
+
+    float fx = 2.0f * near / (right - left);
+    float fy = 2.0f * near / (top - bottom);
+    float fz = -(far + near) / (far - near);
+    float fw = -2.0f * far * near / (far - near);
+
+    // Compute the projection matrix
+    return Matrix4(fx, 0, 0, 0,
+                   0, fy, 0, 0,
+                   0, 0, fz, fw,
+                   0, 0, -1, 0);
+}
+
+// Return a 4x4 orthographic projection matrix
+inline Matrix4 Matrix4::orthoProjectionMatrix(float near, float far, int width, int height) {
+
+    // Compute the aspect ratio
+    float aspect = float(width) / float(height);
+
+    float top = height * 0.5f;
+    float bottom = -top;
+    float left = bottom * aspect;
+    float right = top * aspect;
+
+    float fx = 2.0f / (right - left);
+    float fy = 2.0f / (top - bottom);
+    float fz = -2.0f / (far - near);
+    float fw = -(far + near) / (far - near);
+
+    // Compute the projection matrix
+    return Matrix4(fx, 0, 0, 0,
+                   0, fy, 0, 0,
+                   0, 0, fz, fw,
+                   0, 0, 0, 1);
 }
 
 }

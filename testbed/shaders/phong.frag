@@ -71,9 +71,8 @@ void main() {
 
     // Compute shadow factor
     vec4 shadowMapCoordsOverW = shadowMapCoords / shadowMapCoords.w ;
-    shadowMapCoordsOverW += 0.0005;
-    vec2 shadowMapCoordsWithBias = (shadowMapCoordsOverW.xy + vec2(1, 1)) * 0.5;
-    float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsWithBias).r;
+    //shadowMapCoordsOverW += 0.0005;
+    float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r;
     float shadow = 0.0;
     if (shadowMapCoords.w > 0) {
         shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.0 : 1.0;
@@ -81,5 +80,4 @@ void main() {
 
     // Compute the final color
     color = vec4(ambient + shadow * vertexColor.rgb, 1.0);
-    //color = vec4(distanceInShadowMap, distanceInShadowMap, distanceInShadowMap, 1.0);
 }
