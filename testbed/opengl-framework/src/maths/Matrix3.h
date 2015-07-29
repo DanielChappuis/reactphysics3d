@@ -272,6 +272,13 @@ class Matrix3 {
             m[2][0] *= nb; m[2][1] *= nb; m[2][2] *= nb;
             return *this;
         }
+
+        // Return the identity matrix
+        static Matrix3 identity() {
+            return Matrix3(1, 0, 0,
+                           0, 1, 0,
+                           0, 0, 1);
+        }
 };
 
 }

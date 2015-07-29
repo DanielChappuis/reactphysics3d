@@ -73,7 +73,7 @@ class Dumbbell : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
     public :
 
@@ -81,11 +81,11 @@ class Dumbbell : public openglframework::Mesh {
 
         /// Constructor
         Dumbbell(const openglframework::Vector3& position, rp3d::DynamicsWorld* dynamicsWorld,
-                 const std::string& meshFolderPath, openglframework::Shader &shader);
+                 const std::string& meshFolderPath);
 
         /// Constructor
         Dumbbell(const openglframework::Vector3& position, rp3d::CollisionWorld* world,
-                 const std::string& meshFolderPath, openglframework::Shader& shader);
+                 const std::string& meshFolderPath);
 
 
         /// Destructor

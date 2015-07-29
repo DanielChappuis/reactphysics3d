@@ -70,12 +70,14 @@ void main() {
     vec3 specular = light0SpecularColor * specularFactor;
 
     // Compute shadow factor
-    vec4 shadowMapCoordsOverW = shadowMapCoords / shadowMapCoords.w ;
-    //shadowMapCoordsOverW += 0.0005;
+    float shadowBias = 0.005;
+    vec4 shadowMapUV = shadowMapCoords;
+    shadowMapUV.z -= shadowBias;
+    vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w ;
     float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r;
     float shadow = 0.0;
     if (shadowMapCoords.w > 0) {
-        shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.0 : 1.0;
+        shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
     }
 
     // Compute the final color

@@ -37,7 +37,6 @@ int VisualContactPoint::totalNbBoxes = 0;
 
 // Constructor
 VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
-                                       openglframework::Shader& shader,
                                        const std::string& meshFolderPath)
     : mColor(1.0f, 0.0f, 0.0f, 1.0f) {
 
@@ -47,7 +46,7 @@ VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
     // Create the VBOs and VAO
     if (totalNbBoxes == 0) {
         createStaticData(meshFolderPath);
-        createVBOAndVAO(shader);
+        createVBOAndVAO();
     }
 
     totalNbBoxes++;
@@ -96,26 +95,44 @@ void VisualContactPoint::render(openglframework::Shader& shader,
     shader.bind();
 
     // Set the model to camera matrix
-    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
-    shader.setMatrix4x4Uniform("localToCameraMatrix", localToCameraMatrix);
+    shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
     // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
     // model-view matrix)
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
     openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
-    shader.setVector4Uniform("vertexColor", color);
+    shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();
+
+    mVBOVertices.bind();
+
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
+
+    glEnableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
+
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // For each part of the mesh
     for (unsigned int i=0; i<mMesh.getNbParts(); i++) {
         glDrawElements(GL_TRIANGLES, mMesh.getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
     }
+
+    glDisableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
+
+    mVBOVertices.unbind();
 
     // Unbind the VAO
     mVAO.unbind();
@@ -126,15 +143,7 @@ void VisualContactPoint::render(openglframework::Shader& shader,
 
 // Create the Vertex Buffer Objects used to render with OpenGL.
 /// We create two VBOs (one for vertices and one for indices)
-void VisualContactPoint::createVBOAndVAO(openglframework::Shader& shader) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Get the location of shader attribute variables
-    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
-    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal");
-    GLint vertexTexCoordLoc = shader.getAttribLocation("textureCoords");
+void VisualContactPoint::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -163,20 +172,13 @@ void VisualContactPoint::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Bind the VBO of vertices
     mVBOVertices.bind();
-    glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // Bind the VBO of normals
     mVBONormals.bind();
-    glEnableVertexAttribArray(vertexNormalLoc);
-    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // Bind the VBO of indices
     mVBOIndices.bind();
 
     // Unbind the VAO
     mVAO.unbind();
-
-    // Unbind the shader
-    shader.unbind();
 }

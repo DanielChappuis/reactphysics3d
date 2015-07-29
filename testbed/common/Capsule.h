@@ -76,7 +76,7 @@ class Capsule : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
     public :
 
@@ -84,13 +84,12 @@ class Capsule : public openglframework::Mesh {
 
         /// Constructor
         Capsule(float radius, float height, const openglframework::Vector3& position,
-                reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath,
-                openglframework::Shader& shader);
+                reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
         Capsule(float radius, float height, const openglframework::Vector3& position,
                 float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
-                const std::string& meshFolderPath, openglframework::Shader& shader);
+                const std::string& meshFolderPath);
 
         /// Destructor
         ~Capsule();

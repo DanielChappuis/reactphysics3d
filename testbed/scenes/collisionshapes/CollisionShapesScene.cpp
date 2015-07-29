@@ -32,19 +32,15 @@ using namespace collisionshapesscene;
 
 // Constructor
 CollisionShapesScene::CollisionShapesScene(const std::string& name)
-       : Scene(name), mLight0(0), mPhongShader("shaders/phong.vert", "shaders/phong.frag") {
+       : SceneDemo(name, SCENE_RADIUS) {
 
     std::string meshFolderPath("meshes/");
 
-    // Move the light 0
-    mLight0.translateWorld(Vector3(50, 50, 50));
-
     // Compute the radius and the center of the scene
-    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    setScenePosition(center, radiusScene);
+    setScenePosition(center, SCENE_RADIUS);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, -9.81, 0);
@@ -69,8 +65,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath,
-                                          mPhongShader);
+        Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
@@ -111,7 +106,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a sphere and a corresponding rigid in the dynamics world
         Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
-                                    meshFolderPath, mPhongShader);
+                                    meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -132,7 +127,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cone and a corresponding rigid in the dynamics world
         Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
-                              meshFolderPath, mPhongShader);
+                              meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -153,7 +148,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
-                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath, mPhongShader);
+                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
@@ -174,8 +169,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
-                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath,
-                                       mPhongShader);
+                                       CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -195,8 +189,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath,
-                                          mPhongShader);
+        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -394,70 +387,54 @@ void CollisionShapesScene::update() {
 }
 
 // Render the scene
-void CollisionShapesScene::render() {
-
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_CULL_FACE);
-
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
+void CollisionShapesScene::renderSinglePass(openglframework::Shader& shader,
+                                            const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
-    mPhongShader.bind();
-
-    // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    const Color& diffColLight0 = mLight0.getDiffuseColor();
-    const Color& specColLight0 = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffColLight0.r, diffColLight0.g, diffColLight0.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specColLight0.r, specColLight0.g, specColLight0.b));
-    mPhongShader.setFloatUniform("shininess", 200.0f);
+    shader.bind();
 
     // Render all the boxes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the sphere of the scene
     for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the cones of the scene
     for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the cylinders of the scene
     for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the capsules of the scene
     for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the convex meshes of the scene
     for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
          it != mConvexMeshes.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render all the dumbbells of the scene
     for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
          it != mDumbbells.end(); ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Render the floor
-    mFloor->render(mPhongShader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix);
 
     // Unbind the shader
-    mPhongShader.unbind();
+    shader.unbind();
 }
 
 /// Reset the scene

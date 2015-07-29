@@ -29,8 +29,7 @@
 // Constructor
 ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
                        reactphysics3d::CollisionWorld* world,
-                       const std::string& meshFolderPath,
-                       openglframework::Shader& shader)
+                       const std::string& meshFolderPath)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
@@ -91,13 +90,13 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    createVBOAndVAO();
 }
 
 // Constructor
 ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
                        reactphysics3d::DynamicsWorld* dynamicsWorld,
-                       const std::string& meshFolderPath, openglframework::Shader &shader)
+                       const std::string& meshFolderPath)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
@@ -157,7 +156,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     mRigidBody = body;
 
     // Create the VBOs and VAO
-    createVBOAndVAO(shader);
+    createVBOAndVAO();
 }
 
 // Destructor
@@ -182,26 +181,44 @@ void ConvexMesh::render(openglframework::Shader& shader,
     shader.bind();
 
     // Set the model to camera matrix
-    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
-    shader.setMatrix4x4Uniform("localToCameraMatrix", localToCameraMatrix);
+    shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
     // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
     // model-view matrix)
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
     openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
-    shader.setVector4Uniform("vertexColor", color);
+    shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();
+
+    mVBOVertices.bind();
+
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
+
+    glEnableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
+
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
         glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
     }
+
+    glDisableVertexAttribArray(vertexPositionLoc);
+    if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
+
+    mVBOVertices.unbind();
 
     // Unbind the VAO
     mVAO.unbind();
@@ -236,15 +253,7 @@ void ConvexMesh::updateTransform(float interpolationFactor) {
 
 // Create the Vertex Buffer Objects used to render with OpenGL.
 /// We create two VBOs (one for vertices and one for indices)
-void ConvexMesh::createVBOAndVAO(openglframework::Shader& shader) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Get the location of shader attribute variables
-    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
-    GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal");
-    GLint vertexTexCoordLoc = shader.getAttribLocation("textureCoords");
+void ConvexMesh::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -282,19 +291,13 @@ void ConvexMesh::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Bind the VBO of vertices
     mVBOVertices.bind();
-    glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // Bind the VBO of normals
     mVBONormals.bind();
-    glEnableVertexAttribArray(vertexNormalLoc);
-    glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     if (hasTexture()) {
         // Bind the VBO of texture coords
         mVBOTextureCoords.bind();
-        glEnableVertexAttribArray(vertexTexCoordLoc);
-        glVertexAttribPointer(vertexTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
     }
 
     // Bind the VBO of indices
@@ -302,9 +305,6 @@ void ConvexMesh::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Unbind the VAO
     mVAO.unbind();
-
-    // Unbind the shader
-    shader.unbind();
 }
 
 // Reset the transform

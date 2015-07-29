@@ -37,11 +37,11 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), 
                      mVBOQuad(GL_ARRAY_BUFFER) {
 
     // Move the light0
-    mLight0.translateWorld(Vector3(0, 60, 00));
+    mLight0.translateWorld(Vector3(0, 40, 40));
 
     // Camera at light0 postion for the shadow map
     mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
-    mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 2.0f);
+    mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
     mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
     mShadowMapLightCamera.setFieldOfView(70.0f);
     mShadowMapLightCamera.setSceneRadius(200);
@@ -64,6 +64,8 @@ SceneDemo::~SceneDemo() {
 
     mShadowMapTexture.destroy();
     mFBOShadowMap.destroy();
+    mVBOQuad.destroy();
+
 }
 
 // Render the scene (in multiple passes for shadow mapping)
@@ -75,7 +77,7 @@ void SceneDemo::render() {
     // ---------- Render the scene to generate the shadow map (first pass) ----------- //
 
     // Culling switching, rendering only backface, this is done to avoid self-shadowing
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     Matrix4 shadowMapProjMatrix = mShadowMapLightCamera.getProjectionMatrix();
 

@@ -35,7 +35,7 @@ VertexArrayObject::VertexArrayObject() : mVertexArrayID(0) {
 
 // Destructor
 VertexArrayObject::~VertexArrayObject() {
-
+    destroy();
 }
 
 // Create the vertex buffer object
@@ -63,7 +63,7 @@ bool VertexArrayObject::create() {
 void VertexArrayObject::destroy() {
 
     // Delete the vertex buffer object
-    if (mVertexArrayID) {
+    if (mVertexArrayID != 0) {
         glDeleteVertexArrays(1, &mVertexArrayID);
         mVertexArrayID = 0;
     }

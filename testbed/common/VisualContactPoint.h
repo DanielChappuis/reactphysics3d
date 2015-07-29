@@ -63,7 +63,7 @@ class VisualContactPoint : public openglframework::Object3D {
         openglframework::Color mColor;
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        static void createVBOAndVAO(openglframework::Shader& shader);
+        static void createVBOAndVAO();
 
         // -------------------- Methods -------------------- //
 
@@ -73,7 +73,6 @@ class VisualContactPoint : public openglframework::Object3D {
 
         /// Constructor
         VisualContactPoint(const openglframework::Vector3& position,
-                           openglframework::Shader &shader,
                            const std::string &meshFolderPath);
 
         /// Destructor

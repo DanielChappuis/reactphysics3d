@@ -33,18 +33,17 @@ using namespace jointsscene;
 
 // Constructor
 JointsScene::JointsScene(const std::string& name)
-      : Scene(name), mLight0(0), mPhongShader("shaders/phong.vert",
+      : SceneDemo(name, SCENE_RADIUS), mLight0(0), mPhongShader("shaders/phong.vert",
                                               "shaders/phong.frag") {
 
     // Move the light 0
     mLight0.translateWorld(Vector3(7, 15, 15));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
-    setScenePosition(center, radiusScene);
+    setScenePosition(center, SCENE_RADIUS);
 
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
@@ -168,43 +167,27 @@ void JointsScene::update() {
 }
 
 // Render the scene
-void JointsScene::render() {
-
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_CULL_FACE);
-
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
+void JointsScene::renderSinglePass(openglframework::Shader& shader,
+                                   const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
-    mPhongShader.bind();
-
-    // Set the variables of the shader
-    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    const Color& diffCol = mLight0.getDiffuseColor();
-    const Color& specCol = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
-    mPhongShader.setFloatUniform("shininess", 60.0f);
+    shader.bind();
 
     // Render all the boxes
-    mSliderJointBottomBox->render(mPhongShader, worldToCameraMatrix);
-    mSliderJointTopBox->render(mPhongShader, worldToCameraMatrix);
-    mPropellerBox->render(mPhongShader, worldToCameraMatrix);
-    mFixedJointBox1->render(mPhongShader, worldToCameraMatrix);
-    mFixedJointBox2->render(mPhongShader, worldToCameraMatrix);
+    mSliderJointBottomBox->render(shader, worldToCameraMatrix);
+    mSliderJointTopBox->render(shader, worldToCameraMatrix);
+    mPropellerBox->render(shader, worldToCameraMatrix);
+    mFixedJointBox1->render(shader, worldToCameraMatrix);
+    mFixedJointBox2->render(shader, worldToCameraMatrix);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mBallAndSocketJointChainBoxes[i]->render(mPhongShader, worldToCameraMatrix);
+        mBallAndSocketJointChainBoxes[i]->render(shader, worldToCameraMatrix);
     }
 
     // Render the floor
-    mFloor->render(mPhongShader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix);
 
     // Unbind the shader
-    mPhongShader.unbind();
+    shader.unbind();
 }
 
 // Reset the scene

@@ -48,7 +48,7 @@ Shader::Shader(const std::string vertexShaderFilename, const std::string fragmen
 
 // Destructor
 Shader::~Shader() {
-
+    destroy();
 }
 
 // Create the shader

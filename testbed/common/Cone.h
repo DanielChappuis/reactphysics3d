@@ -76,7 +76,7 @@ class Cone : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
     public :
 
@@ -84,12 +84,11 @@ class Cone : public openglframework::Mesh {
 
         /// Constructor
         Cone(float radius, float height, const openglframework::Vector3& position,
-             rp3d::CollisionWorld* world, const std::string& meshFolderPath, openglframework::Shader &shader);
+             rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
         Cone(float radius, float height, const openglframework::Vector3& position,
-             float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath,
-             openglframework::Shader& shader);
+             float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Cone();

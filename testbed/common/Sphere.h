@@ -73,7 +73,7 @@ class Sphere : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
     public :
 
@@ -81,13 +81,11 @@ class Sphere : public openglframework::Mesh {
 
         /// Constructor
         Sphere(float radius, const openglframework::Vector3& position,
-               rp3d::CollisionWorld* world, const std::string& meshFolderPath,
-               openglframework::Shader& shader);
+               rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
         Sphere(float radius, const openglframework::Vector3& position,
-               float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath,
-               openglframework::Shader& shader);
+               float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Sphere();

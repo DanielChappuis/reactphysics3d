@@ -32,7 +32,7 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
-       : Scene(name), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
+       : SceneDemo(name, SCENE_RADIUS), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
          mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
          mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
          mVBOVertices(GL_ARRAY_BUFFER) {
@@ -41,11 +41,10 @@ RaycastScene::RaycastScene(const std::string& name)
     mLight0.translateWorld(Vector3(50, 50, 50));
 
     // Compute the radius and the center of the scene
-    float radiusScene = 30.0f;
     openglframework::Vector3 center(0, 0, 0);
 
     // Set the center of the scene
-    setScenePosition(center, radiusScene);
+    setScenePosition(center, SCENE_RADIUS);
 
     // Create the dynamics world for the physics simulation
     mCollisionWorld = new rp3d::CollisionWorld();
@@ -54,7 +53,7 @@ RaycastScene::RaycastScene(const std::string& name)
     openglframework::Vector3 position1(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mDumbbell = new Dumbbell(position1, mCollisionWorld, mMeshFolderPath, mPhongShader);
+    mDumbbell = new Dumbbell(position1, mCollisionWorld, mMeshFolderPath);
 
     // ---------- Box ---------- //
     openglframework::Vector3 position2(0, 0, 0);
@@ -68,34 +67,34 @@ RaycastScene::RaycastScene(const std::string& name)
 
     // Create a sphere and a corresponding collision body in the dynamics world
     mSphere = new Sphere(SPHERE_RADIUS, position3, mCollisionWorld,
-                         mMeshFolderPath, mPhongShader);
+                         mMeshFolderPath);
 
     // ---------- Cone ---------- //
     openglframework::Vector3 position4(0, 0, 0);
 
     // Create a cone and a corresponding collision body in the dynamics world
     mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
-                     mMeshFolderPath, mPhongShader);
+                     mMeshFolderPath);
 
     // ---------- Cylinder ---------- //
     openglframework::Vector3 position5(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
-                             mCollisionWorld, mMeshFolderPath, mPhongShader);
+                             mCollisionWorld, mMeshFolderPath);
 
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position6 ,
-                           mCollisionWorld, mMeshFolderPath, mPhongShader);
+                           mCollisionWorld, mMeshFolderPath);
 
     // ---------- Convex Mesh ---------- //
     openglframework::Vector3 position7(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath, mPhongShader);
+    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath);
 
     // Create the lines that will be used for raycasting
     createLines();
@@ -266,41 +265,26 @@ void RaycastScene::update() {
 }
 
 // Render the scene
-void RaycastScene::render() {
-
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_CULL_FACE);
+void RaycastScene::renderSinglePass(openglframework::Shader& shader,
+                                    const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
-    mPhongShader.bind();
-
-    // Get the world-space to camera-space matrix
-    const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
-
-    // Set the variables of the shader
-    mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setVector3Uniform("light0PosCameraSpace",worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
-    const Color& diffCol = mLight0.getDiffuseColor();
-    const Color& specCol = mLight0.getSpecularColor();
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
-    mPhongShader.setFloatUniform("shininess", 60.0f);
+    shader.bind();
 
     // Set the model to camera matrix
-    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix;
-    mPhongShader.setMatrix4x4Uniform("localToCameraMatrix", localToCameraMatrix);
+    const Matrix4 localToCameraMatrix = Matrix4::identity();
+    shader.setMatrix4x4Uniform("localToWorldMatrix", localToCameraMatrix);
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
     // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
     // model-view matrix)
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-    mPhongShader.setMatrix3x3Uniform("normalMatrix", normalMatrix);
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
     openglframework::Vector4 color(1, 0, 0, 1);
-    mPhongShader.setVector4Uniform("vertexColor", color);
+    shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();
@@ -311,41 +295,40 @@ void RaycastScene::render() {
     // Unbind the VAO
     mVAO.unbind();
 
-    mPhongShader.unbind();
+    shader.unbind();
 
     // Render the shapes
-    if (mBox->getCollisionBody()->isActive()) mBox->render(mPhongShader, worldToCameraMatrix);
-    if (mSphere->getCollisionBody()->isActive()) mSphere->render(mPhongShader, worldToCameraMatrix);
-    if (mCone->getCollisionBody()->isActive()) mCone->render(mPhongShader, worldToCameraMatrix);
-    if (mCylinder->getCollisionBody()->isActive()) mCylinder->render(mPhongShader, worldToCameraMatrix);
-    if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(mPhongShader, worldToCameraMatrix);
-    if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(mPhongShader, worldToCameraMatrix);
-    if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(mPhongShader, worldToCameraMatrix);
+    if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
+    if (mSphere->getCollisionBody()->isActive()) mSphere->render(shader, worldToCameraMatrix);
+    if (mCone->getCollisionBody()->isActive()) mCone->render(shader, worldToCameraMatrix);
+    if (mCylinder->getCollisionBody()->isActive()) mCylinder->render(shader, worldToCameraMatrix);
+    if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(shader, worldToCameraMatrix);
+    if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix);
+    if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix);
 
     //mPhongShader.unbind();
-    mPhongShader.bind();
+    shader.bind();
 
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(0, 0, 0));
     openglframework::Vector4 redColor(1, 0, 0, 1);
-    mPhongShader.setVector4Uniform("vertexColor", redColor);
+    shader.setVector4Uniform("vertexColor", redColor, false);
 
     // Render all the raycast hit points
     mRaycastManager.render(worldToCameraMatrix, mAreNormalsDisplayed);
 
-    mPhongShader.unbind();
-    mPhongShader.bind();
+    shader.unbind();
+    shader.bind();
 
     openglframework::Vector4 blueColor(0, 0.62, 0.92, 1);
-    mPhongShader.setVector4Uniform("vertexColor", blueColor);
+    shader.setVector4Uniform("vertexColor", blueColor, false);
 
     // Render the lines
     for (std::vector<Line*>::iterator it = mLines.begin(); it != mLines.end();
          ++it) {
-        (*it)->render(mPhongShader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix);
     }
 
     // Unbind the shader
-    mPhongShader.unbind();
+    shader.unbind();
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

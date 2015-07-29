@@ -30,8 +30,8 @@
 #include "Scene.h"
 
 // Constants
-const int SHADOWMAP_WIDTH = 1024;
-const int SHADOWMAP_HEIGHT = 1024;
+const int SHADOWMAP_WIDTH = 2048;
+const int SHADOWMAP_HEIGHT = 2048;
 
 // Class SceneDemo
 // Abstract class that represents a 3D scene for the ReactPhysics3D examples.

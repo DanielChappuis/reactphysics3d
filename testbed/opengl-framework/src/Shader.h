@@ -180,8 +180,10 @@ inline GLint Shader::getAttribLocation(const std::string& variableName, bool err
 
 // Clear the shader
 inline void Shader::destroy() {
-    glDeleteProgram(mProgramObjectID);
-    mProgramObjectID = 0;
+    if (mProgramObjectID != 0) {
+        glDeleteProgram(mProgramObjectID);
+        mProgramObjectID = 0;
+    }
 }
 
 // Set a float uniform value to this shader (be careful if the uniform is not

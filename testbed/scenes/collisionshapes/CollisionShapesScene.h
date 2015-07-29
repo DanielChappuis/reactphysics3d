@@ -29,7 +29,7 @@
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Scene.h"
+#include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
 #include "Cone.h"
@@ -44,6 +44,7 @@ namespace collisionshapesscene {
 
 
 // Constants
+const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 3;
 const int NB_CUBES = 3;
 const int NB_CONES = 3;
@@ -69,14 +70,11 @@ const float MESH_MASS = 1.0f;
 const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 
 // Class CollisionShapesScene
-class CollisionShapesScene : public Scene{
+class CollisionShapesScene : public SceneDemo {
 
     private :
 
         // -------------------- Attributes -------------------- //
-
-        /// Light 0
-        openglframework::Light mLight0;
 
         /// Phong shader
         openglframework::Shader mPhongShader;
@@ -121,8 +119,9 @@ class CollisionShapesScene : public Scene{
         /// Take a step for the simulation
         virtual void update();
 
-        /// Render the scene
-        virtual void render();
+        /// Render the scene in a single pass
+        virtual void renderSinglePass(openglframework::Shader& shader,
+                                      const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Reset the scene
         virtual void reset();

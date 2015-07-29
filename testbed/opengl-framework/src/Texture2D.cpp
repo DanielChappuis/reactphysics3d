@@ -47,7 +47,7 @@ Texture2D::Texture2D(uint width, uint height, uint internalFormat, uint format, 
 
 // Destructor
 Texture2D::~Texture2D() {
-
+    destroy();
 }
 
 // Create the texture

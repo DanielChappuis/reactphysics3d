@@ -64,7 +64,7 @@ class ConvexMesh : public openglframework::Mesh {
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
     public :
 
@@ -72,12 +72,11 @@ class ConvexMesh : public openglframework::Mesh {
 
         /// Constructor
         ConvexMesh(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world, const std::string& meshFolderPath, openglframework::Shader &shader);
+                   rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
         ConvexMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath,
-                   openglframework::Shader& shader);
+                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~ConvexMesh();

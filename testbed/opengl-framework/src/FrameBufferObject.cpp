@@ -37,7 +37,7 @@ FrameBufferObject::FrameBufferObject() : mFrameBufferID(0), mRenderBufferID (0) 
 
 // Destructor
 FrameBufferObject::~FrameBufferObject() {
-
+    destroy();
 }
 
 // Create the frame buffer object

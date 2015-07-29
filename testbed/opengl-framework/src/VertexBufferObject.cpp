@@ -36,7 +36,7 @@ VertexBufferObject::VertexBufferObject(GLenum targetData)
 
 // Destructor
 VertexBufferObject::~VertexBufferObject() {
-
+    destroy();
 }
 
 // Create the vertex buffer object
@@ -71,7 +71,7 @@ void VertexBufferObject::copyDataIntoVBO(GLsizei size, const void* data, GLenum 
 void VertexBufferObject::destroy() {
 
     // Delete the vertex buffer object
-    if (mVertexBufferID) {
+    if (mVertexBufferID != 0) {
         glDeleteFramebuffers(1, &mVertexBufferID);
         mVertexBufferID = 0;
     }

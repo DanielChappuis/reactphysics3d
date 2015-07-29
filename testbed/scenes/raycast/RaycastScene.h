@@ -31,7 +31,7 @@
 #include <cmath>
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Scene.h"
+#include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
 #include "Cone.h"
@@ -46,6 +46,7 @@
 namespace raycastscene {
 
 // Constants
+const float SCENE_RADIUS = 30.0f;
 const openglframework::Vector3 BOX_SIZE(4, 2, 1);
 const float SPHERE_RADIUS = 3.0f;
 const float CONE_RADIUS = 3.0f;
@@ -87,7 +88,7 @@ class RaycastManager : public rp3d::RaycastCallback {
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            VisualContactPoint* point = new VisualContactPoint(position, mShader, mMeshFolderPath);
+            VisualContactPoint* point = new VisualContactPoint(position, mMeshFolderPath);
             mHitPoints.push_back(point);
 
             // Create a line to display the normal at hit point
@@ -137,7 +138,7 @@ class RaycastManager : public rp3d::RaycastCallback {
 };
 
 // Class RaycastScene
-class RaycastScene : public Scene {
+class RaycastScene : public SceneDemo {
 
     private :
 
@@ -211,8 +212,9 @@ class RaycastScene : public Scene {
         /// Take a step for the simulation
         virtual void update();
 
-        /// Render the scene
-        virtual void render();
+        /// Render the scene in a single pass
+        virtual void renderSinglePass(openglframework::Shader& shader,
+                                      const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Reset the scene
         virtual void reset();

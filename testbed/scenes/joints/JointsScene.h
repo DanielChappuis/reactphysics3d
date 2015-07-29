@@ -30,11 +30,12 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
-#include "Scene.h"
+#include "SceneDemo.h"
 
 namespace jointsscene {
 
 // Constants
+const float SCENE_RADIUS = 30.0f;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(20, 0.5f, 20);    // Floor dimensions in meters
 const float BOX_MASS = 1.0f;                                // Box mass in kilograms
@@ -43,7 +44,7 @@ const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-An
 const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
 // Class JointsScene
-class JointsScene : public Scene {
+class JointsScene : public SceneDemo {
 
     protected :
 
@@ -134,8 +135,9 @@ class JointsScene : public Scene {
         /// Take a step for the simulation
         virtual void update();
 
-        /// Render the scene
-        virtual void render();
+        /// Render the scene in a single pass
+        virtual void renderSinglePass(openglframework::Shader& shader,
+                                      const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Reset the scene
         virtual void reset();

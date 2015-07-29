@@ -385,6 +385,9 @@ class Matrix4 {
         // Return a 4x4 orthographic projection matrix
         static Matrix4 orthoProjectionMatrix(float near, float far, int width,
                                              int height);
+
+        // Return the identity matrix
+        static Matrix4 identity();
 };
 
 // * operator
@@ -475,6 +478,14 @@ inline Matrix4 Matrix4::orthoProjectionMatrix(float near, float far, int width, 
     return Matrix4(fx, 0, 0, 0,
                    0, fy, 0, 0,
                    0, 0, fz, fw,
+                   0, 0, 0, 1);
+}
+
+// Return the identity matrix
+inline Matrix4 Matrix4::identity() {
+    return Matrix4(1, 0, 0, 0,
+                   0, 1, 0, 0,
+                   0, 0, 1, 0,
                    0, 0, 0, 1);
 }
 
