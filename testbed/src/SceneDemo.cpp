@@ -44,7 +44,7 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name), 
     mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
     mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
     mShadowMapLightCamera.setFieldOfView(70.0f);
-    mShadowMapLightCamera.setSceneRadius(200);
+    mShadowMapLightCamera.setSceneRadius(100);
     //mShadowMapLightCamera.setZoom(1.0);
 
 
@@ -75,6 +75,9 @@ void SceneDemo::render() {
     glEnable(GL_CULL_FACE);
 
     // ---------- Render the scene to generate the shadow map (first pass) ----------- //
+
+    //glEnable(GL_POLYGON_OFFSET_FILL);
+    //glPolygonOffset(8.0, 4.0);
 
     // Culling switching, rendering only backface, this is done to avoid self-shadowing
     glCullFace(GL_BACK);
@@ -108,6 +111,8 @@ void SceneDemo::render() {
     mDepthShader.unbind();
 
     mFBOShadowMap.unbind();
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
 
 
     // ---------- Render the scene for final rendering (second pass) ----------- //

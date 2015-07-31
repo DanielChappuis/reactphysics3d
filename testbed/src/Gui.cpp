@@ -135,11 +135,39 @@ void Gui::displayLeftPane() {
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
                          app.mWindowToFramebufferRatio.y * LEFT_PANE_HEADER_HEIGHT, &scrollarea);
 
+    // ------ Header ----- //
+
+    imguiHorizontalSpace(10);
+    imguiVerticalSpace(20);
+    imguiStartLine();
+
+    const int button_width = 150;
+
+    // Play/Pause
+    if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width)) {
+        app.togglePlayPauseSimulation();
+    }
+    imguiHorizontalSpace(5);
+
+    // Step
+    if (imguiButton("Step", !app.mTimer.isRunning(), button_width)) {
+        app.toggleTakeSinglePhysicsStep();
+    }
+    imguiHorizontalSpace(5);
+
+    // Restart
+    if (imguiButton("Restart", true, button_width)) {
+        app.restartSimulation();
+    }
+
+    imguiEndLine();
+
     imguiSeparatorLine();
     imguiVerticalSpace(5);
     imguiStartLine();
 
-    // ----- Left Pane Header ----- //
+    // ----- Left Pane Tabs ----- //
+
     int widthButton = app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH / 4.3;
     if (imguiButton("Scenes", true, widthButton)) {
         mLeftPane = SCENES;
@@ -323,7 +351,7 @@ void Gui::render() {
                     - app.mWindowToFramebufferRatio.y * mScrollY);
     resetScroll();
 
-    displayHeader();
+    //displayHeader();
     displayLeftPane();
 
     imguiEndFrame();
