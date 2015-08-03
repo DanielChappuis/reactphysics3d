@@ -41,7 +41,7 @@ CubesScene::CubesScene(const std::string& name)
     setScenePosition(center, SCENE_RADIUS);
 
     // Gravity vector in the dynamics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-5.81), 0);
+    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Time step for the physics simulation
     rp3d::decimal timeStep = 1.0f / 60.0f;
@@ -99,9 +99,6 @@ CubesScene::CubesScene(const std::string& name)
 
 // Destructor
 CubesScene::~CubesScene() {
-
-    // Destroy the shader
-    mPhongShader.destroy();
 
     // Destroy all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {

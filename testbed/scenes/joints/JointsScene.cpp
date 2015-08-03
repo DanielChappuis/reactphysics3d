@@ -33,11 +33,7 @@ using namespace jointsscene;
 
 // Constructor
 JointsScene::JointsScene(const std::string& name)
-      : SceneDemo(name, SCENE_RADIUS), mLight0(0), mPhongShader("shaders/phong.vert",
-                                              "shaders/phong.frag") {
-
-    // Move the light 0
-    mLight0.translateWorld(Vector3(7, 15, 15));
+      : SceneDemo(name, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
@@ -86,9 +82,6 @@ JointsScene::JointsScene(const std::string& name)
 
 // Destructor
 JointsScene::~JointsScene() {
-
-    // Destroy the shader
-    mPhongShader.destroy();
 
     // Destroy the joints
     mDynamicsWorld->destroyJoint(mSliderJoint);

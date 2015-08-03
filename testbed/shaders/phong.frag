@@ -35,6 +35,7 @@ uniform sampler2D textureSampler;           // Texture
 uniform sampler2D shadowMapSampler;         // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
 uniform vec4 vertexColor;                   // Vertex color
+uniform bool isShadowEnabled;               // True if shadow mapping is enabled
 
 // In variables
 in vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
@@ -70,20 +71,19 @@ void main() {
     vec3 specular = light0SpecularColor * specularFactor;
 
     // Compute shadow factor
-    float bias = 0.00001;
-    float shadowBias = -0.000;
-    vec4 shadowMapUV = shadowMapCoords;
-    shadowMapUV.z -= shadowBias;
-    vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w ;
-    float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r + bias;
-    float shadow = 0.0;
-    if (shadowMapCoords.w > 0) {
-        shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
-    }
-    if (abs(dot(N, L0)) < 0.01) {
-        shadow = 0.5;
+    float shadow = 1.0;
+    if (isShadowEnabled) {
+        float bias = 0.0001;
+        float shadowBias = -0.000;
+        vec4 shadowMapUV = shadowMapCoords;
+        shadowMapUV.z -= shadowBias;
+        vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w ;
+        float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r + bias;
+        if (shadowMapCoords.w > 0) {
+            shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
+        }
     }
 
     // Compute the final color
-    color = vec4(ambient + shadow * vertexColor.rgb, 1.0);
+    color = vec4(ambient + shadow * diffuse, 1.0);
 }

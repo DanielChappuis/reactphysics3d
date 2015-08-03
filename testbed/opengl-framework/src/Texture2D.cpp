@@ -33,13 +33,13 @@
 using namespace openglframework;
 
 // Constructor
-Texture2D::Texture2D() : mID(0), mLayer(0), mWidth(0), mHeight(0) {
+Texture2D::Texture2D() : mID(0), mUnit(0), mWidth(0), mHeight(0) {
 
 }
 
 // Constructor
 Texture2D::Texture2D(uint width, uint height, uint internalFormat, uint format, uint type)
-          : mID(0), mLayer(0), mWidth(0), mHeight(0){
+          : mID(0), mUnit(0), mWidth(0), mHeight(0) {
 
     // Create the texture
     create(width, height, internalFormat, format, type);
@@ -52,7 +52,7 @@ Texture2D::~Texture2D() {
 
 // Create the texture
 void Texture2D::create(uint width, uint height, uint internalFormat, uint format, uint type,
-            void* data) {
+                       void* data) {
 
     // Destroy the current texture
     destroy();
@@ -99,7 +99,7 @@ void Texture2D::destroy() {
     if (mID != 0) {
         glDeleteTextures(1, &mID);
         mID = 0;
-        mLayer = 0;
+        mUnit = 0;
         mWidth = 0;
         mHeight = 0;
     }

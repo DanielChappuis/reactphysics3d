@@ -45,11 +45,19 @@ class SceneDemo : public Scene {
         /// Light 0
         openglframework::Light mLight0;
 
+        /// True if the shadow mapping is enabled
+        bool mIsShadowMappingEnabled;
+
+        /// True if the shadows FBO, textures have been created
+        bool mIsShadowMappingInitialized;
+
         /// FBO for the shadow map
         openglframework::FrameBufferObject mFBOShadowMap;
 
         /// Shadow map texture
         openglframework::Texture2D mShadowMapTexture;
+
+        static int shadowMapTextureLevel;
 
         /// Shadow map bias matrix
         openglframework::Matrix4 mShadowMapBiasMatrix;
@@ -99,7 +107,27 @@ class SceneDemo : public Scene {
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
                                       const openglframework::Matrix4& worldToCameraMatrix)=0;
+
+        /// Return true if the shadow mapping is enabled
+        bool getIsShadowMappingEnabled() const;
+
+        /// Enabled/Disable the shadow mapping
+        void setIsShadowMappingEnabled(bool isShadowMappingEnabled);
 };
+
+// Return true if the shadow mapping is enabled
+inline bool SceneDemo::getIsShadowMappingEnabled() const {
+    return mIsShadowMappingEnabled;
+}
+
+// Enabled/Disable the shadow mapping
+inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
+    mIsShadowMappingEnabled = isShadowMappingEnabled;
+
+    if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
+        createShadowMapFBOAndTexture();
+    }
+}
 
 #endif
 

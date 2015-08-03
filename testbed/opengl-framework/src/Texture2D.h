@@ -45,8 +45,8 @@ class Texture2D {
         // OpenGL texture ID
         GLuint mID;
 
-        // Layer of the texture
-        GLuint mLayer;
+        // Current texture unit for this texture
+        GLuint mUnit;
 
         // Width
         uint mWidth;
@@ -87,11 +87,11 @@ class Texture2D {
         // Get the OpenGL texture ID
         uint getID() const;
 
-        // Get the layer of the texture
-        uint getLayer() const;
+        // Get the unit of the texture
+        uint getUnit() const;
 
-        // Set the layer of the texture
-        void setLayer(uint layer);
+        // Set the unit of the texture
+        void setUnit(uint unit);
 
         // Get the width
         uint getWidth() const;
@@ -103,14 +103,14 @@ class Texture2D {
 // Bind the texture
 inline void Texture2D::bind() const {
     assert(mID != 0);
-    glActiveTexture(GL_TEXTURE0 + mLayer);
+    glActiveTexture(GL_TEXTURE0 + mUnit);
     glBindTexture(GL_TEXTURE_2D, mID);
 }
 
 // Unbind the texture
 inline void Texture2D::unbind() const {
     assert(mID != 0);
-    glActiveTexture(GL_TEXTURE0 + mLayer);
+    glActiveTexture(GL_TEXTURE0 + mUnit);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -119,14 +119,14 @@ inline uint Texture2D::getID() const {
     return mID;
 }
 
-// Get the layer of the texture
-inline uint Texture2D::getLayer() const {
-    return mLayer;
+// Get the unit of the texture
+inline uint Texture2D::getUnit() const {
+    return mUnit;
 }
 
-// Set the layer of the texture
-inline void Texture2D::setLayer(uint layer) {
-    mLayer = layer;
+// Set the unit of the texture
+inline void Texture2D::setUnit(uint unit) {
+    mUnit = unit;
 }
 
 // Get the width

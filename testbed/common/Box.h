@@ -65,17 +65,17 @@ class Box : public openglframework::Object3D {
         /// Vertex Buffer Object for the vertices data used to render the box with OpenGL
         static openglframework::VertexBufferObject mVBOVertices;
 
-        /// Vertex Buffer Object for the indices used to render the box with OpenGL
-        static openglframework::VertexBufferObject mVBOIndices;
+        /// Vertex Buffer Object for the normales used to render the box with OpenGL
+        static openglframework::VertexBufferObject mVBONormals;
 
         /// Vertex Array Object for the vertex data
         static openglframework::VertexArrayObject mVAO;
 
-        /// Vertex data for each vertex of the cube (used to render the box)
-        static VertexData mCubeVertices[8];
+        /// Vertices coordinates of the triangles of the box
+        static GLfloat mCubeVertices[108];
 
-        /// Indices of the cube (used to render the box)
-        static GLuint mCubeIndices[36];
+        /// Vertices normals of the triangles of the box
+        static GLfloat mCubeNormals[108];
 
         /// Total number of boxes created
         static int totalNbBoxes;

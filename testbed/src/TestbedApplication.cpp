@@ -276,10 +276,6 @@ void TestbedApplication::reshape() {
     // Resize the camera viewport
     mCurrentScene->reshape(width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
 
-    // Resize the OpenGL viewport
-    //glViewport(LEFT_PANE_WIDTH, HEADER_HEIGHT,
-    //           width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
-
     // Update the window size of the scene
     int windowWidth, windowHeight;
     glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);

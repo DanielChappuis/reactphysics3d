@@ -225,9 +225,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 // Destructor
 CollisionShapesScene::~CollisionShapesScene() {
 
-    // Destroy the shader
-    mPhongShader.destroy();
-
     // Destroy all the boxes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 

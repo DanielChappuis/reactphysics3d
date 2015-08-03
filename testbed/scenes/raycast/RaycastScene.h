@@ -144,12 +144,6 @@ class RaycastScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        /// Light 0
-        openglframework::Light mLight0;
-
-        /// Phong shader
-        openglframework::Shader mPhongShader;
-
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 

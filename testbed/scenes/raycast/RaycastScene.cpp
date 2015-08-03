@@ -32,13 +32,9 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
-       : SceneDemo(name, SCENE_RADIUS), mLight0(0), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
-         mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
+       : SceneDemo(name, SCENE_RADIUS), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
          mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
          mVBOVertices(GL_ARRAY_BUFFER) {
-
-    // Move the light 0
-    mLight0.translateWorld(Vector3(50, 50, 50));
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 0, 0);

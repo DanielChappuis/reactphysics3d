@@ -31,32 +31,85 @@
 
 // Initialize static variables
 openglframework::VertexBufferObject Box::mVBOVertices(GL_ARRAY_BUFFER);
-openglframework::VertexBufferObject Box::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
+openglframework::VertexBufferObject Box::mVBONormals(GL_ARRAY_BUFFER);
 openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
-VertexData Box::mCubeVertices[8] = {
- {openglframework::Vector3(1,1,1),openglframework::Vector3(1,1,1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(-1,1,1),openglframework::Vector3(-1,1,1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(-1,-1,1),openglframework::Vector3(-1,-1,1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(1,-1,1),openglframework::Vector3(1,-1,1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(1,-1,-1),openglframework::Vector3(1,-1,-1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(-1,-1,-1),openglframework::Vector3(-1,-1,-1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(-1,1,-1),openglframework::Vector3(-1,1,-1),openglframework::Color(1,0,0,1)},
- {openglframework::Vector3(1,1,-1),openglframework::Vector3(1,1,-1),openglframework::Color(1,0,0,1)}
+GLfloat Box::mCubeVertices[108] = {
+    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+    -1.0f,-1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, // triangle 1 : end
+    1.0f, 1.0f,-1.0f, // triangle 2 : begin
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f, // triangle 2 : end
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
 };
-GLuint Box::mCubeIndices[36] = { 0, 1, 2,
-                                 2, 3, 0,
-                                 7, 4, 5,
-                                 5, 6, 7,
-                                 6, 5, 2,
-                                 2, 1, 6,
-                                 7, 0, 3,
-                                 3, 4, 7,
-                                 7, 6, 1,
-                                 1, 0, 7,
-                                 3, 2, 5,
-                                 5, 4, 3};
-
+GLfloat Box::mCubeNormals[108] = {
+    -1.0f, 0.0f, 0.0f, // triangle 1 : begin
+    -1.0f, 0.0f, 0.0f,
+    -1.0f, 0.0f, 0.0f, // triangle 1 : end
+    0.0f, 0.0f,-1.0f, // triangle 2 : begin
+    0.0f, 0.0f,-1.0f,
+    0.0f, 0.0f,-1.0f, // triangle 2 : end
+    0.0f,-1.0f, 0.0f,
+    0.0f,-1.0f, 0.0f,
+    0.0f,-1.0f, 0.0f,//
+    0.0f, 0.0f,-1.0f,
+    0.0f, 0.0f,-1.0f,
+    0.0f, 0.0f,-1.0f,//
+    -1.0f, 0.0f, 0.0f,
+    -1.0f, 0.0f, 0.0f,
+    -1.0f, 0.0f,0.0f,//
+    0.0f,-1.0f, 0.0f,
+    0.0f,-1.0f, 0.0f,
+    0.0f,-1.0f, 0.0f,//
+    0.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f,//
+    1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,//
+    1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,//
+    0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,//
+    0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,//
+    0.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f//
+};
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
          reactphysics3d::CollisionWorld* world)
@@ -161,8 +214,8 @@ Box::~Box() {
     if (totalNbBoxes == 1) {
 
         // Destroy the VBOs and VAO
-        mVBOIndices.destroy();
         mVBOVertices.destroy();
+        mVBONormals.destroy();
         mVAO.destroy();
     }
 
@@ -201,17 +254,20 @@ void Box::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, position));
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), MEMBER_OFFSET(VertexData, normal));
+    mVBONormals.bind();
+
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
     // Draw the geometry of the box
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (char*)NULL);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     glDisableVertexAttribArray(vertexPositionLoc);
     if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
 
+    mVBONormals.unbind();
     mVBOVertices.unbind();
 
     // Unbind the VAO
@@ -256,11 +312,11 @@ void Box::createVBOAndVAO() {
     mVBOVertices.copyDataIntoVBO(sizeof(mCubeVertices), mCubeVertices, GL_STATIC_DRAW);
     mVBOVertices.unbind();
 
-    // Create th VBO for the indices data
-    mVBOIndices.create();
-    mVBOIndices.bind();
-    mVBOIndices.copyDataIntoVBO(sizeof(mCubeIndices), mCubeIndices, GL_STATIC_DRAW);
-    mVBOIndices.unbind();
+    // Create th VBO for the normals data
+    mVBONormals.create();
+    mVBONormals.bind();
+    mVBONormals.copyDataIntoVBO(sizeof(mCubeNormals), mCubeNormals, GL_STATIC_DRAW);
+    mVBONormals.unbind();
 
     // Create the VAO for both VBOs
     mVAO.create();
@@ -270,7 +326,7 @@ void Box::createVBOAndVAO() {
     mVBOVertices.bind();
 
     // Bind the VBO of indices
-    mVBOIndices.bind();
+    mVBONormals.bind();
 
     // Unbind the VAO
     mVAO.unbind();
