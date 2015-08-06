@@ -69,11 +69,17 @@ class TestbedApplication {
         /// Number of frames during the last second
         int mNbFrames;
 
-        /// Current time for fps computation
+        /// Current time for fps computation (in seconds)
         double mCurrentTime;
 
-        /// Previous time for fps computation
+        /// Previous time for fps computation (in seconds)
         double mPreviousTime;
+
+        /// Update time (in seconds)
+        double mUpdateTime;
+
+        /// Physics update time (in seconds)
+        double mPhysicsUpdateTime;
 
         /// True if multisampling is active
         bool mIsMultisamplingActive;
@@ -88,6 +94,12 @@ class TestbedApplication {
         bool mSinglePhysicsStepDone;
 
         openglframework::Vector2 mWindowToFramebufferRatio;
+
+        /// True if shadow mapping is enabled
+        bool mIsShadowMappingEnabled;
+
+        /// True if vsync is enabled
+        bool mIsVSyncEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -160,6 +172,9 @@ class TestbedApplication {
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
 
+        /// Enable/Disable shadow mapping
+        void enableShadows(bool enable);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -178,6 +193,9 @@ class TestbedApplication {
 
         /// Change the current scene
         void switchScene(Scene* newScene);
+
+        /// Enable/Disable Vertical synchronization
+        void enableVSync(bool enable);
 
         // -------------------- Friendship -------------------- //
 
@@ -213,6 +231,22 @@ inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
 
     if (mTimer.isRunning()) {
         mSinglePhysicsStepEnabled = false;
+    }
+}
+
+// Enable/Disable shadow mapping
+inline void TestbedApplication::enableShadows(bool enable) {
+    mIsShadowMappingEnabled = enable;
+}
+
+// Enable/Disable Vertical synchronization
+inline void TestbedApplication::enableVSync(bool enable) {
+    mIsVSyncEnabled = enable;
+    if (mIsVSyncEnabled) {
+        glfwSwapInterval(1);
+    }
+    else {
+        glfwSwapInterval(0);
     }
 }
 

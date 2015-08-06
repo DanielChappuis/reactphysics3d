@@ -30,8 +30,8 @@
 #include "Scene.h"
 
 // Constants
-const int SHADOWMAP_WIDTH = 2048;
-const int SHADOWMAP_HEIGHT = 2048;
+const int SHADOWMAP_WIDTH = 1024;
+const int SHADOWMAP_HEIGHT = 1024;
 
 // Class SceneDemo
 // Abstract class that represents a 3D scene for the ReactPhysics3D examples.
@@ -44,9 +44,6 @@ class SceneDemo : public Scene {
 
         /// Light 0
         openglframework::Light mLight0;
-
-        /// True if the shadow mapping is enabled
-        bool mIsShadowMappingEnabled;
 
         /// True if the shadows FBO, textures have been created
         bool mIsShadowMappingInitialized;
@@ -96,7 +93,7 @@ class SceneDemo : public Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SceneDemo(const std::string& name, float sceneRadius);
+        SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled = true);
 
         /// Destructor
         virtual ~SceneDemo();
@@ -108,21 +105,14 @@ class SceneDemo : public Scene {
         virtual void renderSinglePass(openglframework::Shader& shader,
                                       const openglframework::Matrix4& worldToCameraMatrix)=0;
 
-        /// Return true if the shadow mapping is enabled
-        bool getIsShadowMappingEnabled() const;
-
         /// Enabled/Disable the shadow mapping
-        void setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
 };
-
-// Return true if the shadow mapping is enabled
-inline bool SceneDemo::getIsShadowMappingEnabled() const {
-    return mIsShadowMappingEnabled;
-}
 
 // Enabled/Disable the shadow mapping
 inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
-    mIsShadowMappingEnabled = isShadowMappingEnabled;
+
+    Scene::setIsShadowMappingEnabled(isShadowMappingEnabled);
 
     if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
         createShadowMapFBOAndTexture();

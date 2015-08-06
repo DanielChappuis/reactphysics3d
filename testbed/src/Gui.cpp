@@ -26,6 +26,8 @@
 // Libraries
 #include "Gui.h"
 #include <GLFW/glfw3.h>
+#include <sstream>
+#include <iomanip>
 #include "TestbedApplication.h"
 
 GLFWwindow* Gui::mWindow = NULL;
@@ -42,6 +44,10 @@ openglframework::VertexArrayObject Gui::mVAO;
 Gui::LeftPane Gui::mLeftPane = SCENES;
 double Gui::mScrollX = 0.0;
 double Gui::mScrollY = 0.0;
+double Gui::mTimeSinceLastProfilingDisplay = 0;
+double Gui::mCachedFPS = 0;
+double Gui::mCachedUpdateTime = 0;
+double Gui::mCachedPhysicsUpdateTime = 0;
 
 // Constructor
 Gui::Gui() {
@@ -80,47 +86,8 @@ void Gui::init() {
         fprintf(stderr, "Could not init GUI renderer.\n");
         exit(EXIT_FAILURE);
     }
-}
 
-void Gui::displayHeader() {
-
-    TestbedApplication& app = TestbedApplication::getInstance();
-
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
-
-    const int button_width = 150;
-
-    int scrollarea = 0;
-    imguiBeginScrollArea(NULL, 0, app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT),
-                         app.mWindowToFramebufferRatio.x * windowWidth,
-                         app.mWindowToFramebufferRatio.y * HEADER_HEIGHT, &scrollarea);
-
-    imguiHorizontalSpace(10);
-    imguiVerticalSpace(20);
-    imguiStartLine();
-
-    // ----- Left Pane Header ----- //
-
-    // Play/Pause
-    if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width)) {
-        app.togglePlayPauseSimulation();
-    }
-    imguiHorizontalSpace(5);
-
-    // Step
-    if (imguiButton("Step", !app.mTimer.isRunning(), button_width)) {
-        app.toggleTakeSinglePhysicsStep();
-    }
-    imguiHorizontalSpace(5);
-
-    // Restart
-    if (imguiButton("Restart", true, button_width)) {
-        app.restartSimulation();
-    }
-
-    imguiEndLine();
-    imguiEndScrollArea();
+    mTimeSinceLastProfilingDisplay = glfwGetTime();
 }
 
 void Gui::displayLeftPane() {
@@ -131,7 +98,7 @@ void Gui::displayLeftPane() {
     glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
 
     int scrollarea = 0;
-    imguiBeginScrollArea(NULL, 0, app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+    imguiBeginScrollArea(NULL, 0, app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
                          app.mWindowToFramebufferRatio.y * LEFT_PANE_HEADER_HEIGHT, &scrollarea);
 
@@ -161,6 +128,7 @@ void Gui::displayLeftPane() {
     }
 
     imguiEndLine();
+    imguiVerticalSpace(70);
 
     imguiSeparatorLine();
     imguiVerticalSpace(5);
@@ -179,10 +147,14 @@ void Gui::displayLeftPane() {
     }
     imguiHorizontalSpace(5);
 
-    imguiButton("Rendering", true, widthButton);
+    if (imguiButton("Rendering", true, widthButton)) {
+        mLeftPane = RENDERING;
+    }
     imguiHorizontalSpace(5);
 
-    imguiButton("Profiling", true, widthButton);
+    if (imguiButton("Profiling", true, widthButton)) {
+        mLeftPane = PROFILING;
+    }
 
     imguiEndLine();
     imguiVerticalSpace(BUTTON_HEIGHT + 8);
@@ -213,7 +185,7 @@ void Gui::displayScenesPane() {
 
     imguiBeginScrollArea("Scenes", 0, 0,
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                         app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+                         app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
                          &scrollarea);
 
     imguiVerticalSpace(15);
@@ -243,7 +215,7 @@ void Gui::displayPhysicsPane() {
     int scrollarea = 2;
     imguiBeginScrollArea("Physics Engine Parameters", 0, 0,
                          app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                         app.mWindowToFramebufferRatio.y * (windowHeight - HEADER_HEIGHT - LEFT_PANE_HEADER_HEIGHT),
+                         app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
                          &scrollarea);
 
     imguiVerticalSpace(15);
@@ -314,10 +286,77 @@ void Gui::displayPhysicsPane() {
 
 void Gui::displayRenderingPane() {
 
+    TestbedApplication& app = TestbedApplication::getInstance();
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
+    int scrollarea = 2;
+    imguiBeginScrollArea("Rendering Parameters", 0, 0,
+                         app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                         app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
+                         &scrollarea);
+
+    imguiVerticalSpace(15);
+
+    // Enabled/Disable VSync
+    bool toggleVSync = imguiCheck("V Sync", app.mIsVSyncEnabled);
+    if (toggleVSync) {
+        app.enableVSync(!app.mIsVSyncEnabled);
+    }
+
+    // Enabled/Disable Shadows
+    bool toggleShadows = imguiCheck("Shadows", app.mIsShadowMappingEnabled);
+    if (toggleShadows) {
+        app.enableShadows(!app.mIsShadowMappingEnabled);
+    }
+
+    imguiEndScrollArea();
 }
 
 void Gui::displayProfilingPane() {
 
+    TestbedApplication& app = TestbedApplication::getInstance();
+
+    double currentTime = glfwGetTime();
+    if ((currentTime - mTimeSinceLastProfilingDisplay)  > TIME_INTERVAL_DISPLAY_PROFILING_INFO) {
+        mTimeSinceLastProfilingDisplay = currentTime;
+        mCachedFPS = app.mFPS;
+        mCachedUpdateTime = app.mUpdateTime;
+        mCachedPhysicsUpdateTime = app.mPhysicsUpdateTime;
+    }
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+
+    int scrollarea = 2;
+    imguiBeginScrollArea("Profiling", 0, 0,
+                         app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
+                         app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
+                         &scrollarea);
+
+    imguiVerticalSpace(15);
+
+    // Framerate (FPS)
+    std::stringstream ss;
+    ss << std::setprecision(4) << mCachedFPS;
+    std::string fps = std::string("FPS : ") + ss.str();
+    imguiItem(fps.c_str());
+
+    // Update time
+    std::stringstream ss1;
+    double updateTime = mCachedUpdateTime * 1000.0;
+    ss1 << std::setprecision(4) << updateTime;
+    std::string updateTimeStr = std::string("Update time (ms) : ") + ss1.str();
+    imguiItem(updateTimeStr.c_str());
+
+    // Update time (physics)
+    std::stringstream ss2;
+    ss2 << std::setprecision(4) << (mCachedPhysicsUpdateTime * 1000.0);
+    std::string updatePhysicsTimeStr = std::string("Update physics time (ms) : ") + ss2.str();
+    imguiItem(updatePhysicsTimeStr.c_str());
+
+    imguiEndScrollArea();
 }
 
 // Display the GUI

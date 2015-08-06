@@ -35,9 +35,9 @@
 
 // Constants
 const float GUI_SCALING = 2.0f;
-const int HEADER_HEIGHT = 80;
 const int LEFT_PANE_WIDTH = 300;
-const int LEFT_PANE_HEADER_HEIGHT = 50;
+const int LEFT_PANE_HEADER_HEIGHT = 90;
+const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 1.0;
 
 using namespace openglframework;
 
@@ -64,7 +64,6 @@ class Gui {
         static bool         g_MousePressed[3];
         static float        g_MouseWheel;
         static GLuint       g_FontTexture;
-        //static int          g_ShaderHandle, g_VertHandle, g_FragHandle;
         static int          g_AttribLocationTex, g_AttribLocationProjMtx;
         static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
         static size_t       g_VboSize;
@@ -76,7 +75,6 @@ class Gui {
 
         // -------------------- Methods -------------------- //
 
-        static void displayHeader();
         static void displayLeftPane();
 
         /// Display the list of scenes
@@ -87,6 +85,18 @@ class Gui {
         static void displayProfilingPane();
 
         static void resetScroll();
+
+        /// Current time (in seconds) from last profiling time display
+        static double mTimeSinceLastProfilingDisplay;
+
+        /// Cached Framerate
+        static double mCachedFPS;
+
+        /// Cached update time
+        static double mCachedUpdateTime;
+
+        // Cached update physics time
+        static double mCachedPhysicsUpdateTime;
 
 
     public :

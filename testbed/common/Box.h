@@ -30,19 +30,6 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 
-// Structure VertexData
-struct VertexData {
-
-    /// Vertex position
-    openglframework::Vector3 position;
-
-    /// Vertex normal
-    openglframework::Vector3 normal;
-
-    // Vertex color
-    openglframework::Color color;
-};
-
 // Class Box
 class Box : public openglframework::Object3D {
 

@@ -32,7 +32,7 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
-       : SceneDemo(name, SCENE_RADIUS), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
+       : SceneDemo(name, SCENE_RADIUS, false), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
          mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
          mVBOVertices(GL_ARRAY_BUFFER) {
 

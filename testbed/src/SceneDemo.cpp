@@ -32,8 +32,9 @@ using namespace openglframework;
 int SceneDemo::shadowMapTextureLevel = 0;
 
 // Constructor
-SceneDemo::SceneDemo(const std::string& name, float sceneRadius) : Scene(name),
-                     mLight0(0), mIsShadowMappingEnabled(true), mIsShadowMappingInitialized(false),
+SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled)
+          : Scene(name, isShadowMappingEnabled),
+                     mLight0(0), mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),

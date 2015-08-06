@@ -1,3 +1,4 @@
+
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
 * Copyright (c) 2010-2015 Daniel Chappuis                                       *
@@ -23,69 +24,15 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CUBES_SCENE_H
-#define CUBES_SCENE_H
-
 // Libraries
-#include "openglframework.h"
-#include "reactphysics3d.h"
-#include "Box.h"
-#include "SceneDemo.h"
+#include "PhysicsEventListener.h"
 
-namespace cubesscene {
-
-// Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 20;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
-
-// Class CubesScene
-class CubesScene : public SceneDemo {
-
-    protected :
-
-        // -------------------- Attributes -------------------- //
-
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
-
-        /// Box for the floor
-        Box* mFloor;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        CubesScene(const std::string& name);
-
-        /// Destructor
-        virtual ~CubesScene();
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
-
-        /// Update the scene (take a simulation step)
-        virtual void update();
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Reset the scene
-        virtual void reset();
-
-        /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
-};
+// Called when a new contact point is found between two bodies that were separated before
+void PhysicsEventListener::beginContact(const rp3d::ContactPointInfo& contact) {
 
 }
 
-#endif
+// Called when a new contact point is found between two bodies
+void PhysicsEventListener::newContact(const rp3d::ContactPointInfo& contact) {
+
+}

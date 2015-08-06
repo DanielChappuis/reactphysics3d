@@ -50,7 +50,9 @@ TestbedApplication& TestbedApplication::getInstance() {
 }
 
 // Constructor
-TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(0) {
+TestbedApplication::TestbedApplication()
+                   : mFPS(0), mNbFrames(0), mPreviousTime(0),
+                     mUpdateTime(0), mPhysicsUpdateTime(0) {
 
     mCurrentScene = NULL;
     mIsMultisamplingActive = true;
@@ -59,6 +61,8 @@ TestbedApplication::TestbedApplication() : mFPS(0), mNbFrames(0), mPreviousTime(
     mSinglePhysicsStepEnabled = false;
     mSinglePhysicsStepDone = false;
     mWindowToFramebufferRatio = Vector2(1, 1);
+    mIsShadowMappingEnabled = true;
+    mIsVSyncEnabled = true;
 }
 
 // Destructor
@@ -107,8 +111,8 @@ void TestbedApplication::init() {
     }
     glfwMakeContextCurrent(mWindow);
 
-    // Disable Vertical Synchronization
-    glfwSwapInterval(0);
+    // Vertical Synchronization
+    enableVSync(mIsVSyncEnabled);
 
     // Initialize the GLEW library
     glewExperimental = GL_TRUE;
@@ -214,6 +218,8 @@ void TestbedApplication::updatePhysics() {
 
 void TestbedApplication::update() {
 
+    double currentTime = glfwGetTime();
+
     // Update the physics
     if (mSinglePhysicsStepEnabled && !mSinglePhysicsStepDone) {
         updateSinglePhysicsStep();
@@ -223,6 +229,9 @@ void TestbedApplication::update() {
         updatePhysics();
     }
 
+    // Compute the physics update time
+    mPhysicsUpdateTime = glfwGetTime() - currentTime;
+
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
     assert(factor >= 0.0f && factor <= 1.0f);
@@ -230,11 +239,11 @@ void TestbedApplication::update() {
     // Notify the scene about the interpolation factor
     mCurrentScene->setInterpolationFactor(factor);
 
+    // Enable/Disable shadow mapping
+    mCurrentScene->setIsShadowMappingEnabled(mIsShadowMappingEnabled);
+
     // Update the scene
     mCurrentScene->update();
-
-    // Compute the current framerate
-    //application->computeFPS();
 }
 
 // Render
@@ -254,7 +263,7 @@ void TestbedApplication::render() {
     mCurrentScene->setViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
                                0,
                                bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                               bufferHeight - mWindowToFramebufferRatio.y * HEADER_HEIGHT);
+                               bufferHeight);
 
     // Render the scene
     mCurrentScene->render();
@@ -274,7 +283,7 @@ void TestbedApplication::reshape() {
     glfwGetFramebufferSize(mWindow, &width, &height);
 
     // Resize the camera viewport
-    mCurrentScene->reshape(width - LEFT_PANE_WIDTH, height - HEADER_HEIGHT);
+    mCurrentScene->reshape(width - LEFT_PANE_WIDTH, height);
 
     // Update the window size of the scene
     int windowWidth, windowHeight;
@@ -304,6 +313,9 @@ void TestbedApplication::startMainLoop() {
 
         // Process events
         glfwPollEvents();
+
+        // Compute the current framerate
+        computeFPS();
 
         checkOpenGLErrors();
     }
@@ -355,17 +367,19 @@ void TestbedApplication::computeFPS() {
 
     mNbFrames++;
 
-    //  Get the number of milliseconds since glutInit called
+    //  Get the number of seconds since start
     mCurrentTime = glfwGetTime();
 
     //  Calculate time passed
-    double timeInterval = mCurrentTime - mPreviousTime;
+    mUpdateTime = mCurrentTime - mPreviousTime;
+    double timeInterval = mUpdateTime * 1000.0;
 
     // Update the FPS counter each second
-    if(timeInterval > 1.0) {
+    if(timeInterval > 0.0001) {
 
         //  calculate the number of frames per second
         mFPS = static_cast<double>(mNbFrames) / timeInterval;
+        mFPS *= 1000.0;
 
         //  Set time
         mPreviousTime = mCurrentTime;

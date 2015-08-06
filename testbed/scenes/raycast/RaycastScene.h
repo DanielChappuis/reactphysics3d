@@ -221,11 +221,20 @@ class RaycastScene : public SceneDemo {
 
         /// Called when a keyboard event occurs
         virtual void keyboardEvent(int key, int scancode, int action, int mods);
+
+        /// Enabled/Disable the shadow mapping
+        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
 };
 
 // Display or not the surface normals at hit points
 inline void RaycastScene::showHideNormals() {
     mAreNormalsDisplayed = !mAreNormalsDisplayed;
+}
+
+// Enabled/Disable the shadow mapping
+inline void RaycastScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
+
+    SceneDemo::setIsShadowMappingEnabled(false);
 }
 
 }

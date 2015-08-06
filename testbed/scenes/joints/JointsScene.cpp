@@ -447,6 +447,7 @@ void JointsScene::createFloor() {
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor->setColor(Color(0.70f, 0.70f, 0.7f, 1.0f));
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);

@@ -77,6 +77,7 @@ CubesScene::CubesScene(const std::string& name)
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor->setColor(Color(0.70f, 0.70f, 0.7f, 1.0f));
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
@@ -201,4 +202,12 @@ void CubesScene::reset() {
 
         mBoxes[i]->resetTransform(transform);
     }
+}
+
+// Return all the contact points of the scene
+std::vector<ContactPoint> CubesScene::getContactPoints() const {
+
+    std::vector<ContactPoint> contactPoints;
+
+    return contactPoints;
 }

@@ -28,6 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
+#include "PhysicsEventListener.h"
 
 /// Structure EngineSettings
 /// This structure contains several physics engine parameters
@@ -90,6 +91,9 @@ class Scene {
         /// Viewport x,y, width and height values
         int mViewportX, mViewportY, mViewportWidth, mViewportHeight;
 
+        /// True if the shadow mapping is enabled
+        bool mIsShadowMappingEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -117,7 +121,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(const std::string& name);
+        Scene(const std::string& name, bool isShadowMappingEnabled = false);
 
         /// Destructor
         virtual ~Scene();
@@ -172,6 +176,15 @@ class Scene {
 
         /// Return the name of the scene
         std::string getName() const;
+
+        /// Return true if the shadow mapping is enabled
+        bool getIsShadowMappingEnabled() const;
+
+        /// Enabled/Disable the shadow mapping
+        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+
+        /// Return all the contact points of the scene
+        std::vector<ContactPoint> virtual getContactPoints() const;
 };
 
 // Called when a keyboard event occurs
@@ -221,6 +234,23 @@ inline void Scene::setInterpolationFactor(float interpolationFactor) {
 // Return the name of the scene
 inline std::string Scene::getName() const {
     return mName;
+}
+
+// Return true if the shadow mapping is enabled
+inline bool Scene::getIsShadowMappingEnabled() const {
+    return mIsShadowMappingEnabled;
+}
+
+// Enabled/Disable the shadow mapping
+inline void Scene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
+    mIsShadowMappingEnabled = isShadowMappingEnabled;
+}
+
+// Return all the contact points of the scene
+inline std::vector<ContactPoint> Scene::getContactPoints() const {
+
+    // Return an empty list of contact points
+    return std::vector<ContactPoint>();
 }
 
 #endif
