@@ -23,69 +23,37 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CUBES_SCENE_H
-#define CUBES_SCENE_H
-
 // Libraries
-#include "openglframework.h"
-#include "reactphysics3d.h"
-#include "Box.h"
-#include "SceneDemo.h"
+#include "PhysicsObject.h"
 
-namespace cubesscene {
+/// Constructor
+PhysicsObject::PhysicsObject() {
 
-// Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 30;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
-
-// Class CubesScene
-class CubesScene : public SceneDemo {
-
-    protected :
-
-        // -------------------- Attributes -------------------- //
-
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
-
-        /// Box for the floor
-        Box* mFloor;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
-    public:
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        CubesScene(const std::string& name);
-
-        /// Destructor
-        virtual ~CubesScene();
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
-
-        /// Update the scene (take a simulation step)
-        virtual void update();
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Reset the scene
-        virtual void reset();
-
-        /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
-};
-
+    mColor = openglframework::Color(1, 1, 1, 1);
+    mSleepingColor = openglframework::Color(1, 0, 0, 1);
 }
 
-#endif
+// Compute the new transform matrix
+openglframework::Matrix4 PhysicsObject::computeTransform(float interpolationFactor,
+                                                        const openglframework::Matrix4& scalingMatrix) {
+
+    // Get the transform of the rigid body
+    rp3d::Transform transform = mBody->getTransform();
+
+    // Interpolate the transform between the previous one and the new one
+    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
+                                                                                  transform,
+                                                                                  interpolationFactor);
+    mPreviousTransform = transform;
+
+    // Compute the transform used for rendering the box
+    rp3d::decimal matrix[16];
+    interpolatedTransform.getOpenGLMatrix(matrix);
+    openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
+                                       matrix[1], matrix[5], matrix[9], matrix[13],
+                                       matrix[2], matrix[6], matrix[10], matrix[14],
+                                       matrix[3], matrix[7], matrix[11], matrix[15]);
+
+    // Apply the scaling matrix to have the correct box dimensions
+    return newMatrix * scalingMatrix;
+}

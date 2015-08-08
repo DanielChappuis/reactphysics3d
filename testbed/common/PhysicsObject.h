@@ -23,69 +23,74 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CUBES_SCENE_H
-#define CUBES_SCENE_H
+#ifndef PHYSICSOBJECT_H
+#define PHYSICSOBJECT_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "Box.h"
-#include "SceneDemo.h"
 
-namespace cubesscene {
+// Class PhysicsObject
+class PhysicsObject {
 
-// Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 30;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);   // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
+    protected:
 
-// Class CubesScene
-class CubesScene : public SceneDemo {
+        /// Body used to simulate the dynamics of the box
+        rp3d::CollisionBody* mBody;
 
-    protected :
+        /// Previous transform of the body (for interpolation)
+        rp3d::Transform mPreviousTransform;
 
-        // -------------------- Attributes -------------------- //
+        /// Main color of the box
+        openglframework::Color mColor;
 
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
+        /// Sleeping color
+        openglframework::Color mSleepingColor;
 
-        /// Box for the floor
-        Box* mFloor;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
+        // Compute the new transform matrix
+        openglframework::Matrix4 computeTransform(float interpolationFactor,
+                                                 const openglframework::Matrix4 &scalingMatrix);
 
     public:
 
-        // -------------------- Methods -------------------- //
-
         /// Constructor
-        CubesScene(const std::string& name);
+        PhysicsObject();
 
-        /// Destructor
-        virtual ~CubesScene();
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor)=0;
 
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
+        /// Set the color of the box
+        void setColor(const openglframework::Color& color);
 
-        /// Update the scene (take a simulation step)
-        virtual void update();
+        /// Set the sleeping color of the box
+        void setSleepingColor(const openglframework::Color& color);
 
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+        /// Return a pointer to the collision body of the box
+        reactphysics3d::CollisionBody* getCollisionBody();
 
-        /// Reset the scene
-        virtual void reset();
-
-        /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
+        /// Return a pointer to the rigid body of the box
+        reactphysics3d::RigidBody* getRigidBody();
 };
 
+// Set the color of the box
+inline void PhysicsObject::setColor(const openglframework::Color& color) {
+    mColor = color;
+}
+
+// Set the sleeping color of the box
+inline void PhysicsObject::setSleepingColor(const openglframework::Color& color) {
+    mSleepingColor = color;
+}
+
+// Return a pointer to the collision body of the box
+inline rp3d::CollisionBody* PhysicsObject::getCollisionBody() {
+    return mBody;
+}
+
+// Return a pointer to the rigid body of the box (NULL if it's not a rigid body)
+inline rp3d::RigidBody* PhysicsObject::getRigidBody() {
+    return dynamic_cast<rp3d::RigidBody*>(mBody);
 }
 
 #endif
+

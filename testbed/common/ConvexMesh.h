@@ -29,16 +29,14 @@
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Class ConvexMesh
-class ConvexMesh : public openglframework::Mesh {
+class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
 
     private :
 
         // -------------------- Attributes -------------------- //
-
-        /// Rigid body used to simulate the dynamics of the mesh
-        rp3d::CollisionBody* mRigidBody;
 
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
@@ -57,9 +55,6 @@ class ConvexMesh : public openglframework::Mesh {
 
         /// Vertex Array Object for the vertex data
         openglframework::VertexArrayObject mVAO;
-
-        /// Color
-        openglframework::Color mColor;
 
         // -------------------- Methods -------------------- //
 
@@ -81,31 +76,20 @@ class ConvexMesh : public openglframework::Mesh {
         /// Destructor
         ~ConvexMesh();
 
-        /// Return a pointer to the collision body of the box
-        reactphysics3d::CollisionBody* getCollisionBody();
-
-        /// Return a pointer to the rigid body of the box
-        reactphysics3d::RigidBody* getRigidBody();
-
-        /// Update the transform matrix of the mesh
-        void updateTransform(float interpolationFactor);
-
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Set the position of the box
         void resetTransform(const rp3d::Transform& transform);
+
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
 };
 
-// Return a pointer to the collision body of the box
-inline rp3d::CollisionBody* ConvexMesh::getCollisionBody() {
-    return mRigidBody;
-}
-
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* ConvexMesh::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+// Update the transform matrix of the object
+inline void ConvexMesh::updateTransform(float interpolationFactor) {
+    mTransformMatrix = computeTransform(interpolationFactor, openglframework::Matrix4::identity());
 }
 
 #endif

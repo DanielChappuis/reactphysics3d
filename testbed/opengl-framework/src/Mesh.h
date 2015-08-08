@@ -140,10 +140,10 @@ class Mesh : public Object3D {
         void setNormal(uint i, const Vector3& normal);
 
         // Return the color of a given vertex
-        const Color& getColor(uint i) const;
+        const Color& getVertexColor(uint i) const;
 
         // Set the color of a given vertex
-        void setColor(uint i, const Color& color);
+        void setVertexColor(uint i, const Color& color);
 
         // Set a color to all the vertices
         void setColorToAllVertices(const Color& color);
@@ -282,13 +282,13 @@ inline void Mesh::setNormal(uint i, const Vector3& normal) {
 }
 
 // Return the color of a given vertex
-inline const Color& Mesh::getColor(uint i) const {
+inline const Color& Mesh::getVertexColor(uint i) const {
     assert(i < getNbVertices());
     return mColors[i];
 }
 
 // Set the color of a given vertex
-inline void Mesh::setColor(uint i, const Color& color) {
+inline void Mesh::setVertexColor(uint i, const Color& color) {
 
     // If the color array does not have the same size as
     // the vertices array

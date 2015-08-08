@@ -67,6 +67,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         // Create a convex mesh and a corresponding rigid in the dynamics world
         Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
 
+        // Set the box color
+        dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
+        dumbbell->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -86,6 +90,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Create a sphere and a corresponding rigid in the dynamics world
         Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+
+        // Set the box color
+        box->setColor(mDemoColors[i % mNbDemoColors]);
+        box->setSleepingColor(mRedColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -108,6 +116,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
                                     meshFolderPath);
 
+        // Set the box color
+        sphere->setColor(mDemoColors[i % mNbDemoColors]);
+        sphere->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -128,6 +140,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         // Create a cone and a corresponding rigid in the dynamics world
         Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
                               meshFolderPath);
+
+        // Set the box color
+        cone->setColor(mDemoColors[i % mNbDemoColors]);
+        cone->setSleepingColor(mRedColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = cone->getRigidBody()->getMaterial();
@@ -150,6 +166,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
                                           CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
 
+        // Set the box color
+        cylinder->setColor(mDemoColors[i % mNbDemoColors]);
+        cylinder->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -171,6 +191,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
                                        CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
 
+        // Set the box color
+        capsule->setColor(mDemoColors[i % mNbDemoColors]);
+        capsule->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -191,6 +215,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         // Create a convex mesh and a corresponding rigid in the dynamics world
         ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
 
+        // Set the box color
+        mesh->setColor(mDemoColors[i % mNbDemoColors]);
+        mesh->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
@@ -202,7 +230,10 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
-    mFloor->setColor(Color(0.70f, 0.70f, 0.7f, 1.0f));
+
+    // Set the box color
+    mFloor->setColor(mGreyColorDemo);
+    mFloor->setSleepingColor(mRedColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);

@@ -67,10 +67,10 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mPreviousTransform = transform;
 
     // Create a rigid body corresponding in the dynamics world
-    mRigidBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -86,8 +86,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                  const std::string& meshFolderPath)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height),
-          mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
@@ -120,7 +119,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     // Add a collision shape to the body and specify the mass of the shape
     body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
 
-    mRigidBody = body;
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -170,7 +169,8 @@ void Capsule::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
     shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO
@@ -183,10 +183,12 @@ void Capsule::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
-
     glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    mVBONormals.bind();
+
     if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
@@ -196,6 +198,7 @@ void Capsule::render(openglframework::Shader& shader,
     glDisableVertexAttribArray(vertexPositionLoc);
     if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
 
+    mVBONormals.unbind();
     mVBOVertices.unbind();
 
     // Unbind the VAO
@@ -203,30 +206,6 @@ void Capsule::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-}
-
-// Update the transform matrix of the sphere
-void Capsule::updateTransform(float interpolationFactor) {
-
-    // Get the transform of the rigid body
-    rp3d::Transform transform = mRigidBody->getTransform();
-
-    // Interpolate the transform between the previous one and the new one
-    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
-                                                                                  transform,
-                                                                                  interpolationFactor);
-    mPreviousTransform = transform;
-
-    // Compute the transform used for rendering the sphere
-    rp3d::decimal matrix[16];
-    interpolatedTransform.getOpenGLMatrix(matrix);
-    openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
-                                       matrix[1], matrix[5], matrix[9], matrix[13],
-                                       matrix[2], matrix[6], matrix[10], matrix[14],
-                                       matrix[3], matrix[7], matrix[11], matrix[15]);
-
-    // Apply the scaling matrix to have the correct sphere dimensions
-    mTransformMatrix = newMatrix * mScalingMatrix;
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.
@@ -289,12 +268,12 @@ void Capsule::createVBOAndVAO() {
 void Capsule::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the transform
-    mRigidBody->setTransform(transform);
+    mBody->setTransform(transform);
 
-    mRigidBody->setIsSleeping(false);
+    mBody->setIsSleeping(false);
 
     // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
     if (rigidBody != NULL) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));

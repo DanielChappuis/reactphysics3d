@@ -29,9 +29,10 @@
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Class Sphere
-class Capsule : public openglframework::Mesh {
+class Capsule : public openglframework::Mesh, public PhysicsObject {
 
     private :
 
@@ -42,9 +43,6 @@ class Capsule : public openglframework::Mesh {
 
         /// Height of the capsule
         float mHeight;
-
-        /// Rigid body used to simulate the dynamics of the sphere
-        rp3d::CollisionBody* mRigidBody;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -70,9 +68,6 @@ class Capsule : public openglframework::Mesh {
         // Total number of capsules created
         static int totalNbCapsules;
 
-        /// Color
-        openglframework::Color mColor;
-
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
@@ -94,31 +89,20 @@ class Capsule : public openglframework::Mesh {
         /// Destructor
         ~Capsule();
 
-        /// Return a pointer to the collision body of the box
-        reactphysics3d::CollisionBody* getCollisionBody();
-
-        /// Return a pointer to the rigid body of the box
-        reactphysics3d::RigidBody* getRigidBody();
-
-        /// Update the transform matrix of the sphere
-        void updateTransform(float interpolationFactor);
-
         /// Render the sphere at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Set the position of the box
         void resetTransform(const rp3d::Transform& transform);
+
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
 };
 
-// Return a pointer to the collision body of the box
-inline rp3d::CollisionBody* Capsule::getCollisionBody() {
-    return mRigidBody;
-}
-
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Capsule::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+// Update the transform matrix of the object
+inline void Capsule::updateTransform(float interpolationFactor) {
+    mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
 
 #endif

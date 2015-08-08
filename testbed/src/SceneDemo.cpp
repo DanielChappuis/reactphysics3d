@@ -30,6 +30,15 @@
 using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
+openglframework::Color SceneDemo::mGreyColorDemo = Color(0.70f, 0.70f, 0.7f, 1.0);
+openglframework::Color SceneDemo::mYellowColorDemo = Color(0.9, 0.88, 0.145, 1.0);
+openglframework::Color SceneDemo::mBlueColorDemo = Color(0, 0.66, 0.95, 1.0);
+openglframework::Color SceneDemo::mOrangeColorDemo = Color(0.9, 0.35, 0, 1.0);
+openglframework::Color SceneDemo::mPinkColorDemo = Color(0.83, 0.48, 0.64, 1.0);
+openglframework::Color SceneDemo::mRedColorDemo = Color(0.95, 0, 0, 1.0);
+int SceneDemo::mNbDemoColors = 4;
+openglframework::Color SceneDemo::mDemoColors[] = {SceneDemo::mYellowColorDemo, SceneDemo::mBlueColorDemo,
+                                                   SceneDemo::mOrangeColorDemo, SceneDemo::mPinkColorDemo};
 
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled)
@@ -43,15 +52,16 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMa
     shadowMapTextureLevel++;
 
     // Move the light0
-    mLight0.translateWorld(Vector3(0, 40, 40));
+    mLight0.translateWorld(Vector3(-2, 35, 40));
 
     // Camera at light0 postion for the shadow map
     mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
     mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+    mShadowMapLightCamera.rotateWorld(Vector3(0, 1, 0), PI / 8.0f);
+
     mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-    mShadowMapLightCamera.setFieldOfView(70.0f);
+    mShadowMapLightCamera.setFieldOfView(80.0f);
     mShadowMapLightCamera.setSceneRadius(100);
-    //mShadowMapLightCamera.setZoom(1.0);
 
     mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
                                       0.0, 0.5, 0.0, 0.5,
@@ -142,8 +152,6 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.4f, 0.4f, 0.4f));
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setVector3Uniform("light0SpecularColor", Vector3(specCol.r, specCol.g, specCol.b));
-    mPhongShader.setFloatUniform("shininess", 60.0f);
     mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
 
@@ -186,7 +194,6 @@ void SceneDemo::createShadowMapFBOAndTexture() {
     mIsShadowMappingInitialized = true;
 }
 
-// TODO : Delete this
 void SceneDemo::createQuadVBO() {
 
     mVAOQuad.create();
@@ -217,10 +224,12 @@ void SceneDemo::drawTextureQuad() {
     // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    const GLuint textureUnit = 0;
+
     mVAOQuad.bind();
     mQuadShader.bind();
     mShadowMapTexture.bind();
-    mQuadShader.setIntUniform("textureSampler", mShadowMapTexture.getID());
+    mQuadShader.setIntUniform("textureSampler", textureUnit);
     mVBOQuad.bind();
 
     GLint vertexPositionLoc = mQuadShader.getAttribLocation("vertexPosition");

@@ -66,6 +66,10 @@ CubesScene::CubesScene(const std::string& name)
         // Create a cube and a corresponding rigid in the dynamics world
         Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
+        // Set the box color
+        cube->setColor(mDemoColors[i % mNbDemoColors]);
+        cube->setSleepingColor(mRedColorDemo);
+
         // Change the material properties of the rigid body
         rp3d::Material& material = cube->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.4));
@@ -77,7 +81,8 @@ CubesScene::CubesScene(const std::string& name)
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
-    mFloor->setColor(Color(0.70f, 0.70f, 0.7f, 1.0f));
+    mFloor->setColor(mGreyColorDemo);
+    mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
@@ -152,16 +157,6 @@ void CubesScene::update() {
     }
 
     mFloor->updateTransform(mInterpolationFactor);
-
-    // Set the color of the awake/sleeping bodies
-    for (uint i=0; i<mBoxes.size(); i++) {
-        if (mBoxes[i]->getRigidBody()->isSleeping()) {
-            mBoxes[i]->setColor(Color(1, 0, 0, 1));
-        }
-        else {
-            mBoxes[i]->setColor(Color(0, 1, 0, 1));
-        }
-    }
 }
 
 // Render the scene in a single pass

@@ -51,12 +51,20 @@ RaycastScene::RaycastScene(const std::string& name)
     // Create a convex mesh and a corresponding collision body in the dynamics world
     mDumbbell = new Dumbbell(position1, mCollisionWorld, mMeshFolderPath);
 
+    // Set the box color
+    mDumbbell->setColor(mGreyColorDemo);
+    mDumbbell->setSleepingColor(mRedColorDemo);
+
     // ---------- Box ---------- //
     openglframework::Vector3 position2(0, 0, 0);
 
     // Create a box and a corresponding collision body in the dynamics world
     mBox = new Box(BOX_SIZE, position2, mCollisionWorld);
     mBox->getCollisionBody()->setIsActive(false);
+
+    // Set the box color
+    mBox->setColor(mGreyColorDemo);
+    mBox->setSleepingColor(mRedColorDemo);
 
     // ---------- Sphere ---------- //
     openglframework::Vector3 position3(0, 0, 0);
@@ -65,12 +73,20 @@ RaycastScene::RaycastScene(const std::string& name)
     mSphere = new Sphere(SPHERE_RADIUS, position3, mCollisionWorld,
                          mMeshFolderPath);
 
+    // Set the color
+    mSphere->setColor(mGreyColorDemo);
+    mSphere->setSleepingColor(mRedColorDemo);
+
     // ---------- Cone ---------- //
     openglframework::Vector3 position4(0, 0, 0);
 
     // Create a cone and a corresponding collision body in the dynamics world
     mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
                      mMeshFolderPath);
+
+    // Set the color
+    mCone->setColor(mGreyColorDemo);
+    mCone->setSleepingColor(mRedColorDemo);
 
     // ---------- Cylinder ---------- //
     openglframework::Vector3 position5(0, 0, 0);
@@ -79,6 +95,10 @@ RaycastScene::RaycastScene(const std::string& name)
     mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
                              mCollisionWorld, mMeshFolderPath);
 
+    // Set the color
+    mCylinder->setColor(mGreyColorDemo);
+    mCylinder->setSleepingColor(mRedColorDemo);
+
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
 
@@ -86,11 +106,19 @@ RaycastScene::RaycastScene(const std::string& name)
     mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position6 ,
                            mCollisionWorld, mMeshFolderPath);
 
+    // Set the color
+    mCapsule->setColor(mGreyColorDemo);
+    mCapsule->setSleepingColor(mRedColorDemo);
+
     // ---------- Convex Mesh ---------- //
     openglframework::Vector3 position7(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
     mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath);
+
+    // Set the color
+    mConvexMesh->setColor(mGreyColorDemo);
+    mConvexMesh->setSleepingColor(mRedColorDemo);
 
     // Create the lines that will be used for raycasting
     createLines();

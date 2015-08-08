@@ -30,8 +30,8 @@
 #include "Scene.h"
 
 // Constants
-const int SHADOWMAP_WIDTH = 1024;
-const int SHADOWMAP_HEIGHT = 1024;
+const int SHADOWMAP_WIDTH = 2048;
+const int SHADOWMAP_HEIGHT = 2048;
 
 // Class SceneDemo
 // Abstract class that represents a 3D scene for the ReactPhysics3D examples.
@@ -76,6 +76,14 @@ class SceneDemo : public Scene {
 
         openglframework::VertexBufferObject mVBOQuad;
 
+        static openglframework::Color mGreyColorDemo;
+        static openglframework::Color mYellowColorDemo;
+        static openglframework::Color mBlueColorDemo;
+        static openglframework::Color mOrangeColorDemo;
+        static openglframework::Color mPinkColorDemo;
+        static openglframework::Color mRedColorDemo;
+        static openglframework::Color mDemoColors[];
+        static int mNbDemoColors;
 
         // -------------------- Methods -------------------- //
 

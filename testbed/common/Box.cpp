@@ -113,7 +113,7 @@ GLfloat Box::mCubeNormals[108] = {
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
          reactphysics3d::CollisionWorld* world)
-    : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
+    : openglframework::Object3D() {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -142,10 +142,10 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     mPreviousTransform = transform;
 
     // Create a rigid body in the dynamics world
-    mRigidBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(transform);
 
     // Add the collision shape to the body
-    mRigidBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -162,7 +162,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
          float mass, reactphysics3d::DynamicsWorld* world)
-    : openglframework::Object3D(), mColor(0.01f, 0.62f, 0.39f, 1.0f) {
+    : openglframework::Object3D() {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -194,7 +194,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
     // Add the collision shape to the body
     body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
 
-    mRigidBody = body;
+    mBody = body;
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -246,7 +246,8 @@ void Box::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
     shader.setVector4Uniform("vertexColor", color, false);
 
     // Get the location of shader attribute variables
@@ -277,29 +278,7 @@ void Box::render(openglframework::Shader& shader,
     shader.unbind();
 }
 
-// Update the transform matrix of the box
-void Box::updateTransform(float interpolationFactor) {
 
-    // Get the transform of the rigid body
-    rp3d::Transform transform = mRigidBody->getTransform();
-
-    // Interpolate the transform between the previous one and the new one
-    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
-                                                                                  transform,
-                                                                                  interpolationFactor);
-    mPreviousTransform = transform;
-
-    // Compute the transform used for rendering the box
-    rp3d::decimal matrix[16];
-    interpolatedTransform.getOpenGLMatrix(matrix);
-    openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
-                                       matrix[1], matrix[5], matrix[9], matrix[13],
-                                       matrix[2], matrix[6], matrix[10], matrix[14],
-                                       matrix[3], matrix[7], matrix[11], matrix[15]);
-
-    // Apply the scaling matrix to have the correct box dimensions
-    mTransformMatrix = newMatrix * mScalingMatrix;
-}
 
 // Create the Vertex Buffer Objects used to render to box with OpenGL.
 /// We create two VBOs (one for vertices and one for indices) to render all the boxes
@@ -336,12 +315,12 @@ void Box::createVBOAndVAO() {
 void Box::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the transform
-    mRigidBody->setTransform(transform);
+    mBody->setTransform(transform);
 
-    mRigidBody->setIsSleeping(false);
+    mBody->setIsSleeping(false);
 
     // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
     if (rigidBody != NULL) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));

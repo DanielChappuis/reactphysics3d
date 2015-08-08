@@ -74,6 +74,8 @@ SET(COMMON_SOURCES
     common/Cylinder.cpp
     common/Dumbbell.h
     common/Dumbbell.cpp
+    common/PhysicsObject.h
+    common/PhysicsObject.cpp
     common/VisualContactPoint.h
     common/VisualContactPoint.cpp
 )

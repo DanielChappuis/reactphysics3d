@@ -36,7 +36,7 @@ int Dumbbell::totalNbDumbbells = 0;
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
                    reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
-         : openglframework::Mesh(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+         : openglframework::Mesh() {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
@@ -105,7 +105,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
                    reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
-         : openglframework::Mesh(), mColor(0.5f, 0.5f, 0.5f, 1.0f) {
+         : openglframework::Mesh() {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
@@ -218,9 +218,11 @@ void Dumbbell::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
-
     glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    mVBONormals.bind();
+
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
     if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // For each part of the mesh
@@ -231,6 +233,7 @@ void Dumbbell::render(openglframework::Shader& shader,
     glDisableVertexAttribArray(vertexPositionLoc);
     if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
 
+    mVBONormals.unbind();
     mVBOVertices.unbind();
 
     // Unbind the VAO
@@ -238,30 +241,6 @@ void Dumbbell::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-}
-
-// Update the transform matrix of the sphere
-void Dumbbell::updateTransform(float interpolationFactor) {
-
-    // Get the transform of the rigid body
-    rp3d::Transform transform = mBody->getTransform();
-
-    // Interpolate the transform between the previous one and the new one
-    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
-                                                                                  transform,
-                                                                                  interpolationFactor);
-    mPreviousTransform = transform;
-
-    // Compute the transform used for rendering the sphere
-    rp3d::decimal matrix[16];
-    interpolatedTransform.getOpenGLMatrix(matrix);
-    openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
-                                       matrix[1], matrix[5], matrix[9], matrix[13],
-                                       matrix[2], matrix[6], matrix[10], matrix[14],
-                                       matrix[3], matrix[7], matrix[11], matrix[15]);
-
-    // Apply the scaling matrix to have the correct sphere dimensions
-    mTransformMatrix = newMatrix * mScalingMatrix;
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

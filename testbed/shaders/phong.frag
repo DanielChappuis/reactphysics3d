@@ -29,8 +29,6 @@
 uniform vec3 lightAmbientColor;             // Lights ambient color
 uniform vec3 light0PosCameraSpace;          // Camera-space position of the light
 uniform vec3 light0DiffuseColor;            // Light 0 diffuse color
-uniform vec3 light0SpecularColor;           // Light 0 specular color
-uniform float shininess;                    // Shininess
 uniform sampler2D textureSampler;           // Texture
 uniform sampler2D shadowMapSampler;         // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
@@ -63,17 +61,10 @@ void main() {
     float diffuseFactor = max(dot(N, L0), 0.0);
     vec3 diffuse = light0DiffuseColor * diffuseFactor * textureColor;
 
-    // Compute the specular term of light 0
-    vec3 V = normalize(-vertexPosCameraSpace);
-    vec3 H0 = normalize(V + L0);
-    float specularFactor = pow(max(dot(N, H0), 0.0), shininess);
-    if (diffuseFactor < 0.0) specularFactor = 0.0;
-    vec3 specular = light0SpecularColor * specularFactor;
-
     // Compute shadow factor
     float shadow = 1.0;
     if (isShadowEnabled) {
-        float bias = 0.0001;
+        float bias = 0.0003;
         float shadowBias = -0.000;
         vec4 shadowMapUV = shadowMapCoords;
         shadowMapUV.z -= shadowBias;

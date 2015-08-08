@@ -29,9 +29,10 @@
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Class Sphere
-class Dumbbell : public openglframework::Mesh {
+class Dumbbell : public openglframework::Mesh, public PhysicsObject {
 
     private :
 
@@ -39,9 +40,6 @@ class Dumbbell : public openglframework::Mesh {
 
         /// Radius of the spheres
         float mRadius;
-
-        /// Rigid body used to simulate the dynamics of the sphere
-        rp3d::CollisionBody* mBody;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -67,9 +65,6 @@ class Dumbbell : public openglframework::Mesh {
         // Total number of capsules created
         static int totalNbDumbbells;
 
-        /// Color
-        openglframework::Color mColor;
-
         // -------------------- Methods -------------------- //
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
@@ -91,31 +86,20 @@ class Dumbbell : public openglframework::Mesh {
         /// Destructor
         ~Dumbbell();
 
-        /// Return a pointer to the rigid body
-        rp3d::RigidBody* getRigidBody();
-
-        /// Return a pointer to the body
-        rp3d::CollisionBody* getCollisionBody();
-
-        /// Update the transform matrix of the sphere
-        void updateTransform(float interpolationFactor);
-
         /// Render the sphere at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Set the position of the box
         void resetTransform(const rp3d::Transform& transform);
+
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
 };
 
-// Return a pointer to the rigid body of the sphere
-inline rp3d::RigidBody* Dumbbell::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mBody);
-}
-
-// Return a pointer to the body
-inline rp3d::CollisionBody* Dumbbell::getCollisionBody() {
-    return mBody;
+// Update the transform matrix of the object
+inline void Dumbbell::updateTransform(float interpolationFactor) {
+    mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
 
 #endif

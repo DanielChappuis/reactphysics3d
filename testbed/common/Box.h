@@ -29,9 +29,10 @@
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Class Box
-class Box : public openglframework::Object3D {
+class Box : public openglframework::Object3D, public PhysicsObject {
 
     private :
 
@@ -39,12 +40,6 @@ class Box : public openglframework::Object3D {
 
         /// Size of each side of the box
         float mSize[3];
-
-        /// Rigid body used to simulate the dynamics of the box
-        rp3d::CollisionBody* mRigidBody;
-
-        /// Previous transform of the body (for interpolation)
-        rp3d::Transform mPreviousTransform;
 
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -67,9 +62,6 @@ class Box : public openglframework::Object3D {
         /// Total number of boxes created
         static int totalNbBoxes;
 
-        /// Main color of the box
-        openglframework::Color mColor;
-
         // -------------------- Methods -------------------- //
 
         /// Create a the VAO and VBOs to render to box with OpenGL
@@ -90,38 +82,20 @@ class Box : public openglframework::Object3D {
         /// Destructor
         ~Box();
 
-        /// Return a pointer to the collision body of the box
-        reactphysics3d::CollisionBody* getCollisionBody();
-
-        /// Return a pointer to the rigid body of the box
-        reactphysics3d::RigidBody* getRigidBody();
-
-        /// Update the transform matrix of the box
-        void updateTransform(float interpolationFactor);
-
         /// Render the cube at the correct position and with the correct orientation
         void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
-        /// Set the color of the box
-        void setColor(const openglframework::Color& color);
-
         /// Set the position of the box
         void resetTransform(const rp3d::Transform& transform);
+
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
 };
 
-// Return a pointer to the collision body of the box
-inline rp3d::CollisionBody* Box::getCollisionBody() {
-    return mRigidBody;
+// Update the transform matrix of the object
+inline void Box::updateTransform(float interpolationFactor) {
+    mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
 
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Box::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
-}
-
-// Set the color of the box
-inline void Box::setColor(const openglframework::Color& color) {
-    mColor = color;
-}
 
 #endif

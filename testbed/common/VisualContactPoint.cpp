@@ -119,10 +119,12 @@ void VisualContactPoint::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
-
     glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+    mVBONormals.bind();
+
     if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
 
     // For each part of the mesh
     for (unsigned int i=0; i<mMesh.getNbParts(); i++) {
@@ -132,6 +134,7 @@ void VisualContactPoint::render(openglframework::Shader& shader,
     glDisableVertexAttribArray(vertexPositionLoc);
     if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
 
+    mVBONormals.unbind();
     mVBOVertices.unbind();
 
     // Unbind the VAO
