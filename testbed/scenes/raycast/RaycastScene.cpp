@@ -36,6 +36,8 @@ RaycastScene::RaycastScene(const std::string& name)
          mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
          mVBOVertices(GL_ARRAY_BUFFER) {
 
+    mIsContactPointsDisplayed = true;
+
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 0, 0);
 
@@ -286,6 +288,8 @@ void RaycastScene::update() {
         // callback class in argument.
         mCollisionWorld->raycast(ray, &mRaycastManager);
     }
+
+    SceneDemo::update();
 }
 
 // Render the scene

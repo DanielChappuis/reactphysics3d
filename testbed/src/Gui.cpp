@@ -299,6 +299,13 @@ void Gui::displayRenderingPane() {
 
     imguiVerticalSpace(15);
 
+
+    // Display/Hide contact points
+    bool toggleContactPoints = imguiCheck("Contacts", app.mIsContactPointsDisplayed);
+    if (toggleContactPoints) {
+        app.displayContactPoints(!app.mIsContactPointsDisplayed);
+    }
+
     // Enabled/Disable VSync
     bool toggleVSync = imguiCheck("V Sync", app.mIsVSyncEnabled);
     if (toggleVSync) {

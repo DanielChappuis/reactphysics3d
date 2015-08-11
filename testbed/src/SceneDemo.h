@@ -28,6 +28,8 @@
 
 // Libraries
 #include "Scene.h"
+#include "VisualContactPoint.h"
+#include "reactphysics3d.h"
 
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
@@ -55,6 +57,9 @@ class SceneDemo : public Scene {
         openglframework::Texture2D mShadowMapTexture;
 
         static int shadowMapTextureLevel;
+
+        /// All the visual contact points
+        std::vector<VisualContactPoint*> mContactPoints;
 
         /// Shadow map bias matrix
         openglframework::Matrix4 mShadowMapBiasMatrix;
@@ -85,16 +90,27 @@ class SceneDemo : public Scene {
         static openglframework::Color mDemoColors[];
         static int mNbDemoColors;
 
+        std::string mMeshFolderPath;
+
         // -------------------- Methods -------------------- //
 
         // Create the Shadow map FBO and texture
         void createShadowMapFBOAndTexture();
 
-        // TODO : Delete this
+        // Used for debugging shadow maps
         void createQuadVBO();
 
         // TODO : Delete this
         void drawTextureQuad();
+
+        // Update the contact points
+        void updateContactPoints();
+
+        // Render the contact points
+        void renderContactPoints(openglframework::Shader& shader,
+                                 const openglframework::Matrix4& worldToCameraMatrix);
+
+        void removeAllContactPoints();
 
     public:
 
@@ -106,6 +122,9 @@ class SceneDemo : public Scene {
         /// Destructor
         virtual ~SceneDemo();
 
+        /// Update the scene
+        virtual void update();
+
         /// Render the scene (possibly in multiple passes for shadow mapping)
         virtual void render();
 
@@ -115,6 +134,9 @@ class SceneDemo : public Scene {
 
         /// Enabled/Disable the shadow mapping
         void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+
+        /// Return all the contact points of the scene
+        std::vector<ContactPoint> computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const;
 };
 
 // Enabled/Disable the shadow mapping

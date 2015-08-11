@@ -149,6 +149,8 @@ void CubesScene::updatePhysics() {
 // Update the scene
 void CubesScene::update() {
 
+    SceneDemo::update();
+
     // Update the position and orientation of the boxes
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
@@ -197,12 +199,4 @@ void CubesScene::reset() {
 
         mBoxes[i]->resetTransform(transform);
     }
-}
-
-// Return all the contact points of the scene
-std::vector<ContactPoint> CubesScene::getContactPoints() const {
-
-    std::vector<ContactPoint> contactPoints;
-
-    return contactPoints;
 }

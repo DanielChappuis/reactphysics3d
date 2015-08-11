@@ -145,6 +145,8 @@ void JointsScene::updatePhysics() {
 // Take a step for the simulation
 void JointsScene::update() {
 
+    SceneDemo::update();
+
     // Update the position and orientation of the boxes
     mSliderJointBottomBox->updateTransform(mInterpolationFactor);
     mSliderJointTopBox->updateTransform(mInterpolationFactor);
@@ -474,7 +476,7 @@ void JointsScene::createFloor() {
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);
-    mFloor->setSleepingColor(mRedColorDemo);
+    mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);

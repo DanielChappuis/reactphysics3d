@@ -47,7 +47,7 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMa
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
-                     mVBOQuad(GL_ARRAY_BUFFER) {
+                     mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/") {
 
     shadowMapTextureLevel++;
 
@@ -74,6 +74,8 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMa
     }
 
     createQuadVBO();
+
+    VisualContactPoint::createStaticData(mMeshFolderPath);
 }
 
 // Destructor
@@ -83,13 +85,23 @@ SceneDemo::~SceneDemo() {
     mFBOShadowMap.destroy();
     mVBOQuad.destroy();
 
+    // Destroy the contact points
+    removeAllContactPoints();
+
+    VisualContactPoint::destroyStaticData();
+}
+
+// Update the scene
+void SceneDemo::update() {
+
+    // Update the contact points
+    updateContactPoints();
 }
 
 // Render the scene (in multiple passes for shadow mapping)
 void SceneDemo::render() {
 
     const Color& diffCol = mLight0.getDiffuseColor();
-    const Color& specCol = mLight0.getSpecularColor();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -154,6 +166,7 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
+    //mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 
     // Set the viewport to render the scene
     glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
@@ -167,10 +180,15 @@ void SceneDemo::render() {
     // Render the objects of the scene
     renderSinglePass(mPhongShader, worldToCameraMatrix);
 
+    // Render the contact points
+    if (mIsContactPointsDisplayed) {
+        renderContactPoints(mPhongShader, worldToCameraMatrix);
+    }
+
     if (mIsShadowMappingEnabled) mShadowMapTexture.unbind();
     mPhongShader.unbind();
 
-   //drawTextureQuad();
+   drawTextureQuad();
 }
 
 // Create the Shadow map FBO and texture
@@ -194,6 +212,7 @@ void SceneDemo::createShadowMapFBOAndTexture() {
     mIsShadowMappingInitialized = true;
 }
 
+// Used for debugging shadow maps
 void SceneDemo::createQuadVBO() {
 
     mVAOQuad.create();
@@ -253,4 +272,75 @@ void SceneDemo::drawTextureQuad() {
     mShadowMapTexture.unbind();
     mQuadShader.unbind();
     mVAOQuad.unbind();
+}
+
+// Gather and create contact points
+void SceneDemo::updateContactPoints() {
+
+    // Remove the previous contact points
+    removeAllContactPoints();
+
+    if (mIsContactPointsDisplayed) {
+
+        // Get the current contact points of the scene
+        std::vector<ContactPoint> contactPoints = getContactPoints();
+
+        // For each contact point
+        std::vector<ContactPoint>::const_iterator it;
+        for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
+
+            // Create a visual contact point for rendering
+            VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath);
+            mContactPoints.push_back(point);
+        }
+    }
+}
+
+// Render the contact points
+void SceneDemo::renderContactPoints(openglframework::Shader& shader,
+                                    const openglframework::Matrix4& worldToCameraMatrix) {
+
+    // Render all the raycast hit points
+    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
+         it != mContactPoints.end(); ++it) {
+        (*it)->render(shader, worldToCameraMatrix);
+    }
+}
+
+void SceneDemo::removeAllContactPoints() {
+
+    // Destroy all the visual contact points
+    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
+         it != mContactPoints.end(); ++it) {
+        delete (*it);
+    }
+    mContactPoints.clear();
+}
+
+// Return all the contact points of the scene
+std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const {
+
+    std::vector<ContactPoint> contactPoints;
+
+    // Get the list of contact manifolds from the world
+    std::vector<const rp3d::ContactManifold*> manifolds = world->getContactsList();
+
+    // For each contact manifold
+    std::vector<const rp3d::ContactManifold*>::const_iterator it;
+    for (it = manifolds.begin(); it != manifolds.end(); ++it) {
+
+        const rp3d::ContactManifold* manifold = *it;
+
+        // For each contact point of the manifold
+        for (uint i=0; i<manifold->getNbContactPoints(); i++) {
+
+            rp3d::ContactPoint* contactPoint = manifold->getContactPoint(i);
+            rp3d::Vector3 point = contactPoint->getWorldPointOnBody1();
+            ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z));
+            contactPoints.push_back(contact);
+        }
+
+    }
+
+    return contactPoints;
 }

@@ -98,6 +98,9 @@ class TestbedApplication {
         /// True if shadow mapping is enabled
         bool mIsShadowMappingEnabled;
 
+        /// True if contact points are displayed
+        bool mIsContactPointsDisplayed;
+
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
 
@@ -175,6 +178,9 @@ class TestbedApplication {
         /// Enable/Disable shadow mapping
         void enableShadows(bool enable);
 
+        /// Display/Hide contact points
+        void displayContactPoints(bool display);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -237,6 +243,11 @@ inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
 // Enable/Disable shadow mapping
 inline void TestbedApplication::enableShadows(bool enable) {
     mIsShadowMappingEnabled = enable;
+}
+
+/// Display/Hide contact points
+inline void TestbedApplication::displayContactPoints(bool display) {
+    mIsContactPointsDisplayed = display;
 }
 
 // Enable/Disable Vertical synchronization

@@ -45,13 +45,13 @@ namespace collisionshapesscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 5;
-const int NB_CUBES = 4;
-const int NB_CONES = 4;
-const int NB_CYLINDERS = 6;
-const int NB_CAPSULES = 5;
-const int NB_MESHES = 7;
-const int NB_COMPOUND_SHAPES = 3;
+const int NB_BOXES = 4;
+const int NB_CUBES = 6;
+const int NB_CONES = 6;
+const int NB_CYLINDERS = 5;
+const int NB_CAPSULES = 4;
+const int NB_MESHES = 5;
+const int NB_COMPOUND_SHAPES = 4;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;
@@ -122,7 +122,15 @@ class CollisionShapesScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset();
+
+        /// Return all the contact points of the scene
+        virtual std::vector<ContactPoint> getContactPoints() const;
 };
+
+// Return all the contact points of the scene
+inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() const {
+    return computeContactPointsOfWorld(mDynamicsWorld);
+}
 
 }
 

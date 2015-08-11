@@ -233,7 +233,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);
-    mFloor->setSleepingColor(mRedColorDemo);
+    mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::STATIC);
@@ -360,6 +360,8 @@ void CollisionShapesScene::updatePhysics() {
 
 // Take a step for the simulation
 void CollisionShapesScene::update() {
+
+    SceneDemo::update();
 
     // Update the position and orientation of the boxes
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {

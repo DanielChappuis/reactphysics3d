@@ -43,8 +43,6 @@ SET(TESTBED_SOURCES
     src/SceneDemo.cpp
     src/Timer.h
     src/Timer.cpp
-    src/PhysicsEventListener.h
-    src/PhysicsEventListener.cpp
 )
 
 # IMGUI source files

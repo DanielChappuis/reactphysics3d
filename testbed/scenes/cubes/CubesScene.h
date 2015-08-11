@@ -83,8 +83,13 @@ class CubesScene : public SceneDemo {
         virtual void reset();
 
         /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() const;
 };
+
+// Return all the contact points of the scene
+inline std::vector<ContactPoint> CubesScene::getContactPoints() const {
+    return computeContactPointsOfWorld(mDynamicsWorld);
+}
 
 }
 

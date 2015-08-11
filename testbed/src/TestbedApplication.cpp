@@ -63,12 +63,11 @@ TestbedApplication::TestbedApplication()
     mWindowToFramebufferRatio = Vector2(1, 1);
     mIsShadowMappingEnabled = true;
     mIsVSyncEnabled = true;
+    mIsContactPointsDisplayed = false;
 }
 
 // Destructor
 TestbedApplication::~TestbedApplication() {
-
-    // TODO : Check that this method is called at the end
 
     // Destroy all the scenes
     destroyScenes();
@@ -241,6 +240,9 @@ void TestbedApplication::update() {
 
     // Enable/Disable shadow mapping
     mCurrentScene->setIsShadowMappingEnabled(mIsShadowMappingEnabled);
+
+    // Display/Hide contact points
+    mCurrentScene->setIsContactPointsDisplayed(mIsContactPointsDisplayed);
 
     // Update the scene
     mCurrentScene->update();

@@ -28,7 +28,18 @@
 
 // Libraries
 #include "openglframework.h"
-#include "PhysicsEventListener.h"
+
+// Structure ContactPoint
+struct ContactPoint {
+
+    public:
+        openglframework::Vector3 point;
+
+        /// Constructor
+        ContactPoint(const openglframework::Vector3& pointWorld) : point(pointWorld) {
+
+        }
+};
 
 /// Structure EngineSettings
 /// This structure contains several physics engine parameters
@@ -94,6 +105,9 @@ class Scene {
         /// True if the shadow mapping is enabled
         bool mIsShadowMappingEnabled;
 
+        /// True if contact points are displayed
+        bool mIsContactPointsDisplayed;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -105,7 +119,6 @@ class Scene {
         /// Map mouse coordinates to coordinates on the sphere
         bool mapMouseCoordinatesToSphere(double xMouse, double yMouse,
                                          openglframework::Vector3& spherePoint) const;
-
 
         /// Zoom the camera
         void zoom(float zoomDiff);
@@ -183,6 +196,9 @@ class Scene {
         /// Enabled/Disable the shadow mapping
         void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
 
+        /// Display/Hide the contact points
+        void virtual setIsContactPointsDisplayed(bool display);
+
         /// Return all the contact points of the scene
         std::vector<ContactPoint> virtual getContactPoints() const;
 };
@@ -244,6 +260,11 @@ inline bool Scene::getIsShadowMappingEnabled() const {
 // Enabled/Disable the shadow mapping
 inline void Scene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
     mIsShadowMappingEnabled = isShadowMappingEnabled;
+}
+
+// Display/Hide the contact points
+inline void Scene::setIsContactPointsDisplayed(bool display) {
+    mIsContactPointsDisplayed = display;
 }
 
 // Return all the contact points of the scene

@@ -135,7 +135,15 @@ class JointsScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset();
+
+        /// Return all the contact points of the scene
+        virtual std::vector<ContactPoint> getContactPoints() const;
 };
+
+// Return all the contact points of the scene
+inline std::vector<ContactPoint> JointsScene::getContactPoints() const {
+    return computeContactPointsOfWorld(mDynamicsWorld);
+}
 
 }
 

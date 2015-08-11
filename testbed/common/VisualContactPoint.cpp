@@ -33,7 +33,6 @@ openglframework::VertexBufferObject VisualContactPoint::mVBOIndices(GL_ELEMENT_A
 openglframework::VertexArrayObject VisualContactPoint::mVAO;
 int VisualContactPoint::mNbTotalPoints = 0;
 openglframework::Mesh VisualContactPoint::mMesh;
-int VisualContactPoint::totalNbBoxes = 0;
 
 // Constructor
 VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
@@ -42,31 +41,11 @@ VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
 
     // Initialize the position where the mesh will be rendered
     translateWorld(position);
-
-    // Create the VBOs and VAO
-    if (totalNbBoxes == 0) {
-        createStaticData(meshFolderPath);
-        createVBOAndVAO();
-    }
-
-    totalNbBoxes++;
 }
 
 // Destructor
 VisualContactPoint::~VisualContactPoint() {
 
-    if (totalNbBoxes == 1) {
-
-        // Destroy the VBOs and VAO
-        mVBOIndices.destroy();
-        mVBOVertices.destroy();
-        mVBONormals.destroy();
-        mVAO.destroy();
-
-        destroyStaticData();
-    }
-
-    totalNbBoxes--;
 }
 
 // Load and initialize the mesh for all the contact points
@@ -79,10 +58,18 @@ void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
     mMesh.calculateNormals();
 
     mMesh.scaleVertices(VISUAL_CONTACT_POINT_RADIUS);
+
+    createVBOAndVAO();
 }
 
 // Destroy the mesh for the contact points
 void VisualContactPoint::destroyStaticData() {
+
+    // Destroy the VBOs and VAO
+    mVBOIndices.destroy();
+    mVBOVertices.destroy();
+    mVBONormals.destroy();
+    mVAO.destroy();
 
     mMesh.destroy();
 }

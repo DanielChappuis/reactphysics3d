@@ -34,6 +34,7 @@ uniform sampler2D shadowMapSampler;         // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
 uniform vec4 vertexColor;                   // Vertex color
 uniform bool isShadowEnabled;               // True if shadow mapping is enabled
+uniform vec2 shadowMapDimension;            // Shadow map dimension
 
 // In variables
 in vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
@@ -43,6 +44,13 @@ in vec4 shadowMapCoords;                // Shadow map texture coords
 
 // Out variable
 out vec4 color;                        // Output color
+
+// Texture for PCF Shadow mapping
+float textureLookupPCF(sampler2D map, vec2 texCoords, vec2 offset)
+{
+    vec2 shadowMapScale = vec2(1.0, 1.0) / shadowMapDimension;
+    return texture(map, texCoords.xy + offset * shadowMapScale).r;
+}
 
 void main() {
 
@@ -61,18 +69,36 @@ void main() {
     float diffuseFactor = max(dot(N, L0), 0.0);
     vec3 diffuse = light0DiffuseColor * diffuseFactor * textureColor;
 
+
     // Compute shadow factor
     float shadow = 1.0;
     if (isShadowEnabled) {
+        shadow = 0.0;
         float bias = 0.0003;
         float shadowBias = -0.000;
         vec4 shadowMapUV = shadowMapCoords;
         shadowMapUV.z -= shadowBias;
-        vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w ;
+        vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w;
+
+        /*
+        // PCF Shadow Mapping
+        for (float i=-1; i<=1; i++) {
+            for (float j=-1; j<=1; j++) {
+                float distInShadowMap = textureLookupPCF(shadowMapSampler, shadowMapCoordsOverW.xy, vec2(i, j)) + bias;
+                if (shadowMapCoords.w > 0) {
+                    shadow += distInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
+                }
+            }
+        }
+        shadow /= 9.0;
+        */
+
+
         float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r + bias;
         if (shadowMapCoords.w > 0) {
             shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
         }
+
     }
 
     // Compute the final color

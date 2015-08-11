@@ -29,7 +29,7 @@
 // Libraries
 #include "openglframework.h"
 
-const float VISUAL_CONTACT_POINT_RADIUS = 0.1f;
+const float VISUAL_CONTACT_POINT_RADIUS = 0.2f;
 
 // Class VisualContactPoint
 class VisualContactPoint : public openglframework::Object3D {
@@ -55,9 +55,6 @@ class VisualContactPoint : public openglframework::Object3D {
 
         /// Vertex Array Object for the vertex data
         static openglframework::VertexArrayObject mVAO;
-
-        /// Total number of points created
-        static int totalNbBoxes;
 
         /// Color
         openglframework::Color mColor;

@@ -37,7 +37,7 @@
 const float GUI_SCALING = 2.0f;
 const int LEFT_PANE_WIDTH = 300;
 const int LEFT_PANE_HEADER_HEIGHT = 90;
-const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.2;
+const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.3;
 
 using namespace openglframework;
 

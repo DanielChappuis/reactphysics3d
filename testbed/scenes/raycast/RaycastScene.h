@@ -66,7 +66,7 @@ class RaycastManager : public rp3d::RaycastCallback {
     private:
 
         /// All the visual contact points
-        std::vector<VisualContactPoint*> mHitPoints;
+        std::vector<ContactPoint> mHitPoints;
 
         /// All the normals at hit points
         std::vector<Line*> mNormals;
@@ -88,8 +88,7 @@ class RaycastManager : public rp3d::RaycastCallback {
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            VisualContactPoint* point = new VisualContactPoint(position, mMeshFolderPath);
-            mHitPoints.push_back(point);
+            mHitPoints.push_back(ContactPoint(position));
 
             // Create a line to display the normal at hit point
             rp3d::Vector3 n = raycastInfo.worldNormal;
@@ -103,11 +102,13 @@ class RaycastManager : public rp3d::RaycastCallback {
         void render(const openglframework::Matrix4& worldToCameraMatrix,
                     bool showNormals) {
 
+            /*
             // Render all the raycast hit points
-            for (std::vector<VisualContactPoint*>::iterator it = mHitPoints.begin();
+            for (std::vector<ContactPoint>::iterator it = mHitPoints.begin();
                  it != mHitPoints.end(); ++it) {
                 (*it)->render(mShader, worldToCameraMatrix);
             }
+            */
 
             if (showNormals) {
 
@@ -121,11 +122,13 @@ class RaycastManager : public rp3d::RaycastCallback {
 
         void resetPoints() {
 
+            /*
             // Destroy all the visual contact points
             for (std::vector<VisualContactPoint*>::iterator it = mHitPoints.begin();
                  it != mHitPoints.end(); ++it) {
                 delete (*it);
             }
+            */
             mHitPoints.clear();
 
             // Destroy all the normals
@@ -134,6 +137,10 @@ class RaycastManager : public rp3d::RaycastCallback {
                 delete (*it);
             }
             mNormals.clear();
+        }
+
+        std::vector<ContactPoint> getHitPoints() const {
+            return mHitPoints;
         }
 };
 
@@ -224,6 +231,12 @@ class RaycastScene : public SceneDemo {
 
         /// Enabled/Disable the shadow mapping
         void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+
+        /// Display/Hide the contact points
+        void virtual setIsContactPointsDisplayed(bool display);
+
+        /// Return all the contact points of the scene
+        virtual std::vector<ContactPoint> getContactPoints() const;
 };
 
 // Display or not the surface normals at hit points
@@ -233,8 +246,17 @@ inline void RaycastScene::showHideNormals() {
 
 // Enabled/Disable the shadow mapping
 inline void RaycastScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
-
     SceneDemo::setIsShadowMappingEnabled(false);
+}
+
+// Display/Hide the contact points
+inline void RaycastScene::setIsContactPointsDisplayed(bool display) {
+    SceneDemo::setIsContactPointsDisplayed(true);
+}
+
+// Return all the contact points of the scene
+inline std::vector<ContactPoint> RaycastScene::getContactPoints() const {
+    return mRaycastManager.getHitPoints();
 }
 
 }
