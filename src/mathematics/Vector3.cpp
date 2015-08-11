@@ -55,7 +55,9 @@ Vector3::~Vector3() {
 Vector3 Vector3::getUnit() const {
     decimal lengthVector = length();
 
-    assert(lengthVector > MACHINE_EPSILON);
+    if (lengthVector < MACHINE_EPSILON) {
+        return *this;
+    }
 
     // Compute and return the unit vector
     decimal lengthInv = decimal(1.0) / lengthVector;
