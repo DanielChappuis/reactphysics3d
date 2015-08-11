@@ -297,6 +297,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Test and report collisions between all shapes of the world
         virtual void testCollision(CollisionCallback* callback);
 
+        /// Return the list of all contacts of the world
+        std::vector<const ContactManifold*> getContactsList() const;
+
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;

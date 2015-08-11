@@ -952,3 +952,23 @@ void DynamicsWorld::testCollision(CollisionCallback* callback) {
     // Perform the collision detection and report contacts
     mCollisionDetection.reportCollisionBetweenShapes(callback, emptySet, emptySet);
 }
+
+/// Return the list of all contacts of the world
+std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
+
+    std::vector<const ContactManifold*> contactManifolds;
+
+    // For each currently overlapping pair of bodies
+    std::map<overlappingpairid, OverlappingPair*>::const_iterator it;
+    for (it = mCollisionDetection.mOverlappingPairs.begin();
+         it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
+
+        OverlappingPair* pair = it->second;
+
+        // Get the contact manifold
+        contactManifolds.push_back(pair->getContactManifold());
+    }
+
+    // Return all the contact manifold
+    return contactManifolds;
+}
