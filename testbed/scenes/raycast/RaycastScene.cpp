@@ -296,8 +296,13 @@ void RaycastScene::update() {
 void RaycastScene::renderSinglePass(openglframework::Shader& shader,
                                     const openglframework::Matrix4& worldToCameraMatrix) {
 
+    // Bind the VAO
+    mVAO.bind();
+
     // Bind the shader
     shader.bind();
+
+    mVBOVertices.bind();
 
     // Set the model to camera matrix
     const Matrix4 localToCameraMatrix = Matrix4::identity();
@@ -314,11 +319,18 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader,
     openglframework::Vector4 color(1, 0, 0, 1);
     shader.setVector4Uniform("vertexColor", color, false);
 
-    // Bind the VAO
-    mVAO.bind();
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+
+    glEnableVertexAttribArray(vertexPositionLoc);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // Draw the lines
     glDrawArrays(GL_LINES, 0, NB_RAYS);
+
+    glDisableVertexAttribArray(vertexPositionLoc);
+
+    mVBOVertices.unbind();
 
     // Unbind the VAO
     mVAO.unbind();
@@ -335,27 +347,6 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader,
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix);
 
     //mPhongShader.unbind();
-    shader.bind();
-
-    openglframework::Vector4 redColor(1, 0, 0, 1);
-    shader.setVector4Uniform("vertexColor", redColor, false);
-
-    // Render all the raycast hit points
-    mRaycastManager.render(worldToCameraMatrix, mAreNormalsDisplayed);
-
-    shader.unbind();
-    shader.bind();
-
-    openglframework::Vector4 blueColor(0, 0.62, 0.92, 1);
-    shader.setVector4Uniform("vertexColor", blueColor, false);
-
-    // Render the lines
-    for (std::vector<Line*>::iterator it = mLines.begin(); it != mLines.end();
-         ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
-    }
-
-    // Unbind the shader
     shader.unbind();
 }
 
@@ -365,9 +356,6 @@ void RaycastScene::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Bind the shader
     shader.bind();
-
-    // Get the location of shader attribute variables
-    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -382,8 +370,6 @@ void RaycastScene::createVBOAndVAO(openglframework::Shader& shader) {
 
     // Bind the VBO of vertices
     mVBOVertices.bind();
-    glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
 
     // Unbind the VAO
     mVAO.unbind();

@@ -56,6 +56,9 @@ class VisualContactPoint : public openglframework::Object3D {
         /// Vertex Array Object for the vertex data
         static openglframework::VertexArrayObject mVAO;
 
+        /// True if static data (VBO, VAO) has been created already
+        static bool mStaticDataCreated;
+
         /// Color
         openglframework::Color mColor;
 

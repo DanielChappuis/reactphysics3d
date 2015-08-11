@@ -188,7 +188,7 @@ void SceneDemo::render() {
     if (mIsShadowMappingEnabled) mShadowMapTexture.unbind();
     mPhongShader.unbind();
 
-   drawTextureQuad();
+   //drawTextureQuad();
 }
 
 // Create the Shadow map FBO and texture

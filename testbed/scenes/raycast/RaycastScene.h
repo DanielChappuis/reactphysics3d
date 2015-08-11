@@ -99,36 +99,8 @@ class RaycastManager : public rp3d::RaycastCallback {
             return raycastInfo.hitFraction;
         }
 
-        void render(const openglframework::Matrix4& worldToCameraMatrix,
-                    bool showNormals) {
-
-            /*
-            // Render all the raycast hit points
-            for (std::vector<ContactPoint>::iterator it = mHitPoints.begin();
-                 it != mHitPoints.end(); ++it) {
-                (*it)->render(mShader, worldToCameraMatrix);
-            }
-            */
-
-            if (showNormals) {
-
-                // Render all the normals at hit points
-                for (std::vector<Line*>::iterator it = mNormals.begin();
-                     it != mNormals.end(); ++it) {
-                    (*it)->render(mShader, worldToCameraMatrix);
-                }
-            }
-        }
-
         void resetPoints() {
 
-            /*
-            // Destroy all the visual contact points
-            for (std::vector<VisualContactPoint*>::iterator it = mHitPoints.begin();
-                 it != mHitPoints.end(); ++it) {
-                delete (*it);
-            }
-            */
             mHitPoints.clear();
 
             // Destroy all the normals

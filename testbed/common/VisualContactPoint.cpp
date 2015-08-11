@@ -33,6 +33,7 @@ openglframework::VertexBufferObject VisualContactPoint::mVBOIndices(GL_ELEMENT_A
 openglframework::VertexArrayObject VisualContactPoint::mVAO;
 int VisualContactPoint::mNbTotalPoints = 0;
 openglframework::Mesh VisualContactPoint::mMesh;
+bool VisualContactPoint::mStaticDataCreated = false;
 
 // Constructor
 VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
@@ -51,6 +52,8 @@ VisualContactPoint::~VisualContactPoint() {
 // Load and initialize the mesh for all the contact points
 void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
 
+    if (mStaticDataCreated) return;
+
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", mMesh);
 
@@ -60,10 +63,14 @@ void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
     mMesh.scaleVertices(VISUAL_CONTACT_POINT_RADIUS);
 
     createVBOAndVAO();
+
+    mStaticDataCreated = true;
 }
 
 // Destroy the mesh for the contact points
 void VisualContactPoint::destroyStaticData() {
+
+    if (!mStaticDataCreated) return;
 
     // Destroy the VBOs and VAO
     mVBOIndices.destroy();
@@ -72,14 +79,21 @@ void VisualContactPoint::destroyStaticData() {
     mVAO.destroy();
 
     mMesh.destroy();
+
+    mStaticDataCreated = false;
 }
 
 // Render the sphere at the correct position and with the correct orientation
 void VisualContactPoint::render(openglframework::Shader& shader,
                                 const openglframework::Matrix4& worldToCameraMatrix) {
 
+    // Bind the VAO
+    mVAO.bind();
+
     // Bind the shader
     shader.bind();
+
+    mVBOVertices.bind();
 
     // Set the model to camera matrix
     shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
@@ -95,11 +109,6 @@ void VisualContactPoint::render(openglframework::Shader& shader,
     // Set the vertex color
     openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
     shader.setVector4Uniform("vertexColor", color, false);
-
-    // Bind the VAO
-    mVAO.bind();
-
-    mVBOVertices.bind();
 
     // Get the location of shader attribute variables
     GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
