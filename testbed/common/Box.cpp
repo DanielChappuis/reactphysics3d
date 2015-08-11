@@ -188,6 +188,8 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
 
+    mPreviousTransform = transform;
+
     // Create a rigid body in the dynamics world
     rp3d::RigidBody* body = world->createRigidBody(transform);
 

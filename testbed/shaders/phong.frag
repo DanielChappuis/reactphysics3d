@@ -69,7 +69,6 @@ void main() {
     float diffuseFactor = max(dot(N, L0), 0.0);
     vec3 diffuse = light0DiffuseColor * diffuseFactor * textureColor;
 
-
     // Compute shadow factor
     float shadow = 1.0;
     if (isShadowEnabled) {
@@ -80,7 +79,6 @@ void main() {
         shadowMapUV.z -= shadowBias;
         vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w;
 
-        /*
         // PCF Shadow Mapping
         for (float i=-1; i<=1; i++) {
             for (float j=-1; j<=1; j++) {
@@ -91,14 +89,13 @@ void main() {
             }
         }
         shadow /= 9.0;
-        */
 
-
+        /*
         float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r + bias;
         if (shadowMapCoords.w > 0) {
             shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
         }
-
+        */
     }
 
     // Compute the final color

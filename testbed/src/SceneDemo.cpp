@@ -166,7 +166,7 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
     mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
-    //mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
+    mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 
     // Set the viewport to render the scene
     glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);

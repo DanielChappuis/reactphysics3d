@@ -129,7 +129,6 @@ CubesScene::~CubesScene() {
 // Update the physics world (take a simulation step)
 void CubesScene::updatePhysics() {
 
-
     // Update the physics engine parameters
     mDynamicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
     rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
