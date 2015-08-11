@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* OpenGL-Framework                                                              *
+* Copyright (c) 2013 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,64 +23,77 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef VERTEX_ARRAY_OBJECT_H
+#define VERTEX_ARRAY_OBJECT_H
+
 // Libraries
-#include "Vector3.h"
+#include <GL/glew.h>
+#include <cassert>
 #include <iostream>
-#include <vector>
 
-// Namespaces
-using namespace reactphysics3d;
+namespace openglframework {
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+
+// Class VertexArrayObject
+class VertexArrayObject {
+
+    private :
+
+        // -------------------- Attributes -------------------- //
+
+        /// ID of the Vertex Array Object
+        GLuint mVertexArrayID;
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        VertexArrayObject();
+
+        /// Destructor
+        ~VertexArrayObject();
+
+        /// Create the vertex buffer object
+        bool create();
+
+        /// Bind the VAO
+        void bind() const;
+
+        /// Unbind the VAO
+        void unbind() const;
+
+        /// Return true if the needed OpenGL extensions are available for VAO
+        static bool checkOpenGLExtensions();
+
+        /// Destroy the VAO
+        void destroy();
+};
+
+// Bind the VAO
+inline void VertexArrayObject::bind() const {
+    assert(mVertexArrayID != 0);
+
+    // Bind the VAO
+    glBindVertexArray(mVertexArrayID);
+}
+
+// Unbind the VAO
+inline void VertexArrayObject::unbind() const {
+    assert(mVertexArrayID != 0);
+
+    // Unbind the VAO
+    glBindVertexArray(0);
+}
+
+// Return true if the needed OpenGL extensions are available for VAO
+inline bool VertexArrayObject::checkOpenGLExtensions() {
+
+    // Check that OpenGL version is at least 3.0 or there the vertex array object extension exists
+    return (GLEW_VERSION_3_0 || GL_ARB_vertex_array_object);
+}
 
 }
 
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+#endif
 
-}
-
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
-
-}
-
-// Destructor
-Vector3::~Vector3() {
-
-}
-
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
-
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
-
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
-
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
-}

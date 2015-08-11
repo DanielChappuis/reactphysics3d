@@ -23,64 +23,54 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef LINE_H
+#define LINE_H
+
 // Libraries
-#include "Vector3.h"
-#include <iostream>
-#include <vector>
+#include "openglframework.h"
+#include "reactphysics3d.h"
 
-// Namespaces
-using namespace reactphysics3d;
+// Class Line
+class Line : public openglframework::Object3D {
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+    private :
 
+        // -------------------- Attributes -------------------- //
+
+        openglframework::Vector3 mWorldPoint1, mWorldPoint2;
+
+        // -------------------- Methods -------------------- //
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        Line(const openglframework::Vector3& worldPoint1,
+             const openglframework::Vector3& worldPoint2);
+
+        /// Destructor
+        ~Line();
+
+        /// Return the first point of the line
+        openglframework::Vector3 getPoint1() const;
+
+        /// Return the second point of the line
+        openglframework::Vector3 getPoint2() const;
+
+        /// Render the line at the correct position and with the correct orientation
+        void render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix);
+};
+
+// Return the first point of the line
+inline openglframework::Vector3 Line::getPoint1() const {
+    return mWorldPoint1;
 }
 
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
-
+// Return the second point of the line
+inline openglframework::Vector3 Line::getPoint2() const {
+    return mWorldPoint2;
 }
 
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
-
-}
-
-// Destructor
-Vector3::~Vector3() {
-
-}
-
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
-
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
-
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
-
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
-}
+#endif

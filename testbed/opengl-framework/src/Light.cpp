@@ -1,6 +1,6 @@
 /********************************************************************************
-* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* OpenGL-Framework                                                              *
+* Copyright (c) 2013 Daniel Chappuis                                            *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,63 +24,39 @@
 ********************************************************************************/
 
 // Libraries
-#include "Vector3.h"
-#include <iostream>
-#include <vector>
+#include "Light.h"
 
 // Namespaces
-using namespace reactphysics3d;
+using namespace openglframework;
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
-
-}
-
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+// Constructor
+Light::Light(GLuint id)
+      : mLightID(id), mDiffuseColor(Color::white()),
+        mSpecularColor(Color::white()), mIsActive(false) {
 
 }
 
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+// Constructor
+Light::Light(GLuint id, Color diffuseColor, Color specularColor)
+      : mLightID(id), mDiffuseColor(diffuseColor),
+        mSpecularColor(specularColor), mIsActive(false) {
 
 }
 
 // Destructor
-Vector3::~Vector3() {
+Light::~Light() {
 
 }
 
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
+// Initialize the light
+void Light::init() {
 
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
+    // Enable the light
+    enable();
 
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
-
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
+    // Set the diffuse and specular color
+    GLfloat diffuseColor[] = {mDiffuseColor.r, mDiffuseColor.g, mDiffuseColor.b, mDiffuseColor.a};
+    GLfloat specularColor[] = {mSpecularColor.r,mSpecularColor.g,mSpecularColor.b,mSpecularColor.a};
+    glLightfv(mLightID, GL_DIFFUSE, diffuseColor);
+    glLightfv(mLightID, GL_SPECULAR, specularColor);
 }

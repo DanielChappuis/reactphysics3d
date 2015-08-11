@@ -24,63 +24,41 @@
 ********************************************************************************/
 
 // Libraries
-#include "Vector3.h"
-#include <iostream>
-#include <vector>
+#include "Line.h"
 
-// Namespaces
-using namespace reactphysics3d;
-
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
-
-}
-
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
-
-}
-
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+// Constructor
+Line::Line(const openglframework::Vector3& worldPoint1,
+           const openglframework::Vector3& worldPoint2)
+     : mWorldPoint1(worldPoint1), mWorldPoint2(worldPoint2) {
 
 }
 
 // Destructor
-Vector3::~Vector3() {
+Line::~Line() {
+
 
 }
 
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
+// Render the sphere at the correct position and with the correct orientation
+void Line::render(openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix) {
 
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
+    // Bind the shader
+    shader.bind();
 
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
+    // Set the model to camera matrix
+    shader.setMatrix4x4Uniform("localToWorldMatrix", openglframework::Matrix4::identity());
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
+    // Set the vertex color
+    openglframework::Vector4 color(1, 0, 0, 1);
+    shader.setVector4Uniform("vertexColor", color, false);
 
-    assert(length() > MACHINE_EPSILON);
+    glBegin(GL_LINES);
+        glVertex3f(mWorldPoint1.x, mWorldPoint1.y, mWorldPoint1.z);
+        glVertex3f(mWorldPoint2.x, mWorldPoint2.y, mWorldPoint2.z);
+    glEnd();
 
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
+    // Unbind the shader
+    shader.unbind();
 }

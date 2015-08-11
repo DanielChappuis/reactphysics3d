@@ -186,17 +186,17 @@ class DynamicsWorld : public CollisionWorld {
         /// Destructor
         virtual ~DynamicsWorld();
 
-        /// Start the physics simulation
-        void start();
-
-        /// Stop the physics simulation
-        void stop();
-
         /// Update the physics simulation
         void update(decimal timeStep);
 
+        /// Get the number of iterations for the velocity constraint solver
+        uint getNbIterationsVelocitySolver() const;
+
         /// Set the number of iterations for the velocity constraint solver
         void setNbIterationsVelocitySolver(uint nbIterations);
+
+        /// Get the number of iterations for the position constraint solver
+        uint getNbIterationsPositionSolver() const;
 
         /// Set the number of iterations for the position constraint solver
         void setNbIterationsPositionSolver(uint nbIterations);
@@ -226,6 +226,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
+        /// Set the gravity vector of the world
+        void setGravity(Vector3& gravity);
+
         /// Return if the gravity is on
         bool isGravityEnabled() const;
 
@@ -237,9 +240,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Return the number of joints in the world
         uint getNbJoints() const;
-
-        /// Return the current physics time (in seconds)
-        long double getPhysicsTime() const;
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -297,6 +297,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Test and report collisions between all shapes of the world
         virtual void testCollision(CollisionCallback* callback);
 
+        /// Return the list of all contacts of the world
+        std::vector<const ContactManifold*> getContactsList() const;
+
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;
@@ -311,7 +314,12 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
         (*it)->mExternalForce.setToZero();
         (*it)->mExternalTorque.setToZero();
     }
-}             
+}
+
+// Get the number of iterations for the velocity constraint solver
+inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
+    return mNbVelocitySolverIterations;
+}
 
 // Set the number of iterations for the velocity constraint solver
 /**
@@ -319,6 +327,11 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
  */
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
+}
+
+// Get the number of iterations for the position constraint solver
+inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
+    return mNbPositionSolverIterations;
 }
 
 // Set the number of iterations for the position constraint solver
@@ -373,6 +386,14 @@ inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool 
  */
 inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
+}
+
+// Set the gravity vector of the world
+/**
+ * @param gravity The gravity vector (in meter per seconds squared)
+ */
+inline void DynamicsWorld::setGravity(Vector3& gravity) {
+    mGravity = gravity;
 }
 
 // Return if the gravity is enaled

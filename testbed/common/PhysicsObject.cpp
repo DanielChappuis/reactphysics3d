@@ -24,63 +24,36 @@
 ********************************************************************************/
 
 // Libraries
-#include "Vector3.h"
-#include <iostream>
-#include <vector>
+#include "PhysicsObject.h"
 
-// Namespaces
-using namespace reactphysics3d;
+/// Constructor
+PhysicsObject::PhysicsObject() {
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
-
+    mColor = openglframework::Color(1, 1, 1, 1);
+    mSleepingColor = openglframework::Color(1, 0, 0, 1);
 }
 
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+// Compute the new transform matrix
+openglframework::Matrix4 PhysicsObject::computeTransform(float interpolationFactor,
+                                                        const openglframework::Matrix4& scalingMatrix) {
 
-}
+    // Get the transform of the rigid body
+    rp3d::Transform transform = mBody->getTransform();
 
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+    // Interpolate the transform between the previous one and the new one
+    rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(mPreviousTransform,
+                                                                                  transform,
+                                                                                  interpolationFactor);
+    mPreviousTransform = transform;
 
-}
+    // Compute the transform used for rendering the box
+    rp3d::decimal matrix[16];
+    interpolatedTransform.getOpenGLMatrix(matrix);
+    openglframework::Matrix4 newMatrix(matrix[0], matrix[4], matrix[8], matrix[12],
+                                       matrix[1], matrix[5], matrix[9], matrix[13],
+                                       matrix[2], matrix[6], matrix[10], matrix[14],
+                                       matrix[3], matrix[7], matrix[11], matrix[15]);
 
-// Destructor
-Vector3::~Vector3() {
-
-}
-
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
-
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
-
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
-}
-
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
-    }
-
+    // Apply the scaling matrix to have the correct box dimensions
+    return newMatrix * scalingMatrix;
 }
