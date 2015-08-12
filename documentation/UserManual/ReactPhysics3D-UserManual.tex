@@ -228,7 +228,10 @@ rp3d::CollisionWorld world;
 
     Do not forget to destroy the \texttt{CollisionWorld} instance at the end of your program in order to release the allocated memory. If the object has been created
     statically, it will be destroyed automatically at the end of the scope in which it has been created. If the object has been created dynamically (using the \texttt{new}
-    operator), you need to destroy it with the \texttt{delete} operator.
+    operator), you need to destroy it with the \texttt{delete} operator. \\
+
+    When the \texttt{CollisionWorld} is destroyed, all the bodies that have been added into it and that have not been destroyed already will be destroyed.
+    Therefore, the pointers to the bodies of the world will become invalid after the existence of their \texttt{CollisionWorld}.
 
     \section{Collision Bodies}
 
@@ -414,9 +417,12 @@ world.update();
 
     \subsection{Destroying the Dynamics World}
 
-    Do not forget to destroy the \texttt{DynamicsWorld} instance at the end of your program in order to release the allocated memory. If the object has been created statically, it will
-    automatically be destroyed at the end of the scope in which it has been created. If the object has been created dynamically (using the \texttt{new} operator), you need to destroy
-    it with the \texttt{delete} operator.
+    Do not forget to destroy the \texttt{DynamicsWorld} instance at the end of your program in order to release the allocated memory. If the object has been created
+    statically, it will automatically be destroyed at the end of the scope in which it has been created. If the object has been created dynamically (using the
+    \texttt{new} operator), you need to destroy it with the \texttt{delete} operator. \\
+
+    When the \texttt{DynamicsWorld} is destroyed, all the bodies and joints that have been added into it and that have not been destroyed already will be destroyed.
+    Therefore, the pointers to the bodies and joints of the world will become invalid after the existence of their \texttt{DynamicsWorld}.
 
     \section{Rigid Bodies}
     \label{sec:rigidbody}
@@ -1472,8 +1478,91 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     In this example, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
     It is possible to switch from a collision shape to another using the space key.
 
-    \section{Receiving Feedback}
+    \section{Retrieving contacts}
 
+    There are several ways to get the contacts information (contact point, normal, penetration depth, \dots) from the \texttt{DynamicsWorld}. \\
+
+    \subsection{Contacts of a given rigid body}
+
+    If you are interested to retrieve all the contacts of a single rigid body, you can use the \texttt{RigidBody::getContactManifoldsList()} method. This method will
+    return a linked list with all the current contact manifolds of the body. A contact manifold can contains several contact points. \\
+
+    Here is an example showing how to get the contact points of a given rigid body: \\
+
+    \begin{lstlisting}
+const ContactManifoldListElement* listElem;
+
+// Get the head of the linked list of contact manifolds of the body
+listElem = rigidbody->getContactManifoldsList();
+
+// For each contact manifold of the body
+for (; listElem != NULL; listElem = listElem->next) {
+    ContactManifold* manifold = listElem->contactManifold;
+
+    // For each contact point of the manifold
+    for (int i=0; i<manifold->getNbContactPoints(); i++) {
+
+        // Get the contact point
+        ContactPoint* point = manifold->getContactPoint(i);
+
+        // Get the world-space contact point on body 1
+        Vector3 pos = point->getWorldPointOnBody1();
+
+        // Get the world-space contact normal
+        Vector3 normal = point->getNormal();
+    }
+}
+    \end{lstlisting}
+
+     \vspace{0.6cm}
+
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
+    each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
+    see how to get all the contact occuring in the physis sub-steps of the engine. Also note that a contact manifold contains some persistent contact points that
+    have may have been there for several frames.
+    
+    \subsection{All the contacts of the world}
+
+    If you want to retrieve all the contacts of any rigid body in the world, you can use the \texttt{DynamicsWorld::getContactsList()} method. This method will
+    a \texttt{std::vector} with the list of all the current contact manifolds of the world. A contact manifold may contain several contact points. \\
+
+    The following example shows how to get all the contacts of the world using this method: \\
+
+    \begin{lstlisting}
+std::vector<ContactManifold*> manifolds;
+
+// Get all the contacts of the world
+manifolds = dynamicsWorld->getContactsList();
+std::vector<ContactManifold*>::iterator it;
+      
+// For each contact manifold of the body
+for (it = manifolds.begin(); it != manifolds.end(); ++it) {
+    ContactManifold* manifold = *it;
+
+    // For each contact point of the manifold
+    for (int i=0; i<manifold->getNbContactPoints(); i++) {
+
+        // Get the contact point
+        ContactPoint* point = manifold->getContactPoint(i);
+
+        // Get the world-space contact point on body 1
+        Vector3 pos = point->getWorldPointOnBody1();
+
+        // Get the world-space contact normal
+        Vector3 normal = point->getNormal();
+    }
+}
+    \end{lstlisting}
+
+     \vspace{0.6cm}
+
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
+    each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
+    see how to get all the contact occuring in the physis sub-steps of the engine. Also note that a contact manifold contains some persistent contact points that
+    have may have been there for several frames.
+
+    \section{Receiving Feedback}
+    \label{sec:receiving_feedback}
     Sometimes, you want to receive notifications from the physics engine when a given event happens. The \texttt{EventListener} class can be used for that purpose. In order to use
     it, you need to create a new class that inherits from the \texttt{EventListener} class and overrides some methods that will be called by the ReactPhysics3D library when some events
     occur. You also need to register your class in the physics world using the \texttt{DynamicsWorld::setEventListener()} as in the following code: \\
