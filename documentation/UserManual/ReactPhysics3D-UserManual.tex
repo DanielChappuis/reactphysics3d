@@ -314,12 +314,8 @@ world.destroyCollisionBody(body);
     \subsection{Creating the Dynamics World}
 
     The first thing you have to do when you want to simulate the dynamics of rigid bodies in time is to create an instance
-    of the \texttt{DynamicsWorld}. You need to specify two parameters when constructing the world. The first one is the gravity acceleration  vector (in $m / s^2$) in the
-    world and
-    the second one is the simulation time step (in seconds). Note that gravity is activated by default when you create the world. The time step is the fixed amount of time
-    used at each internal
-    physics tick. Note that multiple internal physics ticks can be taken at each frame. For real-time applications, a time step of $\frac{1}{60}$ seconds (60 Hz) is usually
-    used. Using a smaller time step makes the simulation more precise but also more expensive to compute. \\
+    of the \texttt{DynamicsWorld}. You need to specify the gravity acceleration vector (in $m / s^2$) in the world as parameter. Note that gravity is
+    activated by default when you create the world. \\
 
     Here is how to create the Dynamics World: \\
 
@@ -327,11 +323,8 @@ world.destroyCollisionBody(body);
 // Gravity vector
 rp3d::Vector3 gravity(0.0, -9.81, 0.0);
 
-// Time step (in seconds)
-rp3d::decimal timeStep = 1.0 / 60.0;
-
 // Create the dynamics world
-rp3d::DynamicsWorld world(gravity, timeStep);
+rp3d::DynamicsWorld world(gravity);
   \end{lstlisting}
 
     \subsection{Customizing the Dynamics World}
@@ -387,33 +380,58 @@ world.enableSleeping(false);
     
     \subsection{Updating the Dynamics World}
 
-    The first thing you have to do to simulate the dynamics of your world is to start the simulation using the following method: \\
+    The \texttt{DynamicsWorld} is used to simulate physics through time. It has to be updated each time you want to simulate a step forward in time. Most of the time,
+    you want to update the world right before rendering a new frame in a real-time application. \\
+
+    To update the physics world, you need to use the \texttt{DynamicsWorld::update()} method. This method will perform collision detection and update the
+    position and orientation of the bodies and joints. After updating the world, you will be able to get the new position and orientation of your bodies for the next
+    frame to render. This method requires a \emph{timeStep} parameter. This is the amount of time you want to advance the physics simulation (in seconds). \\
+
+    The smaller the time step you pick, the more precise the simulation will be but it can also be more expensive to compute. For a real-time application, you
+    probably want a time step of at most $\frac{1}{60}$ seconds to
+    have at least a 60 Hz framerate. Most of the time, physics engines prefer to work with a constant time step. It means that you should always call
+    the \texttt{DynamicsWorld::update()} method with the same time step parameter. You do not want to use the time between two frames as your time step because it will
+    not be constant. \\
+
+    You can use the following technique. First, you choose a constant time step for the physics. Let say the time step is $\frac{1}{60}$ seconds. Then, at each frame,
+    you compute the time difference between the current frame and the previous one and you accumulate this difference in a variable called \emph{accumulator}. The accumulator
+    is initialized to zero at the beginning of your application and is updated at each frame. The idea is to divide the time in the accumulator in several constant time steps.
+    For instance, if your accumulator contains $0.145$ seconds, it means that we can take $8$ physics steps of $\frac{1}{60}$ seconds during the current frame. Note that
+    $0.012$ seconds will remain in the accumulator and will probably be used in the next frame. As you can see, multiple physics steps can be taken at each frame. It is
+    important to understand that each call to the \texttt{DynamicsWorld::update()} method is done using a constant time step that is not varying with the framerate. \\
+
+    Here is what the code looks like at each frame: \\
 
     \begin{lstlisting}
-// Start the simulation
-world.start();
+
+// Constant physics time step
+const float timeStep = 1.0 / 60.0;
+
+// Get the current system time
+long double currentFrameTime = getCurrentSystemTime();
+    
+// Compute the time difference between the two frames
+long double deltaTime  = currentFrameTime - previousFrameTime;
+
+// Update the previous time
+previousFrameTime = currentFrameTime;
+
+// Add the time difference in the accumulator 
+accumulator += mDeltaTime;
+
+// While there is enough accumulated time to take
+// one or several physics steps
+while (accumulator >= timeStep) {
+
+    // Update the Dynamics world with a constant time step
+    dynamicsWorld->update(timeStep);
+
+    // Decrease the accumulated time
+    accumulator -= timeStep;
+}
+     
     \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    Then, each time you have to compute the next frame to render in your application, you need to update the state of the world. To do that, you simply need to call this method: \\
-
-    \begin{lstlisting}
-// Update the world by taking a simulation step
-world.update();
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    When the \texttt{DynamicsWorld::update()} method is called, collision detection is performed and the position and orientation of the bodies are updated accordingly.
-    After updating the world, you will be able to get the updated position and orientation of the bodies for the next frame. Make sure that you call
-    the \texttt{DynamicsWorld::start()} method before calling the \texttt{DynamicsWorld::update()} method. \\
-
-    You can also use the \texttt{DynamicsWorld::stop()} method to stop the simulation. You will then be able to start it again and continue updating it. \\
-
-    Note that you can get the elapsed time (in seconds) from the beginning of the physics simulation using the \texttt{DynamicsWorld::getPhysicsTime()} method.
-    This can be useful to
-    create some animations.
+ 
 
     \subsection{Destroying the Dynamics World}
 
