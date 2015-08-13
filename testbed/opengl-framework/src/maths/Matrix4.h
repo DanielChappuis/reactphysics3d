@@ -33,6 +33,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Matrix3.h"
+#include "definitions.h"
 
 namespace openglframework {
 
@@ -441,7 +442,7 @@ inline Matrix4 Matrix4::perspectiveProjectionMatrix(float near, float far, int w
     // Compute the aspect ratio
     float aspect = float(width) / float(height);
 
-    float top = near * tan((fieldOfView / 2.0f) * (float(M_PI) / 180.0f));
+    float top = near * tan((fieldOfView / 2.0f) * (float(PI) / 180.0f));
     float bottom = -top;
     float left = bottom * aspect;
     float right = top * aspect;

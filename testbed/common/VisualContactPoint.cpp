@@ -161,7 +161,7 @@ void VisualContactPoint::createVBOAndVAO() {
     // Create th VBO for the indices data
     mVBOIndices.create();
     mVBOIndices.bind();
-    size_t sizeIndices = mMesh.getIndices(0).size() * sizeof(uint);
+    size_t sizeIndices = mMesh.getIndices(0).size() * sizeof(unsigned int);
     mVBOIndices.copyDataIntoVBO(sizeIndices, mMesh.getIndicesPointer(), GL_STATIC_DRAW);
     mVBOIndices.unbind();
 

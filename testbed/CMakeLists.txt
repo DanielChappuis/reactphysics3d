@@ -28,7 +28,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x")
 #ADD_DEFINITIONS(-DGL3)
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
+INCLUDE_DIRECTORIES(${GLEW_INCLUDE_PATH} "src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
 # Testbed source files
 SET(TESTBED_SOURCES

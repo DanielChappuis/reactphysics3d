@@ -237,7 +237,7 @@ void Cylinder::createVBOAndVAO() {
     // Create th VBO for the indices data
     mVBOIndices.create();
     mVBOIndices.bind();
-    size_t sizeIndices = mIndices[0].size() * sizeof(uint);
+    size_t sizeIndices = mIndices[0].size() * sizeof(unsigned int);
     mVBOIndices.copyDataIntoVBO(sizeIndices, getIndicesPointer(), GL_STATIC_DRAW);
     mVBOIndices.unbind();
 

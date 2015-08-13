@@ -139,8 +139,8 @@ void RaycastScene::createLines() {
       for (int i=0; i<nbRaysOneDimension; i++) {
           for (int j=0; j<nbRaysOneDimension; j++) {
 
-              float theta = i * 2.0f * M_PI / float(nbRaysOneDimension);
-              float phi = j * M_PI / float(nbRaysOneDimension);
+              float theta = i * 2.0f * PI / float(nbRaysOneDimension);
+              float phi = j * PI / float(nbRaysOneDimension);
 
               // Generate a point on a sphere with spherical coordinates
               float x = RAY_LENGTH * std::sin(phi) * std::cos(theta);
