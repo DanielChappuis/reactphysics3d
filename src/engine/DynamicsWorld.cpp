@@ -59,6 +59,22 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
 // Destructor
 DynamicsWorld::~DynamicsWorld() {
 
+    // Destroy all the joints that have not been removed
+    std::set<Joint*>::iterator itJoints;
+    for (itJoints = mJoints.begin(); itJoints != mJoints.end();) {
+        std::set<Joint*>::iterator itToRemove = itJoints;
+        ++itJoints;
+        destroyJoint(*itToRemove);
+    }
+
+    // Destroy all the rigid bodies that have not been removed
+    std::set<RigidBody*>::iterator itRigidBodies;
+    for (itRigidBodies = mRigidBodies.begin(); itRigidBodies != mRigidBodies.end();) {
+        std::set<RigidBody*>::iterator itToRemove = itRigidBodies;
+        ++itRigidBodies;
+        destroyRigidBody(*itToRemove);
+    }
+
     // Release the memory allocated for the islands
     for (uint i=0; i<mNbIslands; i++) {
 
@@ -81,6 +97,9 @@ DynamicsWorld::~DynamicsWorld() {
         delete[] mConstrainedPositions;
         delete[] mConstrainedOrientations;
     }
+
+    assert(mJoints.size() == 0);
+    assert(mRigidBodies.size() == 0);
 
 #ifdef IS_PROFILING_ACTIVE
 
