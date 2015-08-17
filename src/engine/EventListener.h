@@ -53,7 +53,7 @@ class EventListener {
         /**
          * @param contact Information about the contact
          */
-        virtual void beginContact(const ContactPointInfo& contact) {}
+        virtual void beginContact(const ContactPointInfo& contact) {};
 
         /// Called when a new contact point is found between two bodies
         /**

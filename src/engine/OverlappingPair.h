@@ -82,10 +82,10 @@ class OverlappingPair {
         ~OverlappingPair();
         
         /// Return the pointer to first proxy collision shape
-        ProxyShape* const getShape1() const;
+        ProxyShape* getShape1() const;
 
         /// Return the pointer to second body
-        ProxyShape* const getShape2() const;
+        ProxyShape* getShape2() const;
 
         /// Add a contact to the contact cache
         void addContact(ContactPoint* contact);
@@ -120,12 +120,12 @@ class OverlappingPair {
 };
 
 // Return the pointer to first body
-inline ProxyShape* const OverlappingPair::getShape1() const {
+inline ProxyShape* OverlappingPair::getShape1() const {
     return mShape1;
 }          
 
 // Return the pointer to second body
-inline ProxyShape* const OverlappingPair::getShape2() const {
+inline ProxyShape* OverlappingPair::getShape2() const {
     return mShape2;
 }                
 

@@ -123,7 +123,6 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
-    const rp3d::decimal massSphere = rp3d::decimal(2.0);
     const rp3d::SphereShape sphereCollisionShape(radiusSphere);
 
     // Create a cylinder collision shape for the middle of the dumbbell
@@ -131,7 +130,6 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
     const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
-    const rp3d::decimal massCylinder = rp3d::decimal(1.0);
     const rp3d::CylinderShape cylinderCollisionShape(radiusCylinder, heightCylinder);
 
     // Initial position and orientation of the rigid body

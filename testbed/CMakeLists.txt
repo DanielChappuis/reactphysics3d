@@ -23,9 +23,7 @@ FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 FILE(COPY "imgui/DroidSans.ttf" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 
 # Enable C++11 features
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
-
-#ADD_DEFINITIONS(-DGL3)
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
 
 # Headers
 INCLUDE_DIRECTORIES(${GLEW_INCLUDE_PATH} "src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")

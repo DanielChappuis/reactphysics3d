@@ -71,9 +71,6 @@ class RaycastManager : public rp3d::RaycastCallback {
         /// All the normals at hit points
         std::vector<Line*> mNormals;
 
-        /// Shader
-        openglframework::Shader& mShader;
-
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 
@@ -81,7 +78,7 @@ class RaycastManager : public rp3d::RaycastCallback {
 
         RaycastManager(openglframework::Shader& shader,
                        const std::string& meshFolderPath)
-            : mShader(shader), mMeshFolderPath(meshFolderPath) {
+            : mMeshFolderPath(meshFolderPath) {
 
         }
 

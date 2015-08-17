@@ -23,6 +23,10 @@ OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
 OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
+
+# Compiler flags
+set(CMAKE_CXX_FLAGS "-Wall")
+
 # Headers
 INCLUDE_DIRECTORIES(src)
 

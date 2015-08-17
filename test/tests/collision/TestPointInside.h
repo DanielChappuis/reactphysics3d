@@ -470,8 +470,6 @@ class TestPointInside : public Test {
 
             // ----- Tests without using edges information ----- //
 
-            bool value = mConvexMeshBody->testPointInside(Vector3(0, 0, 0));
-
             // Tests with CollisionBody
             test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));

@@ -92,8 +92,8 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
 
         OverlappingPair* pair = it->second;
 
-        ProxyShape* shape1 = pair->getShape1();
-        ProxyShape* shape2 = pair->getShape2();
+        const ProxyShape* shape1 = pair->getShape1();
+        const ProxyShape* shape2 = pair->getShape2();
 
         assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
 
