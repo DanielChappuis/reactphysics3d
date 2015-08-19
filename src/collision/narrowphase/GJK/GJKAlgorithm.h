@@ -86,10 +86,13 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm(MemoryAllocator& memoryAllocator);
+        GJKAlgorithm();
 
         /// Destructor
         ~GJKAlgorithm();
+
+        /// Initalize the algorithm
+        virtual void init(MemoryAllocator* memoryAllocator);
 
         /// Return true and compute a contact info if the two bounding volumes collide.
         virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
@@ -101,6 +104,12 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
         bool raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo);
 };
+
+// Initalize the algorithm
+inline void GJKAlgorithm::init(MemoryAllocator* memoryAllocator) {
+    NarrowPhaseAlgorithm::init(memoryAllocator);
+    mAlgoEPA.init(memoryAllocator);
+}
 
 }
 

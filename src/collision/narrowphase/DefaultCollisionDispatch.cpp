@@ -24,23 +24,38 @@
 ********************************************************************************/
 
 // Libraries
-#include "NarrowPhaseAlgorithm.h"
+#include "DefaultCollisionDispatch.h"
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
-                     : mMemoryAllocator(NULL), mCurrentOverlappingPair(NULL) {
+DefaultCollisionDispatch::DefaultCollisionDispatch() {
 
 }
 
 // Destructor
-NarrowPhaseAlgorithm::~NarrowPhaseAlgorithm() {
+DefaultCollisionDispatch::~DefaultCollisionDispatch() {
 
 }
 
-// Initalize the algorithm
-void NarrowPhaseAlgorithm::init(MemoryAllocator* memoryAllocator) {
-    mMemoryAllocator = memoryAllocator;
+/// Initialize the collision dispatch configuration
+void DefaultCollisionDispatch::init(MemoryAllocator* memoryAllocator) {
+
+    // Initialize the collision algorithms
+    mSphereVsSphereAlgorithm.init(memoryAllocator);
+    mGJKAlgorithm.init(memoryAllocator);
+}
+
+// Select and return the narrow-phase collision detection algorithm to
+// use between two types of collision shapes.
+NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int shape1Type,
+                                                                int shape2Type) {
+
+    // Sphere vs Sphere algorithm
+    if (shape1Type == SPHERE && shape2Type == SPHERE) {
+        return &mSphereVsSphereAlgorithm;
+    }
+    else {   // GJK algorithm
+        return &mGJKAlgorithm;
+    }
 }

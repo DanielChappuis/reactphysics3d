@@ -37,9 +37,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-GJKAlgorithm::GJKAlgorithm(MemoryAllocator& memoryAllocator)
-             :NarrowPhaseAlgorithm(memoryAllocator), mAlgoEPA(memoryAllocator) {
-    
+GJKAlgorithm::GJKAlgorithm() : NarrowPhaseAlgorithm() {
+
 }
 
 // Destructor
@@ -140,7 +139,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                  ContactPointInfo(collisionShape1, collisionShape2, normal,
                                                   penetrationDepth, pA, pB);
 
@@ -172,7 +171,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                    ContactPointInfo(collisionShape1, collisionShape2, normal,
                                                     penetrationDepth, pA, pB);
 
@@ -202,7 +201,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                  ContactPointInfo(collisionShape1, collisionShape2, normal,
                                                   penetrationDepth, pA, pB);
 
@@ -239,7 +238,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* collisionShape1, ProxyShape* collis
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
+            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                    ContactPointInfo(collisionShape1, collisionShape2, normal,
                                                     penetrationDepth, pA, pB);
 

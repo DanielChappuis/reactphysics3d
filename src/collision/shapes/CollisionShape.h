@@ -41,6 +41,7 @@ namespace reactphysics3d {
     
 /// Type of the collision shape
 enum CollisionShapeType {BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH};
+const int NB_COLLISION_SHAPE_TYPES = 6;
 
 // Declarations
 class ProxyShape;

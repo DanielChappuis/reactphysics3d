@@ -38,10 +38,9 @@ namespace reactphysics3d {
 
 // Class NarrowPhaseAlgorithm
 /**
- * This class is an abstract class that represents an algorithm
- * used to perform the narrow-phase of a collision detection. The
- * goal of the narrow phase algorithm is to compute contact
- * informations of a collision between two bodies.
+ * This abstract class is the base class for a  narrow-phase collision
+ * detection algorithm. The goal of the narrow phase algorithm is to
+ * compute information about the contact between two proxy shapes.
  */
 class NarrowPhaseAlgorithm {
 
@@ -49,8 +48,8 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        /// Pointer to the memory allocator
+        MemoryAllocator* mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
         OverlappingPair* mCurrentOverlappingPair;
@@ -68,10 +67,13 @@ class NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm(MemoryAllocator& memoryAllocator);
+        NarrowPhaseAlgorithm();
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm();
+
+        /// Initalize the algorithm
+        virtual void init(MemoryAllocator* memoryAllocator);
         
         /// Set the current overlapping pair of bodies
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);

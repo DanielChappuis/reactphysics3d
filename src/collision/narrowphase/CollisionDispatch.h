@@ -23,24 +23,44 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_COLLISION_DISPATCH_H
+#define	REACTPHYSICS3D_COLLISION_DISPATCH_H
+
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+namespace reactphysics3d {
 
-// Constructor
-NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
-                     : mMemoryAllocator(NULL), mCurrentOverlappingPair(NULL) {
+// Class CollisionDispatch
+/**
+ * This is the abstract base class for dispatching the narrow-phase
+ * collision detection algorithm. Collision dispatching decides which collision
+ * algorithm to use given two types of proxy collision shapes.
+ */
+class CollisionDispatch {
+
+    protected:
+
+    public:
+
+        /// Constructor
+        CollisionDispatch() {}
+
+        /// Destructor
+        virtual ~CollisionDispatch() {}
+
+        /// Initialize the collision dispatch configuration
+        virtual void init(MemoryAllocator* memoryAllocator) {
+
+        }
+
+        /// Select and return the narrow-phase collision detection algorithm to
+        /// use between two types of collision shapes.
+        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type,
+                                                      int shape2Type)=0;
+};
 
 }
 
-// Destructor
-NarrowPhaseAlgorithm::~NarrowPhaseAlgorithm() {
+#endif
 
-}
-
-// Initalize the algorithm
-void NarrowPhaseAlgorithm::init(MemoryAllocator* memoryAllocator) {
-    mMemoryAllocator = memoryAllocator;
-}

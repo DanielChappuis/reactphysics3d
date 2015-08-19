@@ -123,6 +123,9 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
+        /// Set the collision dispatch configuration
+        void setCollisionDispatch(CollisionDispatch* collisionDispatch);
+
         /// Ray cast method
         void raycast(const Ray& ray, RaycastCallback* raycastCallback,
                      unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
@@ -180,6 +183,17 @@ inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator
  */
 inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
     return mBodies.end();
+}
+
+// Set the collision dispatch configuration
+/// This can be used to replace default collision detection algorithms by your
+/// custom algorithm for instance.
+/**
+ * @param CollisionDispatch Pointer to a collision dispatch object describing
+ * which collision detection algorithm to use for two given collision shapes
+ */
+inline void CollisionWorld::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
+    mCollisionDetection.setCollisionDispatch(collisionDispatch);
 }
 
 // Ray cast method

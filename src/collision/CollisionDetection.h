@@ -30,8 +30,7 @@
 #include "body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "engine/OverlappingPair.h"
-#include "narrowphase/GJK/GJKAlgorithm.h"
-#include "narrowphase/SphereVsSphereAlgorithm.h"
+#include "narrowphase/DefaultCollisionDispatch.h"
 #include "memory/MemoryAllocator.h"
 #include "constraint/ContactPoint.h"
 #include <vector>
@@ -60,6 +59,18 @@ class CollisionDetection {
 
         // -------------------- Attributes -------------------- //
 
+        /// Collision Detection Dispatch configuration
+        CollisionDispatch* mCollisionDispatch;
+
+        /// Default collision dispatch configuration
+        DefaultCollisionDispatch mDefaultCollisionDispatch;
+
+        /// Collision detection matrix (algorithms to use)
+        NarrowPhaseAlgorithm* mCollisionMatrix[NB_COLLISION_SHAPE_TYPES][NB_COLLISION_SHAPE_TYPES];
+
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
@@ -70,9 +81,11 @@ class CollisionDetection {
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 
         /// Narrow-phase GJK algorithm
+        // TODO : Delete this
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
         /// Narrow-phase Sphere vs Sphere algorithm
+        // TODO : Delete this
         SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
 
         /// Set of pair of bodies that cannot collide between each other
@@ -95,10 +108,6 @@ class CollisionDetection {
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
-        /// Select the narrow phase algorithm to use given two collision shapes
-        NarrowPhaseAlgorithm& selectNarrowPhaseAlgorithm(const CollisionShape* collisionShape1,
-                                                         const CollisionShape* collisionShape2);
-
         /// Create a new contact
         void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
 
@@ -109,6 +118,9 @@ class CollisionDetection {
 
         /// Delete all the contact points in the currently overlapping pairs
         void clearContactPoints();
+
+        /// Fill-in the collision detection matrix
+        void fillInCollisionMatrix();
    
     public :
 
@@ -119,6 +131,9 @@ class CollisionDetection {
 
         /// Destructor
         ~CollisionDetection();
+
+        /// Set the collision dispatch configuration
+        void setCollisionDispatch(CollisionDispatch* collisionDispatch);
 
         /// Add a proxy collision shape to the collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
@@ -178,19 +193,15 @@ class CollisionDetection {
         friend class ConvexMeshShape;
 };
 
-// Select the narrow-phase collision algorithm to use given two collision shapes
-inline NarrowPhaseAlgorithm& CollisionDetection::selectNarrowPhaseAlgorithm(
-                             const CollisionShape* collisionShape1,
-                             const CollisionShape* collisionShape2) {
-    
-    // Sphere vs Sphere algorithm
-    if (collisionShape1->getType() == SPHERE && collisionShape2->getType() == SPHERE) {
-        return mNarrowPhaseSphereVsSphereAlgorithm;
-    }
-    else {   // GJK algorithm
-        return mNarrowPhaseGJKAlgorithm;
-    }
-}  
+/// Set the collision dispatch configuration
+inline void CollisionDetection::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
+    mCollisionDispatch = collisionDispatch;
+
+    mCollisionDispatch->init(&mMemoryAllocator);
+
+    // Fill-in the collision matrix with the new algorithms to use
+    fillInCollisionMatrix();
+}
 
 // Add a body to the collision detection
 inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,

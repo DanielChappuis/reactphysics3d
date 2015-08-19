@@ -42,11 +42,15 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator)
-                   : mWorld(world), mBroadPhaseAlgorithm(*this),
-                     mNarrowPhaseGJKAlgorithm(memoryAllocator),
-                     mNarrowPhaseSphereVsSphereAlgorithm(memoryAllocator),
+                   : mMemoryAllocator(memoryAllocator),
+                     mWorld(world), mBroadPhaseAlgorithm(*this),
                      mIsCollisionShapesAdded(false) {
 
+    // Set the default collision dispatch configuration
+    setCollisionDispatch(&mDefaultCollisionDispatch);
+
+    // Fill-in the collision detection matrix with algorithms
+    fillInCollisionMatrix();
 }
 
 // Destructor
@@ -209,16 +213,16 @@ void CollisionDetection::computeNarrowPhase() {
         if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
         
         // Select the narrow phase algorithm to use according to the two collision shapes
-        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(
-                                                        shape1->getCollisionShape(),
-                                                        shape2->getCollisionShape());
+        const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
+        const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
-        narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
+        narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
         
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        if (narrowPhaseAlgorithm.testCollision(shape1, shape2, contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(shape1, shape2, contactInfo)) {
             assert(contactInfo != NULL);
 
             // If it is the first contact since the pair are overlapping
@@ -316,16 +320,16 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         if (body1->isSleeping() && body2->isSleeping()) continue;
 
         // Select the narrow phase algorithm to use according to the two collision shapes
-        NarrowPhaseAlgorithm& narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(
-                                                        shape1->getCollisionShape(),
-                                                        shape2->getCollisionShape());
+        const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
+        const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
 
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
-        narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
+        narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
 
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        if (narrowPhaseAlgorithm.testCollision(shape1, shape2, contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(shape1, shape2, contactInfo)) {
             assert(contactInfo != NULL);
 
             // Create a new contact
@@ -450,5 +454,17 @@ void CollisionDetection::clearContactPoints() {
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
         it->second->clearContactPoints();
+    }
+}
+
+// Fill-in the collision detection matrix
+void CollisionDetection::fillInCollisionMatrix() {
+
+    // For each possible type of collision shape
+    for (int i=0; i<NB_COLLISION_SHAPE_TYPES; i++) {
+        for (int j=0; j<NB_COLLISION_SHAPE_TYPES; j++) {
+            mCollisionMatrix[i][j] = mCollisionDispatch->selectAlgorithm(i, j);
+            assert(mCollisionMatrix[i][j] != NULL);
+        }
     }
 }

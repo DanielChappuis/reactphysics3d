@@ -86,7 +86,7 @@ class EPAAlgorithm {
         // -------------------- Attributes -------------------- //
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        MemoryAllocator* mMemoryAllocator;
 
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
@@ -112,10 +112,13 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm(MemoryAllocator& memoryAllocator);
+        EPAAlgorithm();
 
         /// Destructor
         ~EPAAlgorithm();
+
+        /// Initalize the algorithm
+        void init(MemoryAllocator* memoryAllocator);
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
@@ -142,6 +145,11 @@ inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** 
         nbTriangles++;
         std::push_heap(&heap[0], &heap[nbTriangles], mTriangleComparison);
     }
+}
+
+// Initalize the algorithm
+inline void EPAAlgorithm::init(MemoryAllocator* memoryAllocator) {
+    mMemoryAllocator = memoryAllocator;
 }
 
 }
