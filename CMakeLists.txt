@@ -18,8 +18,8 @@ SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 ENABLE_TESTING()
 
 # Options
-OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
-OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
+OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" ON)
+OPTION(COMPILE_TESTS "Select this if you want to build the tests" ON)
 OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)

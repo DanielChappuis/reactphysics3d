@@ -165,7 +165,7 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 
 // Test equality between two box shapes
 inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
+    const BoxShape& otherShape = static_cast<const BoxShape&>(otherCollisionShape);
     return (mExtent == otherShape.mExtent);
 }
 

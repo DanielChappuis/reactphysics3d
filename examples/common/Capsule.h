@@ -88,7 +88,7 @@ inline rp3d::CollisionBody* Capsule::getCollisionBody() {
 
 // Return a pointer to the rigid body of the box
 inline rp3d::RigidBody* Capsule::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    return static_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 #endif
