@@ -162,7 +162,7 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
 // Test equality between two capsule shapes
 inline bool CapsuleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const CapsuleShape& otherShape = dynamic_cast<const CapsuleShape&>(otherCollisionShape);
+    const CapsuleShape& otherShape = static_cast<const CapsuleShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 

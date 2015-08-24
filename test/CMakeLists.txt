@@ -18,3 +18,5 @@ file (
 ADD_EXECUTABLE(tests ${TESTS_SOURCE_FILES})
 
 TARGET_LINK_LIBRARIES(tests reactphysics3d)
+
+ADD_TEST(Test tests)

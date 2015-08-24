@@ -288,8 +288,7 @@ void DynamicsWorld::initVelocityArrays() {
     for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         // Add the body into the map
-        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair<RigidBody*,
-                                                  uint>(*it, indexBody));
+        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair(*it, indexBody));
         indexBody++;
     }
 }
@@ -530,7 +529,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case BALLSOCKETJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(BallAndSocketJoint));
-            const BallAndSocketJointInfo& info = dynamic_cast<const BallAndSocketJointInfo&>(
+            const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
             newJoint = new (allocatedMemory) BallAndSocketJoint(info);
             break;
@@ -540,7 +539,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case SLIDERJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
-            const SliderJointInfo& info = dynamic_cast<const SliderJointInfo&>(jointInfo);
+            const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) SliderJoint(info);
             break;
         }
@@ -549,7 +548,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case HINGEJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
-            const HingeJointInfo& info = dynamic_cast<const HingeJointInfo&>(jointInfo);
+            const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) HingeJoint(info);
             break;
         }
@@ -558,7 +557,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case FIXEDJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(FixedJoint));
-            const FixedJointInfo& info = dynamic_cast<const FixedJointInfo&>(jointInfo);
+            const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) FixedJoint(info);
             break;
         }
@@ -747,8 +746,8 @@ void DynamicsWorld::computeIslands() {
                 contactManifold->mIsAlreadyInIsland = true;
 
                 // Get the other body of the contact manifold
-                RigidBody* body1 = dynamic_cast<RigidBody*>(contactManifold->getBody1());
-                RigidBody* body2 = dynamic_cast<RigidBody*>(contactManifold->getBody2());
+                RigidBody* body1 = static_cast<RigidBody*>(contactManifold->getBody1());
+                RigidBody* body2 = static_cast<RigidBody*>(contactManifold->getBody2());
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
@@ -775,8 +774,8 @@ void DynamicsWorld::computeIslands() {
                 joint->mIsAlreadyInIsland = true;
 
                 // Get the other body of the contact manifold
-                RigidBody* body1 = dynamic_cast<RigidBody*>(joint->getBody1());
-                RigidBody* body2 = dynamic_cast<RigidBody*>(joint->getBody2());
+                RigidBody* body1 = static_cast<RigidBody*>(joint->getBody1());
+                RigidBody* body2 = static_cast<RigidBody*>(joint->getBody2());
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
