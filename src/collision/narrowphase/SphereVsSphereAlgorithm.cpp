@@ -48,8 +48,8 @@ bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
     // Get the sphere collision shapes
     const CollisionShape* shape1 = collisionShape1->getCollisionShape();
     const CollisionShape* shape2 = collisionShape2->getCollisionShape();
-    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(shape1);
-    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(shape2);
+    const SphereShape* sphereShape1 = static_cast<const SphereShape*>(shape1);
+    const SphereShape* sphereShape2 = static_cast<const SphereShape*>(shape2);
 
     // Get the local-space to world-space transforms
     const Transform transform1 = collisionShape1->getBody()->getTransform() *

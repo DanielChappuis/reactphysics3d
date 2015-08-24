@@ -21,3 +21,7 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# vim swap files
+#####################
+*.*sw*

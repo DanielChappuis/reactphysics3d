@@ -342,7 +342,7 @@ void RigidBody::updateBroadPhaseState() const {
 
     PROFILE("RigidBody::updateBroadPhaseState()");
 
-    DynamicsWorld& world = dynamic_cast<DynamicsWorld&>(mWorld);
+    DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
     const Vector3 displacement = world.mTimer.getTimeStep() * mLinearVelocity;
 
     // For all the proxy collision shapes of the body

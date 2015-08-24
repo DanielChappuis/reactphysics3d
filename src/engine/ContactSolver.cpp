@@ -83,8 +83,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         assert(externalManifold->getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
-        RigidBody* body1 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
-        RigidBody* body2 = dynamic_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
+        RigidBody* body1 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
+        RigidBody* body2 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
         assert(body1 != NULL);
         assert(body2 != NULL);
 

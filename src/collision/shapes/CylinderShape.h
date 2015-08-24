@@ -175,7 +175,7 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
 
 // Test equality between two cylinder shapes
 inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
+    const CylinderShape& otherShape = static_cast<const CylinderShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 

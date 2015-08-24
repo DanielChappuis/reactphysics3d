@@ -120,7 +120,7 @@ inline rp3d::CollisionBody* Box::getCollisionBody() {
 
 // Return a pointer to the rigid body of the box
 inline rp3d::RigidBody* Box::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mRigidBody);
+    return static_cast<rp3d::RigidBody*>(mRigidBody);
 }
 
 // Set the color of the box
