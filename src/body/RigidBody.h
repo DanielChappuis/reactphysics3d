@@ -118,9 +118,6 @@ class RigidBody : public CollisionBody {
         /// Update the broad-phase state for this body (because it has moved for instance)
         virtual void updateBroadPhaseState() const;
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -133,6 +130,9 @@ class RigidBody : public CollisionBody {
 
         /// Set the type of the body (static, kinematic or dynamic)
         void setType(BodyType type);
+
+        /// Set the current position and orientation
+        virtual void setTransform(const Transform& transform);
 
         /// Return the mass of the body
         decimal getMass() const;
@@ -148,6 +148,9 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular velocity.
         void setAngularVelocity(const Vector3& angularVelocity);
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
 
         /// Return the local inertia tensor of the body (in body coordinates)
         const Matrix3x3& getInertiaTensorLocal() const;
@@ -252,20 +255,6 @@ inline Vector3 RigidBody::getAngularVelocity() const {
     return mAngularVelocity;
 }
 
-// Set the angular velocity.
-/// You should only call this method for a kinematic body. Otherwise, it
-/// will do nothing.
-/**
-* @param angularVelocity The angular velocity vector of the body
-*/
-inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
-
-    // If it is a kinematic body
-    if (mType == KINEMATIC) {
-        mAngularVelocity = angularVelocity;
-    }
-}
-
 // Return the local inertia tensor of the body (in local-space coordinates)
 /**
  * @return The 3x3 inertia tensor matrix of the body (in local-space coordinates)
@@ -308,22 +297,6 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
     // Compute and return the inertia tensor in world coordinates
     return mTransform.getOrientation().getMatrix() * mInertiaTensorLocalInverse *
            mTransform.getOrientation().getMatrix().getTranspose();
-}
-
-// Set the linear velocity of the rigid body.
-/// You should only call this method for a kinematic body. Otherwise, it
-/// will do nothing.
-/**
- * @param linearVelocity Linear velocity vector of the body
- */
-inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
-
-    // If it is a kinematic body
-    if (mType == KINEMATIC) {
-
-        // Update the linear velocity of the current body state
-        mLinearVelocity = linearVelocity;
-    }
 }
 
 // Return true if the gravity needs to be applied to this rigid body

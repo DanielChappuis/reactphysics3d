@@ -18,7 +18,7 @@ SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 ENABLE_TESTING()
 
 # Options
-OPTION(COMPILE_EXAMPLES "Select this if you want to build the examples" OFF)
+OPTION(COMPILE_TESTBED "Select this if you want to build the testbed application" OFF)
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
 OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
@@ -119,8 +119,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/OverlappingPair.cpp"
     "src/engine/Profiler.h"
     "src/engine/Profiler.cpp"
-    "src/engine/Timer.h"
-    "src/engine/Timer.cpp"
     "src/mathematics/mathematics.h"
     "src/mathematics/mathematics_functions.h"
     "src/mathematics/Matrix2x2.h"
@@ -144,10 +142,10 @@ SET (REACTPHYSICS3D_SOURCES
 # Create the library
 ADD_LIBRARY (reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
 
-# If we need to compile the examples
-IF(COMPILE_EXAMPLES)
-   add_subdirectory(examples/)
-ENDIF(COMPILE_EXAMPLES)
+# If we need to compile the testbed application
+IF(COMPILE_TESTBED)
+   add_subdirectory(testbed/)
+ENDIF(COMPILE_TESTBED)
 
 # If we need to compile the tests
 IF(COMPILE_TESTS)

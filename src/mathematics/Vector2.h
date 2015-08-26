@@ -178,7 +178,9 @@ inline decimal Vector2::dot(const Vector2& vector) const {
 // Normalize the vector
 inline void Vector2::normalize() {
     decimal l = length();
-    assert(l > std::numeric_limits<decimal>::epsilon());
+    if (l < MACHINE_EPSILON) {
+        return;
+    }
     x /= l;
     y /= l;
 }

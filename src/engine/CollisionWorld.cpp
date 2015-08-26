@@ -40,6 +40,15 @@ CollisionWorld::CollisionWorld()
 
 // Destructor
 CollisionWorld::~CollisionWorld() {
+
+    // Destroy all the collision bodies that have not been removed
+    std::set<CollisionBody*>::iterator itBodies;
+    for (itBodies = mBodies.begin(); itBodies != mBodies.end(); ) {
+         std::set<CollisionBody*>::iterator itToRemove = itBodies;
+         ++itBodies;
+        destroyCollisionBody(*itToRemove);
+    }
+
     assert(mCollisionShapes.empty());
     assert(mBodies.empty());
 }

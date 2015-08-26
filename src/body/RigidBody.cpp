@@ -265,6 +265,64 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
     recomputeMassInformation();
 }
 
+// Set the linear velocity of the rigid body.
+/**
+ * @param linearVelocity Linear velocity vector of the body
+ */
+void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
+
+    // If it is a static body, we do nothing
+    if (mType == STATIC) return;
+
+    // Update the linear velocity of the current body state
+    mLinearVelocity = linearVelocity;
+
+    // If the linear velocity is not zero, awake the body
+    if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+}
+
+// Set the angular velocity.
+/**
+* @param angularVelocity The angular velocity vector of the body
+*/
+void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
+
+    // If it is a static body, we do nothing
+    if (mType == STATIC) return;
+
+    // Set the angular velocity
+    mAngularVelocity = angularVelocity;
+
+    // If the velocity is not zero, awake the body
+    if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+}
+
+// Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
+void RigidBody::setTransform(const Transform& transform) {
+
+    // Update the transform of the body
+    mTransform = transform;
+
+    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+
+    // Compute the new center of mass in world-space coordinates
+    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+
+    // Update the linear velocity of the center of mass
+    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
+}
+
 // Recompute the center of mass, total mass and inertia tensor of the body using all
 // the collision shapes attached to the body.
 void RigidBody::recomputeMassInformation() {
@@ -342,8 +400,13 @@ void RigidBody::updateBroadPhaseState() const {
 
     PROFILE("RigidBody::updateBroadPhaseState()");
 
+<<<<<<< HEAD
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
     const Vector3 displacement = world.mTimer.getTimeStep() * mLinearVelocity;
+=======
+    DynamicsWorld& world = dynamic_cast<DynamicsWorld&>(mWorld);
+    const Vector3 displacement = world.mTimeStep* mLinearVelocity;
+>>>>>>> 1bde11f245806de07a12b1cf6c33cdb83046b882
 
     // For all the proxy collision shapes of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {

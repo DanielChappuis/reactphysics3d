@@ -193,7 +193,9 @@ inline Vector3 Vector3::cross(const Vector3& vector) const {
 // Normalize the vector
 inline void Vector3::normalize() {
     decimal l = length();
-    assert(l > std::numeric_limits<decimal>::epsilon());
+    if (l < MACHINE_EPSILON) {
+        return;
+    }
     x /= l;
     y /= l;
     z /= l;
