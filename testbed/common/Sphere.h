@@ -96,15 +96,9 @@ class Sphere : public openglframework::Mesh, public PhysicsObject {
         virtual void updateTransform(float interpolationFactor);
 };
 
-<<<<<<< HEAD:examples/common/Sphere.h
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Sphere::getRigidBody() {
-    return static_cast<rp3d::RigidBody*>(mRigidBody);
-=======
 // Update the transform matrix of the object
 inline void Sphere::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
->>>>>>> 1bde11f245806de07a12b1cf6c33cdb83046b882:testbed/common/Sphere.h
 }
 
 #endif

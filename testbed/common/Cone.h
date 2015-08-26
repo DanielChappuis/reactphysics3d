@@ -99,15 +99,8 @@ class Cone : public openglframework::Mesh, public PhysicsObject {
         virtual void updateTransform(float interpolationFactor);
 };
 
-<<<<<<< HEAD:examples/common/Cone.h
-// Return a pointer to the rigid body of the box
-inline rp3d::RigidBody* Cone::getRigidBody() {
-    return static_cast<rp3d::RigidBody*>(mRigidBody);
-=======
-// Update the transform matrix of the object
 inline void Cone::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
->>>>>>> 1bde11f245806de07a12b1cf6c33cdb83046b882:testbed/common/Cone.h
 }
 
 #endif
