@@ -25,7 +25,3 @@ Thumbs.db
 # vim swap files
 #####################
 *.*sw*
-
-# CMake build directory
-#######################
-build/*
