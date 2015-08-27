@@ -23,41 +23,37 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_SHAPE_H
-#define REACTPHYSICS3D_SPHERE_SHAPE_H
+#ifndef REACTPHYSICS3D_TRIANGLE_SHAPE_H
+#define REACTPHYSICS3D_TRIANGLE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
-#include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
+#include "CollisionShape.h"
 
-// ReactPhysics3D namespace
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class SphereShape
+// Class TriangleShape
 /**
- * This class represents a sphere collision shape that is centered
- * at the origin and defined by its radius. This collision shape does not
- * have an explicit object margin distance. The margin is implicitly the
- * radius of the sphere. Therefore, no need to specify an object margin
- * for a sphere shape.
+ * This class represents a triangle collision shape that is centered
+ * at the origin and defined three points.
  */
-class SphereShape : public CollisionShape {
+class TriangleShape : public CollisionShape {
 
-    protected :
+    protected:
 
-        // -------------------- Attributes -------------------- //
+        // -------------------- Attribute -------------------- //
 
-        /// Radius of the sphere
-        decimal mRadius;
+        /// Three points of the triangle
+        Vector3 mPoints[3];
 
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
-        SphereShape(const SphereShape& shape);
+        TriangleShape(const TriangleShape& shape);
 
         /// Private assignment operator
-        SphereShape& operator=(const SphereShape& shape);
+        TriangleShape& operator=(const TriangleShape& shape);
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
@@ -74,23 +70,21 @@ class SphereShape : public CollisionShape {
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
         /// Allocate and return a copy of the object
-        virtual SphereShape* clone(void* allocatedMemory) const;
+        virtual TriangleShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
-    public :
+    public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereShape(decimal radius);
+        TriangleShape(const Vector3& point1, const Vector3& point2,
+                      const Vector3& point3, decimal margin);
 
         /// Destructor
-        virtual ~SphereShape();
-
-        /// Return the radius of the sphere
-        decimal getRadius() const;
+        virtual ~TriangleShape();
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -101,50 +95,34 @@ class SphereShape : public CollisionShape {
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform);
 
-        /// Test equality between two sphere shapes
+        /// Test equality between two triangle shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
 /// Allocate and return a copy of the object
-inline SphereShape* SphereShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) SphereShape(*this);
-}
-
-// Get the radius of the sphere
-/**
- * @return Radius of the sphere (in meters)
- */
-inline decimal SphereShape::getRadius() const {
-    return mRadius;
+inline TriangleShape* TriangleShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) TriangleShape(*this);
 }
 
 // Return the number of bytes used by the collision shape
-inline size_t SphereShape::getSizeInBytes() const {
-    return sizeof(SphereShape);
+inline size_t TriangleShape::getSizeInBytes() const {
+    return sizeof(TriangleShape);
 }
 
 // Return a local support point in a given direction with the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction,
+inline Vector3 TriangleShape::getLocalSupportPointWithMargin(const Vector3& direction,
                                                            void** cachedCollisionData) const {
 
-    // If the direction vector is not the zero vector
-    if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
+    // TODO : Do we need to use margin for triangle support point ?
 
-        // Return the support point of the sphere in the given direction
-        return mMargin * direction.getUnit();
-    }
-
-    // If the direction vector is the zero vector we return a point on the
-    // boundary of the sphere
-    return Vector3(0, mMargin, 0);
+    return getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                               void** cachedCollisionData) const {
-
-    // Return the center of the sphere (the radius is taken into account in the object margin)
-    return Vector3(0.0, 0.0, 0.0);
+    Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1], direction.dot(mPoints[2])));
+    return mPoints[dotProducts.getMaxAxis()];
 }
 
 // Return the local bounds of the shape in x, y and z directions.
@@ -153,30 +131,24 @@ inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& dir
  * @param min The minimum bounds of the shape in local-space coordinates
  * @param max The maximum bounds of the shape in local-space coordinates
  */
-inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
+inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    // Maximum bounds
-    max.x = mRadius;
-    max.y = mRadius;
-    max.z = mRadius;
-
-    // Minimum bounds
-    min.x = -mRadius;
-    min.y = min.x;
-    min.z = min.x;
+    // TODO :This code is wrong
+    const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
+    const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
+    const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
+    min.setAllValues(xAxis.getMinAxis(), yAxis.getMinAxis(), zAxis.getMinAxis());
+    max.setAllValues(xAxis.getMaxAxis(), yAxis.getMaxAxis(), zAxis.getMaxAxis());
 }
 
-// Return the local inertia tensor of the sphere
+// Return the local inertia tensor of the triangle shape
 /**
  * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
-    tensor.setAllValues(diag, 0.0, 0.0,
-                        0.0, diag, 0.0,
-                        0.0, 0.0, diag);
+inline void TriangleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+    tensor.setToZero();
 }
 
 // Update the AABB of a body using its collision shape
@@ -185,27 +157,35 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
  *                  computed in world-space coordinates
  * @param transform Transform used to compute the AABB of the collision shape
  */
-inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
+inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) {
 
-    // Get the local extents in x,y and z direction
-    Vector3 extents(mRadius, mRadius, mRadius);
+    // TODO :This code is wrong
 
-    // Update the AABB with the new minimum and maximum coordinates
-    aabb.setMin(transform.getPosition() - extents);
-    aabb.setMax(transform.getPosition() + extents);
+    const Vector3 worldPoint1 = transform * mPoints[0];
+    const Vector3 worldPoint2 = transform * mPoints[1];
+    const Vector3 worldPoint3 = transform * mPoints[2];
+
+    const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
+    const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
+    const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
+    aabb.setMin(Vector3(xAxis.getMinAxis(), yAxis.getMinAxis(), zAxis.getMinAxis()));
+    aabb.setMax(Vector3(xAxis.getMaxAxis(), yAxis.getMaxAxis(), zAxis.getMaxAxis()));
 }
 
-// Test equality between two sphere shapes
-inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius);
+// Test equality between two triangle shapes
+inline bool TriangleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const TriangleShape& otherShape = dynamic_cast<const TriangleShape&>(otherCollisionShape);
+    return (mPoints[0] == otherShape.mPoints[0] &&
+            mPoints[1] == otherShape.mPoints[1] &&
+            mPoints[2] == otherShape.mPoints[2]);
 }
 
 // Return true if a point is inside the collision shape
-inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
-    return (localPoint.lengthSquare() < mRadius * mRadius);
+inline bool TriangleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+    return false;
 }
 
 }
 
 #endif
+

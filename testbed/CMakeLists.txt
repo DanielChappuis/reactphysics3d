@@ -26,7 +26,7 @@ FILE(COPY "imgui/DroidSans.ttf" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
 
 # Headers
-INCLUDE_DIRECTORIES(${GLEW_INCLUDE_PATH} "src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
+INCLUDE_DIRECTORIES("src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
 # Testbed source files
 SET(TESTBED_SOURCES

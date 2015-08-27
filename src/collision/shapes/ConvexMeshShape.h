@@ -41,6 +41,9 @@ namespace reactphysics3d {
 // Declaration
 class CollisionWorld;
 
+// TODO : Make possible to create a ConvexMeshShape using a TriangleMesh as for
+// the ConcaveMeshShape
+
 // Class ConvexMeshShape
 /**
  * This class represents a convex mesh shape. In order to create a convex mesh shape, you
@@ -59,7 +62,7 @@ class CollisionWorld;
  */
 class ConvexMeshShape : public CollisionShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 

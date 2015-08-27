@@ -52,7 +52,7 @@ namespace reactphysics3d {
  */
 class BoxShape : public CollisionShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 

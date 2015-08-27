@@ -51,7 +51,7 @@ namespace reactphysics3d {
  */
 class ConeShape : public CollisionShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 

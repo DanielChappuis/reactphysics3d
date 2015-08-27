@@ -46,7 +46,7 @@ namespace reactphysics3d {
  */
 class CapsuleShape : public CollisionShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 

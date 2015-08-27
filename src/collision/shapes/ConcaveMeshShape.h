@@ -23,51 +23,30 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CYLINDER_SHAPE_H
-#define REACTPHYSICS3D_CYLINDER_SHAPE_H
+#ifndef REACTPHYSICS3D_CONCAVE_MESH_SHAPE_H
+#define REACTPHYSICS3D_CONCAVE_MESH_SHAPE_H
 
-// Libraries
-#include "CollisionShape.h"
-#include "body/CollisionBody.h"
-#include "mathematics/mathematics.h"
-
-
-/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class CylinderShape
+// TODO : Implement raycasting with this collision shape
+
+// Class ConcaveMeshShape
 /**
- * This class represents a cylinder collision shape around the Y axis
- * and centered at the origin. The cylinder is defined by its height
- * and the radius of its base. The "transform" of the corresponding
- * rigid body gives an orientation and a position to the cylinder.
- * This collision shape uses an extra margin distance around it for collision
- * detection purpose. The default margin is 4cm (if your units are meters,
- * which is recommended). In case, you want to simulate small objects
- * (smaller than the margin distance), you might want to reduce the margin by
- * specifying your own margin distance using the "margin" parameter in the
- * constructor of the cylinder shape. Otherwise, it is recommended to use the
- * default margin distance by not using the "margin" parameter in the constructor.
+ * This class represents a concave mesh shape. Note that collision detection
+ * with a concave mesh shape can be very expensive. You should use only use
+ * this shape for a static mesh.
  */
-class CylinderShape : public CollisionShape {
+class ConcaveMeshShape : public CollisionShape {
 
-    protected :
-
-        // -------------------- Attributes -------------------- //
-
-        /// Radius of the base
-        decimal mRadius;
-
-        /// Half height of the cylinder
-        decimal mHalfHeight;
+    protected:
 
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
-        CylinderShape(const CylinderShape& shape);
+        ConcaveMeshShape(const ConcaveMeshShape& shape);
 
         /// Private assignment operator
-        CylinderShape& operator=(const CylinderShape& shape);
+        ConcaveMeshShape& operator=(const ConcaveMeshShape& shape);
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
@@ -84,108 +63,110 @@ class CylinderShape : public CollisionShape {
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
         /// Allocate and return a copy of the object
-        virtual CylinderShape* clone(void* allocatedMemory) const;
+        virtual ConcaveMeshShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
-    public :
-
-        // -------------------- Methods -------------------- //
+    public:
 
         /// Constructor
-        CylinderShape(decimal radius, decimal height, decimal margin = OBJECT_MARGIN);
+        ConcaveMeshShape(TriangleMesh* triangleMesh);
 
         /// Destructor
-        virtual ~CylinderShape();
+        ~ConcaveMeshShape();
 
-        /// Return the radius
-        decimal getRadius() const;
-
-        /// Return the height
-        decimal getHeight() const;
-
-        /// Return the local bounds of the shape in x, y and z directions
+        /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Test equality between two cylinder shapes
+        /// Update the AABB of a body using its collision shape
+        virtual void computeAABB(AABB& aabb, const Transform& transform);
+
+        /// Test equality between two sphere shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
 /// Allocate and return a copy of the object
-inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) CylinderShape(*this);
-}
-
-// Return the radius
-/**
- * @return Radius of the cylinder (in meters)
- */
-inline decimal CylinderShape::getRadius() const {
-    return mRadius;
-}
-
-// Return the height
-/**
- * @return Height of the cylinder (in meters)
- */
-inline decimal CylinderShape::getHeight() const {
-    return mHalfHeight + mHalfHeight;
+inline ConcaveMeshShape* ConcaveMeshShape::clone(void* allocatedMemory) const {
+    return new (allocatedMemory) ConcaveMeshShape(*this);
 }
 
 // Return the number of bytes used by the collision shape
-inline size_t CylinderShape::getSizeInBytes() const {
-    return sizeof(CylinderShape);
+inline size_t ConcaveMeshShape::getSizeInBytes() const {
+    return sizeof(ConcaveMeshShape);
 }
 
-// Return the local bounds of the shape in x, y and z directions
+// Return a local support point in a given direction with the object margin
+inline Vector3 ConcaveMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                           void** cachedCollisionData) const {
+
+    // TODO : Implement this
+    return Vector3(0, 0, 0);
+}
+
+// Return a local support point in a given direction without the object margin
+inline Vector3 ConcaveMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                              void** cachedCollisionData) const {
+    // TODO : Implement this
+    return Vector3(0.0, 0.0, 0.0);
+}
+
+// Return the local bounds of the shape in x, y and z directions.
+// This method is used to compute the AABB of the box
 /**
  * @param min The minimum bounds of the shape in local-space coordinates
  * @param max The maximum bounds of the shape in local-space coordinates
  */
-inline void CylinderShape::getLocalBounds(Vector3& min, Vector3& max) const {
+inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    // Maximum bounds
-    max.x = mRadius + mMargin;
-    max.y = mHalfHeight + mMargin;
-    max.z = max.x;
-
-    // Minimum bounds
-    min.x = -max.x;
-    min.y = -max.y;
-    min.z = min.x;
+    // TODO : Implement this
 }
 
-// Return the local inertia tensor of the cylinder
+// Return the local inertia tensor of the sphere
 /**
  * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal height = decimal(2.0) * mHalfHeight;
-    decimal diag = (decimal(1.0) / decimal(12.0)) * mass * (3 * mRadius * mRadius + height * height);
-    tensor.setAllValues(diag, 0.0, 0.0, 0.0,
-                        decimal(0.5) * mass * mRadius * mRadius, 0.0,
+inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+
+    // TODO : Implement this
+    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
+    tensor.setAllValues(diag, 0.0, 0.0,
+                        0.0, diag, 0.0,
                         0.0, 0.0, diag);
 }
 
-// Test equality between two cylinder shapes
-inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+// Update the AABB of a body using its collision shape
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
+inline void ConcaveMeshShape::computeAABB(AABB& aabb, const Transform& transform) {
+
+    // TODO : Implement this
+}
+
+// Test equality between two sphere shapes
+inline bool ConcaveMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    const ConcaveMeshShape& otherShape = dynamic_cast<const ConcaveMeshShape&>(otherCollisionShape);
+
+    // TODO : Implement this
+
+    return false;
 }
 
 // Return true if a point is inside the collision shape
-inline bool CylinderShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const{
-    return ((localPoint.x * localPoint.x + localPoint.z * localPoint.z) < mRadius * mRadius &&
-            localPoint.y < mHalfHeight && localPoint.y > -mHalfHeight);
+inline bool ConcaveMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+
+    // TODO : Implement this
+    return false;
 }
 
 }
-
 #endif
 
