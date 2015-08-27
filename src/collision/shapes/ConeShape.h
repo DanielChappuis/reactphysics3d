@@ -178,7 +178,7 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
 
 // Test equality between two cone shapes
 inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
+    const ConeShape& otherShape = static_cast<const ConeShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 

@@ -197,7 +197,7 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 
 // Test equality between two sphere shapes
 inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
+    const SphereShape& otherShape = static_cast<const SphereShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius);
 }
 
