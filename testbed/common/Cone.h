@@ -99,7 +99,6 @@ class Cone : public openglframework::Mesh, public PhysicsObject {
         virtual void updateTransform(float interpolationFactor);
 };
 
-// Update the transform matrix of the object
 inline void Cone::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
