@@ -26,6 +26,9 @@
 #ifndef REACTPHYSICS3D_CONCAVE_MESH_SHAPE_H
 #define REACTPHYSICS3D_CONCAVE_MESH_SHAPE_H
 
+// Libraries
+#include "ConcaveShape.h"
+
 namespace reactphysics3d {
 
 // TODO : Implement raycasting with this collision shape
@@ -36,7 +39,7 @@ namespace reactphysics3d {
  * with a concave mesh shape can be very expensive. You should use only use
  * this shape for a static mesh.
  */
-class ConcaveMeshShape : public CollisionShape {
+class ConcaveMeshShape : public ConcaveShape {
 
     protected:
 
@@ -76,6 +79,9 @@ class ConcaveMeshShape : public CollisionShape {
         /// Destructor
         ~ConcaveMeshShape();
 
+        /// Return true if the collision shape is convex, false if it is concave
+        virtual bool isConvex() const;
+
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -89,7 +95,12 @@ class ConcaveMeshShape : public CollisionShape {
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
-/// Allocate and return a copy of the object
+// Return true if the collision shape is convex, false if it is concave
+virtual bool isConvex() const {
+    return false;
+}
+
+// Allocate and return a copy of the object
 inline ConcaveMeshShape* ConcaveMeshShape::clone(void* allocatedMemory) const {
     return new (allocatedMemory) ConcaveMeshShape(*this);
 }

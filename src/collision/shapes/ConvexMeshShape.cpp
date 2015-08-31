@@ -211,6 +211,9 @@ void ConvexMeshShape::recalculateBounds() {
 
 // Test equality between two cone shapes
 bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const ConvexMeshShape& otherShape = dynamic_cast<const ConvexMeshShape&>(otherCollisionShape);
 
     assert(mNbVertices == mVertices.size());

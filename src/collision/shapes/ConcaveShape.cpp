@@ -24,38 +24,23 @@
 ********************************************************************************/
 
 // Libraries
-#include "DefaultCollisionDispatch.h"
+#include "ConcaveShape.h"
 
+
+// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-DefaultCollisionDispatch::DefaultCollisionDispatch() {
+ConcaveShape::ConcaveShape(CollisionShapeType type) : CollisionShape(type) {
+
+}
+
+// Private copy-constructor
+ConcaveShape::ConcaveShape(const CollisionShape& shape) : CollisionShape(shape) {
 
 }
 
 // Destructor
-DefaultCollisionDispatch::~DefaultCollisionDispatch() {
+ConcaveShape::~ConcaveShape() {
 
-}
-
-/// Initialize the collision dispatch configuration
-void DefaultCollisionDispatch::init(MemoryAllocator* memoryAllocator) {
-
-    // Initialize the collision algorithms
-    mSphereVsSphereAlgorithm.init(memoryAllocator);
-    mGJKAlgorithm.init(memoryAllocator);
-}
-
-// Select and return the narrow-phase collision detection algorithm to
-// use between two types of collision shapes.
-NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int shape1Type,
-                                                                int shape2Type) {
-
-
-    if (shape1Type == SPHERE && shape2Type == SPHERE) { // Sphere vs Sphere algorithm
-        return &mSphereVsSphereAlgorithm;
-    }
-    else {   // GJK algorithm
-        return &mGJKAlgorithm;
-    }
 }

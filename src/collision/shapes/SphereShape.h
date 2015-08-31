@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_SPHERE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -42,7 +42,7 @@ namespace reactphysics3d {
  * radius of the sphere. Therefore, no need to specify an object margin
  * for a sphere shape.
  */
-class SphereShape : public CollisionShape {
+class SphereShape : public ConvexShape {
 
     protected :
 
@@ -105,7 +105,7 @@ class SphereShape : public CollisionShape {
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
-/// Allocate and return a copy of the object
+// Allocate and return a copy of the object
 inline SphereShape* SphereShape::clone(void* allocatedMemory) const {
     return new (allocatedMemory) SphereShape(*this);
 }
@@ -197,6 +197,9 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 
 // Test equality between two sphere shapes
 inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius);
 }

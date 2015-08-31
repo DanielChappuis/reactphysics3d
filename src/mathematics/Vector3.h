@@ -111,6 +111,12 @@ struct Vector3 {
         /// Return the axis with the maximal value
         int getMaxAxis() const;
 
+        /// Return the minimum value among the three components of a vector
+        decimal getMinValue() const;
+
+        /// Return the maximum value among the three components of a vector
+        decimal getMaxValue() const;
+
         /// Overloaded operator for the equality condition
         bool operator== (const Vector3& vector) const;
 
@@ -332,6 +338,16 @@ inline Vector3 Vector3::max(const Vector3& vector1, const Vector3& vector2) {
     return Vector3(std::max(vector1.x, vector2.x),
                    std::max(vector1.y, vector2.y),
                    std::max(vector1.z, vector2.z));
+}
+
+// Return the minimum value among the three components of a vector
+inline decimal Vector3::getMinValue() const {
+    return std::min(std::min(x, y), z);
+}
+
+// Return the maximum value among the three components of a vector
+inline decimal Vector3::getMaxValue() const {
+    return std::max(std::max(x, y), z);
 }
 
 }

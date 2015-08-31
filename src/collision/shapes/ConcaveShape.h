@@ -23,112 +23,57 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_COLLISION_SHAPE_H
-#define REACTPHYSICS3D_COLLISION_SHAPE_H
+#ifndef REACTPHYSICS3D_CONCAVE_SHAPE_H
+#define REACTPHYSICS3D_CONCAVE_SHAPE_H
 
 // Libraries
-#include <cassert>
-#include <typeinfo>
-#include "mathematics/Vector3.h"
-#include "mathematics/Matrix3x3.h"
-#include "mathematics/Ray.h"
-#include "AABB.h"
-#include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "CollisionShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-    
-/// Type of the collision shape
-enum CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH, CONCAVE_MESH};
-const int NB_COLLISION_SHAPE_TYPES = 8;
 
-// Declarations
-class ProxyShape;
-class CollisionBody;
-
-// Class CollisionShape
+// Class ConcaveShape
 /**
- * This abstract class represents the collision shape associated with a
+ * This abstract class represents a concave collision shape associated with a
  * body that is used during the narrow-phase collision detection.
  */
-class CollisionShape {
-        
+class ConcaveShape : public CollisionShape {
+
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Type of the collision shape
-        CollisionShapeType mType;
 
-        /// Current number of similar created shapes
-        uint mNbSimilarCreatedShapes;
-        
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
-        CollisionShape(const CollisionShape& shape);
+        ConcaveShape(const ConcaveShape& shape);
 
         /// Private assignment operator
-        CollisionShape& operator=(const CollisionShape& shape);
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
-
-        /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
-
-        /// Return the number of similar created shapes
-        uint getNbSimilarCreatedShapes() const;
-
-        /// Allocate and return a copy of the object
-        virtual CollisionShape* clone(void* allocatedMemory) const=0;
-
-        /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const = 0;
-
-        /// Increment the number of similar allocated collision shapes
-        void incrementNbSimilarCreatedShapes();
-
-        /// Decrement the number of similar allocated collision shapes
-        void decrementNbSimilarCreatedShapes();
+        ConcaveShape& operator=(const ConcaveShape& shape);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShape(CollisionShapeType type);
+        ConcaveShape(CollisionShapeType type);
 
         /// Destructor
-        virtual ~CollisionShape();
-
-        /// Return the type of the collision shapes
-        CollisionShapeType getType() const;
+        virtual ~ConcaveShape();
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const=0;
+        virtual bool isConvex() const;
 
-        /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
-
-        /// Return the local inertia tensor of the collision shapes
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
-
-        /// Compute the world-space AABB of the collision shape given a transform
-        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
-
-        /// Equality operator between two collision shapes.
-        bool operator==(const CollisionShape& otherCollisionShape) const;
-
-        /// Test equality between two collision shapes of the same type (same derived classes).
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const=0;
-
-        // -------------------- Friendship -------------------- //
-
-        friend class ProxyShape;
-        friend class CollisionWorld;
+        /// Test equality between two shapes
+        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
+
+/// Return true if the collision shape is convex, false if it is concave
+inline bool ConcaveShape::isConvex() const {
+    return false;
+}
 
 // Return the type of the collision shape
 /**
@@ -141,6 +86,14 @@ inline CollisionShapeType CollisionShape::getType() const {
 // Return the number of similar created shapes
 inline uint CollisionShape::getNbSimilarCreatedShapes() const {
     return mNbSimilarCreatedShapes;
+}
+
+// Return the current collision shape margin
+/**
+ * @return The margin (in meters) around the collision shape
+ */
+inline decimal CollisionShape::getMargin() const {
+    return mMargin;
 }
 
 // Increment the number of similar allocated collision shapes
@@ -164,10 +117,18 @@ inline bool CollisionShape::operator==(const CollisionShape& otherCollisionShape
 
     assert(typeid(*this) == typeid(otherCollisionShape));
 
+    if (mMargin != otherCollisionShape.mMargin) return false;
+
     // Check if the two shapes are equal
     return otherCollisionShape.isEqualTo(*this);
+}
+
+// Test equality between two shapes
+inline bool ConcaveShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+    return true;
 }
 
 }
 
 #endif
+

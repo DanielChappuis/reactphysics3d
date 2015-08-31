@@ -28,7 +28,7 @@
 
 // Libraries
 #include "mathematics/mathematics.h"
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -38,7 +38,7 @@ namespace reactphysics3d {
  * This class represents a triangle collision shape that is centered
  * at the origin and defined three points.
  */
-class TriangleShape : public CollisionShape {
+class TriangleShape : public ConvexShape {
 
     protected:
 
@@ -99,7 +99,7 @@ class TriangleShape : public CollisionShape {
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
-/// Allocate and return a copy of the object
+// Allocate and return a copy of the object
 inline TriangleShape* TriangleShape::clone(void* allocatedMemory) const {
     return new (allocatedMemory) TriangleShape(*this);
 }
@@ -121,7 +121,7 @@ inline Vector3 TriangleShape::getLocalSupportPointWithMargin(const Vector3& dire
 // Return a local support point in a given direction without the object margin
 inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                               void** cachedCollisionData) const {
-    Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1], direction.dot(mPoints[2])));
+    Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1]), direction.dot(mPoints[2]));
     return mPoints[dotProducts.getMaxAxis()];
 }
 
@@ -133,12 +133,11 @@ inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& d
  */
 inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    // TODO :This code is wrong
     const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
     const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
     const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
-    min.setAllValues(xAxis.getMinAxis(), yAxis.getMinAxis(), zAxis.getMinAxis());
-    max.setAllValues(xAxis.getMaxAxis(), yAxis.getMaxAxis(), zAxis.getMaxAxis());
+    min.setAllValues(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
+    max.setAllValues(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
 }
 
 // Return the local inertia tensor of the triangle shape
@@ -159,8 +158,6 @@ inline void TriangleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
  */
 inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) {
 
-    // TODO :This code is wrong
-
     const Vector3 worldPoint1 = transform * mPoints[0];
     const Vector3 worldPoint2 = transform * mPoints[1];
     const Vector3 worldPoint3 = transform * mPoints[2];
@@ -168,12 +165,15 @@ inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) {
     const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
     const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
     const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
-    aabb.setMin(Vector3(xAxis.getMinAxis(), yAxis.getMinAxis(), zAxis.getMinAxis()));
-    aabb.setMax(Vector3(xAxis.getMaxAxis(), yAxis.getMaxAxis(), zAxis.getMaxAxis()));
+    aabb.setMin(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()));
+    aabb.setMax(Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
 }
 
 // Test equality between two triangle shapes
 inline bool TriangleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const TriangleShape& otherShape = dynamic_cast<const TriangleShape&>(otherCollisionShape);
     return (mPoints[0] == otherShape.mPoints[0] &&
             mPoints[1] == otherShape.mPoints[1] &&

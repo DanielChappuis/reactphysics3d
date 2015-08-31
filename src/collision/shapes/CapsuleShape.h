@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CAPSULE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -44,7 +44,7 @@ namespace reactphysics3d {
  * and height of the shape. Therefore, no need to specify an object margin for a
  * capsule shape.
  */
-class CapsuleShape : public CollisionShape {
+class CapsuleShape : public ConvexShape {
 
     protected :
 
@@ -115,7 +115,7 @@ class CapsuleShape : public CollisionShape {
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
-/// Allocate and return a copy of the object
+// Allocate and return a copy of the object
 inline CapsuleShape* CapsuleShape::clone(void* allocatedMemory) const {
     return new (allocatedMemory) CapsuleShape(*this);
 }
@@ -162,6 +162,9 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
 // Test equality between two capsule shapes
 inline bool CapsuleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const CapsuleShape& otherShape = dynamic_cast<const CapsuleShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }

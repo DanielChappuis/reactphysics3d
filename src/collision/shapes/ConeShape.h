@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CONE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -49,7 +49,7 @@ namespace reactphysics3d {
  * constructor of the cone shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class ConeShape : public CollisionShape {
+class ConeShape : public ConvexShape {
 
     protected :
 
@@ -178,6 +178,9 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
 
 // Test equality between two cone shapes
 inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }

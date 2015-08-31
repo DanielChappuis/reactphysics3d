@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CONVEX_MESH_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
@@ -60,7 +60,7 @@ class CollisionWorld;
  * with the addEdge() method. Then, you must use the setIsEdgesInformationUsed(true) method
  * in order to use the edges information for collision detection.
  */
-class ConvexMeshShape : public CollisionShape {
+class ConvexMeshShape : public ConvexShape {
 
     protected :
 

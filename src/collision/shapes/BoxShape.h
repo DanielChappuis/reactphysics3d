@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cfloat>
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -50,7 +50,7 @@ namespace reactphysics3d {
  * constructor of the box shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class BoxShape : public CollisionShape {
+class BoxShape : public ConvexShape {
 
     protected :
 
@@ -165,6 +165,9 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 
 // Test equality between two box shapes
 inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
     return (mExtent == otherShape.mExtent);
 }

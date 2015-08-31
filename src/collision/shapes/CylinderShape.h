@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CYLINDER_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -49,7 +49,7 @@ namespace reactphysics3d {
  * constructor of the cylinder shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class CylinderShape : public CollisionShape {
+class CylinderShape : public ConvexShape {
 
     protected :
 
@@ -115,7 +115,7 @@ class CylinderShape : public CollisionShape {
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
-/// Allocate and return a copy of the object
+// Allocate and return a copy of the object
 inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
     return new (allocatedMemory) CylinderShape(*this);
 }
@@ -175,6 +175,9 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
 
 // Test equality between two cylinder shapes
 inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
+
+    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
+
     const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
     return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }

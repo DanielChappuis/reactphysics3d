@@ -32,15 +32,14 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type, decimal margin)
-               : mType(type), mNbSimilarCreatedShapes(0), mMargin(margin) {
+CollisionShape::CollisionShape(CollisionShapeType type)
+               : mType(type), mNbSimilarCreatedShapes(0) {
     
 }
 
 // Private copy-constructor
 CollisionShape::CollisionShape(const CollisionShape& shape)
-               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes),
-                 mMargin(shape.mMargin) {
+               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes) {
 
 }
 

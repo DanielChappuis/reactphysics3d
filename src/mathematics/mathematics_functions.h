@@ -28,18 +28,20 @@
 
 // Libraries
 #include "configuration.h"
+#include "mathematics/Vector3.h"
 #include "decimal.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+struct Vector3;
+
 // ---------- Mathematics functions ---------- //
 
 /// Function to test if two real numbers are (almost) equal
 /// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
-
     decimal difference = a - b;
     return (difference < epsilon && difference > -epsilon);
 }
@@ -51,8 +53,16 @@ inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
     return std::min(std::max(value, lowerLimit), upperLimit);
 }
 
+/// Return the minimum value among three values
+inline decimal min3(decimal a, decimal b, decimal c) {
+    return std::min(std::min(a, b), c);
 }
 
+/// Return the maximum value among three values
+inline decimal max3(decimal a, decimal b, decimal c) {
+    return std::max(std::max(a, b), c);
+}
 
+}
 
 #endif
