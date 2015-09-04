@@ -66,9 +66,6 @@ class CollisionWorld {
         /// All the bodies (rigid and soft) of the world
         std::set<CollisionBody*> mBodies;
 
-        /// All the collision shapes of the world
-        std::list<CollisionShape*> mCollisionShapes;
-
         /// Current body ID
         bodyindex mCurrentBodyID;
 
@@ -91,12 +88,6 @@ class CollisionWorld {
 
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
-
-        /// Remove a collision shape.
-        void removeCollisionShape(CollisionShape* collisionShape);
-
-        /// Create a new collision shape in the world.
-        CollisionShape* createCollisionShape(const CollisionShape& collisionShape);
 
         /// Reset all the contact manifolds linked list of each body
         void resetContactManifoldListsOfBodies();

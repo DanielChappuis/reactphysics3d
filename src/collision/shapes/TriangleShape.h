@@ -69,9 +69,6 @@ class TriangleShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual TriangleShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -94,15 +91,7 @@ class TriangleShape : public ConvexShape {
 
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform);
-
-        /// Test equality between two triangle shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline TriangleShape* TriangleShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) TriangleShape(*this);
-}
 
 // Return the number of bytes used by the collision shape
 inline size_t TriangleShape::getSizeInBytes() const {
@@ -133,9 +122,9 @@ inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& d
  */
 inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
-    const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
-    const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
+    const Vector3 xAxis(mPoints[0].x, mPoints[1].x, mPoints[2].x);
+    const Vector3 yAxis(mPoints[0].y, mPoints[1].y, mPoints[2].y);
+    const Vector3 zAxis(mPoints[0].z, mPoints[1].z, mPoints[2].z);
     min.setAllValues(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
     max.setAllValues(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
 }
@@ -162,22 +151,11 @@ inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) {
     const Vector3 worldPoint2 = transform * mPoints[1];
     const Vector3 worldPoint3 = transform * mPoints[2];
 
-    const Vector3 xAxis(worldPoint1.X, worldPoint2.X, worldPoint3.X);
-    const Vector3 yAxis(worldPoint1.Y, worldPoint2.Y, worldPoint3.Y);
-    const Vector3 zAxis(worldPoint1.Z, worldPoint2.Z, worldPoint3.Z);
+    const Vector3 xAxis(worldPoint1.x, worldPoint2.x, worldPoint3.x);
+    const Vector3 yAxis(worldPoint1.y, worldPoint2.y, worldPoint3.y);
+    const Vector3 zAxis(worldPoint1.z, worldPoint2.z, worldPoint3.z);
     aabb.setMin(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()));
     aabb.setMax(Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
-}
-
-// Test equality between two triangle shapes
-inline bool TriangleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const TriangleShape& otherShape = dynamic_cast<const TriangleShape&>(otherCollisionShape);
-    return (mPoints[0] == otherShape.mPoints[0] &&
-            mPoints[1] == otherShape.mPoints[1] &&
-            mPoints[2] == otherShape.mPoints[2]);
 }
 
 // Return true if a point is inside the collision shape

@@ -132,7 +132,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    mboxCollisionShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -145,7 +145,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
     mBody = world->createCollisionBody(transform);
 
     // Add the collision shape to the body
-    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(mboxCollisionShape, rp3d::Transform::identity());
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -181,7 +181,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::BoxShape collisionShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    mboxCollisionShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -194,7 +194,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
     rp3d::RigidBody* body = world->createRigidBody(transform);
 
     // Add the collision shape to the body
-    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+    body->addCollisionShape(mboxCollisionShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -220,7 +220,7 @@ Box::~Box() {
         mVBONormals.destroy();
         mVAO.destroy();
     }
-
+    delete mboxCollisionShape;
     totalNbBoxes--;
 }
 

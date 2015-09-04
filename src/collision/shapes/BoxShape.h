@@ -81,9 +81,6 @@ class BoxShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual BoxShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -105,15 +102,7 @@ class BoxShape : public ConvexShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two box shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline BoxShape* BoxShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) BoxShape(*this);
-}
 
 // Return the extents of the box
 /**
@@ -161,15 +150,6 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,
                    direction.z < 0.0 ? -mExtent.z : mExtent.z);
-}
-
-// Test equality between two box shapes
-inline bool BoxShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const BoxShape& otherShape = dynamic_cast<const BoxShape&>(otherCollisionShape);
-    return (mExtent == otherShape.mExtent);
 }
 
 // Return true if a point is inside the collision shape

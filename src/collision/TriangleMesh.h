@@ -28,6 +28,7 @@
 
 // Libraries
 #include <vector>
+#include <cassert>
 #include "TriangleVertexArray.h"
 
 namespace reactphysics3d {

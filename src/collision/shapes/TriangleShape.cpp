@@ -40,18 +40,10 @@ using namespace reactphysics3d;
  */
 TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2,
                              const Vector3& point3, decimal margin)
-              : CollisionShape(TRIANGLE, margin) {
+              : ConvexShape(TRIANGLE, margin) {
     mPoints[0] = point1;
     mPoints[1] = point2;
     mPoints[2] = point3;
-}
-
-// Private copy-constructor
-TriangleShape::TriangleShape(const TriangleShape& shape)
-              : CollisionShape(shape) {
-    mPoints[0] = shape.mPoints[0];
-    mPoints[1] = shape.mPoints[1];
-    mPoints[2] = shape.mPoints[2];
 }
 
 // Destructor

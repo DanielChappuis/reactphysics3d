@@ -27,6 +27,7 @@
 #define	REACTPHYSICS3D_CONCAVE_VS_CONVEX_ALGORITHM_H
 
 // Libraries
+#include "NarrowPhaseAlgorithm.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {

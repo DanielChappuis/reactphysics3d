@@ -35,8 +35,7 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform,
-                       decimal mass)
+ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass)
            :mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
             mNext(NULL), mBroadPhaseID(-1), mCachedCollisionData(NULL), mUserData(NULL),
             mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {

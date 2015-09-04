@@ -37,16 +37,10 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
-              : CollisionShape(CYLINDER, margin), mRadius(radius),
+              : ConvexShape(CYLINDER, margin), mRadius(radius),
                 mHalfHeight(height/decimal(2.0)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Private copy-constructor
-CylinderShape::CylinderShape(const CylinderShape& shape)
-              : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight) {
-
 }
 
 // Destructor

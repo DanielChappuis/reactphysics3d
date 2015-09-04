@@ -28,7 +28,6 @@
 
 // Libraries
 #include "configuration.h"
-#include "mathematics/Vector3.h"
 #include "decimal.h"
 #include <algorithm>
 

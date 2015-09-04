@@ -35,11 +35,6 @@ ConcaveShape::ConcaveShape(CollisionShapeType type) : CollisionShape(type) {
 
 }
 
-// Private copy-constructor
-ConcaveShape::ConcaveShape(const CollisionShape& shape) : CollisionShape(shape) {
-
-}
-
 // Destructor
 ConcaveShape::~ConcaveShape() {
 

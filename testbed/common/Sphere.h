@@ -41,6 +41,9 @@ class Sphere : public openglframework::Mesh, public PhysicsObject {
         /// Radius of the sphere
         float mRadius;
 
+        /// Collision shape
+        rp3d::SphereShape* mCollisionShape;
+
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

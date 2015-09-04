@@ -37,12 +37,6 @@ CollisionShape::CollisionShape(CollisionShapeType type)
     
 }
 
-// Private copy-constructor
-CollisionShape::CollisionShape(const CollisionShape& shape)
-               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes) {
-
-}
-
 // Destructor
 CollisionShape::~CollisionShape() {
     assert(mNbSimilarCreatedShapes == 0);

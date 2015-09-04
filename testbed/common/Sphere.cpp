@@ -57,7 +57,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::SphereShape collisionShape(mRadius);
+    mCollisionShape = new rp3d::SphereShape(mRadius);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -70,7 +70,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -106,7 +106,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::SphereShape collisionShape(mRadius);
+    mCollisionShape = new rp3d::SphereShape(mRadius);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -117,7 +117,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     rp3d::RigidBody* body = world->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -145,7 +145,7 @@ Sphere::~Sphere() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-
+    delete mCollisionShape;
     totalNbSpheres--;
 }
 

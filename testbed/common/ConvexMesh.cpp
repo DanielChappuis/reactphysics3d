@@ -51,11 +51,9 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
         vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
     }
 
-    // Create the collision shape for the rigid body (convex mesh shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-
-    rp3d::ConvexMeshShape collisionShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
+    // Create the collision shape for the rigid body (convex mesh shape) and
+    // do not forget to delete it at the end
+    mCollisionShape = new rp3d::ConvexMeshShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
 
     delete[] vertices;
 
@@ -70,11 +68,11 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
         unsigned int v3 = getVertexIndexInFace(i, 2);
 
         // Add the three edges into the collision shape
-        collisionShape.addEdge(v1, v2);
-        collisionShape.addEdge(v1, v3);
-        collisionShape.addEdge(v2, v3);
+        mCollisionShape->addEdge(v1, v2);
+        mCollisionShape->addEdge(v1, v3);
+        mCollisionShape->addEdge(v2, v3);
     }
-    collisionShape.setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
+    mCollisionShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -87,7 +85,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -118,10 +116,9 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
         vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
     }
 
-    // Create the collision shape for the rigid body (convex mesh shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    rp3d::ConvexMeshShape collisionShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
+    // Create the collision shape for the rigid body (convex mesh shape) and do
+    // not forget to delete it at the end
+    mCollisionShape = new rp3d::ConvexMeshShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
 
     delete[] vertices;
 
@@ -136,11 +133,11 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
         unsigned int v3 = getVertexIndexInFace(i, 2);
 
         // Add the three edges into the collision shape
-        collisionShape.addEdge(v1, v2);
-        collisionShape.addEdge(v1, v3);
-        collisionShape.addEdge(v2, v3);
+        mCollisionShape->addEdge(v1, v2);
+        mCollisionShape->addEdge(v1, v3);
+        mCollisionShape->addEdge(v2, v3);
     }
-    collisionShape.setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
+    mCollisionShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -151,7 +148,7 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -171,6 +168,8 @@ ConvexMesh::~ConvexMesh() {
     mVBONormals.destroy();
     mVBOTextureCoords.destroy();
     mVAO.destroy();
+
+    delete mCollisionShape;
 }
 
 // Render the sphere at the correct position and with the correct orientation

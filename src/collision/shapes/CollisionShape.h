@@ -78,20 +78,8 @@ class CollisionShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
 
-        /// Return the number of similar created shapes
-        uint getNbSimilarCreatedShapes() const;
-
-        /// Allocate and return a copy of the object
-        virtual CollisionShape* clone(void* allocatedMemory) const=0;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;
-
-        /// Increment the number of similar allocated collision shapes
-        void incrementNbSimilarCreatedShapes();
-
-        /// Decrement the number of similar allocated collision shapes
-        void decrementNbSimilarCreatedShapes();
 
     public :
 
@@ -118,12 +106,6 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
-        /// Equality operator between two collision shapes.
-        bool operator==(const CollisionShape& otherCollisionShape) const;
-
-        /// Test equality between two collision shapes of the same type (same derived classes).
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const=0;
-
         // -------------------- Friendship -------------------- //
 
         friend class ProxyShape;
@@ -136,36 +118,6 @@ class CollisionShape {
  */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
-}
-
-// Return the number of similar created shapes
-inline uint CollisionShape::getNbSimilarCreatedShapes() const {
-    return mNbSimilarCreatedShapes;
-}
-
-// Increment the number of similar allocated collision shapes
-inline void CollisionShape::incrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes++;
-}
-
-// Decrement the number of similar allocated collision shapes
-inline void CollisionShape::decrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes--;
-}
-
-// Equality operator between two collision shapes.
-/// This methods returns true only if the two collision shapes are of the same type and
-/// of the same dimensions.
-inline bool CollisionShape::operator==(const CollisionShape& otherCollisionShape) const {
-
-    // If the two collisions shapes are not of the same type (same derived classes)
-    // we return false
-    if (mType != otherCollisionShape.mType) return false;
-
-    assert(typeid(*this) == typeid(otherCollisionShape));
-
-    // Check if the two shapes are equal
-    return otherCollisionShape.isEqualTo(*this);
 }
 
 }

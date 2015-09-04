@@ -32,13 +32,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConvexShape::ConvexShape(CollisionShapeType type, decimal margin)
-               : CollisionShape(type), mMargin(margin) {
-
-}
-
-// Private copy-constructor
-ConvexShape::ConvexShape(const CollisionShape& shape)
-               : CollisionShape(shape), mMargin(shape.mMargin) {
+            : CollisionShape(type), mMargin(margin) {
 
 }
 

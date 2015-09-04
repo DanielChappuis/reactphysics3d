@@ -93,14 +93,8 @@ class ProxyShape {
         /// Private assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape);
 
-        // Return a local support point in a given direction with the object margin
-        Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin.
-        Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
-        /// Return the collision shape margin
-        decimal getMargin() const;
+        /// Return the pointer to the cached collision data
+        void** getCachedCollisionData();
 
     public:
 
@@ -173,7 +167,12 @@ class ProxyShape {
         friend class ConvexMeshShape;
 };
 
-/// Return the collision shape
+// Return the pointer to the cached collision data
+inline void** ProxyShape::getCachedCollisionData()  {
+    return &mCachedCollisionData;
+}
+
+// Return the collision shape
 /**
  * @return Pointer to the internal collision shape
  */
@@ -229,21 +228,6 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
  */
 inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 ProxyShape::getLocalSupportPointWithMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithMargin(direction, &mCachedCollisionData);
-}
-
-// Return a local support point in a given direction without the object margin.
-inline Vector3 ProxyShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithoutMargin(direction, &mCachedCollisionData);
-}
-
-// Return the collision shape margin
-inline decimal ProxyShape::getMargin() const {
-    return mCollisionShape->getMargin();
 }
 
 // Raycast method with feedback information

@@ -50,6 +50,9 @@ class Cylinder : public openglframework::Mesh, public PhysicsObject {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
+        /// Collision shape
+        rp3d::CylinderShape* mCollisionShape;
+
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
 

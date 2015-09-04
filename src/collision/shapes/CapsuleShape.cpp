@@ -37,15 +37,9 @@ using namespace reactphysics3d;
  * @param height The height of the capsule (in meters)
  */
 CapsuleShape::CapsuleShape(decimal radius, decimal height)
-            : CollisionShape(CAPSULE, radius), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+            : ConvexShape(CAPSULE, radius), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Private copy-constructor
-CapsuleShape::CapsuleShape(const CapsuleShape& shape)
-             : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight) {
-
 }
 
 // Destructor

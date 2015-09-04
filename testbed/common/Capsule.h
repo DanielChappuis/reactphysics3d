@@ -44,6 +44,9 @@ class Capsule : public openglframework::Mesh, public PhysicsObject {
         /// Height of the capsule
         float mHeight;
 
+        /// Collision shape
+        rp3d::CapsuleShape* mCollisionShape;
+
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

@@ -86,9 +86,6 @@ class ConeShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual ConeShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
         
@@ -113,15 +110,7 @@ class ConeShape : public ConvexShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two cone shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline ConeShape* ConeShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) ConeShape(*this);
-}
 
 // Return the radius
 /**
@@ -174,15 +163,6 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
     tensor.setAllValues(diagXZ, 0.0, 0.0,
                         0.0, decimal(0.3) * mass * rSquare,
                         0.0, 0.0, 0.0, diagXZ);
-}
-
-// Test equality between two cone shapes
-inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 // Return true if a point is inside the collision shape

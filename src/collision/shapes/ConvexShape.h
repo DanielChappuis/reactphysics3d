@@ -81,8 +81,10 @@ class ConvexShape : public CollisionShape {
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
 
-        /// Test equality between two shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+        // -------------------- Friendship -------------------- //
+
+        friend class GJKAlgorithm;
+        friend class EPAAlgorithm;
 };
 
 /// Return true if the collision shape is convex, false if it is concave
@@ -94,46 +96,8 @@ inline bool ConvexShape::isConvex() const {
 /**
  * @return The margin (in meters) around the collision shape
  */
-inline decimal CollisionShape::getMargin() const {
+inline decimal ConvexShape::getMargin() const {
     return mMargin;
-}
-
-// Return the type of the collision shape
-/**
- * @return The type of the collision shape (box, sphere, cylinder, ...)
- */
-inline CollisionShapeType CollisionShape::getType() const {
-    return mType;
-}
-
-// Return the number of similar created shapes
-inline uint CollisionShape::getNbSimilarCreatedShapes() const {
-    return mNbSimilarCreatedShapes;
-}
-
-// Return the current collision shape margin
-/**
- * @return The margin (in meters) around the collision shape
- */
-inline decimal CollisionShape::getMargin() const {
-    return mMargin;
-}
-
-// Increment the number of similar allocated collision shapes
-inline void CollisionShape::incrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes++;
-}
-
-// Decrement the number of similar allocated collision shapes
-inline void CollisionShape::decrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes--;
-}
-
-// Test equality between two shapes
-inline bool ConvexShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    const ConvexShape& otherShape = static_cast<const ConvexShape&>(otherCollisionShape);
-    return (mMargin == otherShape.mMargin);
 }
 
 }

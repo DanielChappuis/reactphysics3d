@@ -41,6 +41,10 @@ class Dumbbell : public openglframework::Mesh, public PhysicsObject {
         /// Radius of the spheres
         float mRadius;
 
+        /// Collision shapes
+        rp3d::CylinderShape* mCylinderShape;
+        rp3d::SphereShape* mSphereShape;
+
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

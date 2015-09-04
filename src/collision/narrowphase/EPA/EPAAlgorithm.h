@@ -122,9 +122,9 @@ class EPAAlgorithm {
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                     ProxyShape* collisionShape1,
+                                                     ProxyShape* proxyShape1,
                                                      const Transform& transform1,
-                                                     ProxyShape* collisionShape2,
+                                                     ProxyShape* proxyShape2,
                                                      const Transform& transform2,
                                                      Vector3& v, ContactPointInfo*& contactInfo);
 };

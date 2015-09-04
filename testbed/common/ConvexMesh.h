@@ -41,6 +41,9 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
+        /// Collision shape
+        rp3d::ConvexMeshShape* mCollisionShape;
+
         /// Vertex Buffer Object for the vertices data
         openglframework::VertexBufferObject mVBOVertices;
 

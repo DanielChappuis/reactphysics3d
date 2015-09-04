@@ -210,7 +210,7 @@ class RigidBody : public CollisionBody {
         void applyTorque(const Vector3& torque);
 
         /// Add a collision shape to the body.
-        virtual ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
                                               const Transform& transform,
                                               decimal mass);
 

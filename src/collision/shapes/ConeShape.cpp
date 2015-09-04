@@ -38,19 +38,12 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
-          : CollisionShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+          : ConvexShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));
     assert(mHalfHeight > decimal(0.0));
     
     // Compute the sine of the semi-angle at the apex point
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
-}
-
-// Private copy-constructor
-ConeShape::ConeShape(const ConeShape& shape)
-          : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight),
-            mSinTheta(shape.mSinTheta){
-
 }
 
 // Destructor

@@ -73,9 +73,6 @@ class SphereShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual SphereShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -100,15 +97,7 @@ class SphereShape : public ConvexShape {
 
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform);
-
-        /// Test equality between two sphere shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline SphereShape* SphereShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) SphereShape(*this);
-}
 
 // Get the radius of the sphere
 /**
@@ -193,15 +182,6 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(transform.getPosition() - extents);
     aabb.setMax(transform.getPosition() + extents);
-}
-
-// Test equality between two sphere shapes
-inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius);
 }
 
 // Return true if a point is inside the collision shape

@@ -110,9 +110,6 @@ class ConvexMeshShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual ConvexMeshShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -136,9 +133,6 @@ class ConvexMeshShape : public ConvexShape {
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Test equality between two collision shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
-
         /// Add a vertex into the convex mesh
         void addVertex(const Vector3& vertex);
 
@@ -152,11 +146,6 @@ class ConvexMeshShape : public ConvexShape {
         /// collision detection
         void setIsEdgesInformationUsed(bool isEdgesUsed);
 };
-
-// Allocate and return a copy of the object
-inline ConvexMeshShape* ConvexMeshShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) ConvexMeshShape(*this);
-}
 
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {

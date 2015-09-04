@@ -83,9 +83,6 @@ class CapsuleShape : public ConvexShape {
                                      const Vector3& sphereCenter, decimal maxFraction,
                                      Vector3& hitLocalPoint, decimal& hitFraction) const;
 
-        /// Allocate and return a copy of the object
-        virtual CapsuleShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -110,15 +107,7 @@ class CapsuleShape : public ConvexShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two capsule shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline CapsuleShape* CapsuleShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) CapsuleShape(*this);
-}
 
 // Get the radius of the capsule
 /**
@@ -158,15 +147,6 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min.x = -mRadius;
     min.y = -max.y;
     min.z = min.x;
-}
-
-// Test equality between two capsule shapes
-inline bool CapsuleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const CapsuleShape& otherShape = dynamic_cast<const CapsuleShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 }

@@ -40,7 +40,7 @@ using namespace reactphysics3d;
  */
 ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
                                  decimal margin)
-                : CollisionShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
+                : ConvexShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(nbVertices > 0);
     assert(stride > 0);
@@ -62,19 +62,9 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
 /// If you use this constructor, you will need to set the vertices manually one by one using
 /// the addVertex() method.
 ConvexMeshShape::ConvexMeshShape(decimal margin)
-                : CollisionShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
+                : ConvexShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
 
-}
-
-// Private copy-constructor
-ConvexMeshShape::ConvexMeshShape(const ConvexMeshShape& shape)
-    : CollisionShape(shape), mVertices(shape.mVertices), mNbVertices(shape.mNbVertices),
-      mMinBounds(shape.mMinBounds), mMaxBounds(shape.mMaxBounds),
-      mIsEdgesInformationUsed(shape.mIsEdgesInformationUsed),
-      mEdgesAdjacencyList(shape.mEdgesAdjacencyList) {
-
-    assert(mNbVertices == mVertices.size());
 }
 
 // Destructor
@@ -207,36 +197,6 @@ void ConvexMeshShape::recalculateBounds() {
     // Add the object margin to the bounds
     mMaxBounds += Vector3(mMargin, mMargin, mMargin);
     mMinBounds -= Vector3(mMargin, mMargin, mMargin);
-}
-
-// Test equality between two cone shapes
-bool ConvexMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const ConvexMeshShape& otherShape = dynamic_cast<const ConvexMeshShape&>(otherCollisionShape);
-
-    assert(mNbVertices == mVertices.size());
-
-    if (mNbVertices != otherShape.mNbVertices) return false;
-
-    if (mIsEdgesInformationUsed != otherShape.mIsEdgesInformationUsed) return false;
-
-    if (mEdgesAdjacencyList.size() != otherShape.mEdgesAdjacencyList.size()) return false;
-
-    // Check that the vertices are the same
-    for (uint i=0; i<mNbVertices; i++) {
-        if (mVertices[i] != otherShape.mVertices[i]) return false;
-    }
-
-    // Check that the edges are the same
-    for (uint i=0; i<mEdgesAdjacencyList.size(); i++) {
-
-        assert(otherShape.mEdgesAdjacencyList.count(i) == 1);
-        if (mEdgesAdjacencyList.at(i) != otherShape.mEdgesAdjacencyList.at(i)) return false;
-    }
-
-    return true;
 }
 
 // Raycast method with feedback information

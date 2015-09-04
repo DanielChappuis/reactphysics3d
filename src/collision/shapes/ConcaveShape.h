@@ -65,67 +65,11 @@ class ConcaveShape : public CollisionShape {
 
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
-
-        /// Test equality between two shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
 
 /// Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {
     return false;
-}
-
-// Return the type of the collision shape
-/**
- * @return The type of the collision shape (box, sphere, cylinder, ...)
- */
-inline CollisionShapeType CollisionShape::getType() const {
-    return mType;
-}
-
-// Return the number of similar created shapes
-inline uint CollisionShape::getNbSimilarCreatedShapes() const {
-    return mNbSimilarCreatedShapes;
-}
-
-// Return the current collision shape margin
-/**
- * @return The margin (in meters) around the collision shape
- */
-inline decimal CollisionShape::getMargin() const {
-    return mMargin;
-}
-
-// Increment the number of similar allocated collision shapes
-inline void CollisionShape::incrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes++;
-}
-
-// Decrement the number of similar allocated collision shapes
-inline void CollisionShape::decrementNbSimilarCreatedShapes() {
-    mNbSimilarCreatedShapes--;
-}
-
-// Equality operator between two collision shapes.
-/// This methods returns true only if the two collision shapes are of the same type and
-/// of the same dimensions.
-inline bool CollisionShape::operator==(const CollisionShape& otherCollisionShape) const {
-
-    // If the two collisions shapes are not of the same type (same derived classes)
-    // we return false
-    if (mType != otherCollisionShape.mType) return false;
-
-    assert(typeid(*this) == typeid(otherCollisionShape));
-
-    if (mMargin != otherCollisionShape.mMargin) return false;
-
-    // Check if the two shapes are equal
-    return otherCollisionShape.isEqualTo(*this);
-}
-
-// Test equality between two shapes
-inline bool ConcaveShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    return true;
 }
 
 }

@@ -83,9 +83,6 @@ class CylinderShape : public ConvexShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual CylinderShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -110,15 +107,7 @@ class CylinderShape : public ConvexShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two cylinder shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) CylinderShape(*this);
-}
 
 // Return the radius
 /**
@@ -171,15 +160,6 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
     tensor.setAllValues(diag, 0.0, 0.0, 0.0,
                         decimal(0.5) * mass * mRadius * mRadius, 0.0,
                         0.0, 0.0, diag);
-}
-
-// Test equality between two cylinder shapes
-inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-
-    if (!ConvexShape::isEqualTo(otherCollisionShape)) return false;
-
-    const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 // Return true if a point is inside the collision shape

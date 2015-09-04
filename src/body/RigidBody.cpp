@@ -209,18 +209,15 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
  * @return A pointer to the proxy shape that has been created to link the body to
  *         the new collision shape you have added.
  */
-ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
+ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
     assert(mass > decimal(0.0));
 
-    // Create an internal copy of the collision shape into the world if it is not there yet
-    CollisionShape* newCollisionShape = mWorld.createCollisionShape(collisionShape);
-
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
-                                      sizeof(ProxyShape))) ProxyShape(this, newCollisionShape,
+                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass);
 
     // Add it to the list of proxy collision shapes of the body
@@ -234,7 +231,7 @@ ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    newCollisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mTransform * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);

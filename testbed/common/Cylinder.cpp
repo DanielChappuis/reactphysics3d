@@ -54,10 +54,9 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     // Initialize the position where the cylinder will be rendered
     translateWorld(position);
 
-    // Create the collision shape for the rigid body (cylinder shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::CylinderShape collisionShape(mRadius, mHeight);
+    // Create the collision shape for the rigid body (cylinder shape) and do not
+    // forget to delete it at the end
+    mCollisionShape = new rp3d::CylinderShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -70,7 +69,7 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -103,10 +102,9 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     // Initialize the position where the cylinder will be rendered
     translateWorld(position);
 
-    // Create the collision shape for the rigid body (cylinder shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::CylinderShape collisionShape(mRadius, mHeight);
+    // Create the collision shape for the rigid body (cylinder shape) and do
+    // not forget to delete it at the end
+    mCollisionShape = new rp3d::CylinderShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -117,7 +115,7 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -146,7 +144,7 @@ Cylinder::~Cylinder() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-
+    delete mCollisionShape;
     totalNbCylinders--;
 }
 

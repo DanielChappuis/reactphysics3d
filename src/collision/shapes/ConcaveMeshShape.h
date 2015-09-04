@@ -28,6 +28,7 @@
 
 // Libraries
 #include "ConcaveShape.h"
+#include "collision/TriangleMesh.h"
 
 namespace reactphysics3d {
 
@@ -65,9 +66,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual ConcaveMeshShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -78,9 +76,6 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Destructor
         ~ConcaveMeshShape();
-
-        /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
@@ -94,16 +89,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Test equality between two sphere shapes
         virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Return true if the collision shape is convex, false if it is concave
-virtual bool isConvex() const {
-    return false;
-}
-
-// Allocate and return a copy of the object
-inline ConcaveMeshShape* ConcaveMeshShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) ConcaveMeshShape(*this);
-}
 
 // Return the number of bytes used by the collision shape
 inline size_t ConcaveMeshShape::getSizeInBytes() const {
@@ -145,10 +130,7 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
 
     // TODO : Implement this
-    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
-    tensor.setAllValues(diag, 0.0, 0.0,
-                        0.0, diag, 0.0,
-                        0.0, 0.0, diag);
+    tensor.setToZero();
 }
 
 // Update the AABB of a body using its collision shape
@@ -160,15 +142,6 @@ inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decim
 inline void ConcaveMeshShape::computeAABB(AABB& aabb, const Transform& transform) {
 
     // TODO : Implement this
-}
-
-// Test equality between two sphere shapes
-inline bool ConcaveMeshShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const ConcaveMeshShape& otherShape = dynamic_cast<const ConcaveMeshShape&>(otherCollisionShape);
-
-    // TODO : Implement this
-
-    return false;
 }
 
 // Return true if a point is inside the collision shape

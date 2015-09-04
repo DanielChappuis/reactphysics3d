@@ -35,14 +35,8 @@ using namespace reactphysics3d;
 /**
  * @param radius Radius of the sphere (in meters)
  */
-SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE, radius), mRadius(radius) {
+SphereShape::SphereShape(decimal radius) : ConvexShape(SPHERE, radius), mRadius(radius) {
     assert(radius > decimal(0.0));
-}
-
-// Private copy-constructor
-SphereShape::SphereShape(const SphereShape& shape)
-            : CollisionShape(shape), mRadius(shape.mRadius) {
-
 }
 
 // Destructor
