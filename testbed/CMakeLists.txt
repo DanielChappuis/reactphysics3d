@@ -92,4 +92,4 @@ SET(SCENES_SOURCES
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${IMGUI_SOURCES})
 
 # Link with libraries
-TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLFW_LIBRARIES})
+TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLEW_LIBRARIES} ${GLFW_LIBRARIES})
