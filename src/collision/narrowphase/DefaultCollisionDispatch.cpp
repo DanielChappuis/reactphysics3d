@@ -25,6 +25,7 @@
 
 // Libraries
 #include "DefaultCollisionDispatch.h"
+#include "collision/shapes/CollisionShape.h"
 
 using namespace reactphysics3d;
 
@@ -39,23 +40,35 @@ DefaultCollisionDispatch::~DefaultCollisionDispatch() {
 }
 
 /// Initialize the collision dispatch configuration
-void DefaultCollisionDispatch::init(MemoryAllocator* memoryAllocator) {
+void DefaultCollisionDispatch::init(const CollisionDetection* collisionDetection,
+                                    MemoryAllocator* memoryAllocator) {
 
     // Initialize the collision algorithms
-    mSphereVsSphereAlgorithm.init(memoryAllocator);
-    mGJKAlgorithm.init(memoryAllocator);
+    mSphereVsSphereAlgorithm.init(collisionDetection, memoryAllocator);
+    mGJKAlgorithm.init(collisionDetection, memoryAllocator);
 }
 
 // Select and return the narrow-phase collision detection algorithm to
 // use between two types of collision shapes.
-NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int shape1Type,
-                                                                int shape2Type) {
+NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int type2) {
 
+    CollisionShapeType shape1Type = static_cast<CollisionShapeType>(type1);
+    CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
-    if (shape1Type == SPHERE && shape2Type == SPHERE) { // Sphere vs Sphere algorithm
+    // Sphere vs Sphere algorithm
+    if (shape1Type == SPHERE && shape2Type == SPHERE) {
         return &mSphereVsSphereAlgorithm;
     }
-    else {   // GJK algorithm
+    // Concave vs Convex algorithm
+    else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
+             (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
+        return &mConcaveVsConvexAlgorithm;
+    }
+    // Convex vs Convex algorithm (GJK algorithm)
+    else if (CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) {
         return &mGJKAlgorithm;
+    }
+    else {
+        return NULL;
     }
 }

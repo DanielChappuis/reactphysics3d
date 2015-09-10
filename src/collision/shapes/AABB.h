@@ -97,6 +97,9 @@ class AABB {
         /// Return true if the current AABB contains the AABB given in parameter
         bool contains(const AABB& aabb);
 
+        /// Return true if the AABB of a triangle intersects the AABB
+        bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
+
         /// Assignment operator
         AABB& operator=(const AABB& aabb);
 
@@ -146,6 +149,20 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 inline decimal AABB::getVolume() const {
     const Vector3 diff = mMaxCoordinates - mMinCoordinates;
     return (diff.x * diff.y * diff.z);
+}
+
+// Return true if the AABB of a triangle intersects the AABB
+inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
+
+    if (min3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) > mMaxCoordinates.x) return false;
+    if (min3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) > mMaxCoordinates.y) return false;
+    if (min3(trianglePoints[0].z, trianglePoints[1].z, trianglePoints[2].z) > mMaxCoordinates.z) return false;
+
+    if (max3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) < mMinCoordinates.x) return false;
+    if (max3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) < mMinCoordinates.y) return false;
+    if (max3(trianglePoints[0].z, trianglePoints[1].z, trianglePoints[2].z) < mMinCoordinates.z) return false;
+
+    return true;
 }
 
 // Assignment operator

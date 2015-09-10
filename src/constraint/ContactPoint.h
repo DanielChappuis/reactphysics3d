@@ -28,6 +28,7 @@
 
 // Libraries
 #include "body/CollisionBody.h"
+#include "collision/CollisionShapeInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "configuration.h"
@@ -58,10 +59,10 @@ struct ContactPointInfo {
 
         // -------------------- Attributes -------------------- //
 
-        /// First proxy collision shape of the contact
+        /// First proxy shape of the contact
         ProxyShape* shape1;
 
-        /// Second proxy collision shape of the contact
+        /// Second proxy shape of the contact
         ProxyShape* shape2;
 
         /// Normal vector the the collision contact in world space
@@ -79,8 +80,8 @@ struct ContactPointInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const Vector3& normal,
-                         decimal penetrationDepth, const Vector3& localPoint1,
+        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2,
+                         const Vector3& normal, decimal penetrationDepth, const Vector3& localPoint1,
                          const Vector3& localPoint2)
             : shape1(proxyShape1), shape2(proxyShape2), normal(normal),
               penetrationDepth(penetrationDepth), localPoint1(localPoint1),

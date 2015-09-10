@@ -50,7 +50,8 @@ class CollisionDispatch {
         virtual ~CollisionDispatch() {}
 
         /// Initialize the collision dispatch configuration
-        virtual void init(MemoryAllocator* memoryAllocator) {
+        virtual void init(const CollisionDetection* collisionDetection,
+                          MemoryAllocator* memoryAllocator) {
 
         }
 

@@ -23,49 +23,46 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_COLLISION_SHAPE_INFO_H
+#define REACTPHYSICS3D_COLLISION_SHAPE_INFO_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
-
+#include "shapes/CollisionShape.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Class SphereVsSphereAlgorithm
+// Class CollisionShapeInfo
 /**
- * This class is used to compute the narrow-phase collision detection
- * between two sphere collision shapes.
+ * This structure regroups different things about a collision shape. This is
+ * used to pass information about a collision shape to a collision algorithm.
  */
-class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
+struct CollisionShapeInfo {
 
-    protected :
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm);
-
-        /// Private assignment operator
-        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm);
-        
-    public :
-
-        // -------------------- Methods -------------------- //
+    public:
 
         /// Constructor
-        SphereVsSphereAlgorithm();
+        CollisionShapeInfo(ProxyShape* proxyCollisionShape, const CollisionShape* shape,
+                           const Transform& shapeLocalToWorldTransform,
+                           void** cachedData)
+              : proxyShape(proxyCollisionShape), collisionShape(shape),
+                shapeToWorldTransform(shapeLocalToWorldTransform),
+                cachedCollisionData(cachedData) {
 
-        /// Destructor
-        virtual ~SphereVsSphereAlgorithm();
+        }
 
-        /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   ContactPointInfo*& contactInfo);
+        /// Proxy shape
+        ProxyShape* proxyShape;
+
+        /// Pointer to the collision shape
+        const CollisionShape* collisionShape;
+
+        /// Transform that maps from collision shape local-space to world-space
+        Transform shapeToWorldTransform;
+
+        /// Cached collision data of the proxy shape
+        void** cachedCollisionData;
+
 };
 
 }

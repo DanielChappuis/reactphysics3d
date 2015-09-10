@@ -75,9 +75,9 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
 
         /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(ProxyShape* proxyShape1,
+        bool computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
                                                        const Transform& transform1,
-                                                       ProxyShape* proxyShape2,
+                                                       const CollisionShapeInfo& shape2Info,
                                                        const Transform& transform2,
                                                        ContactPointInfo*& contactInfo, Vector3& v);
 
@@ -92,10 +92,12 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         ~GJKAlgorithm();
 
         /// Initalize the algorithm
-        virtual void init(MemoryAllocator* memoryAllocator);
+        virtual void init(const CollisionDetection* collisionDetection,
+                          MemoryAllocator* memoryAllocator);
 
         /// Return true and compute a contact info if the two bounding volumes collide.
-        virtual bool testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape2,
+        virtual bool testCollision(const CollisionShapeInfo& shape1Info,
+                                   const CollisionShapeInfo& shape2Info,
                                    ContactPointInfo*& contactInfo);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
@@ -106,8 +108,9 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 };
 
 // Initalize the algorithm
-inline void GJKAlgorithm::init(MemoryAllocator* memoryAllocator) {
-    NarrowPhaseAlgorithm::init(memoryAllocator);
+inline void GJKAlgorithm::init(const CollisionDetection* collisionDetection,
+                               MemoryAllocator* memoryAllocator) {
+    NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
     mAlgoEPA.init(memoryAllocator);
 }
 

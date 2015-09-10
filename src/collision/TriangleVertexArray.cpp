@@ -30,13 +30,16 @@ using namespace reactphysics3d;
 
 // Constructor
 TriangleVertexArray::TriangleVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
-                                         uint nbTriangles, void* indexesStart, int indexesStride) {
+                                         uint nbTriangles, void* indexesStart, int indexesStride,
+                                         VertexDataType vertexDataType, IndexDataType indexDataType) {
     mNbVertices = nbVertices;
     mVerticesStart = reinterpret_cast<unsigned char*>(verticesStart);
     mVerticesStride = verticesStride;
     mNbTriangles = nbTriangles;
-    mIndexesStart = reinterpret_cast<unsigned char*>(indexesStart);
-    mIndexesStride = indexesStride;
+    mIndicesStart = reinterpret_cast<unsigned char*>(indexesStart);
+    mIndicesStride = indexesStride;
+    mVertexDataType = vertexDataType;
+    mIndexDataType = indexDataType;
 }
 
 // Destructor

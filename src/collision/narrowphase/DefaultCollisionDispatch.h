@@ -28,6 +28,7 @@
 
 // Libraries
 #include "CollisionDispatch.h"
+#include "ConcaveVsConvexAlgorithm.h"
 #include "SphereVsSphereAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
 
@@ -46,6 +47,9 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         /// Sphere vs Sphere collision algorithm
         SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
 
+        /// Concave vs Convex collision algorithm
+        ConcaveVsConvexAlgorithm mConcaveVsConvexAlgorithm;
+
         /// GJK Algorithm
         GJKAlgorithm mGJKAlgorithm;
 
@@ -58,12 +62,12 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         virtual ~DefaultCollisionDispatch();
 
         /// Initialize the collision dispatch configuration
-        virtual void init(MemoryAllocator* memoryAllocator);
+        virtual void init(const CollisionDetection* collisionDetection,
+                          MemoryAllocator* memoryAllocator);
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type,
-                                                      int shape2Type);
+        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2);
 };
 
 }

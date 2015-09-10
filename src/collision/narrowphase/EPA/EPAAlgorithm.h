@@ -29,6 +29,7 @@
 // Libraries
 #include "collision/narrowphase/GJK/Simplex.h"
 #include "collision/shapes/CollisionShape.h"
+#include "collision/CollisionShapeInfo.h"
 #include "constraint/ContactPoint.h"
 #include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
@@ -122,9 +123,9 @@ class EPAAlgorithm {
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                     ProxyShape* proxyShape1,
+                                                     CollisionShapeInfo shape1Info,
                                                      const Transform& transform1,
-                                                     ProxyShape* proxyShape2,
+                                                     CollisionShapeInfo shape2Info,
                                                      const Transform& transform2,
                                                      Vector3& v, ContactPointInfo*& contactInfo);
 };

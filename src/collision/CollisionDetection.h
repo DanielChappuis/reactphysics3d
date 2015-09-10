@@ -121,6 +121,10 @@ class CollisionDetection {
 
         /// Fill-in the collision detection matrix
         void fillInCollisionMatrix();
+
+        /// Return the Narrow-phase collision detection algorithm to use between two types of shapes
+        NarrowPhaseAlgorithm* getCollisionAlgorithm(CollisionShapeType shape1Type,
+                                                    CollisionShapeType shape2Type) const;
    
     public :
 
@@ -193,11 +197,17 @@ class CollisionDetection {
         friend class ConvexMeshShape;
 };
 
-/// Set the collision dispatch configuration
+// Return the Narrow-phase collision detection algorithm to use between two types of shapes
+inline NarrowPhaseAlgorithm* CollisionDetection::getCollisionAlgorithm(CollisionShapeType shape1Type,
+                                                                       CollisionShapeType shape2Type) const {
+    return mCollisionMatrix[shape1Type][shape2Type];
+}
+
+// Set the collision dispatch configuration
 inline void CollisionDetection::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
     mCollisionDispatch = collisionDispatch;
 
-    mCollisionDispatch->init(&mMemoryAllocator);
+    mCollisionDispatch->init(this, &mMemoryAllocator);
 
     // Fill-in the collision matrix with the new algorithms to use
     fillInCollisionMatrix();

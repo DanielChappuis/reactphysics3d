@@ -82,20 +82,20 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                           ProxyShape* proxyShape1,
+                                                           CollisionShapeInfo shape1Info,
                                                            const Transform& transform1,
-                                                           ProxyShape* proxyShape2,
+                                                           CollisionShapeInfo shape2Info,
                                                            const Transform& transform2,
                                                            Vector3& v, ContactPointInfo*& contactInfo) {
 
-    assert(proxyShape1->getCollisionShape()->isConvex());
-    assert(proxyShape2->getCollisionShape()->isConvex());
+    assert(shape1Info.collisionShape->isConvex());
+    assert(shape2Info.collisionShape->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(proxyShape1->getCollisionShape());
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(proxyShape2->getCollisionShape());
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
 
-    void** shape1CachedCollisionData = proxyShape1->getCachedCollisionData();
-    void** shape2CachedCollisionData = proxyShape2->getCachedCollisionData();
+    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
+    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
 
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];  // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];  // Support points of object B in local coordinates
@@ -427,7 +427,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     
     // Create the contact info object
     contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                          ContactPointInfo(proxyShape1, proxyShape2, normal,
+                          ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                            penetrationDepth, pALocal, pBLocal);
     
     return true;

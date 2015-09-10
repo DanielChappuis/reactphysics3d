@@ -29,8 +29,23 @@
 // Libraries
 #include "CollisionShape.h"
 
-/// ReactPhysics3D namespace
+// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Class TriangleCallback
+/**
+ * This class is used to encapsulate a callback method for
+ * a single triangle of a ConcaveMesh.
+ */
+class TriangleCallback {
+
+    public:
+
+        /// Report a triangle
+        virtual void reportTriangle(const Vector3* trianglePoints)=0;
+
+};
+
 
 // Class ConcaveShape
 /**
@@ -65,6 +80,9 @@ class ConcaveShape : public CollisionShape {
 
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
+
+        /// Use a callback method on all triangles of the concave shape inside a given AABB
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
 };
 
 /// Return true if the collision shape is convex, false if it is concave

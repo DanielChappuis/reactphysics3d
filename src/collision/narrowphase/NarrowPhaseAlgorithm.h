@@ -31,10 +31,12 @@
 #include "constraint/ContactPoint.h"
 #include "memory/MemoryAllocator.h"
 #include "engine/OverlappingPair.h"
-
+#include "collision/CollisionShapeInfo.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+class CollisionDetection;
 
 // Class NarrowPhaseAlgorithm
 /**
@@ -47,6 +49,9 @@ class NarrowPhaseAlgorithm {
     protected :
 
         // -------------------- Attributes -------------------- //
+
+        /// Pointer to the collision detection object
+        const CollisionDetection* mCollisionDetection;
 
         /// Pointer to the memory allocator
         MemoryAllocator* mMemoryAllocator;
@@ -73,13 +78,14 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();
 
         /// Initalize the algorithm
-        virtual void init(MemoryAllocator* memoryAllocator);
+        virtual void init(const CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
         
         /// Set the current overlapping pair of bodies
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
+        virtual bool testCollision(const CollisionShapeInfo& shape1Info,
+                                   const CollisionShapeInfo& shape2Info,
                                    ContactPointInfo*& contactInfo)=0;
 };
 

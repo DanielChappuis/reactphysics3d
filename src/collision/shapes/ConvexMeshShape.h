@@ -44,6 +44,8 @@ class CollisionWorld;
 // TODO : Make possible to create a ConvexMeshShape using a TriangleMesh as for
 // the ConcaveMeshShape
 
+// TODO : Make possible for the user to have a scaling factor on the mesh
+
 // Class ConvexMeshShape
 /**
  * This class represents a convex mesh shape. In order to create a convex mesh shape, you

@@ -28,9 +28,36 @@
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
+#include "collision/shapes/ConvexShape.h"
+#include "collision/shapes/ConcaveShape.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+// Class ConvexVsTriangleCallback
+/**
+ * This class is used to encapsulate a callback method for
+ * collision detection between the triangle of a concave mesh shape
+ * and a convex shape.
+ */
+class ConvexVsTriangleCallback : public TriangleCallback {
+
+    private:
+
+        /// Convex collision shape to test collision with
+        const ConvexShape* mConvexShape;
+
+    public:
+
+        /// Set the convex collision shape to test collision with
+        void setConvexShape(const ConvexShape* convexShape) {
+            mConvexShape = convexShape;
+        }
+
+        /// Test collision between a triangle and the convex mesh shape
+        virtual void reportTriangle(const Vector3* trianglePoints);
+
+};
 
 // Class ConcaveVsConvexAlgorithm
 /**
@@ -42,6 +69,11 @@ namespace reactphysics3d {
 class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
 
     protected :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Convex vs Triangle callback
+        ConvexVsTriangleCallback mConvexVsTriangleCallback;
 
         // -------------------- Methods -------------------- //
 
@@ -62,7 +94,8 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         virtual ~ConcaveVsConvexAlgorithm();
 
         /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
+        virtual bool testCollision(const CollisionShapeInfo& shape1Info,
+                                   const CollisionShapeInfo& shape2Info,
                                    ContactPointInfo*& contactInfo);
 };
 

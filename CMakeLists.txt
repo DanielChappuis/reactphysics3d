@@ -108,6 +108,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/TriangleMesh.cpp"
     "src/collision/CollisionDetection.h"
     "src/collision/CollisionDetection.cpp"
+    "src/collision/CollisionShapeInfo.h"
     "src/constraint/BallAndSocketJoint.h"
     "src/constraint/BallAndSocketJoint.cpp"
     "src/constraint/ContactPoint.h"

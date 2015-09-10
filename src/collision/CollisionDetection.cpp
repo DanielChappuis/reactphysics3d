@@ -216,13 +216,22 @@ void CollisionDetection::computeNarrowPhase() {
         const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
+
+        // If there is no collision algorithm between those two kinds of shapes
+        if (narrowPhaseAlgorithm == NULL) continue;
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
+
+        // Create the CollisionShapeInfo objects
+        CollisionShapeInfo shape1Info(shape1, shape1->getCollisionShape(), shape1->getLocalToWorldTransform(),
+                                      shape1->getCachedCollisionData());
+        CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
+                                      shape2->getCachedCollisionData());
         
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        if (narrowPhaseAlgorithm->testCollision(shape1, shape2, contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, contactInfo)) {
             assert(contactInfo != NULL);
 
             // If it is the first contact since the pair are overlapping
@@ -324,12 +333,21 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
 
+        // If there is no collision algorithm between those two kinds of shapes
+        if (narrowPhaseAlgorithm == NULL) continue;
+
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
 
+        // Create the CollisionShapeInfo objects
+        CollisionShapeInfo shape1Info(shape1, shape1->getCollisionShape(), shape1->getLocalToWorldTransform(),
+                                      shape1->getCachedCollisionData());
+        CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
+                                      shape2->getCachedCollisionData());
+
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        if (narrowPhaseAlgorithm->testCollision(shape1, shape2, contactInfo)) {
+        if (narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, contactInfo)) {
             assert(contactInfo != NULL);
 
             // Create a new contact
@@ -464,7 +482,6 @@ void CollisionDetection::fillInCollisionMatrix() {
     for (int i=0; i<NB_COLLISION_SHAPE_TYPES; i++) {
         for (int j=0; j<NB_COLLISION_SHAPE_TYPES; j++) {
             mCollisionMatrix[i][j] = mCollisionDispatch->selectAlgorithm(i, j);
-            assert(mCollisionMatrix[i][j] != NULL);
         }
     }
 }

@@ -32,14 +32,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type)
-               : mType(type), mNbSimilarCreatedShapes(0) {
+CollisionShape::CollisionShape(CollisionShapeType type) : mType(type){
     
 }
 
 // Destructor
 CollisionShape::~CollisionShape() {
-    assert(mNbSimilarCreatedShapes == 0);
+
 }
 
 // Compute the world-space AABB of the collision shape given a transform

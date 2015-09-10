@@ -56,7 +56,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape2,
+bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
+                                 const CollisionShapeInfo& shape2Info,
                                  ContactPointInfo*& contactInfo) {
     
     Vector3 suppA;             // Support point of object A
@@ -67,20 +68,18 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
     decimal vDotw;
     decimal prevDistSquare;
 
-    assert(proxyShape1->getCollisionShape()->isConvex());
-    assert(proxyShape2->getCollisionShape()->isConvex());
+    assert(shape1Info.collisionShape->isConvex());
+    assert(shape2Info.collisionShape->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(proxyShape1->getCollisionShape());
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(proxyShape2->getCollisionShape());
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
 
-    void** shape1CachedCollisionData = proxyShape1->getCachedCollisionData();
-    void** shape2CachedCollisionData = proxyShape2->getCachedCollisionData();
+    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
+    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
 
     // Get the local-space to world-space transforms
-    const Transform transform1 = proxyShape1->getBody()->getTransform() *
-                                 proxyShape1->getLocalToBodyTransform();
-    const Transform transform2 = proxyShape2->getBody()->getTransform() *
-                                 proxyShape2->getLocalToBodyTransform();
+    const Transform transform1 = shape1Info.shapeToWorldTransform;
+    const Transform transform2 = shape2Info.shapeToWorldTransform;
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
@@ -149,7 +148,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
 			
             // Create the contact info object
             contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                 ContactPointInfo(proxyShape1, proxyShape2, normal,
+                                 ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                   penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
@@ -181,7 +180,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
 			
             // Create the contact info object
             contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                   ContactPointInfo(proxyShape1, proxyShape2, normal,
+                                   ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                     penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
@@ -211,7 +210,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
 			
             // Create the contact info object
             contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                 ContactPointInfo(proxyShape1, proxyShape2, normal,
+                                 ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                   penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
@@ -248,7 +247,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
 			
             // Create the contact info object
             contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                   ContactPointInfo(proxyShape1, proxyShape2, normal,
+                                   ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                     penetrationDepth, pA, pB);
 
             // There is an intersection, therefore we return true
@@ -261,7 +260,7 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
     // again but on the enlarged objects to compute a simplex polytope that contains
     // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
     // the correct penetration depth and contact points between the enlarged objects.
-    return computePenetrationDepthForEnlargedObjects(proxyShape1, transform1, proxyShape2,
+    return computePenetrationDepthForEnlargedObjects(shape1Info, transform1, shape2Info,
                                                      transform2, contactInfo, v);
 }
 
@@ -270,9 +269,9 @@ bool GJKAlgorithm::testCollision(ProxyShape* proxyShape1, ProxyShape* proxyShape
 /// assumed to intersect in the original objects (without margin). Therefore such
 /// a polytope must exist. Then, we give that polytope to the EPA algorithm to
 /// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(ProxyShape* proxyShape1,
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
                                                              const Transform& transform1,
-                                                             ProxyShape* proxyShape2,
+                                                             const CollisionShapeInfo& shape2Info,
                                                              const Transform& transform2,
                                                              ContactPointInfo*& contactInfo,
                                                              Vector3& v) {
@@ -284,14 +283,14 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(ProxyShape* proxySh
     decimal distSquare = DECIMAL_LARGEST;
     decimal prevDistSquare;
 
-    assert(proxyShape1->getCollisionShape()->isConvex());
-    assert(proxyShape2->getCollisionShape()->isConvex());
+    assert(shape1Info.collisionShape->isConvex());
+    assert(shape2Info.collisionShape->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(proxyShape1->getCollisionShape());
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(proxyShape2->getCollisionShape());
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
 
-    void** shape1CachedCollisionData = proxyShape1->getCachedCollisionData();
-    void** shape2CachedCollisionData = proxyShape2->getCachedCollisionData();
+    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
+    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
 
     // Transform a point from local space of body 2 to local space
     // of body 1 (the GJK algorithm is done in local space of body 1)
@@ -343,8 +342,8 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(ProxyShape* proxySh
     // Give the simplex computed with GJK algorithm to the EPA algorithm
     // which will compute the correct penetration depth and contact points
     // between the two enlarged objects
-    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, proxyShape1,
-                                                            transform1, proxyShape2, transform2,
+    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, shape1Info,
+                                                            transform1, shape2Info, transform2,
                                                             v, contactInfo);
 }
 

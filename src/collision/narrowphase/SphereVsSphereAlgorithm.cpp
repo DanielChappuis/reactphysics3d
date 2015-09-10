@@ -40,21 +40,17 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
-                                            ProxyShape* collisionShape2,
+bool SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
+                                            const CollisionShapeInfo& shape2Info,
                                             ContactPointInfo*& contactInfo) {
     
     // Get the sphere collision shapes
-    const CollisionShape* shape1 = collisionShape1->getCollisionShape();
-    const CollisionShape* shape2 = collisionShape2->getCollisionShape();
-    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(shape1);
-    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(shape2);
+    const SphereShape* sphereShape1 = static_cast<const SphereShape*>(shape1Info.collisionShape);
+    const SphereShape* sphereShape2 = static_cast<const SphereShape*>(shape2Info.collisionShape);
 
     // Get the local-space to world-space transforms
-    const Transform transform1 = collisionShape1->getBody()->getTransform() *
-                                 collisionShape1->getLocalToBodyTransform();
-    const Transform transform2 = collisionShape2->getBody()->getTransform() *
-                                 collisionShape2->getLocalToBodyTransform();
+    const Transform& transform1 = shape1Info.shapeToWorldTransform;
+    const Transform& transform2 = shape2Info.shapeToWorldTransform;
 
     // Compute the distance between the centers
     Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
@@ -75,7 +71,7 @@ bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
         
         // Create the contact info object
         contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                         ContactPointInfo(collisionShape1, collisionShape2,
+                         ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape,
                                           vectorBetweenCenters.getUnit(), penetrationDepth,
                                           intersectionOnBody1, intersectionOnBody2);
     

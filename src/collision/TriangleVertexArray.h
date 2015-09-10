@@ -43,6 +43,14 @@ namespace reactphysics3d {
  */
 class TriangleVertexArray {
 
+    public:
+
+        /// Data type for the vertices in the array
+        enum VertexDataType {VERTEX_FLOAT_TYPE, VERTEX_DOUBLE_TYPE};
+
+        /// Data type for the indices in the array
+        enum IndexDataType {INDEX_INTEGER_TYPE, INDEX_SHORT_TYPE};
+
     protected:
 
         /// Number of vertices in the array
@@ -59,25 +67,92 @@ class TriangleVertexArray {
         uint mNbTriangles;
 
         /// Pointer to the first vertex index of the array
-        unsigned char* mIndexesStart;
+        unsigned char* mIndicesStart;
 
-        /// Stride (number of bytes) between the beginning of two indexes in
+        /// Stride (number of bytes) between the beginning of two indices in
         /// the array
-        int mIndexesStride;
+        int mIndicesStride;
+
+        /// Data type of the vertices in the array
+        VertexDataType mVertexDataType;
+
+        /// Data type of the indices in the array
+        IndexDataType mIndexDataType;
 
     public:
 
         /// Constructor
         TriangleVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
-                            uint nbTriangles, void* indexesStart, int indexesStride);
+                            uint nbTriangles, void* indexesStart, int indexesStride,
+                            VertexDataType vertexDataType, IndexDataType indexDataType);
 
         /// Destructor
         ~TriangleVertexArray();
 
+        /// Return the vertex data type
+        VertexDataType getVertexDataType() const;
 
+        /// Return the index data type
+        IndexDataType getIndexDataType() const;
 
+        /// Return the number of vertices
+        uint getNbVertices() const;
 
+        /// Return the number of triangles
+        uint getNbTriangles() const;
+
+        /// Return the vertices stride (number of bytes)
+        int getVerticesStride() const;
+
+        /// Return the indices stride (number of bytes)
+        int getIndicesStride() const;
+
+        /// Return the pointer to the start of the vertices array
+        unsigned char* getVerticesStart() const;
+
+        /// Return the pointer to the start of the indices array
+        unsigned char* getIndicesStart() const;
 };
+
+// Return the vertex data type
+inline TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataType() const {
+    return mVertexDataType;
+}
+
+// Return the index data type
+inline TriangleVertexArray::IndexDataType TriangleVertexArray::getIndexDataType() const {
+   return mIndexDataType;
+}
+
+// Return the number of vertices
+inline uint TriangleVertexArray::getNbVertices() const {
+    return mNbVertices;
+}
+
+// Return the number of triangles
+inline uint TriangleVertexArray::getNbTriangles() const {
+    return mNbTriangles;
+}
+
+// Return the vertices stride (number of bytes)
+inline int TriangleVertexArray::getVerticesStride() const {
+    return mVerticesStride;
+}
+
+// Return the indices stride (number of bytes)
+inline int TriangleVertexArray::getIndicesStride() const {
+    return mIndicesStride;
+}
+
+// Return the pointer to the start of the vertices array
+inline unsigned char* TriangleVertexArray::getVerticesStart() const {
+    return mVerticesStart;
+}
+
+// Return the pointer to the start of the indices array
+inline unsigned char* TriangleVertexArray::getIndicesStart() const {
+    return mIndicesStart;
+}
 
 }
 

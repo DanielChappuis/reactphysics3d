@@ -60,9 +60,6 @@ class CollisionShape {
 
         /// Type of the collision shape
         CollisionShapeType mType;
-
-        /// Current number of similar created shapes
-        uint mNbSimilarCreatedShapes;
         
         // -------------------- Methods -------------------- //
 
@@ -106,6 +103,9 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
+        /// Return true if the collision shape type is a convex shape
+        static bool isConvex(CollisionShapeType shapeType);
+
         // -------------------- Friendship -------------------- //
 
         friend class ProxyShape;
@@ -118,6 +118,11 @@ class CollisionShape {
  */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
+}
+
+// Return true if the collision shape type is a convex shape
+inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
+    return shapeType != CONCAVE_MESH;
 }
 
 }

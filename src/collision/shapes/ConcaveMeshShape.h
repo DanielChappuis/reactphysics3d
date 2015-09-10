@@ -34,6 +34,8 @@ namespace reactphysics3d {
 
 // TODO : Implement raycasting with this collision shape
 
+// TODO : Make possible for the user to have a scaling factor on the mesh
+
 // Class ConcaveMeshShape
 /**
  * This class represents a concave mesh shape. Note that collision detection
@@ -43,6 +45,11 @@ namespace reactphysics3d {
 class ConcaveMeshShape : public ConcaveShape {
 
     protected:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Triangle mesh
+        TriangleMesh* mTriangleMesh;
 
         // -------------------- Methods -------------------- //
 
@@ -86,8 +93,8 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform);
 
-        /// Test equality between two sphere shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+        /// Use a callback method on all triangles of the concave shape inside a given AABB
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
 };
 
 // Return the number of bytes used by the collision shape
