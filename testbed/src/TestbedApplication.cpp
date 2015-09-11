@@ -396,25 +396,6 @@ void TestbedApplication::error_callback(int error, const char* description) {
     fputs(description, stderr);
 }
 
-// Display the GUI
-void TestbedApplication::displayGUI() {
-
-    // Display the FPS
-    displayFPS();
-}
-
-// Display the FPS
-void TestbedApplication::displayFPS() {
-
-    /*
-    std::stringstream ss;
-    ss << mFPS;
-    std::string fpsString = ss.str();
-    std::string windowTitle = mWindowTitle + " | FPS : " + fpsString;
-    glfwSetWindowTitle(mWindow, windowTitle.c_str());
-    */
-}
-
 // Callback method to receive keyboard events
 void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
                                   int action, int mods) {

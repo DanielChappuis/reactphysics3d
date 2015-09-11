@@ -133,14 +133,8 @@ class TestbedApplication {
         /// Check the OpenGL errors
         static void checkOpenGLErrors();
 
-        /// Display the FPS
-        void displayFPS();
-
         /// Compute the FPS
         void computeFPS();
-
-        /// Display the GUI
-        void displayGUI();
 
         /// GLFW error callback method
         static void error_callback(int error, const char* description);
