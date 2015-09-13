@@ -30,6 +30,7 @@
 #include "body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "engine/OverlappingPair.h"
+#include "engine/EventListener.h"
 #include "narrowphase/DefaultCollisionDispatch.h"
 #include "memory/MemoryAllocator.h"
 #include "constraint/ContactPoint.h"
@@ -108,9 +109,6 @@ class CollisionDetection {
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
-        /// Create a new contact
-        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
-
         /// Add a contact manifold to the linked list of contact manifolds of the two bodies
         /// involed in the corresponding contact.
         void addContactManifoldToBody(ContactManifold* contactManifold,
@@ -121,10 +119,6 @@ class CollisionDetection {
 
         /// Fill-in the collision detection matrix
         void fillInCollisionMatrix();
-
-        /// Return the Narrow-phase collision detection algorithm to use between two types of shapes
-        NarrowPhaseAlgorithm* getCollisionAlgorithm(CollisionShapeType shape1Type,
-                                                    CollisionShapeType shape2Type) const;
    
     public :
 
@@ -138,6 +132,10 @@ class CollisionDetection {
 
         /// Set the collision dispatch configuration
         void setCollisionDispatch(CollisionDispatch* collisionDispatch);
+
+        /// Return the Narrow-phase collision detection algorithm to use between two types of shapes
+        NarrowPhaseAlgorithm* getCollisionAlgorithm(CollisionShapeType shape1Type,
+                                                    CollisionShapeType shape2Type) const;
 
         /// Add a proxy collision shape to the collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
@@ -186,10 +184,22 @@ class CollisionDetection {
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
 
-        // Compute the narrow-phase collision detection
+        /// Compute the narrow-phase collision detection
         void computeNarrowPhaseBetweenShapes(CollisionCallback* callback,
                                              const std::set<uint>& shapes1,
                                              const std::set<uint>& shapes2);
+
+        /// Return a pointer to the world
+        CollisionWorld* getWorld();
+
+        /// Return the world event listener
+        EventListener* getWorldEventListener();
+
+        /// Return a reference to the world memory allocator
+        MemoryAllocator& getWorldMemoryAllocator();
+
+        /// Create a new contact
+        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
 
         // -------------------- Friendship -------------------- //
 
@@ -270,6 +280,11 @@ inline bool CollisionDetection::testAABBOverlap(const ProxyShape* shape1,
     }
 
     return mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2);
+}
+
+// Return a pointer to the world
+inline CollisionWorld* CollisionDetection::getWorld() {
+    return mWorld;
 }
 
 }

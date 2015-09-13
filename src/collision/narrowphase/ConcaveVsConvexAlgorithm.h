@@ -42,16 +42,44 @@ namespace reactphysics3d {
  */
 class ConvexVsTriangleCallback : public TriangleCallback {
 
-    private:
+    protected:
+
+        /// Pointer to the collision detection object
+        CollisionDetection* mCollisionDetection;
 
         /// Convex collision shape to test collision with
         const ConvexShape* mConvexShape;
 
+        /// Proxy shape of the convex collision shape
+        ProxyShape* mConvexProxyShape;
+
+        /// Proxy shape of the concave collision shape
+        ProxyShape* mConcaveProxyShape;
+
+        /// Broadphase overlapping pair
+        OverlappingPair* mOverlappingPair;
+
     public:
+
+        /// Set the collision detection pointer
+        void setCollisionDetection(CollisionDetection* collisionDetection) {
+            mCollisionDetection = collisionDetection;
+        }
 
         /// Set the convex collision shape to test collision with
         void setConvexShape(const ConvexShape* convexShape) {
             mConvexShape = convexShape;
+        }
+
+        /// Set the broadphase overlapping pair
+        void setOverlappingPair(OverlappingPair* overlappingPair) {
+            mOverlappingPair = overlappingPair;
+        }
+
+        /// Set the proxy shapes of the two collision shapes
+        void setProxyShapes(ProxyShape* convexProxyShape, ProxyShape* concaveProxyShape) {
+            mConvexProxyShape = convexProxyShape;
+            mConcaveProxyShape = concaveProxyShape;
         }
 
         /// Test collision between a triangle and the convex mesh shape

@@ -37,6 +37,8 @@
 #include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/CylinderShape.h"
 
+// TODO : Add test for concave shape here
+
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 

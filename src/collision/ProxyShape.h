@@ -93,9 +93,6 @@ class ProxyShape {
         /// Private assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape);
 
-        /// Return the pointer to the cached collision data
-        void** getCachedCollisionData();
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -151,6 +148,9 @@ class ProxyShape {
 
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
+
+        /// Return the pointer to the cached collision data
+        void** getCachedCollisionData();
 
         // -------------------- Friendship -------------------- //
 

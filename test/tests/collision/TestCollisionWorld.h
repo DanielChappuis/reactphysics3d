@@ -39,6 +39,8 @@ enum CollisionCategory {
     CATEGORY_3 = 0x0004
 };
 
+// TODO : Add test for concave shape collision here
+
 // Class
 class WorldCollisionCallback : public CollisionCallback
 {

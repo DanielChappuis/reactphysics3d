@@ -40,7 +40,7 @@ DefaultCollisionDispatch::~DefaultCollisionDispatch() {
 }
 
 /// Initialize the collision dispatch configuration
-void DefaultCollisionDispatch::init(const CollisionDetection* collisionDetection,
+void DefaultCollisionDispatch::init(CollisionDetection* collisionDetection,
                                     MemoryAllocator* memoryAllocator) {
 
     // Initialize the collision algorithms

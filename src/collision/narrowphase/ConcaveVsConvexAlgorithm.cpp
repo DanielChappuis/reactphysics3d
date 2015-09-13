@@ -24,9 +24,11 @@
 ********************************************************************************/
 
 // Libraries
-#include "collision/shapes/ConvexShape.h"
 #include "collision/shapes/ConcaveShape.h"
+#include "collision/shapes/TriangleShape.h"
 #include "ConcaveVsConvexAlgorithm.h"
+#include "collision/CollisionDetection.h"
+#include "engine/CollisionWorld.h"
 
 using namespace reactphysics3d;
 
@@ -45,8 +47,8 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
                                              const CollisionShapeInfo& shape2Info,
                                              ContactPointInfo*& contactInfo) {
 
-    const ProxyShape* convexProxyShape;
-    const ProxyShape* concaveProxyShape;
+    ProxyShape* convexProxyShape;
+    ProxyShape* concaveProxyShape;
     const ConvexShape* convexShape;
     const ConcaveShape* concaveShape;
 
@@ -65,7 +67,10 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
     }
 
     // Set the parameters of the callback object
+    mConvexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
     mConvexVsTriangleCallback.setConvexShape(convexShape);
+    mConvexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
+    mConvexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
 
     // Compute the convex shape AABB in the local-space of the concave shape
     AABB aabb;
@@ -74,11 +79,52 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 
     // Call the convex vs triangle callback for each triangle of the concave shape
     concaveShape->testAllTriangles(mConvexVsTriangleCallback, aabb);
+
+    // TODO : Handle return value here
 }
 
 // Test collision between a triangle and the convex mesh shape
 void ConvexVsTriangleCallback::reportTriangle(const Vector3* trianglePoints) {
 
-    // Create
+    // Create a triangle collision shape
+    // TODO : Do we need to use a collision margin for a triangle ?
+    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], 0.0);
 
+    // Select the collision algorithm to use between the triangle and the convex shape
+    NarrowPhaseAlgorithm* algo = mCollisionDetection->getCollisionAlgorithm(triangleShape.getType(),
+                                                                            mConvexShape->getType());
+
+    // Create the CollisionShapeInfo objects
+    CollisionShapeInfo shapeConvexInfo(mConvexProxyShape, mConvexShape, mConvexProxyShape->getLocalToWorldTransform(),
+                                       mOverlappingPair, mConvexProxyShape->getCachedCollisionData());
+    CollisionShapeInfo shapeConcaveInfo(mConcaveProxyShape, mConcaveProxyShape->getCollisionShape(),
+                                        mConcaveProxyShape->getLocalToWorldTransform(),
+                                        mOverlappingPair, mConcaveProxyShape->getCachedCollisionData());
+
+    // Use the collision algorithm to test collision between the triangle and the other convex shape
+    ContactPointInfo* contactInfo = NULL;
+    if (algo->testCollision(shapeConvexInfo, shapeConcaveInfo, contactInfo)) {
+        assert(contactInfo != NULL);
+
+        // If it is the first contact since the pair are overlapping
+        if (mOverlappingPair->getNbContactPoints() == 0) {
+
+            // Trigger a callback event
+            if (mCollisionDetection->getWorldEventListener() != NULL) {
+                mCollisionDetection->getWorldEventListener()->beginContact(*contactInfo);
+            }
+        }
+
+        // Create a new contact
+        mCollisionDetection->createContact(mOverlappingPair, contactInfo);
+
+        // Trigger a callback event for the new contact
+        if (mCollisionDetection->getWorldEventListener() != NULL) {
+            mCollisionDetection->getWorldEventListener()->newContact(*contactInfo);
+        }
+
+        // Delete and remove the contact info from the memory allocator
+        contactInfo->~ContactPointInfo();
+        mCollisionDetection->getWorldMemoryAllocator().release(contactInfo, sizeof(ContactPointInfo));
+    }
 }

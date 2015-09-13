@@ -225,9 +225,9 @@ void CollisionDetection::computeNarrowPhase() {
 
         // Create the CollisionShapeInfo objects
         CollisionShapeInfo shape1Info(shape1, shape1->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                      shape1->getCachedCollisionData());
+                                      pair, shape1->getCachedCollisionData());
         CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
-                                      shape2->getCachedCollisionData());
+                                      pair, shape2->getCachedCollisionData());
         
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
@@ -341,9 +341,9 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
 
         // Create the CollisionShapeInfo objects
         CollisionShapeInfo shape1Info(shape1, shape1->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                      shape1->getCachedCollisionData());
+                                      pair, shape1->getCachedCollisionData());
         CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
-                                      shape2->getCachedCollisionData());
+                                      pair, shape2->getCachedCollisionData());
 
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
@@ -484,4 +484,14 @@ void CollisionDetection::fillInCollisionMatrix() {
             mCollisionMatrix[i][j] = mCollisionDispatch->selectAlgorithm(i, j);
         }
     }
+}
+
+// Return the world event listener
+EventListener* CollisionDetection::getWorldEventListener() {
+   return mWorld->mEventListener;
+}
+
+/// Return a reference to the world memory allocator
+MemoryAllocator& CollisionDetection::getWorldMemoryAllocator() {
+  return mWorld->mMemoryAllocator;
 }

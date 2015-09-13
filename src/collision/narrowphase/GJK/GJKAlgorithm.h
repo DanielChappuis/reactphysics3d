@@ -92,7 +92,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         ~GJKAlgorithm();
 
         /// Initalize the algorithm
-        virtual void init(const CollisionDetection* collisionDetection,
+        virtual void init(CollisionDetection* collisionDetection,
                           MemoryAllocator* memoryAllocator);
 
         /// Return true and compute a contact info if the two bounding volumes collide.
@@ -108,7 +108,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 };
 
 // Initalize the algorithm
-inline void GJKAlgorithm::init(const CollisionDetection* collisionDetection,
+inline void GJKAlgorithm::init(CollisionDetection* collisionDetection,
                                MemoryAllocator* memoryAllocator) {
     NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
     mAlgoEPA.init(memoryAllocator);

@@ -32,6 +32,8 @@
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
+class OverlappingPair;
+
 // Class CollisionShapeInfo
 /**
  * This structure regroups different things about a collision shape. This is
@@ -41,15 +43,8 @@ struct CollisionShapeInfo {
 
     public:
 
-        /// Constructor
-        CollisionShapeInfo(ProxyShape* proxyCollisionShape, const CollisionShape* shape,
-                           const Transform& shapeLocalToWorldTransform,
-                           void** cachedData)
-              : proxyShape(proxyCollisionShape), collisionShape(shape),
-                shapeToWorldTransform(shapeLocalToWorldTransform),
-                cachedCollisionData(cachedData) {
-
-        }
+        /// Broadphase overlapping pair
+        OverlappingPair* overlappingPair;
 
         /// Proxy shape
         ProxyShape* proxyShape;
@@ -63,6 +58,15 @@ struct CollisionShapeInfo {
         /// Cached collision data of the proxy shape
         void** cachedCollisionData;
 
+        /// Constructor
+        CollisionShapeInfo(ProxyShape* proxyCollisionShape, const CollisionShape* shape,
+                           const Transform& shapeLocalToWorldTransform, OverlappingPair* pair,
+                           void** cachedData)
+              : overlappingPair(pair), proxyShape(proxyCollisionShape), collisionShape(shape),
+                shapeToWorldTransform(shapeLocalToWorldTransform),
+                cachedCollisionData(cachedData) {
+
+        }
 };
 
 }

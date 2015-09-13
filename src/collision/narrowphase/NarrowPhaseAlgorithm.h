@@ -51,7 +51,7 @@ class NarrowPhaseAlgorithm {
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the collision detection object
-        const CollisionDetection* mCollisionDetection;
+        CollisionDetection* mCollisionDetection;
 
         /// Pointer to the memory allocator
         MemoryAllocator* mMemoryAllocator;
@@ -78,7 +78,7 @@ class NarrowPhaseAlgorithm {
         virtual ~NarrowPhaseAlgorithm();
 
         /// Initalize the algorithm
-        virtual void init(const CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
+        virtual void init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
         
         /// Set the current overlapping pair of bodies
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
