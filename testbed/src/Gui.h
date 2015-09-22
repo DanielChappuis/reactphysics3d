@@ -37,6 +37,7 @@
 const int LEFT_PANE_WIDTH = 300;
 const int LEFT_PANE_HEADER_HEIGHT = 90;
 const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.3;
+const int CHECKBOX_SIZE = 9;
 
 using namespace openglframework;
 

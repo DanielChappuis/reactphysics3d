@@ -22,13 +22,13 @@
 #ifndef IMGUI_H
 #define IMGUI_H
 
-static const int BUTTON_HEIGHT = 40;
-static const int SLIDER_HEIGHT = 30;
-static const int SLIDER_MARKER_WIDTH = 10;
-static const int CHECK_SIZE = 18;
-static const int DEFAULT_VERTICAL_SPACING = 14;
+static const int BUTTON_HEIGHT = 20;
+static const int SLIDER_HEIGHT = 20;
+static const int SLIDER_MARKER_WIDTH = 5;
+static const int CHECK_SIZE = 10;
+static const int DEFAULT_VERTICAL_SPACING = 7;
 static const int DEFAULT_HORIZONTAL_SPACING = 14;
-static const int TEXT_HEIGHT = 16;
+static const int TEXT_HEIGHT = 10;
 static const int FONT_HEIGHT = 30;
 static const int SCROll_AREA_TOP_PADDING = 5;
 static const int SCROLL_AREA_PADDING = 5;
@@ -68,13 +68,13 @@ void imguiVerticalSpace(int spaceY);
 void imguiHorizontalSpace(int spaceX);
 void imguiSeparatorLine();
 
-bool imguiButton(const char* text, bool enabled = true, int width = -1);
-bool imguiItem(const char* text, bool enabled = true);
-bool imguiCheck(const char* text, bool checked, bool enabled = true);
+bool imguiButton(const char* text, bool enabled = true, int width = -1, int height = -1, float scaleX=1, float scaleY=1);
+bool imguiItem(const char* text, bool enabled = true, float scaleX=1, float scaleY=1);
+bool imguiCheck(const char* text, bool checked, bool enabled = true, float scaleX = 1, float scaleY = 1);
 bool imguiCollapse(const char* text, const char* subtext, bool checked, bool enabled = true);
 void imguiLabel(const char* text);
 void imguiValue(const char* text);
-bool imguiSlider(const char* text, float* val, float vmin, float vmax, float vinc, bool enabled = true);
+bool imguiSlider(const char* text, float* val, float vmin, float vmax, float vinc, bool enabled = true, float scalingX = 1.0f, float scalingY = 1.0f);
 
 void imguiDrawText(int x, int y, int align, const char* text, unsigned int color);
 void imguiDrawLine(float x0, float y0, float x1, float y1, float r, unsigned int color);

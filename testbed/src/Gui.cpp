@@ -94,6 +94,9 @@ void Gui::displayLeftPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
 
+    const float scalingX = app.mWindowToFramebufferRatio.x;
+    const float scalingY = app.mWindowToFramebufferRatio.y;
+
     int windowWidth, windowHeight;
     glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
 
@@ -104,60 +107,61 @@ void Gui::displayLeftPane() {
 
     // ------ Header ----- //
 
-    imguiHorizontalSpace(10);
-    imguiVerticalSpace(20);
+    imguiHorizontalSpace(scalingX * 2.5);
+    imguiVerticalSpace(scalingY * 5);
     imguiStartLine();
 
-    const int button_width = 150;
+    const int button_width = app.mWindowToFramebufferRatio.x * 75.0f;
+    const int button_height = app.mWindowToFramebufferRatio.y * 20.0f;
 
     // Play/Pause
-    if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width)) {
+    if (imguiButton(app.mTimer.isRunning() ? "Pause" : "Play", true, button_width, button_height, scalingX, scalingY)) {
         app.togglePlayPauseSimulation();
     }
-    imguiHorizontalSpace(5);
+    imguiHorizontalSpace(scalingX * 2.5);
 
     // Step
-    if (imguiButton("Step", !app.mTimer.isRunning(), button_width)) {
+    if (imguiButton("Step", !app.mTimer.isRunning(), button_width, button_height, scalingX, scalingY)) {
         app.toggleTakeSinglePhysicsStep();
     }
-    imguiHorizontalSpace(5);
+    imguiHorizontalSpace(scalingX * 2.5);
 
     // Restart
-    if (imguiButton("Restart", true, button_width)) {
+    if (imguiButton("Restart", true, button_width, button_height, scalingX, scalingY)) {
         app.restartSimulation();
     }
 
     imguiEndLine();
-    imguiVerticalSpace(70);
+    imguiVerticalSpace(scalingY * 35);
 
     imguiSeparatorLine();
-    imguiVerticalSpace(5);
+    imguiVerticalSpace(scalingY * 2.5);
     imguiStartLine();
 
     // ----- Left Pane Tabs ----- //
 
     int widthButton = app.mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH / 4.3;
-    if (imguiButton("Scenes", true, widthButton)) {
+    if (imguiButton("Scenes", true, widthButton, button_height, scalingX, scalingY)) {
         mLeftPane = SCENES;
     }
-    imguiHorizontalSpace(5);
+    imguiHorizontalSpace(scalingX * 2.5);
 
-    if (imguiButton("Physics", true, widthButton)) {
+    if (imguiButton("Physics", true, widthButton, button_height, scalingX, scalingY)) {
         mLeftPane = PHYSICS;
     }
-    imguiHorizontalSpace(5);
+    imguiHorizontalSpace(scalingX * 2.5);
 
-    if (imguiButton("Rendering", true, widthButton)) {
+    if (imguiButton("Rendering", true, widthButton, button_height, scalingX, scalingY)) {
         mLeftPane = RENDERING;
     }
-    imguiHorizontalSpace(5);
+    imguiHorizontalSpace(scalingX * 2.5);
 
-    if (imguiButton("Profiling", true, widthButton)) {
+    if (imguiButton("Profiling", true, widthButton, button_height, scalingX, scalingY)) {
         mLeftPane = PROFILING;
     }
 
     imguiEndLine();
-    imguiVerticalSpace(BUTTON_HEIGHT + 8);
+    imguiVerticalSpace(scalingY * (BUTTON_HEIGHT/2 + 15));
     imguiSeparatorLine();
     imguiEndScrollArea();
 
@@ -174,6 +178,9 @@ void Gui::displayLeftPane() {
 void Gui::displayScenesPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
+
+    const float scalingX = app.mWindowToFramebufferRatio.x;
+    const float scalingY = app.mWindowToFramebufferRatio.y;
 
     static int choice = 0;
     int startChoice = choice;
@@ -194,7 +201,7 @@ void Gui::displayScenesPane() {
     for (int i=0; i<scenes.size(); i++) {
 
         // Display a radio button
-        if (imguiCheck(scenes[i]->getName().c_str(), choice == i)) {
+        if (imguiCheck(scenes[i]->getName().c_str(), choice == i, true, scalingX, scalingY)) {
             choice = i;
         }
     }
@@ -209,6 +216,9 @@ void Gui::displayPhysicsPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
 
+    const float scalingX = app.mWindowToFramebufferRatio.x;
+    const float scalingY = app.mWindowToFramebufferRatio.y;
+
     int windowWidth, windowHeight;
     glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
 
@@ -218,66 +228,68 @@ void Gui::displayPhysicsPane() {
                          app.mWindowToFramebufferRatio.y * (windowHeight - LEFT_PANE_HEADER_HEIGHT),
                          &scrollarea);
 
-    imguiVerticalSpace(15);
+    imguiVerticalSpace(10 * scalingY);
 
     // Enabled/Disable Sleeping
-    bool toggle = imguiCheck("Sleeping enabled", app.mEngineSettings.isSleepingEnabled);
+    bool toggle = imguiCheck("Sleeping enabled", app.mEngineSettings.isSleepingEnabled, true, scalingX, scalingY);
     if (toggle) {
         app.mEngineSettings.isSleepingEnabled = !app.mEngineSettings.isSleepingEnabled;
     }
 
     // Enabled/Disable Gravity
-    toggle = imguiCheck("Gravity enabled", app.mEngineSettings.isGravityEnabled);
+    toggle = imguiCheck("Gravity enabled", app.mEngineSettings.isGravityEnabled, true, scalingX, scalingY);
     if (toggle) {
         app.mEngineSettings.isGravityEnabled = !app.mEngineSettings.isGravityEnabled;
     }
 
+    imguiVerticalSpace(10 * scalingY);
+
     // Timestep
     float timeStep = app.mEngineSettings.timeStep;
-    if (imguiSlider("Timestep", &timeStep, 0.001f, 1.0f, 0.001f)) {
+    if (imguiSlider("Timestep", &timeStep, 0.001f, 1.0f, 0.001f, true, scalingX, scalingY)) {
         app.mEngineSettings.timeStep = timeStep;
     }
 
     // Nb velocity solver iterations
     float nbVelocityIterations = static_cast<float>(app.mEngineSettings.nbVelocitySolverIterations);
-    if (imguiSlider("Velocity Solver Iterations", &nbVelocityIterations, 1.0f, 100.0f, 1.0f)) {
+    if (imguiSlider("Velocity Solver Iterations", &nbVelocityIterations, 1.0f, 100.0f, 1.0f, true, scalingX, scalingY)) {
         app.mEngineSettings.nbVelocitySolverIterations = static_cast<int>(nbVelocityIterations);
     }
 
     // Nb position solver iterations
     float nbPositionIterations = static_cast<float>(app.mEngineSettings.nbPositionSolverIterations);
-    if (imguiSlider("Position Solver Iterations", &nbPositionIterations, 1.0f, 100.0f, 1.0f)) {
+    if (imguiSlider("Position Solver Iterations", &nbPositionIterations, 1.0f, 100.0f, 1.0f, true, scalingX, scalingY)) {
         app.mEngineSettings.nbPositionSolverIterations = static_cast<int>(nbPositionIterations);
     }
 
     // Time before sleep
     float timeBeforeSleep = app.mEngineSettings.timeBeforeSleep;
-    if (imguiSlider("Time before sleep", &timeBeforeSleep, 0.0f, 60.0f, 0.5f)) {
+    if (imguiSlider("Time before sleep", &timeBeforeSleep, 0.0f, 60.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.timeBeforeSleep = timeBeforeSleep;
     }
 
     // Sleep linear velocity
     float sleepLinearVelocity = app.mEngineSettings.sleepLinearVelocity;
-    if (imguiSlider("Sleep linear velocity", &sleepLinearVelocity, 0.0f, 30.0f, 0.5f)) {
+    if (imguiSlider("Sleep linear velocity", &sleepLinearVelocity, 0.0f, 30.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.sleepLinearVelocity = sleepLinearVelocity;
     }
 
     // Sleep angular velocity
     float sleepAngularVelocity = app.mEngineSettings.sleepAngularVelocity;
-    if (imguiSlider("Sleep angular velocity", &sleepAngularVelocity, 0.0f, 30.0f, 0.5f)) {
+    if (imguiSlider("Sleep angular velocity", &sleepAngularVelocity, 0.0f, 30.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.sleepAngularVelocity = sleepAngularVelocity;
     }
 
     // Gravity vector
     openglframework::Vector3 gravity = app.mEngineSettings.gravity;
     float gravityX = gravity.x, gravityY = gravity.y, gravityZ = gravity.z;
-    if (imguiSlider("Gravity X", &gravityX, -50.0f, 50.0f, 0.5f)) {
+    if (imguiSlider("Gravity X", &gravityX, -50.0f, 50.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.gravity.x = gravityX;
     }
-    if (imguiSlider("Gravity Y", &gravityY, -50.0f, 50.0f, 0.5f)) {
+    if (imguiSlider("Gravity Y", &gravityY, -50.0f, 50.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.gravity.y = gravityY;
     }
-    if (imguiSlider("Gravity Z", &gravityZ, -50.0f, 50.0f, 0.5f)) {
+    if (imguiSlider("Gravity Z", &gravityZ, -50.0f, 50.0f, 0.5f, true, scalingX, scalingY)) {
         app.mEngineSettings.gravity.z = gravityZ;
     }
 
@@ -287,6 +299,9 @@ void Gui::displayPhysicsPane() {
 void Gui::displayRenderingPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
+
+    const float scalingX = app.mWindowToFramebufferRatio.x;
+    const float scalingY = app.mWindowToFramebufferRatio.y;
 
     int windowWidth, windowHeight;
     glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
@@ -299,21 +314,20 @@ void Gui::displayRenderingPane() {
 
     imguiVerticalSpace(15);
 
-
     // Display/Hide contact points
-    bool toggleContactPoints = imguiCheck("Contacts", app.mIsContactPointsDisplayed);
+    bool toggleContactPoints = imguiCheck("Contacts", app.mIsContactPointsDisplayed, true, scalingX, scalingY);
     if (toggleContactPoints) {
         app.displayContactPoints(!app.mIsContactPointsDisplayed);
     }
 
     // Enabled/Disable VSync
-    bool toggleVSync = imguiCheck("V Sync", app.mIsVSyncEnabled);
+    bool toggleVSync = imguiCheck("V Sync", app.mIsVSyncEnabled, true, scalingX, scalingY);
     if (toggleVSync) {
         app.enableVSync(!app.mIsVSyncEnabled);
     }
 
     // Enabled/Disable Shadows
-    bool toggleShadows = imguiCheck("Shadows", app.mIsShadowMappingEnabled);
+    bool toggleShadows = imguiCheck("Shadows", app.mIsShadowMappingEnabled, true, scalingX, scalingY);
     if (toggleShadows) {
         app.enableShadows(!app.mIsShadowMappingEnabled);
     }
@@ -324,6 +338,9 @@ void Gui::displayRenderingPane() {
 void Gui::displayProfilingPane() {
 
     TestbedApplication& app = TestbedApplication::getInstance();
+
+    const float scalingX = app.mWindowToFramebufferRatio.x;
+    const float scalingY = app.mWindowToFramebufferRatio.y;
 
     double currentTime = glfwGetTime();
     if ((currentTime - mTimeSinceLastProfilingDisplay)  > TIME_INTERVAL_DISPLAY_PROFILING_INFO) {
@@ -348,20 +365,20 @@ void Gui::displayProfilingPane() {
     std::stringstream ss;
     ss << std::setprecision(4) << mCachedFPS;
     std::string fps = std::string("FPS : ") + ss.str();
-    imguiItem(fps.c_str());
+    imguiItem(fps.c_str(), true, scalingX, scalingY);
 
     // Update time
     std::stringstream ss1;
     double updateTime = mCachedUpdateTime * 1000.0;
     ss1 << std::setprecision(4) << updateTime;
     std::string updateTimeStr = std::string("Update time (ms) : ") + ss1.str();
-    imguiItem(updateTimeStr.c_str());
+    imguiItem(updateTimeStr.c_str(), true, scalingX, scalingY);
 
     // Update time (physics)
     std::stringstream ss2;
     ss2 << std::setprecision(4) << (mCachedPhysicsUpdateTime * 1000.0);
     std::string updatePhysicsTimeStr = std::string("Update physics time (ms) : ") + ss2.str();
-    imguiItem(updatePhysicsTimeStr.c_str());
+    imguiItem(updatePhysicsTimeStr.c_str(), true, scalingX, scalingY);
 
     imguiEndScrollArea();
 }
