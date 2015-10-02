@@ -431,11 +431,15 @@ void CollisionDetection::createContact(OverlappingPair* overlappingPair,
                                 ContactPoint(*contactInfo);
     assert(contact != NULL);
 
-    // Add the contact to the contact cache of the corresponding overlapping pair
+    // Add the contact to the contact manifold set of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 
     // Add the contact manifold into the list of contact manifolds
     // of the two bodies involved in the contact
+
+    // TODO : It seems that we add the same manifold multiple times to the same body
+    // in case we call createContact() multiple time for different contact points from the
+    // same manifold. Check that it is not the case.
     addContactManifoldToBody(overlappingPair->getContactManifold(),
                              overlappingPair->getShape1()->getBody(),
                              overlappingPair->getShape2()->getBody());

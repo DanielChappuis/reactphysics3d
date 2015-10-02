@@ -119,6 +119,9 @@ class ContactManifold {
         /// True if the contact manifold has already been added into an island
         bool mIsAlreadyInIsland;
 
+        /// Average contact normal vector of all points in the manifold
+        Vector3 mAverageContactNormal;
+
         /// Reference to the memory allocator
         MemoryAllocator& mMemoryAllocator;
 
@@ -144,6 +147,9 @@ class ContactManifold {
 
         /// Return true if the contact manifold has already been added into an island
         bool isAlreadyInIsland() const;
+
+        /// Return the normalized averaged normal vector
+        Vector3 getAverageContactNormal() const;
         
     public:
 
@@ -304,6 +310,17 @@ inline ContactPoint* ContactManifold::getContactPoint(uint index) const {
 // Return true if the contact manifold has already been added into an island
 inline bool ContactManifold::isAlreadyInIsland() const {
     return mIsAlreadyInIsland;
+}
+
+// Return the normalized averaged normal vector
+inline Vector3 ContactManifold::getAverageContactNormal() const {
+    Vector3 averageNormal;
+
+    for (int i=0; i<mNbContactPoints; i++) {
+        averageNormal += mContactPoints[i]->getNormal();
+    }
+
+    return averageNormal.getUnit();
 }
 
 }

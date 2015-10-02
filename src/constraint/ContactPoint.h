@@ -65,7 +65,7 @@ struct ContactPointInfo {
         /// Second proxy shape of the contact
         ProxyShape* shape2;
 
-        /// Normal vector the the collision contact in world space
+        /// Normalized normal vector the the collision contact in world space
         const Vector3 normal;
 
         /// Penetration depth of the contact
@@ -107,7 +107,7 @@ class ContactPoint {
         /// Second rigid body of the contact
         CollisionBody* mBody2;
 
-        /// Normal vector of the contact (From body1 toward body2) in world space
+        /// Normalized normal vector of the contact (From body1 toward body2) in world space
         const Vector3 mNormal;
 
         /// Penetration depth

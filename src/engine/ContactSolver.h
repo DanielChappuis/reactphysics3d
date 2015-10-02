@@ -30,7 +30,7 @@
 #include "constraint/ContactPoint.h"
 #include "configuration.h"
 #include "constraint/Joint.h"
-#include "ContactManifold.h"
+#include "collision/ContactManifold.h"
 #include "Island.h"
 #include "Impulse.h"
 #include <map>

@@ -1,0 +1,129 @@
+/********************************************************************************
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+*********************************************************************************
+*                                                                               *
+* This software is provided 'as-is', without any express or implied warranty.   *
+* In no event will the authors be held liable for any damages arising from the  *
+* use of this software.                                                         *
+*                                                                               *
+* Permission is granted to anyone to use this software for any purpose,         *
+* including commercial applications, and to alter it and redistribute it        *
+* freely, subject to the following restrictions:                                *
+*                                                                               *
+* 1. The origin of this software must not be misrepresented; you must not claim *
+*    that you wrote the original software. If you use this software in a        *
+*    product, an acknowledgment in the product documentation would be           *
+*    appreciated but is not required.                                           *
+*                                                                               *
+* 2. Altered source versions must be plainly marked as such, and must not be    *
+*    misrepresented as being the original software.                             *
+*                                                                               *
+* 3. This notice may not be removed or altered from any source distribution.    *
+*                                                                               *
+********************************************************************************/
+
+#ifndef REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
+#define REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
+
+// Libraries
+#include "ContactManifold.h"
+
+namespace reactphysics3d {
+
+// Constants
+const uint MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
+
+// Class ContactManifoldSet
+/**
+ * This class represents a set of one or several contact manifolds. Typically a
+ * convex/convex collision will have a set with a single manifold and a convex-concave
+ * collision can have more than one manifolds. Note that a contact manifold can
+ * contains several contact points.
+ */
+class ContactManifoldSet {
+
+    private:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Maximum number of contact manifolds in the set
+        int mNbMaxManifolds;
+
+        /// Current number of contact manifolds in the set
+        int mNbManifolds;
+
+        /// Pointer to the first proxy shape of the contact
+        ProxyShape* mShape1;
+
+        /// Pointer to the second proxy shape of the contact
+        ProxyShape* mShape2;
+
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
+        /// Contact manifolds of the set
+        ContactManifold* mManifolds[MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET];
+
+        // -------------------- Methods -------------------- //
+
+        /// Create a new contact manifold and add it to the set
+        void createManifold();
+
+        /// Remove a contact manifold from the set
+        void removeManifold(int index);
+
+    public:
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
+                           MemoryAllocator& memoryAllocator, int nbMaxManifolds);
+
+        /// Destructor
+        ~ContactManifoldSet();
+
+        /// Add a contact point to the manifold set
+        void addContactPoint(ContactPoint* contact);
+
+        /// Update the contact manifolds
+        void update(const Transform& transform1, const Transform& transform2);
+
+        /// Clear the contact manifold set
+        void clear();
+
+        /// Return the number of manifolds in the set
+        int getNbContactManifolds() const;
+
+        /// Return a given contact manifold
+        ContactManifold* getContactManifold(uint index);
+
+        /// Return the total number of contact points in the set of manifolds
+        int getTotalNbContactPoints() const;
+};
+
+// Return the number of manifolds in the set
+inline int ContactManifoldSet::getNbContactManifolds() const {
+    return mNbManifolds;
+}
+
+// Return a given contact manifold
+inline ContactManifold* ContactManifoldSet::getContactManifold(uint index) {
+    assert(index < mNbManifolds);
+    return mManifolds[index];
+}
+
+// Return the total number of contact points in the set of manifolds
+inline int ContactManifoldSet::getTotalNbContactPoints() const {
+    int nbPoints = 0;
+    for (int i=0; i<mNbManifolds; i++) {
+        nbPoints += mManifolds[i]->getNbContactPoints();
+    }
+    return nbPoints;
+}
+
+}
+
+#endif
+

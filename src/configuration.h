@@ -128,6 +128,11 @@ const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// followin constant with the linear velocity and the elapsed time between two frames.
 const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
+/// This value is used to compare the normal of a contact point and the average
+/// normal of a whole contact manifold to decide if the point should be part
+/// of the manifold or not
+const decimal MANIFOLD_SIMILAR_NORMAL_DOTPRODUCT_THRESHOLD = 0.99f;
+
 }
 
 #endif
