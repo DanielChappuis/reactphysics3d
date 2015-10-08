@@ -106,6 +106,10 @@ class CollisionShape {
         /// Return true if the collision shape type is a convex shape
         static bool isConvex(CollisionShapeType shapeType);
 
+        /// Return the maximum number of contact manifolds in an overlapping pair given two shape types
+        static int computeNbMaxContactManifolds(CollisionShapeType shapeType1,
+                                                CollisionShapeType shapeType2);
+
         // -------------------- Friendship -------------------- //
 
         friend class ProxyShape;
@@ -123,6 +127,19 @@ inline CollisionShapeType CollisionShape::getType() const {
 // Return true if the collision shape type is a convex shape
 inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
     return shapeType != CONCAVE_MESH;
+}
+
+// Return the maximum number of contact manifolds allowed in an overlapping
+// pair wit the given two collision shape types
+inline int CollisionShape::computeNbMaxContactManifolds(CollisionShapeType shapeType1,
+                                                        CollisionShapeType shapeType2) {
+    // If both shapes are convex
+    if (isConvex(shapeType1) && isConvex(shapeType2)) {
+        return NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE;
+    }   // If there is at least one concave shape
+    else {
+        return NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE;
+    }
 }
 
 }

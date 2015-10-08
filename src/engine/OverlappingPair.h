@@ -76,7 +76,8 @@ class OverlappingPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator);
+        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
+                        int nbMaxContactManifolds, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
@@ -102,8 +103,8 @@ class OverlappingPair {
         /// Return the number of contacts in the cache
         uint getNbContactPoints() const;
 
-        /// Return the contact manifold
-        ContactManifold* getContactManifold();
+        /// Return the contact manifold set
+        ContactManifoldSet* getContactManifoldSet();
 
         /// Clear the contact points of the contact manifold
         void clearContactPoints();
@@ -157,7 +158,7 @@ inline uint OverlappingPair::getNbContactPoints() const {
 }
 
 // Return the contact manifold
-inline ContactManifold* OverlappingPair::getContactManifoldSet() {
+inline ContactManifoldSet* OverlappingPair::getContactManifoldSet() {
     return &mContactManifoldSet;
 }
 

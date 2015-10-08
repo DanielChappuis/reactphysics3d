@@ -128,10 +128,13 @@ const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// followin constant with the linear velocity and the elapsed time between two frames.
 const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
-/// This value is used to compare the normal of a contact point and the average
-/// normal of a whole contact manifold to decide if the point should be part
-/// of the manifold or not
-const decimal MANIFOLD_SIMILAR_NORMAL_DOTPRODUCT_THRESHOLD = 0.99f;
+/// Maximum number of contact manifolds in an overlapping pair that involves two
+/// convex collision shapes.
+const int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
+
+/// Maximum number of contact manifolds in an overlapping pair that involves at
+/// least one concave collision shape.
+const int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
 
 }
 

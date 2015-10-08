@@ -98,6 +98,9 @@ class ContactManifold {
         /// Contact points in the manifold
         ContactPoint* mContactPoints[MAX_CONTACT_POINTS_IN_MANIFOLD];
 
+        /// Normal direction Id (Unique Id representing the normal direction)
+        short int mNormalDirectionId;
+
         /// Number of contacts in the cache
         uint mNbContactPoints;
 
@@ -147,9 +150,6 @@ class ContactManifold {
 
         /// Return true if the contact manifold has already been added into an island
         bool isAlreadyInIsland() const;
-
-        /// Return the normalized averaged normal vector
-        Vector3 getAverageContactNormal() const;
         
     public:
 
@@ -157,7 +157,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
-                        MemoryAllocator& memoryAllocator);
+                        MemoryAllocator& memoryAllocator, short int normalDirectionId);
 
         /// Destructor
         ~ContactManifold();
@@ -173,6 +173,9 @@ class ContactManifold {
 
         /// Return a pointer to the second body of the contact manifold
         CollisionBody* getBody2() const;
+
+        /// Return the normal direction Id
+        short int getNormalDirectionId() const;
 
         /// Add a contact point to the manifold
         void addContactPoint(ContactPoint* contact);
@@ -219,6 +222,12 @@ class ContactManifold {
         /// Return a contact point of the manifold
         ContactPoint* getContactPoint(uint index) const;
 
+        /// Return the normalized averaged normal vector
+        Vector3 getAverageContactNormal() const;
+
+        /// Return the largest depth of all the contact points
+        decimal getLargestContactDepth() const;
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
@@ -244,6 +253,11 @@ inline CollisionBody* ContactManifold::getBody1() const {
 // Return a pointer to the second body of the contact manifold
 inline CollisionBody* ContactManifold::getBody2() const {
     return mShape2->getBody();
+}
+
+// Return the normal direction Id
+inline short int ContactManifold::getNormalDirectionId() const {
+    return mNormalDirectionId;
 }
 
 // Return the number of contact points in the manifold
@@ -321,6 +335,20 @@ inline Vector3 ContactManifold::getAverageContactNormal() const {
     }
 
     return averageNormal.getUnit();
+}
+
+// Return the largest depth of all the contact points
+inline decimal ContactManifold::getLargestContactDepth() const {
+    decimal largestDepth = 0.0f;
+
+    for (int i=0; i<mNbContactPoints; i++) {
+        decimal depth = mContactPoints[i]->getPenetrationDepth();
+        if (depth > largestDepth) {
+            largestDepth = depth;
+        }
+    }
+
+    return largestDepth;
 }
 
 }

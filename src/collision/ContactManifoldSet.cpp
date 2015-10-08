@@ -39,38 +39,127 @@ ContactManifoldSet::ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
 // Destructor
 ContactManifoldSet::~ContactManifoldSet() {
 
+    // Clear all the contact manifolds
+    clear();
 }
 
 // Add a contact point to the manifold set
 void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
 
+    // Compute an Id corresponding to the normal direction (using a cubemap)
+    short int normalDirectionId = computeCubemapNormalId(contact->getNormal());
+
     // If there is no contact manifold yet
     if (mNbManifolds == 0) {
 
-        createManifold();
+        createManifold(normalDirectionId);
         mManifolds[0]->addContactPoint(contact);
 
         return;
     }
 
+    // Select the manifold with the most similar normal (if exists)
+    int similarManifoldIndex = selectManifoldWithSimilarNormal(normalDirectionId);
 
+    // If a similar manifold has been found
+    if (similarManifoldIndex != -1) {
+
+        // Add the contact point to that similar manifold
+        mManifolds[similarManifoldIndex]->addContactPoint(contact);
+
+        return;
+    }
+
+    // If the maximum number of manifold has not been reached yet
+    if (mNbManifolds < mNbMaxManifolds) {
+
+        // Create a new manifold for the contact point
+        createManifold(normalDirectionId);
+        mManifolds[mNbManifolds-1]->addContactPoint(contact);
+
+        return;
+    }
+
+    // The contact point will be in a new contact manifold, we now have too much
+    // manifolds condidates. We need to remove one. We choose to keep the manifolds
+    // with the largest contact depth among their points
+    int smallestDepthIndex = -1;
+    decimal minDepth = contact->getPenetrationDepth();
+    assert(mNbManifolds == mNbMaxManifolds);
+    for (int i=0; i<mNbManifolds; i++) {
+        decimal depth = mManifolds[i]->getLargestContactDepth();
+        if (depth < minDepth) {
+            minDepth = depth;
+            smallestDepthIndex = i;
+        }
+    }
+
+    // If we do not want to keep to new manifold (not created yet) with the
+    // new contact point
+    if (smallestDepthIndex == -1) {
+        return;
+    }
+
+    assert(smallestDepthIndex >= 0 && smallestDepthIndex < mNbManifolds);
+
+    // Here we need to replace an existing manifold with a new one (that contains
+    // the new contact point)
+    removeManifold(smallestDepthIndex);
+    createManifold(normalDirectionId);
+    mManifolds[mNbManifolds-1]->addContactPoint(contact);
+
+    return;
 }
 
 // Return the index of the contact manifold with a similar average normal.
 // If no manifold has close enough average normal, it returns -1
-int ContactManifoldSet::selectManifoldWithSimilarNormal(const Vector3& normal) {
+int ContactManifoldSet::selectManifoldWithSimilarNormal(short int normalDirectionId) const {
 
-    decimal maxDotProduct;
-    int indexManifold = -1;
+    // Return the Id of the manifold with the same normal direction id (if exists)
     for (int i=0; i<mNbManifolds; i++) {
-        decimal dotProduct = normal.dot(mManifolds[i]->getAverageContactNormal());
-        if (dotProduct > maxDotProduct) {
-            maxDotProduct = dotProduct;
-            indexManifold = i;
+        if (normalDirectionId == mManifolds[i]->getNormalDirectionId()) {
+            return i;
         }
     }
 
-    return indexManifold;
+    return -1;
+}
+
+// Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
+// Each face of the cube is divided into 4x4 buckets. This method maps the
+// normal vector into of the of the bucket and returns a unique Id for the bucket
+short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) const {
+
+    assert(normal.lengthSquare() > MACHINE_EPSILON);
+
+    int faceNo;
+    decimal u, v;
+    decimal max = max3(fabs(normal.x), fabs(normal.y), fabs(normal.z));
+    Vector3 normalScaled = normal / max;
+
+    if (normalScaled.x >= normalScaled.y && normalScaled.x >= normalScaled.z) {
+        faceNo = normalScaled.x > 0 ? 0 : 1;
+        u = normalScaled.y;
+        v = normalScaled.z;
+    }
+    else if (normalScaled.y >= normalScaled.x && normalScaled.y >= normalScaled.z) {
+        faceNo = normalScaled.y > 0 ? 2 : 3;
+        u = normalScaled.x;
+        v = normalScaled.z;
+    }
+    else {
+        faceNo = normalScaled.z > 0 ? 4 : 5;
+        u = normalScaled.x;
+        v = normalScaled.y;
+    }
+
+    int indexU = floor(((u + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
+    int indexV = floor(((v + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
+    if (indexU == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexU--;
+    if (indexV == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexV--;
+
+    const int nbSubDivInFace = CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS;
+    return faceNo * 200 + indexU * nbSubDivInFace + indexV;
 }
 
 // Update the contact manifolds
@@ -84,14 +173,20 @@ void ContactManifoldSet::update(const Transform& transform1, const Transform& tr
 // Clear the contact manifold set
 void ContactManifoldSet::clear() {
 
+    // Destroy all the contact manifolds
+    for (int i=mNbManifolds-1; i>=0; i--) {
+        removeManifold(i);
+    }
+
+    assert(mNbManifolds == 0);
 }
 
 // Create a new contact manifold and add it to the set
-void ContactManifoldSet::createManifold() {
-    assert(mNbManifolds < MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET);
+void ContactManifoldSet::createManifold(short int normalDirectionId) {
+    assert(mNbManifolds < mNbMaxManifolds);
 
     mManifolds[mNbManifolds] = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
-                                    ContactManifold(mShape1, mShape2, mMemoryAllocator);
+                                    ContactManifold(mShape1, mShape2, mMemoryAllocator, normalDirectionId);
     mNbManifolds++;
 }
 
@@ -103,6 +198,10 @@ void ContactManifoldSet::removeManifold(int index) {
     // Delete the new contact
     mManifolds[index]->~ContactManifold();
     mMemoryAllocator.release(mManifolds[index], sizeof(ContactManifold));
+
+    for (int i=index; (i+1) < mNbManifolds; i++) {
+        mManifolds[i] = mManifolds[i+1];
+    }
 
     mNbManifolds--;
 }

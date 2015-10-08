@@ -78,6 +78,9 @@ class CollisionDetection {
         /// Broad-phase overlapping pairs
         std::map<overlappingpairid, OverlappingPair*> mOverlappingPairs;
 
+        /// Overlapping pairs in contact (during the current Narrow-phase collision detection)
+        std::map<overlappingpairid, OverlappingPair*> mContactOverlappingPairs;
+
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 
@@ -111,14 +114,16 @@ class CollisionDetection {
 
         /// Add a contact manifold to the linked list of contact manifolds of the two bodies
         /// involed in the corresponding contact.
-        void addContactManifoldToBody(ContactManifold* contactManifold,
-                                      CollisionBody *body1, CollisionBody *body2);
+        void addContactManifoldToBody(OverlappingPair* pair);
 
         /// Delete all the contact points in the currently overlapping pairs
         void clearContactPoints();
 
         /// Fill-in the collision detection matrix
         void fillInCollisionMatrix();
+
+        /// Add all the contact manifold of colliding pairs to their bodies
+        void addAllContactManifoldsToBodies();
    
     public :
 

@@ -32,7 +32,8 @@
 namespace reactphysics3d {
 
 // Constants
-const uint MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
+const int MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
+const int CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS = 4;    // N Number for the N x N subdivisions of the cubemap
 
 // Class ContactManifoldSet
 /**
@@ -68,10 +69,18 @@ class ContactManifoldSet {
         // -------------------- Methods -------------------- //
 
         /// Create a new contact manifold and add it to the set
-        void createManifold();
+        void createManifold(short normalDirectionId);
 
         /// Remove a contact manifold from the set
         void removeManifold(int index);
+
+        // Return the index of the contact manifold with a similar average normal.
+        int selectManifoldWithSimilarNormal(short int normalDirectionId) const;
+
+        // Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
+        // Each face of the cube is divided into 4x4 buckets. This method maps the
+        // normal vector into of the of the bucket and returns a unique Id for the bucket
+        short int computeCubemapNormalId(const Vector3& normal) const;
 
     public:
 
