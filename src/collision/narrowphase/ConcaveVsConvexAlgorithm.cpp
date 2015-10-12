@@ -45,7 +45,7 @@ ConcaveVsConvexAlgorithm::~ConcaveVsConvexAlgorithm() {
 // Return true and compute a contact info if the two bounding volumes collide
 bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                              const CollisionShapeInfo& shape2Info,
-                                             ContactPointInfo*& contactInfo) {
+                                             NarrowPhaseCallback* narrowPhaseCallback) {
 
     ProxyShape* convexProxyShape;
     ProxyShape* concaveProxyShape;
@@ -67,6 +67,7 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
     }
 
     // Set the parameters of the callback object
+    mConvexVsTriangleCallback.setNarrowPhaseCallback(narrowPhaseCallback);
     mConvexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
     mConvexVsTriangleCallback.setConvexShape(convexShape);
     mConvexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
@@ -102,29 +103,5 @@ void ConvexVsTriangleCallback::reportTriangle(const Vector3* trianglePoints) {
                                         mOverlappingPair, mConcaveProxyShape->getCachedCollisionData());
 
     // Use the collision algorithm to test collision between the triangle and the other convex shape
-    ContactPointInfo* contactInfo = NULL;
-    if (algo->testCollision(shapeConvexInfo, shapeConcaveInfo, contactInfo)) {
-        assert(contactInfo != NULL);
-
-        // If it is the first contact since the pair are overlapping
-        if (mOverlappingPair->getNbContactPoints() == 0) {
-
-            // Trigger a callback event
-            if (mCollisionDetection->getWorldEventListener() != NULL) {
-                mCollisionDetection->getWorldEventListener()->beginContact(*contactInfo);
-            }
-        }
-
-        // Create a new contact
-        mCollisionDetection->createContact(mOverlappingPair, contactInfo);
-
-        // Trigger a callback event for the new contact
-        if (mCollisionDetection->getWorldEventListener() != NULL) {
-            mCollisionDetection->getWorldEventListener()->newContact(*contactInfo);
-        }
-
-        // Delete and remove the contact info from the memory allocator
-        contactInfo->~ContactPointInfo();
-        mCollisionDetection->getWorldMemoryAllocator().release(contactInfo, sizeof(ContactPointInfo));
-    }
+    algo->testCollision(shapeConvexInfo, shapeConcaveInfo, mNarrowPhaseCallback);
 }

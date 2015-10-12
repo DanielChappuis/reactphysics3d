@@ -31,6 +31,7 @@
 #include "collision/shapes/CollisionShape.h"
 #include "collision/CollisionShapeInfo.h"
 #include "constraint/ContactPoint.h"
+#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
 #include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
 #include "memory/MemoryAllocator.h"
@@ -127,7 +128,8 @@ class EPAAlgorithm {
                                                      const Transform& transform1,
                                                      CollisionShapeInfo shape2Info,
                                                      const Transform& transform2,
-                                                     Vector3& v, ContactPointInfo*& contactInfo);
+                                                     Vector3& v,
+                                                    NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm

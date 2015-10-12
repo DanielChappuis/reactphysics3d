@@ -38,6 +38,20 @@ namespace reactphysics3d {
 
 class CollisionDetection;
 
+// Class NarrowPhaseCallback
+/**
+ * This abstract class is the base class for a narrow-phase collision
+ * callback class.
+ */
+class NarrowPhaseCallback {
+
+    public:
+
+        /// Called by a narrow-phase collision algorithm when a new contact has been found
+        virtual void notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo)=0;
+
+};
+
 // Class NarrowPhaseAlgorithm
 /**
  * This abstract class is the base class for a  narrow-phase collision
@@ -86,7 +100,7 @@ class NarrowPhaseAlgorithm {
         /// Return true and compute a contact info if the two bounding volume collide
         virtual bool testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   ContactPointInfo*& contactInfo)=0;
+                                   NarrowPhaseCallback* narrowPhaseCallback)=0;
 };
 
 // Set the current overlapping pair of bodies

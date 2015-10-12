@@ -58,7 +58,7 @@ GJKAlgorithm::~GJKAlgorithm() {
 /// the correct penetration depth and contact points between the enlarged objects.
 bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                  const CollisionShapeInfo& shape2Info,
-                                 ContactPointInfo*& contactInfo) {
+                                 NarrowPhaseCallback* narrowPhaseCallback) {
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -147,9 +147,11 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
+            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                  ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                   penetrationDepth, pA, pB);
+
+            narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
             // There is an intersection, therefore we return true
             return true;
@@ -179,9 +181,11 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
+            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                    ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                     penetrationDepth, pA, pB);
+
+            narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
             // There is an intersection, therefore we return true
             return true;
@@ -209,9 +213,11 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
+            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                  ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                   penetrationDepth, pA, pB);
+
+            narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
             // There is an intersection, therefore we return true
             return true;
@@ -246,9 +252,11 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
+            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                                    ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                                     penetrationDepth, pA, pB);
+
+            narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
             // There is an intersection, therefore we return true
             return true;
@@ -261,7 +269,7 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
     // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
     // the correct penetration depth and contact points between the enlarged objects.
     return computePenetrationDepthForEnlargedObjects(shape1Info, transform1, shape2Info,
-                                                     transform2, contactInfo, v);
+                                                     transform2, narrowPhaseCallback, v);
 }
 
 /// This method runs the GJK algorithm on the two enlarged objects (with margin)
@@ -273,7 +281,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
                                                              const Transform& transform1,
                                                              const CollisionShapeInfo& shape2Info,
                                                              const Transform& transform2,
-                                                             ContactPointInfo*& contactInfo,
+                                                             NarrowPhaseCallback* narrowPhaseCallback,
                                                              Vector3& v) {
     Simplex simplex;
     Vector3 suppA;
@@ -344,7 +352,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
     // between the two enlarged objects
     return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, shape1Info,
                                                             transform1, shape2Info, transform2,
-                                                            v, contactInfo);
+                                                            v, narrowPhaseCallback);
 }
 
 // Use the GJK Algorithm to find if a point is inside a convex collision shape

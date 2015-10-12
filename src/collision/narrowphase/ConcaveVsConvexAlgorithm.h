@@ -47,6 +47,9 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         /// Pointer to the collision detection object
         CollisionDetection* mCollisionDetection;
 
+        /// Narrow-phase collision callback
+        NarrowPhaseCallback* mNarrowPhaseCallback;
+
         /// Convex collision shape to test collision with
         const ConvexShape* mConvexShape;
 
@@ -64,6 +67,11 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         /// Set the collision detection pointer
         void setCollisionDetection(CollisionDetection* collisionDetection) {
             mCollisionDetection = collisionDetection;
+        }
+
+        /// Set the narrow-phase collision callback
+        void setNarrowPhaseCallback(NarrowPhaseCallback* callback) {
+            mNarrowPhaseCallback = callback;
         }
 
         /// Set the convex collision shape to test collision with
@@ -124,7 +132,7 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         /// Return true and compute a contact info if the two bounding volume collide
         virtual bool testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   ContactPointInfo*& contactInfo);
+                                   NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 }

@@ -86,7 +86,8 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                                            const Transform& transform1,
                                                            CollisionShapeInfo shape2Info,
                                                            const Transform& transform2,
-                                                           Vector3& v, ContactPointInfo*& contactInfo) {
+                                                           Vector3& v,
+                                                           NarrowPhaseCallback* narrowPhaseCallback) {
 
     assert(shape1Info.collisionShape->isConvex());
     assert(shape2Info.collisionShape->isConvex());
@@ -426,9 +427,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
+    ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
                           ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
                                            penetrationDepth, pALocal, pBLocal);
+
+    narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
     
     return true;
 }

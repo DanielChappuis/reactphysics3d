@@ -175,7 +175,6 @@ void CollisionDetection::computeNarrowPhase() {
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
-        ContactPointInfo* contactInfo = NULL;
 
         OverlappingPair* pair = it->second;
 
@@ -239,27 +238,9 @@ void CollisionDetection::computeNarrowPhase() {
                                       pair, shape2->getCachedCollisionData());
         
         // Use the narrow-phase collision detection algorithm to check
-        // if there really is a collision
-        if (narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, contactInfo)) {
-            assert(contactInfo != NULL);
-
-            // If it is the first contact since the pair are overlapping
-            if (pair->getNbContactPoints() == 0) {
-
-                // Trigger a callback event
-                if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(*contactInfo);
-            }
-
-            // Create a new contact
-            createContact(pair, contactInfo);
-
-            // Trigger a callback event for the new contact
-            if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(*contactInfo);
-
-            // Delete and remove the contact info from the memory allocator
-            contactInfo->~ContactPointInfo();
-            mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
-        }
+        // if there really is a collision. If a collision occurs, the
+        // notifyContact() callback method will be called.
+        narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, this);
     }
 
     // Add all the contact manifolds (between colliding bodies) to the bodies
@@ -361,19 +342,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
 
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        if (narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, contactInfo)) {
-            assert(contactInfo != NULL);
-
-            // Create a new contact
-            createContact(pair, contactInfo);
-
-            // Notify the collision callback about this new contact
-            if (callback != NULL) callback->notifyContact(*contactInfo);
-
-            // Delete and remove the contact info from the memory allocator
-            contactInfo->~ContactPointInfo();
-            mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
-        }
+        narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, this);
     }
 
     // Add all the contact manifolds (between colliding bodies) to the bodies
@@ -441,6 +410,30 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     // Remove the body from the broad-phase
     mBroadPhaseAlgorithm.removeProxyCollisionShape(proxyShape);
+}
+
+// Called by a narrow-phase collision algorithm when a new contact has been found
+void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo) {
+    assert(contactInfo != NULL);
+
+    // If it is the first contact since the pairs are overlapping
+    if (overlappingPair->getNbContactPoints() == 0) {
+
+        // Trigger a callback event
+        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(*contactInfo);
+    }
+
+    // TODO : Try not to allocate ContactPointInfo dynamically
+
+    // Create a new contact
+    createContact(overlappingPair, contactInfo);
+
+    // Trigger a callback event for the new contact
+    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(*contactInfo);
+
+    // Delete and remove the contact info from the memory allocator
+    contactInfo->~ContactPointInfo();
+    mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
 }
 
 // Create a new contact

@@ -54,7 +54,7 @@ class CollisionCallback;
  * collide and then we run a narrow-phase algorithm to compute the
  * collision contacts between bodies.
  */
-class CollisionDetection {
+class CollisionDetection : public NarrowPhaseCallback {
 
     private :
 
@@ -202,6 +202,9 @@ class CollisionDetection {
 
         /// Return a reference to the world memory allocator
         MemoryAllocator& getWorldMemoryAllocator();
+
+        /// Called by a narrow-phase collision algorithm when a new contact has been found
+        virtual void notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo);
 
         /// Create a new contact
         void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);

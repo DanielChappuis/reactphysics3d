@@ -79,7 +79,8 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
                                                        const Transform& transform1,
                                                        const CollisionShapeInfo& shape2Info,
                                                        const Transform& transform2,
-                                                       ContactPointInfo*& contactInfo, Vector3& v);
+                                                       NarrowPhaseCallback* narrowPhaseCallback,
+                                                       Vector3& v);
 
     public :
 
@@ -98,7 +99,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         /// Return true and compute a contact info if the two bounding volumes collide.
         virtual bool testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   ContactPointInfo*& contactInfo);
+                                   NarrowPhaseCallback* narrowPhaseCallback);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);
