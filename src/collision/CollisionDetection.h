@@ -204,10 +204,10 @@ class CollisionDetection : public NarrowPhaseCallback {
         MemoryAllocator& getWorldMemoryAllocator();
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo);
+        virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);
 
         /// Create a new contact
-        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo* contactInfo);
+        void createContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);
 
         // -------------------- Friendship -------------------- //
 

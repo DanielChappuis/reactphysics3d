@@ -70,10 +70,9 @@ bool SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                         ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                          vectorBetweenCenters.getUnit(), penetrationDepth,
-                                          intersectionOnBody1, intersectionOnBody2);
+        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                     vectorBetweenCenters.getUnit(), penetrationDepth,
+                                     intersectionOnBody1, intersectionOnBody2);
 
         // Notify about the new contact
         narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);

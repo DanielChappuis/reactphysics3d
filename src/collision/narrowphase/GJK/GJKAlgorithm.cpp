@@ -147,9 +147,8 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                 ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
-                                                  penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                         normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -181,9 +180,8 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                   ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
-                                                    penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                         normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -213,9 +211,8 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                 ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
-                                                  penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                         normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -252,9 +249,8 @@ bool GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 			if (penetrationDepth <= 0.0) return false;
 			
             // Create the contact info object
-            ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                                   ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
-                                                    penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                         normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 

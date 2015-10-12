@@ -413,37 +413,30 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 }
 
 // Called by a narrow-phase collision algorithm when a new contact has been found
-void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo) {
+void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo) {
     assert(contactInfo != NULL);
 
     // If it is the first contact since the pairs are overlapping
     if (overlappingPair->getNbContactPoints() == 0) {
 
         // Trigger a callback event
-        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(*contactInfo);
+        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(contactInfo);
     }
-
-    // TODO : Try not to allocate ContactPointInfo dynamically
 
     // Create a new contact
     createContact(overlappingPair, contactInfo);
 
     // Trigger a callback event for the new contact
-    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(*contactInfo);
-
-    // Delete and remove the contact info from the memory allocator
-    contactInfo->~ContactPointInfo();
-    mWorld->mMemoryAllocator.release(contactInfo, sizeof(ContactPointInfo));
+    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(contactInfo);
 }
 
 // Create a new contact
 void CollisionDetection::createContact(OverlappingPair* overlappingPair,
-                                       const ContactPointInfo* contactInfo) {
+                                       const ContactPointInfo& contactInfo) {
 
     // Create a new contact
     ContactPoint* contact = new (mWorld->mMemoryAllocator.allocate(sizeof(ContactPoint)))
-                                ContactPoint(*contactInfo);
-    assert(contact != NULL);
+                                ContactPoint(contactInfo);
 
     // Add the contact to the contact manifold set of the corresponding overlapping pair
     overlappingPair->addContact(contact);

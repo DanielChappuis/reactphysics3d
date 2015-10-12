@@ -48,7 +48,8 @@ class NarrowPhaseCallback {
     public:
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair, ContactPointInfo* contactInfo)=0;
+        virtual void notifyContact(OverlappingPair* overlappingPair,
+                                   const ContactPointInfo& contactInfo)=0;
 
 };
 

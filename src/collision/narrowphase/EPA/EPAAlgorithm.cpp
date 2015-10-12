@@ -427,9 +427,8 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     assert(penetrationDepth > 0.0);
     
     // Create the contact info object
-    ContactPointInfo* contactInfo = new (mMemoryAllocator->allocate(sizeof(ContactPointInfo)))
-                          ContactPointInfo(shape1Info.proxyShape, shape2Info.proxyShape, normal,
-                                           penetrationDepth, pALocal, pBLocal);
+    ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
+                                 normal, penetrationDepth, pALocal, pBLocal);
 
     narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
     
