@@ -163,10 +163,11 @@ short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) cons
 }
 
 // Update the contact manifolds
-void ContactManifoldSet::update(const Transform& transform1, const Transform& transform2) {
+void ContactManifoldSet::update() {
 
     for (int i=0; i<mNbManifolds; i++) {
-        mManifolds[i]->update(transform1, transform2);
+        mManifolds[i]->update(mShape1->getBody()->getTransform() * mShape1->getLocalToBodyTransform(),
+                              mShape2->getBody()->getTransform() * mShape2->getLocalToBodyTransform());
     }
 }
 

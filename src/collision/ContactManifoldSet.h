@@ -93,11 +93,17 @@ class ContactManifoldSet {
         /// Destructor
         ~ContactManifoldSet();
 
+        /// Return the first proxy shape
+        ProxyShape* getShape1() const;
+
+        /// Return the second proxy shape
+        ProxyShape* getShape2() const;
+
         /// Add a contact point to the manifold set
         void addContactPoint(ContactPoint* contact);
 
         /// Update the contact manifolds
-        void update(const Transform& transform1, const Transform& transform2);
+        void update();
 
         /// Clear the contact manifold set
         void clear();
@@ -111,6 +117,16 @@ class ContactManifoldSet {
         /// Return the total number of contact points in the set of manifolds
         int getTotalNbContactPoints() const;
 };
+
+// Return the first proxy shape
+inline ProxyShape* ContactManifoldSet::getShape1() const {
+    return mShape1;
+}
+
+// Return the second proxy shape
+inline ProxyShape* ContactManifoldSet::getShape2() const {
+    return mShape2;
+}
 
 // Return the number of manifolds in the set
 inline int ContactManifoldSet::getNbContactManifolds() const {

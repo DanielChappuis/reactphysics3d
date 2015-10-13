@@ -51,12 +51,6 @@ class OverlappingPair {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first proxy collision shape
-        ProxyShape* mShape1;
-
-        /// Pointer to the second proxy collision shape
-        ProxyShape* mShape2;
-
         /// Set of persistent contact manifolds
         ContactManifoldSet mContactManifoldSet;
 
@@ -122,12 +116,12 @@ class OverlappingPair {
 
 // Return the pointer to first body
 inline ProxyShape* OverlappingPair::getShape1() const {
-    return mShape1;
+    return mContactManifoldSet.getShape1();
 }          
 
 // Return the pointer to second body
 inline ProxyShape* OverlappingPair::getShape2() const {
-    return mShape2;
+    return mContactManifoldSet.getShape2();
 }                
 
 // Add a contact to the contact manifold
@@ -137,8 +131,7 @@ inline void OverlappingPair::addContact(ContactPoint* contact) {
 
 // Update the contact manifold
 inline void OverlappingPair::update() {
-    mContactManifoldSet.update(mShape1->getBody()->getTransform() * mShape1->getLocalToBodyTransform(),
-                               mShape2->getBody()->getTransform() *mShape2->getLocalToBodyTransform());
+    mContactManifoldSet.update();
 }
 
 // Return the cached separating axis
