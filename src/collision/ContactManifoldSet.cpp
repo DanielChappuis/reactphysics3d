@@ -97,6 +97,11 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
     // If we do not want to keep to new manifold (not created yet) with the
     // new contact point
     if (smallestDepthIndex == -1) {
+
+        // Delete the new contact
+        contact->~ContactPoint();
+        mMemoryAllocator.release(contact, sizeof(ContactPoint));
+
         return;
     }
 
