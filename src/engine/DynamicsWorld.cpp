@@ -985,10 +985,10 @@ std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
         OverlappingPair* pair = it->second;
 
         // For each contact manifold of the pair
-        ContactManifoldSet* manifoldSet = pair->getContactManifoldSet();
-        for (int i=0; i<manifoldSet->getNbContactManifolds(); i++) {
+        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
+        for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
 
-            ContactManifold* manifold = manifoldSet->getContactManifold(i);
+            ContactManifold* manifold = manifoldSet.getContactManifold(i);
 
             // Get the contact manifold
             contactManifolds.push_back(manifold);

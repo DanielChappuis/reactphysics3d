@@ -97,8 +97,8 @@ class OverlappingPair {
         /// Return the number of contacts in the cache
         uint getNbContactPoints() const;
 
-        /// Return the contact manifold set
-        ContactManifoldSet* getContactManifoldSet();
+        /// Return the a reference to the contact manifold set
+        const ContactManifoldSet& getContactManifoldSet();
 
         /// Clear the contact points of the contact manifold
         void clearContactPoints();
@@ -151,8 +151,8 @@ inline uint OverlappingPair::getNbContactPoints() const {
 }
 
 // Return the contact manifold
-inline ContactManifoldSet* OverlappingPair::getContactManifoldSet() {
-    return &mContactManifoldSet;
+inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
+    return mContactManifoldSet;
 }
 
 // Return the pair of bodies index

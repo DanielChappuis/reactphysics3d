@@ -120,10 +120,10 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
         }
 
         // For each contact manifold set of the overlapping pair
-        ContactManifoldSet* manifoldSet = pair->getContactManifoldSet();
-        for (uint j=0; j<manifoldSet->getNbContactManifolds(); j++) {
+        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
+        for (uint j=0; j<manifoldSet.getNbContactManifolds(); j++) {
 
-            ContactManifold* manifold = manifoldSet->getContactManifold(j);
+            const ContactManifold* manifold = manifoldSet.getContactManifold(j);
 
             // For each contact manifold of the manifold set
             for (uint i=0; i<manifold->getNbContactPoints(); i++) {
@@ -467,12 +467,12 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
     CollisionBody* body1 = pair->getShape1()->getBody();
     CollisionBody* body2 = pair->getShape2()->getBody();
-    ContactManifoldSet* manifoldSet = pair->getContactManifoldSet();
+    const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
 
     // For each contact manifold in the set of manifolds in the pair
-    for (int i=0; i<manifoldSet->getNbContactManifolds(); i++) {
+    for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
 
-        ContactManifold* contactManifold = manifoldSet->getContactManifold(i);
+        ContactManifold* contactManifold = manifoldSet.getContactManifold(i);
 
         // Add the contact manifold at the beginning of the linked
         // list of contact manifolds of the first body
