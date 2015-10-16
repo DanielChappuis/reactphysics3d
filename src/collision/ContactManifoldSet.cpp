@@ -33,7 +33,7 @@ ContactManifoldSet::ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
                                        MemoryAllocator& memoryAllocator, int nbMaxManifolds)
                    : mNbMaxManifolds(nbMaxManifolds), mNbManifolds(0), mShape1(shape1),
                      mShape2(shape2), mMemoryAllocator(memoryAllocator) {
-
+    assert(nbMaxManifolds >= 1);
 }
 
 // Destructor
@@ -59,7 +59,10 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
     }
 
     // Select the manifold with the most similar normal (if exists)
-    int similarManifoldIndex = selectManifoldWithSimilarNormal(normalDirectionId);
+    int similarManifoldIndex = 0;
+    if (mNbMaxManifolds > 1) {
+        similarManifoldIndex = selectManifoldWithSimilarNormal(normalDirectionId);
+    }
 
     // If a similar manifold has been found
     if (similarManifoldIndex != -1) {
