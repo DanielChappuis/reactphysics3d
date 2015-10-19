@@ -135,7 +135,7 @@ inline int ContactManifoldSet::getNbContactManifolds() const {
 
 // Return a given contact manifold
 inline ContactManifold* ContactManifoldSet::getContactManifold(uint index) const {
-    assert(index < mNbManifolds);
+    assert(index >= 0 && index < mNbManifolds);
     return mManifolds[index];
 }
 

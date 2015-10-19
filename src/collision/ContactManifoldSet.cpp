@@ -54,6 +54,10 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
 
         createManifold(normalDirectionId);
         mManifolds[0]->addContactPoint(contact);
+        assert(mManifolds[mNbManifolds-1]->getNbContactPoints() > 0);
+        for (int i=0; i<mNbManifolds; i++) {
+            assert(mManifolds[i]->getNbContactPoints() > 0);
+        }
 
         return;
     }
@@ -69,6 +73,7 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
 
         // Add the contact point to that similar manifold
         mManifolds[similarManifoldIndex]->addContactPoint(contact);
+        assert(mManifolds[similarManifoldIndex]->getNbContactPoints() > 0);
 
         return;
     }
@@ -79,6 +84,9 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
         // Create a new manifold for the contact point
         createManifold(normalDirectionId);
         mManifolds[mNbManifolds-1]->addContactPoint(contact);
+        for (int i=0; i<mNbManifolds; i++) {
+            assert(mManifolds[i]->getNbContactPoints() > 0);
+        }
 
         return;
     }
@@ -115,6 +123,10 @@ void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
     removeManifold(smallestDepthIndex);
     createManifold(normalDirectionId);
     mManifolds[mNbManifolds-1]->addContactPoint(contact);
+    assert(mManifolds[mNbManifolds-1]->getNbContactPoints() > 0);
+    for (int i=0; i<mNbManifolds; i++) {
+        assert(mManifolds[i]->getNbContactPoints() > 0);
+    }
 
     return;
 }
@@ -173,9 +185,16 @@ short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) cons
 // Update the contact manifolds
 void ContactManifoldSet::update() {
 
-    for (int i=0; i<mNbManifolds; i++) {
+    for (int i=mNbManifolds-1; i>=0; i--) {
+
+        // Update the contact manifold
         mManifolds[i]->update(mShape1->getBody()->getTransform() * mShape1->getLocalToBodyTransform(),
                               mShape2->getBody()->getTransform() * mShape2->getLocalToBodyTransform());
+
+        // Remove the contact manifold if has no contact points anymore
+        if (mManifolds[i]->getNbContactPoints() == 0) {
+            removeManifold(i);
+        }
     }
 }
 
@@ -202,6 +221,7 @@ void ContactManifoldSet::createManifold(short int normalDirectionId) {
 // Remove a contact manifold from the set
 void ContactManifoldSet::removeManifold(int index) {
 
+    assert(mNbManifolds > 0);
     assert(index >= 0 && index < mNbManifolds);
 
     // Delete the new contact

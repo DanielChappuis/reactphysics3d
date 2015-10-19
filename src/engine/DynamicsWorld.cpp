@@ -719,6 +719,8 @@ void DynamicsWorld::computeIslands() {
 
                 ContactManifold* contactManifold = contactElement->contactManifold;
 
+                assert(contactManifold->getNbContactPoints() > 0);
+
                 // Check if the current contact manifold has already been added into an island
                 if (contactManifold->isAlreadyInIsland()) continue;
 

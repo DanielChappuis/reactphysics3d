@@ -59,10 +59,10 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
             // Delete the new contact
             contact->~ContactPoint();
             mMemoryAllocator.release(contact, sizeof(ContactPoint));
-            //removeContact(i);
+
+            assert(mNbContactPoints > 0);
 
             return;
-            //break;
 		}
 	}
     
@@ -76,6 +76,8 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
     // Add the new contact point in the manifold
     mContactPoints[mNbContactPoints] = contact;
     mNbContactPoints++;
+
+    assert(mNbContactPoints > 0);
 }
 
 // Remove a contact point from the manifold
@@ -94,6 +96,8 @@ void ContactManifold::removeContactPoint(uint index) {
     }
 
     mNbContactPoints--;
+
+    assert(mNbContactPoints >= 0);
 }
 
 // Update the contact manifold

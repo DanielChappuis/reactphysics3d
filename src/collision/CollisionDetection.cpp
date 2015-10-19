@@ -468,6 +468,8 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
         ContactManifold* contactManifold = manifoldSet.getContactManifold(i);
 
+        assert(contactManifold->getNbContactPoints() > 0);
+
         // Add the contact manifold at the beginning of the linked
         // list of contact manifolds of the first body
         void* allocatedMemory1 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
