@@ -33,7 +33,7 @@ namespace reactphysics3d {
 
 // Constants
 const int MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
-const int CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS = 4;    // N Number for the N x N subdivisions of the cubemap
+const int CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS = 3;    // N Number for the N x N subdivisions of the cubemap
 
 // Class ContactManifoldSet
 /**

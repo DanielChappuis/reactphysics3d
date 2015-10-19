@@ -122,9 +122,6 @@ class ContactManifold {
         /// True if the contact manifold has already been added into an island
         bool mIsAlreadyInIsland;
 
-        /// Average contact normal vector of all points in the manifold
-        Vector3 mAverageContactNormal;
-
         /// Reference to the memory allocator
         MemoryAllocator& mMemoryAllocator;
 
