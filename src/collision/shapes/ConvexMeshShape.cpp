@@ -178,6 +178,9 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 // Recompute the bounds of the mesh
 void ConvexMeshShape::recalculateBounds() {
 
+    // TODO : Only works if the local origin is inside the mesh
+    //        => Make it more robust (init with first vertex of mesh instead)
+
     mMinBounds.setToZero();
     mMaxBounds.setToZero();
 

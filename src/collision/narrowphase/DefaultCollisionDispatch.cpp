@@ -46,6 +46,7 @@ void DefaultCollisionDispatch::init(CollisionDetection* collisionDetection,
     // Initialize the collision algorithms
     mSphereVsSphereAlgorithm.init(collisionDetection, memoryAllocator);
     mGJKAlgorithm.init(collisionDetection, memoryAllocator);
+    mConcaveVsConvexAlgorithm.init(collisionDetection, memoryAllocator);
 }
 
 // Select and return the narrow-phase collision detection algorithm to

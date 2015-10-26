@@ -42,7 +42,7 @@ class TriangleCallback {
     public:
 
         /// Report a triangle
-        virtual void reportTriangle(const Vector3* trianglePoints)=0;
+        virtual void testTriangle(const Vector3* trianglePoints)=0;
 
 };
 

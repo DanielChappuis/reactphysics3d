@@ -36,7 +36,7 @@ namespace reactphysics3d {
  * This class is used to describe the vertices and faces of a triangular mesh.
  * A TriangleVertexArray represents a continuous array of vertices and indexes
  * of a triangular mesh. When you create a TriangleVertexArray, no data is copied
- * into the array. It only stores pointer to the da. The purpose is to allow
+ * into the array. It only stores pointer to the data. The purpose is to allow
  * the user to share vertices data between the physics engine and the rendering
  * part. Therefore, make sure that the data pointed by a TriangleVertexArray
  * remain valid during the TriangleVertexArray life.

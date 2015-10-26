@@ -85,7 +85,7 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 }
 
 // Test collision between a triangle and the convex mesh shape
-void ConvexVsTriangleCallback::reportTriangle(const Vector3* trianglePoints) {
+void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
 
     // Create a triangle collision shape
     // TODO : Do we need to use a collision margin for a triangle ?
@@ -95,10 +95,16 @@ void ConvexVsTriangleCallback::reportTriangle(const Vector3* trianglePoints) {
     NarrowPhaseAlgorithm* algo = mCollisionDetection->getCollisionAlgorithm(triangleShape.getType(),
                                                                             mConvexShape->getType());
 
+    // If there is no collision algorithm between those two kinds of shapes
+    if (algo == NULL) return;
+
+    // Notify the narrow-phase algorithm about the overlapping pair we are going to test
+    algo->setCurrentOverlappingPair(mOverlappingPair);
+
     // Create the CollisionShapeInfo objects
     CollisionShapeInfo shapeConvexInfo(mConvexProxyShape, mConvexShape, mConvexProxyShape->getLocalToWorldTransform(),
                                        mOverlappingPair, mConvexProxyShape->getCachedCollisionData());
-    CollisionShapeInfo shapeConcaveInfo(mConcaveProxyShape, mConcaveProxyShape->getCollisionShape(),
+    CollisionShapeInfo shapeConcaveInfo(mConcaveProxyShape, &triangleShape,
                                         mConcaveProxyShape->getLocalToWorldTransform(),
                                         mOverlappingPair, mConcaveProxyShape->getCachedCollisionData());
 

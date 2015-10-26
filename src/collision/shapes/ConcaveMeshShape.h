@@ -51,6 +51,12 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Triangle mesh
         TriangleMesh* mTriangleMesh;
 
+        /// Mesh minimum bounds in the three local x, y and z directions
+        Vector3 mMinBounds;
+
+        /// Mesh maximum bounds in the three local x, y and z directions
+        Vector3 mMaxBounds;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -76,6 +82,10 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
+        /// Recompute the bounds of the mesh
+        // TODO : Check if we need this when AABB tree is used
+        void recalculateBounds();
+
     public:
 
         /// Constructor
@@ -90,11 +100,8 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
-        /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform);
-
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
 };
 
 // Return the number of bytes used by the collision shape
@@ -125,7 +132,8 @@ inline Vector3 ConcaveMeshShape::getLocalSupportPointWithoutMargin(const Vector3
  */
 inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    // TODO : Implement this
+    min = mMinBounds;
+    max = mMaxBounds;
 }
 
 // Return the local inertia tensor of the sphere
@@ -136,19 +144,13 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
  */
 inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
 
-    // TODO : Implement this
-    tensor.setToZero();
-}
-
-// Update the AABB of a body using its collision shape
-/**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
- */
-inline void ConcaveMeshShape::computeAABB(AABB& aabb, const Transform& transform) {
-
-    // TODO : Implement this
+    // Default inertia tensor
+    // Note that this is not very realistic for a concave triangle mesh.
+    // However, in most cases, it will only be used static bodies and therefore,
+    // the inertia tensor is not used.
+    tensor.setAllValues(mass, 0, 0,
+                        0, mass, 0,
+                        0, 0, mass);
 }
 
 // Return true if a point is inside the collision shape

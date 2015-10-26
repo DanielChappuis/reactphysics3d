@@ -91,7 +91,7 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         }
 
         /// Test collision between a triangle and the convex mesh shape
-        virtual void reportTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints);
 
 };
 

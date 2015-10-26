@@ -31,6 +31,8 @@ using namespace reactphysics3d;
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh) : ConcaveShape(CONCAVE_MESH) {
     mTriangleMesh = triangleMesh;
+
+    recalculateBounds();
 }
 
 // Destructor
@@ -65,10 +67,10 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
                 // Get the index of the current vertex in the triangle
                 int vertexIndex;
                 if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
-                    vertexIndex = ((unsigned int*)(indicesStart + j * indexStride))[k];
+                    vertexIndex = ((unsigned int*)(indicesStart + j * 3 * indexStride))[k];
                 }
                 else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
-                    vertexIndex = ((unsigned short*)(indicesStart + j * indexStride))[k];
+                    vertexIndex = ((unsigned short*)(indicesStart + j * 3 * indexStride))[k];
                 }
 
                 // Get the vertices components of the triangle
@@ -90,7 +92,7 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
             if (localAABB.testCollisionTriangleAABB(trianglePoints)) {
 
                 // Call the callback to report this triangle
-                callback.reportTriangle(trianglePoints);
+                callback.testTriangle(trianglePoints);
             }
         }
     }
@@ -103,4 +105,73 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     // TODO : Implement this
 
     return false;
+}
+
+// Recompute the bounds of the mesh
+void ConcaveMeshShape::recalculateBounds() {
+
+    bool isFirstVertex = true;
+
+    // For each sub-part of the mesh
+    for (int i=0; i<mTriangleMesh->getNbSubparts(); i++) {
+
+        // Get the triangle vertex array of the current sub-part
+        TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(i);
+
+        TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
+        TriangleVertexArray::IndexDataType indexType = triangleVertexArray->getIndexDataType();
+        unsigned char* verticesStart = triangleVertexArray->getVerticesStart();
+        unsigned char* indicesStart = triangleVertexArray->getIndicesStart();
+        int vertexStride = triangleVertexArray->getVerticesStride();
+        int indexStride = triangleVertexArray->getIndicesStride();
+
+        // For each triangle of the concave mesh
+        for (int j=0; j<triangleVertexArray->getNbTriangles(); j++) {
+
+            // For each vertex of the triangle
+            for (int k=0; k < 3; k++) {
+
+                // Get the index of the current vertex in the triangle
+                int vertexIndex;
+                if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
+                    vertexIndex = ((unsigned int*)(indicesStart + j * indexStride))[k];
+                }
+                else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
+                    vertexIndex = ((unsigned short*)(indicesStart + j * indexStride))[k];
+                }
+
+                Vector3 vertex;
+
+                // Get the vertices components of the triangle
+                if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
+                    const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
+                    vertex[0] = decimal(vertices[0]);
+                    vertex[1] = decimal(vertices[1]);
+                    vertex[2] = decimal(vertices[2]);
+                }
+                else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
+                    const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
+                    vertex[0] = decimal(vertices[0]);
+                    vertex[1] = decimal(vertices[1]);
+                    vertex[2] = decimal(vertices[2]);
+                }
+
+                if (isFirstVertex) {
+                    mMinBounds.setAllValues(vertex.x, vertex.y, vertex.z);
+                    mMaxBounds.setAllValues(vertex.x, vertex.y, vertex.z);
+                    isFirstVertex = false;
+                }
+                else {
+                    if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
+                    if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
+
+                    if (vertex.y > mMaxBounds.y) mMaxBounds.y = vertex.y;
+                    if (vertex.y < mMinBounds.y) mMinBounds.y = vertex.y;
+
+                    if (vertex.z > mMaxBounds.z) mMaxBounds.z = vertex.z;
+                    if (vertex.z < mMinBounds.z) mMinBounds.z = vertex.z;
+                }
+            }
+        }
+    }
 }
