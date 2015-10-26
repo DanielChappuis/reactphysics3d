@@ -33,12 +33,14 @@
 #include "joints/JointsScene.h"
 #include "collisionshapes/CollisionShapesScene.h"
 #include "raycast/RaycastScene.h"
+#include "concavemesh/ConcaveMeshScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
 using namespace cubesscene;
 using namespace raycastscene;
 using namespace collisionshapesscene;
+using namespace trianglemeshscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
@@ -165,6 +167,10 @@ void TestbedApplication::createScenes() {
     // Raycast scene
     RaycastScene* raycastScene = new RaycastScene("Raycast");
     mScenes.push_back(raycastScene);
+
+    // Raycast scene
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh");
+    mScenes.push_back(concaveMeshScene);
 
     assert(mScenes.size() > 0);
     mCurrentScene = mScenes[0];

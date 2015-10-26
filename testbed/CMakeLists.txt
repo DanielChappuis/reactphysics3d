@@ -66,6 +66,8 @@ SET(COMMON_SOURCES
     common/Capsule.cpp
     common/ConvexMesh.h
     common/ConvexMesh.cpp
+    common/ConcaveMesh.h
+    common/ConcaveMesh.cpp
     common/Cylinder.h
     common/Cylinder.cpp
     common/Dumbbell.h
@@ -86,6 +88,8 @@ SET(SCENES_SOURCES
     scenes/raycast/RaycastScene.cpp
     scenes/collisionshapes/CollisionShapesScene.h
     scenes/collisionshapes/CollisionShapesScene.cpp
+    scenes/concavemesh/ConcaveMeshScene.h
+    scenes/concavemesh/ConcaveMeshScene.cpp
 )
 
 # Create the executable
