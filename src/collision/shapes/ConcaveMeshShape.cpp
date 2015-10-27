@@ -134,10 +134,10 @@ void ConcaveMeshShape::recalculateBounds() {
                 // Get the index of the current vertex in the triangle
                 int vertexIndex;
                 if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
-                    vertexIndex = ((unsigned int*)(indicesStart + j * indexStride))[k];
+                    vertexIndex = ((unsigned int*)(indicesStart + j * 3 * indexStride))[k];
                 }
                 else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
-                    vertexIndex = ((unsigned short*)(indicesStart + j * indexStride))[k];
+                    vertexIndex = ((unsigned short*)(indicesStart + j * 3 * indexStride))[k];
                 }
 
                 Vector3 vertex;
