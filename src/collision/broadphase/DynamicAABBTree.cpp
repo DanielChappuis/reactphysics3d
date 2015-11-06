@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 const int TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
-DynamicAABBTree::DynamicAABBTree(BroadPhaseAlgorithm& broadPhase) : mBroadPhase(broadPhase){
+DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABBGap) {
 
     mRootNodeID = TreeNode::NULL_TREE_NODE;
     mNbNodes = 0;
@@ -93,9 +93,9 @@ int DynamicAABBTree::allocateNode() {
     int freeNodeID = mFreeNodeID;
     mFreeNodeID = mNodes[freeNodeID].nextNodeID;
     mNodes[freeNodeID].parentID = TreeNode::NULL_TREE_NODE;
-    mNodes[freeNodeID].leftChildID = TreeNode::NULL_TREE_NODE;
-    mNodes[freeNodeID].rightChildID = TreeNode::NULL_TREE_NODE;
-    mNodes[freeNodeID].proxyShape = NULL;
+    mNodes[freeNodeID].children[0] = TreeNode::NULL_TREE_NODE;
+    mNodes[freeNodeID].children[1] = TreeNode::NULL_TREE_NODE;
+    mNodes[freeNodeID].data = NULL;
     mNodes[freeNodeID].height = 0;
     mNbNodes++;
 
@@ -116,18 +116,18 @@ void DynamicAABBTree::releaseNode(int nodeID) {
 
 // Add an object into the tree. This method creates a new leaf node in the tree and
 // returns the ID of the corresponding node.
-void DynamicAABBTree::addObject(ProxyShape* proxyShape, const AABB& aabb) {
+int DynamicAABBTree::addObject(void* nodeData, const AABB& aabb) {
 
     // Get the next available node (or allocate new ones if necessary)
     int nodeID = allocateNode();
 
     // Create the fat aabb to use in the tree
-    const Vector3 gap(DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP);
+    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
     mNodes[nodeID].aabb.setMin(aabb.getMin() - gap);
     mNodes[nodeID].aabb.setMax(aabb.getMax() + gap);
 
-    // Set the collision shape
-    mNodes[nodeID].proxyShape = proxyShape;
+    // Set the node data
+    mNodes[nodeID].data = nodeData;
 
     // Set the height of the node in the tree
     mNodes[nodeID].height = 0;
@@ -136,9 +136,10 @@ void DynamicAABBTree::addObject(ProxyShape* proxyShape, const AABB& aabb) {
     insertLeafNode(nodeID);
     assert(mNodes[nodeID].isLeaf());
 
-    // Set the broad-phase ID of the proxy shape
-    proxyShape->mBroadPhaseID = nodeID;
     assert(nodeID >= 0);
+
+    // Return the Id of the node
+    return nodeID;
 }
 
 // Remove an object from the tree
@@ -176,7 +177,7 @@ bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector
 
     // Compute the fat AABB by inflating the AABB with a constant gap
     mNodes[nodeID].aabb = newAABB;
-    const Vector3 gap(DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP, DYNAMIC_TREE_AABB_GAP);
+    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
     mNodes[nodeID].aabb.mMinCoordinates -= gap;
     mNodes[nodeID].aabb.mMaxCoordinates += gap;
 
@@ -227,8 +228,8 @@ void DynamicAABBTree::insertLeafNode(int nodeID) {
     int currentNodeID = mRootNodeID;
     while (!mNodes[currentNodeID].isLeaf()) {
 
-        int leftChild = mNodes[currentNodeID].leftChildID;
-        int rightChild = mNodes[currentNodeID].rightChildID;
+        int leftChild = mNodes[currentNodeID].children[0];
+        int rightChild = mNodes[currentNodeID].children[1];
 
         // Compute the merged AABB
         decimal volumeAABB = mNodes[currentNodeID].aabb.getVolume();
@@ -285,27 +286,27 @@ void DynamicAABBTree::insertLeafNode(int nodeID) {
     int oldParentNode = mNodes[siblingNode].parentID;
     int newParentNode = allocateNode();
     mNodes[newParentNode].parentID = oldParentNode;
-    mNodes[newParentNode].proxyShape = NULL;
+    mNodes[newParentNode].data = NULL;
     mNodes[newParentNode].aabb.mergeTwoAABBs(mNodes[siblingNode].aabb, newNodeAABB);
     mNodes[newParentNode].height = mNodes[siblingNode].height + 1;
     assert(mNodes[newParentNode].height > 0);
 
     // If the sibling node was not the root node
     if (oldParentNode != TreeNode::NULL_TREE_NODE) {
-        if (mNodes[oldParentNode].leftChildID == siblingNode) {
-            mNodes[oldParentNode].leftChildID = newParentNode;
+        if (mNodes[oldParentNode].children[0] == siblingNode) {
+            mNodes[oldParentNode].children[0] = newParentNode;
         }
         else {
-            mNodes[oldParentNode].rightChildID = newParentNode;
+            mNodes[oldParentNode].children[1] = newParentNode;
         }
-        mNodes[newParentNode].leftChildID = siblingNode;
-        mNodes[newParentNode].rightChildID = nodeID;
+        mNodes[newParentNode].children[0] = siblingNode;
+        mNodes[newParentNode].children[1] = nodeID;
         mNodes[siblingNode].parentID = newParentNode;
         mNodes[nodeID].parentID = newParentNode;
     }
     else {  // If the sibling node was the root node
-        mNodes[newParentNode].leftChildID = siblingNode;
-        mNodes[newParentNode].rightChildID = nodeID;
+        mNodes[newParentNode].children[0] = siblingNode;
+        mNodes[newParentNode].children[1] = nodeID;
         mNodes[siblingNode].parentID = newParentNode;
         mNodes[nodeID].parentID = newParentNode;
         mRootNodeID = newParentNode;
@@ -319,8 +320,8 @@ void DynamicAABBTree::insertLeafNode(int nodeID) {
         currentNodeID = balanceSubTreeAtNode(currentNodeID);
         assert(mNodes[nodeID].isLeaf());
 
-        int leftChild = mNodes[currentNodeID].leftChildID;
-        int rightChild = mNodes[currentNodeID].rightChildID;
+        int leftChild = mNodes[currentNodeID].children[0];
+        int rightChild = mNodes[currentNodeID].children[1];
         assert(leftChild != TreeNode::NULL_TREE_NODE);
         assert(rightChild != TreeNode::NULL_TREE_NODE);
 
@@ -353,23 +354,23 @@ void DynamicAABBTree::removeLeafNode(int nodeID) {
     int parentNodeID = mNodes[nodeID].parentID;
     int grandParentNodeID = mNodes[parentNodeID].parentID;
     int siblingNodeID;
-    if (mNodes[parentNodeID].leftChildID == nodeID) {
-        siblingNodeID = mNodes[parentNodeID].rightChildID;
+    if (mNodes[parentNodeID].children[0] == nodeID) {
+        siblingNodeID = mNodes[parentNodeID].children[1];
     }
     else {
-        siblingNodeID = mNodes[parentNodeID].leftChildID;
+        siblingNodeID = mNodes[parentNodeID].children[0];
     }
 
     // If the parent of the node to remove is not the root node
     if (grandParentNodeID != TreeNode::NULL_TREE_NODE) {
 
         // Destroy the parent node
-        if (mNodes[grandParentNodeID].leftChildID == parentNodeID) {
-            mNodes[grandParentNodeID].leftChildID = siblingNodeID;
+        if (mNodes[grandParentNodeID].children[0] == parentNodeID) {
+            mNodes[grandParentNodeID].children[0] = siblingNodeID;
         }
         else {
-            assert(mNodes[grandParentNodeID].rightChildID == parentNodeID);
-            mNodes[grandParentNodeID].rightChildID = siblingNodeID;
+            assert(mNodes[grandParentNodeID].children[1] == parentNodeID);
+            mNodes[grandParentNodeID].children[1] = siblingNodeID;
         }
         mNodes[siblingNodeID].parentID = grandParentNodeID;
         releaseNode(parentNodeID);
@@ -383,8 +384,8 @@ void DynamicAABBTree::removeLeafNode(int nodeID) {
             currentNodeID = balanceSubTreeAtNode(currentNodeID);
 
             // Get the two children of the current node
-            int leftChildID = mNodes[currentNodeID].leftChildID;
-            int rightChildID = mNodes[currentNodeID].rightChildID;
+            int leftChildID = mNodes[currentNodeID].children[0];
+            int rightChildID = mNodes[currentNodeID].children[1];
 
             // Recompute the AABB and the height of the current node
             mNodes[currentNodeID].aabb.mergeTwoAABBs(mNodes[leftChildID].aabb,
@@ -422,8 +423,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
     }
 
     // Get the two children nodes
-    int nodeBID = nodeA->leftChildID;
-    int nodeCID = nodeA->rightChildID;
+    int nodeBID = nodeA->children[0];
+    int nodeCID = nodeA->children[1];
     assert(nodeBID >= 0 && nodeBID < mNbAllocatedNodes);
     assert(nodeCID >= 0 && nodeCID < mNbAllocatedNodes);
     TreeNode* nodeB = mNodes + nodeBID;
@@ -435,25 +436,25 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
     // If the right node C is 2 higher than left node B
     if (balanceFactor > 1) {
 
-        int nodeFID = nodeC->leftChildID;
-        int nodeGID = nodeC->rightChildID;
+        int nodeFID = nodeC->children[0];
+        int nodeGID = nodeC->children[1];
         assert(nodeFID >= 0 && nodeFID < mNbAllocatedNodes);
         assert(nodeGID >= 0 && nodeGID < mNbAllocatedNodes);
         TreeNode* nodeF = mNodes + nodeFID;
         TreeNode* nodeG = mNodes + nodeGID;
 
-        nodeC->leftChildID = nodeID;
+        nodeC->children[0] = nodeID;
         nodeC->parentID = nodeA->parentID;
         nodeA->parentID = nodeCID;
 
         if (nodeC->parentID != TreeNode::NULL_TREE_NODE) {
 
-            if (mNodes[nodeC->parentID].leftChildID == nodeID) {
-                mNodes[nodeC->parentID].leftChildID = nodeCID;
+            if (mNodes[nodeC->parentID].children[0] == nodeID) {
+                mNodes[nodeC->parentID].children[0] = nodeCID;
             }
             else {
-                assert(mNodes[nodeC->parentID].rightChildID == nodeID);
-                mNodes[nodeC->parentID].rightChildID = nodeCID;
+                assert(mNodes[nodeC->parentID].children[1] == nodeID);
+                mNodes[nodeC->parentID].children[1] = nodeCID;
             }
         }
         else {
@@ -462,8 +463,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 
         // If the right node C was higher than left node B because of the F node
         if (nodeF->height > nodeG->height) {
-            nodeC->rightChildID = nodeFID;
-            nodeA->rightChildID = nodeGID;
+            nodeC->children[1] = nodeFID;
+            nodeA->children[1] = nodeGID;
             nodeG->parentID = nodeID;
 
             // Recompute the AABB of node A and C
@@ -477,8 +478,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
             assert(nodeC->height > 0);
         }
         else {  // If the right node C was higher than left node B because of node G
-            nodeC->rightChildID = nodeGID;
-            nodeA->rightChildID = nodeFID;
+            nodeC->children[1] = nodeGID;
+            nodeA->children[1] = nodeFID;
             nodeF->parentID = nodeID;
 
             // Recompute the AABB of node A and C
@@ -499,25 +500,25 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
     // If the left node B is 2 higher than right node C
     if (balanceFactor < -1) {
 
-        int nodeFID = nodeB->leftChildID;
-        int nodeGID = nodeB->rightChildID;
+        int nodeFID = nodeB->children[0];
+        int nodeGID = nodeB->children[1];
         assert(nodeFID >= 0 && nodeFID < mNbAllocatedNodes);
         assert(nodeGID >= 0 && nodeGID < mNbAllocatedNodes);
         TreeNode* nodeF = mNodes + nodeFID;
         TreeNode* nodeG = mNodes + nodeGID;
 
-        nodeB->leftChildID = nodeID;
+        nodeB->children[0] = nodeID;
         nodeB->parentID = nodeA->parentID;
         nodeA->parentID = nodeBID;
 
         if (nodeB->parentID != TreeNode::NULL_TREE_NODE) {
 
-            if (mNodes[nodeB->parentID].leftChildID == nodeID) {
-                mNodes[nodeB->parentID].leftChildID = nodeBID;
+            if (mNodes[nodeB->parentID].children[0] == nodeID) {
+                mNodes[nodeB->parentID].children[0] = nodeBID;
             }
             else {
-                assert(mNodes[nodeB->parentID].rightChildID == nodeID);
-                mNodes[nodeB->parentID].rightChildID = nodeBID;
+                assert(mNodes[nodeB->parentID].children[1] == nodeID);
+                mNodes[nodeB->parentID].children[1] = nodeBID;
             }
         }
         else {
@@ -526,8 +527,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 
         // If the left node B was higher than right node C because of the F node
         if (nodeF->height > nodeG->height) {
-            nodeB->rightChildID = nodeFID;
-            nodeA->leftChildID = nodeGID;
+            nodeB->children[1] = nodeFID;
+            nodeA->children[0] = nodeGID;
             nodeG->parentID = nodeID;
 
             // Recompute the AABB of node A and B
@@ -541,8 +542,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
             assert(nodeB->height > 0);
         }
         else {  // If the left node B was higher than right node C because of node G
-            nodeB->rightChildID = nodeGID;
-            nodeA->leftChildID = nodeFID;
+            nodeB->children[1] = nodeGID;
+            nodeA->children[0] = nodeFID;
             nodeF->parentID = nodeID;
 
             // Recompute the AABB of node A and B
@@ -568,7 +569,8 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 /// For each overlapping shape with the AABB given in parameter, the
 /// BroadPhase::notifyOverlappingPair() method is called to store a
 /// potential overlapping pair.
-void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aabb) {
+void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aabb,
+                                                     BroadPhaseOverlapCallback& callback) {
 
     // Create a stack with the nodes to visit
     Stack<int, 64> stack;
@@ -593,13 +595,13 @@ void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aab
             if (nodeToVisit->isLeaf()) {
 
                 // Notify the broad-phase about a new potential overlapping pair
-                mBroadPhase.notifyOverlappingPair(nodeID, nodeIDToVisit);
+                callback.notifyOverlappingAABBs(nodeID, nodeIDToVisit);
             }
             else {  // If the node is not a leaf
 
                 // We need to visit its children
-                stack.push(nodeToVisit->leftChildID);
-                stack.push(nodeToVisit->rightChildID);
+                stack.push(nodeToVisit->children[0]);
+                stack.push(nodeToVisit->children[1]);
             }
         }
     }
@@ -607,7 +609,8 @@ void DynamicAABBTree::reportAllShapesOverlappingWith(int nodeID, const AABB& aab
 
 // Ray casting method
 void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest,
-                              unsigned short raycastWithCategoryMaskBits) const {
+                              unsigned short raycastWithCategoryMaskBits,
+                              const BroadPhaseRaycastTestCallback& callback) const {
 
     decimal maxFraction = ray.maxFraction;
 
@@ -639,46 +642,39 @@ void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest,
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
 
-            // Check if the raycast filtering mask allows raycast against this shape
-            if ((raycastWithCategoryMaskBits & node->proxyShape->getCollisionCategoryBits()) != 0) {
+            Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
-                Ray rayTemp(ray.point1, ray.point2, maxFraction);
+            // Call the callback that will raycast again the broad-phase shape
+            decimal hitFraction = callback.raycastBroadPhaseShape(node->data, raycastTest, rayTemp,
+                                                                  raycastWithCategoryMaskBits);
 
-                // Ask the collision detection to perform a ray cast test against
-                // the proxy shape of this node because the ray is overlapping
-                // with the shape in the broad-phase
-                decimal hitFraction = raycastTest.raycastAgainstShape(node->proxyShape,
-                                                                      rayTemp);
-
-                // If the user returned a hitFraction of zero, it means that
-                // the raycasting should stop here
-                if (hitFraction == decimal(0.0)) {
-                    return;
-                }
-
-                // If the user returned a positive fraction
-                if (hitFraction > decimal(0.0)) {
-
-                    // We update the maxFraction value and the ray
-                    // AABB using the new maximum fraction
-                    if (hitFraction < maxFraction) {
-                        maxFraction = hitFraction;
-                    }
-                    endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
-                    rayAABB.mMinCoordinates = Vector3::min(ray.point1, endPoint);
-                    rayAABB.mMaxCoordinates = Vector3::max(ray.point1, endPoint);
-                }
-
-                // If the user returned a negative fraction, we continue
-                // the raycasting as if the proxy shape did not exist
+            // If the user returned a hitFraction of zero, it means that
+            // the raycasting should stop here
+            if (hitFraction == decimal(0.0)) {
+                return;
             }
 
+            // If the user returned a positive fraction
+            if (hitFraction > decimal(0.0)) {
+
+                // We update the maxFraction value and the ray
+                // AABB using the new maximum fraction
+                if (hitFraction < maxFraction) {
+                    maxFraction = hitFraction;
+                }
+                endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
+                rayAABB.mMinCoordinates = Vector3::min(ray.point1, endPoint);
+                rayAABB.mMaxCoordinates = Vector3::max(ray.point1, endPoint);
+            }
+
+            // If the user returned a negative fraction, we continue
+            // the raycasting as if the proxy shape did not exist
         }
         else {  // If the node has children
 
             // Push its children in the stack of nodes to explore
-            stack.push(node->leftChildID);
-            stack.push(node->rightChildID);
+            stack.push(node->children[0]);
+            stack.push(node->children[1]);
         }
     }
 }
@@ -716,8 +712,8 @@ void DynamicAABBTree::checkNode(int nodeID) const {
 
     // Get the children nodes
     TreeNode* pNode = mNodes + nodeID;
-    int leftChild = pNode->leftChildID;
-    int rightChild = pNode->rightChildID;
+    int leftChild = pNode->children[0];
+    int rightChild = pNode->children[1];
 
     assert(pNode->height >= 0);
     assert(pNode->aabb.getVolume() > 0);
@@ -772,8 +768,8 @@ int DynamicAABBTree::computeHeight(int nodeID) {
     }
 
     // Compute the height of the left and right sub-tree
-    int leftHeight = computeHeight(node->leftChildID);
-    int rightHeight = computeHeight(node->rightChildID);
+    int leftHeight = computeHeight(node->children[0]);
+    int rightHeight = computeHeight(node->children[1]);
 
     // Return the height of the node
     return 1 + std::max(leftHeight, rightHeight);

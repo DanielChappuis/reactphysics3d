@@ -36,12 +36,9 @@ namespace reactphysics3d {
 
 // Declarations
 class BroadPhaseAlgorithm;
+class BroadPhaseRaycastTestCallback;
+class BroadPhaseOverlapCallback;
 struct RaycastTest;
-
-// Raycast callback method pointer type
-typedef decimal (*RaycastTestCallback) (ProxyShape* shape,
-                                RaycastCallback* userCallback,
-                                const Ray& ray);
 
 // Structure TreeNode
 /**
@@ -56,23 +53,32 @@ struct TreeNode {
 
     // -------------------- Attributes -------------------- //
 
-    /// Parent node ID
-    int parentID;
+    // A node is either in the tree (has a parent) or in the free nodes list
+    // (has a next node)
+    union {
 
-    /// Left and right child of the node
-    int leftChildID, rightChildID;
+        /// Parent node ID
+        int32 parentID;
 
-    /// Next allocated node ID
-    int nextNodeID;
+        /// Next allocated node ID
+        int32 nextNodeID;
+    };
+
+    // A node is either a leaf (has data) or is an internal node (has children)
+    union {
+
+        /// Left and right child of the node (children[0] = left child)
+        int32 children[2];
+
+        /// Pointer to the data stored at that node (in case the node is a leaf)
+        void* data;
+    };
 
     /// Height of the node in the tree
-    int height;
+    int16 height;
 
     /// Fat axis aligned bounding box (AABB) corresponding to the node
     AABB aabb;
-
-    /// Pointer to the corresponding collision shape (in case this node is a leaf)
-    ProxyShape* proxyShape;
 
     // -------------------- Methods -------------------- //
 
@@ -94,9 +100,6 @@ class DynamicAABBTree {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the broad-phase
-        BroadPhaseAlgorithm& mBroadPhase;
-
         /// Pointer to the memory location of the nodes of the tree
         TreeNode* mNodes;
 
@@ -111,6 +114,10 @@ class DynamicAABBTree {
 
         /// Number of nodes in the tree
         int mNbNodes;
+
+        /// Extra AABB Gap used to allow the collision shape to move a little bit
+        /// without triggering a large modification of the tree which can be costly
+        decimal mExtraAABBGap;
 
         // -------------------- Methods -------------------- //
 
@@ -147,13 +154,13 @@ class DynamicAABBTree {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicAABBTree(BroadPhaseAlgorithm& broadPhase);
+        DynamicAABBTree(decimal extraAABBGap = decimal(0.0));
 
         /// Destructor
         ~DynamicAABBTree();
 
         /// Add an object into the tree
-        void addObject(ProxyShape* proxyShape, const AABB& aabb);
+        int addObject(void* nodeData, const AABB& aabb);
 
         /// Remove an object from the tree
         void removeObject(int nodeID);
@@ -164,15 +171,17 @@ class DynamicAABBTree {
         /// Return the fat AABB corresponding to a given node ID
         const AABB& getFatAABB(int nodeID) const;
 
-        /// Return the collision shape of a given leaf node of the tree
-        ProxyShape* getCollisionShape(int nodeID) const;
+        /// Return the pointer to the data of a given leaf node of the tree
+        void* getNodeData(int nodeID) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
-        void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb);
+        void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb,
+                                            BroadPhaseOverlapCallback& callback);
 
         /// Ray casting method
         void raycast(const Ray& ray, RaycastTest& raycastTest,
-                     unsigned short raycastWithCategoryMaskBits) const;
+                     unsigned short raycastWithCategoryMaskBits,
+                     const BroadPhaseRaycastTestCallback& callback) const;
 
         /// Compute the height of the tree
         int computeHeight();
@@ -180,7 +189,7 @@ class DynamicAABBTree {
 
 // Return true if the node is a leaf of the tree
 inline bool TreeNode::isLeaf() const {
-    return leftChildID == NULL_TREE_NODE;
+    return (height == 0);
 }
 
 // Return the fat AABB corresponding to a given node ID
@@ -189,11 +198,11 @@ inline const AABB& DynamicAABBTree::getFatAABB(int nodeID) const {
     return mNodes[nodeID].aabb;
 }
 
-// Return the collision shape of a given leaf node of the tree
-inline ProxyShape* DynamicAABBTree::getCollisionShape(int nodeID) const {
+// Return the pointer to the data of a given leaf node of the tree
+inline void* DynamicAABBTree::getNodeData(int nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
-    return mNodes[nodeID].proxyShape;
+    return mNodes[nodeID].data;
 }
 
 }

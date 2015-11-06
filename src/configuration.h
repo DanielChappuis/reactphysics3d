@@ -51,6 +51,11 @@ typedef long unsigned int luint;
 typedef luint bodyindex;
 typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
+typedef signed short int16;
+typedef signed int int32;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+
 // ------------------- Enumerations ------------------- //
 
 /// Position correction technique used in the constraint solver (for joints).
