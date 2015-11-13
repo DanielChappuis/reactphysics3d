@@ -28,9 +28,40 @@
 
 // Libraries
 #include "ConcaveShape.h"
+#include "collision/broadphase/DynamicAABBTree.h"
 #include "collision/TriangleMesh.h"
 
 namespace reactphysics3d {
+
+class ConcaveMeshShape;
+
+// class ConvexTriangleAABBOverlapCallback
+class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
+
+    private:
+
+        TriangleCallback& mTriangleTestCallback;
+
+        // Reference to the concave mesh shape
+        const ConcaveMeshShape& mConcaveMeshShape;
+
+        // Reference to the Dynamic AABB tree
+        const DynamicAABBTree& mDynamicAABBTree;
+
+    public:
+
+        // Constructor
+        ConvexTriangleAABBOverlapCallback(TriangleCallback& triangleCallback, const ConcaveMeshShape& concaveShape,
+                                          const DynamicAABBTree& dynamicAABBTree)
+          : mTriangleTestCallback(triangleCallback), mConcaveMeshShape(concaveShape), mDynamicAABBTree(dynamicAABBTree) {
+
+        }
+
+        // Called when a overlapping node has been found during the call to
+        // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+        virtual void notifyOverlappingNode(int nodeId);
+
+};
 
 // TODO : Implement raycasting with this collision shape
 
@@ -51,11 +82,8 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Triangle mesh
         TriangleMesh* mTriangleMesh;
 
-        /// Mesh minimum bounds in the three local x, y and z directions
-        Vector3 mMinBounds;
-
-        /// Mesh maximum bounds in the three local x, y and z directions
-        Vector3 mMaxBounds;
+        /// Dynamic AABB tree to accelerate collision with the triangles
+        DynamicAABBTree mDynamicAABBTree;
 
         // -------------------- Methods -------------------- //
 
@@ -82,9 +110,13 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
-        /// Recompute the bounds of the mesh
-        // TODO : Check if we need this when AABB tree is used
-        void recalculateBounds();
+        /// Insert all the triangles into the dynamic AABB tree
+        void initBVHTree();
+
+        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
+        /// given the start vertex index pointer of the triangle.
+        void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
+                                                 Vector3* outTriangleVertices) const;
 
     public:
 
@@ -102,6 +134,10 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
+
+        // ---------- Friendship ----------- //
+
+        friend class ConvexTriangleAABBOverlapCallback;
 };
 
 // Return the number of bytes used by the collision shape
@@ -132,8 +168,11 @@ inline Vector3 ConcaveMeshShape::getLocalSupportPointWithoutMargin(const Vector3
  */
 inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
-    min = mMinBounds;
-    max = mMaxBounds;
+    // Get the AABB of the whole tree
+    AABB treeAABB = mDynamicAABBTree.getRootAABB();
+
+    min = treeAABB.getMin();
+    max = treeAABB.getMax();
 }
 
 // Return the local inertia tensor of the sphere
@@ -158,6 +197,21 @@ inline bool ConcaveMeshShape::testPointInside(const Vector3& localPoint, ProxySh
 
     // TODO : Implement this
     return false;
+}
+
+// Called when a overlapping node has been found during the call to
+// DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId) {
+
+    // Get the node data (triangle index and mesh subpart index)
+    int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+
+    // Get the triangle vertices for this node from the concave mesh shape
+    Vector3 trianglePoints[3];
+    mConcaveMeshShape.getTriangleVerticesWithIndexPointer(data[0], data[1], trianglePoints);
+
+    // Call the callback to test narrow-phase collision with this triangle
+    mTriangleTestCallback.testTriangle(trianglePoints);
 }
 
 }

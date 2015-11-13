@@ -37,7 +37,7 @@ namespace reactphysics3d {
 // Declarations
 class BroadPhaseAlgorithm;
 class BroadPhaseRaycastTestCallback;
-class BroadPhaseOverlapCallback;
+class DynamicAABBTreeOverlapCallback;
 struct RaycastTest;
 
 // Structure TreeNode
@@ -70,8 +70,11 @@ struct TreeNode {
         /// Left and right child of the node (children[0] = left child)
         int32 children[2];
 
-        /// Pointer to the data stored at that node (in case the node is a leaf)
-        void* data;
+        /// Two pieces of data stored at that node (in case the node is a leaf)
+        union {
+            int32 dataInt[2];
+            void* dataPointer;
+        };
     };
 
     /// Height of the node in the tree
@@ -84,6 +87,20 @@ struct TreeNode {
 
     /// Return true if the node is a leaf of the tree
     bool isLeaf() const;
+};
+
+// Class DynamicAABBTreeOverlapCallback
+/**
+ * Overlapping callback method that has to be used as parameter of the
+ * reportAllShapesOverlappingWithNode() method.
+ */
+class DynamicAABBTreeOverlapCallback {
+
+    public :
+
+        // Called when a overlapping node has been found during the call to
+        // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+        virtual void notifyOverlappingNode(int nodeId)=0;
 };
 
 // Class DynamicAABBTree
@@ -139,6 +156,9 @@ class DynamicAABBTree {
         /// Compute the height of a given node in the tree
         int computeHeight(int nodeID);
 
+        /// Internally add an object into the tree
+        int addObjectInternal(const AABB& aabb);
+
 #ifndef NDEBUG
 
         /// Check if the tree structure is valid (for debugging purpose)
@@ -159,8 +179,11 @@ class DynamicAABBTree {
         /// Destructor
         ~DynamicAABBTree();
 
-        /// Add an object into the tree
-        int addObject(void* nodeData, const AABB& aabb);
+        /// Add an object into the tree (where node data are two integers)
+        int addObject(const AABB& aabb, int32 data1, int32 data2);
+
+        /// Add an object into the tree (where node data is a pointer)
+        int addObject(const AABB& aabb, void* data);
 
         /// Remove an object from the tree
         void removeObject(int nodeID);
@@ -171,12 +194,15 @@ class DynamicAABBTree {
         /// Return the fat AABB corresponding to a given node ID
         const AABB& getFatAABB(int nodeID) const;
 
-        /// Return the pointer to the data of a given leaf node of the tree
-        void* getNodeData(int nodeID) const;
+        /// Return the pointer to the data array of a given leaf node of the tree
+        int32* getNodeDataInt(int nodeID) const;
+
+        /// Return the data pointer of a given leaf node of the tree
+        void* getNodeDataPointer(int nodeID) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
-        void reportAllShapesOverlappingWith(int nodeID, const AABB& aabb,
-                                            BroadPhaseOverlapCallback& callback);
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb,
+                                                DynamicAABBTreeOverlapCallback& callback) const;
 
         /// Ray casting method
         void raycast(const Ray& ray, RaycastTest& raycastTest,
@@ -185,6 +211,9 @@ class DynamicAABBTree {
 
         /// Compute the height of the tree
         int computeHeight();
+
+        /// Return the root AABB of the tree
+        AABB getRootAABB() const;
 };
 
 // Return true if the node is a leaf of the tree
@@ -198,11 +227,46 @@ inline const AABB& DynamicAABBTree::getFatAABB(int nodeID) const {
     return mNodes[nodeID].aabb;
 }
 
-// Return the pointer to the data of a given leaf node of the tree
-inline void* DynamicAABBTree::getNodeData(int nodeID) const {
+// Return the pointer to the data array of a given leaf node of the tree
+inline int32* DynamicAABBTree::getNodeDataInt(int nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
-    return mNodes[nodeID].data;
+    return mNodes[nodeID].dataInt;
+}
+
+// Return the pointer to the data pointer of a given leaf node of the tree
+inline void* DynamicAABBTree::getNodeDataPointer(int nodeID) const {
+    assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
+    assert(mNodes[nodeID].isLeaf());
+    return mNodes[nodeID].dataPointer;
+}
+
+// Return the root AABB of the tree
+inline AABB DynamicAABBTree::getRootAABB() const {
+    return getFatAABB(mRootNodeID);
+}
+
+// Add an object into the tree. This method creates a new leaf node in the tree and
+// returns the ID of the corresponding node.
+inline int DynamicAABBTree::addObject(const AABB& aabb, int32 data1, int32 data2) {
+
+    int nodeId = addObjectInternal(aabb);
+
+    mNodes[nodeId].dataInt[0] = data1;
+    mNodes[nodeId].dataInt[1] = data2;
+
+    return nodeId;
+}
+
+// Add an object into the tree. This method creates a new leaf node in the tree and
+// returns the ID of the corresponding node.
+inline int DynamicAABBTree::addObject(const AABB& aabb, void* data) {
+
+    int nodeId = addObjectInternal(aabb);
+
+    mNodes[nodeId].dataPointer = data;
+
+    return nodeId;
 }
 
 }

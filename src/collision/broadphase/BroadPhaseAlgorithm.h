@@ -37,6 +37,7 @@ namespace reactphysics3d {
 
 // Declarations
 class CollisionDetection;
+class BroadPhaseAlgorithm;
 
 // Structure BroadPhasePair
 /**
@@ -59,17 +60,26 @@ struct BroadPhasePair {
     static bool smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2);
 };
 
-// Class BroadPhaseOverlapCallback
-/**
- * Overlapping callback method that has to be used as parameter of the
- * reportAllShapesOverlappingWith() method.
- */
-class BroadPhaseOverlapCallback {
+// class AABBOverlapCallback
+class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
-    public :
+    private:
 
-        // Called when two overlapping AABBs have been found
-        virtual void notifyOverlappingAABBs(int broadPhaseId1, int broadPhaseId2)=0;
+        BroadPhaseAlgorithm& mBroadPhaseAlgorithm;
+
+        int mReferenceNodeId;
+
+    public:
+
+        // Constructor
+        AABBOverlapCallback(BroadPhaseAlgorithm& broadPhaseAlgo, int referenceNodeId)
+             : mBroadPhaseAlgorithm(broadPhaseAlgo), mReferenceNodeId(referenceNodeId) {
+
+        }
+
+        // Called when a overlapping node has been found during the call to
+        // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+        virtual void notifyOverlappingNode(int nodeId);
 
 };
 
@@ -82,7 +92,7 @@ class BroadPhaseRaycastTestCallback {
     public:
 
         // Called for a broad-phase shape that has to be tested for raycast
-        virtual decimal raycastBroadPhaseShape(void* nodeData, RaycastTest& raycastTest,
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, RaycastTest& raycastTest,
                                                const Ray& ray,
                                                unsigned short raycastWithCategoryMaskBits) const=0;
 
@@ -96,7 +106,7 @@ class BroadPhaseRaycastTestCallback {
  * later for collision during the narrow-phase collision detection. A dynamic AABB
  * tree data structure is used for fast broad-phase collision detection.
  */
-class BroadPhaseAlgorithm : BroadPhaseRaycastTestCallback, BroadPhaseOverlapCallback {
+class BroadPhaseAlgorithm : BroadPhaseRaycastTestCallback {
 
     protected :
 
@@ -171,10 +181,10 @@ class BroadPhaseAlgorithm : BroadPhaseRaycastTestCallback, BroadPhaseOverlapCall
         void removeMovedCollisionShape(int broadPhaseID);
 
         /// Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-        void notifyOverlappingAABBs(int broadPhaseId1, int broadPhaseId2);
+        void notifyOverlappingNodes(int broadPhaseId1, int broadPhaseId2);
 
         /// Called for a broad-phase shape that has to be tested for raycast
-        virtual decimal raycastBroadPhaseShape(void* nodeData, RaycastTest& raycastTest,
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, RaycastTest& raycastTest,
                                                const Ray& ray,
                                                unsigned short raycastWithCategoryMaskBits) const;
 

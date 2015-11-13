@@ -89,3 +89,27 @@ bool AABB::contains(const AABB& aabb) {
     return isInside;
 }
 
+// Create and return an AABB for a triangle
+AABB AABB::createAABBForTriangle(const Vector3* trianglePoints) {
+
+    Vector3 minCoords(trianglePoints[0].x, trianglePoints[0].y, trianglePoints[0].z);
+    Vector3 maxCoords(trianglePoints[0].x, trianglePoints[0].y, trianglePoints[0].z);
+
+    if (trianglePoints[1].x < minCoords.x) minCoords.x = trianglePoints[1].x;
+    if (trianglePoints[1].y < minCoords.y) minCoords.y = trianglePoints[1].y;
+    if (trianglePoints[1].z < minCoords.z) minCoords.z = trianglePoints[1].z;
+
+    if (trianglePoints[2].x < minCoords.x) minCoords.x = trianglePoints[2].x;
+    if (trianglePoints[2].y < minCoords.y) minCoords.y = trianglePoints[2].y;
+    if (trianglePoints[2].z < minCoords.z) minCoords.z = trianglePoints[2].z;
+
+    if (trianglePoints[1].x > maxCoords.x) maxCoords.x = trianglePoints[1].x;
+    if (trianglePoints[1].y > maxCoords.y) maxCoords.y = trianglePoints[1].y;
+    if (trianglePoints[1].z > maxCoords.z) maxCoords.z = trianglePoints[1].z;
+
+    if (trianglePoints[2].x > maxCoords.x) maxCoords.x = trianglePoints[2].x;
+    if (trianglePoints[2].y > maxCoords.y) maxCoords.y = trianglePoints[2].y;
+    if (trianglePoints[2].z > maxCoords.z) maxCoords.z = trianglePoints[2].z;
+
+    return AABB(minCoords, maxCoords);
+}
