@@ -43,7 +43,7 @@ ConcaveVsConvexAlgorithm::~ConcaveVsConvexAlgorithm() {
 }
 
 // Return true and compute a contact info if the two bounding volumes collide
-bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
+void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                              const CollisionShapeInfo& shape2Info,
                                              NarrowPhaseCallback* narrowPhaseCallback) {
 

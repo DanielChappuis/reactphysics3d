@@ -81,7 +81,7 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// intersect. An initial simplex that contains origin has been computed with
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
-bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
+void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
                                                            CollisionShapeInfo shape1Info,
                                                            const Transform& transform1,
                                                            CollisionShapeInfo shape2Info,
@@ -134,7 +134,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             // Only one point in the simplex (which should be the origin).
             // We have a touching contact with zero penetration depth.
             // We drop that kind of contact. Therefore, we return false
-            return false;
+            return;
 
         case 2: {
             // The simplex returned by GJK is a line segment d containing the origin.
@@ -201,7 +201,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             }
             else {
                 // The origin is not in the initial polytope
-                return false;
+                return;
             }
 
             // The polytope contains now 4 vertices
@@ -231,7 +231,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                    && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                    && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                    return false;
+                    return;
                 }
 
                 // Associate the edges of neighbouring triangle faces
@@ -316,14 +316,14 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 face3 = triangleStore.newTriangle(points, 1, 4, 2);
             }
             else {
-                return false;
+                return;
             }
 
             // If the constructed tetrahedron is not correct
             if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                return false;
+                return;
             }
 
             // Associate the edges of neighbouring triangle faces
@@ -350,7 +350,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     // can run the EPA algorithm.
 
     if (nbTriangles == 0) {
-        return false;
+        return;
     }
 
     TriangleEPA* triangle = 0;
@@ -432,5 +432,5 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
     narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
     
-    return true;
+    return;
 }

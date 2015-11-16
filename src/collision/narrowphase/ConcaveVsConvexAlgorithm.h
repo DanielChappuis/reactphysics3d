@@ -129,8 +129,8 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         /// Destructor
         virtual ~ConcaveVsConvexAlgorithm();
 
-        /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const CollisionShapeInfo& shape1Info,
+        /// Compute a contact info if the two bounding volume collide
+        virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
                                    NarrowPhaseCallback* narrowPhaseCallback);
 };

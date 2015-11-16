@@ -123,7 +123,7 @@ class EPAAlgorithm {
         void init(MemoryAllocator* memoryAllocator);
 
         /// Compute the penetration depth with EPA algorithm.
-        bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
+        void computePenetrationDepthAndContactPoints(const Simplex& simplex,
                                                      CollisionShapeInfo shape1Info,
                                                      const Transform& transform1,
                                                      CollisionShapeInfo shape2Info,

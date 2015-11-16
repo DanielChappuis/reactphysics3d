@@ -40,7 +40,7 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
+void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                             const CollisionShapeInfo& shape2Info,
                                             NarrowPhaseCallback* narrowPhaseCallback) {
     
@@ -76,9 +76,7 @@ bool SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info
 
         // Notify about the new contact
         narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
-    
-        return true;
     }
     
-    return false;
+    return;
 }
