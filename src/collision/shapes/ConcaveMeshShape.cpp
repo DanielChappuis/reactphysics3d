@@ -25,7 +25,6 @@
 
 // Libraries
 #include "ConcaveMeshShape.h"
-#include <iostream>
 
 using namespace reactphysics3d;
 

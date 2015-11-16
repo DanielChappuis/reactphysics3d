@@ -73,10 +73,9 @@ bool ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
     mConvexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
     mConvexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
 
-    // Compute the convex shape AABB in the local-space of the concave shape
+    // Compute the convex shape AABB in the local-space of the convex shape
     AABB aabb;
     convexShape->computeAABB(aabb, convexProxyShape->getLocalToWorldTransform());
-    concaveShape->computeAABB(aabb, concaveProxyShape->getLocalToWorldTransform().getInverse());
 
     // Call the convex vs triangle callback for each triangle of the concave shape
     concaveShape->testAllTriangles(mConvexVsTriangleCallback, aabb);

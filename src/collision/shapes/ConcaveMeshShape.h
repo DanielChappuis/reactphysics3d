@@ -30,6 +30,7 @@
 #include "ConcaveShape.h"
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "collision/TriangleMesh.h"
+#include <iostream>
 
 namespace reactphysics3d {
 
@@ -212,6 +213,9 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
 
     // Call the callback to test narrow-phase collision with this triangle
     mTriangleTestCallback.testTriangle(trianglePoints);
+
+    // TODO : Delete this
+    std::cout << "Notify triangle test" << std::endl;
 }
 
 }
