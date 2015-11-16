@@ -77,6 +77,4 @@ void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info
         // Notify about the new contact
         narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
     }
-    
-    return;
 }

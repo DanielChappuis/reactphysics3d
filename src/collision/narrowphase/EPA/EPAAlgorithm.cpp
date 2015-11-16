@@ -431,6 +431,4 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                  normal, penetrationDepth, pALocal, pBLocal);
 
     narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
-    
-    return;
 }

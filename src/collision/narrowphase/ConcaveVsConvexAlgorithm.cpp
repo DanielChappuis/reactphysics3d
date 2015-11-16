@@ -79,8 +79,6 @@ void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 
     // Call the convex vs triangle callback for each triangle of the concave shape
     concaveShape->testAllTriangles(mConvexVsTriangleCallback, aabb);
-
-    // TODO : Handle return value here
 }
 
 // Test collision between a triangle and the convex mesh shape
