@@ -157,7 +157,9 @@ struct Vector3 {
         friend Vector3 operator-(const Vector3& vector);
         friend Vector3 operator*(const Vector3& vector, decimal number);
         friend Vector3 operator*(decimal number, const Vector3& vector);
+        friend Vector3 operator*(const Vector3& vector1, const Vector3& vector2);
         friend Vector3 operator/(const Vector3& vector, decimal number);
+        friend Vector3 operator/(const Vector3& vector1, const Vector3& vector2);
 };
 
 // Set the vector to zero
@@ -311,9 +313,22 @@ inline Vector3 operator/(const Vector3& vector, decimal number) {
     return Vector3(vector.x / number, vector.y / number, vector.z / number);
 }
 
+// Overload operator for division between two vectors
+inline Vector3 operator/(const Vector3& vector1, const Vector3& vector2) {
+    assert(vector2.x > MACHINE_EPSILON);
+    assert(vector2.y > MACHINE_EPSILON);
+    assert(vector2.z > MACHINE_EPSILON);
+    return Vector3(vector1.x / vector2.x, vector1.y / vector2.y, vector1.z / vector2.z);
+}
+
 // Overloaded operator for multiplication with a number
 inline Vector3 operator*(decimal number, const Vector3& vector) {
     return vector * number;
+}
+
+// Overload operator for multiplication between two vectors
+inline Vector3 operator*(const Vector3& vector1, const Vector3& vector2) {
+    return Vector3(vector1.x * vector2.x, vector1.y * vector2.y, vector1.z * vector2.z);
 }
 
 // Assignment operator

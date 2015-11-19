@@ -37,6 +37,19 @@ const int TreeNode::NULL_TREE_NODE = -1;
 // Constructor
 DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABBGap) {
 
+    init();
+}
+
+// Destructor
+DynamicAABBTree::~DynamicAABBTree() {
+
+    // Free the allocated memory for the nodes
+    free(mNodes);
+}
+
+// Initialize the tree
+void DynamicAABBTree::init() {
+
     mRootNodeID = TreeNode::NULL_TREE_NODE;
     mNbNodes = 0;
     mNbAllocatedNodes = 8;
@@ -56,11 +69,14 @@ DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABB
     mFreeNodeID = 0;
 }
 
-// Destructor
-DynamicAABBTree::~DynamicAABBTree() {
+// Clear all the nodes and reset the tree
+void DynamicAABBTree::reset() {
 
     // Free the allocated memory for the nodes
     free(mNodes);
+
+    // Initialize the tree
+    init();
 }
 
 // Allocate and return a new node in the tree

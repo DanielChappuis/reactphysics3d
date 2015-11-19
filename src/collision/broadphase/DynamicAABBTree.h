@@ -159,6 +159,9 @@ class DynamicAABBTree {
         /// Internally add an object into the tree
         int addObjectInternal(const AABB& aabb);
 
+        /// Initialize the tree
+        void init();
+
 #ifndef NDEBUG
 
         /// Check if the tree structure is valid (for debugging purpose)
@@ -214,6 +217,9 @@ class DynamicAABBTree {
 
         /// Return the root AABB of the tree
         AABB getRootAABB() const;
+
+        /// Clear all the nodes and reset the tree
+        void reset();
 };
 
 // Return true if the node is a leaf of the tree

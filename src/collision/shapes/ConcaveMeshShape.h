@@ -30,7 +30,6 @@
 #include "ConcaveShape.h"
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "collision/TriangleMesh.h"
-#include <iostream>
 
 namespace reactphysics3d {
 
@@ -130,6 +129,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
+        /// Set the local scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
@@ -150,14 +152,16 @@ inline size_t ConcaveMeshShape::getSizeInBytes() const {
 inline Vector3 ConcaveMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
                                                            void** cachedCollisionData) const {
 
-    // TODO : Implement this
+    // Should not be used
+    assert(false);
     return Vector3(0, 0, 0);
 }
 
 // Return a local support point in a given direction without the object margin
 inline Vector3 ConcaveMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                               void** cachedCollisionData) const {
-    // TODO : Implement this
+    // Should not be used
+    assert(false);
     return Vector3(0.0, 0.0, 0.0);
 }
 
@@ -174,6 +178,18 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     min = treeAABB.getMin();
     max = treeAABB.getMax();
+}
+
+// Set the local scaling vector of the collision shape
+inline void ConcaveMeshShape::setLocalScaling(const Vector3& scaling) {
+
+    CollisionShape::setLocalScaling(scaling);
+
+    // Reset the Dynamic AABB Tree
+    mDynamicAABBTree.reset();
+
+    // Rebuild Dynamic AABB Tree here
+    initBVHTree();
 }
 
 // Return the local inertia tensor of the sphere
@@ -213,9 +229,6 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
 
     // Call the callback to test narrow-phase collision with this triangle
     mTriangleTestCallback.testTriangle(trianglePoints);
-
-    // TODO : Delete this
-    std::cout << "Notify triangle test" << std::endl;
 }
 
 }

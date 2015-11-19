@@ -201,10 +201,17 @@ class TestVector2 : public Test {
             vector4 /= 3;
             test(vector3 == Vector2(60, 330));
             test(vector4 == Vector2(5, 20));
+            Vector2 vector5(21, 80);
+            Vector2 vector6(7, 10);
+            Vector2 vector7 = vector5 * vector6;
+            test(vector7 == Vector2(147, 800));
+            Vector2 vector8 = vector5 / vector6;
+            test(approxEqual(vector8.x, 3));
+            test(approxEqual(vector8.y, 8));
 
             // Negative operator
-            Vector2 vector5(-34, 5);
-            Vector2 negative = -vector5;
+            Vector2 vector9(-34, 5);
+            Vector2 negative = -vector9;
             test(negative == Vector2(34, -5));
         }
  };

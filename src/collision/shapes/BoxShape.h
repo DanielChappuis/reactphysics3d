@@ -97,6 +97,9 @@ class BoxShape : public ConvexShape {
         /// Return the extents of the box
         Vector3 getExtent() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -110,6 +113,14 @@ class BoxShape : public ConvexShape {
  */
 inline Vector3 BoxShape::getExtent() const {
     return mExtent + Vector3(mMargin, mMargin, mMargin);
+}
+
+// Set the scaling vector of the collision shape
+inline void BoxShape::setLocalScaling(const Vector3& scaling) {
+
+    mExtent = (mExtent / mScaling) * scaling;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the local bounds of the shape in x, y and z directions

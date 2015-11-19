@@ -152,6 +152,12 @@ class ProxyShape {
         /// Return the pointer to the cached collision data
         void** getCachedCollisionData();
 
+        /// Return the scaling vector of the collision shape
+        Vector3 getScaling() const;
+
+        /// Set the scaling vector of the collision shape
+        virtual void setScaling(const Vector3& scaling);
+
         // -------------------- Friendship -------------------- //
 
         friend class OverlappingPair;
@@ -291,6 +297,21 @@ inline unsigned short ProxyShape::getCollideWithMaskBits() const {
  */
 inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     mCollideWithMaskBits = collideWithMaskBits;
+}
+
+// Return the scaling vector of the collision shape
+inline Vector3 ProxyShape::getScaling() const {
+    return mCollisionShape->getScaling();
+}
+
+// Set the scaling vector of the collision shape
+inline void ProxyShape::setScaling(const Vector3& scaling) {
+
+    // Set the local scaling of the collision shape
+    mCollisionShape->setLocalScaling(scaling);
+
+    // Notify the body that the proxy shape has to be updated in the broad-phase
+    mBody->updateProxyShapeInBroadPhase(this);
 }
 
 }

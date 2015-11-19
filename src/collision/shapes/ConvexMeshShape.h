@@ -44,7 +44,7 @@ class CollisionWorld;
 // TODO : Make possible to create a ConvexMeshShape using a TriangleMesh as for
 // the ConcaveMeshShape
 
-// TODO : Make possible for the user to have a scaling factor on the mesh
+// TODO : Check that scaling factor is working after the change of the previous TODO
 
 // Class ConvexMeshShape
 /**
@@ -63,6 +63,8 @@ class CollisionWorld;
  * in order to use the edges information for collision detection.
  */
 class ConvexMeshShape : public ConvexShape {
+
+    // TODO : Implement method setLocalScaling() here
 
     protected :
 

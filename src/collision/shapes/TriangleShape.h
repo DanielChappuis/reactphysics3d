@@ -77,14 +77,16 @@ class TriangleShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TriangleShape(const Vector3& point1, const Vector3& point2,
-                      const Vector3& point3, decimal margin);
+        TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3);
 
         /// Destructor
         virtual ~TriangleShape();
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+
+        /// Set the local scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
@@ -101,8 +103,6 @@ inline size_t TriangleShape::getSizeInBytes() const {
 // Return a local support point in a given direction with the object margin
 inline Vector3 TriangleShape::getLocalSupportPointWithMargin(const Vector3& direction,
                                                            void** cachedCollisionData) const {
-
-    // TODO : Do we need to use margin for triangle support point ?
 
     return getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
 }
@@ -127,6 +127,16 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
     const Vector3 zAxis(mPoints[0].z, mPoints[1].z, mPoints[2].z);
     min.setAllValues(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
     max.setAllValues(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
+}
+
+// Set the local scaling vector of the collision shape
+inline void TriangleShape::setLocalScaling(const Vector3& scaling) {
+
+    mPoints[0] = (mPoints[0] / mScaling) * scaling;
+    mPoints[1] = (mPoints[1] / mScaling) * scaling;
+    mPoints[2] = (mPoints[2] / mScaling) * scaling;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the local inertia tensor of the triangle shape

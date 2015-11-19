@@ -148,7 +148,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
         *((int*)(*cachedCollisionData)) = maxVertex;
 
         // Return the support vertex
-        return mVertices[maxVertex];
+        return mVertices[maxVertex] * mScaling;
     }
     else {  // If the edges information is not used
 
@@ -171,7 +171,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
         assert(maxDotProduct >= decimal(0.0));
 
         // Return the vertex with the largest dot product in the support direction
-        return mVertices[indexMaxDotProduct];
+        return mVertices[indexMaxDotProduct] * mScaling;
     }
 }
 

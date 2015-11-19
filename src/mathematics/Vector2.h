@@ -145,7 +145,9 @@ struct Vector2 {
         friend Vector2 operator-(const Vector2& vector);
         friend Vector2 operator*(const Vector2& vector, decimal number);
         friend Vector2 operator*(decimal number, const Vector2& vector);
+        friend Vector2 operator*(const Vector2& vector1, const Vector2& vector2);
         friend Vector2 operator/(const Vector2& vector, decimal number);
+        friend Vector2 operator/(const Vector2& vector1, const Vector2& vector2);
 };
 
 // Set the vector to zero
@@ -279,10 +281,22 @@ inline Vector2 operator*(const Vector2& vector, decimal number) {
     return Vector2(number * vector.x, number * vector.y);
 }
 
+// Overloaded operator for multiplication of two vectors
+inline Vector2 operator*(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(vector1.x * vector2.x, vector1.y * vector2.y);
+}
+
 // Overloaded operator for division by a number
 inline Vector2 operator/(const Vector2& vector, decimal number) {
     assert(number > MACHINE_EPSILON);
     return Vector2(vector.x / number, vector.y / number);
+}
+
+// Overload operator for division between two vectors
+inline Vector2 operator/(const Vector2& vector1, const Vector2& vector2) {
+    assert(vector2.x > MACHINE_EPSILON);
+    assert(vector2.y > MACHINE_EPSILON);
+    return Vector2(vector1.x / vector2.x, vector1.y / vector2.y);
 }
 
 // Overloaded operator for multiplication with a number

@@ -80,15 +80,15 @@ void ConcaveMeshShape::initBVHTree() {
                 // Get the vertices components of the triangle
                 if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
                     const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
-                    trianglePoints[k][0] = decimal(vertices[0]);
-                    trianglePoints[k][1] = decimal(vertices[1]);
-                    trianglePoints[k][2] = decimal(vertices[2]);
+                    trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
+                    trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
+                    trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
                 }
                 else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
                     const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
-                    trianglePoints[k][0] = decimal(vertices[0]);
-                    trianglePoints[k][1] = decimal(vertices[1]);
-                    trianglePoints[k][2] = decimal(vertices[2]);
+                    trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
+                    trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
+                    trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
                 }
             }
 
@@ -133,15 +133,15 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
         // Get the vertices components of the triangle
         if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
             const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
-            outTriangleVertices[k][0] = decimal(vertices[0]);
-            outTriangleVertices[k][1] = decimal(vertices[1]);
-            outTriangleVertices[k][2] = decimal(vertices[2]);
+            outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
+            outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
+            outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
         }
         else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
             const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
-            outTriangleVertices[k][0] = decimal(vertices[0]);
-            outTriangleVertices[k][1] = decimal(vertices[1]);
-            outTriangleVertices[k][2] = decimal(vertices[2]);
+            outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
+            outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
+            outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
         }
     }
 }

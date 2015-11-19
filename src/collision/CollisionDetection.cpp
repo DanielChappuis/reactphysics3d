@@ -335,9 +335,11 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
                                       pair, shape2->getCachedCollisionData());
 
+        TestCollisionBetweenShapesCallback narrowPhaseCallback(callback);
+
         // Use the narrow-phase collision detection algorithm to check
         // if there really is a collision
-        narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, this);
+        narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, &narrowPhaseCallback);
     }
 
     // Add all the contact manifolds (between colliding bodies) to the bodies
@@ -517,4 +519,10 @@ EventListener* CollisionDetection::getWorldEventListener() {
 /// Return a reference to the world memory allocator
 MemoryAllocator& CollisionDetection::getWorldMemoryAllocator() {
   return mWorld->mMemoryAllocator;
+}
+
+// Called by a narrow-phase collision algorithm when a new contact has been found
+void TestCollisionBetweenShapesCallback::notifyContact(OverlappingPair* overlappingPair,
+                           const ContactPointInfo& contactInfo) {
+    mCollisionCallback->notifyContact(contactInfo);
 }

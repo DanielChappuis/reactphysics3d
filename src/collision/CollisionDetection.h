@@ -47,6 +47,26 @@ class BroadPhaseAlgorithm;
 class CollisionWorld;
 class CollisionCallback;
 
+// Class TestCollisionBetweenShapesCallback
+class TestCollisionBetweenShapesCallback : public NarrowPhaseCallback {
+
+    private:
+
+        CollisionCallback* mCollisionCallback;
+
+    public:
+
+        // Constructor
+        TestCollisionBetweenShapesCallback(CollisionCallback* callback)
+            : mCollisionCallback(callback) {
+
+        }
+
+        // Called by a narrow-phase collision algorithm when a new contact has been found
+        virtual void notifyContact(OverlappingPair* overlappingPair,
+                                   const ContactPointInfo& contactInfo);
+};
+
 // Class CollisionDetection
 /**
  * This class computes the collision detection algorithms. We first

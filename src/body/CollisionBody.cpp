@@ -197,13 +197,20 @@ void CollisionBody::updateBroadPhaseState() const {
     // For all the proxy collision shapes of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
-        // Recompute the world-space AABB of the collision shape
-        AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform *shape->getLocalToBodyTransform());
-
-        // Update the broad-phase state for the proxy collision shape
-        mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb);
+        // Update the proxy
+        updateProxyShapeInBroadPhase(shape);
     }
+}
+
+// Update the broad-phase state of a proxy collision shape of the body
+void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape) const {
+
+    // Recompute the world-space AABB of the collision shape
+    AABB aabb;
+    proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+
+    // Update the broad-phase state for the proxy collision shape
+    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb);
 }
 
 // Set whether or not the body is active

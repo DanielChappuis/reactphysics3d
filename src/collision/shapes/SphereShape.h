@@ -48,8 +48,6 @@ class SphereShape : public ConvexShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// Radius of the sphere
-        decimal mRadius;
 
         // -------------------- Methods -------------------- //
 
@@ -89,6 +87,9 @@ class SphereShape : public ConvexShape {
         /// Return the radius of the sphere
         decimal getRadius() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -104,7 +105,15 @@ class SphereShape : public ConvexShape {
  * @return Radius of the sphere (in meters)
  */
 inline decimal SphereShape::getRadius() const {
-    return mRadius;
+    return mMargin;
+}
+
+// Set the scaling vector of the collision shape
+inline void SphereShape::setLocalScaling(const Vector3& scaling) {
+
+    mMargin = (mMargin / mScaling.x) * scaling.x;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -145,12 +154,12 @@ inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& dir
 inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max.x = mRadius;
-    max.y = mRadius;
-    max.z = mRadius;
+    max.x = mMargin;
+    max.y = mMargin;
+    max.z = mMargin;
 
     // Minimum bounds
-    min.x = -mRadius;
+    min.x = -mMargin;
     min.y = min.x;
     min.z = min.x;
 }
@@ -162,7 +171,7 @@ inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
 inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
+    decimal diag = decimal(0.4) * mass * mMargin * mMargin;
     tensor.setAllValues(diag, 0.0, 0.0,
                         0.0, diag, 0.0,
                         0.0, 0.0, diag);
@@ -177,7 +186,7 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
 inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 
     // Get the local extents in x,y and z direction
-    Vector3 extents(mRadius, mRadius, mRadius);
+    Vector3 extents(mMargin, mMargin, mMargin);
 
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(transform.getPosition() - extents);
@@ -186,7 +195,7 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
 
 // Return true if a point is inside the collision shape
 inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
-    return (localPoint.lengthSquare() < mRadius * mRadius);
+    return (localPoint.lengthSquare() < mMargin * mMargin);
 }
 
 }

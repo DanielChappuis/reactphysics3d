@@ -60,6 +60,9 @@ class CollisionShape {
 
         /// Type of the collision shape
         CollisionShapeType mType;
+
+        /// Scaling vector of the collision shape
+        Vector3 mScaling;
         
         // -------------------- Methods -------------------- //
 
@@ -97,6 +100,12 @@ class CollisionShape {
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
+        /// Return the scaling vector of the collision shape
+        Vector3 getScaling() const;
+
+        /// Set the local scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
 
@@ -127,6 +136,16 @@ inline CollisionShapeType CollisionShape::getType() const {
 // Return true if the collision shape type is a convex shape
 inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
     return shapeType != CONCAVE_MESH;
+}
+
+// Return the scaling vector of the collision shape
+inline Vector3 CollisionShape::getScaling() const {
+    return mScaling;
+}
+
+// Set the scaling vector of the collision shape
+inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
+    mScaling = scaling;
 }
 
 // Return the maximum number of contact manifolds allowed in an overlapping

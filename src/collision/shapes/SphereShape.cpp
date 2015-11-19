@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 /**
  * @param radius Radius of the sphere (in meters)
  */
-SphereShape::SphereShape(decimal radius) : ConvexShape(SPHERE, radius), mRadius(radius) {
+SphereShape::SphereShape(decimal radius) : ConvexShape(SPHERE, radius) {
     assert(radius > decimal(0.0));
 }
 
@@ -51,7 +51,7 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* 
 
     const Vector3 sphereCenter = proxyShape->getLocalToWorldTransform().getPosition();
     const Vector3 m = ray.point1 - sphereCenter;
-    decimal c = m.dot(m) - mRadius * mRadius;
+    decimal c = m.dot(m) - mMargin * mMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;
