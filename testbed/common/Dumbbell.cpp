@@ -86,9 +86,9 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transformBody);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
-    body->addCollisionShape(mSphereShape, transformSphereShape2, massSphere);
-    body->addCollisionShape(mCylinderShape, transformCylinderShape, massCylinder);
+    mProxyShapeSphere1 = body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
+    mProxyShapeSphere2 = body->addCollisionShape(mSphereShape, transformSphereShape2, massSphere);
+    mProxyShapeCylinder = body->addCollisionShape(mCylinderShape, transformCylinderShape, massCylinder);
 
     mBody = body;
 
@@ -151,9 +151,9 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transformBody);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mBody->addCollisionShape(mSphereShape, transformSphereShape1);
-    mBody->addCollisionShape(mSphereShape, transformSphereShape2);
-    mBody->addCollisionShape(mCylinderShape, transformCylinderShape);
+    mProxyShapeSphere1 = mBody->addCollisionShape(mSphereShape, transformSphereShape1);
+    mProxyShapeSphere2 = mBody->addCollisionShape(mSphereShape, transformSphereShape2);
+    mProxyShapeCylinder = mBody->addCollisionShape(mCylinderShape, transformCylinderShape);
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -314,4 +314,20 @@ void Dumbbell::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void Dumbbell::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    rp3d::Vector3 newScaling(scaling.x, scaling.y, scaling.z);
+    mProxyShapeCylinder->setLocalScaling(newScaling);
+    mProxyShapeSphere1->setLocalScaling(newScaling);
+    mProxyShapeSphere2->setLocalScaling(newScaling);
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
+                                              0, scaling.y, 0, 0,
+                                              0, 0, scaling.z, 0,
+                                              0, 0, 0, 1);
 }

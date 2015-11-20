@@ -42,7 +42,11 @@ class ConcaveMesh : public openglframework::Mesh, public PhysicsObject {
         rp3d::Transform mPreviousTransform;
 
         /// Collision shape
-        rp3d::ConcaveMeshShape* mCollisionShape;
+        rp3d::ConcaveMeshShape* mConcaveShape;
+        rp3d::ProxyShape* mProxyShape;
+
+        /// Scaling matrix
+        openglframework::Matrix4 mScalingMatrix;
 
         /// Vertex Buffer Object for the vertices data
         openglframework::VertexBufferObject mVBOVertices;
@@ -91,11 +95,14 @@ class ConcaveMesh : public openglframework::Mesh, public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object
 inline void ConcaveMesh::updateTransform(float interpolationFactor) {
-    mTransformMatrix = computeTransform(interpolationFactor, openglframework::Matrix4::identity());
+    mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
 
 #endif

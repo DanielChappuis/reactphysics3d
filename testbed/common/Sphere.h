@@ -43,6 +43,7 @@ class Sphere : public openglframework::Mesh, public PhysicsObject {
 
         /// Collision shape
         rp3d::SphereShape* mCollisionShape;
+        rp3d::ProxyShape* mProxyShape;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -97,6 +98,9 @@ class Sphere : public openglframework::Mesh, public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object

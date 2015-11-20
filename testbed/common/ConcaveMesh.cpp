@@ -43,14 +43,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
-    // Convert the vertices array to the rp3d::decimal type
-    /*rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
-        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
-        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
-        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
-    }
-    */
+    // Compute the scaling matrix
+    mScalingMatrix = openglframework::Matrix4::identity();
 
     // For each subpart of the mesh
     for (int i=0; i<getNbParts(); i++) {
@@ -68,28 +62,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mCollisionShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
-
-    //delete[] vertices;
-
-    /*
-    // Add the edges information of the mesh into the convex mesh collision shape.
-    // This is optional but it really speed up the convex mesh collision detection at the
-    // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
-
-        // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
-
-        // Add the three edges into the collision shape
-        mCollisionShape->addEdge(v1, v2);
-        mCollisionShape->addEdge(v1, v3);
-        mCollisionShape->addEdge(v2, v3);
-    }
-    mCollisionShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
-    */
+    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -102,10 +75,12 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
+    mProxyShape = mBody->addCollisionShape(mConcaveShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
     createVBOAndVAO();
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
 // Constructor
@@ -125,15 +100,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
-    /*
-    // Convert the vertices array to the rp3d::decimal type
-    rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
-        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
-        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
-        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
-    }
-    */
+    // Compute the scaling matrix
+    mScalingMatrix = openglframework::Matrix4::identity();
 
     // For each subpart of the mesh
     for (int i=0; i<getNbParts(); i++) {
@@ -151,28 +119,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mCollisionShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
-
-    //delete[] vertices;
-
-    /*
-    // Add the edges information of the mesh into the convex mesh collision shape.
-    // This is optional but it really speed up the convex mesh collision detection at the
-    // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
-
-        // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
-
-        // Add the three edges into the collision shape
-        mCollisionShape->addEdge(v1, v2);
-        mCollisionShape->addEdge(v1, v3);
-        mCollisionShape->addEdge(v2, v3);
-    }
-    mCollisionShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
-    */
+    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -183,12 +130,14 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
+    mProxyShape = body->addCollisionShape(mConcaveShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
     // Create the VBOs and VAO
     createVBOAndVAO();
+
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
 // Destructor
@@ -209,7 +158,7 @@ ConcaveMesh::~ConcaveMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mCollisionShape;
+    delete mConcaveShape;
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -341,5 +290,18 @@ void ConcaveMesh::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void ConcaveMesh::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
+                                              0, scaling.y, 0,0,
+                                              0, 0, scaling.z, 0,
+                                              0, 0, 0, 1.0f);
 }
 

@@ -152,11 +152,11 @@ class ProxyShape {
         /// Return the pointer to the cached collision data
         void** getCachedCollisionData();
 
-        /// Return the scaling vector of the collision shape
-        Vector3 getScaling() const;
+        /// Return the local scaling vector of the collision shape
+        Vector3 getLocalScaling() const;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setScaling(const Vector3& scaling);
+        /// Set the local scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
 
         // -------------------- Friendship -------------------- //
 
@@ -299,19 +299,25 @@ inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBit
     mCollideWithMaskBits = collideWithMaskBits;
 }
 
-// Return the scaling vector of the collision shape
-inline Vector3 ProxyShape::getScaling() const {
+// Return the local scaling vector of the collision shape
+/**
+ * @return The local scaling vector
+ */
+inline Vector3 ProxyShape::getLocalScaling() const {
     return mCollisionShape->getScaling();
 }
 
-// Set the scaling vector of the collision shape
-inline void ProxyShape::setScaling(const Vector3& scaling) {
+// Set the local scaling vector of the collision shape
+/**
+ * @param scaling The new local scaling vector
+ */
+inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
 
     // Set the local scaling of the collision shape
     mCollisionShape->setLocalScaling(scaling);
 
     // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this);
+    mBody->updateProxyShapeInBroadPhase(this, true);
 }
 
 }

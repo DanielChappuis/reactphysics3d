@@ -41,7 +41,8 @@ class Box : public openglframework::Object3D, public PhysicsObject {
         /// Size of each side of the box
         float mSize[3];
 
-        rp3d::BoxShape* mboxCollisionShape;
+        rp3d::BoxShape* mBoxShape;
+        rp3d::ProxyShape* mProxyShape;
 
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -92,6 +93,9 @@ class Box : public openglframework::Object3D, public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object

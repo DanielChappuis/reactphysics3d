@@ -56,7 +56,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (cone shape) and do
     // not forget to delete it at the end
-    mCollisionShape = new rp3d::ConeShape(mRadius, mHeight);
+    mConeShape = new rp3d::ConeShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -69,7 +69,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
+    mProxyShape = mBody->addCollisionShape(mConeShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -104,7 +104,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (cone shape) and do not
     // forget to delete it at the end
-    mCollisionShape = new rp3d::ConeShape(mRadius, mHeight);
+    mConeShape = new rp3d::ConeShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -115,7 +115,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
+    mProxyShape = body->addCollisionShape(mConeShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -143,7 +143,7 @@ Cone::~Cone() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-    delete mCollisionShape;
+    delete mConeShape;
     totalNbCones--;
 }
 
@@ -276,5 +276,18 @@ void Cone::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void Cone::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(mRadius * scaling.x, 0, 0, 0,
+                                              0, mHeight * scaling.y, 0, 0,
+                                              0, 0, mRadius * scaling.z, 0,
+                                              0, 0, 0, 1);
 }
 

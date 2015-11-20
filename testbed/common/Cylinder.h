@@ -51,7 +51,8 @@ class Cylinder : public openglframework::Mesh, public PhysicsObject {
         rp3d::Transform mPreviousTransform;
 
         /// Collision shape
-        rp3d::CylinderShape* mCollisionShape;
+        rp3d::CylinderShape* mCylinderShape;
+        rp3d::ProxyShape* mProxyShape;
 
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
@@ -100,6 +101,9 @@ class Cylinder : public openglframework::Mesh, public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object

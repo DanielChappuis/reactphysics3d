@@ -203,14 +203,14 @@ void CollisionBody::updateBroadPhaseState() const {
 }
 
 // Update the broad-phase state of a proxy collision shape of the body
-void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape) const {
+void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
     // Recompute the world-space AABB of the collision shape
     AABB aabb;
     proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
 
     // Update the broad-phase state for the proxy collision shape
-    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb);
+    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert);
 }
 
 // Set whether or not the body is active

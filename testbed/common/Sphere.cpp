@@ -70,7 +70,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
+    mProxyShape = mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -117,7 +117,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
     rp3d::RigidBody* body = world->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
+    mProxyShape = body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -278,4 +278,17 @@ void Sphere::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void Sphere::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(mRadius * scaling.x, 0, 0, 0,
+                                              0, mRadius * scaling.y, 0, 0,
+                                              0, 0, mRadius * scaling.z, 0,
+                                              0, 0, 0, 1);
 }

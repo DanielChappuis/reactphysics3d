@@ -103,7 +103,7 @@ class CollisionBody : public Body {
         virtual void updateBroadPhaseState() const;
 
         /// Update the broad-phase state of a proxy collision shape of the body
-        void updateProxyShapeInBroadPhase(ProxyShape* proxyShape) const;
+        void updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert = false) const;
 
         /// Ask the broad-phase to test again the collision shapes of the body for collision
         /// (as if the body has moved).

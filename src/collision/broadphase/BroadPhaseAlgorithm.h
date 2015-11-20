@@ -170,7 +170,7 @@ class BroadPhaseAlgorithm : BroadPhaseRaycastTestCallback {
 
         /// Notify the broad-phase that a collision shape has moved and need to be updated
         void updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
-                                       const Vector3& displacement);
+                                       const Vector3& displacement, bool forceReinsert = false);
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.
