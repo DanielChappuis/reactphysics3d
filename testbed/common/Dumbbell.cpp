@@ -47,6 +47,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
+    mDistanceBetweenSphere = 8.0f;
+
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
@@ -74,10 +76,10 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mPreviousTransform = transformBody;
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
@@ -116,6 +118,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
+    mDistanceBetweenSphere = 8.0f;
+
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
@@ -139,10 +143,10 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::Transform transformBody(initPosition, initOrientation);
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
@@ -324,6 +328,17 @@ void Dumbbell::setScaling(const openglframework::Vector3& scaling) {
     mProxyShapeCylinder->setLocalScaling(newScaling);
     mProxyShapeSphere1->setLocalScaling(newScaling);
     mProxyShapeSphere2->setLocalScaling(newScaling);
+
+    mDistanceBetweenSphere = (mDistanceBetweenSphere / mScalingMatrix.getValue(1, 1)) * scaling.y;
+
+    // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
+
+    // Initial transform of the second sphere collision shape of the dumbell (in local-space)
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
+
+    mProxyShapeSphere1->setLocalToBodyTransform(transformSphereShape1);
+    mProxyShapeSphere2->setLocalToBodyTransform(transformSphereShape2);
 
     // Scale the graphics object
     mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,

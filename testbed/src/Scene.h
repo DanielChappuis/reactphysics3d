@@ -47,7 +47,7 @@ struct EngineSettings {
 
     public:
 
-       float elapsedTime;                   // Elapsed time (in seconds)
+       long double elapsedTime;             // Elapsed time (in seconds)
        float timeStep;                      // Current time step (in seconds)
        int nbVelocitySolverIterations;      // Nb of velocity solver iterations
        int nbPositionSolverIterations;      // Nb of position solver iterations

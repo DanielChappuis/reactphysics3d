@@ -128,7 +128,7 @@ inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
 }
 
-/// Set the scaling vector of the collision shape
+// Set the scaling vector of the collision shape
 inline void CapsuleShape::setLocalScaling(const Vector3& scaling) {
 
     mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;

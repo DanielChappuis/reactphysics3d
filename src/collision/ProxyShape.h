@@ -55,7 +55,7 @@ class ProxyShape {
         CollisionShape* mCollisionShape;
 
         /// Local-space to parent body-space transform (does not change over time)
-        const Transform mLocalToBodyTransform;
+        Transform mLocalToBodyTransform;
 
         /// Mass (in kilogramms) of the corresponding collision shape
         decimal mMass;
@@ -121,6 +121,9 @@ class ProxyShape {
 
         /// Return the local to parent body transform
         const Transform& getLocalToBodyTransform() const;
+
+        /// Set the local to parent body transform
+        void setLocalToBodyTransform(const Transform& transform);
 
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
@@ -227,6 +230,17 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
+// Set the local to parent body transform
+inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
+
+    mLocalToBodyTransform = transform;
+
+    mBody->setIsSleeping(false);
+
+    // Notify the body that the proxy shape has to be updated in the broad-phase
+    mBody->updateProxyShapeInBroadPhase(this, true);
+}
+
 // Return the local to world transform
 /**
  * @return The transformation that transforms the local-space of the collision
@@ -315,6 +329,8 @@ inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
 
     // Set the local scaling of the collision shape
     mCollisionShape->setLocalScaling(scaling);
+
+    mBody->setIsSleeping(false);
 
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);

@@ -39,7 +39,7 @@ class Dumbbell : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Attributes -------------------- //
 
         /// Radius of the spheres
-        float mRadius;
+        float mDistanceBetweenSphere;
 
         /// Collision shapes
         rp3d::CylinderShape* mCylinderShape;

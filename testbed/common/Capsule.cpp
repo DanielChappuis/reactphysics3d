@@ -47,7 +47,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, (mHeight + 2.0f * mRadius) / 3.0f, 0,0,
+                                              0, (mHeight + 2.0f * mRadius) / 3, 0,0,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1.0f);
 
@@ -290,7 +290,7 @@ void Capsule::setScaling(const openglframework::Vector3& scaling) {
 
     // Scale the graphics object
     mScalingMatrix = openglframework::Matrix4(mRadius * scaling.x, 0, 0, 0,
-                                              0, (mHeight + 2.0f * mRadius) / 3.0f * scaling.y, 0,0,
-                                              0, 0, mRadius * scaling.z, 0,
+                                              0, (mHeight * scaling.y + 2.0f * mRadius * scaling.x) / 3, 0,0,
+                                              0, 0, mRadius * scaling.x, 0,
                                               0, 0, 0, 1.0f);
 }
