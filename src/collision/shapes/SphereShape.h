@@ -97,7 +97,7 @@ class SphereShape : public ConvexShape {
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
         /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform);
+        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 };
 
 // Get the radius of the sphere
@@ -183,7 +183,7 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
  *                  computed in world-space coordinates
  * @param transform Transform used to compute the AABB of the collision shape
  */
-inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
+inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
     // Get the local extents in x,y and z direction
     Vector3 extents(mMargin, mMargin, mMargin);

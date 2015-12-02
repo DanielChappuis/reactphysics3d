@@ -165,7 +165,7 @@ void ConcaveMeshScene::reset() {
     // Reset the transform
     mConcaveMesh->resetTransform(rp3d::Transform::identity());
 
-    rp3d::Vector3 spherePos(10.1, 10, 0);
+    rp3d::Vector3 spherePos(0, 15, 0);
     rp3d::Transform sphereTransform(spherePos, rp3d::Quaternion::identity());
     mSphere->resetTransform(sphereTransform);
 }

@@ -45,9 +45,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, -9.81, 0);
 
-    // Time step for the physics simulation
-    rp3d::decimal timeStep = 1.0f / 60.0f;
-
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 

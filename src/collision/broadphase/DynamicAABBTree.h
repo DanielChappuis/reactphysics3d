@@ -103,6 +103,20 @@ class DynamicAABBTreeOverlapCallback {
         virtual void notifyOverlappingNode(int nodeId)=0;
 };
 
+// Class DynamicAABBTreeRaycastCallback
+/**
+ * Raycast callback in the Dynamic AABB Tree called when the AABB of a leaf
+ * node is hit by the ray.
+ */
+class DynamicAABBTreeRaycastCallback {
+
+    public:
+
+        // Called when the AABB of a leaf node is hit by a ray
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray)=0;
+
+};
+
 // Class DynamicAABBTree
 /**
  * This class implements a dynamic AABB tree that is used for broad-phase
@@ -208,9 +222,7 @@ class DynamicAABBTree {
                                                 DynamicAABBTreeOverlapCallback& callback) const;
 
         /// Ray casting method
-        void raycast(const Ray& ray, RaycastTest& raycastTest,
-                     unsigned short raycastWithCategoryMaskBits,
-                     const BroadPhaseRaycastTestCallback& callback) const;
+        void raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const;
 
         /// Compute the height of the tree
         int computeHeight();

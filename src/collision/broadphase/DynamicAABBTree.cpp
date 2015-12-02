@@ -631,9 +631,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 }
 
 // Ray casting method
-void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest,
-                              unsigned short raycastWithCategoryMaskBits,
-                              const BroadPhaseRaycastTestCallback& callback) const {
+void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
 
     decimal maxFraction = ray.maxFraction;
 
@@ -668,8 +666,7 @@ void DynamicAABBTree::raycast(const Ray& ray, RaycastTest& raycastTest,
             Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
             // Call the callback that will raycast again the broad-phase shape
-            decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, raycastTest, rayTemp,
-                                                                  raycastWithCategoryMaskBits);
+            decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, rayTemp);
 
             // If the user returned a hitFraction of zero, it means that
             // the raycasting should stop here

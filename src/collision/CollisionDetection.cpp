@@ -252,7 +252,6 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
-        ContactPointInfo* contactInfo = NULL;
 
         OverlappingPair* pair = it->second;
 

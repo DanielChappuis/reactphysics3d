@@ -85,7 +85,6 @@ void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
 
     // Create a triangle collision shape
-    // TODO : Do we need to use a collision margin for a triangle ?
     TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
 
     // Select the collision algorithm to use between the triangle and the convex shape

@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConcaveMeshShape.h"
+#include "collision/shapes/TriangleShape.h"
 
 using namespace reactphysics3d;
 
@@ -157,10 +158,67 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 }
 
 // Raycast method with feedback information
+/// Note that only the first triangle hit by the ray in the mesh will be returned, even if
+/// the ray hits many triangles.
 bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
+    // Create the callback object that will compute ray casting against triangles
+    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray);
 
-    // TODO : Implement this
+    // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
+    // The raycastCallback object will then compute ray casting against the triangles
+    // in the hit AABBs.
+    mDynamicAABBTree.raycast(ray, raycastCallback);
 
-    return false;
+    return raycastCallback.getIsHit();
+}
+
+// Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
+decimal ConcaveMeshRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+
+    // Add the id of the hit AABB node into
+    mHitAABBNodes.push_back(nodeId);
+
+    return ray.maxFraction;
+}
+
+// Raycast all collision shapes that have been collected
+void ConcaveMeshRaycastCallback::raycastTriangles() {
+
+    std::vector<int>::const_iterator it;
+    decimal smallestHitFraction = mRay.maxFraction;
+
+    for (it = mHitAABBNodes.begin(); it != mHitAABBNodes.end(); ++it) {
+
+        // Get the node data (triangle index and mesh subpart index)
+        int32* data = mDynamicAABBTree.getNodeDataInt(*it);
+
+        // Get the triangle vertices for this node from the concave mesh shape
+        Vector3 trianglePoints[3];
+        mConcaveMeshShape.getTriangleVerticesWithIndexPointer(data[0], data[1], trianglePoints);
+
+        // Create a triangle collision shape
+        TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+
+        // Ray casting test against the collision shape
+        RaycastInfo raycastInfo;
+        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+
+        // If the ray hit the collision shape
+        if (isTriangleHit && raycastInfo.hitFraction <= smallestHitFraction) {
+
+            assert(raycastInfo.hitFraction >= decimal(0.0));
+
+            mRaycastInfo.body = raycastInfo.body;
+            mRaycastInfo.proxyShape = raycastInfo.proxyShape;
+            mRaycastInfo.hitFraction = raycastInfo.hitFraction;
+            mRaycastInfo.worldPoint = raycastInfo.worldPoint;
+            mRaycastInfo.worldNormal = raycastInfo.worldNormal;
+            mRaycastInfo.meshSubpart = data[0];
+            mRaycastInfo.triangleIndex = data[1];
+
+            smallestHitFraction = raycastInfo.hitFraction;
+            mIsHit = true;
+        }
+    }
 }

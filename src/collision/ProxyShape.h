@@ -174,6 +174,7 @@ class ProxyShape {
         friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
+
 };
 
 // Return the pointer to the cached collision data

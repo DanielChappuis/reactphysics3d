@@ -39,6 +39,7 @@
 #include "Capsule.h"
 #include "Line.h"
 #include "ConvexMesh.h"
+#include "ConcaveMesh.h"
 #include "Dumbbell.h"
 #include "VisualContactPoint.h"
 #include "../common/Viewer.h"
@@ -58,7 +59,7 @@ const float CAPSULE_HEIGHT = 5.0f;
 const float DUMBBELL_HEIGHT = 5.0f;
 const int NB_RAYS = 100;
 const float RAY_LENGTH = 30.0f;
-const int NB_BODIES = 7;
+const int NB_BODIES = 8;
 
 // Raycast manager
 class RaycastManager : public rp3d::RaycastCallback {
@@ -145,6 +146,7 @@ class RaycastScene : public SceneDemo {
         Capsule* mCapsule;
         ConvexMesh* mConvexMesh;
         Dumbbell* mDumbbell;
+        ConcaveMesh* mConcaveMesh;
 
         /// Collision world used for the physics simulation
         rp3d::CollisionWorld* mCollisionWorld;

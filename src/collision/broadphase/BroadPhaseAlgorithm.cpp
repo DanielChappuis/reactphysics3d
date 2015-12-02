@@ -264,31 +264,29 @@ void BroadPhaseAlgorithm::notifyOverlappingNodes(int node1ID, int node2ID) {
     mNbPotentialPairs++;
 }
 
-// Called for a broad-phase shape that has to be tested for raycast
-decimal BroadPhaseAlgorithm::raycastBroadPhaseShape(int32 nodeId, RaycastTest& raycastTest,
-                                                    const Ray& ray,
-                                                    unsigned short raycastWithCategoryMaskBits) const {
-
-     decimal hitFraction = decimal(-1.0);
-
-     // Get the proxy shape from the node
-     ProxyShape* proxyShape = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
-
-     // Check if the raycast filtering mask allows raycast against this shape
-     if ((raycastWithCategoryMaskBits & proxyShape->getCollisionCategoryBits()) != 0) {
-
-         // Ask the collision detection to perform a ray cast test against
-         // the proxy shape of this node because the ray is overlapping
-         // with the shape in the broad-phase
-         hitFraction = raycastTest.raycastAgainstShape(proxyShape, ray);
-     }
-
-     return hitFraction;
-}
-
 // Called when a overlapping node has been found during the call to
 // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
 void AABBOverlapCallback::notifyOverlappingNode(int nodeId) {
 
     mBroadPhaseAlgorithm.notifyOverlappingNodes(mReferenceNodeId, nodeId);
+}
+
+// Called for a broad-phase shape that has to be tested for raycast
+decimal BroadPhaseRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+
+    decimal hitFraction = decimal(-1.0);
+
+    // Get the proxy shape from the node
+    ProxyShape* proxyShape = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
+
+    // Check if the raycast filtering mask allows raycast against this shape
+    if ((mRaycastWithCategoryMaskBits & proxyShape->getCollisionCategoryBits()) != 0) {
+
+        // Ask the collision detection to perform a ray cast test against
+        // the proxy shape of this node because the ray is overlapping
+        // with the shape in the broad-phase
+        hitFraction = mRaycastTest.raycastAgainstShape(proxyShape, ray);
+    }
+
+    return hitFraction;
 }

@@ -63,6 +63,41 @@ class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback 
 
 };
 
+/// Class ConcaveMeshRaycastCallback
+class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
+
+    private :
+
+        std::vector<int32> mHitAABBNodes;
+        const DynamicAABBTree& mDynamicAABBTree;
+        const ConcaveMeshShape& mConcaveMeshShape;
+        ProxyShape* mProxyShape;
+        RaycastInfo& mRaycastInfo;
+        const Ray& mRay;
+        bool mIsHit;
+
+    public:
+
+        // Constructor
+        ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
+                                   ProxyShape* proxyShape, RaycastInfo& raycastInfo, const Ray& ray)
+            : mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mProxyShape(proxyShape),
+              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false) {
+
+        }
+
+        /// Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray);
+
+        /// Raycast all collision shapes that have been collected
+        void raycastTriangles();
+
+        /// Return true if a raycast hit has been found
+        bool getIsHit() const {
+            return mIsHit;
+        }
+};
+
 // TODO : Implement raycasting with this collision shape
 
 // TODO : Make possible for the user to have a scaling factor on the mesh
@@ -101,9 +136,6 @@ class ConcaveMeshShape : public ConcaveShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
 
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
-
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
@@ -141,6 +173,7 @@ class ConcaveMeshShape : public ConcaveShape {
         // ---------- Friendship ----------- //
 
         friend class ConvexTriangleAABBOverlapCallback;
+        friend class ConcaveMeshRaycastCallback;
 };
 
 // Return the number of bytes used by the collision shape
@@ -207,13 +240,6 @@ inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decim
     tensor.setAllValues(mass, 0, 0,
                         0, mass, 0,
                         0, 0, mass);
-}
-
-// Return true if a point is inside the collision shape
-inline bool ConcaveMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
-
-    // TODO : Implement this
-    return false;
 }
 
 // Called when a overlapping node has been found during the call to

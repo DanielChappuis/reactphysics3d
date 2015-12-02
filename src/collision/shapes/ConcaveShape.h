@@ -68,6 +68,9 @@ class ConcaveShape : public CollisionShape {
         /// Private assignment operator
         ConcaveShape& operator=(const ConcaveShape& shape);
 
+        /// Return true if a point is inside the collision shape
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -87,6 +90,11 @@ class ConcaveShape : public CollisionShape {
 
 /// Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {
+    return false;
+}
+
+// Return true if a point is inside the collision shape
+inline bool ConcaveShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return false;
 }
 

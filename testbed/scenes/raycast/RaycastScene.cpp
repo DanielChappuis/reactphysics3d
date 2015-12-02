@@ -32,9 +32,9 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name)
-       : SceneDemo(name, SCENE_RADIUS, false), mCurrentBodyIndex(-1), mAreNormalsDisplayed(false),
-         mMeshFolderPath("meshes/"), mRaycastManager(mPhongShader, mMeshFolderPath),
-         mVBOVertices(GL_ARRAY_BUFFER) {
+       : SceneDemo(name, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+         mRaycastManager(mPhongShader, mMeshFolderPath), mCurrentBodyIndex(-1),
+         mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
 
     mIsContactPointsDisplayed = true;
 
@@ -122,6 +122,16 @@ RaycastScene::RaycastScene(const std::string& name)
     mConvexMesh->setColor(mGreyColorDemo);
     mConvexMesh->setSleepingColor(mRedColorDemo);
 
+    // ---------- Concave Mesh ---------- //
+    openglframework::Vector3 position8(0, 0, 0);
+
+    // Create a convex mesh and a corresponding collision body in the dynamics world
+    mConcaveMesh = new ConcaveMesh(position8, mCollisionWorld, mMeshFolderPath);
+
+    // Set the color
+    mConcaveMesh->setColor(mGreyColorDemo);
+    mConcaveMesh->setSleepingColor(mRedColorDemo);
+
     // Create the lines that will be used for raycasting
     createLines();
 
@@ -173,6 +183,7 @@ void RaycastScene::changeBody() {
     mCapsule->getCollisionBody()->setIsActive(false);
     mConvexMesh->getCollisionBody()->setIsActive(false);
     mDumbbell->getCollisionBody()->setIsActive(false);
+    mConcaveMesh->getCollisionBody()->setIsActive(false);
 
     switch(mCurrentBodyIndex) {
         case 0: mSphere->getCollisionBody()->setIsActive(true);
@@ -188,6 +199,8 @@ void RaycastScene::changeBody() {
         case 5: mConvexMesh->getCollisionBody()->setIsActive(true);
                 break;
         case 6: mDumbbell->getCollisionBody()->setIsActive(true);
+                break;
+        case 7: mConcaveMesh->getCollisionBody()->setIsActive(true);
                 break;
 
     }
@@ -237,8 +250,14 @@ RaycastScene::~RaycastScene() {
     // Destroy the corresponding rigid body from the dynamics world
     mCollisionWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
 
-    // Destroy the convex mesh
+    // Destroy the dumbbell
     delete mDumbbell;
+
+    // Destroy the corresponding rigid body from the dynamics world
+    mCollisionWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
+
+    // Destroy the convex mesh
+    delete mConcaveMesh;
 
     mRaycastManager.resetPoints();
 
@@ -345,8 +364,8 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader,
     if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(shader, worldToCameraMatrix);
     if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix);
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix);
+    if (mConcaveMesh->getCollisionBody()->isActive()) mConcaveMesh->render(shader, worldToCameraMatrix);
 
-    //mPhongShader.unbind();
     shader.unbind();
 }
 

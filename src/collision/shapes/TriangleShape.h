@@ -92,7 +92,11 @@ class TriangleShape : public ConvexShape {
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
         /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform);
+        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
+
+        // ---------- Friendship ---------- //
+
+        friend class ConcaveMeshRaycastCallback;
 };
 
 // Return the number of bytes used by the collision shape
@@ -155,7 +159,7 @@ inline void TriangleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
  *                  computed in world-space coordinates
  * @param transform Transform used to compute the AABB of the collision shape
  */
-inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) {
+inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
     const Vector3 worldPoint1 = transform * mPoints[0];
     const Vector3 worldPoint2 = transform * mPoints[1];
