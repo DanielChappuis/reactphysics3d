@@ -43,6 +43,7 @@ TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const
     mPoints[0] = point1;
     mPoints[1] = point2;
     mPoints[2] = point3;
+    mRaycastTestType = FRONT;
 }
 
 // Destructor
@@ -72,16 +73,21 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     // product for this test.
     const Vector3 m = pq.cross(pc);
     decimal u = pb.dot(m);
-    if (u < decimal(0.0)) return false;
-    
+    if (mRaycastTestType == FRONT && u < decimal(0.0)) return false;
+    if (mRaycastTestType == BACK && u > decimal(0.0)) return false;
+
     decimal v = -pa.dot(m);
-    if (v < decimal(0.0)) return false;
+    if (mRaycastTestType == FRONT && v < decimal(0.0)) return false;
+    if (mRaycastTestType == BACK && v > decimal(0.0)) return false;
+    if (mRaycastTestType == FRONT_AND_BACK && !sameSign(u, v)) return false;
 
     decimal w = pa.dot(pq.cross(pb));
-    if (w < decimal(0.0)) return false;
+    if (mRaycastTestType == FRONT && w < decimal(0.0)) return false;
+    if (mRaycastTestType == BACK && w > decimal(0.0)) return false;
+    if (mRaycastTestType == FRONT_AND_BACK && !sameSign(u, w)) return false;
 
     // If the line PQ is in the triangle plane (case where u=v=w=0)
-    if (u < MACHINE_EPSILON && u < MACHINE_EPSILON && v < MACHINE_EPSILON) return false;
+    if (approxEqual(u, 0) && approxEqual(v, 0) && approxEqual(w, 0)) return false;
 
     // Compute the barycentric coordinates (u, v, w) to determine the
     // intersection point R, R = u * a + v * b + w * c
@@ -93,7 +99,8 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     // Compute the local hit point using the barycentric coordinates
     const Vector3 localHitPoint = u * mPoints[0] + v * mPoints[1] + w * mPoints[2];
 
-    const Vector3 localHitNormal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
+    Vector3 localHitNormal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
+    if (localHitNormal.dot(pq) > decimal(0.0)) localHitNormal = -localHitNormal;
 
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;

@@ -41,8 +41,7 @@ struct Vector3;
 /// Function to test if two real numbers are (almost) equal
 /// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
 inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
-    decimal difference = a - b;
-    return (difference < epsilon && difference > -epsilon);
+    return (fabs(a - b) < epsilon);
 }
 
 /// Function that returns the result of the "value" clamped by
@@ -60,6 +59,11 @@ inline decimal min3(decimal a, decimal b, decimal c) {
 /// Return the maximum value among three values
 inline decimal max3(decimal a, decimal b, decimal c) {
     return std::max(std::max(a, b), c);
+}
+
+/// Return true if two values have the same sign
+inline bool sameSign(decimal a, decimal b) {
+    return a * b >= decimal(0.0);
 }
 
 }

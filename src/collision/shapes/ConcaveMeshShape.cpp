@@ -25,13 +25,13 @@
 
 // Libraries
 #include "ConcaveMeshShape.h"
-#include "collision/shapes/TriangleShape.h"
 
 using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh) : ConcaveShape(CONCAVE_MESH) {
     mTriangleMesh = triangleMesh;
+    mRaycastTestType = FRONT;
 
     // Insert all the triangles into the dynamic AABB tree
     initBVHTree();
@@ -199,6 +199,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
         // Create a triangle collision shape
         TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+        triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;

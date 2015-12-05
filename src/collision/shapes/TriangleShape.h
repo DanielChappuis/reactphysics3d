@@ -33,6 +33,19 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+/// Raycast test side for the triangle
+enum TriangleRaycastSide {
+
+    /// Raycast against front triangle
+    FRONT,
+
+    /// Raycast against back triangle
+    BACK,
+
+    /// Raycast against front and back triangle
+    FRONT_AND_BACK
+};
+
 // Class TriangleShape
 /**
  * This class represents a triangle collision shape that is centered
@@ -46,6 +59,9 @@ class TriangleShape : public ConvexShape {
 
         /// Three points of the triangle
         Vector3 mPoints[3];
+
+        /// Raycast test type for the triangle (front, back, front-back)
+        TriangleRaycastSide mRaycastTestType;
 
         // -------------------- Methods -------------------- //
 
@@ -93,6 +109,12 @@ class TriangleShape : public ConvexShape {
 
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
+
+        /// Return the raycast test type (front, back, front-back)
+        TriangleRaycastSide getRaycastTestType() const;
+
+        // Set the raycast test type (front, back, front-back)
+        void setRaycastTestType(TriangleRaycastSide testType);
 
         // ---------- Friendship ---------- //
 
@@ -175,6 +197,19 @@ inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) c
 // Return true if a point is inside the collision shape
 inline bool TriangleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return false;
+}
+
+// Return the raycast test type (front, back, front-back)
+inline TriangleRaycastSide TriangleShape::getRaycastTestType() const {
+    return mRaycastTestType;
+}
+
+// Set the raycast test type (front, back, front-back)
+/**
+ * @param testType Raycast test type for the triangle (front, back, front-back)
+ */
+inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
+    mRaycastTestType = testType;
 }
 
 }

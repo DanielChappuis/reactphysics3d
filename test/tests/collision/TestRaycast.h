@@ -961,21 +961,72 @@ class TestRaycast : public Test {
             // ----- Test feedback data ----- //
             Vector3 point1 = mLocalShapeToWorld * Vector3(101, 101, 400);
             Vector3 point2 = mLocalShapeToWorld * Vector3(101, 101, -200);
-            Ray ray(point1, point2);
-            Vector3 hitPoint = mLocalShapeToWorld * Vector3(101, 101, 0);
+            Ray ray(point1, point2);            
+            Ray rayBackward(point2, point1);
 
+            Vector3 hitPoint = mLocalShapeToWorld * Vector3(101, 101, 0);
+            Vector3 hitNormal = mLocalShapeToWorld.getOrientation() * Vector3(0, 0, 1);
+            hitNormal.normalize();
             mCallback.shapeToTest = mTriangleProxyShape;
 
             // CollisionWorld::raycast()
             mCallback.reset();
+            mTriangleShape->setRaycastTestType(FRONT);
             mWorld->raycast(ray, &mCallback);
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mTriangleBody);
             test(mCallback.raycastInfo.proxyShape == mTriangleProxyShape);
-            test(approxEqual(mCallback.raycastInfo.hitFraction, 0.2, epsilon));
+            test(approxEqual(mCallback.raycastInfo.hitFraction, 0.6666, epsilon));
             test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.x, hitNormal.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.y, hitNormal.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.z, hitNormal.z, epsilon));
+
+            mCallback.reset();
+            mTriangleShape->setRaycastTestType(BACK);
+            mWorld->raycast(rayBackward, &mCallback);
+            test(mCallback.isHit);
+            test(mCallback.raycastInfo.body == mTriangleBody);
+            test(mCallback.raycastInfo.proxyShape == mTriangleProxyShape);
+            test(approxEqual(mCallback.raycastInfo.hitFraction, 0.3333, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.x, -hitNormal.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.y, -hitNormal.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.z, -hitNormal.z, epsilon));
+
+            mCallback.reset();
+            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mWorld->raycast(ray, &mCallback);
+            test(mCallback.isHit);
+            test(mCallback.raycastInfo.body == mTriangleBody);
+            test(mCallback.raycastInfo.proxyShape == mTriangleProxyShape);
+            test(approxEqual(mCallback.raycastInfo.hitFraction, 0.6666, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.x, hitNormal.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.y, hitNormal.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.z, hitNormal.z, epsilon));
+
+            mCallback.reset();
+            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mWorld->raycast(rayBackward, &mCallback);
+            test(mCallback.isHit);
+            test(mCallback.raycastInfo.body == mTriangleBody);
+            test(mCallback.raycastInfo.proxyShape == mTriangleProxyShape);
+            test(approxEqual(mCallback.raycastInfo.hitFraction, 0.3333, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.x, -hitNormal.x, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.y, -hitNormal.y, epsilon));
+            test(approxEqual(mCallback.raycastInfo.worldNormal.z, -hitNormal.z, epsilon));
+
+            mTriangleShape->setRaycastTestType(FRONT);
 
             // Correct category filter mask
             mCallback.reset();
@@ -992,7 +1043,7 @@ class TestRaycast : public Test {
             test(mTriangleBody->raycast(ray, raycastInfo2));
             test(raycastInfo2.body == mTriangleBody);
             test(raycastInfo2.proxyShape == mTriangleProxyShape);
-            test(approxEqual(raycastInfo2.hitFraction, 0.2, epsilon));
+            test(approxEqual(raycastInfo2.hitFraction, 0.6666, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -1002,7 +1053,7 @@ class TestRaycast : public Test {
             test(mTriangleProxyShape->raycast(ray, raycastInfo3));
             test(raycastInfo3.body == mTriangleBody);
             test(raycastInfo3.proxyShape == mTriangleProxyShape);
-            test(approxEqual(raycastInfo3.hitFraction, 0.2, epsilon));
+            test(approxEqual(raycastInfo3.hitFraction, 0.6666, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -1014,6 +1065,10 @@ class TestRaycast : public Test {
             Ray ray4(mLocalShapeToWorld * Vector3(100.2, 101, 5), mLocalShapeToWorld * Vector3(100.2, 101, -5));
             Ray ray5(mLocalShapeToWorld * Vector3(100.5, 101.5, 4), mLocalShapeToWorld * Vector3(100.5, 101.5, -54));
             Ray ray6(mLocalShapeToWorld * Vector3(102, 101, 1), mLocalShapeToWorld * Vector3(102, 102, -1));
+
+            Ray ray4Back(mLocalShapeToWorld * Vector3(100.2, 101, -5), mLocalShapeToWorld * Vector3(100.2, 101, 5));
+            Ray ray5Back(mLocalShapeToWorld * Vector3(100.5, 101.5, -54), mLocalShapeToWorld * Vector3(100.5, 101.5, 4));
+            Ray ray6Back(mLocalShapeToWorld * Vector3(102, 102, -1), mLocalShapeToWorld * Vector3(102, 101, 1));
 
             // ----- Test raycast miss ----- //
             test(!mTriangleBody->raycast(ray1, raycastInfo3));
@@ -1040,7 +1095,53 @@ class TestRaycast : public Test {
             mWorld->raycast(ray3, &mCallback);
             test(!mCallback.isHit);
 
+            // Test backward ray against front triangles (not hit should occur)
+            mTriangleShape->setRaycastTestType(FRONT);
+
+            test(!mTriangleBody->raycast(ray4Back, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray4Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray4Back, &mCallback);
+            test(!mCallback.isHit);
+
+            test(!mTriangleBody->raycast(ray5Back, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray5Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray5Back, &mCallback);
+            test(!mCallback.isHit);
+
+            test(!mTriangleBody->raycast(ray6Back, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray6Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray6Back, &mCallback);
+            test(!mCallback.isHit);
+
+            // Test front ray against back triangles (not hit should occur)
+            mTriangleShape->setRaycastTestType(BACK);
+
+            test(!mTriangleBody->raycast(ray4, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray4, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray4, &mCallback);
+            test(!mCallback.isHit);
+
+            test(!mTriangleBody->raycast(ray5, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray5, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray5, &mCallback);
+            test(!mCallback.isHit);
+
+            test(!mTriangleBody->raycast(ray6, raycastInfo3));
+            test(!mTriangleProxyShape->raycast(ray6, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray6, &mCallback);
+            test(!mCallback.isHit);
+
             // ----- Test raycast hits ----- //
+
+            // Test front ray against front triangles
+            mTriangleShape->setRaycastTestType(FRONT);
+
             test(mTriangleBody->raycast(ray4, raycastInfo3));
             test(mTriangleProxyShape->raycast(ray4, raycastInfo3));
             mCallback.reset();
@@ -1065,6 +1166,90 @@ class TestRaycast : public Test {
             mWorld->raycast(ray6, &mCallback);
             mCallback.reset();
             mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), &mCallback);
+
+            // Test back ray against back triangles
+            mTriangleShape->setRaycastTestType(BACK);
+
+            test(mTriangleBody->raycast(ray4Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray4Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray4Back, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray4Back.point1, ray4Back.point2, decimal(0.8)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray5Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray5Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray5Back, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray5Back.point1, ray5Back.point2, decimal(1.0)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray6Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray6Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray6Back, &mCallback);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray6Back.point1, ray6Back.point2, decimal(0.8)), &mCallback);
+
+            // Test front ray against front-back triangles
+            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+
+            test(mTriangleBody->raycast(ray4, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray4, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray4, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray4.point1, ray4.point2, decimal(0.8)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray5, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray5, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray5, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray5.point1, ray5.point2, decimal(0.8)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray6, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray6, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray6, &mCallback);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), &mCallback);
+
+            // Test back ray against front-back triangles
+            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+
+            test(mTriangleBody->raycast(ray4Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray4Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray4Back, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray4Back.point1, ray4Back.point2, decimal(0.8)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray5Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray5Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray5Back, &mCallback);
+            test(mCallback.isHit);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray5Back.point1, ray5Back.point2, decimal(1.0)), &mCallback);
+            test(mCallback.isHit);
+
+            test(mTriangleBody->raycast(ray6Back, raycastInfo3));
+            test(mTriangleProxyShape->raycast(ray6Back, raycastInfo3));
+            mCallback.reset();
+            mWorld->raycast(ray6Back, &mCallback);
+            mCallback.reset();
+            mWorld->raycast(Ray(ray6Back.point1, ray6Back.point2, decimal(0.8)), &mCallback);
         }
 
         /// Test the ProxyConeShape::raycast(), CollisionBody::raycast() and
