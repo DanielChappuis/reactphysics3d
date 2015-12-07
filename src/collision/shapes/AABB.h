@@ -100,6 +100,9 @@ class AABB {
         /// Return true if the AABB of a triangle intersects the AABB
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
 
+        /// Return true if the ray intersects the AABB
+        bool testRayIntersect(const Ray& ray) const;
+
         /// Create and return an AABB for a triangle
         static AABB createAABBForTriangle(const Vector3* trianglePoints);
 

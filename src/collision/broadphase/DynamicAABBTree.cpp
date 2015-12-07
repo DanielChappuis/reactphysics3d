@@ -637,11 +637,6 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &ca
 
     decimal maxFraction = ray.maxFraction;
 
-    // Create an AABB for the ray
-    Vector3 endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
-    AABB rayAABB(Vector3::min(ray.point1, endPoint),
-                 Vector3::max(ray.point1, endPoint));
-
     Stack<int, 128> stack;
     stack.push(mRootNodeID);
 
@@ -658,13 +653,13 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &ca
         // Get the corresponding node
         const TreeNode* node = mNodes + nodeID;
 
-        // Test if the node AABB overlaps with the ray AABB
-        if (!rayAABB.testCollision(node->aabb)) continue;
+        Ray rayTemp(ray.point1, ray.point2, maxFraction);
+
+        // Test if the ray intersects with the current node AABB
+        if (!node->aabb.testRayIntersect(rayTemp)) continue;
 
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
-
-            Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
             // Call the callback that will raycast again the broad-phase shape
             decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, rayTemp);
@@ -683,9 +678,6 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &ca
                 if (hitFraction < maxFraction) {
                     maxFraction = hitFraction;
                 }
-                endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
-                rayAABB.mMinCoordinates = Vector3::min(ray.point1, endPoint);
-                rayAABB.mMaxCoordinates = Vector3::max(ray.point1, endPoint);
             }
 
             // If the user returned a negative fraction, we continue

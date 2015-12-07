@@ -109,6 +109,9 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
 
     // Compute the local hit point using the barycentric coordinates
     const Vector3 localHitPoint = u * mPoints[0] + v * mPoints[1] + w * mPoints[2];
+    const decimal hitFraction = (localHitPoint - ray.point1).length() / pq.length();
+
+    if (hitFraction < decimal(0.0) || hitFraction > ray.maxFraction) return false;
 
     Vector3 localHitNormal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
     if (localHitNormal.dot(pq) > decimal(0.0)) localHitNormal = -localHitNormal;
@@ -116,7 +119,7 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.worldPoint = localHitPoint;
-    raycastInfo.hitFraction = (localHitPoint - ray.point1).length() / pq.length();
+    raycastInfo.hitFraction = hitFraction;
     raycastInfo.worldNormal = localHitNormal;
 
     return true;

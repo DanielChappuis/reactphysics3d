@@ -113,3 +113,38 @@ AABB AABB::createAABBForTriangle(const Vector3* trianglePoints) {
 
     return AABB(minCoords, maxCoords);
 }
+
+// Return true if the ray intersects the AABB
+/// This method use the line vs AABB raycasting technique described in
+/// Real-time Collision Detection by Christer Ericson.
+bool AABB::testRayIntersect(const Ray& ray) const {
+
+    const Vector3 point2 = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
+    const Vector3 e = mMaxCoordinates - mMinCoordinates;
+    const Vector3 d = point2 - ray.point1;
+    const Vector3 m = ray.point1 + point2 - mMinCoordinates - mMaxCoordinates;
+
+    // Test if the AABB face normals are separating axis
+    decimal adx = std::abs(d.x);
+    if (std::abs(m.x) > e.x + adx) return false;
+    decimal ady = std::abs(d.y);
+    if (std::abs(m.y) > e.y + ady) return false;
+    decimal adz = std::abs(d.z);
+    if (std::abs(m.z) > e.z + adz) return false;
+
+    // Add in an epsilon term to counteract arithmetic errors when segment is
+    // (near) parallel to a coordinate axis (see text for detail)
+    const decimal epsilon = 0.00001;
+    adx += epsilon;
+    ady += epsilon;
+    adz += epsilon;
+
+    // Test if the cross products between face normals and ray direction are
+    // separating axis
+    if (std::abs(m.y * d.z - m.z * d.y) > e.y * adz + e.z * ady) return false;
+    if (std::abs(m.z * d.x - m.x * d.z) > e.x * adz + e.z * adx) return false;
+    if (std::abs(m.x * d.y - m.y * d.x) > e.x * ady + e.y * adx) return false;
+
+    // No separating axis has been found
+    return true;
+}

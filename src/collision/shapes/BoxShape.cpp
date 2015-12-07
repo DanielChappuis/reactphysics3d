@@ -117,7 +117,7 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
     }
 
     // If tMin is negative, we return no hit
-    if (tMin < decimal(0.0)) return false;
+    if (tMin < decimal(0.0) || tMin > ray.maxFraction) return false;
 
     // The ray intersects the three slabs, we compute the hit point
     Vector3 localHitPoint = ray.point1 + tMin * rayDirection;
