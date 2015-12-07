@@ -69,11 +69,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 // Raycast method with feedback information
 bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 point1 = worldToLocalTransform * ray.point1;
-    const Vector3 point2 = worldToLocalTransform * ray.point2;
-    Vector3 rayDirection = point2 - point1;
+    Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;
     decimal tMax = DECIMAL_LARGEST;
     Vector3 normalDirection(decimal(0), decimal(0), decimal(0));
@@ -86,14 +82,14 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
         if (std::abs(rayDirection[i]) < MACHINE_EPSILON) {
 
             // If the ray's origin is not inside the slab, there is no hit
-            if (point1[i] > mExtent[i] || point1[i] < -mExtent[i]) return false;
+            if (ray.point1[i] > mExtent[i] || ray.point1[i] < -mExtent[i]) return false;
         }
         else {
 
             // Compute the intersection of the ray with the near and far plane of the slab
             decimal oneOverD = decimal(1.0) / rayDirection[i];
-            decimal t1 = (-mExtent[i] - point1[i]) * oneOverD;
-            decimal t2 = (mExtent[i] - point1[i]) * oneOverD;
+            decimal t1 = (-mExtent[i] - ray.point1[i]) * oneOverD;
+            decimal t2 = (mExtent[i] - ray.point1[i]) * oneOverD;
             currentNormal[0] = (i == 0) ? -mExtent[i] : decimal(0.0);
             currentNormal[1] = (i == 1) ? -mExtent[i] : decimal(0.0);
             currentNormal[2] = (i == 2) ? -mExtent[i] : decimal(0.0);
@@ -124,14 +120,13 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
     if (tMin < decimal(0.0)) return false;
 
     // The ray intersects the three slabs, we compute the hit point
-    Vector3 localHitPoint = point1 + tMin * rayDirection;
+    Vector3 localHitPoint = ray.point1 + tMin * rayDirection;
 
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = tMin;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-    normalDirection.normalize();
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+    raycastInfo.worldPoint = localHitPoint;
+    raycastInfo.worldNormal = normalDirection;
 
     return true;
 }

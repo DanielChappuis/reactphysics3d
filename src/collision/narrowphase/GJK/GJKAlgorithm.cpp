@@ -433,11 +433,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
     const decimal epsilon = decimal(0.0001);
 
     // Convert the ray origin and direction into the local-space of the collision shape
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Vector3 point1 = worldToLocalTransform * ray.point1;
-    Vector3 point2 = worldToLocalTransform * ray.point2;
-    Vector3 rayDirection = point2 - point1;
+    Vector3 rayDirection = ray.point2 - ray.point1;
 
     // If the points of the segment are two close, return no hit
     if (rayDirection.lengthSquare() < machineEpsilonSquare) return false;
@@ -449,7 +445,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
 
     Vector3 n(decimal(0.0), decimal(0.0), decimal(0.0));
     decimal lambda = decimal(0.0);
-    suppA = point1;    // Current lower bound point on the ray (starting at ray's origin)
+    suppA = ray.point1;    // Current lower bound point on the ray (starting at ray's origin)
     suppB = shape->getLocalSupportPointWithoutMargin(rayDirection, shapeCachedCollisionData);
     Vector3 v = suppA - suppB;
     decimal vDotW, vDotR;
@@ -476,7 +472,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
 
                 // We have found a better lower bound for the hit point along the ray
                 lambda = lambda - vDotW / vDotR;
-                suppA = point1 + lambda * rayDirection;
+                suppA = ray.point1 + lambda * rayDirection;
                 w = suppA - suppB;
                 n = v;
             }
@@ -512,12 +508,12 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
 
     // A raycast hit has been found, we fill in the raycast info
     raycastInfo.hitFraction = lambda;
-    raycastInfo.worldPoint = localToWorldTransform * pointB;
+    raycastInfo.worldPoint = pointB;
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
 
     if (n.lengthSquare() >= machineEpsilonSquare) { // The normal vector is valid
-        raycastInfo.worldNormal = localToWorldTransform.getOrientation() * n.getUnit();
+        raycastInfo.worldNormal = n;
     }
     else {  // Degenerated normal vector, we return a zero normal vector
         raycastInfo.worldNormal = Vector3(decimal(0), decimal(0), decimal(0));

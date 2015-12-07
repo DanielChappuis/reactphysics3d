@@ -92,18 +92,13 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
 /// Morgan Kaufmann.
 bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // Transform the ray direction and origin in local-space coordinates
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 pointA = worldToLocalTransform * ray.point1;
-    const Vector3 pointB = worldToLocalTransform * ray.point2;
-    const Vector3 n = pointB - pointA;
+    const Vector3 n = ray.point2 - ray.point1;
 
     const decimal epsilon = decimal(0.01);
     Vector3 p(decimal(0), -mHalfHeight, decimal(0));
     Vector3 q(decimal(0), mHalfHeight, decimal(0));
     Vector3 d = q - p;
-    Vector3 m = pointA - p;
+    Vector3 m = ray.point1 - p;
     decimal t;
 
     decimal mDotD = m.dot(d);
@@ -139,13 +134,13 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
             if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
             // Compute the hit information
-            Vector3 localHitPoint = pointA + t * n;
+            Vector3 localHitPoint = ray.point1 + t * n;
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = t;
-            raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+            raycastInfo.worldPoint = localHitPoint;
             Vector3 normalDirection(0, decimal(-1), 0);
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -158,13 +153,13 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
             if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
             // Compute the hit information
-            Vector3 localHitPoint = pointA + t * n;
+            Vector3 localHitPoint = ray.point1 + t * n;
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = t;
-            raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+            raycastInfo.worldPoint = localHitPoint;
             Vector3 normalDirection(0, decimal(1.0), 0);
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -199,13 +194,13 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
         if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
         // Compute the hit information
-        Vector3 localHitPoint = pointA + t * n;
+        Vector3 localHitPoint = ray.point1 + t * n;
         raycastInfo.body = proxyShape->getBody();
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.hitFraction = t;
-        raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+        raycastInfo.worldPoint = localHitPoint;
         Vector3 normalDirection(0, decimal(-1.0), 0);
-        raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+        raycastInfo.worldNormal = normalDirection;
 
         return true;
     }
@@ -226,13 +221,13 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
         if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
         // Compute the hit information
-        Vector3 localHitPoint = pointA + t * n;
+        Vector3 localHitPoint = ray.point1 + t * n;
         raycastInfo.body = proxyShape->getBody();
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.hitFraction = t;
-        raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+        raycastInfo.worldPoint = localHitPoint;
         Vector3 normalDirection(0, decimal(1.0), 0);
-        raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+        raycastInfo.worldNormal = normalDirection;
 
         return true;
     }
@@ -244,15 +239,15 @@ bool CylinderShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
     // Compute the hit information
-    Vector3 localHitPoint = pointA + t * n;
+    Vector3 localHitPoint = ray.point1 + t * n;
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = t;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    raycastInfo.worldPoint = localHitPoint;
     Vector3 v = localHitPoint - p;
     Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
-    Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+    Vector3 normalDirection = (localHitPoint - (p + w));
+    raycastInfo.worldNormal = normalDirection;
 
     return true;
 }

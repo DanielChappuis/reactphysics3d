@@ -31,6 +31,7 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
+#include "engine/Profiler.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -233,6 +234,8 @@ inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
 // Ray casting method
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
+
+    PROFILE("BroadPhaseAlgorithm::raycast()");
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 

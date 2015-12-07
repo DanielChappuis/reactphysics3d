@@ -47,10 +47,7 @@ SphereShape::~SphereShape() {
 // Raycast method with feedback information
 bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // We perform the intersection test in world-space
-
-    const Vector3 sphereCenter = proxyShape->getLocalToWorldTransform().getPosition();
-    const Vector3 m = ray.point1 - sphereCenter;
+    const Vector3 m = ray.point1;
     decimal c = m.dot(m) - mMargin * mMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
@@ -85,7 +82,7 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* 
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.hitFraction = t;
         raycastInfo.worldPoint = ray.point1 + t * rayDirection;
-        raycastInfo.worldNormal = (raycastInfo.worldPoint - sphereCenter).getUnit();
+        raycastInfo.worldNormal = raycastInfo.worldPoint;
 
         return true;
     }

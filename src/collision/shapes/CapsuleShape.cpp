@@ -149,18 +149,13 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 // Raycast method with feedback information
 bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // Transform the ray direction and origin in local-space coordinates
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 point1 = worldToLocalTransform * ray.point1;
-    const Vector3 point2 = worldToLocalTransform * ray.point2;
-    const Vector3 n = point2 - point1;
+    const Vector3 n = ray.point2 - ray.point1;
 
     const decimal epsilon = decimal(0.01);
     Vector3 p(decimal(0), -mHalfHeight, decimal(0));
     Vector3 q(decimal(0), mHalfHeight, decimal(0));
     Vector3 d = q - p;
-    Vector3 m = point1 - p;
+    Vector3 m = ray.point1 - p;
     decimal t;
 
     decimal mDotD = m.dot(d);
@@ -168,7 +163,7 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
     decimal dDotD = d.dot(d);
 
     // Test if the segment is outside the cylinder
-    decimal vec1DotD = (point1 - Vector3(decimal(0.0), -mHalfHeight - mRadius, decimal(0.0))).dot(d);
+    decimal vec1DotD = (ray.point1 - Vector3(decimal(0.0), -mHalfHeight - mRadius, decimal(0.0))).dot(d);
     if (vec1DotD < decimal(0.0) && vec1DotD + nDotD < decimal(0.0)) return false;
     decimal ddotDExtraCaps = decimal(2.0) * mRadius * d.y;
     if (vec1DotD > dDotD + ddotDExtraCaps && vec1DotD + nDotD > dDotD + ddotDExtraCaps) return false;
@@ -194,13 +189,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             // Check intersection between the ray and the "p" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(point1, point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = proxyShape->getBody();
                 raycastInfo.proxyShape = proxyShape;
                 raycastInfo.hitFraction = hitFraction;
-                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-                Vector3 normalDirection = (hitLocalPoint - p).getUnit();
-                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+                raycastInfo.worldPoint = hitLocalPoint;
+                Vector3 normalDirection = hitLocalPoint - p;
+                raycastInfo.worldNormal = normalDirection;
 
                 return true;
             }
@@ -212,13 +207,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             // Check intersection between the ray and the "q" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(point1, point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = proxyShape->getBody();
                 raycastInfo.proxyShape = proxyShape;
                 raycastInfo.hitFraction = hitFraction;
-                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-                Vector3 normalDirection = (hitLocalPoint - q).getUnit();
-                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+                raycastInfo.worldPoint = hitLocalPoint;
+                Vector3 normalDirection = hitLocalPoint - q;
+                raycastInfo.worldNormal = normalDirection;
 
                 return true;
             }
@@ -245,13 +240,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         // Check intersection between the ray and the "p" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(point1, point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = hitFraction;
-            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-            Vector3 normalDirection = (hitLocalPoint - p).getUnit();
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldPoint = hitLocalPoint;
+            Vector3 normalDirection = hitLocalPoint - p;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -263,13 +258,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         // Check intersection between the ray and the "q" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(point1, point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = hitFraction;
-            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-            Vector3 normalDirection = (hitLocalPoint - q).getUnit();
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldPoint = hitLocalPoint;
+            Vector3 normalDirection = hitLocalPoint - q;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -284,15 +279,15 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
     if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
     // Compute the hit information
-    Vector3 localHitPoint = point1 + t * n;
+    Vector3 localHitPoint = ray.point1 + t * n;
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = t;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    raycastInfo.worldPoint = localHitPoint;
     Vector3 v = localHitPoint - p;
     Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
     Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+    raycastInfo.worldNormal = normalDirection;
 
     return true;
 }

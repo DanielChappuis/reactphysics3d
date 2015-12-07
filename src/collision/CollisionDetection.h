@@ -291,6 +291,8 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
                                         const Ray& ray,
                                         unsigned short raycastWithCategoryMaskBits) const {
 
+    PROFILE("CollisionDetection::raycast()");
+
     RaycastTest rayCastTest(raycastCallback);
 
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()

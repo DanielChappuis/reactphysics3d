@@ -31,6 +31,7 @@
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "collision/TriangleMesh.h"
 #include "collision/shapes/TriangleShape.h"
+#include "engine/Profiler.h"
 
 namespace reactphysics3d {
 

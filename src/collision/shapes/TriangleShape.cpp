@@ -26,6 +26,7 @@
 // Libraries
 #include "TriangleShape.h"
 #include "collision/ProxyShape.h"
+#include "engine/Profiler.h"
 #include "configuration.h"
 #include <cassert>
 
@@ -56,35 +57,45 @@ TriangleShape::~TriangleShape() {
 /// Real-time Collision Detection by Christer Ericson.
 bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // TODO : For all collision shape, try to perform raycasting in local-space and
-    //        compute world-space hit point, normal in upper classes when local-space
-    //        hit points are returned
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 point1 = worldToLocalTransform * ray.point1;
-    const Vector3 point2 = worldToLocalTransform * ray.point2;
+    PROFILE("TriangleShape::raycast()");
 
-    const Vector3 pq = point2 - point1;
-    const Vector3 pa = mPoints[0] - point1;
-    const Vector3 pb = mPoints[1] - point1;
-    const Vector3 pc = mPoints[2] - point1;
+    const Vector3 pq = ray.point2 - ray.point1;
+    const Vector3 pa = mPoints[0] - ray.point1;
+    const Vector3 pb = mPoints[1] - ray.point1;
+    const Vector3 pc = mPoints[2] - ray.point1;
 
     // Test if the line PQ is inside the eges BC, CA and AB. We use the triple
     // product for this test.
     const Vector3 m = pq.cross(pc);
     decimal u = pb.dot(m);
-    if (mRaycastTestType == FRONT && u < decimal(0.0)) return false;
-    if (mRaycastTestType == BACK && u > decimal(0.0)) return false;
+    if (mRaycastTestType == FRONT) {
+        if (u < decimal(0.0)) return false;
+    }
+    else if (mRaycastTestType == BACK) {
+        if (u > decimal(0.0)) return false;
+    }
 
     decimal v = -pa.dot(m);
-    if (mRaycastTestType == FRONT && v < decimal(0.0)) return false;
-    if (mRaycastTestType == BACK && v > decimal(0.0)) return false;
-    if (mRaycastTestType == FRONT_AND_BACK && !sameSign(u, v)) return false;
+    if (mRaycastTestType == FRONT) {
+        if (v < decimal(0.0)) return false;
+    }
+    else if (mRaycastTestType == BACK) {
+        if (v > decimal(0.0)) return false;
+    }
+    else if (mRaycastTestType == FRONT_AND_BACK) {
+        if (!sameSign(u, v)) return false;
+    }
 
     decimal w = pa.dot(pq.cross(pb));
-    if (mRaycastTestType == FRONT && w < decimal(0.0)) return false;
-    if (mRaycastTestType == BACK && w > decimal(0.0)) return false;
-    if (mRaycastTestType == FRONT_AND_BACK && !sameSign(u, w)) return false;
+    if (mRaycastTestType == FRONT) {
+        if (w < decimal(0.0)) return false;
+    }
+    else if (mRaycastTestType == BACK) {
+        if (w > decimal(0.0)) return false;
+    }
+    else if (mRaycastTestType == FRONT_AND_BACK) {
+        if (!sameSign(u, w)) return false;
+    }
 
     // If the line PQ is in the triangle plane (case where u=v=w=0)
     if (approxEqual(u, 0) && approxEqual(v, 0) && approxEqual(w, 0)) return false;
@@ -104,10 +115,9 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
 
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
-    raycastInfo.hitFraction = (localHitPoint - point1).length() / pq.length();
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * localHitNormal;
-    raycastInfo.worldNormal.normalize();
+    raycastInfo.worldPoint = localHitPoint;
+    raycastInfo.hitFraction = (localHitPoint - ray.point1).length() / pq.length();
+    raycastInfo.worldNormal = localHitNormal;
 
     return true;
 }

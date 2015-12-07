@@ -633,11 +633,12 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 // Ray casting method
 void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
 
+    PROFILE("DynamicAABBTree::raycast()");
+
     decimal maxFraction = ray.maxFraction;
 
     // Create an AABB for the ray
-    Vector3 endPoint = ray.point1 +
-                             maxFraction * (ray.point2 - ray.point1);
+    Vector3 endPoint = ray.point1 + maxFraction * (ray.point2 - ray.point1);
     AABB rayAABB(Vector3::min(ray.point1, endPoint),
                  Vector3::max(ray.point1, endPoint));
 
