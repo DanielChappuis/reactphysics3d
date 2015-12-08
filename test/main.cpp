@@ -34,6 +34,7 @@
 #include "tests/collision/TestPointInside.h"
 #include "tests/collision/TestRaycast.h"
 #include "tests/collision/TestCollisionWorld.h"
+#include "tests/collision/TestAABB.h"
 
 using namespace reactphysics3d;
 
@@ -52,6 +53,7 @@ int main() {
 
     // ---------- Collision Detection tests ---------- //
 
+    testSuite.addTest(new TestAABB("AABB"));
     testSuite.addTest(new TestPointInside("IsPointInside"));
     testSuite.addTest(new TestRaycast("Raycasting"));
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
