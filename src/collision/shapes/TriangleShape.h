@@ -93,7 +93,8 @@ class TriangleShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3);
+        TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
+                      decimal margin = OBJECT_MARGIN);
 
         /// Destructor
         virtual ~TriangleShape();

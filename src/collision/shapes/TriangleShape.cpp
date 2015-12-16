@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param point3 Third point of the triangle
  * @param margin The collision margin (in meters) around the collision shape
  */
-TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3)
-              : ConvexShape(TRIANGLE, 0) {
+TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3, decimal margin)
+              : ConvexShape(TRIANGLE, margin) {
     mPoints[0] = point1;
     mPoints[1] = point2;
     mPoints[2] = point3;
