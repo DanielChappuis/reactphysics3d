@@ -117,6 +117,9 @@ class TriangleShape : public ConvexShape {
         // Set the raycast test type (front, back, front-back)
         void setRaycastTestType(TriangleRaycastSide testType);
 
+        /// Return the coordinates of a given vertex of the triangle
+        Vector3 getVertex(int index) const;
+
         // ---------- Friendship ---------- //
 
         friend class ConcaveMeshRaycastCallback;
@@ -211,6 +214,15 @@ inline TriangleRaycastSide TriangleShape::getRaycastTestType() const {
  */
 inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
     mRaycastTestType = testType;
+}
+
+// Return the coordinates of a given vertex of the triangle
+/**
+ * @param index Index (0 to 2) of a vertex of the triangle
+ */
+inline Vector3 TriangleShape::getVertex(int index) const {
+    assert(index >= 0 && index < 3);
+    return mPoints[index];
 }
 
 }

@@ -132,6 +132,8 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
 
                 // Create the contact info object for the contact
                 ContactPointInfo contactInfo(manifold->getShape1(), manifold->getShape2(),
+                                             manifold->getShape1()->getCollisionShape(),
+                                             manifold->getShape2()->getCollisionShape(),
                                              contactPoint->getNormal(),
                                              contactPoint->getPenetrationDepth(),
                                              contactPoint->getLocalPointOnBody1(),

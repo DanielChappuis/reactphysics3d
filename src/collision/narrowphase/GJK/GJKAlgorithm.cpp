@@ -28,6 +28,7 @@
 #include "Simplex.h"
 #include "constraint/ContactPoint.h"
 #include "configuration.h"
+#include "engine/Profiler.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
@@ -58,6 +59,8 @@ GJKAlgorithm::~GJKAlgorithm() {
 void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                  const CollisionShapeInfo& shape2Info,
                                  NarrowPhaseCallback* narrowPhaseCallback) {
+
+    PROFILE("GJKAlgorithm::testCollision()");
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -146,8 +149,8 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
             if (penetrationDepth <= 0.0) return;
 			
             // Create the contact info object
-            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                         normal, penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                         shape2Info.collisionShape, normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -179,8 +182,8 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
             if (penetrationDepth <= 0.0) return;
 			
             // Create the contact info object
-            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                         normal, penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                         shape2Info.collisionShape, normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -210,8 +213,8 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
             if (penetrationDepth <= 0.0) return;
 			
             // Create the contact info object
-            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                         normal, penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                         shape2Info.collisionShape, normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -248,8 +251,8 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
             if (penetrationDepth <= 0.0) return;
 			
             // Create the contact info object
-            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                         normal, penetrationDepth, pA, pB);
+            ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                         shape2Info.collisionShape, normal, penetrationDepth, pA, pB);
 
             narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 
@@ -278,6 +281,8 @@ void GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
                                                              const Transform& transform2,
                                                              NarrowPhaseCallback* narrowPhaseCallback,
                                                              Vector3& v) {
+    PROFILE("GJKAlgorithm::computePenetrationDepthForEnlargedObjects()");
+
     Simplex simplex;
     Vector3 suppA;
     Vector3 suppB;

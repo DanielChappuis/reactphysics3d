@@ -25,6 +25,7 @@
 
 // Libraries
 #include "EPAAlgorithm.h"
+#include "engine/Profiler.h"
 #include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
 
@@ -88,6 +89,8 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                                            const Transform& transform2,
                                                            Vector3& v,
                                                            NarrowPhaseCallback* narrowPhaseCallback) {
+
+    PROFILE("EPAAlgorithm::computePenetrationDepthAndContactPoints()");
 
     assert(shape1Info.collisionShape->isConvex());
     assert(shape2Info.collisionShape->isConvex());
@@ -425,10 +428,12 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
+
+    if (normal.lengthSquare() < MACHINE_EPSILON) return;
     
     // Create the contact info object
-    ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                 normal, penetrationDepth, pALocal, pBLocal);
+    ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                 shape2Info.collisionShape, normal, penetrationDepth, pALocal, pBLocal);
 
     narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 }

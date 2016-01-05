@@ -30,6 +30,7 @@
 #include "NarrowPhaseAlgorithm.h"
 #include "collision/shapes/ConvexShape.h"
 #include "collision/shapes/ConcaveShape.h"
+#include <unordered_map>
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -61,6 +62,10 @@ class ConvexVsTriangleCallback : public TriangleCallback {
 
         /// Broadphase overlapping pair
         OverlappingPair* mOverlappingPair;
+
+        /// Used to sort ContactPointInfos according to their penetration depth
+        static bool contactsDepthCompare(const ContactPointInfo& contact1,
+                                         const ContactPointInfo& contact2);
 
     public:
 
@@ -95,6 +100,72 @@ class ConvexVsTriangleCallback : public TriangleCallback {
 
 };
 
+// Class SmoothMeshContactInfo
+/**
+ * This class is used to store data about a contact with a triangle for the smooth
+ * mesh algorithm.
+ */
+class SmoothMeshContactInfo {
+
+    public:
+
+        ContactPointInfo contactInfo;
+        bool isFirstShapeTriangle;
+        Vector3 triangleVertices[3];
+
+        /// Constructor
+        SmoothMeshContactInfo(const ContactPointInfo& contact, bool firstShapeTriangle, const Vector3& trianglePoint1,
+                              const Vector3& trianglePoint2, const Vector3& trianglePoint3)
+            : contactInfo(contact) {
+            isFirstShapeTriangle = firstShapeTriangle;
+            triangleVertices[0] = trianglePoint1;
+            triangleVertices[1] = trianglePoint2;
+            triangleVertices[2] = trianglePoint3;
+        }
+
+};
+
+struct ContactsDepthCompare {
+    bool operator()(const SmoothMeshContactInfo& contact1, const SmoothMeshContactInfo& contact2)
+    {
+        return contact1.contactInfo.penetrationDepth < contact2.contactInfo.penetrationDepth;
+    }
+};
+
+/// Method used to compare two smooth mesh contact info to sort them
+//inline static bool contactsDepthCompare(const SmoothMeshContactInfo& contact1,
+//                                        const SmoothMeshContactInfo& contact2) {
+//    return contact1.contactInfo.penetrationDepth < contact2.contactInfo.penetrationDepth;
+//}
+
+// Class SmoothCollisionNarrowPhaseCallback
+/**
+ * This class is used as a narrow-phase callback to get narrow-phase contacts
+ * of the concave triangle mesh to temporary store them in order to be used in
+ * the smooth mesh collision algorithm if this one is enabled.
+ */
+class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
+
+    private:
+
+        std::vector<SmoothMeshContactInfo>& mContactPoints;
+
+
+    public:
+
+        // Constructor
+        SmoothCollisionNarrowPhaseCallback(std::vector<SmoothMeshContactInfo>& contactPoints)
+          : mContactPoints(contactPoints) {
+
+        }
+
+
+        /// Called by a narrow-phase collision algorithm when a new contact has been found
+        virtual void notifyContact(OverlappingPair* overlappingPair,
+                                   const ContactPointInfo& contactInfo);
+
+};
+
 // Class ConcaveVsConvexAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
@@ -119,6 +190,19 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         /// Private assignment operator
         ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm);
 
+        /// Process the concave triangle mesh collision using the smooth mesh collision algorithm
+        void processSmoothMeshCollision(OverlappingPair* overlappingPair,
+                                        std::vector<SmoothMeshContactInfo> contactPoints,
+                                        NarrowPhaseCallback* narrowPhaseCallback);
+
+        /// Add a triangle vertex into the set of processed triangles
+        void addProcessedVertex(std::unordered_multimap<int, Vector3>& processTriangleVertices,
+                                const Vector3& vertex);
+
+        /// Return true if the vertex is in the set of already processed vertices
+        bool hasVertexBeenProcessed(const std::unordered_multimap<int, Vector3>& processTriangleVertices,
+                                    const Vector3& vertex) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -134,6 +218,11 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
                                    const CollisionShapeInfo& shape2Info,
                                    NarrowPhaseCallback* narrowPhaseCallback);
 };
+
+// Add a triangle vertex into the set of processed triangles
+inline void ConcaveVsConvexAlgorithm::addProcessedVertex(std::unordered_multimap<int, Vector3>& processTriangleVertices, const Vector3& vertex) {
+    processTriangleVertices.insert(std::make_pair(int(vertex.x * vertex.y * vertex.z), vertex));
+}
 
 }
 

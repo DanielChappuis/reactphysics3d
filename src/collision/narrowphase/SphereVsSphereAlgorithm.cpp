@@ -70,8 +70,8 @@ void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape,
-                                     vectorBetweenCenters.getUnit(), penetrationDepth,
+        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                     shape2Info.collisionShape, vectorBetweenCenters.getUnit(), penetrationDepth,
                                      intersectionOnBody1, intersectionOnBody2);
 
         // Notify about the new contact

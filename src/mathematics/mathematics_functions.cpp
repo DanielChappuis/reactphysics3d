@@ -23,55 +23,29 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_MATHEMATICS_FUNCTIONS_H
-#define REACTPHYSICS3D_MATHEMATICS_FUNCTIONS_H
-
 // Libraries
-#include "configuration.h"
-#include "decimal.h"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
+#include "mathematics_functions.h"
+#include "Vector3.h"
 
-/// ReactPhysics3D namespace
-namespace reactphysics3d {
-
-struct Vector3;
-
-// ---------- Mathematics functions ---------- //
-
-/// Function to test if two real numbers are (almost) equal
-/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
-    return (std::fabs(a - b) < epsilon);
-}
-
-/// Function that returns the result of the "value" clamped by
-/// two others values "lowerLimit" and "upperLimit"
-inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
-    assert(lowerLimit <= upperLimit);
-    return std::min(std::max(value, lowerLimit), upperLimit);
-}
-
-/// Return the minimum value among three values
-inline decimal min3(decimal a, decimal b, decimal c) {
-    return std::min(std::min(a, b), c);
-}
-
-/// Return the maximum value among three values
-inline decimal max3(decimal a, decimal b, decimal c) {
-    return std::max(std::max(a, b), c);
-}
-
-/// Return true if two values have the same sign
-inline bool sameSign(decimal a, decimal b) {
-    return a * b >= decimal(0.0);
-}
+using namespace reactphysics3d;
 
 /// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
-void computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
-                                             const Vector3& p, decimal& u, decimal& v, decimal& w);
+/// This method uses the technique described in the book Real-Time collision detection by
+/// Christer Ericson.
+void reactphysics3d::computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
+                                             const Vector3& p, decimal& u, decimal& v, decimal& w) {
+    const Vector3 v0 = b - a;
+    const Vector3 v1 = c - a;
+    const Vector3 v2 = p - a;
 
+    decimal d00 = v0.dot(v0);
+    decimal d01 = v0.dot(v1);
+    decimal d11 = v1.dot(v1);
+    decimal d20 = v2.dot(v0);
+    decimal d21 = v2.dot(v1);
+
+    decimal denom = d00 * d11 - d01 * d01;
+    v = (d11 * d20 - d01 * d21) / denom;
+    w = (d00 * d21 - d01 * d20) / denom;
+    u = decimal(1.0) - u - w;
 }
-
-#endif

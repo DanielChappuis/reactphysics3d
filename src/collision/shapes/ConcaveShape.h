@@ -58,7 +58,8 @@ class ConcaveShape : public CollisionShape {
 
         // -------------------- Attributes -------------------- //
 
-
+        /// True if the smooth mesh collision algorithm is enabled
+        bool mIsSmoothMeshCollisionEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -86,6 +87,12 @@ class ConcaveShape : public CollisionShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
+
+        /// Return true if the smooth mesh collision is enabled
+        bool getIsSmoothMeshCollisionEnabled() const;
+
+        /// Enable/disable the smooth mesh collision algorithm
+        void setIsSmoothMeshCollisionEnabled(bool isEnabled);
 };
 
 /// Return true if the collision shape is convex, false if it is concave
@@ -96,6 +103,19 @@ inline bool ConcaveShape::isConvex() const {
 // Return true if a point is inside the collision shape
 inline bool ConcaveShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return false;
+}
+
+// Return true if the smooth mesh collision is enabled
+inline bool ConcaveShape::getIsSmoothMeshCollisionEnabled() const {
+    return mIsSmoothMeshCollisionEnabled;
+}
+
+// Enable/disable the smooth mesh collision algorithm
+/// Smooth mesh collision is used to avoid collisions against some internal edges
+/// of the triangle mesh. If it is enabled, collsions with the mesh will be smoother
+/// but collisions computation is a bit more expensive.
+inline void ConcaveShape::setIsSmoothMeshCollisionEnabled(bool isEnabled) {
+    mIsSmoothMeshCollisionEnabled = isEnabled;
 }
 
 }

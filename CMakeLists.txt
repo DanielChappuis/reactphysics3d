@@ -1,5 +1,5 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
 
 # Project configuration
 PROJECT(REACTPHYSICS3D)
@@ -147,6 +147,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/Timer.cpp"
     "src/mathematics/mathematics.h"
     "src/mathematics/mathematics_functions.h"
+    "src/mathematics/mathematics_functions.cpp"
     "src/mathematics/Matrix2x2.h"
     "src/mathematics/Matrix2x2.cpp"
     "src/mathematics/Matrix3x3.h"
@@ -166,7 +167,11 @@ SET (REACTPHYSICS3D_SOURCES
 )
 
 # Create the library
-ADD_LIBRARY (reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
+ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
+
+# Enable C++11 features
+set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD 11)
+set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # If we need to compile the testbed application
 IF(COMPILE_TESTBED)
