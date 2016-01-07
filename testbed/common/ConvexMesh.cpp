@@ -46,36 +46,17 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // Convert the vertices array to the rp3d::decimal type
-    rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
-        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
-        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
-        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
-    }
+
+    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
+    mPhysicsTriangleVertexArray =
+            new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
+                                          getNbFaces(0), &(mIndices[0][0]), sizeof(int),
+                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
-
-    delete[] vertices;
-
-    // Add the edges information of the mesh into the convex mesh collision shape.
-    // This is optional but it really speed up the convex mesh collision detection at the
-    // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
-
-        // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
-
-        // Add the three edges into the collision shape
-        mConvexShape->addEdge(v1, v2);
-        mConvexShape->addEdge(v1, v3);
-        mConvexShape->addEdge(v2, v3);
-    }
-    mConvexShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
+    mConvexShape = new rp3d::ConvexMeshShape(mPhysicsTriangleVertexArray);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -116,36 +97,16 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // Convert the vertices array to the rp3d::decimal type
-    rp3d::decimal* vertices = new rp3d::decimal[3 * mVertices.size()];
-    for (int i=0; i < mVertices.size(); i++) {
-        vertices[3 * i] = static_cast<rp3d::decimal>(mVertices[i].x);
-        vertices[3 * i + 1] = static_cast<rp3d::decimal>(mVertices[i].y);
-        vertices[3 * i + 2] = static_cast<rp3d::decimal>(mVertices[i].z);
-    }
+    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
+    mPhysicsTriangleVertexArray =
+            new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
+                                          getNbFaces(0), &(mIndices[0][0]), sizeof(int),
+                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(vertices, mVertices.size(), 3 * sizeof(rp3d::decimal));
-
-    delete[] vertices;
-
-    // Add the edges information of the mesh into the convex mesh collision shape.
-    // This is optional but it really speed up the convex mesh collision detection at the
-    // cost of some additional memory to store the edges inside the collision shape.
-    for (unsigned int i=0; i<getNbFaces(); i++) { // For each triangle face of the mesh
-
-        // Get the three vertex IDs of the vertices of the face
-        unsigned int v1 = getVertexIndexInFace(i, 0);
-        unsigned int v2 = getVertexIndexInFace(i, 1);
-        unsigned int v3 = getVertexIndexInFace(i, 2);
-
-        // Add the three edges into the collision shape
-        mConvexShape->addEdge(v1, v2);
-        mConvexShape->addEdge(v1, v3);
-        mConvexShape->addEdge(v2, v3);
-    }
-    mConvexShape->setIsEdgesInformationUsed(true);// Enable the fast collision detection with edges
+    mConvexShape = new rp3d::ConvexMeshShape(mPhysicsTriangleVertexArray);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -179,6 +140,7 @@ ConvexMesh::~ConvexMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
+    delete mPhysicsTriangleVertexArray;
     delete mConvexShape;
 }
 

@@ -30,6 +30,7 @@
 #include "ConvexShape.h"
 #include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
+#include "collision/TriangleMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
@@ -63,8 +64,6 @@ class CollisionWorld;
  * in order to use the edges information for collision detection.
  */
 class ConvexMeshShape : public ConvexShape {
-
-    // TODO : Implement method setLocalScaling() here
 
     protected :
 
@@ -121,8 +120,12 @@ class ConvexMeshShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor to initialize with a array of 3D vertices.
+        /// Constructor to initialize with an array of 3D vertices.
         ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
+                        decimal margin = OBJECT_MARGIN);
+
+        /// Constructor to initialize with a triangle vertex array
+        ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed = true,
                         decimal margin = OBJECT_MARGIN);
 
         /// Constructor.
@@ -214,9 +217,6 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
 * @param v2 Index of the second vertex of the edge to add
 */
 inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
-
-    assert(v1 >= 0);
-    assert(v2 >= 0);
 
     // If the entry for vertex v1 does not exist in the adjacency list
     if (mEdgesAdjacencyList.count(v1) == 0) {

@@ -100,10 +100,6 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 };
 
-// TODO : Implement raycasting with this collision shape
-
-// TODO : Make possible for the user to have a scaling factor on the mesh
-
 // Class ConcaveMeshShape
 /**
  * This class represents a concave mesh shape. Note that collision detection

@@ -207,7 +207,7 @@ class TestRaycast : public Test {
             mConeShape = new ConeShape(2, 6, 0);
             mConeProxyShape = mConeBody->addCollisionShape(mConeShape, mShapeTransform);
 
-            mConvexMeshShape = new ConvexMeshShape(0);             // Box of dimension (2, 3, 4)
+            mConvexMeshShape = new ConvexMeshShape(0.0);             // Box of dimension (2, 3, 4)
             mConvexMeshShape->addVertex(Vector3(-2, -3, -4));
             mConvexMeshShape->addVertex(Vector3(2, -3, -4));
             mConvexMeshShape->addVertex(Vector3(2, -3, 4));
@@ -218,7 +218,7 @@ class TestRaycast : public Test {
             mConvexMeshShape->addVertex(Vector3(-2, 3, 4));
             mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
 
-            mConvexMeshShapeEdgesInfo = new ConvexMeshShape(0);
+            mConvexMeshShapeEdgesInfo = new ConvexMeshShape(0.0);
             mConvexMeshShapeEdgesInfo->addVertex(Vector3(-2, -3, -4));
             mConvexMeshShapeEdgesInfo->addVertex(Vector3(2, -3, -4));
             mConvexMeshShapeEdgesInfo->addVertex(Vector3(2, -3, 4));

@@ -22,9 +22,6 @@ FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 # Copy the fonts used for the GUI into the build directory
 FILE(COPY "imgui/DroidSans.ttf" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 
-# Enable C++11 features
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
-
 # Headers
 INCLUDE_DIRECTORIES("src/" ${GLEW_INCLUDE_PATH} "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
@@ -94,6 +91,10 @@ SET(SCENES_SOURCES
 
 # Create the executable
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${IMGUI_SOURCES})
+
+# Enable C++11 features
+set_property(TARGET testbed PROPERTY CXX_STANDARD 11)
+set_property(TARGET testbed PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Link with libraries
 TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLFW_LIBRARIES})

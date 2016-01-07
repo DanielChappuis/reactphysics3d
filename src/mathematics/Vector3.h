@@ -144,6 +144,9 @@ struct Vector3 {
         /// Overloaded operator
         Vector3& operator=(const Vector3& vector);
 
+        /// Overloaded less than operator for ordering to be used inside std::set for instance
+        bool operator<(const Vector3& vector) const;
+
         /// Return a vector taking the minimum components of two vectors
         static Vector3 min(const Vector3& vector1, const Vector3& vector2);
 
@@ -339,6 +342,11 @@ inline Vector3& Vector3::operator=(const Vector3& vector) {
         z = vector.z;
     }
     return *this;
+}
+
+// Overloaded less than operator for ordering to be used inside std::set for instance
+inline bool Vector3::operator<(const Vector3& vector) const {
+    return (x == vector.x ? (y == vector.y ? z < vector.z : y < vector.y) : x < vector.x);
 }
 
 // Return a vector taking the minimum components of two vectors

@@ -30,7 +30,7 @@
 
 using namespace reactphysics3d;
 
-// Constructor to initialize with a array of 3D vertices.
+// Constructor to initialize with an array of 3D vertices.
 /// This method creates an internal copy of the input vertices.
 /**
  * @param arrayVertices Array with the vertices of the convex mesh
@@ -55,6 +55,77 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
     }
 
     // Recalculate the bounds of the mesh
+    recalculateBounds();
+}
+
+// Constructor to initialize with a triangle mesh
+/// This method creates an internal copy of the input vertices.
+/**
+ * @param triangleVertexArray Array with the vertices and indices of the vertices and triangles of the mesh
+ * @param isEdgesInformationUsed True if you want to use edges information for collision detection (faster but requires more memory)
+ * @param margin Collision margin (in meters) around the collision shape
+ */
+ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed, decimal margin)
+                : ConvexShape(CONVEX_MESH, margin), mMinBounds(0, 0, 0),
+                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(isEdgesInformationUsed) {
+
+    TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
+    TriangleVertexArray::IndexDataType indexType = triangleVertexArray->getIndexDataType();
+    unsigned char* verticesStart = triangleVertexArray->getVerticesStart();
+    unsigned char* indicesStart = triangleVertexArray->getIndicesStart();
+    int vertexStride = triangleVertexArray->getVerticesStride();
+    int indexStride = triangleVertexArray->getIndicesStride();
+
+    // For each vertex of the mesh
+    for (int v = 0; v < triangleVertexArray->getNbVertices(); v++) {
+
+        // Get the vertices components of the triangle
+        if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
+            const float* vertices = (float*)(verticesStart + v * vertexStride);
+
+            Vector3 vertex(vertices[0], vertices[1], vertices[2] );
+            vertex = vertex * mScaling;
+            mVertices.push_back(vertex);
+        }
+        else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
+            const double* vertices = (double*)(verticesStart + v * vertexStride);
+
+            Vector3 vertex(vertices[0], vertices[1], vertices[2] );
+            vertex = vertex * mScaling;
+            mVertices.push_back(vertex);
+        }
+    }
+
+    // If we need to use the edges information of the mesh
+    if (mIsEdgesInformationUsed) {
+
+        // For each triangle of the mesh
+        for (int triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+
+            void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
+
+            uint vertexIndex[3];
+
+            // For each vertex of the triangle
+            for (int k=0; k < 3; k++) {
+
+                // Get the index of the current vertex in the triangle
+                if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
+                    vertexIndex[k] = ((uint*)vertexIndexPointer)[k];
+                }
+                else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
+                    vertexIndex[k] = ((unsigned short*)vertexIndexPointer)[k];
+                }
+            }
+
+            // Add information about the edges
+            addEdge(vertexIndex[0], vertexIndex[1]);
+            addEdge(vertexIndex[0], vertexIndex[2]);
+            addEdge(vertexIndex[1], vertexIndex[2]);
+        }
+    }
+
+    mNbVertices = mVertices.size();
     recalculateBounds();
 }
 

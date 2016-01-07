@@ -131,7 +131,7 @@ class TestPointInside : public Test {
             mConeShape = new ConeShape(2, 6, 0);
             mConeProxyShape = mConeBody->addCollisionShape(mConeShape, mShapeTransform);
 
-            mConvexMeshShape = new ConvexMeshShape(0);             // Box of dimension (2, 3, 4)
+            mConvexMeshShape = new ConvexMeshShape(0.0);             // Box of dimension (2, 3, 4)
             mConvexMeshShape->addVertex(Vector3(-2, -3, -4));
             mConvexMeshShape->addVertex(Vector3(2, -3, -4));
             mConvexMeshShape->addVertex(Vector3(2, -3, 4));
@@ -142,7 +142,7 @@ class TestPointInside : public Test {
             mConvexMeshShape->addVertex(Vector3(-2, 3, 4));
             mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
 
-            mConvexMeshShapeBodyEdgesInfo = new ConvexMeshShape(0);
+            mConvexMeshShapeBodyEdgesInfo = new ConvexMeshShape(0.0);
             mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(-2, -3, -4));
             mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, -3, -4));
             mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, -3, 4));

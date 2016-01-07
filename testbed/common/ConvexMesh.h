@@ -41,6 +41,8 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
+        rp3d::TriangleVertexArray* mPhysicsTriangleVertexArray;
+
         /// Collision shape
         rp3d::ConvexMeshShape* mConvexShape;
         rp3d::ProxyShape* mProxyShape;
