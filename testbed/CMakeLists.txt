@@ -89,6 +89,12 @@ SET(SCENES_SOURCES
     scenes/concavemesh/ConcaveMeshScene.cpp
 )
 
+# Add .user file to set debug path in Visual Studio
+SET(USER_FILE testbed.vcxproj.user)
+SET(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
+SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
+CONFIGURE_FILE(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
+
 # Create the executable
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${IMGUI_SOURCES})
 
