@@ -42,11 +42,6 @@ namespace reactphysics3d {
 // Declaration
 class CollisionWorld;
 
-// TODO : Make possible to create a ConvexMeshShape using a TriangleMesh as for
-// the ConcaveMeshShape
-
-// TODO : Check that scaling factor is working after the change of the previous TODO
-
 // Class ConvexMeshShape
 /**
  * This class represents a convex mesh shape. In order to create a convex mesh shape, you
@@ -98,6 +93,9 @@ class ConvexMeshShape : public ConvexShape {
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
+
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
 
         /// Return a local support point in a given direction with the object margin
         virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
@@ -154,6 +152,12 @@ class ConvexMeshShape : public ConvexShape {
         void setIsEdgesInformationUsed(bool isEdgesUsed);
 };
 
+/// Set the scaling vector of the collision shape
+inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
+    ConvexShape::setLocalScaling(scaling);
+    recalculateBounds();
+}
+
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {
     return sizeof(ConvexMeshShape);
@@ -200,12 +204,12 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
     mNbVertices++;
 
     // Update the bounds of the mesh
-    if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
-    if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
-    if (vertex.y > mMaxBounds.y) mMaxBounds.y = vertex.y;
-    if (vertex.y < mMinBounds.y) mMinBounds.y = vertex.y;
-    if (vertex.z > mMaxBounds.z) mMaxBounds.z = vertex.z;
-    if (vertex.z < mMinBounds.z) mMinBounds.z = vertex.z;
+    if (vertex.x * mScaling.x > mMaxBounds.x) mMaxBounds.x = vertex.x * mScaling.x;
+    if (vertex.x * mScaling.x < mMinBounds.x) mMinBounds.x = vertex.x * mScaling.x;
+    if (vertex.y * mScaling.y > mMaxBounds.y) mMaxBounds.y = vertex.y * mScaling.y;
+    if (vertex.y * mScaling.y < mMinBounds.y) mMinBounds.y = vertex.y * mScaling.y;
+    if (vertex.z * mScaling.z > mMaxBounds.z) mMaxBounds.z = vertex.z * mScaling.z;
+    if (vertex.z * mScaling.z < mMinBounds.z) mMinBounds.z = vertex.z * mScaling.z;
 }
 
 // Add an edge into the convex mesh by specifying the two vertex indices of the edge.

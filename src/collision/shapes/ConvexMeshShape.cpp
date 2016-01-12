@@ -38,8 +38,7 @@ using namespace reactphysics3d;
  * @param stride Stride between the beginning of two elements in the vertices array
  * @param margin Collision margin (in meters) around the collision shape
  */
-ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
-                                 decimal margin)
+ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride, decimal margin)
                 : ConvexShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(nbVertices > 0);
@@ -267,6 +266,10 @@ void ConvexMeshShape::recalculateBounds() {
         if (mVertices[i].z > mMaxBounds.z) mMaxBounds.z = mVertices[i].z;
         if (mVertices[i].z < mMinBounds.z) mMinBounds.z = mVertices[i].z;
     }
+
+    // Apply the local scaling factor
+    mMaxBounds = mMaxBounds * mScaling;
+    mMinBounds = mMinBounds * mScaling;
 
     // Add the object margin to the bounds
     mMaxBounds += Vector3(mMargin, mMargin, mMargin);

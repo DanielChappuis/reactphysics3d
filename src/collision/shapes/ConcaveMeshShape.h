@@ -102,7 +102,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
 // Class ConcaveMeshShape
 /**
- * This class represents a concave mesh shape. Note that collision detection
+ * This class represents a static concave mesh shape. Note that collision detection
  * with a concave mesh shape can be very expensive. You should use only use
  * this shape for a static mesh.
  */
@@ -128,14 +128,6 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Private assignment operator
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape);
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
-        /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
@@ -188,23 +180,6 @@ inline size_t ConcaveMeshShape::getSizeInBytes() const {
     return sizeof(ConcaveMeshShape);
 }
 
-// Return a local support point in a given direction with the object margin
-inline Vector3 ConcaveMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
-
-    // Should not be used
-    assert(false);
-    return Vector3(0, 0, 0);
-}
-
-// Return a local support point in a given direction without the object margin
-inline Vector3 ConcaveMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                              void** cachedCollisionData) const {
-    // Should not be used
-    assert(false);
-    return Vector3(0.0, 0.0, 0.0);
-}
-
 // Return the local bounds of the shape in x, y and z directions.
 // This method is used to compute the AABB of the box
 /**
@@ -232,7 +207,7 @@ inline void ConcaveMeshShape::setLocalScaling(const Vector3& scaling) {
     initBVHTree();
 }
 
-// Return the local inertia tensor of the sphere
+// Return the local inertia tensor of the shape
 /**
  * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
  *                    coordinates
