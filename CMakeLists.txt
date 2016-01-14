@@ -98,6 +98,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/shapes/TriangleShape.cpp"
     "src/collision/shapes/ConcaveMeshShape.h"
     "src/collision/shapes/ConcaveMeshShape.cpp"
+    "src/collision/shapes/HeightFieldShape.h"
+    "src/collision/shapes/HeightFieldShape.cpp"
     "src/collision/RaycastInfo.h"
     "src/collision/RaycastInfo.cpp"
     "src/collision/ProxyShape.h"
