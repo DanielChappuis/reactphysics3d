@@ -68,10 +68,12 @@ void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
     }
 
     // Set the parameters of the callback object
-    mConvexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
-    mConvexVsTriangleCallback.setConvexShape(convexShape);
-    mConvexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
-    mConvexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
+    ConvexVsTriangleCallback convexVsTriangleCallback;
+    convexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
+    convexVsTriangleCallback.setConvexShape(convexShape);
+    convexVsTriangleCallback.setConcaveShape(concaveShape);
+    convexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
+    convexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
 
     // Compute the convex shape AABB in the local-space of the convex shape
     AABB aabb;
@@ -84,20 +86,20 @@ void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 
         SmoothCollisionNarrowPhaseCallback smoothNarrowPhaseCallback(contactPoints);
 
-        mConvexVsTriangleCallback.setNarrowPhaseCallback(&smoothNarrowPhaseCallback);
+        convexVsTriangleCallback.setNarrowPhaseCallback(&smoothNarrowPhaseCallback);
 
         // Call the convex vs triangle callback for each triangle of the concave shape
-        concaveShape->testAllTriangles(mConvexVsTriangleCallback, aabb);
+        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
 
         // Run the smooth mesh collision algorithm
         processSmoothMeshCollision(shape1Info.overlappingPair, contactPoints, narrowPhaseCallback);
     }
     else {
 
-        mConvexVsTriangleCallback.setNarrowPhaseCallback(narrowPhaseCallback);
+        convexVsTriangleCallback.setNarrowPhaseCallback(narrowPhaseCallback);
 
         // Call the convex vs triangle callback for each triangle of the concave shape
-        concaveShape->testAllTriangles(mConvexVsTriangleCallback, aabb);
+        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
     }
 }
 
@@ -105,7 +107,8 @@ void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Inf
 void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
 
     // Create a triangle collision shape
-    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+    decimal margin = mConcaveShape->getTriangleMargin();
+    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
 
     // Select the collision algorithm to use between the triangle and the convex shape
     NarrowPhaseAlgorithm* algo = mCollisionDetection->getCollisionAlgorithm(triangleShape.getType(),

@@ -61,6 +61,9 @@ class ConcaveShape : public CollisionShape {
         /// True if the smooth mesh collision algorithm is enabled
         bool mIsSmoothMeshCollisionEnabled;
 
+        // Margin use for collision detection for each triangle
+        decimal mTriangleMargin;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -82,6 +85,9 @@ class ConcaveShape : public CollisionShape {
         /// Destructor
         virtual ~ConcaveShape();
 
+        /// Return the triangle margin
+        decimal getTriangleMargin() const;
+
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
 
@@ -94,6 +100,11 @@ class ConcaveShape : public CollisionShape {
         /// Enable/disable the smooth mesh collision algorithm
         void setIsSmoothMeshCollisionEnabled(bool isEnabled);
 };
+
+// Return the triangle margin
+inline decimal ConcaveShape::getTriangleMargin() const {
+    return mTriangleMargin;
+}
 
 /// Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {

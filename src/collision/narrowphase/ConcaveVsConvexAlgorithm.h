@@ -54,6 +54,9 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         /// Convex collision shape to test collision with
         const ConvexShape* mConvexShape;
 
+        /// Concave collision shape
+        const ConcaveShape* mConcaveShape;
+
         /// Proxy shape of the convex collision shape
         ProxyShape* mConvexProxyShape;
 
@@ -84,6 +87,11 @@ class ConvexVsTriangleCallback : public TriangleCallback {
             mConvexShape = convexShape;
         }
 
+        /// Set the concave collision shape
+        void setConcaveShape(const ConcaveShape* concaveShape) {
+            mConcaveShape = concaveShape;
+        }
+
         /// Set the broadphase overlapping pair
         void setOverlappingPair(OverlappingPair* overlappingPair) {
             mOverlappingPair = overlappingPair;
@@ -97,7 +105,6 @@ class ConvexVsTriangleCallback : public TriangleCallback {
 
         /// Test collision between a triangle and the convex mesh shape
         virtual void testTriangle(const Vector3* trianglePoints);
-
 };
 
 // Class SmoothMeshContactInfo
@@ -177,10 +184,7 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
 
     protected :
 
-        // -------------------- Attributes -------------------- //
-
-        /// Convex vs Triangle callback
-        ConvexVsTriangleCallback mConvexVsTriangleCallback;
+        // -------------------- Attributes -------------------- //        
 
         // -------------------- Methods -------------------- //
 

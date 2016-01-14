@@ -29,7 +29,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh) : ConcaveShape(CONCAVE_MESH) {
+ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
+                 : ConcaveShape(CONCAVE_MESH) {
     mTriangleMesh = triangleMesh;
     mRaycastTestType = FRONT;
 
@@ -95,6 +96,7 @@ void ConcaveMeshShape::initBVHTree() {
 
             // Create the AABB for the triangle
             AABB aabb = AABB::createAABBForTriangle(trianglePoints);
+            aabb.inflate(mTriangleMargin, mTriangleMargin, mTriangleMargin);
 
             // Add the AABB with the index of the triangle into the dynamic AABB tree
             mDynamicAABBTree.addObject(aabb, subPart, triangleIndex);
@@ -202,7 +204,8 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         mConcaveMeshShape.getTriangleVerticesWithIndexPointer(data[0], data[1], trianglePoints);
 
         // Create a triangle collision shape
-        TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+        decimal margin = mConcaveMeshShape.getTriangleMargin();
+        TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 
         // Ray casting test against the collision shape
