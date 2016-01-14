@@ -57,10 +57,6 @@ class SphereShape : public ConvexShape {
         /// Private assignment operator
         SphereShape& operator=(const SphereShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -119,22 +115,6 @@ inline void SphereShape::setLocalScaling(const Vector3& scaling) {
 // Return the number of bytes used by the collision shape
 inline size_t SphereShape::getSizeInBytes() const {
     return sizeof(SphereShape);
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
-
-    // If the direction vector is not the zero vector
-    if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
-
-        // Return the support point of the sphere in the given direction
-        return mMargin * direction.getUnit();
-    }
-
-    // If the direction vector is the zero vector we return a point on the
-    // boundary of the sphere
-    return Vector3(0, mMargin, 0);
 }
 
 // Return a local support point in a given direction without the object margin

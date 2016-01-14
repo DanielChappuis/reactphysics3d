@@ -40,3 +40,20 @@ ConvexShape::ConvexShape(CollisionShapeType type, decimal margin)
 ConvexShape::~ConvexShape() {
 
 }
+
+// Return a local support point in a given direction with the object margin
+Vector3 ConvexShape::getLocalSupportPointWithMargin(const Vector3& direction,
+                                                    void** cachedCollisionData) const {
+
+    // Get the support point without margin
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
+
+    // Add the margin to the support point
+    Vector3 unitVec(0.0, -1.0, 0.0);
+    if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
+        unitVec = direction.getUnit();
+    }
+    supportPoint += unitVec * mMargin;
+
+    return supportPoint;
+}

@@ -82,6 +82,9 @@ class AABB {
         /// Set the maximum coordinates of the AABB
         void setMax(const Vector3& max);
 
+        /// Inflate each side of the AABB by a given size
+        void inflate(decimal dx, decimal dy, decimal dz);
+
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
 
@@ -137,6 +140,12 @@ inline const Vector3& AABB::getMax() const {
 // Set the maximum coordinates of the AABB
 inline void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
+}
+
+// Inflate each side of the AABB by a given size
+inline void AABB::inflate(decimal dx, decimal dy, decimal dz) {
+    mMaxCoordinates += Vector3(dx, dy, dz);
+    mMinCoordinates -= Vector3(dx, dy, dz);
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument.

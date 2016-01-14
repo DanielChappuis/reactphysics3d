@@ -67,10 +67,6 @@ class BoxShape : public ConvexShape {
         /// Private assignment operator
         BoxShape& operator=(const BoxShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -141,17 +137,6 @@ inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
 // Return the number of bytes used by the collision shape
 inline size_t BoxShape::getSizeInBytes() const {
     return sizeof(BoxShape);
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 BoxShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                        void** cachedCollisionData) const {
-
-    assert(mMargin > 0.0);
-    
-    return Vector3(direction.x < 0.0 ? -mExtent.x - mMargin : mExtent.x + mMargin,
-                   direction.y < 0.0 ? -mExtent.y - mMargin : mExtent.y + mMargin,
-                   direction.z < 0.0 ? -mExtent.z - mMargin : mExtent.z + mMargin);
 }
 
 // Return a local support point in a given direction without the objec margin

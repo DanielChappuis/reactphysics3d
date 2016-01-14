@@ -114,6 +114,16 @@ class TestAABB : public Test {
             test(aabb3.getMax().y == 98);
             test(aabb3.getMax().z == 76);
 
+            // -------- Test inflate() -------- //
+            AABB aabbInflate(Vector3(-3, 4, 8), Vector3(-1, 6, 32));
+            aabbInflate.inflate(1, 2, 3);
+            test(approxEqual(aabbInflate.getMin().x, -4, 0.00001));
+            test(approxEqual(aabbInflate.getMin().y, 2, 0.00001));
+            test(approxEqual(aabbInflate.getMin().z, 5, 0.00001));
+            test(approxEqual(aabbInflate.getMax().x, 0, 0.00001));
+            test(approxEqual(aabbInflate.getMax().y, 8, 0.00001));
+            test(approxEqual(aabbInflate.getMax().z, 35, 0.00001));
+
             // -------- Test getCenter() -------- //
 
             test(mAABB1.getCenter().x == 0);

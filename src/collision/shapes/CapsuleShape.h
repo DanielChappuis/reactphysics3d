@@ -50,9 +50,6 @@ class CapsuleShape : public ConvexShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// Radius of the two spheres of the capsule
-        decimal mRadius;
-
         /// Half height of the capsule (height = distance between the centers of the two spheres)
         decimal mHalfHeight;
 
@@ -63,10 +60,6 @@ class CapsuleShape : public ConvexShape {
 
         /// Private assignment operator
         CapsuleShape& operator=(const CapsuleShape& shape);
-
-        /// Return a local support point in a given direction with the object margin.
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
@@ -117,7 +110,7 @@ class CapsuleShape : public ConvexShape {
  * @return The radius of the capsule shape (in meters)
  */
 inline decimal CapsuleShape::getRadius() const {
-    return mRadius;
+    return mMargin;
 }
 
 // Return the height of the capsule
@@ -132,7 +125,7 @@ inline decimal CapsuleShape::getHeight() const {
 inline void CapsuleShape::setLocalScaling(const Vector3& scaling) {
 
     mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;
-    mRadius = (mRadius / mScaling.x) * scaling.x;
+    mMargin = (mMargin / mScaling.x) * scaling.x;
 
     CollisionShape::setLocalScaling(scaling);
 }
@@ -151,14 +144,39 @@ inline size_t CapsuleShape::getSizeInBytes() const {
 inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max.x = mRadius;
-    max.y = mHalfHeight + mRadius;
-    max.z = mRadius;
+    max.x = mMargin;
+    max.y = mHalfHeight + mMargin;
+    max.z = mMargin;
 
     // Minimum bounds
-    min.x = -mRadius;
+    min.x = -mMargin;
     min.y = -max.y;
     min.z = min.x;
+}
+
+// Return a local support point in a given direction without the object margin.
+/// A capsule is the convex hull of two spheres S1 and S2. The support point in the direction "d"
+/// of the convex hull of a set of convex objects is the support point "p" in the set of all
+/// support points from all the convex objects with the maximum dot product with the direction "d".
+/// Therefore, in this method, we compute the support points of both top and bottom spheres of
+/// the capsule and return the point with the maximum dot product with the direction vector. Note
+/// that the object margin is implicitly the radius and height of the capsule.
+inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                        void** cachedCollisionData) const {
+
+    // Support point top sphere
+    decimal dotProductTop = mHalfHeight * direction.y;
+
+    // Support point bottom sphere
+    decimal dotProductBottom = -mHalfHeight * direction.y;
+
+    // Return the point with the maximum dot product
+    if (dotProductTop > dotProductBottom) {
+        return Vector3(0, mHalfHeight, 0);
+    }
+    else {
+        return Vector3(0, -mHalfHeight, 0);
+    }
 }
 
 }

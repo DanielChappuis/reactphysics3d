@@ -69,10 +69,6 @@ class CylinderShape : public ConvexShape {
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;

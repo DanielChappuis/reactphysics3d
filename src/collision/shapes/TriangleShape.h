@@ -71,10 +71,6 @@ class TriangleShape : public ConvexShape {
         /// Private assignment operator
         TriangleShape& operator=(const TriangleShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -130,13 +126,6 @@ inline size_t TriangleShape::getSizeInBytes() const {
     return sizeof(TriangleShape);
 }
 
-// Return a local support point in a given direction with the object margin
-inline Vector3 TriangleShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
-
-    return getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
-}
-
 // Return a local support point in a given direction without the object margin
 inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                               void** cachedCollisionData) const {
@@ -157,6 +146,9 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
     const Vector3 zAxis(mPoints[0].z, mPoints[1].z, mPoints[2].z);
     min.setAllValues(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
     max.setAllValues(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
+
+    min -= Vector3(mMargin, mMargin, mMargin);
+    max += Vector3(mMargin, mMargin, mMargin);
 }
 
 // Set the local scaling vector of the collision shape

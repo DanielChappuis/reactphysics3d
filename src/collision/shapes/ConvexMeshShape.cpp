@@ -142,24 +142,6 @@ ConvexMeshShape::~ConvexMeshShape() {
 
 }
 
-// Return a local support point in a given direction with the object margin
-Vector3 ConvexMeshShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                        void** cachedCollisionData) const {
-
-    // Get the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
-
-    // Get the unit direction vector
-    Vector3 unitDirection = direction;
-    if (direction.lengthSquare() < MACHINE_EPSILON * MACHINE_EPSILON) {
-        unitDirection.setAllValues(1.0, 1.0, 1.0);
-    }
-    unitDirection.normalize();
-
-    // Add the margin to the support point and return it
-    return supportPoint + unitDirection * mMargin;
-}
-
 // Return a local support point in a given direction without the object margin.
 /// If the edges information is not used for collision detection, this method will go through
 /// the whole vertices list and pick up the vertex with the largest dot product in the support

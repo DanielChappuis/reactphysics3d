@@ -51,23 +51,6 @@ ConeShape::~ConeShape() {
 
 }
 
-// Return a local support point in a given direction with the object margin
-Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                  void** cachedCollisionData) const {
-
-    // Compute the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
-
-    // Add the margin to the support point
-    Vector3 unitVec(0.0, -1.0, 0.0);
-    if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-        unitVec = direction.getUnit();
-    }
-    supportPoint += unitVec * mMargin;
-
-    return supportPoint;
-}
-
 // Return a local support point in a given direction without the object margin
 Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                      void** cachedCollisionData) const {
