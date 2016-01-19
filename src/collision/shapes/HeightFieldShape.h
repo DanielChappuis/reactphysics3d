@@ -66,11 +66,17 @@ class HeightFieldShape : public ConcaveShape {
         /// Up axis direction (0 => x, 1 => y, 2 => z)
         int mUpAxis;
 
+        /// Height values scale for height field with integer height values
+        decimal mIntegerHeightScale;
+
         /// Data type of the height values
         HeightDataType mHeightDataType;
 
         /// Array of data with all the height values of the height field
         const void*	mHeightFieldData;
+
+        /// Local AABB of the height field (without scaling)
+        AABB mAABB;
 
         // -------------------- Methods -------------------- //
 
@@ -94,11 +100,24 @@ class HeightFieldShape : public ConcaveShape {
         void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
                                                  Vector3* outTriangleVertices) const;
 
+        /// Return the vertex (local-coordinates) of the height field at a given (x,y) position
+        Vector3 getVertexAt(int x, int y) const;
+
+        /// Return the height of a given (x,y) point in the height field
+        decimal getHeightAt(int x, int y) const;
+
+        /// Return the closest inside integer grid value of a given floating grid value
+        int computeIntegerGridValue(decimal value) const;
+
+        /// Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and the AABB to collide
+        void computeMinMaxGridCoordinates(int* minCoords, int* maxCoords, const AABB& aabbToCollide) const;
+
     public:
 
         /// Constructor
         HeightFieldShape(int width, int length, int minHeight, int maxHeight,
-                         const void* heightFieldData, HeightDataType dataType, int upAxis = 1);
+                         const void* heightFieldData, HeightDataType dataType,
+                         int upAxis = 1, decimal integerHeightScale = 1.0f);
 
         /// Destructor
         ~HeightFieldShape();
@@ -126,23 +145,40 @@ inline size_t HeightFieldShape::getSizeInBytes() const {
     return sizeof(HeightFieldShape);
 }
 
-// Return the local bounds of the shape in x, y and z directions.
-// This method is used to compute the AABB of the box
-/**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
- */
-inline void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
-
-    // TODO : Implement this
-}
-
 // Set the local scaling vector of the collision shape
 inline void HeightFieldShape::setLocalScaling(const Vector3& scaling) {
-
     CollisionShape::setLocalScaling(scaling);
+}
 
-    // TODO : Implement this
+// Return the vertex (local-coordinates) of the height field at a given (x,y) position
+inline Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
+
+    // Get the height value
+    const decimal height = getHeightAt(x, y);
+
+    // Get the difference between the center of AABB and zero level of the height field
+    const decimal originToZeroHeight = (mMaxHeight - mMinHeight) * decimal(0.5);
+
+    switch (mUpAxis) {
+        case 0: return Vector3(height - originToZeroHeight, -mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y) * mScaling;
+        case 1: return Vector3(-mWidth * decimal(0.5) + x, height - originToZeroHeight, -mLength * decimal(0.5) + y) * mScaling;
+        case 2: return Vector3(-mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y, height - originToZeroHeight) * mScaling;
+    }
+}
+
+// Return the height of a given (x,y) point in the height field
+inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
+
+    switch(mHeightDataType) {
+        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mWidth + x];
+        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mWidth + x];
+        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mWidth + x] * mIntegerHeightScale;
+    }
+}
+
+// Return the closest inside integer grid value of a given floating grid value
+inline int HeightFieldShape::computeIntegerGridValue(decimal value) const {
+    return (value < decimal(0.0)) ? value - decimal(0.5) : value + decimal(0.5);
 }
 
 // Return the local inertia tensor
