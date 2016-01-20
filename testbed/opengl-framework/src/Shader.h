@@ -34,6 +34,7 @@
 #include "maths/Vector4.h"
 #include <string>
 #include <iostream>
+#include <stdexcept>
 #include <exception>
 #include <GL/glew.h>
 
