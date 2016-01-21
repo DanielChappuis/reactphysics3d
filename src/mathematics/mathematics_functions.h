@@ -48,6 +48,13 @@ inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON)
 
 /// Function that returns the result of the "value" clamped by
 /// two others values "lowerLimit" and "upperLimit"
+inline int clamp(int value, int lowerLimit, int upperLimit) {
+    assert(lowerLimit <= upperLimit);
+    return std::min(std::max(value, lowerLimit), upperLimit);
+}
+
+/// Function that returns the result of the "value" clamped by
+/// two others values "lowerLimit" and "upperLimit"
 inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
     assert(lowerLimit <= upperLimit);
     return std::min(std::max(value, lowerLimit), upperLimit);

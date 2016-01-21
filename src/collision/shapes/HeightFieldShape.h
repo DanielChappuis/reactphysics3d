@@ -51,11 +51,17 @@ class HeightFieldShape : public ConcaveShape {
 
         // -------------------- Attributes -------------------- //
 
+        /// Number of grid points in the width dimension
+        int mNbWidthGridPoints;
+
+        /// Number of grid points in the length dimension
+        int mNbLengthGridPoints;
+
         /// Height field width
-        int mWidth;
+        decimal mWidth;
 
         /// Height field length
-        int mLength;
+        decimal mLength;
 
         /// Minimum height of the height field
         decimal mMinHeight;
@@ -115,7 +121,7 @@ class HeightFieldShape : public ConcaveShape {
     public:
 
         /// Constructor
-        HeightFieldShape(int width, int length, int minHeight, int maxHeight,
+        HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
                          const void* heightFieldData, HeightDataType dataType,
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
@@ -163,16 +169,19 @@ inline Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
         case 0: return Vector3(height - originToZeroHeight, -mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y) * mScaling;
         case 1: return Vector3(-mWidth * decimal(0.5) + x, height - originToZeroHeight, -mLength * decimal(0.5) + y) * mScaling;
         case 2: return Vector3(-mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y, height - originToZeroHeight) * mScaling;
+        default: assert(false);
     }
+
 }
 
 // Return the height of a given (x,y) point in the height field
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     switch(mHeightDataType) {
-        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mWidth + x];
-        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mWidth + x];
-        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mWidth + x] * mIntegerHeightScale;
+        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbWidthGridPoints + x];
+        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbWidthGridPoints + x];
+        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbWidthGridPoints + x] * mIntegerHeightScale;
+        default: assert(false);
     }
 }
 

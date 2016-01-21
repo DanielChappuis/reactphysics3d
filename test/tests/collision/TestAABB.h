@@ -124,6 +124,20 @@ class TestAABB : public Test {
             test(approxEqual(aabbInflate.getMax().y, 8, 0.00001));
             test(approxEqual(aabbInflate.getMax().z, 35, 0.00001));
 
+            // -------- Test getExtent() --------- //
+
+            test(approxEqual(mAABB1.getExtent().x, 20));
+            test(approxEqual(mAABB1.getExtent().y, 20));
+            test(approxEqual(mAABB1.getExtent().z, 20));
+
+            test(approxEqual(mAABB2.getExtent().x, 3));
+            test(approxEqual(mAABB2.getExtent().y, 16));
+            test(approxEqual(mAABB2.getExtent().z, 60));
+
+            test(approxEqual(mAABB3.getExtent().x, 25));
+            test(approxEqual(mAABB3.getExtent().y, 15));
+            test(approxEqual(mAABB3.getExtent().z, 28));
+
             // -------- Test getCenter() -------- //
 
             test(mAABB1.getCenter().x == 0);

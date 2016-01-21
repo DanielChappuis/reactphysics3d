@@ -82,6 +82,9 @@ class AABB {
         /// Set the maximum coordinates of the AABB
         void setMax(const Vector3& max);
 
+        /// Return the size of the AABB in the three dimension x, y and z
+        Vector3 getExtent() const;
+
         /// Inflate each side of the AABB by a given size
         void inflate(decimal dx, decimal dy, decimal dz);
 
@@ -140,6 +143,11 @@ inline const Vector3& AABB::getMax() const {
 // Set the maximum coordinates of the AABB
 inline void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
+}
+
+// Return the size of the AABB in the three dimension x, y and z
+inline Vector3 AABB::getExtent() const {
+  return  mMaxCoordinates - mMinCoordinates;
 }
 
 // Inflate each side of the AABB by a given size

@@ -30,15 +30,18 @@ using namespace reactphysics3d;
 
 // Constructor
 // TODO : Add documentation to this constructor
-HeightFieldShape::HeightFieldShape(int width, int length, int minHeight, int maxHeight,
+HeightFieldShape::HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
-                 : ConcaveShape(CONCAVE_MESH), mWidth(width), mLength(length), mMinHeight(minHeight),
+                 : ConcaveShape(CONCAVE_MESH), mNbWidthGridPoints(nbWidthGridPoints), mNbLengthGridPoints(nbLengthGridPoints),
+                   mWidth(nbWidthGridPoints - 1), mLength(nbWidthGridPoints - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
 
-    assert(width >= 1);
-    assert(length >= 1);
+    assert(nbWidthGridPoints >= 2);
+    assert(nbLengthGridPoints >= 2);
+    assert(mWidth >= 1);
+    assert(mLength >= 1);
     assert(minHeight <= maxHeight);
     assert(upAxis == 0 || upAxis == 1 || upAxis == 2);
 
@@ -78,7 +81,10 @@ void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
     max = mAABB.getMax() * mScaling;
 }
 
-// Use a callback method on all triangles of the concave shape inside a given AABB
+// Test collision with the triangles of the height field shape. The idea is to use the AABB
+// of the body when need to test and see against which triangles of the height-field we need
+// to test for collision. We compute the sub-grid points that are inside the other body's AABB
+// and then for each rectangle in the sub-grid we generate two triangles that we use to test collision.
 void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
 
    // Compute the non-scaled AABB
@@ -90,7 +96,56 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
    int maxGridCoords[3];
    computeMinMaxGridCoordinates(minGridCoords, maxGridCoords, localAABB);
 
+   // Compute the starting and ending coords of the sub-grid according to the up axis
+   int iMin, iMax, jMin, jMax;
+   switch(mUpAxis) {
+        case 0 : iMin = clamp(minGridCoords[1], 0, mNbWidthGridPoints - 1);
+                 iMax = clamp(maxGridCoords[1], 0, mNbWidthGridPoints - 1);
+                 jMin = clamp(minGridCoords[2], 0, mNbLengthGridPoints - 1);
+                 jMax = clamp(maxGridCoords[2], 0, mNbLengthGridPoints - 1);
+                 break;
+        case 1 : iMin = clamp(minGridCoords[0], 0, mNbWidthGridPoints - 1);
+                 iMax = clamp(maxGridCoords[0], 0, mNbWidthGridPoints - 1);
+                 jMin = clamp(minGridCoords[2], 0, mNbLengthGridPoints - 1);
+                 jMax = clamp(maxGridCoords[2], 0, mNbLengthGridPoints - 1);
+                 break;
+        case 2 : iMin = clamp(minGridCoords[0], 0, mNbWidthGridPoints - 1);
+                 iMax = clamp(maxGridCoords[0], 0, mNbWidthGridPoints - 1);
+                 jMin = clamp(minGridCoords[1], 0, mNbLengthGridPoints - 1);
+                 jMax = clamp(maxGridCoords[1], 0, mNbLengthGridPoints - 1);
+                 break;
+   }
 
+   assert(iMin >= 0 && iMin < mNbWidthGridPoints);
+   assert(iMax >= 0 && iMax < mNbWidthGridPoints);
+   assert(jMin >= 0 && jMin < mNbLengthGridPoints);
+   assert(jMax >= 0 && jMax < mNbLengthGridPoints);
+
+   // For each sub-grid points (except the last ones one each dimension)
+   for (int i = iMin; i < iMax; i++) {
+       for (int j = jMin; j < jMax; j++) {
+
+           // Compute the four point of the current quad
+           Vector3 p1 = getVertexAt(i, j);
+           Vector3 p2 = getVertexAt(i, j + 1);
+           Vector3 p3 = getVertexAt(i + 1, j);
+           Vector3 p4 = getVertexAt(i + 1, j + 1);
+
+           // Generate the first triangle for the current grid rectangle
+           Vector3 trianglePoints[3] = {p1, p2, p3};
+
+           // Test collision against the first triangle
+           callback.testTriangle(trianglePoints);
+
+           // Generate the second triangle for the current grid rectangle
+           trianglePoints[0] = p3;
+           trianglePoints[1] = p2;
+           trianglePoints[2] = p4;
+
+           // Test collision against the second triangle
+           callback.testTriangle(trianglePoints);
+       }
+   }
 }
 
 // Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and
@@ -103,6 +158,13 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 
     Vector3 maxPoint = Vector3::max(aabbToCollide.getMax(), mAABB.getMin());
     maxPoint = Vector3::min(maxPoint, mAABB.getMax());
+
+    // Translate the min/max points such that the we compute grid points from [0 ... mNbWidthGridPoints]
+    // and from [0 ... mNbLengthGridPoints] because the AABB coordinates range are [-mWdith/2 ... mWidth/2]
+    // and [-mLength/2 ... mLength/2]
+    const Vector3 translateVec = mAABB.getExtent();
+    minPoint += translateVec;
+    maxPoint += translateVec;
 
     // Convert the floating min/max coords of the AABB into closest integer
     // grid values (note that we use the closest grid coordinate that is out
