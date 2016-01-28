@@ -31,6 +31,7 @@
 #include "tests/mathematics/TestQuaternion.h"
 #include "tests/mathematics/TestMatrix2x2.h"
 #include "tests/mathematics/TestMatrix3x3.h"
+#include "tests/mathematics/TestMathematicsFunctions.h"
 #include "tests/collision/TestPointInside.h"
 #include "tests/collision/TestRaycast.h"
 #include "tests/collision/TestCollisionWorld.h"
@@ -50,6 +51,7 @@ int main() {
     testSuite.addTest(new TestQuaternion("Quaternion"));
     testSuite.addTest(new TestMatrix3x3("Matrix3x3"));
     testSuite.addTest(new TestMatrix2x2("Matrix2x2"));
+    testSuite.addTest(new TestMathematicsFunctions("Maths Functions"));
 
     // ---------- Collision Detection tests ---------- //
 

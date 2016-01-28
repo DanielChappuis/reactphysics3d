@@ -134,9 +134,9 @@ class TestAABB : public Test {
             test(approxEqual(mAABB2.getExtent().y, 16));
             test(approxEqual(mAABB2.getExtent().z, 60));
 
-            test(approxEqual(mAABB3.getExtent().x, 25));
-            test(approxEqual(mAABB3.getExtent().y, 15));
-            test(approxEqual(mAABB3.getExtent().z, 28));
+            test(approxEqual(mAABB3.getExtent().x, 50));
+            test(approxEqual(mAABB3.getExtent().y, 50));
+            test(approxEqual(mAABB3.getExtent().z, 50));
 
             // -------- Test getCenter() -------- //
 
