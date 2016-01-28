@@ -44,8 +44,10 @@ namespace reactphysics3d {
  */
 class HeightFieldShape : public ConcaveShape {
 
-    /// Data type for the height data of the height field
-    enum HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
+    public:
+
+        /// Data type for the height data of the height field
+        enum HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
 
     protected:
 

@@ -29,12 +29,21 @@
 using namespace reactphysics3d;
 
 // Constructor
-// TODO : Add documentation to this constructor
+/**
+ * @param nbWidthGridPoints Number of grid points along the width of the height field
+ * @param nbLengthGridPoints Number of grid points along the length of the height field
+ * @param minHeight Minimum height value of the height field
+ * @param maxHeight Maximum height value of the height field
+ * @param heightFieldData Pointer to the first height value data
+ * @param dataType Data type for the height values (int, float, double)
+ * @param upAxis Integer representing the up axis direction (0 for x, 1 for y and 2 for z)
+ * @param integerHeightScale Scaling factor used to scale the height values
+ */
 HeightFieldShape::HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
                  : ConcaveShape(CONCAVE_MESH), mNbWidthGridPoints(nbWidthGridPoints), mNbLengthGridPoints(nbLengthGridPoints),
-                   mWidth(nbWidthGridPoints - 1), mLength(nbWidthGridPoints - 1), mMinHeight(minHeight),
+                   mWidth(nbWidthGridPoints - 1), mLength(nbLengthGridPoints - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
 
@@ -94,7 +103,7 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
    // Compute the integer grid coordinates inside the area we need to test for collision
    int minGridCoords[3];
    int maxGridCoords[3];
-   computeMinMaxGridCoordinates(minGridCoords, maxGridCoords, localAABB);
+   computeMinMaxGridCoordinates(minGridCoords, maxGridCoords, aabb);
 
    // Compute the starting and ending coords of the sub-grid according to the up axis
    int iMin, iMax, jMin, jMax;
@@ -156,8 +165,8 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
     Vector3 minPoint = Vector3::max(aabbToCollide.getMin(), mAABB.getMin());
     minPoint = Vector3::min(minPoint, mAABB.getMax());
 
-    Vector3 maxPoint = Vector3::max(aabbToCollide.getMax(), mAABB.getMin());
-    maxPoint = Vector3::min(maxPoint, mAABB.getMax());
+    Vector3 maxPoint = Vector3::min(aabbToCollide.getMax(), mAABB.getMax());
+    maxPoint = Vector3::max(maxPoint, mAABB.getMin());
 
     // Translate the min/max points such that the we compute grid points from [0 ... mNbWidthGridPoints]
     // and from [0 ... mNbLengthGridPoints] because the AABB coordinates range are [-mWdith/2 ... mWidth/2]
