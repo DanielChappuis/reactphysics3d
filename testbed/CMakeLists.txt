@@ -69,6 +69,8 @@ SET(COMMON_SOURCES
     common/Cylinder.cpp
     common/Dumbbell.h
     common/Dumbbell.cpp
+    common/HeightField.h
+    common/HeightField.cpp
     common/PhysicsObject.h
     common/PhysicsObject.cpp
     common/VisualContactPoint.h
@@ -87,6 +89,8 @@ SET(SCENES_SOURCES
     scenes/collisionshapes/CollisionShapesScene.cpp
     scenes/concavemesh/ConcaveMeshScene.h
     scenes/concavemesh/ConcaveMeshScene.cpp
+    scenes/heightfield/HeightFieldScene.h
+    scenes/heightfield/HeightFieldScene.cpp
 )
 
 # Add .user file to set debug path in Visual Studio

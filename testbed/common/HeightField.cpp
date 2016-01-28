@@ -24,21 +24,14 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConcaveMesh.h"
+#include "HeightField.h"
 
 // Constructor
-ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
-                       reactphysics3d::CollisionWorld* world,
-                       const std::string& meshFolderPath)
+HeightField::HeightField(const openglframework::Vector3 &position,
+                       reactphysics3d::CollisionWorld* world)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "concavemesh.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
 
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
@@ -46,23 +39,16 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // For each subpart of the mesh
-    for (int i=0; i<getNbParts(); i++) {
+    // Generate the height field
+    generateHeightField();
 
-        // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-        rp3d::TriangleVertexArray* vertexArray =
-                new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
-
-        // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh.addSubpart(vertexArray);
-    }
+    // Generate the graphics mesh
+    generateGraphicsMesh();
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
+    mHeightFieldShape = new rp3d::HeightFieldShape(HEIGHTFIELD_WIDTH, HEIGHTFIELD_LENGTH, 0, 5,
+                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -75,7 +61,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = mBody->addCollisionShape(mConcaveShape, rp3d::Transform::identity());
+    mProxyShape = mBody->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -84,18 +70,11 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
 }
 
 // Constructor
-ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
-                       reactphysics3d::DynamicsWorld* dynamicsWorld,
-                       const std::string& meshFolderPath)
+HeightField::HeightField(const openglframework::Vector3 &position, float mass,
+                       reactphysics3d::DynamicsWorld* dynamicsWorld)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "concavemesh.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
 
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
@@ -103,25 +82,16 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // For each subpart of the mesh
-    for (int i=0; i<getNbParts(); i++) {
+    // Generate the height field
+    generateHeightField();
 
-        // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-        rp3d::TriangleVertexArray* vertexArray =
-                new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
-
-        // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh.addSubpart(vertexArray);
-    }
+    // Generate the graphics mesh
+    generateGraphicsMesh();
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
-
-    mConcaveShape->setIsSmoothMeshCollisionEnabled(false);
+    mHeightFieldShape = new rp3d::HeightFieldShape(HEIGHTFIELD_WIDTH, HEIGHTFIELD_LENGTH, 0, 5,
+                                                   mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -132,7 +102,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = body->addCollisionShape(mConcaveShape, rp3d::Transform::identity(), mass);
+    mProxyShape = body->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -143,12 +113,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
 }
 
 // Destructor
-ConcaveMesh::~ConcaveMesh() {
-
-    // Destroy the triangle mesh data for the physics engine
-    for (int i=0; i<mPhysicsTriangleMesh.getNbSubparts(); i++) {
-        delete mPhysicsTriangleMesh.getSubpart(i);
-    }
+HeightField::~HeightField() {
 
     // Destroy the mesh
     destroy();
@@ -160,11 +125,11 @@ ConcaveMesh::~ConcaveMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mConcaveShape;
+    delete mHeightFieldShape;
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void ConcaveMesh::render(openglframework::Shader& shader,
+void HeightField::render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
@@ -220,9 +185,64 @@ void ConcaveMesh::render(openglframework::Shader& shader,
     shader.unbind();
 }
 
+// Compute the heights of the height field
+void HeightField::generateHeightField() {
+
+    mMinHeight = 0.0;
+    mMaxHeight = 5.0;
+
+    for (int i=0; i<HEIGHTFIELD_WIDTH; i++) {
+        for (int j=0; j<HEIGHTFIELD_LENGTH; j++) {
+            mHeightData[i][j] = 5.0f;
+        }
+    }
+}
+
+// Generate the graphics mesh to render the height field
+void HeightField::generateGraphicsMesh() {
+
+    std::vector<uint> indices;
+    int vertexId = 0;
+
+    for (int i=0; i<HEIGHTFIELD_WIDTH; i++) {
+        for (int j=0; j<HEIGHTFIELD_LENGTH; j++) {
+
+            float height = mHeightData[i][j] - (mMaxHeight - mMinHeight) * 0.5f;
+            openglframework::Vector3 vertex(-HEIGHTFIELD_WIDTH * 0.5f + i, height, -HEIGHTFIELD_LENGTH * 0.5 + j);
+
+            mVertices.push_back(vertex);
+
+            // Triangle indices
+            if ((i < HEIGHTFIELD_WIDTH - 1) && (j < HEIGHTFIELD_LENGTH - 1)) {
+
+                int v1 = vertexId;
+                int v2 = vertexId + 1;
+                int v3 = vertexId + HEIGHTFIELD_LENGTH;
+                int v4 = vertexId + HEIGHTFIELD_LENGTH + 1;
+
+                // First triangle
+                indices.push_back(v1);
+                indices.push_back(v2);
+                indices.push_back(v3);
+
+                // Second triangle
+                indices.push_back(v2);
+                indices.push_back(v4);
+                indices.push_back(v3);
+            }
+
+            vertexId++;
+        }
+    }
+
+    mIndices.push_back(indices);
+
+    calculateNormals();
+}
+
 // Create the Vertex Buffer Objects used to render with OpenGL.
 /// We create two VBOs (one for vertices and one for indices)
-void ConcaveMesh::createVBOAndVAO() {
+void HeightField::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -277,7 +297,7 @@ void ConcaveMesh::createVBOAndVAO() {
 }
 
 // Reset the transform
-void ConcaveMesh::resetTransform(const rp3d::Transform& transform) {
+void HeightField::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the transform
     mBody->setTransform(transform);
@@ -295,7 +315,7 @@ void ConcaveMesh::resetTransform(const rp3d::Transform& transform) {
 }
 
 // Set the scaling of the object
-void ConcaveMesh::setScaling(const openglframework::Vector3& scaling) {
+void HeightField::setScaling(const openglframework::Vector3& scaling) {
 
     // Scale the collision shape
     mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
