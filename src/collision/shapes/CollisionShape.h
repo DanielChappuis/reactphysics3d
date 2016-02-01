@@ -40,8 +40,9 @@
 namespace reactphysics3d {
     
 /// Type of the collision shape
-enum CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER, CAPSULE, CONVEX_MESH, CONCAVE_MESH};
-const int NB_COLLISION_SHAPE_TYPES = 8;
+enum CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER,
+                         CAPSULE, CONVEX_MESH, CONCAVE_MESH, HEIGHTFIELD};
+const int NB_COLLISION_SHAPE_TYPES = 9;
 
 // Declarations
 class ProxyShape;
@@ -135,7 +136,7 @@ inline CollisionShapeType CollisionShape::getType() const {
 
 // Return true if the collision shape type is a convex shape
 inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
-    return shapeType != CONCAVE_MESH;
+    return shapeType != CONCAVE_MESH && shapeType != HEIGHTFIELD;
 }
 
 // Return the scaling vector of the collision shape

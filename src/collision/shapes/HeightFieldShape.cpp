@@ -42,7 +42,7 @@ using namespace reactphysics3d;
 HeightFieldShape::HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
-                 : ConcaveShape(CONCAVE_MESH), mNbWidthGridPoints(nbWidthGridPoints), mNbLengthGridPoints(nbLengthGridPoints),
+                 : ConcaveShape(HEIGHTFIELD), mNbWidthGridPoints(nbWidthGridPoints), mNbLengthGridPoints(nbLengthGridPoints),
                    mWidth(nbWidthGridPoints - 1), mLength(nbLengthGridPoints - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
@@ -171,7 +171,7 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
     // Translate the min/max points such that the we compute grid points from [0 ... mNbWidthGridPoints]
     // and from [0 ... mNbLengthGridPoints] because the AABB coordinates range are [-mWdith/2 ... mWidth/2]
     // and [-mLength/2 ... mLength/2]
-    const Vector3 translateVec = mAABB.getExtent();
+    const Vector3 translateVec = mAABB.getExtent() * decimal(0.5);
     minPoint += translateVec;
     maxPoint += translateVec;
 
