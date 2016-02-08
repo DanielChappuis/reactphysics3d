@@ -118,9 +118,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Dynamic AABB tree to accelerate collision with the triangles
         DynamicAABBTree mDynamicAABBTree;
 
-        /// Raycast test type for the triangle (front, back, front-back)
-        TriangleRaycastSide mRaycastTestType;
-
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -162,12 +159,6 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
-
-        /// Return the raycast test type (front, back, front-back)
-        TriangleRaycastSide getRaycastTestType() const;
-
-        // Set the raycast test type (front, back, front-back)
-        void setRaycastTestType(TriangleRaycastSide testType);
 
         // ---------- Friendship ----------- //
 
@@ -237,19 +228,6 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
 
     // Call the callback to test narrow-phase collision with this triangle
     mTriangleTestCallback.testTriangle(trianglePoints);
-}
-
-// Return the raycast test type (front, back, front-back)
-inline TriangleRaycastSide ConcaveMeshShape::getRaycastTestType() const {
-    return mRaycastTestType;
-}
-
-// Set the raycast test type (front, back, front-back)
-/**
- * @param testType Raycast test type for the triangle (front, back, front-back)
- */
-inline void ConcaveMeshShape::setRaycastTestType(TriangleRaycastSide testType) {
-    mRaycastTestType = testType;
 }
 
 }

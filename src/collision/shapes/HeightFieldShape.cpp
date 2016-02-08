@@ -192,7 +192,48 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 /// the ray hits many triangles.
 bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
+    // TODO : Implement raycasting without using an AABB for the ray
+    //        but using a dynamic AABB tree or octree instead
+
     PROFILE("HeightFieldShape::raycast()");
 
-    // TODO : Implement this
+    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this);
+
+    // Compute the AABB for the ray
+    const Vector3 rayEnd = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
+    const AABB rayAABB(Vector3::min(ray.point1, rayEnd), Vector3::max(ray.point1, rayEnd));
+
+    testAllTriangles(triangleCallback, rayAABB);
+
+    return triangleCallback.getIsHit();
+}
+
+// Raycast test between a ray and a triangle of the heightfield
+void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints) {
+
+    // Create a triangle collision shape
+    decimal margin = mHeightFieldShape.getTriangleMargin();
+    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+    triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
+
+    // Ray casting test against the collision shape
+    RaycastInfo raycastInfo;
+    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+
+    // If the ray hit the collision shape
+    if (isTriangleHit && raycastInfo.hitFraction <= mSmallestHitFraction) {
+
+        assert(raycastInfo.hitFraction >= decimal(0.0));
+
+        mRaycastInfo.body = raycastInfo.body;
+        mRaycastInfo.proxyShape = raycastInfo.proxyShape;
+        mRaycastInfo.hitFraction = raycastInfo.hitFraction;
+        mRaycastInfo.worldPoint = raycastInfo.worldPoint;
+        mRaycastInfo.worldNormal = raycastInfo.worldNormal;
+        mRaycastInfo.meshSubpart = -1;
+        mRaycastInfo.triangleIndex = -1;
+
+        mSmallestHitFraction = raycastInfo.hitFraction;
+        mIsHit = true;
+    }
 }

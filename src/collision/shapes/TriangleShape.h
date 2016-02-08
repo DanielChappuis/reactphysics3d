@@ -119,6 +119,7 @@ class TriangleShape : public ConvexShape {
         // ---------- Friendship ---------- //
 
         friend class ConcaveMeshRaycastCallback;
+        friend class TriangleOverlapCallback;
 };
 
 // Return the number of bytes used by the collision shape

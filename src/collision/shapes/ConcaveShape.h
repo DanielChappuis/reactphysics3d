@@ -28,6 +28,7 @@
 
 // Libraries
 #include "CollisionShape.h"
+#include "TriangleShape.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -64,6 +65,9 @@ class ConcaveShape : public CollisionShape {
         // Margin use for collision detection for each triangle
         decimal mTriangleMargin;
 
+        /// Raycast test type for the triangle (front, back, front-back)
+        TriangleRaycastSide mRaycastTestType;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor
@@ -87,6 +91,12 @@ class ConcaveShape : public CollisionShape {
 
         /// Return the triangle margin
         decimal getTriangleMargin() const;
+
+        /// Return the raycast test type (front, back, front-back)
+        TriangleRaycastSide getRaycastTestType() const;
+
+        // Set the raycast test type (front, back, front-back)
+        void setRaycastTestType(TriangleRaycastSide testType);
 
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
@@ -127,6 +137,19 @@ inline bool ConcaveShape::getIsSmoothMeshCollisionEnabled() const {
 /// but collisions computation is a bit more expensive.
 inline void ConcaveShape::setIsSmoothMeshCollisionEnabled(bool isEnabled) {
     mIsSmoothMeshCollisionEnabled = isEnabled;
+}
+
+// Return the raycast test type (front, back, front-back)
+inline TriangleRaycastSide ConcaveShape::getRaycastTestType() const {
+    return mRaycastTestType;
+}
+
+// Set the raycast test type (front, back, front-back)
+/**
+ * @param testType Raycast test type for the triangle (front, back, front-back)
+ */
+inline void ConcaveShape::setRaycastTestType(TriangleRaycastSide testType) {
+    mRaycastTestType = testType;
 }
 
 }

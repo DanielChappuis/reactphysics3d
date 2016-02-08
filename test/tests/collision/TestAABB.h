@@ -229,12 +229,22 @@ class TestAABB : public Test {
 
         void testIntersection() {
 
-            // -------- Test contains() -------- //
+            // -------- Test contains(AABB) -------- //
             test(!mAABB1.contains(mAABB2));
             test(mAABB3.contains(mAABB1));
             test(!mAABB1.contains(mAABB3));
             test(!mAABB1.contains(mAABB4));
             test(!mAABB4.contains(mAABB1));
+
+            // -------- Test contains(Vector3) -------- //
+            test(mAABB1.contains(Vector3(0, 0, 0)));
+            test(mAABB1.contains(Vector3(-5, 6, 9)));
+            test(mAABB1.contains(Vector3(-9, -4, -9)));
+            test(mAABB1.contains(Vector3(9, 4, 7)));
+            test(!mAABB1.contains(Vector3(-11, -4, -9)));
+            test(!mAABB1.contains(Vector3(1, 12, -9)));
+            test(!mAABB1.contains(Vector3(1, 8, -13)));
+            test(!mAABB1.contains(Vector3(-14, 82, -13)));
 
             // -------- Test testCollision() -------- //
             test(mAABB1.testCollision(mAABB2));

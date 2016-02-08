@@ -33,6 +33,40 @@
 
 namespace reactphysics3d {
 
+class HeightFieldShape;
+
+// Class TriangleOverlapCallback
+/**
+ * This class is used for testing AABB and triangle overlap for raycasting
+ */
+class TriangleOverlapCallback : public TriangleCallback {
+
+    protected:
+
+        const Ray& mRay;
+        ProxyShape* mProxyShape;
+        RaycastInfo& mRaycastInfo;
+        bool mIsHit;
+        decimal mSmallestHitFraction;
+        const HeightFieldShape& mHeightFieldShape;
+
+    public:
+
+        // Constructor
+        TriangleOverlapCallback(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo,
+                                const HeightFieldShape& heightFieldShape)
+                               : mRay(ray), mProxyShape(proxyShape), mRaycastInfo(raycastInfo),
+                                 mHeightFieldShape (heightFieldShape) {
+            mIsHit = false;
+            mSmallestHitFraction = mRay.maxFraction;
+        }
+
+        bool getIsHit() const {return mIsHit;}
+
+        /// Raycast test between a ray and a triangle of the heightfield
+        virtual void testTriangle(const Vector3* trianglePoints);
+};
+
 // TODO : Implement raycasting for this shape
 
 // TODO : Implement smooth collision mesh for this shape
@@ -167,13 +201,19 @@ inline Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
     // Get the difference between the center of AABB and zero level of the height field
     const decimal originToZeroHeight = (mMaxHeight - mMinHeight) * decimal(0.5);
 
+    Vector3 vertex;
     switch (mUpAxis) {
-        case 0: return Vector3(height - originToZeroHeight, -mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y) * mScaling;
-        case 1: return Vector3(-mWidth * decimal(0.5) + x, height - originToZeroHeight, -mLength * decimal(0.5) + y) * mScaling;
-        case 2: return Vector3(-mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y, height - originToZeroHeight) * mScaling;
+        case 0: vertex = Vector3(height - originToZeroHeight, -mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y) * mScaling;
+                break;
+        case 1: vertex = Vector3(-mWidth * decimal(0.5) + x, height - originToZeroHeight, -mLength * decimal(0.5) + y) * mScaling;
+                break;
+        case 2: vertex = Vector3(-mWidth * decimal(0.5) + x, -mLength * decimal(0.5) + y, height - originToZeroHeight) * mScaling;
+                break;
         default: assert(false);
     }
 
+    assert(mAABB.contains(vertex));
+    return vertex;
 }
 
 // Return the height of a given (x,y) point in the height field

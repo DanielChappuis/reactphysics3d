@@ -101,7 +101,10 @@ class AABB {
         void mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2);
 
         /// Return true if the current AABB contains the AABB given in parameter
-        bool contains(const AABB& aabb);
+        bool contains(const AABB& aabb) const;
+
+        /// Return true if a point is inside the AABB
+        bool contains(const Vector3& point) const;
 
         /// Return true if the AABB of a triangle intersects the AABB
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
@@ -186,6 +189,14 @@ inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const
     if (max3(trianglePoints[0].z, trianglePoints[1].z, trianglePoints[2].z) < mMinCoordinates.z) return false;
 
     return true;
+}
+
+// Return true if a point is inside the AABB
+inline bool AABB::contains(const Vector3& point) const {
+
+    return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
+            point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
+            point.z >= mMinCoordinates.z - MACHINE_EPSILON && point.z <= mMaxCoordinates.z + MACHINE_EPSILON);
 }
 
 // Assignment operator

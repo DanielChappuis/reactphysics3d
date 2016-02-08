@@ -76,7 +76,7 @@ void AABB::mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2) {
 }
 
 // Return true if the current AABB contains the AABB given in parameter
-bool AABB::contains(const AABB& aabb) {
+bool AABB::contains(const AABB& aabb) const {
 
     bool isInside = true;
     isInside = isInside && mMinCoordinates.x <= aabb.mMinCoordinates.x;
