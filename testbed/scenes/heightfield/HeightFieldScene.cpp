@@ -52,7 +52,6 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     // ---------- Create the cube ----------- //
 
     // Position
-    rp3d::decimal radius = 2.0;
     openglframework::Vector3 spherePos(15, 10, 0);
 
     // Create a sphere and a corresponding rigid in the dynamics world
@@ -165,7 +164,7 @@ void HeightFieldScene::reset() {
     rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
     mHeightField->resetTransform(transform);
 
-    rp3d::Vector3 spherePos(2, 15, 0);
+    rp3d::Vector3 spherePos(-3.6, 15, 1.7);
     rp3d::Transform sphereTransform(spherePos, initOrientation);
     mBox->resetTransform(sphereTransform);
 }

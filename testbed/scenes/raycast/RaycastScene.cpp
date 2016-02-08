@@ -132,6 +132,16 @@ RaycastScene::RaycastScene(const std::string& name)
     mConcaveMesh->setColor(mGreyColorDemo);
     mConcaveMesh->setSleepingColor(mRedColorDemo);
 
+    // ---------- Heightfield ---------- //
+    openglframework::Vector3 position9(0, 0, 0);
+
+    // Create a convex mesh and a corresponding collision body in the dynamics world
+    mHeightField = new HeightField(position9, mCollisionWorld);
+
+    // Set the color
+    mHeightField->setColor(mGreyColorDemo);
+    mHeightField->setSleepingColor(mRedColorDemo);
+
     // Create the lines that will be used for raycasting
     createLines();
 
@@ -184,6 +194,7 @@ void RaycastScene::changeBody() {
     mConvexMesh->getCollisionBody()->setIsActive(false);
     mDumbbell->getCollisionBody()->setIsActive(false);
     mConcaveMesh->getCollisionBody()->setIsActive(false);
+    mHeightField->getCollisionBody()->setIsActive(false);
 
     switch(mCurrentBodyIndex) {
         case 0: mSphere->getCollisionBody()->setIsActive(true);
@@ -201,6 +212,8 @@ void RaycastScene::changeBody() {
         case 6: mDumbbell->getCollisionBody()->setIsActive(true);
                 break;
         case 7: mConcaveMesh->getCollisionBody()->setIsActive(true);
+                break;
+        case 8: mHeightField->getCollisionBody()->setIsActive(true);
                 break;
 
     }
@@ -258,6 +271,12 @@ RaycastScene::~RaycastScene() {
 
     // Destroy the convex mesh
     delete mConcaveMesh;
+
+    // Destroy the corresponding rigid body from the dynamics world
+    mCollisionWorld->destroyCollisionBody(mHeightField->getCollisionBody());
+
+    // Destroy the convex mesh
+    delete mHeightField;
 
     mRaycastManager.resetPoints();
 
@@ -365,6 +384,7 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader,
     if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix);
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix);
     if (mConcaveMesh->getCollisionBody()->isActive()) mConcaveMesh->render(shader, worldToCameraMatrix);
+    if (mHeightField->getCollisionBody()->isActive()) mHeightField->render(shader, worldToCameraMatrix);
 
     shader.unbind();
 }

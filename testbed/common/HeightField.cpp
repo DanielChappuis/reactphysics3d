@@ -208,7 +208,7 @@ void HeightField::generateGraphicsMesh() {
         for (int j=0; j<HEIGHTFIELD_LENGTH; j++) {
 
             float height = mHeightData[i][j] - (mMaxHeight - mMinHeight) * 0.5f;
-            openglframework::Vector3 vertex(-HEIGHTFIELD_WIDTH * 0.5f + i, height, -HEIGHTFIELD_LENGTH * 0.5 + j);
+            openglframework::Vector3 vertex(-(HEIGHTFIELD_WIDTH - 1) * 0.5f + i, height, -(HEIGHTFIELD_LENGTH - 1) * 0.5 + j);
 
             mVertices.push_back(vertex);
 
