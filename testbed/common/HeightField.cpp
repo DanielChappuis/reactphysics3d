@@ -25,6 +25,7 @@
 
 // Libraries
 #include "HeightField.h"
+#include "PerlinNoise.h"
 
 // Constructor
 HeightField::HeightField(const openglframework::Vector3 &position,
@@ -47,7 +48,7 @@ HeightField::HeightField(const openglframework::Vector3 &position,
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(HEIGHTFIELD_WIDTH, HEIGHTFIELD_LENGTH, 0, 5,
+    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
 
     // Initial position and orientation of the rigid body
@@ -90,7 +91,7 @@ HeightField::HeightField(const openglframework::Vector3 &position, float mass,
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(HEIGHTFIELD_WIDTH, HEIGHTFIELD_LENGTH, 0, 5,
+    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                    mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
 
     // Initial position and orientation of the rigid body
@@ -188,12 +189,33 @@ void HeightField::render(openglframework::Shader& shader,
 // Compute the heights of the height field
 void HeightField::generateHeightField() {
 
-    mMinHeight = 0.0;
-    mMaxHeight = 5.0;
+    double persistence = 6;
+    double frequency = 0.13;
+    double amplitude = 18;
+    int octaves = 1;
+    int randomseed = 779;
+    PerlinNoise perlinNoise(persistence, frequency, amplitude, octaves, randomseed);
 
-    for (int i=0; i<HEIGHTFIELD_WIDTH; i++) {
-        for (int j=0; j<HEIGHTFIELD_LENGTH; j++) {
-            mHeightData[i][j] = 5.0f;
+    mMinHeight = 0;
+    mMaxHeight = 5;
+
+    float width = (NB_POINTS_WIDTH - 1);
+    float length = (NB_POINTS_LENGTH - 1);
+
+    for (int i=0; i<NB_POINTS_WIDTH; i++) {
+        for (int j=0; j<NB_POINTS_LENGTH; j++) {
+
+            int arrayIndex = j * NB_POINTS_WIDTH + i;
+
+            mHeightData[arrayIndex] = (float)(perlinNoise.GetHeight(-width * 0.5 + i, -length * 0.5 + j));
+
+            if (i==0 && j==0) {
+                mMinHeight = mHeightData[arrayIndex] ;
+                mMaxHeight = mHeightData[arrayIndex] ;
+            }
+
+            if (mHeightData[arrayIndex]  > mMaxHeight) mMaxHeight = mHeightData[arrayIndex] ;
+            if (mHeightData[arrayIndex]  < mMinHeight) mMinHeight = mHeightData[arrayIndex] ;
         }
     }
 }
@@ -204,21 +226,27 @@ void HeightField::generateGraphicsMesh() {
     std::vector<uint> indices;
     int vertexId = 0;
 
-    for (int i=0; i<HEIGHTFIELD_WIDTH; i++) {
-        for (int j=0; j<HEIGHTFIELD_LENGTH; j++) {
+    float horizontalScale = 1.0f;
 
-            float height = mHeightData[i][j] - (mMaxHeight - mMinHeight) * 0.5f;
-            openglframework::Vector3 vertex(-(HEIGHTFIELD_WIDTH - 1) * 0.5f + i, height, -(HEIGHTFIELD_LENGTH - 1) * 0.5 + j);
+    for (int i=0; i<NB_POINTS_WIDTH; i++) {
+        for (int j=0; j<NB_POINTS_LENGTH; j++) {
+
+            float originHeight = -(mMaxHeight - mMinHeight) * 0.5f - mMinHeight;
+            float height = originHeight + mHeightData[j * NB_POINTS_WIDTH + i];
+            openglframework::Vector3 vertex(-(NB_POINTS_WIDTH - 1) * 0.5f + i, height, -(NB_POINTS_LENGTH - 1) * 0.5f + j);
+
+            vertex.x *= horizontalScale;
+            vertex.z *= horizontalScale;
 
             mVertices.push_back(vertex);
 
             // Triangle indices
-            if ((i < HEIGHTFIELD_WIDTH - 1) && (j < HEIGHTFIELD_LENGTH - 1)) {
+            if ((i < NB_POINTS_WIDTH - 1) && (j < NB_POINTS_LENGTH - 1)) {
 
                 int v1 = vertexId;
                 int v2 = vertexId + 1;
-                int v3 = vertexId + HEIGHTFIELD_LENGTH;
-                int v4 = vertexId + HEIGHTFIELD_LENGTH + 1;
+                int v3 = vertexId + NB_POINTS_LENGTH;
+                int v4 = vertexId + NB_POINTS_LENGTH + 1;
 
                 // First triangle
                 indices.push_back(v1);
@@ -326,4 +354,3 @@ void HeightField::setScaling(const openglframework::Vector3& scaling) {
                                               0, 0, scaling.z, 0,
                                               0, 0, 0, 1.0f);
 }
-

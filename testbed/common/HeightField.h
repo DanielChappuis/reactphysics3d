@@ -31,18 +31,19 @@
 #include "reactphysics3d.h"
 #include "PhysicsObject.h"
 
+
 // Class HeightField
 class HeightField : public openglframework::Mesh, public PhysicsObject {
 
     private :
 
-        static const int HEIGHTFIELD_WIDTH = 10;
-        static const int HEIGHTFIELD_LENGTH = 5;
+        static const int NB_POINTS_WIDTH = 100;
+        static const int NB_POINTS_LENGTH = 100;
 
         // -------------------- Attributes -------------------- //
 
         /// Height field data
-        float mHeightData[HEIGHTFIELD_WIDTH][HEIGHTFIELD_LENGTH];
+        float mHeightData[NB_POINTS_WIDTH * NB_POINTS_LENGTH];
 
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
@@ -74,13 +75,13 @@ class HeightField : public openglframework::Mesh, public PhysicsObject {
 
         // -------------------- Methods -------------------- //
 
-        // Create the Vertex Buffer Objects used to render with OpenGL.
+        /// Create the Vertex Buffer Objects used to render with OpenGL.
         void createVBOAndVAO();
 
-        // Compute the heights of the height field
+        /// Compute the heights of the height field
         void generateHeightField();
 
-        // Generate the graphics mesh to render the height field
+        /// Generate the graphics mesh to render the height field
         void generateGraphicsMesh();
 
     public :

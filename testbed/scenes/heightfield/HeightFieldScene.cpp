@@ -164,7 +164,7 @@ void HeightFieldScene::reset() {
     rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
     mHeightField->resetTransform(transform);
 
-    rp3d::Vector3 spherePos(-3.6, 15, 1.7);
+    rp3d::Vector3 spherePos(0, 13, 0);
     rp3d::Transform sphereTransform(spherePos, initOrientation);
     mBox->resetTransform(sphereTransform);
 }

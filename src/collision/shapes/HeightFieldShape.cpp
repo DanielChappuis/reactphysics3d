@@ -57,7 +57,7 @@ HeightFieldShape::HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints
     mHeightFieldData = heightFieldData;
 
     decimal halfHeight = (mMaxHeight - mMinHeight) * decimal(0.5);
-    assert(halfHeight > 0);
+    assert(halfHeight >= 0);
 
     // Compute the local AABB of the height field
     if (mUpAxis == 0) {
