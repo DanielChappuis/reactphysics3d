@@ -224,7 +224,9 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         mConvexMeshes.push_back(mesh);
     }
 
-    // Create the floor
+    // ---------- Create the floor ---------
+
+
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
@@ -238,6 +240,30 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
+
+
+    // ---------- Create the triangular mesh ---------- //
+
+    /*
+    // Position
+    openglframework::Vector3 position(0, 0, 0);
+    rp3d::decimal mass = 1.0;
+
+    // Create a convex mesh and a corresponding rigid in the dynamics world
+    mConcaveMesh = new ConcaveMesh(position, mass, mDynamicsWorld, meshFolderPath);
+
+    // Set the mesh as beeing static
+    mConcaveMesh->getRigidBody()->setType(rp3d::STATIC);
+
+    // Set the box color
+    mConcaveMesh->setColor(mDemoColors[0]);
+    mConcaveMesh->setSleepingColor(mRedColorDemo);
+
+    // Change the material properties of the rigid body
+    rp3d::Material& material = mConcaveMesh->getRigidBody()->getMaterial();
+    material.setBounciness(rp3d::decimal(0.2));
+    material.setFrictionCoefficient(0.1);
+    */
 
     // Get the physics engine parameters
     mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
@@ -328,9 +354,13 @@ CollisionShapesScene::~CollisionShapesScene() {
 
     // Destroy the rigid body of the floor
     mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
+    //mDynamicsWorld->destroyRigidBody(mConcaveMesh->getRigidBody());
 
     // Destroy the floor
     delete mFloor;
+
+    // Destroy the convex mesh
+    //delete mConcaveMesh;
 
     // Destroy the dynamics world
     delete mDynamicsWorld;
@@ -411,6 +441,8 @@ void CollisionShapesScene::update() {
         (*it)->updateTransform(mInterpolationFactor);
     }
 
+    //mConcaveMesh->updateTransform(mInterpolationFactor);
+
     mFloor->updateTransform(mInterpolationFactor);
 }
 
@@ -460,6 +492,8 @@ void CollisionShapesScene::renderSinglePass(openglframework::Shader& shader,
 
     // Render the floor
     mFloor->render(shader, worldToCameraMatrix);
+
+    //mConcaveMesh->render(shader, worldToCameraMatrix);
 
     // Unbind the shader
     shader.unbind();

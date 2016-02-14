@@ -52,21 +52,21 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
-    // ---------- Create the sphere ----------- //
+    // ---------- Create the cube ----------- //
 
     // Position
     rp3d::decimal radius = 2.0;
-    openglframework::Vector3 spherePos(0, 10, 0);
+    openglframework::Vector3 spherePos(15, 10, 0);
 
     // Create a sphere and a corresponding rigid in the dynamics world
-    mSphere = new Sphere(radius, spherePos , 1.0, mDynamicsWorld, meshFolderPath);
+    mBox = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
 
     // Set the sphere color
-    mSphere->setColor(mDemoColors[1]);
-    mSphere->setSleepingColor(mRedColorDemo);
+    mBox->setColor(mDemoColors[1]);
+    mBox->setSleepingColor(mRedColorDemo);
 
     // Change the material properties of the rigid body
-    rp3d::Material& sphereMat = mSphere->getRigidBody()->getMaterial();
+    rp3d::Material& sphereMat = mBox->getRigidBody()->getMaterial();
     sphereMat.setBounciness(rp3d::decimal(0.2));
 
     // ---------- Create the triangular mesh ---------- //
@@ -88,6 +88,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     // Change the material properties of the rigid body
     rp3d::Material& material = mConcaveMesh->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
+    material.setFrictionCoefficient(0.1);
 
     // Get the physics engine parameters
     mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
@@ -104,11 +105,11 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
 // Destructor
 ConcaveMeshScene::~ConcaveMeshScene() {
 
-    mDynamicsWorld->destroyRigidBody(mSphere->getRigidBody());
+    mDynamicsWorld->destroyRigidBody(mBox->getRigidBody());
     // Destroy the corresponding rigid body from the dynamics world
     mDynamicsWorld->destroyRigidBody(mConcaveMesh->getRigidBody());
 
-    delete mSphere;
+    delete mBox;
 
     // Destroy the convex mesh
     delete mConcaveMesh;
@@ -143,7 +144,7 @@ void ConcaveMeshScene::update() {
 
     // Update the transform used for the rendering
     mConcaveMesh->updateTransform(mInterpolationFactor);
-    mSphere->updateTransform(mInterpolationFactor);
+    mBox->updateTransform(mInterpolationFactor);
 }
 
 // Render the scene in a single pass
@@ -153,7 +154,7 @@ void ConcaveMeshScene::renderSinglePass(Shader& shader, const openglframework::M
     shader.bind();
 
     mConcaveMesh->render(shader, worldToCameraMatrix);
-    mSphere->render(shader, worldToCameraMatrix);
+    mBox->render(shader, worldToCameraMatrix);
 
     // Unbind the shader
     shader.unbind();
@@ -163,9 +164,13 @@ void ConcaveMeshScene::renderSinglePass(Shader& shader, const openglframework::M
 void ConcaveMeshScene::reset() {
 
     // Reset the transform
-    mConcaveMesh->resetTransform(rp3d::Transform::identity());
+    rp3d::Quaternion initOrientation(0, 0, 3.141/12);
+    rp3d::Quaternion initOrientation2(0, 0, 3.141/13);
+    //rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
+    rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation2);
+    mConcaveMesh->resetTransform(transform);
 
-    rp3d::Vector3 spherePos(0, 15, 0);
-    rp3d::Transform sphereTransform(spherePos, rp3d::Quaternion::identity());
-    mSphere->resetTransform(sphereTransform);
+    rp3d::Vector3 spherePos(2, 15, 0);
+    rp3d::Transform sphereTransform(spherePos, initOrientation2);
+    mBox->resetTransform(sphereTransform);
 }

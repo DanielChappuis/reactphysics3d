@@ -49,21 +49,25 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
-    // ---------- Create the cube ----------- //
+    // ---------- Create the boxes ----------- //
 
-    // Position
-    openglframework::Vector3 spherePos(15, 10, 0);
+    // For each box
+    for (int i=0; i<NB_BOXES; i++) {
 
-    // Create a sphere and a corresponding rigid in the dynamics world
-    mBox = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
+        // Position
+        openglframework::Vector3 spherePos(15, 10, 0);
 
-    // Set the sphere color
-    mBox->setColor(mDemoColors[1]);
-    mBox->setSleepingColor(mRedColorDemo);
+        // Create a sphere and a corresponding rigid in the dynamics world
+        mBoxes[i] = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
 
-    // Change the material properties of the rigid body
-    rp3d::Material& sphereMat = mBox->getRigidBody()->getMaterial();
-    sphereMat.setBounciness(rp3d::decimal(0.2));
+        // Set the sphere color
+        mBoxes[i]->setColor(mDemoColors[1]);
+        mBoxes[i]->setSleepingColor(mRedColorDemo);
+
+        // Change the material properties of the rigid body
+        rp3d::Material& sphereMat = mBoxes[i]->getRigidBody()->getMaterial();
+        sphereMat.setBounciness(rp3d::decimal(0.2));
+    }
 
     // ---------- Create the height field ---------- //
 
@@ -101,11 +105,15 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
 // Destructor
 HeightFieldScene::~HeightFieldScene() {
 
-    mDynamicsWorld->destroyRigidBody(mBox->getRigidBody());
     // Destroy the corresponding rigid body from the dynamics world
+    for (int i=0; i<NB_BOXES; i++) {
+        mDynamicsWorld->destroyRigidBody(mBoxes[i]->getRigidBody());
+    }
     mDynamicsWorld->destroyRigidBody(mHeightField->getRigidBody());
 
-    delete mBox;
+    for (int i=0; i<NB_BOXES; i++) {
+       delete mBoxes[i];
+    }
 
     // Destroy the convex mesh
     delete mHeightField;
@@ -140,7 +148,10 @@ void HeightFieldScene::update() {
 
     // Update the transform used for the rendering
     mHeightField->updateTransform(mInterpolationFactor);
-    mBox->updateTransform(mInterpolationFactor);
+
+    for (int i=0; i<NB_BOXES; i++) {
+       mBoxes[i]->updateTransform(mInterpolationFactor);
+    }
 }
 
 // Render the scene in a single pass
@@ -150,7 +161,10 @@ void HeightFieldScene::renderSinglePass(Shader& shader, const openglframework::M
     shader.bind();
 
     mHeightField->render(shader, worldToCameraMatrix);
-    mBox->render(shader, worldToCameraMatrix);
+
+    for (int i=0; i<NB_BOXES; i++) {
+       mBoxes[i]->render(shader, worldToCameraMatrix);
+    }
 
     // Unbind the shader
     shader.unbind();
@@ -164,7 +178,11 @@ void HeightFieldScene::reset() {
     rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
     mHeightField->resetTransform(transform);
 
-    rp3d::Vector3 spherePos(0, 13, 0);
-    rp3d::Transform sphereTransform(spherePos, initOrientation);
-    mBox->resetTransform(sphereTransform);
+    float heightFieldWidth = 10.0f;
+    float stepDist = heightFieldWidth / (NB_BOXES + 1);
+    for (int i=0; i<NB_BOXES; i++) {
+        rp3d::Vector3 spherePos(-heightFieldWidth * 0.5f + i * stepDist , 14 + 6.0f * i, -heightFieldWidth * 0.5f + i * stepDist);
+        rp3d::Transform sphereTransform(spherePos, initOrientation);
+        mBoxes[i]->resetTransform(sphereTransform);
+    }
 }

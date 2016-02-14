@@ -49,7 +49,7 @@ HeightField::HeightField(const openglframework::Vector3 &position,
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
     mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_INT_TYPE);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -92,7 +92,7 @@ HeightField::HeightField(const openglframework::Vector3 &position, float mass,
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
     mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                                   mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+                                                   mHeightData, rp3d::HeightFieldShape::HEIGHT_INT_TYPE);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -189,15 +189,15 @@ void HeightField::render(openglframework::Shader& shader,
 // Compute the heights of the height field
 void HeightField::generateHeightField() {
 
-    double persistence = 6;
-    double frequency = 0.13;
-    double amplitude = 18;
+    double persistence = 9;
+    double frequency = 0.28;
+    double amplitude = 12;
     int octaves = 1;
-    int randomseed = 779;
+    int randomseed = 23;
     PerlinNoise perlinNoise(persistence, frequency, amplitude, octaves, randomseed);
 
     mMinHeight = 0;
-    mMaxHeight = 5;
+    mMaxHeight = 0;
 
     float width = (NB_POINTS_WIDTH - 1);
     float length = (NB_POINTS_LENGTH - 1);
@@ -214,8 +214,8 @@ void HeightField::generateHeightField() {
                 mMaxHeight = mHeightData[arrayIndex] ;
             }
 
-            if (mHeightData[arrayIndex]  > mMaxHeight) mMaxHeight = mHeightData[arrayIndex] ;
-            if (mHeightData[arrayIndex]  < mMinHeight) mMinHeight = mHeightData[arrayIndex] ;
+            if (mHeightData[arrayIndex] > mMaxHeight) mMaxHeight = mHeightData[arrayIndex] ;
+            if (mHeightData[arrayIndex] < mMinHeight) mMinHeight = mHeightData[arrayIndex] ;
         }
     }
 }
@@ -226,17 +226,12 @@ void HeightField::generateGraphicsMesh() {
     std::vector<uint> indices;
     int vertexId = 0;
 
-    float horizontalScale = 1.0f;
-
     for (int i=0; i<NB_POINTS_WIDTH; i++) {
         for (int j=0; j<NB_POINTS_LENGTH; j++) {
 
             float originHeight = -(mMaxHeight - mMinHeight) * 0.5f - mMinHeight;
             float height = originHeight + mHeightData[j * NB_POINTS_WIDTH + i];
             openglframework::Vector3 vertex(-(NB_POINTS_WIDTH - 1) * 0.5f + i, height, -(NB_POINTS_LENGTH - 1) * 0.5f + j);
-
-            vertex.x *= horizontalScale;
-            vertex.z *= horizontalScale;
 
             mVertices.push_back(vertex);
 

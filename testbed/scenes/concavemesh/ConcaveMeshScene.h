@@ -32,7 +32,7 @@
 #include "Box.h"
 #include "SceneDemo.h"
 #include "ConcaveMesh.h"
-#include "Sphere.h"
+#include "Box.h"
 
 namespace trianglemeshscene {
 
@@ -46,7 +46,7 @@ class ConcaveMeshScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        Sphere* mSphere;
+        Box* mBox;
 
         /// Concave triangles mesh
         ConcaveMesh* mConcaveMesh;

@@ -30,25 +30,25 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param nbWidthGridPoints Number of grid points along the width of the height field
- * @param nbLengthGridPoints Number of grid points along the length of the height field
+ * @param nbGridColumns Number of columns in the grid of the height field
+ * @param nbGridRows Number of rows in the grid of the height field
  * @param minHeight Minimum height value of the height field
  * @param maxHeight Maximum height value of the height field
- * @param heightFieldData Pointer to the first height value data
+ * @param heightFieldData Pointer to the first height value data (note that values are shared and not copied)
  * @param dataType Data type for the height values (int, float, double)
  * @param upAxis Integer representing the up axis direction (0 for x, 1 for y and 2 for z)
- * @param integerHeightScale Scaling factor used to scale the height values
+ * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
  */
-HeightFieldShape::HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
+HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
-                 : ConcaveShape(HEIGHTFIELD), mNbWidthGridPoints(nbWidthGridPoints), mNbLengthGridPoints(nbLengthGridPoints),
-                   mWidth(nbWidthGridPoints - 1), mLength(nbLengthGridPoints - 1), mMinHeight(minHeight),
+                 : ConcaveShape(HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                   mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
 
-    assert(nbWidthGridPoints >= 2);
-    assert(nbLengthGridPoints >= 2);
+    assert(nbGridColumns >= 2);
+    assert(nbGridRows >= 2);
     assert(mWidth >= 1);
     assert(mLength >= 1);
     assert(minHeight <= maxHeight);
@@ -108,27 +108,27 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
    // Compute the starting and ending coords of the sub-grid according to the up axis
    int iMin, iMax, jMin, jMax;
    switch(mUpAxis) {
-        case 0 : iMin = clamp(minGridCoords[1], 0, mNbWidthGridPoints - 1);
-                 iMax = clamp(maxGridCoords[1], 0, mNbWidthGridPoints - 1);
-                 jMin = clamp(minGridCoords[2], 0, mNbLengthGridPoints - 1);
-                 jMax = clamp(maxGridCoords[2], 0, mNbLengthGridPoints - 1);
+        case 0 : iMin = clamp(minGridCoords[1], 0, mNbColumns - 1);
+                 iMax = clamp(maxGridCoords[1], 0, mNbColumns - 1);
+                 jMin = clamp(minGridCoords[2], 0, mNbRows - 1);
+                 jMax = clamp(maxGridCoords[2], 0, mNbRows - 1);
                  break;
-        case 1 : iMin = clamp(minGridCoords[0], 0, mNbWidthGridPoints - 1);
-                 iMax = clamp(maxGridCoords[0], 0, mNbWidthGridPoints - 1);
-                 jMin = clamp(minGridCoords[2], 0, mNbLengthGridPoints - 1);
-                 jMax = clamp(maxGridCoords[2], 0, mNbLengthGridPoints - 1);
+        case 1 : iMin = clamp(minGridCoords[0], 0, mNbColumns - 1);
+                 iMax = clamp(maxGridCoords[0], 0, mNbColumns - 1);
+                 jMin = clamp(minGridCoords[2], 0, mNbRows - 1);
+                 jMax = clamp(maxGridCoords[2], 0, mNbRows - 1);
                  break;
-        case 2 : iMin = clamp(minGridCoords[0], 0, mNbWidthGridPoints - 1);
-                 iMax = clamp(maxGridCoords[0], 0, mNbWidthGridPoints - 1);
-                 jMin = clamp(minGridCoords[1], 0, mNbLengthGridPoints - 1);
-                 jMax = clamp(maxGridCoords[1], 0, mNbLengthGridPoints - 1);
+        case 2 : iMin = clamp(minGridCoords[0], 0, mNbColumns - 1);
+                 iMax = clamp(maxGridCoords[0], 0, mNbColumns - 1);
+                 jMin = clamp(minGridCoords[1], 0, mNbRows - 1);
+                 jMax = clamp(maxGridCoords[1], 0, mNbRows - 1);
                  break;
    }
 
-   assert(iMin >= 0 && iMin < mNbWidthGridPoints);
-   assert(iMax >= 0 && iMax < mNbWidthGridPoints);
-   assert(jMin >= 0 && jMin < mNbLengthGridPoints);
-   assert(jMax >= 0 && jMax < mNbLengthGridPoints);
+   assert(iMin >= 0 && iMin < mNbColumns);
+   assert(iMax >= 0 && iMax < mNbColumns);
+   assert(jMin >= 0 && jMin < mNbRows);
+   assert(jMax >= 0 && jMax < mNbRows);
 
    // For each sub-grid points (except the last ones one each dimension)
    for (int i = iMin; i < iMax; i++) {

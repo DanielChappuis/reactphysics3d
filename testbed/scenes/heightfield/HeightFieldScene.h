@@ -41,11 +41,13 @@ const float SCENE_RADIUS = 30.0f;
 // Class HeightFieldScene
 class HeightFieldScene : public SceneDemo {
 
+    static const int NB_BOXES = 10;
+
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        Box* mBox;
+        Box* mBoxes[NB_BOXES];
 
         /// Height field
         HeightField* mHeightField;

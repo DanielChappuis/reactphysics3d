@@ -75,6 +75,8 @@ SET(COMMON_SOURCES
     common/PhysicsObject.cpp
     common/VisualContactPoint.h
     common/VisualContactPoint.cpp
+    common/PerlinNoise.h
+    common/PerlinNoise.cpp
 )
 
 # Examples scenes source files

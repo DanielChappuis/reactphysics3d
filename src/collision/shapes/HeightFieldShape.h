@@ -67,14 +67,17 @@ class TriangleOverlapCallback : public TriangleCallback {
         virtual void testTriangle(const Vector3* trianglePoints);
 };
 
-// TODO : Implement raycasting for this shape
-
-// TODO : Implement smooth collision mesh for this shape
 
 // Class HeightFieldShape
 /**
  * This class represents a static height field that can be used to represent
- * a terrain.
+ * a terrain. The height field is made of a grid with rows and columns with a
+ * height value at each grid point. Note that the height values are not copied into the shape
+ * but are shared instead. The height values can be of type integer, float or double.
+ * When creating a HeightFieldShape, you need to specify the minimum and maximum height value of
+ * your height field. Note that the HeightFieldShape will be re-centered based on its AABB. It means
+ * that for instance, if the minimum height value is -200 and the maximum value is 400, the final
+ * minimum height of the field in the simulation will be -300 and the maximum height will be 300.
  */
 class HeightFieldShape : public ConcaveShape {
 
@@ -87,11 +90,11 @@ class HeightFieldShape : public ConcaveShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// Number of grid points in the width dimension
-        int mNbWidthGridPoints;
+        /// Number of columns in the grid of the height field
+        int mNbColumns;
 
-        /// Number of grid points in the length dimension
-        int mNbLengthGridPoints;
+        /// Number of rows in the grid of the height field
+        int mNbRows;
 
         /// Height field width
         decimal mWidth;
@@ -164,6 +167,15 @@ class HeightFieldShape : public ConcaveShape {
         /// Destructor
         ~HeightFieldShape();
 
+        /// Return the number of rows in the height field
+        int getNbRows() const;
+
+        /// Return the number of columns in the height field
+        int getNbColumns() const;
+
+        /// Return the type of height value in the height field
+        HeightDataType getHeightDataType() const;
+
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -181,6 +193,21 @@ class HeightFieldShape : public ConcaveShape {
         friend class ConvexTriangleAABBOverlapCallback;
         friend class ConcaveMeshRaycastCallback;
 };
+
+// Return the number of rows in the height field
+inline int HeightFieldShape::getNbRows() const {
+    return mNbRows;
+}
+
+// Return the number of columns in the height field
+inline int HeightFieldShape::getNbColumns() const {
+    return mNbColumns;
+}
+
+// Return the type of height value in the height field
+inline HeightFieldShape::HeightDataType HeightFieldShape::getHeightDataType() const {
+    return mHeightDataType;
+}
 
 // Return the number of bytes used by the collision shape
 inline size_t HeightFieldShape::getSizeInBytes() const {
@@ -221,9 +248,9 @@ inline Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     switch(mHeightDataType) {
-        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbWidthGridPoints + x];
-        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbWidthGridPoints + x];
-        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbWidthGridPoints + x] * mIntegerHeightScale;
+        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
+        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
+        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
         default: assert(false);
     }
 }
