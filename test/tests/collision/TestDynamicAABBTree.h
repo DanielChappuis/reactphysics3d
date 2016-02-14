@@ -23,53 +23,44 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef TEST_DYNAMIC_AABB_TREE_H
+#define TEST_DYNAMIC_AABB_TREE_H
+
 // Libraries
-#include "TestSuite.h"
-#include "tests/mathematics/TestVector2.h"
-#include "tests/mathematics/TestVector3.h"
-#include "tests/mathematics/TestTransform.h"
-#include "tests/mathematics/TestQuaternion.h"
-#include "tests/mathematics/TestMatrix2x2.h"
-#include "tests/mathematics/TestMatrix3x3.h"
-#include "tests/mathematics/TestMathematicsFunctions.h"
-#include "tests/collision/TestPointInside.h"
-#include "tests/collision/TestRaycast.h"
-#include "tests/collision/TestCollisionWorld.h"
-#include "tests/collision/TestAABB.h"
-#include "tests/collision/TestDynamicAABBTree.h"
+#include "Test.h"
+#include "collision/broadphase/DynamicAABBTree.h"
 
-using namespace reactphysics3d;
+/// Reactphysics3D namespace
+namespace reactphysics3d {
 
-int main() {
+// Class TestDynamicAABBTree
+/**
+ * Unit test for the dynamic AABB tree
+ */
+class TestDynamicAABBTree : public Test {
 
-    TestSuite testSuite("ReactPhysics3D Tests");
+    private :
 
-    // ---------- Mathematics tests ---------- //
+        // ---------- Atributes ---------- //
 
-    testSuite.addTest(new TestVector2("Vector2"));
-    testSuite.addTest(new TestVector3("Vector3"));
-    testSuite.addTest(new TestTransform("Transform"));
-    testSuite.addTest(new TestQuaternion("Quaternion"));
-    testSuite.addTest(new TestMatrix3x3("Matrix3x3"));
-    testSuite.addTest(new TestMatrix2x2("Matrix2x2"));
-    testSuite.addTest(new TestMathematicsFunctions("Maths Functions"));
+        // Dynamic AABB Tree
+        DynamicAABBTree mTree;
 
-    // ---------- Collision Detection tests ---------- //
+    public :
 
-    testSuite.addTest(new TestAABB("AABB"));
-    testSuite.addTest(new TestPointInside("IsPointInside"));
-    testSuite.addTest(new TestRaycast("Raycasting"));
-    testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
-    testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
+        // ---------- Methods ---------- //
 
-    // Run the tests
-    testSuite.run();
+        /// Constructor
+        TestDynamicAABBTree(const std::string& name): Test(name)  {}
 
-    // Display the report
-    long nbFailedTests = testSuite.report();
+        /// Run the tests
+        void run() {
 
-    // Clear the tests from the test suite
-    testSuite.clear();
+            // TODO : Implement tests here
+        }
 
-    return nbFailedTests;
+ };
+
 }
+
+#endif
