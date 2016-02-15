@@ -1,5 +1,8 @@
 [![Travis Build Status](https://travis-ci.org/DanielChappuis/reactphysics3d.svg?branch=master)](https://travis-ci.org/DanielChappuis/reactphysics3d)
 
+<a href="https://scan.coverity.com/projects/danielchappuis-reactphysics3d">
+  <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/7733/badge.svg"/>
+</a>
 
 ## ReactPhysics3D
 
