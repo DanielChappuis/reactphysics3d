@@ -36,6 +36,7 @@
 #include "Cylinder.h"
 #include "Capsule.h"
 #include "ConvexMesh.h"
+#include "ConcaveMesh.h"
 #include "Dumbbell.h"
 #include "VisualContactPoint.h"
 #include "../common/Viewer.h"
@@ -45,13 +46,13 @@ namespace collisionshapesscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 4;
-const int NB_CUBES = 6;
-const int NB_CONES = 6;
+const int NB_BOXES = 5;
+const int NB_CUBES = 5;
+const int NB_CONES = 5;
 const int NB_CYLINDERS = 5;
-const int NB_CAPSULES = 4;
-const int NB_MESHES = 5;
-const int NB_COMPOUND_SHAPES = 4;
+const int NB_CAPSULES = 5;
+const int NB_MESHES = 3;
+const int NB_COMPOUND_SHAPES = 3;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;
@@ -92,6 +93,9 @@ class CollisionShapesScene : public SceneDemo {
 
         /// All the dumbbell of the scene
         std::vector<Dumbbell*> mDumbbells;
+
+        /// Concave triangles mesh
+        ConcaveMesh* mConcaveMesh;
 
         /// Box for the floor
         Box* mFloor;

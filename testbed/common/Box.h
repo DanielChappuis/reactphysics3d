@@ -41,8 +41,11 @@ class Box : public openglframework::Object3D, public PhysicsObject {
 		/// Size of each side of the box
 		float mSize[3];
 
-		/// Scaling matrix (applied to a cube to obtain the correct box dimensions)
-		openglframework::Matrix4 mScalingMatrix;
+        rp3d::BoxShape* mBoxShape;
+        rp3d::ProxyShape* mProxyShape;
+
+        /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
+        openglframework::Matrix4 mScalingMatrix;
 
 		/// Vertex Buffer Object for the vertices data used to render the box with OpenGL
 		static openglframework::VertexBufferObject mVBOVertices;
@@ -88,8 +91,11 @@ class Box : public openglframework::Object3D, public PhysicsObject {
 		/// Set the position of the box
 		void resetTransform(const rp3d::Transform& transform);
 
-		/// Update the transform matrix of the object
-		virtual void updateTransform(float interpolationFactor);
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object

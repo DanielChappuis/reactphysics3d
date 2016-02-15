@@ -55,7 +55,7 @@ class ProxyShape {
         CollisionShape* mCollisionShape;
 
         /// Local-space to parent body-space transform (does not change over time)
-        const Transform mLocalToBodyTransform;
+        Transform mLocalToBodyTransform;
 
         /// Mass (in kilogramms) of the corresponding collision shape
         decimal mMass;
@@ -93,15 +93,6 @@ class ProxyShape {
         /// Private assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape);
 
-        // Return a local support point in a given direction with the object margin
-        Vector3 getLocalSupportPointWithMargin(const Vector3& direction);
-
-        /// Return a local support point in a given direction without the object margin.
-        Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction);
-
-        /// Return the collision shape margin
-        decimal getMargin() const;
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -131,6 +122,9 @@ class ProxyShape {
         /// Return the local to parent body transform
         const Transform& getLocalToBodyTransform() const;
 
+        /// Set the local to parent body transform
+        void setLocalToBodyTransform(const Transform& transform);
+
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
 
@@ -158,6 +152,15 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
+        /// Return the pointer to the cached collision data
+        void** getCachedCollisionData();
+
+        /// Return the local scaling vector of the collision shape
+        Vector3 getLocalScaling() const;
+
+        /// Set the local scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         // -------------------- Friendship -------------------- //
 
         friend class OverlappingPair;
@@ -171,9 +174,15 @@ class ProxyShape {
         friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
+
 };
 
-/// Return the collision shape
+// Return the pointer to the cached collision data
+inline void** ProxyShape::getCachedCollisionData()  {
+    return &mCachedCollisionData;
+}
+
+// Return the collision shape
 /**
  * @return Pointer to the internal collision shape
  */
@@ -222,6 +231,17 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
+// Set the local to parent body transform
+inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
+
+    mLocalToBodyTransform = transform;
+
+    mBody->setIsSleeping(false);
+
+    // Notify the body that the proxy shape has to be updated in the broad-phase
+    mBody->updateProxyShapeInBroadPhase(this, true);
+}
+
 // Return the local to world transform
 /**
  * @return The transformation that transforms the local-space of the collision
@@ -229,36 +249,6 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
  */
 inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 ProxyShape::getLocalSupportPointWithMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithMargin(direction, &mCachedCollisionData);
-}
-
-// Return a local support point in a given direction without the object margin.
-inline Vector3 ProxyShape::getLocalSupportPointWithoutMargin(const Vector3& direction) {
-    return mCollisionShape->getLocalSupportPointWithoutMargin(direction, &mCachedCollisionData);
-}
-
-// Return the collision shape margin
-inline decimal ProxyShape::getMargin() const {
-    return mCollisionShape->getMargin();
-}
-
-// Raycast method with feedback information
-/**
- * @param ray Ray to use for the raycasting
- * @param[out] raycastInfo Result of the raycasting that is valid only if the
- *             methods returned true
- * @return True if the ray hit the collision shape
- */
-inline bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
-
-    // If the corresponding body is not active, it cannot be hit by rays
-    if (!mBody->isActive()) return false;
-
-    return mCollisionShape->raycast(ray, raycastInfo, this);
 }
 
 // Return the next proxy shape in the linked list of proxy shapes
@@ -307,6 +297,29 @@ inline unsigned short ProxyShape::getCollideWithMaskBits() const {
  */
 inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     mCollideWithMaskBits = collideWithMaskBits;
+}
+
+// Return the local scaling vector of the collision shape
+/**
+ * @return The local scaling vector
+ */
+inline Vector3 ProxyShape::getLocalScaling() const {
+    return mCollisionShape->getScaling();
+}
+
+// Set the local scaling vector of the collision shape
+/**
+ * @param scaling The new local scaling vector
+ */
+inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
+
+    // Set the local scaling of the collision shape
+    mCollisionShape->setLocalScaling(scaling);
+
+    mBody->setIsSleeping(false);
+
+    // Notify the body that the proxy shape has to be updated in the broad-phase
+    mBody->updateProxyShapeInBroadPhase(this, true);
 }
 
 }

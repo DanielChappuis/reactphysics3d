@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CAPSULE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -44,14 +44,11 @@ namespace reactphysics3d {
  * and height of the shape. Therefore, no need to specify an object margin for a
  * capsule shape.
  */
-class CapsuleShape : public CollisionShape {
+class CapsuleShape : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
-
-        /// Radius of the two spheres of the capsule
-        decimal mRadius;
 
         /// Half height of the capsule (height = distance between the centers of the two spheres)
         decimal mHalfHeight;
@@ -63,10 +60,6 @@ class CapsuleShape : public CollisionShape {
 
         /// Private assignment operator
         CapsuleShape& operator=(const CapsuleShape& shape);
-
-        /// Return a local support point in a given direction with the object margin.
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
@@ -82,9 +75,6 @@ class CapsuleShape : public CollisionShape {
         bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
                                      const Vector3& sphereCenter, decimal maxFraction,
                                      Vector3& hitLocalPoint, decimal& hitFraction) const;
-
-        /// Allocate and return a copy of the object
-        virtual CapsuleShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -105,27 +95,22 @@ class CapsuleShape : public CollisionShape {
         /// Return the height of the capsule
         decimal getHeight() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two capsule shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-/// Allocate and return a copy of the object
-inline CapsuleShape* CapsuleShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) CapsuleShape(*this);
-}
 
 // Get the radius of the capsule
 /**
  * @return The radius of the capsule shape (in meters)
  */
 inline decimal CapsuleShape::getRadius() const {
-    return mRadius;
+    return mMargin;
 }
 
 // Return the height of the capsule
@@ -134,6 +119,15 @@ inline decimal CapsuleShape::getRadius() const {
  */
 inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
+}
+
+// Set the scaling vector of the collision shape
+inline void CapsuleShape::setLocalScaling(const Vector3& scaling) {
+
+    mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;
+    mMargin = (mMargin / mScaling.x) * scaling.x;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -150,20 +144,39 @@ inline size_t CapsuleShape::getSizeInBytes() const {
 inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max.x = mRadius;
-    max.y = mHalfHeight + mRadius;
-    max.z = mRadius;
+    max.x = mMargin;
+    max.y = mHalfHeight + mMargin;
+    max.z = mMargin;
 
     // Minimum bounds
-    min.x = -mRadius;
+    min.x = -mMargin;
     min.y = -max.y;
     min.z = min.x;
 }
 
-// Test equality between two capsule shapes
-inline bool CapsuleShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const CapsuleShape& otherShape = static_cast<const CapsuleShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
+// Return a local support point in a given direction without the object margin.
+/// A capsule is the convex hull of two spheres S1 and S2. The support point in the direction "d"
+/// of the convex hull of a set of convex objects is the support point "p" in the set of all
+/// support points from all the convex objects with the maximum dot product with the direction "d".
+/// Therefore, in this method, we compute the support points of both top and bottom spheres of
+/// the capsule and return the point with the maximum dot product with the direction vector. Note
+/// that the object margin is implicitly the radius and height of the capsule.
+inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
+                                                        void** cachedCollisionData) const {
+
+    // Support point top sphere
+    decimal dotProductTop = mHalfHeight * direction.y;
+
+    // Support point bottom sphere
+    decimal dotProductBottom = -mHalfHeight * direction.y;
+
+    // Return the point with the maximum dot product
+    if (dotProductTop > dotProductBottom) {
+        return Vector3(0, mHalfHeight, 0);
+    }
+    else {
+        return Vector3(0, -mHalfHeight, 0);
+    }
 }
 
 }

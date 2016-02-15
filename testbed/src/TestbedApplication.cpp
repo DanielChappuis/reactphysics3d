@@ -32,13 +32,17 @@
 #include "cubes/CubesScene.h"
 #include "joints/JointsScene.h"
 #include "collisionshapes/CollisionShapesScene.h"
+#include "heightfield/HeightFieldScene.h"
 #include "raycast/RaycastScene.h"
+#include "concavemesh/ConcaveMeshScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
 using namespace cubesscene;
 using namespace raycastscene;
 using namespace collisionshapesscene;
+using namespace trianglemeshscene;
+using namespace heightfieldscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
@@ -162,9 +166,17 @@ void TestbedApplication::createScenes() {
     CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");
     mScenes.push_back(collisionShapesScene);
 
+    // Heightfield shape scene
+    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield");
+    mScenes.push_back(heightFieldScene);
+
     // Raycast scene
     RaycastScene* raycastScene = new RaycastScene("Raycast");
     mScenes.push_back(raycastScene);
+
+    // Raycast scene
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh");
+    mScenes.push_back(concaveMeshScene);
 
     assert(mScenes.size() > 0);
     mCurrentScene = mScenes[0];

@@ -47,6 +47,10 @@ class Capsule : public openglframework::Mesh, public PhysicsObject {
 		/// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
 		openglframework::Matrix4 mScalingMatrix;
 
+        /// Collision shape
+        rp3d::CapsuleShape* mCapsuleShape;
+        rp3d::ProxyShape* mProxyShape;
+
 		/// Previous transform (for interpolation)
 		rp3d::Transform mPreviousTransform;
 
@@ -96,8 +100,11 @@ class Capsule : public openglframework::Mesh, public PhysicsObject {
 		/// Set the position of the box
 		void resetTransform(const rp3d::Transform& transform);
 
-		/// Update the transform matrix of the object
-		virtual void updateTransform(float interpolationFactor);
+        /// Update the transform matrix of the object
+        virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 // Update the transform matrix of the object

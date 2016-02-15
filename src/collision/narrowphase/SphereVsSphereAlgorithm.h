@@ -57,14 +57,15 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator);
+        SphereVsSphereAlgorithm();
 
         /// Destructor
         virtual ~SphereVsSphereAlgorithm();
 
-        /// Return true and compute a contact info if the two bounding volume collide
-        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
-                                   ContactPointInfo*& contactInfo);
+        /// Compute a contact info if the two bounding volume collide
+        virtual void testCollision(const CollisionShapeInfo& shape1Info,
+                                   const CollisionShapeInfo& shape2Info,
+                                   NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 }

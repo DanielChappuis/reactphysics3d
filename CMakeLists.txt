@@ -1,5 +1,5 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
 
 # Project configuration
 PROJECT(REACTPHYSICS3D)
@@ -53,6 +53,9 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
     "src/collision/broadphase/DynamicAABBTree.h"
     "src/collision/broadphase/DynamicAABBTree.cpp"
+    "src/collision/narrowphase/CollisionDispatch.h"
+    "src/collision/narrowphase/DefaultCollisionDispatch.h"
+    "src/collision/narrowphase/DefaultCollisionDispatch.cpp"
     "src/collision/narrowphase/EPA/EdgeEPA.h"
     "src/collision/narrowphase/EPA/EdgeEPA.cpp"
     "src/collision/narrowphase/EPA/EPAAlgorithm.h"
@@ -69,8 +72,14 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/narrowphase/NarrowPhaseAlgorithm.cpp"
     "src/collision/narrowphase/SphereVsSphereAlgorithm.h"
     "src/collision/narrowphase/SphereVsSphereAlgorithm.cpp"
+    "src/collision/narrowphase/ConcaveVsConvexAlgorithm.h"
+    "src/collision/narrowphase/ConcaveVsConvexAlgorithm.cpp"
     "src/collision/shapes/AABB.h"
     "src/collision/shapes/AABB.cpp"
+    "src/collision/shapes/ConvexShape.h"
+    "src/collision/shapes/ConvexShape.cpp"
+    "src/collision/shapes/ConcaveShape.h"
+    "src/collision/shapes/ConcaveShape.cpp"
     "src/collision/shapes/BoxShape.h"
     "src/collision/shapes/BoxShape.cpp"
     "src/collision/shapes/CapsuleShape.h"
@@ -85,12 +94,27 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/shapes/CylinderShape.cpp"
     "src/collision/shapes/SphereShape.h"
     "src/collision/shapes/SphereShape.cpp"
+    "src/collision/shapes/TriangleShape.h"
+    "src/collision/shapes/TriangleShape.cpp"
+    "src/collision/shapes/ConcaveMeshShape.h"
+    "src/collision/shapes/ConcaveMeshShape.cpp"
+    "src/collision/shapes/HeightFieldShape.h"
+    "src/collision/shapes/HeightFieldShape.cpp"
     "src/collision/RaycastInfo.h"
     "src/collision/RaycastInfo.cpp"
     "src/collision/ProxyShape.h"
     "src/collision/ProxyShape.cpp"
+    "src/collision/TriangleVertexArray.h"
+    "src/collision/TriangleVertexArray.cpp"
+    "src/collision/TriangleMesh.h"
+    "src/collision/TriangleMesh.cpp"
     "src/collision/CollisionDetection.h"
     "src/collision/CollisionDetection.cpp"
+    "src/collision/CollisionShapeInfo.h"
+    "src/collision/ContactManifold.h"
+    "src/collision/ContactManifold.cpp"
+    "src/collision/ContactManifoldSet.h"
+    "src/collision/ContactManifoldSet.cpp"
     "src/constraint/BallAndSocketJoint.h"
     "src/constraint/BallAndSocketJoint.cpp"
     "src/constraint/ContactPoint.h"
@@ -107,8 +131,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/CollisionWorld.cpp"
     "src/engine/ConstraintSolver.h"
     "src/engine/ConstraintSolver.cpp"
-    "src/engine/ContactManifold.h"
-    "src/engine/ContactManifold.cpp"
     "src/engine/ContactSolver.h"
     "src/engine/ContactSolver.cpp"
     "src/engine/DynamicsWorld.h"
@@ -123,8 +145,11 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/OverlappingPair.cpp"
     "src/engine/Profiler.h"
     "src/engine/Profiler.cpp"
+    "src/engine/Timer.h"
+    "src/engine/Timer.cpp"
     "src/mathematics/mathematics.h"
     "src/mathematics/mathematics_functions.h"
+    "src/mathematics/mathematics_functions.cpp"
     "src/mathematics/Matrix2x2.h"
     "src/mathematics/Matrix2x2.cpp"
     "src/mathematics/Matrix3x3.h"
@@ -144,7 +169,11 @@ SET (REACTPHYSICS3D_SOURCES
 )
 
 # Create the library
-ADD_LIBRARY (reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
+ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
+
+# Enable C++11 features
+set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD 11)
+set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # If we need to compile the testbed application
 IF(COMPILE_TESTBED)

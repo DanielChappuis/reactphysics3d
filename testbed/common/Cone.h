@@ -44,6 +44,10 @@ class Cone : public openglframework::Mesh, public PhysicsObject {
         /// Height of the cone
         float mHeight;
 
+        /// Collision shape
+        rp3d::ConeShape* mConeShape;
+        rp3d::ProxyShape* mProxyShape;
+
         /// Scaling matrix (applied to a sphere to obtain the correct cone dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
@@ -97,6 +101,9 @@ class Cone : public openglframework::Mesh, public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor);
+
+        /// Set the scaling of the object
+        void setScaling(const openglframework::Vector3& scaling);
 };
 
 inline void Cone::updateTransform(float interpolationFactor) {

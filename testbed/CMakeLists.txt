@@ -22,11 +22,8 @@ FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 # Copy the fonts used for the GUI into the build directory
 FILE(COPY "imgui/DroidSans.ttf" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 
-# Enable C++11 features
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x")
-
 # Headers
-INCLUDE_DIRECTORIES(${GLEW_INCLUDE_PATH} "src/" "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
+INCLUDE_DIRECTORIES("src/" ${GLEW_INCLUDE_PATH} "opengl-framework/src/" "glfw/include/" "common/" "scenes/" "imgui/")
 
 # Testbed source files
 SET(TESTBED_SOURCES
@@ -66,14 +63,20 @@ SET(COMMON_SOURCES
     common/Capsule.cpp
     common/ConvexMesh.h
     common/ConvexMesh.cpp
+    common/ConcaveMesh.h
+    common/ConcaveMesh.cpp
     common/Cylinder.h
     common/Cylinder.cpp
     common/Dumbbell.h
     common/Dumbbell.cpp
+    common/HeightField.h
+    common/HeightField.cpp
     common/PhysicsObject.h
     common/PhysicsObject.cpp
     common/VisualContactPoint.h
     common/VisualContactPoint.cpp
+    common/PerlinNoise.h
+    common/PerlinNoise.cpp
 )
 
 # Examples scenes source files
@@ -86,10 +89,24 @@ SET(SCENES_SOURCES
     scenes/raycast/RaycastScene.cpp
     scenes/collisionshapes/CollisionShapesScene.h
     scenes/collisionshapes/CollisionShapesScene.cpp
+    scenes/concavemesh/ConcaveMeshScene.h
+    scenes/concavemesh/ConcaveMeshScene.cpp
+    scenes/heightfield/HeightFieldScene.h
+    scenes/heightfield/HeightFieldScene.cpp
 )
+
+# Add .user file to set debug path in Visual Studio
+SET(USER_FILE testbed.vcxproj.user)
+SET(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
+SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
+CONFIGURE_FILE(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
 
 # Create the executable
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${IMGUI_SOURCES})
+
+# Enable C++11 features
+set_property(TARGET testbed PROPERTY CXX_STANDARD 11)
+set_property(TARGET testbed PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Link with libraries
 TARGET_LINK_LIBRARIES(testbed reactphysics3d openglframework glfw ${GLEW_LIBRARIES} ${GLFW_LIBRARIES})

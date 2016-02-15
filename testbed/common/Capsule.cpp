@@ -47,7 +47,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, (mHeight + 2.0f * mRadius) / 3.0f, 0,0,
+                                              0, (mHeight + 2.0f * mRadius) / 3, 0,0,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1.0f);
 
@@ -57,7 +57,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::CapsuleShape collisionShape(mRadius, mHeight);
+    mCapsuleShape = new rp3d::CapsuleShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -70,7 +70,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     mBody = world->createCollisionBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mBody->addCollisionShape(collisionShape, rp3d::Transform::identity());
+    mProxyShape = mBody->addCollisionShape(mCapsuleShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -106,7 +106,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::CapsuleShape collisionShape(mRadius, mHeight);
+    mCapsuleShape = new rp3d::CapsuleShape(mRadius, mHeight);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -117,7 +117,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    body->addCollisionShape(collisionShape, rp3d::Transform::identity(), mass);
+    mProxyShape = body->addCollisionShape(mCapsuleShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 
@@ -146,7 +146,7 @@ Capsule::~Capsule() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-
+    delete mCapsuleShape;
     totalNbCapsules--;
 }
 
@@ -280,4 +280,17 @@ void Capsule::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void Capsule::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(mRadius * scaling.x, 0, 0, 0,
+                                              0, (mHeight * scaling.y + 2.0f * mRadius * scaling.x) / 3, 0,0,
+                                              0, 0, mRadius * scaling.x, 0,
+                                              0, 0, 0, 1.0f);
 }

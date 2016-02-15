@@ -35,8 +35,7 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform,
-                       decimal mass)
+ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass)
            :mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
             mNext(NULL), mBroadPhaseID(-1), mCachedCollisionData(NULL), mUserData(NULL),
             mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
@@ -63,3 +62,31 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
     return mCollisionShape->testPointInside(localPoint, this);
 }
 
+// Raycast method with feedback information
+/**
+ * @param ray Ray to use for the raycasting
+ * @param[out] raycastInfo Result of the raycasting that is valid only if the
+ *             methods returned true
+ * @return True if the ray hit the collision shape
+ */
+bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
+
+    // If the corresponding body is not active, it cannot be hit by rays
+    if (!mBody->isActive()) return false;
+
+    // Convert the ray into the local-space of the collision shape
+    const Transform localToWorldTransform = getLocalToWorldTransform();
+    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
+    Ray rayLocal(worldToLocalTransform * ray.point1,
+                 worldToLocalTransform * ray.point2,
+                 ray.maxFraction);
+
+    bool isHit = mCollisionShape->raycast(rayLocal, raycastInfo, this);
+
+    // Convert the raycast info into world-space
+    raycastInfo.worldPoint = localToWorldTransform * raycastInfo.worldPoint;
+    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * raycastInfo.worldNormal;
+    raycastInfo.worldNormal.normalize();
+
+    return isHit;
+}

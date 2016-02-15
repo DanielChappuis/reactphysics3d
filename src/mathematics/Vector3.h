@@ -111,6 +111,12 @@ struct Vector3 {
         /// Return the axis with the maximal value
         int getMaxAxis() const;
 
+        /// Return the minimum value among the three components of a vector
+        decimal getMinValue() const;
+
+        /// Return the maximum value among the three components of a vector
+        decimal getMaxValue() const;
+
         /// Overloaded operator for the equality condition
         bool operator== (const Vector3& vector) const;
 
@@ -138,6 +144,9 @@ struct Vector3 {
         /// Overloaded operator
         Vector3& operator=(const Vector3& vector);
 
+        /// Overloaded less than operator for ordering to be used inside std::set for instance
+        bool operator<(const Vector3& vector) const;
+
         /// Return a vector taking the minimum components of two vectors
         static Vector3 min(const Vector3& vector1, const Vector3& vector2);
 
@@ -151,7 +160,9 @@ struct Vector3 {
         friend Vector3 operator-(const Vector3& vector);
         friend Vector3 operator*(const Vector3& vector, decimal number);
         friend Vector3 operator*(decimal number, const Vector3& vector);
+        friend Vector3 operator*(const Vector3& vector1, const Vector3& vector2);
         friend Vector3 operator/(const Vector3& vector, decimal number);
+        friend Vector3 operator/(const Vector3& vector1, const Vector3& vector2);
 };
 
 // Set the vector to zero
@@ -305,9 +316,22 @@ inline Vector3 operator/(const Vector3& vector, decimal number) {
     return Vector3(vector.x / number, vector.y / number, vector.z / number);
 }
 
+// Overload operator for division between two vectors
+inline Vector3 operator/(const Vector3& vector1, const Vector3& vector2) {
+    assert(vector2.x > MACHINE_EPSILON);
+    assert(vector2.y > MACHINE_EPSILON);
+    assert(vector2.z > MACHINE_EPSILON);
+    return Vector3(vector1.x / vector2.x, vector1.y / vector2.y, vector1.z / vector2.z);
+}
+
 // Overloaded operator for multiplication with a number
 inline Vector3 operator*(decimal number, const Vector3& vector) {
     return vector * number;
+}
+
+// Overload operator for multiplication between two vectors
+inline Vector3 operator*(const Vector3& vector1, const Vector3& vector2) {
+    return Vector3(vector1.x * vector2.x, vector1.y * vector2.y, vector1.z * vector2.z);
 }
 
 // Assignment operator
@@ -318,6 +342,11 @@ inline Vector3& Vector3::operator=(const Vector3& vector) {
         z = vector.z;
     }
     return *this;
+}
+
+// Overloaded less than operator for ordering to be used inside std::set for instance
+inline bool Vector3::operator<(const Vector3& vector) const {
+    return (x == vector.x ? (y == vector.y ? z < vector.z : y < vector.y) : x < vector.x);
 }
 
 // Return a vector taking the minimum components of two vectors
@@ -332,6 +361,16 @@ inline Vector3 Vector3::max(const Vector3& vector1, const Vector3& vector2) {
     return Vector3(std::max(vector1.x, vector2.x),
                    std::max(vector1.y, vector2.y),
                    std::max(vector1.z, vector2.z));
+}
+
+// Return the minimum value among the three components of a vector
+inline decimal Vector3::getMinValue() const {
+    return std::min(std::min(x, y), z);
+}
+
+// Return the maximum value among the three components of a vector
+inline decimal Vector3::getMaxValue() const {
+    return std::max(std::max(x, y), z);
 }
 
 }

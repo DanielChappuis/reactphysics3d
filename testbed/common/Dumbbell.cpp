@@ -47,6 +47,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
+    mDistanceBetweenSphere = 8.0f;
+
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
@@ -55,7 +57,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
     const rp3d::decimal massSphere = rp3d::decimal(2.0);
-    const rp3d::SphereShape sphereCollisionShape(radiusSphere);
+    mSphereShape = new rp3d::SphereShape(radiusSphere);
 
     // Create a cylinder collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
@@ -63,7 +65,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
     const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
     const rp3d::decimal massCylinder = rp3d::decimal(1.0);
-    const rp3d::CylinderShape cylinderCollisionShape(radiusCylinder, heightCylinder);
+    mCylinderShape = new rp3d::CylinderShape(radiusCylinder, heightCylinder);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -74,10 +76,10 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mPreviousTransform = transformBody;
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
@@ -86,9 +88,9 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transformBody);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    body->addCollisionShape(sphereCollisionShape, transformSphereShape1, massSphere);
-    body->addCollisionShape(sphereCollisionShape, transformSphereShape2, massSphere);
-    body->addCollisionShape(cylinderCollisionShape, transformCylinderShape, massCylinder);
+    mProxyShapeSphere1 = body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
+    mProxyShapeSphere2 = body->addCollisionShape(mSphereShape, transformSphereShape2, massSphere);
+    mProxyShapeCylinder = body->addCollisionShape(mCylinderShape, transformCylinderShape, massCylinder);
 
     mBody = body;
 
@@ -116,6 +118,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
+    mDistanceBetweenSphere = 8.0f;
+
     // Initialize the position where the sphere will be rendered
     translateWorld(position);
 
@@ -123,14 +127,14 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
-    const rp3d::SphereShape sphereCollisionShape(radiusSphere);
+    mSphereShape = new rp3d::SphereShape(radiusSphere);
 
     // Create a cylinder collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
     const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
-    const rp3d::CylinderShape cylinderCollisionShape(radiusCylinder, heightCylinder);
+    mCylinderShape = new rp3d::CylinderShape(radiusCylinder, heightCylinder);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -139,10 +143,10 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::Transform transformBody(initPosition, initOrientation);
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, 4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -4.0, 0), rp3d::Quaternion::identity());
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
@@ -151,9 +155,9 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     mBody = world->createCollisionBody(transformBody);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mBody->addCollisionShape(sphereCollisionShape, transformSphereShape1);
-    mBody->addCollisionShape(sphereCollisionShape, transformSphereShape2);
-    mBody->addCollisionShape(cylinderCollisionShape, transformCylinderShape);
+    mProxyShapeSphere1 = mBody->addCollisionShape(mSphereShape, transformSphereShape1);
+    mProxyShapeSphere2 = mBody->addCollisionShape(mSphereShape, transformSphereShape2);
+    mProxyShapeCylinder = mBody->addCollisionShape(mCylinderShape, transformCylinderShape);
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -180,7 +184,8 @@ Dumbbell::~Dumbbell() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-
+    delete mSphereShape;
+    delete mCylinderShape;
     totalNbDumbbells--;
 }
 
@@ -313,4 +318,31 @@ void Dumbbell::resetTransform(const rp3d::Transform& transform) {
     }
 
     updateTransform(1.0f);
+}
+
+// Set the scaling of the object
+void Dumbbell::setScaling(const openglframework::Vector3& scaling) {
+
+    // Scale the collision shape
+    rp3d::Vector3 newScaling(scaling.x, scaling.y, scaling.z);
+    mProxyShapeCylinder->setLocalScaling(newScaling);
+    mProxyShapeSphere1->setLocalScaling(newScaling);
+    mProxyShapeSphere2->setLocalScaling(newScaling);
+
+    mDistanceBetweenSphere = (mDistanceBetweenSphere / mScalingMatrix.getValue(1, 1)) * scaling.y;
+
+    // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
+    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
+
+    // Initial transform of the second sphere collision shape of the dumbell (in local-space)
+    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
+
+    mProxyShapeSphere1->setLocalToBodyTransform(transformSphereShape1);
+    mProxyShapeSphere2->setLocalToBodyTransform(transformSphereShape2);
+
+    // Scale the graphics object
+    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
+                                              0, scaling.y, 0, 0,
+                                              0, 0, scaling.z, 0,
+                                              0, 0, 0, 1);
 }

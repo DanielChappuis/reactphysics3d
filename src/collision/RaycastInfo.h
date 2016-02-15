@@ -68,6 +68,12 @@ struct RaycastInfo {
         /// The hit point "p" is such that p = point1 + hitFraction * (point2 - point1)
         decimal hitFraction;
 
+        /// Mesh subpart index that has been hit (only used for triangles mesh and -1 otherwise)
+        int meshSubpart;
+
+        /// Hit triangle index (only used for triangles mesh and -1 otherwise)
+        int triangleIndex;
+
         /// Pointer to the hit collision body
         CollisionBody* body;
 
@@ -77,7 +83,7 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : body(NULL), proxyShape(NULL) {
+        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(NULL), proxyShape(NULL) {
 
         }
 
@@ -108,7 +114,7 @@ class RaycastCallback {
         /// This method will be called for each ProxyShape that is hit by the
         /// ray. You cannot make any assumptions about the order of the
         /// calls. You should use the return value to control the continuation
-        /// of the ray. The return value is the next maxFraction value to use.
+        /// of the ray. The returned value is the next maxFraction value to use.
         /// If you return a fraction of 0.0, it means that the raycast should
         /// terminate. If you return a fraction of 1.0, it indicates that the
         /// ray is not clipped and the ray cast should continue as if no hit

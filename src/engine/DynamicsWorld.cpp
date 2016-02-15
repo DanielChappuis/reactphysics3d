@@ -719,6 +719,8 @@ void DynamicsWorld::computeIslands() {
 
                 ContactManifold* contactManifold = contactElement->contactManifold;
 
+                assert(contactManifold->getNbContactPoints() > 0);
+
                 // Check if the current contact manifold has already been added into an island
                 if (contactManifold->isAlreadyInIsland()) continue;
 
@@ -984,8 +986,15 @@ std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
 
         OverlappingPair* pair = it->second;
 
-        // Get the contact manifold
-        contactManifolds.push_back(pair->getContactManifold());
+        // For each contact manifold of the pair
+        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
+        for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
+
+            ContactManifold* manifold = manifoldSet.getContactManifold(i);
+
+            // Get the contact manifold
+            contactManifolds.push_back(manifold);
+        }
     }
 
     // Return all the contact manifold

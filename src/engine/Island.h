@@ -30,7 +30,7 @@
 #include "memory/MemoryAllocator.h"
 #include "body/RigidBody.h"
 #include "constraint/Joint.h"
-#include "ContactManifold.h"
+#include "collision/ContactManifold.h"
 
 namespace reactphysics3d {
 

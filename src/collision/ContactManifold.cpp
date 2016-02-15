@@ -31,9 +31,10 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
-                                 MemoryAllocator& memoryAllocator)
-                : mShape1(shape1), mShape2(shape2), mNbContactPoints(0), mFrictionImpulse1(0.0),
-                  mFrictionImpulse2(0.0), mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
+                                 MemoryAllocator& memoryAllocator, short normalDirectionId)
+                : mShape1(shape1), mShape2(shape2), mNormalDirectionId(normalDirectionId),
+                  mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
+                  mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
                   mMemoryAllocator(memoryAllocator) {
     
 }
@@ -58,10 +59,10 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
             // Delete the new contact
             contact->~ContactPoint();
             mMemoryAllocator.release(contact, sizeof(ContactPoint));
-            //removeContact(i);
+
+            assert(mNbContactPoints > 0);
 
             return;
-            //break;
 		}
 	}
     
@@ -75,6 +76,8 @@ void ContactManifold::addContactPoint(ContactPoint* contact) {
     // Add the new contact point in the manifold
     mContactPoints[mNbContactPoints] = contact;
     mNbContactPoints++;
+
+    assert(mNbContactPoints > 0);
 }
 
 // Remove a contact point from the manifold
@@ -93,6 +96,8 @@ void ContactManifold::removeContactPoint(uint index) {
     }
 
     mNbContactPoints--;
+
+    assert(mNbContactPoints >= 0);
 }
 
 // Update the contact manifold

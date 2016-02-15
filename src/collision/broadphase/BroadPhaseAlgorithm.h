@@ -31,12 +31,14 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
+#include "engine/Profiler.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 // Declarations
 class CollisionDetection;
+class BroadPhaseAlgorithm;
 
 // Structure BroadPhasePair
 /**
@@ -57,6 +59,59 @@ struct BroadPhasePair {
 
     /// Method used to compare two pairs for sorting algorithm
     static bool smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2);
+};
+
+// class AABBOverlapCallback
+class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
+
+    private:
+
+        BroadPhaseAlgorithm& mBroadPhaseAlgorithm;
+
+        int mReferenceNodeId;
+
+    public:
+
+        // Constructor
+        AABBOverlapCallback(BroadPhaseAlgorithm& broadPhaseAlgo, int referenceNodeId)
+             : mBroadPhaseAlgorithm(broadPhaseAlgo), mReferenceNodeId(referenceNodeId) {
+
+        }
+
+        // Called when a overlapping node has been found during the call to
+        // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+        virtual void notifyOverlappingNode(int nodeId);
+
+};
+
+// Class BroadPhaseRaycastCallback
+/**
+ * Callback called when the AABB of a leaf node is hit by a ray the
+ * broad-phase Dynamic AABB Tree.
+ */
+class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
+
+    private :
+
+        const DynamicAABBTree& mDynamicAABBTree;
+
+        unsigned short mRaycastWithCategoryMaskBits;
+
+        RaycastTest& mRaycastTest;
+
+    public:
+
+        // Constructor
+        BroadPhaseRaycastCallback(const DynamicAABBTree& dynamicAABBTree, unsigned short raycastWithCategoryMaskBits,
+                                  RaycastTest& raycastTest)
+            : mDynamicAABBTree(dynamicAABBTree), mRaycastWithCategoryMaskBits(raycastWithCategoryMaskBits),
+              mRaycastTest(raycastTest) {
+
+        }
+
+        // Called for a broad-phase shape that has to be tested for raycast
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray);
+
 };
 
 // Class BroadPhaseAlgorithm
@@ -131,7 +186,7 @@ class BroadPhaseAlgorithm {
 
         /// Notify the broad-phase that a collision shape has moved and need to be updated
         void updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
-                                       const Vector3& displacement);
+                                       const Vector3& displacement, bool forceReinsert = false);
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.
@@ -142,7 +197,7 @@ class BroadPhaseAlgorithm {
         void removeMovedCollisionShape(int broadPhaseID);
 
         /// Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-        void notifyOverlappingPair(int node1ID, int node2ID);
+        void notifyOverlappingNodes(int broadPhaseId1, int broadPhaseId2);
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs();
@@ -179,7 +234,12 @@ inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
 // Ray casting method
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
-    mDynamicAABBTree.raycast(ray, raycastTest, raycastWithCategoryMaskBits);
+
+    PROFILE("BroadPhaseAlgorithm::raycast()");
+
+    BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
+
+    mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
 }
 
 }

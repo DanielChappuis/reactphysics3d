@@ -27,7 +27,7 @@
 #define	REACTPHYSICS3D_OVERLAPPING_PAIR_H
 
 // Libraries
-#include "ContactManifold.h"
+#include "collision/ContactManifoldSet.h"
 #include "collision/ProxyShape.h"
 #include "collision/shapes/CollisionShape.h"
 
@@ -51,14 +51,8 @@ class OverlappingPair {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first proxy collision shape
-        ProxyShape* mShape1;
-
-        /// Pointer to the second proxy collision shape
-        ProxyShape* mShape2;
-
-        /// Persistent contact manifold
-        ContactManifold mContactManifold;
+        /// Set of persistent contact manifolds
+        ContactManifoldSet mContactManifoldSet;
 
         /// Cached previous separating axis
         Vector3 mCachedSeparatingAxis;
@@ -76,7 +70,8 @@ class OverlappingPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator);
+        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
+                        int nbMaxContactManifolds, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
@@ -102,8 +97,8 @@ class OverlappingPair {
         /// Return the number of contacts in the cache
         uint getNbContactPoints() const;
 
-        /// Return the contact manifold
-        ContactManifold* getContactManifold();
+        /// Return the a reference to the contact manifold set
+        const ContactManifoldSet& getContactManifoldSet();
 
         /// Clear the contact points of the contact manifold
         void clearContactPoints();
@@ -121,23 +116,22 @@ class OverlappingPair {
 
 // Return the pointer to first body
 inline ProxyShape* OverlappingPair::getShape1() const {
-    return mShape1;
+    return mContactManifoldSet.getShape1();
 }          
 
 // Return the pointer to second body
 inline ProxyShape* OverlappingPair::getShape2() const {
-    return mShape2;
+    return mContactManifoldSet.getShape2();
 }                
 
 // Add a contact to the contact manifold
 inline void OverlappingPair::addContact(ContactPoint* contact) {
-    mContactManifold.addContactPoint(contact);
+    mContactManifoldSet.addContactPoint(contact);
 }
 
 // Update the contact manifold
 inline void OverlappingPair::update() {
-    mContactManifold.update(mShape1->getBody()->getTransform() * mShape1->getLocalToBodyTransform(),
-                            mShape2->getBody()->getTransform() *mShape2->getLocalToBodyTransform());
+    mContactManifoldSet.update();
 }
 
 // Return the cached separating axis
@@ -153,12 +147,12 @@ inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
 
 // Return the number of contact points in the contact manifold
 inline uint OverlappingPair::getNbContactPoints() const {
-    return mContactManifold.getNbContactPoints();
+    return mContactManifoldSet.getTotalNbContactPoints();
 }
 
 // Return the contact manifold
-inline ContactManifold* OverlappingPair::getContactManifold() {
-    return &mContactManifold;
+inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
+    return mContactManifoldSet;
 }
 
 // Return the pair of bodies index
@@ -187,7 +181,7 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
 
 // Clear the contact points of the contact manifold
 inline void OverlappingPair::clearContactPoints() {
-   mContactManifold.clear();
+   mContactManifoldSet.clear();
 }
 
 }
