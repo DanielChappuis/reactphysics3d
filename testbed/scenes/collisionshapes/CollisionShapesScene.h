@@ -39,10 +39,8 @@
 #include "ConcaveMesh.h"
 #include "Dumbbell.h"
 #include "VisualContactPoint.h"
-#include "../common/Viewer.h"
 
 namespace collisionshapesscene {
-
 
 // Constants
 const float SCENE_RADIUS = 30.0f;

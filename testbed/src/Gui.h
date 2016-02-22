@@ -27,10 +27,8 @@
 #define	GUI_H
 
 // Libraries
-#include "imgui.h"
-#include "imguiRenderGL3.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <nanogui/opengl.h>
+#include <nanogui/nanogui.h>
 #include "openglframework.h"
 
 // Constants
@@ -40,6 +38,7 @@ const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.3;
 const int CHECKBOX_SIZE = 9;
 
 using namespace openglframework;
+using namespace nanogui;
 
 // Declarations
 class TestbedApplication;
@@ -56,8 +55,7 @@ class Gui {
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : Delete this
-        static GLFWwindow* mWindow;
+        Screen* mScreen;
 
         static Shader mShader;
         static double       g_Time;
@@ -104,13 +102,10 @@ class Gui {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Gui();
+        Gui(Screen* screen);
 
         /// Destructor
         ~Gui();
-
-        /// Create and return the singleton instance of this class
-        static Gui& getInstance();
 
         /// Initialize the GUI
         void init();
@@ -118,14 +113,8 @@ class Gui {
         /// Display the GUI
         void render();
 
-        static void setWindow(GLFWwindow* window);
-
         static void setScroll(double scrollX, double scrollY);
 };
-
-inline void Gui::setWindow(GLFWwindow* window) {
-    mWindow = window;
-}
 
 inline void Gui::resetScroll() {
     mScrollX = 0.0;

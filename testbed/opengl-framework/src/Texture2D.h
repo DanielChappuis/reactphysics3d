@@ -30,7 +30,7 @@
 #include <string>
 #include <cassert>
 #include "definitions.h"
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 
 namespace openglframework {
 

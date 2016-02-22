@@ -418,10 +418,13 @@ void RaycastScene::createVBOAndVAO(openglframework::Shader& shader) {
 }
 
 // Called when a keyboard event occurs
-void RaycastScene::keyboardEvent(int key, int scancode, int action, int mods) {
+bool RaycastScene::keyboardEvent(int key, int scancode, int action, int mods) {
 
     // If the space key has been pressed
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         changeBody();
+        return true;
     }
+
+    return false;
 }

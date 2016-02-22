@@ -33,12 +33,17 @@
 #include "Timer.h"
 #include <GLFW/glfw3.h>
 
+using namespace nanogui;
+
+// Macro for OpenGL errors
+#define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
+
 // Constants
 const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
 
 /// Class TestbedApplication
 /// Singleton class representing the application.
-class TestbedApplication {
+class TestbedApplication : public Screen {
 
     private :
 
@@ -48,8 +53,11 @@ class TestbedApplication {
 
         // -------------------- Attributes -------------------- //
 
-        /// GLFW window
-        GLFWwindow* mWindow;
+        bool mIsInitialized;
+
+        Screen* mScreen;
+
+        Gui mGui;
 
         /// Timer
         Timer mTimer;
@@ -106,9 +114,6 @@ class TestbedApplication {
 
         // -------------------- Methods -------------------- //
 
-        /// Private constructor (for the singleton class)
-        TestbedApplication();
-
         /// Private copy-constructor (for the singleton class)
         TestbedApplication(TestbedApplication const&);
 
@@ -128,10 +133,10 @@ class TestbedApplication {
         void reshape();
 
         /// Render
-        void render();
+        //void render();
 
         /// Check the OpenGL errors
-        static void checkOpenGLErrors();
+        static void checkOpenGLErrorsInternal(const char* file, int line);
 
         /// Compute the FPS
         void computeFPS();
@@ -179,17 +184,34 @@ class TestbedApplication {
 
         // -------------------- Methods -------------------- //
 
-        /// Create and return the singleton instance of this class
-        static TestbedApplication& getInstance();
+        /// Private constructor (for the singleton class)
+        TestbedApplication(bool isFullscreen);
 
         /// Destructor
-        ~TestbedApplication();
+        virtual ~TestbedApplication();
+
+        virtual void drawContents();
+
+        /// Window resize event handler
+        virtual bool resizeEvent(const Vector2i& size);
+
+        /// Default keyboard event handler
+        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+
+        /// Handle a mouse button event (default implementation: propagate to children)
+        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+
+        /// Handle a mouse motion event (default implementation: propagate to children)
+        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+
+        /// Handle a mouse scroll event (default implementation: propagate to children)
+        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
 
         /// Initialize the application
         void init();
 
         /// Start the main loop where rendering occur
-        void startMainLoop();
+        //void startMainLoop();
 
         /// Change the current scene
         void switchScene(Scene* newScene);

@@ -30,7 +30,9 @@
 #include <iomanip>
 #include "TestbedApplication.h"
 
-GLFWwindow* Gui::mWindow = NULL;
+using namespace nanogui;
+
+//GLFWwindow* Gui::mWindow = NULL;
 double Gui::g_Time = 0.0f;
 bool Gui::g_MousePressed[3] = {false, false, false};
 float Gui::g_MouseWheel = 0.0f;
@@ -50,7 +52,9 @@ double Gui::mCachedUpdateTime = 0;
 double Gui::mCachedPhysicsUpdateTime = 0;
 
 // Constructor
-Gui::Gui() {
+Gui::Gui(Screen* screen) {
+
+    mScreen = screen;
 
     g_Time = 0.0f;
     g_MousePressed[0] = false;
@@ -69,29 +73,50 @@ Gui::~Gui() {
 
     mShader.destroy();
 
-    imguiRenderGLDestroy();
-}
-
-// Create and return the singleton instance of this class
-Gui& Gui::getInstance() {
-    static Gui instance;
-    return instance;
+    //imguiRenderGLDestroy();
 }
 
 /// Initialize the GUI
 void Gui::init() {
 
+    bool bvar = true;
+    int ivar = 12345678;
+    double dvar = 3.1415926;
+    float fvar = (float)dvar;
+    std::string strval = "A string";
+    nanogui::Color colval(0.5f, 0.5f, 0.7f, 1.f);
+
+    FormHelper *gui = new FormHelper(mScreen);
+    ref<Window> window = gui->addWindow(Eigen::Vector2i(10, 10), "Form helper example");
+    gui->addGroup("Basic types");
+    gui->addVariable("bool", bvar);
+    gui->addVariable("string", strval);
+
+    gui->addGroup("Validating fields");
+    gui->addVariable("int", ivar);
+    gui->addVariable("float", fvar);
+    gui->addVariable("double", dvar);
+
+    gui->addGroup("Other widgets");
+    gui->addButton("A button", [](){ std::cout << "Button pressed." << std::endl; });
+
+    mScreen->setVisible(true);
+    mScreen->performLayout();
+    window->center();
+
+
     // Init UI
-    if (!imguiRenderGLInit("DroidSans.ttf")) {
+    /*if (!imguiRenderGLInit("DroidSans.ttf")) {
         fprintf(stderr, "Could not init GUI renderer.\n");
         exit(EXIT_FAILURE);
-    }
+    }*/
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
 }
 
 void Gui::displayLeftPane() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     const float scalingX = app.mWindowToFramebufferRatio.x;
@@ -172,11 +197,13 @@ void Gui::displayLeftPane() {
         case RENDERING: displayRenderingPane(); break;
         case PROFILING: displayProfilingPane(); break;
     }
+    */
 }
 
 // Display the list of scenes
 void Gui::displayScenesPane() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     const float scalingX = app.mWindowToFramebufferRatio.x;
@@ -210,10 +237,12 @@ void Gui::displayScenesPane() {
     }
 
     imguiEndScrollArea();
+    */
 }
 
 void Gui::displayPhysicsPane() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     const float scalingX = app.mWindowToFramebufferRatio.x;
@@ -294,10 +323,13 @@ void Gui::displayPhysicsPane() {
     }
 
     imguiEndScrollArea();
+
+    */
 }
 
 void Gui::displayRenderingPane() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     const float scalingX = app.mWindowToFramebufferRatio.x;
@@ -333,10 +365,12 @@ void Gui::displayRenderingPane() {
     }
 
     imguiEndScrollArea();
+    */
 }
 
 void Gui::displayProfilingPane() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     const float scalingX = app.mWindowToFramebufferRatio.x;
@@ -381,11 +415,13 @@ void Gui::displayProfilingPane() {
     imguiItem(updatePhysicsTimeStr.c_str(), true, scalingX, scalingY);
 
     imguiEndScrollArea();
+    */
 }
 
 // Display the GUI
 void Gui::render() {
 
+    /*
     TestbedApplication& app = TestbedApplication::getInstance();
 
     glEnable(GL_BLEND);
@@ -420,4 +456,6 @@ void Gui::render() {
     imguiEndFrame();
 
     imguiRenderGLDraw(display_w, display_h);
+
+    */
 }

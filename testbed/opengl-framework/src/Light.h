@@ -32,7 +32,7 @@
 #include "Object3D.h"
 #include "Texture2D.h"
 #include "Shader.h"
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 
 namespace openglframework {
 
@@ -124,8 +124,8 @@ inline void Light::enable() {
     mIsActive = true;
 
     // Enable the light
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0 + mLightID);
+    //glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHT0 + mLightID);
 }
 
 // Disable the light
@@ -134,7 +134,7 @@ inline void Light::disable() {
     mIsActive = false;
 
     // Disable the light
-    glDisable(GL_LIGHT0 + mLightID);
+    //glDisable(GL_LIGHT0 + mLightID);
 }
 
 }
