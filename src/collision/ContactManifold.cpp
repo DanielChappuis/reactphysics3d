@@ -96,8 +96,6 @@ void ContactManifold::removeContactPoint(uint index) {
     }
 
     mNbContactPoints--;
-
-    assert(mNbContactPoints >= 0);
 }
 
 // Update the contact manifold

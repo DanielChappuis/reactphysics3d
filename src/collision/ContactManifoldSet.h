@@ -112,7 +112,7 @@ class ContactManifoldSet {
         int getNbContactManifolds() const;
 
         /// Return a given contact manifold
-        ContactManifold* getContactManifold(uint index) const;
+        ContactManifold* getContactManifold(int index) const;
 
         /// Return the total number of contact points in the set of manifolds
         int getTotalNbContactPoints() const;
@@ -134,7 +134,7 @@ inline int ContactManifoldSet::getNbContactManifolds() const {
 }
 
 // Return a given contact manifold
-inline ContactManifold* ContactManifoldSet::getContactManifold(uint index) const {
+inline ContactManifold* ContactManifoldSet::getContactManifold(int index) const {
     assert(index >= 0 && index < mNbManifolds);
     return mManifolds[index];
 }

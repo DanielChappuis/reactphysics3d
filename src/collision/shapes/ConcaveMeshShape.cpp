@@ -49,7 +49,7 @@ void ConcaveMeshShape::initBVHTree() {
     // TODO : Try to randomly add the triangles into the tree to obtain a better tree
 
     // For each sub-part of the mesh
-    for (int subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
+    for (uint subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
 
         // Get the triangle vertex array of the current sub-part
         TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -62,7 +62,7 @@ void ConcaveMeshShape::initBVHTree() {
         int indexStride = triangleVertexArray->getIndicesStride();
 
         // For each triangle of the concave mesh
-        for (int triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
 
             void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
             Vector3 trianglePoints[3];

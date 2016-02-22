@@ -314,7 +314,7 @@ inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpuls
 
 // Return a contact point of the manifold
 inline ContactPoint* ContactManifold::getContactPoint(uint index) const {
-    assert(index >= 0 && index < mNbContactPoints);
+    assert(index < mNbContactPoints);
     return mContactPoints[index];
 }
 
@@ -327,7 +327,7 @@ inline bool ContactManifold::isAlreadyInIsland() const {
 inline Vector3 ContactManifold::getAverageContactNormal() const {
     Vector3 averageNormal;
 
-    for (int i=0; i<mNbContactPoints; i++) {
+    for (uint i=0; i<mNbContactPoints; i++) {
         averageNormal += mContactPoints[i]->getNormal();
     }
 
@@ -338,7 +338,7 @@ inline Vector3 ContactManifold::getAverageContactNormal() const {
 inline decimal ContactManifold::getLargestContactDepth() const {
     decimal largestDepth = 0.0f;
 
-    for (int i=0; i<mNbContactPoints; i++) {
+    for (uint i=0; i<mNbContactPoints; i++) {
         decimal depth = mContactPoints[i]->getPenetrationDepth();
         if (depth > largestDepth) {
             largestDepth = depth;

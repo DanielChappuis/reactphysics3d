@@ -121,7 +121,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
 
         // For each contact manifold set of the overlapping pair
         const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-        for (uint j=0; j<manifoldSet.getNbContactManifolds(); j++) {
+        for (int j=0; j<manifoldSet.getNbContactManifolds(); j++) {
 
             const ContactManifold* manifold = manifoldSet.getContactManifold(j);
 

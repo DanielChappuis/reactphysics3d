@@ -76,7 +76,7 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
     int indexStride = triangleVertexArray->getIndicesStride();
 
     // For each vertex of the mesh
-    for (int v = 0; v < triangleVertexArray->getNbVertices(); v++) {
+    for (uint v = 0; v < triangleVertexArray->getNbVertices(); v++) {
 
         // Get the vertices components of the triangle
         if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
@@ -99,7 +99,7 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
     if (mIsEdgesInformationUsed) {
 
         // For each triangle of the mesh
-        for (int triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
 
             void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
 

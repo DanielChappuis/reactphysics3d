@@ -57,7 +57,7 @@ void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Ve
         mLastFoundBit <<= 1;
     }
 
-    assert(mLastFound >= 0 && mLastFound < 4);
+    assert(mLastFound < 4);
 
     // Add the point into the simplex
     mPoints[mLastFound] = point;
