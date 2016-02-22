@@ -31,11 +31,6 @@
 #include <nanogui/nanogui.h>
 #include "openglframework.h"
 
-// Constants
-const int LEFT_PANE_WIDTH = 300;
-const int LEFT_PANE_HEADER_HEIGHT = 90;
-const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.3;
-const int CHECKBOX_SIZE = 9;
 
 using namespace openglframework;
 using namespace nanogui;
@@ -56,18 +51,6 @@ class Gui {
         // -------------------- Attributes -------------------- //
 
         Screen* mScreen;
-
-        static Shader mShader;
-        static double       g_Time;
-        static bool         g_MousePressed[3];
-        static float        g_MouseWheel;
-        static GLuint       g_FontTexture;
-        static int          g_AttribLocationTex, g_AttribLocationProjMtx;
-        static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
-        static size_t       g_VboSize;
-        static openglframework::VertexBufferObject mVBO;
-        static openglframework::VertexArrayObject mVAO;
-        static LeftPane mLeftPane;
 
         static double mScrollX, mScrollY;
 

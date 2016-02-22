@@ -55,8 +55,6 @@ class TestbedApplication : public Screen {
 
         bool mIsInitialized;
 
-        Screen* mScreen;
-
         Gui mGui;
 
         /// Timer

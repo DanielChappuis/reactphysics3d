@@ -33,17 +33,6 @@
 using namespace nanogui;
 
 //GLFWwindow* Gui::mWindow = NULL;
-double Gui::g_Time = 0.0f;
-bool Gui::g_MousePressed[3] = {false, false, false};
-float Gui::g_MouseWheel = 0.0f;
-GLuint Gui::g_FontTexture = 0;
-size_t Gui::g_VboSize = 0;
-int Gui::g_AttribLocationTex = 0, Gui::g_AttribLocationProjMtx = 0;
-int Gui::g_AttribLocationPosition = 0, Gui::g_AttribLocationUV = 0, Gui::g_AttribLocationColor = 0;
-Shader Gui::mShader;
-openglframework::VertexBufferObject Gui::mVBO(GL_ARRAY_BUFFER);
-openglframework::VertexArrayObject Gui::mVAO;
-Gui::LeftPane Gui::mLeftPane = SCENES;
 double Gui::mScrollX = 0.0;
 double Gui::mScrollY = 0.0;
 double Gui::mTimeSinceLastProfilingDisplay = 0;
@@ -55,23 +44,11 @@ double Gui::mCachedPhysicsUpdateTime = 0;
 Gui::Gui(Screen* screen) {
 
     mScreen = screen;
-
-    g_Time = 0.0f;
-    g_MousePressed[0] = false;
-    g_MousePressed[1] = false;
-    g_MousePressed[2] = false;
-    g_MouseWheel = 0.0f;
-    g_FontTexture = 0;
-    g_VboSize = 0;
 }
 
 // Destructor
 Gui::~Gui() {
 
-    mVAO.destroy();
-    mVBO.destroy();
-
-    mShader.destroy();
 
     //imguiRenderGLDestroy();
 }
