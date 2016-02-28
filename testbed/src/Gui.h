@@ -30,10 +30,13 @@
 #include <nanogui/opengl.h>
 #include <nanogui/nanogui.h>
 #include "openglframework.h"
-
+#include <sstream>
+#include <iomanip>
 
 using namespace openglframework;
 using namespace nanogui;
+
+const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 1;
 
 // Declarations
 class TestbedApplication;
@@ -50,20 +53,27 @@ class Gui {
 
         // -------------------- Attributes -------------------- //
 
-        Screen* mScreen;
+        // Pointer to the application
+        TestbedApplication* mApp;
 
         static double mScrollX, mScrollY;
 
+        // Simulation panel
+        Widget* mSimulationPanel;
+
+        // Settings Panel
+        Widget* mSettingsPanel;
+        Widget* mPhysicsPanel;
+        Widget* mRenderingPanel;
+
+        // Profiling panel
+        Label* mFPSLabel;
+        Label* mUpdateTimeLabel;
+        Label* mUpdatePhysicsTimeLabel;
+
+        std::vector<CheckBox*> mCheckboxesScenes;
+
         // -------------------- Methods -------------------- //
-
-        static void displayLeftPane();
-
-        /// Display the list of scenes
-        static void displayScenesPane();
-
-        static void displayPhysicsPane();
-        static void displayRenderingPane();
-        static void displayProfilingPane();
 
         static void resetScroll();
 
@@ -79,19 +89,32 @@ class Gui {
         // Cached update physics time
         static double mCachedPhysicsUpdateTime;
 
+        // -------------------- Methods -------------------- //
+
+        void createSimulationPanel();
+
+        void createSettingsPanel();
+
+        void createProfilingPanel();
+
+        // Convert float value to string
+        std::string floatToString(float value, int precision);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Gui(Screen* screen);
+        Gui(TestbedApplication* app);
 
         /// Destructor
         ~Gui();
 
         /// Initialize the GUI
         void init();
+
+        /// Update the GUI
+        void update();
 
         /// Display the GUI
         void render();
@@ -107,6 +130,12 @@ inline void Gui::resetScroll() {
 inline void Gui::setScroll(double scrollX, double scrollY) {
     mScrollX = scrollX;
     mScrollY = scrollY;
+}
+
+inline std::string Gui::floatToString(float value, int precision) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(precision) << value;
+    return ss.str();
 }
 
 #endif

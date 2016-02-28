@@ -42,7 +42,6 @@ using namespace nanogui;
 const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
 
 /// Class TestbedApplication
-/// Singleton class representing the application.
 class TestbedApplication : public Screen {
 
     private :
@@ -130,9 +129,6 @@ class TestbedApplication : public Screen {
         /// Called when the windows is reshaped
         void reshape();
 
-        /// Render
-        //void render();
-
         /// Check the OpenGL errors
         static void checkOpenGLErrorsInternal(const char* file, int line);
 
@@ -165,6 +161,12 @@ class TestbedApplication : public Screen {
 
         /// Start/stop the simulation
         void togglePlayPauseSimulation();
+
+        /// Play the simulation
+        void playSimulation();
+
+        /// Pause the simulation
+        void pauseSimulation();
 
         /// Restart the simulation
         void restartSimulation();
@@ -208,9 +210,6 @@ class TestbedApplication : public Screen {
         /// Initialize the application
         void init();
 
-        /// Start the main loop where rendering occur
-        //void startMainLoop();
-
         /// Change the current scene
         void switchScene(Scene* newScene);
 
@@ -227,7 +226,7 @@ inline std::vector<Scene*> TestbedApplication::getScenes() {
     return mScenes;
 }
 
-// Start the simulation
+// Toggle play/pause for the simulation
 inline void TestbedApplication::togglePlayPauseSimulation() {
 
     if (mTimer.isRunning()) {
@@ -236,6 +235,16 @@ inline void TestbedApplication::togglePlayPauseSimulation() {
     else {
         mTimer.start();
     }
+}
+
+// Play the simulation
+inline void TestbedApplication::playSimulation() {
+    if (!mTimer.isRunning()) mTimer.start();
+}
+
+// Pause the simulation
+inline void TestbedApplication::pauseSimulation() {
+    if (mTimer.isRunning()) mTimer.stop();
 }
 
 // Restart the simulation

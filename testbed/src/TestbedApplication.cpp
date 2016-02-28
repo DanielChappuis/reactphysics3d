@@ -83,82 +83,11 @@ TestbedApplication::~TestbedApplication() {
 // Initialize the viewer
 void TestbedApplication::init() {
 
-    mGui.init();
-
-    /*
-
-    {
-
-        // Set the GLFW error callback method
-        glfwSetErrorCallback(error_callback);
-
-        // Initialize the GLFW library
-        if (!glfwInit()) {
-             std::exit(EXIT_FAILURE);
-        }
-
-        // OpenGL version required
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-        // Active the multi-sampling by default
-        if (mIsMultisamplingActive) {
-            glfwWindowHint(GLFW_SAMPLES, 4);
-        }
-
-
-        // Create the GLFW window
-        mWindow = glfwCreateWindow(mWidth, mHeight,
-                                   "ReactPhysics3D Testbed", NULL, NULL);
-        if (!mWindow) {
-            glfwTerminate();
-            std::exit(EXIT_FAILURE);
-        }
-        glfwMakeContextCurrent(mWindow);
-
-        // Vertical Synchronization
-        enableVSync(mIsVSyncEnabled);
-
-        // Initialize the GLEW library
-        glewExperimental = GL_TRUE;
-        GLenum errorGLEW = glewInit();
-        if (errorGLEW != GLEW_OK) {
-
-            // Problem: glewInit failed, something is wrong
-            std::cerr << "GLEW Error : " << glewGetErrorString(errorGLEW) << std::endl;
-            assert(false);
-            std::exit(EXIT_FAILURE);
-        }
-
-        if (mIsMultisamplingActive) {
-            glEnable(GL_MULTISAMPLE);
-        }
-
-        glfwSetKeyCallback(mWindow, keyboard);
-        glfwSetMouseButtonCallback(mWindow, mouseButton);
-        glfwSetCursorPosCallback(mWindow, mouseMotion);
-        glfwSetScrollCallback(mWindow, scroll);
-
-        // Define the background color (black)
-        glClearColor(0, 0, 0, 1.0);
-
-        // Create all the scenes
-        createScenes();
-
-        Gui::getInstance().setWindow(mScreen);
-
-        // Init the GUI
-        Gui::getInstance().init();
-
-        mTimer.start();
-
-    }
-    */
-
     // Create all the scenes
     createScenes();
+
+    // Initialize the GUI
+    mGui.init();
 
     mTimer.start();
 
@@ -296,6 +225,8 @@ void TestbedApplication::drawContents() {
     // Compute the current framerate
     computeFPS();
 
+    mGui.update();
+
     // Check the OpenGL errors
     checkOpenGLErrors();
 }
@@ -320,71 +251,11 @@ bool TestbedApplication::resizeEvent(const Vector2i& size) {
     return true;
 }
 
-// Render
-/*
-void TestbedApplication::render() {
-
-    int bufferWidth, bufferHeight;
-    glfwGetFramebufferSize(mGLFWWindow, &bufferWidth, &bufferHeight);
-
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(mGLFWWindow, &windowWidth, &windowHeight);
-
-    // Compute the window to framebuffer ratio
-    mWindowToFramebufferRatio.x = float(bufferWidth) / float(windowWidth);
-    mWindowToFramebufferRatio.y = float(bufferHeight) / float(windowHeight);
-
-    // Set the viewport of the scene
-    mCurrentScene->setViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                               0,
-                               bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                               bufferHeight);
-
-    // Render the scene
-    mCurrentScene->render();
-
-    // Display the GUI
-    Gui::getInstance().render();
-
-    // Check the OpenGL errors
-    checkOpenGLErrors();
-}
-*/
-
 // Set the dimension of the camera viewport
 void TestbedApplication::reshape() {
 
 
 }
-
-/*
-// Start the main loop where rendering occur
-void TestbedApplication::startMainLoop() {
-
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(mGLFWWindow)) {
-
-        checkOpenGLErrors();
-
-        // Call the update function
-        update();
-
-        // Render the application
-        //render();
-
-        // Swap front and back buffers
-        glfwSwapBuffers(mGLFWWindow);
-
-        // Process events
-        glfwPollEvents();
-
-        // Compute the current framerate
-        computeFPS();
-
-        checkOpenGLErrors();
-    }
-}
-*/
 
 // Change the current scene
 void TestbedApplication::switchScene(Scene* newScene) {
@@ -471,6 +342,12 @@ void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
 bool TestbedApplication::keyboardEvent(int key, int scancode, int action, int modifiers) {
 
     if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
+        return true;
+    }
+
+    // Close application on escape key
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(mGLFWWindow, GL_TRUE);
         return true;
     }
 
