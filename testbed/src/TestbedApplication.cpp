@@ -51,7 +51,7 @@ const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
 TestbedApplication::TestbedApplication(bool isFullscreen)
                    : Screen(Vector2i(1280, 760), "Testbed ReactPhysics3D", true, isFullscreen),
                      mIsInitialized(false), mFPS(0), mNbFrames(0), mPreviousTime(0),
-                     mUpdateTime(0), mPhysicsUpdateTime(0), mGui(this) {
+                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0), mGui(this) {
 
     mCurrentScene = NULL;
     mIsMultisamplingActive = true;
@@ -61,10 +61,12 @@ TestbedApplication::TestbedApplication(bool isFullscreen)
     mSinglePhysicsStepDone = false;
     mWindowToFramebufferRatio = Vector2(1, 1);
     mIsShadowMappingEnabled = true;
-    mIsVSyncEnabled = true;
+    mIsVSyncEnabled = false;
     mIsContactPointsDisplayed = false;
 
     init();
+
+    resizeEvent(Vector2i(0, 0));
 }
 
 // Destructor
@@ -72,12 +74,6 @@ TestbedApplication::~TestbedApplication() {
 
     // Destroy all the scenes
     destroyScenes();
-
-    // Destroy the window
-    //glfwDestroyWindow(mWindow);
-
-    // Terminate GLFW
-    //glfwTerminate();
 }
 
 // Initialize the viewer
@@ -184,7 +180,7 @@ void TestbedApplication::update() {
     }
 
     // Compute the physics update time
-    mPhysicsUpdateTime = glfwGetTime() - currentTime;
+    mPhysicsTime = glfwGetTime() - currentTime;
 
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
@@ -205,8 +201,6 @@ void TestbedApplication::update() {
 
 void TestbedApplication::drawContents() {
 
-    resizeEvent(Vector2i(0, 0));
-
     update();
 
     int bufferWidth, bufferHeight;
@@ -219,16 +213,13 @@ void TestbedApplication::drawContents() {
     // Render the scene
     mCurrentScene->render();
 
-    // Display the GUI
-    //Gui::getInstance().render();
-
-    // Compute the current framerate
-    computeFPS();
-
     mGui.update();
 
     // Check the OpenGL errors
     checkOpenGLErrors();
+
+    // Compute the current framerate
+    computeFPS();
 }
 
 /// Window resize event handler
@@ -251,12 +242,6 @@ bool TestbedApplication::resizeEvent(const Vector2i& size) {
     return true;
 }
 
-// Set the dimension of the camera viewport
-void TestbedApplication::reshape() {
-
-
-}
-
 // Change the current scene
 void TestbedApplication::switchScene(Scene* newScene) {
 
@@ -271,6 +256,8 @@ void TestbedApplication::switchScene(Scene* newScene) {
 
     // Reset the scene
     mCurrentScene->reset();
+
+    resizeEvent(Vector2i(0, 0));
 }
 
 // Check the OpenGL errors
@@ -310,22 +297,24 @@ void TestbedApplication::computeFPS() {
     mCurrentTime = glfwGetTime();
 
     //  Calculate time passed
-    mUpdateTime = mCurrentTime - mPreviousTime;
-    double timeInterval = mUpdateTime * 1000.0;
+    mFrameTime = mCurrentTime - mPreviousTime;
+    double timeInterval = (mCurrentTime - mLastTimeComputedFPS) * 1000.0;
 
     // Update the FPS counter each second
-    if(timeInterval > 0.0001) {
+    if(timeInterval > 1000) {
 
         //  calculate the number of frames per second
         mFPS = static_cast<double>(mNbFrames) / timeInterval;
         mFPS *= 1000.0;
 
-        //  Set time
-        mPreviousTime = mCurrentTime;
-
         //  Reset frame count
         mNbFrames = 0;
+
+        mLastTimeComputedFPS = mCurrentTime;
     }
+
+    //  Set time
+    mPreviousTime = mCurrentTime;
 }
 
 // GLFW error callback method

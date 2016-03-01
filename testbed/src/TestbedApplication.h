@@ -80,11 +80,14 @@ class TestbedApplication : public Screen {
         /// Previous time for fps computation (in seconds)
         double mPreviousTime;
 
+        /// Last time the FPS have been computed
+        double mLastTimeComputedFPS;
+
         /// Update time (in seconds)
-        double mUpdateTime;
+        double mFrameTime;
 
         /// Physics update time (in seconds)
-        double mPhysicsUpdateTime;
+        double mPhysicsTime;
 
         /// True if multisampling is active
         bool mIsMultisamplingActive;
@@ -125,9 +128,6 @@ class TestbedApplication : public Screen {
 
         /// Update the simulation by taking a single physics step
         void updateSinglePhysicsStep();
-
-        /// Called when the windows is reshaped
-        void reshape();
 
         /// Check the OpenGL errors
         static void checkOpenGLErrorsInternal(const char* file, int line);
@@ -275,13 +275,13 @@ inline void TestbedApplication::displayContactPoints(bool display) {
 
 // Enable/Disable Vertical synchronization
 inline void TestbedApplication::enableVSync(bool enable) {
-    mIsVSyncEnabled = enable;
+    /*mIsVSyncEnabled = enable;
     if (mIsVSyncEnabled) {
         glfwSwapInterval(1);
     }
     else {
         glfwSwapInterval(0);
-    }
+    }*/
 }
 
 #endif

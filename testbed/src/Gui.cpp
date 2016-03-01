@@ -79,22 +79,22 @@ void Gui::init() {
 // Update the GUI
 void Gui::update() {
 
-    double currentTime = glfwGetTime();
-    if ((currentTime - mTimeSinceLastProfilingDisplay)  > TIME_INTERVAL_DISPLAY_PROFILING_INFO) {
-        mTimeSinceLastProfilingDisplay = currentTime;
+    // Update Profiling GUI every seconds
+    if ((mApp->mCurrentTime - mTimeSinceLastProfilingDisplay)  > TIME_INTERVAL_DISPLAY_PROFILING_INFO) {
+        mTimeSinceLastProfilingDisplay = mApp->mCurrentTime;
         mCachedFPS = mApp->mFPS;
-        mCachedUpdateTime = mApp->mUpdateTime;
-        mCachedPhysicsUpdateTime = mApp->mPhysicsUpdateTime;
+        mCachedUpdateTime = mApp->mFrameTime;
+        mCachedPhysicsUpdateTime = mApp->mPhysicsTime;
     }
 
     // Framerate (FPS)
     mFPSLabel->setCaption(std::string("FPS : ") + floatToString(mCachedFPS, 0));
 
-    // Update time
-    mUpdateTimeLabel->setCaption(std::string("Update time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1));
+    // Frame time
+    mFrameTimeLabel->setCaption(std::string("Frame time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1));
 
-    // Update time
-    mUpdatePhysicsTimeLabel->setCaption("Update physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1));
+    // Physics time
+    mPhysicsTimeLabel->setCaption("Physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1));
 
 }
 
@@ -400,7 +400,7 @@ void Gui::createSettingsPanel() {
     CheckBox* checkboxVSync = new CheckBox(mRenderingPanel, "V-Sync");
     checkboxVSync->setChecked(mApp->mIsVSyncEnabled);
     checkboxVSync->setCallback([&](bool value) {
-        mApp->mIsVSyncEnabled = value;
+        mApp->enableVSync(value);
     });
 
     // Enabled/Disable Shadows
@@ -426,10 +426,10 @@ void Gui::createProfilingPanel() {
     mFPSLabel = new Label(profilingPanel, std::string("FPS : ") + floatToString(mCachedFPS, 0),"sans-bold");
 
     // Update time
-    mUpdateTimeLabel = new Label(profilingPanel, std::string("Update time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1),"sans-bold");
+    mFrameTimeLabel = new Label(profilingPanel, std::string("Frame time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1),"sans-bold");
 
     // Update time
-    mUpdatePhysicsTimeLabel = new Label(profilingPanel, "Update physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1),"sans-bold");
+    mPhysicsTimeLabel = new Label(profilingPanel, "Physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1),"sans-bold");
 
     profilingPanel->setVisible(true);
 }

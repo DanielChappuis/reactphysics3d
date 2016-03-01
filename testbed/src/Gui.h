@@ -68,8 +68,8 @@ class Gui {
 
         // Profiling panel
         Label* mFPSLabel;
-        Label* mUpdateTimeLabel;
-        Label* mUpdatePhysicsTimeLabel;
+        Label* mFrameTimeLabel;
+        Label* mPhysicsTimeLabel;
 
         std::vector<CheckBox*> mCheckboxesScenes;
 
