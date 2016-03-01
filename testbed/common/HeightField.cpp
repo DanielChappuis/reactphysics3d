@@ -223,7 +223,7 @@ void HeightField::generateHeightField() {
 // Generate the graphics mesh to render the height field
 void HeightField::generateGraphicsMesh() {
 
-    std::vector<uint> indices;
+    std::vector<unsigned int> indices;
     int vertexId = 0;
 
     for (int i=0; i<NB_POINTS_WIDTH; i++) {
@@ -238,10 +238,10 @@ void HeightField::generateGraphicsMesh() {
             // Triangle indices
             if ((i < NB_POINTS_WIDTH - 1) && (j < NB_POINTS_LENGTH - 1)) {
 
-                int v1 = vertexId;
-                int v2 = vertexId + 1;
-                int v3 = vertexId + NB_POINTS_LENGTH;
-                int v4 = vertexId + NB_POINTS_LENGTH + 1;
+                unsigned int v1 = vertexId;
+                unsigned int v2 = vertexId + 1;
+                unsigned int v3 = vertexId + NB_POINTS_LENGTH;
+                unsigned int v4 = vertexId + NB_POINTS_LENGTH + 1;
 
                 // First triangle
                 indices.push_back(v1);

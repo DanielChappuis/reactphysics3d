@@ -49,7 +49,7 @@ class Mesh : public Object3D {
         // -------------------- Attributes -------------------- //
 
         // A triplet of vertex indices for each triangle
-        std::vector<std::vector<uint> > mIndices;
+        std::vector<std::vector<unsigned int> > mIndices;
 
         // Vertices coordinates (local space)
         std::vector<Vector3> mVertices;
