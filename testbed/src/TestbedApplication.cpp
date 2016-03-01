@@ -213,10 +213,11 @@ void TestbedApplication::drawContents() {
     // Render the scene
     mCurrentScene->render();
 
-    mGui.update();
-
     // Check the OpenGL errors
     checkOpenGLErrors();
+
+
+    mGui.update();
 
     // Compute the current framerate
     computeFPS();
@@ -290,6 +291,12 @@ void TestbedApplication::checkOpenGLErrorsInternal(const char* file, int line) {
 
 // Compute the FPS
 void TestbedApplication::computeFPS() {
+
+    // Note : By default the nanogui library is using glfwWaitEvents() to process
+    //        events and sleep to target a framerate of 50 ms (using a thread
+    //        sleeping). However, for games we prefer to use glfwPollEvents()
+    //        instead and remove the update. Therefore the file common.cpp of the
+    //        nanogui library has been modified to have a faster framerate
 
     mNbFrames++;
 
@@ -384,6 +391,16 @@ bool TestbedApplication::scrollEvent(const Vector2i &p, const Vector2f &rel) {
     //Gui::getInstance().setScroll(xAxis, yAxis);
 
     return mCurrentScene->scrollingEvent(rel[0], rel[1], SCROLL_SENSITIVITY);
+}
+
+void TestbedApplication::drawAll() {
+    glClearColor(mBackground[0], mBackground[1], mBackground[2], 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    drawContents();
+    drawWidgets();
+
+    glfwSwapBuffers(mGLFWWindow);
 }
 
 // Callback method to receive scrolling events

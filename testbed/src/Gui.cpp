@@ -64,14 +64,6 @@ void Gui::init() {
 
     mApp->setVisible(true);
     mApp->performLayout();
-    //window->center();
-
-
-    // Init UI
-    /*if (!imguiRenderGLInit("DroidSans.ttf")) {
-        fprintf(stderr, "Could not init GUI renderer.\n");
-        exit(EXIT_FAILURE);
-    }*/
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
 }
@@ -91,11 +83,10 @@ void Gui::update() {
     mFPSLabel->setCaption(std::string("FPS : ") + floatToString(mCachedFPS, 0));
 
     // Frame time
-    mFrameTimeLabel->setCaption(std::string("Frame time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1));
+    mFrameTimeLabel->setCaption(std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"));
 
     // Physics time
-    mPhysicsTimeLabel->setCaption("Physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1));
-
+    mPhysicsTimeLabel->setCaption(std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"));
 }
 
 void Gui::createSimulationPanel() {
@@ -426,10 +417,10 @@ void Gui::createProfilingPanel() {
     mFPSLabel = new Label(profilingPanel, std::string("FPS : ") + floatToString(mCachedFPS, 0),"sans-bold");
 
     // Update time
-    mFrameTimeLabel = new Label(profilingPanel, std::string("Frame time (ms) : ") + floatToString(mCachedUpdateTime * 1000.0, 1),"sans-bold");
+    mFrameTimeLabel = new Label(profilingPanel, std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
     // Update time
-    mPhysicsTimeLabel = new Label(profilingPanel, "Physics time (ms) : " + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1),"sans-bold");
+    mPhysicsTimeLabel = new Label(profilingPanel, std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
     profilingPanel->setVisible(true);
 }

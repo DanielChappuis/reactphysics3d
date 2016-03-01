@@ -190,6 +190,7 @@ class TestbedApplication : public Screen {
         /// Destructor
         virtual ~TestbedApplication();
 
+        virtual void drawAll();
         virtual void drawContents();
 
         /// Window resize event handler
@@ -275,13 +276,13 @@ inline void TestbedApplication::displayContactPoints(bool display) {
 
 // Enable/Disable Vertical synchronization
 inline void TestbedApplication::enableVSync(bool enable) {
-    /*mIsVSyncEnabled = enable;
+    mIsVSyncEnabled = enable;
     if (mIsVSyncEnabled) {
         glfwSwapInterval(1);
     }
     else {
         glfwSwapInterval(0);
-    }*/
+    }
 }
 
 #endif

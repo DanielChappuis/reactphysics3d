@@ -55,7 +55,7 @@ void mainloop() {
        view roughly every 50 ms; this is to support animations
        such as progress bars while keeping the system load
        reasonably low */
-    std::thread refresh_thread = std::thread(
+    /*std::thread refresh_thread = std::thread(
         [&]() {
             std::chrono::milliseconds time(50);
             while (__mainloop_active) {
@@ -63,7 +63,7 @@ void mainloop() {
                 glfwPostEmptyEvent();
             }
         }
-    );
+    );*/
 
     try {
         while (__mainloop_active) {
@@ -87,14 +87,15 @@ void mainloop() {
             }
 
             /* Wait for mouse/keyboard or empty refresh events */
-            glfwWaitEvents();
+            //glfwWaitEvents();
+            glfwPollEvents();
         }
     } catch (const std::exception &e) {
         std::cerr << "Caught exception in main loop: " << e.what() << std::endl;
         abort();
     }
 
-    refresh_thread.join();
+    //refresh_thread.join();
 }
 
 void leave() {
