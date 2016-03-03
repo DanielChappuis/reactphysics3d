@@ -19,7 +19,7 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "glew/include/" "nanogui/ext/glfw/include/" "nanogui/include/" "nanogui/ext/nanovg/src/" "nanogui/ext/eigen/" "opengl-framework/src/" "common/" "scenes/")
+INCLUDE_DIRECTORIES("src/" "glew/include/" "nanogui/ext/glfw/include/" "nanogui/ext/glew/include/" "nanogui/include/" "nanogui/ext/nanovg/src/" "nanogui/ext/eigen/" "opengl-framework/src/" "common/" "scenes/")
 
 # OpenGLFramework source files
 SET(OPENGLFRAMEWORK_SOURCES

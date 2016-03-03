@@ -1,8 +1,8 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
 
 # Project configuration
-PROJECT(REACTPHYSICS3D)
+PROJECT(REACTPHYSICS3D CXX)
 
 # Build type
 IF (NOT CMAKE_BUILD_TYPE)
@@ -24,8 +24,19 @@ OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profil
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
 
-# Compiler flags
-set(CMAKE_CXX_FLAGS "-Wall")
+# Warning Compiler flags
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
+# C++11 flags
+IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	include(CheckCXXCompilerFlag)
+	CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+	IF(COMPILER_SUPPORTS_CXX11)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	ELSE()
+		message("The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+	ENDIF()
+ENDIF()
 
 # Headers
 INCLUDE_DIRECTORIES(src)
@@ -170,10 +181,6 @@ SET (REACTPHYSICS3D_SOURCES
 
 # Create the library
 ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
-
-# Enable C++11 features
-set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD 11)
-set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # If we need to compile the testbed application
 IF(COMPILE_TESTBED)
