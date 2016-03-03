@@ -216,7 +216,6 @@ void TestbedApplication::drawContents() {
     // Check the OpenGL errors
     checkOpenGLErrors();
 
-
     mGui.update();
 
     // Compute the current framerate
@@ -324,17 +323,6 @@ void TestbedApplication::computeFPS() {
     mPreviousTime = mCurrentTime;
 }
 
-// GLFW error callback method
-void TestbedApplication::error_callback(int error, const char* description) {
-    fputs(description, stderr);
-}
-
-// Callback method to receive keyboard events
-void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
-                                  int action, int mods) {
-    //getInstance().mCurrentScene->keyboardEvent(key, scancode, action, mods);
-}
-
 bool TestbedApplication::keyboardEvent(int key, int scancode, int action, int modifiers) {
 
     if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
@@ -387,49 +375,5 @@ bool TestbedApplication::scrollEvent(const Vector2i &p, const Vector2f &rel) {
         return true;
     }
 
-    // Update scroll on the GUI
-    //Gui::getInstance().setScroll(xAxis, yAxis);
-
     return mCurrentScene->scrollingEvent(rel[0], rel[1], SCROLL_SENSITIVITY);
-}
-
-void TestbedApplication::drawAll() {
-    glClearColor(mBackground[0], mBackground[1], mBackground[2], 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    drawContents();
-    drawWidgets();
-
-    glfwSwapBuffers(mGLFWWindow);
-}
-
-// Callback method to receive scrolling events
-void TestbedApplication::scroll(GLFWwindow* window, double xAxis, double yAxis) {
-
-    // Update scroll on the GUI
-    //Gui::getInstance().setScroll(xAxis, yAxis);
-
-    //getInstance().mCurrentScene->scrollingEvent(xAxis, yAxis, SCROLL_SENSITIVITY);
-}
-
-// Called when a mouse button event occurs
-void TestbedApplication::mouseButton(GLFWwindow* window, int button, int action, int mods) {
-
-    // Get the mouse cursor position
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
-
-    //getInstance().mCurrentScene->mouseButtonEvent(button, action, mods, x, y);
-}
-
-// Called when a mouse motion event occurs
-void TestbedApplication::mouseMotion(GLFWwindow* window, double x, double y) {
-
-    int leftButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    int rightButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-    int middleButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-    int altKeyState = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
-
-    /*getInstance().mCurrentScene->mouseMotionEvent(x, y, leftButtonState, rightButtonState,
-                                                  middleButtonState, altKeyState);*/
 }

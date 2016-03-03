@@ -47,7 +47,6 @@ Gui::Gui(TestbedApplication* app) : mApp(app) {
 Gui::~Gui() {
 
 
-    //imguiRenderGLDestroy();
 }
 
 /// Initialize the GUI
@@ -217,7 +216,7 @@ void Gui::createSettingsPanel() {
 
     // Velocity solver iterations
     Widget* panelVelocityIterations = new Widget(mPhysicsPanel);
-    panelVelocityIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Fill, 0, 5));
+    panelVelocityIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelVelocityIterations = new Label(panelVelocityIterations, "Velocity solver","sans-bold");
     labelVelocityIterations->setFixedWidth(120);
     TextBox* textboxVelocityIterations = new TextBox(panelVelocityIterations);
@@ -229,6 +228,8 @@ void Gui::createSettingsPanel() {
 
         try {
             float value = std::stof(str);
+            std::ostringstream out;
+            out << std::setprecision(0) << std::fixed << value;
 
             if (value < 1 || value > 1000) return false;
 
@@ -246,7 +247,7 @@ void Gui::createSettingsPanel() {
 
     // Position solver iterations
     Widget* panelPositionIterations = new Widget(mPhysicsPanel);
-    panelPositionIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Fill, 0, 5));
+    panelPositionIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelPositionIterations = new Label(panelPositionIterations, "Position solver","sans-bold");
     labelPositionIterations->setFixedWidth(120);
     TextBox* textboxPositionIterations = new TextBox(panelPositionIterations);
@@ -258,6 +259,8 @@ void Gui::createSettingsPanel() {
 
         try {
             float value = std::stof(str);
+            std::ostringstream out;
+            out << std::setprecision(0) << std::fixed << value;
 
             if (value < 1 || value > 1000) return false;
 
@@ -275,7 +278,7 @@ void Gui::createSettingsPanel() {
 
     // Time before sleep
     Widget* panelTimeSleep = new Widget(mPhysicsPanel);
-    panelTimeSleep->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Fill, 0, 5));
+    panelTimeSleep->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelTimeSleep = new Label(panelTimeSleep, "Time before sleep","sans-bold");
     labelTimeSleep->setFixedWidth(120);
     out.str("");
@@ -307,10 +310,9 @@ void Gui::createSettingsPanel() {
     textboxTimeSleep->setFontSize(16);
     textboxTimeSleep->setAlignment(TextBox::Alignment::Right);
 
-
     // Sleep linear velocity
     Widget* panelSleepLinearVel = new Widget(mPhysicsPanel);
-    panelSleepLinearVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 5, 5));
+    panelSleepLinearVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
     Label* labelSleepLinearVel = new Label(panelSleepLinearVel, "Sleep linear velocity","sans-bold");
     labelSleepLinearVel->setFixedWidth(120);
     out.str("");
@@ -344,7 +346,7 @@ void Gui::createSettingsPanel() {
 
     // Sleep angular velocity
     Widget* panelSleepAngularVel = new Widget(mPhysicsPanel);
-    panelSleepAngularVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Fill, 5, 5));
+    panelSleepAngularVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
     Label* labelSleepAngularVel = new Label(panelSleepAngularVel, "Sleep angular velocity","sans-bold");
     labelSleepAngularVel->setFixedWidth(120);
     out.str("");
@@ -408,7 +410,7 @@ void Gui::createSettingsPanel() {
 void Gui::createProfilingPanel() {
 
     Widget* profilingPanel = new Window(mApp, "Profiling");
-    profilingPanel->setPosition(Vector2i(15, 530));
+    profilingPanel->setPosition(Vector2i(15, 525));
     profilingPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
     profilingPanel->setId("SettingsPanel");
     profilingPanel->setFixedWidth(220);

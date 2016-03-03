@@ -135,21 +135,6 @@ class TestbedApplication : public Screen {
         /// Compute the FPS
         void computeFPS();
 
-        /// GLFW error callback method
-        static void error_callback(int error, const char* description);
-
-        /// Callback method to receive keyboard events
-        static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-        /// Callback method to receive scrolling events
-        static void scroll(GLFWwindow* window, double xAxis, double yAxis);
-
-        /// Called when a mouse button event occurs
-        static void mouseButton(GLFWwindow* window, int button, int action, int mods);
-
-        /// Called when a mouse motion event occurs
-        static void mouseMotion(GLFWwindow* window, double x, double y);
-
         /// Initialize all the scenes
         void createScenes();
 
@@ -190,7 +175,7 @@ class TestbedApplication : public Screen {
         /// Destructor
         virtual ~TestbedApplication();
 
-        virtual void drawAll();
+        /// Render the content of the application
         virtual void drawContents();
 
         /// Window resize event handler
