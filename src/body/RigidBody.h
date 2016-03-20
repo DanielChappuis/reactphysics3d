@@ -339,7 +339,8 @@ inline decimal RigidBody::getLinearDamping() const {
     return mLinearDamping;
 }
 
-// Set the linear damping factor
+// Set the linear damping factor. This is the ratio of the linear velocity
+// that the body will lose every at seconds of simulation.
 /**
  * @param linearDamping The linear damping factor of this body
  */
@@ -356,7 +357,8 @@ inline decimal RigidBody::getAngularDamping() const {
     return mAngularDamping;
 }
 
-// Set the angular damping factor
+// Set the angular damping factor. This is the ratio of the angular velocity
+// that the body will lose at every seconds of simulation.
 /**
  * @param angularDamping The angular damping factor of this body
  */
