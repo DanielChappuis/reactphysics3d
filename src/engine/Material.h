@@ -47,6 +47,9 @@ class Material {
         /// Friction coefficient (positive value)
         decimal mFrictionCoefficient;
 
+        /// Rolling resistance factor (positive value)
+        decimal mRollingResistance;
+
         /// Bounciness during collisions (between 0 and 1) where 1 is for a very bouncy body
         decimal mBounciness;
 
@@ -74,6 +77,12 @@ class Material {
 
         /// Set the friction coefficient.
         void setFrictionCoefficient(decimal frictionCoefficient);
+
+        /// Return the rolling resistance factor
+        decimal getRollingResistance() const;
+
+        /// Set the rolling resistance factor
+        void setRollingResistance(decimal rollingResistance);
 
         /// Overloaded assignment operator
         Material& operator=(const Material& material);
@@ -117,6 +126,27 @@ inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
     mFrictionCoefficient = frictionCoefficient;
 }
 
+// Return the rolling resistance factor. If this value is larger than zero,
+// it will be used to slow down the body when it is rolling
+// against another body.
+/**
+ * @return The rolling resistance factor (positive value)
+ */
+inline decimal Material::getRollingResistance() const {
+    return mRollingResistance;
+}
+
+// Set the rolling resistance factor. If this value is larger than zero,
+// it will be used to slow down the body when it is rolling
+// against another body.
+/**
+ * @param rollingResistance The rolling resistance factor
+ */
+inline void Material::setRollingResistance(decimal rollingResistance) {
+    assert(rollingResistance >= 0);
+    mRollingResistance = rollingResistance;
+}
+
 // Overloaded assignment operator
 inline Material& Material::operator=(const Material& material) {
 
@@ -124,6 +154,7 @@ inline Material& Material::operator=(const Material& material) {
     if (this != &material) {
         mFrictionCoefficient = material.mFrictionCoefficient;
         mBounciness = material.mBounciness;
+        mRollingResistance = material.mRollingResistance;
     }
 
     // Return this material

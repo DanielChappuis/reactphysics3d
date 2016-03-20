@@ -139,6 +139,9 @@ class ContactPoint {
 
         /// Cached second friction impulse
         decimal mFrictionImpulse2;
+
+        /// Cached rolling resistance impulse
+        Vector3 mRollingResistanceImpulse;
         
         // -------------------- Methods -------------------- //
 
@@ -191,6 +194,9 @@ class ContactPoint {
         /// Return the cached second friction impulse
         decimal getFrictionImpulse2() const;
 
+        /// Return the cached rolling resistance impulse
+        Vector3 getRollingResistanceImpulse() const;
+
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
 
@@ -199,6 +205,9 @@ class ContactPoint {
 
         /// Set the second cached friction impulse
         void setFrictionImpulse2(decimal impulse);
+
+        /// Set the cached rolling resistance impulse
+        void setRollingResistanceImpulse(const Vector3& impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -286,6 +295,11 @@ inline decimal ContactPoint::getFrictionImpulse2() const {
     return mFrictionImpulse2;
 }
 
+// Return the cached rolling resistance impulse
+inline Vector3 ContactPoint::getRollingResistanceImpulse() const {
+    return mRollingResistanceImpulse;
+}
+
 // Set the cached penetration impulse
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
@@ -299,6 +313,11 @@ inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
 // Set the second cached friction impulse
 inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
     mFrictionImpulse2 = impulse;
+}
+
+// Set the cached rolling resistance impulse
+inline void ContactPoint::setRollingResistanceImpulse(const Vector3& impulse) {
+    mRollingResistanceImpulse = impulse;
 }
 
 // Set the contact world point on body 1

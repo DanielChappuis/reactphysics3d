@@ -119,6 +119,9 @@ class ContactManifold {
         /// Twist friction constraint accumulated impulse
         decimal mFrictionTwistImpulse;
 
+        /// Accumulated rolling resistance impulse
+        Vector3 mRollingResistanceImpulse;
+
         /// True if the contact manifold has already been added into an island
         bool mIsAlreadyInIsland;
 
@@ -216,6 +219,9 @@ class ContactManifold {
         /// Set the friction twist accumulated impulse
         void setFrictionTwistImpulse(decimal frictionTwistImpulse);
 
+        /// Set the accumulated rolling resistance impulse
+        void setRollingResistanceImpulse(const Vector3& rollingResistanceImpulse);
+
         /// Return a contact point of the manifold
         ContactPoint* getContactPoint(uint index) const;
 
@@ -310,6 +316,11 @@ inline decimal ContactManifold::getFrictionTwistImpulse() const {
 // Set the friction twist accumulated impulse
 inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpulse) {
     mFrictionTwistImpulse = frictionTwistImpulse;
+}
+
+// Set the accumulated rolling resistance impulse
+inline void ContactManifold::setRollingResistanceImpulse(const Vector3& rollingResistanceImpulse) {
+    mRollingResistanceImpulse = rollingResistanceImpulse;
 }
 
 // Return a contact point of the manifold
