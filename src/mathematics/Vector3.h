@@ -153,6 +153,9 @@ struct Vector3 {
         /// Return a vector taking the maximum components of two vectors
         static Vector3 max(const Vector3& vector1, const Vector3& vector2);
 
+        /// Return the zero vector
+        static Vector3 zero();
+
         // -------------------- Friends -------------------- //
 
         friend Vector3 operator+(const Vector3& vector1, const Vector3& vector2);
@@ -371,6 +374,11 @@ inline decimal Vector3::getMinValue() const {
 // Return the maximum value among the three components of a vector
 inline decimal Vector3::getMaxValue() const {
     return std::max(std::max(x, y), z);
+}
+
+// Return the zero vector
+inline Vector3 Vector3::zero() {
+    return Vector3(0, 0, 0);
 }
 
 }

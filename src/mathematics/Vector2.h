@@ -141,6 +141,9 @@ struct Vector2 {
         /// Return a vector taking the maximum components of two vectors
         static Vector2 max(const Vector2& vector1, const Vector2& vector2);
 
+        /// Return the zero vector
+        static Vector2 zero();
+
         // -------------------- Friends -------------------- //
 
         friend Vector2 operator+(const Vector2& vector1, const Vector2& vector2);
@@ -331,6 +334,11 @@ inline Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
 inline Vector2 Vector2::max(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(std::max(vector1.x, vector2.x),
                    std::max(vector1.y, vector2.y));
+}
+
+// Return the zero vector
+inline Vector2 Vector2::zero() {
+    return Vector2(0, 0);
 }
 
 }
