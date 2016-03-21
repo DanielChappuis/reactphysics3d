@@ -75,6 +75,9 @@ inline bool sameSign(decimal a, decimal b) {
     return a * b >= decimal(0.0);
 }
 
+/// Clamp a vector such that it is no longer than a given maximum length
+Vector3 clamp(const Vector3& vector, decimal maxLength);
+
 /// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
 void computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
                                              const Vector3& p, decimal& u, decimal& v, decimal& w);

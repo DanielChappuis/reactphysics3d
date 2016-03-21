@@ -43,7 +43,6 @@
 #include "HeightField.h"
 #include "Dumbbell.h"
 #include "VisualContactPoint.h"
-#include "../common/Viewer.h"
 
 namespace raycastscene {
 
@@ -200,7 +199,7 @@ class RaycastScene : public SceneDemo {
         void showHideNormals();
 
         /// Called when a keyboard event occurs
-        virtual void keyboardEvent(int key, int scancode, int action, int mods);
+        virtual bool keyboardEvent(int key, int scancode, int action, int mods);
 
         /// Enabled/Disable the shadow mapping
         void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);

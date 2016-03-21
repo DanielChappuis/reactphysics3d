@@ -94,6 +94,9 @@ const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 /// Default bounciness factor for a rigid body
 const decimal DEFAULT_BOUNCINESS = decimal(0.5);
 
+/// Default rolling resistance
+const decimal DEFAULT_ROLLING_RESISTANCE = decimal(0.0);
+
 /// True if the spleeping technique is enabled
 const bool SPLEEPING_ENABLED = true;
 

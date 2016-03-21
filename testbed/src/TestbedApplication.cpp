@@ -47,16 +47,11 @@ using namespace heightfieldscene;
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
 
-// Create and return the singleton instance of this class
-TestbedApplication& TestbedApplication::getInstance() {
-    static TestbedApplication instance;
-    return instance;
-}
-
 // Constructor
-TestbedApplication::TestbedApplication()
-                   : mFPS(0), mNbFrames(0), mPreviousTime(0),
-                     mUpdateTime(0), mPhysicsUpdateTime(0) {
+TestbedApplication::TestbedApplication(bool isFullscreen)
+                   : Screen(Vector2i(1280, 760), "Testbed ReactPhysics3D", true, isFullscreen),
+                     mIsInitialized(false), mFPS(0), mNbFrames(0), mPreviousTime(0),
+                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0), mGui(this) {
 
     mCurrentScene = NULL;
     mIsMultisamplingActive = true;
@@ -66,8 +61,12 @@ TestbedApplication::TestbedApplication()
     mSinglePhysicsStepDone = false;
     mWindowToFramebufferRatio = Vector2(1, 1);
     mIsShadowMappingEnabled = true;
-    mIsVSyncEnabled = true;
+    mIsVSyncEnabled = false;
     mIsContactPointsDisplayed = false;
+
+    init();
+
+    resizeEvent(Vector2i(0, 0));
 }
 
 // Destructor
@@ -75,80 +74,20 @@ TestbedApplication::~TestbedApplication() {
 
     // Destroy all the scenes
     destroyScenes();
-
-    // Destroy the window
-    glfwDestroyWindow(mWindow);
-
-    // Terminate GLFW
-    glfwTerminate();
 }
 
 // Initialize the viewer
 void TestbedApplication::init() {
 
-    // Set the GLFW error callback method
-    glfwSetErrorCallback(error_callback);
-
-    // Initialize the GLFW library
-    if (!glfwInit()) {
-         std::exit(EXIT_FAILURE);
-    }
-
-    // OpenGL version required
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-    // Active the multi-sampling by default
-    if (mIsMultisamplingActive) {
-        glfwWindowHint(GLFW_SAMPLES, 4);
-    }
-
-    // Create the GLFW window
-    mWindow = glfwCreateWindow(mWidth, mHeight,
-                               "ReactPhysics3D Testbed", NULL, NULL);
-    if (!mWindow) {
-        glfwTerminate();
-        std::exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(mWindow);
-
-    // Vertical Synchronization
-    enableVSync(mIsVSyncEnabled);
-
-    // Initialize the GLEW library
-    glewExperimental = GL_TRUE;
-    GLenum errorGLEW = glewInit();
-    if (errorGLEW != GLEW_OK) {
-
-        // Problem: glewInit failed, something is wrong
-        std::cerr << "GLEW Error : " << glewGetErrorString(errorGLEW) << std::endl;
-        assert(false);
-        std::exit(EXIT_FAILURE);
-    }
-
-    if (mIsMultisamplingActive) {
-        glEnable(GL_MULTISAMPLE);
-    }
-
-    glfwSetKeyCallback(mWindow, keyboard);
-    glfwSetMouseButtonCallback(mWindow, mouseButton);
-    glfwSetCursorPosCallback(mWindow, mouseMotion);
-    glfwSetScrollCallback(mWindow, scroll);
-
-    // Define the background color (black)
-    glClearColor(0, 0, 0, 1.0);
-
     // Create all the scenes
     createScenes();
 
-    Gui::getInstance().setWindow(mWindow);
-
-    // Init the GUI
-    Gui::getInstance().init();
+    // Initialize the GUI
+    mGui.init();
 
     mTimer.start();
+
+    mIsInitialized = true;
 }
 
 // Create all the scenes
@@ -241,7 +180,7 @@ void TestbedApplication::update() {
     }
 
     // Compute the physics update time
-    mPhysicsUpdateTime = glfwGetTime() - currentTime;
+    mPhysicsTime = glfwGetTime() - currentTime;
 
     // Compute the interpolation factor
     float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
@@ -260,79 +199,47 @@ void TestbedApplication::update() {
     mCurrentScene->update();
 }
 
-// Render
-void TestbedApplication::render() {
+void TestbedApplication::drawContents() {
+
+    update();
 
     int bufferWidth, bufferHeight;
-    glfwGetFramebufferSize(mWindow, &bufferWidth, &bufferHeight);
-
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
-
-    // Compute the window to framebuffer ratio
-    mWindowToFramebufferRatio.x = float(bufferWidth) / float(windowWidth);
-    mWindowToFramebufferRatio.y = float(bufferHeight) / float(windowHeight);
+    glfwMakeContextCurrent(mGLFWWindow);
+    glfwGetFramebufferSize(mGLFWWindow, &bufferWidth, &bufferHeight);
 
     // Set the viewport of the scene
-    mCurrentScene->setViewport(mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                               0,
-                               bufferWidth - mWindowToFramebufferRatio.x * LEFT_PANE_WIDTH,
-                               bufferHeight);
+    mCurrentScene->setViewport(0, 0, bufferWidth, bufferHeight);
 
     // Render the scene
     mCurrentScene->render();
 
-    // Display the GUI
-    Gui::getInstance().render();
-
     // Check the OpenGL errors
     checkOpenGLErrors();
+
+    mGui.update();
+
+    // Compute the current framerate
+    computeFPS();
 }
 
-// Set the dimension of the camera viewport
-void TestbedApplication::reshape() {
+/// Window resize event handler
+bool TestbedApplication::resizeEvent(const Vector2i& size) {
+
+    if (!mIsInitialized) return false;
 
     // Get the framebuffer dimension
     int width, height;
-    glfwGetFramebufferSize(mWindow, &width, &height);
+    glfwGetFramebufferSize(mGLFWWindow, &width, &height);
 
     // Resize the camera viewport
-    mCurrentScene->reshape(width - LEFT_PANE_WIDTH, height);
+    mCurrentScene->reshape(width, height);
 
     // Update the window size of the scene
     int windowWidth, windowHeight;
-    glfwGetWindowSize(mWindow, &windowWidth, &windowHeight);
+    glfwGetWindowSize(mGLFWWindow, &windowWidth, &windowHeight);
     mCurrentScene->setWindowDimension(windowWidth, windowHeight);
-}
 
-// Start the main loop where rendering occur
-void TestbedApplication::startMainLoop() {
-
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(mWindow)) {
-
-        checkOpenGLErrors();
-
-        // Reshape the viewport
-        reshape();
-
-        // Call the update function
-        update();
-
-        // Render the application
-        render();
-
-        // Swap front and back buffers
-        glfwSwapBuffers(mWindow);
-
-        // Process events
-        glfwPollEvents();
-
-        // Compute the current framerate
-        computeFPS();
-
-        checkOpenGLErrors();
-    }
+    return true;
 }
 
 // Change the current scene
@@ -349,10 +256,12 @@ void TestbedApplication::switchScene(Scene* newScene) {
 
     // Reset the scene
     mCurrentScene->reset();
+
+    resizeEvent(Vector2i(0, 0));
 }
 
 // Check the OpenGL errors
-void TestbedApplication::checkOpenGLErrors() {
+void TestbedApplication::checkOpenGLErrorsInternal(const char* file, int line) {
     GLenum glError;
 
     // Get the OpenGL errors
@@ -361,14 +270,17 @@ void TestbedApplication::checkOpenGLErrors() {
     // While there are errors
     while (glError != GL_NO_ERROR) {
 
-        // Get the error string
-        const GLubyte* stringError = gluErrorString(glError);
+        std::string error;
 
-        // Display the error
-        if (stringError)
-            std::cerr << "OpenGL Error #" << glError << "(" << gluErrorString(glError) << ")" << std::endl;
-        else
-            std::cerr << "OpenGL Error #" << glError << " (no message available)" << std::endl;
+        switch(glError) {
+                case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+                case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+                case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+                case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+                case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+        }
+
+        std::cerr << "OpenGL Error #" << error.c_str() << " - " << file << ": " << line << std::endl;
 
         // Get the next error
         glError = glGetError();
@@ -379,68 +291,89 @@ void TestbedApplication::checkOpenGLErrors() {
 // Compute the FPS
 void TestbedApplication::computeFPS() {
 
+    // Note : By default the nanogui library is using glfwWaitEvents() to process
+    //        events and sleep to target a framerate of 50 ms (using a thread
+    //        sleeping). However, for games we prefer to use glfwPollEvents()
+    //        instead and remove the update. Therefore the file common.cpp of the
+    //        nanogui library has been modified to have a faster framerate
+
     mNbFrames++;
 
     //  Get the number of seconds since start
     mCurrentTime = glfwGetTime();
 
     //  Calculate time passed
-    mUpdateTime = mCurrentTime - mPreviousTime;
-    double timeInterval = mUpdateTime * 1000.0;
+    mFrameTime = mCurrentTime - mPreviousTime;
+    double timeInterval = (mCurrentTime - mLastTimeComputedFPS) * 1000.0;
 
     // Update the FPS counter each second
-    if(timeInterval > 0.0001) {
+    if(timeInterval > 1000) {
 
         //  calculate the number of frames per second
         mFPS = static_cast<double>(mNbFrames) / timeInterval;
         mFPS *= 1000.0;
 
-        //  Set time
-        mPreviousTime = mCurrentTime;
-
         //  Reset frame count
         mNbFrames = 0;
+
+        mLastTimeComputedFPS = mCurrentTime;
     }
+
+    //  Set time
+    mPreviousTime = mCurrentTime;
 }
 
-// GLFW error callback method
-void TestbedApplication::error_callback(int error, const char* description) {
-    fputs(description, stderr);
+bool TestbedApplication::keyboardEvent(int key, int scancode, int action, int modifiers) {
+
+    if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
+        return true;
+    }
+
+    // Close application on escape key
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(mGLFWWindow, GL_TRUE);
+        return true;
+    }
+
+    return mCurrentScene->keyboardEvent(key, scancode, action, modifiers);
 }
 
-// Callback method to receive keyboard events
-void TestbedApplication::keyboard(GLFWwindow* window, int key, int scancode,
-                                  int action, int mods) {
-    getInstance().mCurrentScene->keyboardEvent(key, scancode, action, mods);
-}
+// Handle a mouse button event (default implementation: propagate to children)
+bool TestbedApplication::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
 
-// Callback method to receive scrolling events
-void TestbedApplication::scroll(GLFWwindow* window, double xAxis, double yAxis) {
-
-    // Update scroll on the GUI
-    Gui::getInstance().setScroll(xAxis, yAxis);
-
-    getInstance().mCurrentScene->scrollingEvent(xAxis, yAxis, SCROLL_SENSITIVITY);
-}
-
-// Called when a mouse button event occurs
-void TestbedApplication::mouseButton(GLFWwindow* window, int button, int action, int mods) {
+    if (Screen::mouseButtonEvent(p, button, down, modifiers)) {
+        return true;
+    }
 
     // Get the mouse cursor position
     double x, y;
-    glfwGetCursorPos(window, &x, &y);
+    glfwGetCursorPos(mGLFWWindow, &x, &y);
 
-    getInstance().mCurrentScene->mouseButtonEvent(button, action, mods, x, y);
+    return mCurrentScene->mouseButtonEvent(button, down, modifiers, x, y);
 }
 
-// Called when a mouse motion event occurs
-void TestbedApplication::mouseMotion(GLFWwindow* window, double x, double y) {
+// Handle a mouse motion event (default implementation: propagate to children)
+bool TestbedApplication::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
 
-    int leftButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    int rightButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-    int middleButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-    int altKeyState = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
+    if (Screen::mouseMotionEvent(p, rel, button, modifiers)) {
+        return true;
+    }
 
-    getInstance().mCurrentScene->mouseMotionEvent(x, y, leftButtonState, rightButtonState,
+    int leftButtonState = glfwGetMouseButton(mGLFWWindow, GLFW_MOUSE_BUTTON_LEFT);
+    int rightButtonState = glfwGetMouseButton(mGLFWWindow, GLFW_MOUSE_BUTTON_RIGHT);
+    int middleButtonState = glfwGetMouseButton(mGLFWWindow, GLFW_MOUSE_BUTTON_MIDDLE);
+    int altKeyState = glfwGetKey(mGLFWWindow, GLFW_KEY_LEFT_ALT);
+
+    return mCurrentScene->mouseMotionEvent(p[0], p[1], leftButtonState, rightButtonState,
                                                   middleButtonState, altKeyState);
+}
+
+// Handle a mouse scroll event (default implementation: propagate to children)
+bool TestbedApplication::scrollEvent(const Vector2i &p, const Vector2f &rel) {
+
+    if (Screen::scrollEvent(p, rel)) {
+        return true;
+    }
+
+    return mCurrentScene->scrollingEvent(rel[0], rel[1], SCROLL_SENSITIVITY);
 }

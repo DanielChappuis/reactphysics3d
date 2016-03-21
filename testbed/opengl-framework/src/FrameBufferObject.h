@@ -28,7 +28,7 @@
 
 // Libraries
 #include "definitions.h"
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 #include <cassert>
 #include <iostream>
 
@@ -93,7 +93,8 @@ inline void FrameBufferObject::unbind() const {
 inline bool FrameBufferObject::checkOpenGLExtensions() {
 
     // Check that OpenGL version is at least 3.0 or there the framebuffer object extension exists
-    return (GLEW_VERSION_3_0 || GLEW_ARB_framebuffer_object);
+    //return (GLEW_VERSION_3_0 || GLEW_ARB_framebuffer_object);
+    return true;
 }
 
 }

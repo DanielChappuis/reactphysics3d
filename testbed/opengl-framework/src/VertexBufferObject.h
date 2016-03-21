@@ -27,7 +27,7 @@
 #define VERTEX_BUFFER_OBJECT_H
 
 // Libraries
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 #include <cassert>
 #include <iostream>
 
@@ -98,7 +98,8 @@ inline void VertexBufferObject::unbind() const {
 inline bool VertexBufferObject::checkOpenGLExtensions() {
 
     // Check that OpenGL version is at least 1.5 or there the vertex buffer object extension exists
-    return (GLEW_VERSION_1_5 || GL_ARB_vertex_buffer_object);
+    //return (GLEW_VERSION_1_5 || GL_ARB_vertex_buffer_object);
+    return true;
 }
 
 }

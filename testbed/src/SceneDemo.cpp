@@ -196,7 +196,7 @@ void SceneDemo::createShadowMapFBOAndTexture() {
 
     // Create the texture for the depth values
     mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
-                             GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP, NULL);
+                             GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, NULL);
 
     // Create the FBO for the shadow map
     mFBOShadowMap.create(0, 0, false);
@@ -206,7 +206,7 @@ void SceneDemo::createShadowMapFBOAndTexture() {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
 
-    mFBOShadowMap.attachTexture(GL_DEPTH_ATTACHMENT_EXT, mShadowMapTexture.getID());
+    mFBOShadowMap.attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture.getID());
     mFBOShadowMap.unbind();
 
     mIsShadowMappingInitialized = true;

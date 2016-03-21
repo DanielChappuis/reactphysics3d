@@ -27,19 +27,16 @@
 #define	GUI_H
 
 // Libraries
-#include "imgui.h"
-#include "imguiRenderGL3.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <nanogui/opengl.h>
+#include <nanogui/nanogui.h>
 #include "openglframework.h"
-
-// Constants
-const int LEFT_PANE_WIDTH = 300;
-const int LEFT_PANE_HEADER_HEIGHT = 90;
-const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 0.3;
-const int CHECKBOX_SIZE = 9;
+#include <sstream>
+#include <iomanip>
 
 using namespace openglframework;
+using namespace nanogui;
+
+const double TIME_INTERVAL_DISPLAY_PROFILING_INFO = 1;
 
 // Declarations
 class TestbedApplication;
@@ -56,33 +53,27 @@ class Gui {
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : Delete this
-        static GLFWwindow* mWindow;
-
-        static Shader mShader;
-        static double       g_Time;
-        static bool         g_MousePressed[3];
-        static float        g_MouseWheel;
-        static GLuint       g_FontTexture;
-        static int          g_AttribLocationTex, g_AttribLocationProjMtx;
-        static int          g_AttribLocationPosition, g_AttribLocationUV, g_AttribLocationColor;
-        static size_t       g_VboSize;
-        static openglframework::VertexBufferObject mVBO;
-        static openglframework::VertexArrayObject mVAO;
-        static LeftPane mLeftPane;
+        // Pointer to the application
+        TestbedApplication* mApp;
 
         static double mScrollX, mScrollY;
 
+        // Simulation panel
+        Widget* mSimulationPanel;
+
+        // Settings Panel
+        Widget* mSettingsPanel;
+        Widget* mPhysicsPanel;
+        Widget* mRenderingPanel;
+
+        // Profiling panel
+        Label* mFPSLabel;
+        Label* mFrameTimeLabel;
+        Label* mPhysicsTimeLabel;
+
+        std::vector<CheckBox*> mCheckboxesScenes;
+
         // -------------------- Methods -------------------- //
-
-        static void displayLeftPane();
-
-        /// Display the list of scenes
-        static void displayScenesPane();
-
-        static void displayPhysicsPane();
-        static void displayRenderingPane();
-        static void displayProfilingPane();
 
         static void resetScroll();
 
@@ -98,34 +89,38 @@ class Gui {
         // Cached update physics time
         static double mCachedPhysicsUpdateTime;
 
+        // -------------------- Methods -------------------- //
+
+        void createSimulationPanel();
+
+        void createSettingsPanel();
+
+        void createProfilingPanel();
+
+        // Convert float value to string
+        std::string floatToString(float value, int precision);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Gui();
+        Gui(TestbedApplication* app);
 
         /// Destructor
         ~Gui();
 
-        /// Create and return the singleton instance of this class
-        static Gui& getInstance();
-
         /// Initialize the GUI
         void init();
+
+        /// Update the GUI
+        void update();
 
         /// Display the GUI
         void render();
 
-        static void setWindow(GLFWwindow* window);
-
         static void setScroll(double scrollX, double scrollY);
 };
-
-inline void Gui::setWindow(GLFWwindow* window) {
-    mWindow = window;
-}
 
 inline void Gui::resetScroll() {
     mScrollX = 0.0;
@@ -135,6 +130,12 @@ inline void Gui::resetScroll() {
 inline void Gui::setScroll(double scrollX, double scrollY) {
     mScrollX = scrollX;
     mScrollY = scrollY;
+}
+
+inline std::string Gui::floatToString(float value, int precision) {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(precision) << value;
+    return ss.str();
 }
 
 #endif

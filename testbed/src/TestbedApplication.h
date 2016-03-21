@@ -33,12 +33,16 @@
 #include "Timer.h"
 #include <GLFW/glfw3.h>
 
+using namespace nanogui;
+
+// Macro for OpenGL errors
+#define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
+
 // Constants
 const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
 
 /// Class TestbedApplication
-/// Singleton class representing the application.
-class TestbedApplication {
+class TestbedApplication : public Screen {
 
     private :
 
@@ -48,8 +52,9 @@ class TestbedApplication {
 
         // -------------------- Attributes -------------------- //
 
-        /// GLFW window
-        GLFWwindow* mWindow;
+        bool mIsInitialized;
+
+        Gui mGui;
 
         /// Timer
         Timer mTimer;
@@ -75,11 +80,14 @@ class TestbedApplication {
         /// Previous time for fps computation (in seconds)
         double mPreviousTime;
 
+        /// Last time the FPS have been computed
+        double mLastTimeComputedFPS;
+
         /// Update time (in seconds)
-        double mUpdateTime;
+        double mFrameTime;
 
         /// Physics update time (in seconds)
-        double mPhysicsUpdateTime;
+        double mPhysicsTime;
 
         /// True if multisampling is active
         bool mIsMultisamplingActive;
@@ -106,9 +114,6 @@ class TestbedApplication {
 
         // -------------------- Methods -------------------- //
 
-        /// Private constructor (for the singleton class)
-        TestbedApplication();
-
         /// Private copy-constructor (for the singleton class)
         TestbedApplication(TestbedApplication const&);
 
@@ -124,32 +129,11 @@ class TestbedApplication {
         /// Update the simulation by taking a single physics step
         void updateSinglePhysicsStep();
 
-        /// Called when the windows is reshaped
-        void reshape();
-
-        /// Render
-        void render();
-
         /// Check the OpenGL errors
-        static void checkOpenGLErrors();
+        static void checkOpenGLErrorsInternal(const char* file, int line);
 
         /// Compute the FPS
         void computeFPS();
-
-        /// GLFW error callback method
-        static void error_callback(int error, const char* description);
-
-        /// Callback method to receive keyboard events
-        static void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-        /// Callback method to receive scrolling events
-        static void scroll(GLFWwindow* window, double xAxis, double yAxis);
-
-        /// Called when a mouse button event occurs
-        static void mouseButton(GLFWwindow* window, int button, int action, int mods);
-
-        /// Called when a mouse motion event occurs
-        static void mouseMotion(GLFWwindow* window, double x, double y);
 
         /// Initialize all the scenes
         void createScenes();
@@ -162,6 +146,12 @@ class TestbedApplication {
 
         /// Start/stop the simulation
         void togglePlayPauseSimulation();
+
+        /// Play the simulation
+        void playSimulation();
+
+        /// Pause the simulation
+        void pauseSimulation();
 
         /// Restart the simulation
         void restartSimulation();
@@ -179,17 +169,32 @@ class TestbedApplication {
 
         // -------------------- Methods -------------------- //
 
-        /// Create and return the singleton instance of this class
-        static TestbedApplication& getInstance();
+        /// Private constructor (for the singleton class)
+        TestbedApplication(bool isFullscreen);
 
         /// Destructor
-        ~TestbedApplication();
+        virtual ~TestbedApplication();
+
+        /// Render the content of the application
+        virtual void drawContents();
+
+        /// Window resize event handler
+        virtual bool resizeEvent(const Vector2i& size);
+
+        /// Default keyboard event handler
+        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+
+        /// Handle a mouse button event (default implementation: propagate to children)
+        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+
+        /// Handle a mouse motion event (default implementation: propagate to children)
+        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+
+        /// Handle a mouse scroll event (default implementation: propagate to children)
+        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
 
         /// Initialize the application
         void init();
-
-        /// Start the main loop where rendering occur
-        void startMainLoop();
 
         /// Change the current scene
         void switchScene(Scene* newScene);
@@ -207,7 +212,7 @@ inline std::vector<Scene*> TestbedApplication::getScenes() {
     return mScenes;
 }
 
-// Start the simulation
+// Toggle play/pause for the simulation
 inline void TestbedApplication::togglePlayPauseSimulation() {
 
     if (mTimer.isRunning()) {
@@ -216,6 +221,16 @@ inline void TestbedApplication::togglePlayPauseSimulation() {
     else {
         mTimer.start();
     }
+}
+
+// Play the simulation
+inline void TestbedApplication::playSimulation() {
+    if (!mTimer.isRunning()) mTimer.start();
+}
+
+// Pause the simulation
+inline void TestbedApplication::pauseSimulation() {
+    if (mTimer.isRunning()) mTimer.stop();
 }
 
 // Restart the simulation

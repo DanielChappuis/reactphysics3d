@@ -156,18 +156,18 @@ class Scene {
         virtual void reset()=0;
 
         /// Called when a keyboard event occurs
-        virtual void keyboardEvent(int key, int scancode, int action, int mods);
+        virtual bool keyboardEvent(int key, int scancode, int action, int mods);
 
         /// Called when a mouse button event occurs
-        virtual void mouseButtonEvent(int button, int action, int mods,
+        virtual bool mouseButtonEvent(int button, bool down, int mods,
                                       double mousePosX, double mousePosY);
 
         /// Called when a mouse motion event occurs
-        virtual void mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
+        virtual bool mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
                                       int rightButtonState, int middleButtonState, int altKeyState);
 
         /// Called when a scrolling event occurs
-        virtual void scrollingEvent(float xAxis, float yAxis, float scrollSensitivy);
+        virtual bool scrollingEvent(float xAxis, float yAxis, float scrollSensitivy);
 
         /// Set the window dimension
         void setWindowDimension(int width, int height);
@@ -204,8 +204,8 @@ class Scene {
 };
 
 // Called when a keyboard event occurs
-inline void Scene::keyboardEvent(int key, int scancode, int action, int mods) {
-
+inline bool Scene::keyboardEvent(int key, int scancode, int action, int mods) {
+    return false;
 }
 
 /// Reshape the view

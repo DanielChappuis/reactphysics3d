@@ -60,12 +60,12 @@ bool Shader::create(const std::string vertexShaderFilename,
     mFilenameFragmentShader = fragmentShaderFilename;
 
     // Check that the needed OpenGL extensions are available
-    bool isExtensionOK = checkOpenGLExtensions();
+    /*bool isExtensionOK = checkOpenGLExtensions();
     if (!isExtensionOK) {
        cerr << "Error : Impossible to use GLSL vertex or fragment shaders on this platform" << endl;
        assert(false);
        return false;
-    }
+    }*/
 
     // Delete the current shader
     destroy();

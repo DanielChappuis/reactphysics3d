@@ -55,7 +55,7 @@ bool FrameBufferObject::create(uint width, uint height, bool needRenderBuffer) {
     }
 
     // Generate a new FBO
-    glGenFramebuffersEXT(1, &mFrameBufferID);
+    glGenFramebuffers(1, &mFrameBufferID);
     assert(mFrameBufferID != 0);
 
     // If we also need to create a render buffer

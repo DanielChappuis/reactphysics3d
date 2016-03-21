@@ -28,12 +28,14 @@ OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 # C++11 flags
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-IF(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-ELSE()
-    message("The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	include(CheckCXXCompilerFlag)
+	CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+	IF(COMPILER_SUPPORTS_CXX11)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	ELSE()
+		message("The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+	ENDIF()
 ENDIF()
 
 # Headers
@@ -179,10 +181,6 @@ SET (REACTPHYSICS3D_SOURCES
 
 # Create the library
 ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
-
-# Enable C++11 features
-#set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD 11)
-#set_property(TARGET reactphysics3d PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # If we need to compile the testbed application
 IF(COMPILE_TESTBED)

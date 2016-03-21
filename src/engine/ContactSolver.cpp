@@ -103,12 +103,15 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.nbContacts = externalManifold->getNbContactPoints();
         internalManifold.restitutionFactor = computeMixedRestitutionFactor(body1, body2);
         internalManifold.frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
+        internalManifold.rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         internalManifold.externalContactManifold = externalManifold;
+        internalManifold.isBody1DynamicType = body1->getType() == DYNAMIC;
+        internalManifold.isBody2DynamicType = body2->getType() == DYNAMIC;
 
         // If we solve the friction constraints at the center of the contact manifold
         if (mIsSolveFrictionAtContactManifoldCenterActive) {
-            internalManifold.frictionPointBody1 = Vector3(0.0, 0.0, 0.0);
-            internalManifold.frictionPointBody2 = Vector3(0.0, 0.0, 0.0);
+            internalManifold.frictionPointBody1 = Vector3::zero();
+            internalManifold.frictionPointBody2 = Vector3::zero();
         }
 
         // For each  contact point of the contact manifold
@@ -135,6 +138,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
             contactPoint.penetrationImpulse = 0.0;
             contactPoint.friction1Impulse = 0.0;
             contactPoint.friction2Impulse = 0.0;
+            contactPoint.rollingResistanceImpulse = Vector3::zero();
 
             // If we solve the friction constraints at the center of the contact manifold
             if (mIsSolveFrictionAtContactManifoldCenterActive) {
@@ -167,6 +171,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
                 internalManifold.friction1Impulse = 0.0;
                 internalManifold.friction2Impulse = 0.0;
                 internalManifold.frictionTwistImpulse = 0.0;
+                internalManifold.rollingResistanceImpulse = Vector3(0, 0, 0);
             }
         }
     }
@@ -266,6 +271,7 @@ void ContactSolver::initializeContactConstraints() {
                 contactPoint.penetrationImpulse = externalContact->getPenetrationImpulse();
                 contactPoint.friction1Impulse = externalContact->getFrictionImpulse1();
                 contactPoint.friction2Impulse = externalContact->getFrictionImpulse2();
+                contactPoint.rollingResistanceImpulse = externalContact->getRollingResistanceImpulse();
             }
 
             // Initialize the split impulses to zero
@@ -275,6 +281,13 @@ void ContactSolver::initializeContactConstraints() {
             if (mIsSolveFrictionAtContactManifoldCenterActive) {
                 manifold.normal += contactPoint.normal;
             }
+        }
+
+        // Compute the inverse K matrix for the rolling resistance constraint
+        manifold.inverseRollingResistance.setToZero();
+        if (manifold.rollingResistanceFactor > 0 && manifold.isBody1DynamicType || manifold.isBody2DynamicType) {
+            manifold.inverseRollingResistance = manifold.inverseInertiaTensorBody1 + manifold.inverseInertiaTensorBody2;
+            manifold.inverseRollingResistance = manifold.inverseRollingResistance.getInverse();
         }
 
         // If we solve the friction constraints at the center of the contact manifold
@@ -384,6 +397,18 @@ void ContactSolver::warmStart() {
 
                     // Apply the impulses to the bodies of the constraint
                     applyImpulse(impulseFriction2, contactManifold);
+
+                    // ------ Rolling resistance------ //
+
+                    if (contactManifold.rollingResistanceFactor > 0) {
+
+                        // Compute the impulse P = J^T * lambda
+                        const Impulse impulseRollingResistance(Vector3::zero(), -contactPoint.rollingResistanceImpulse,
+                                                               Vector3::zero(), contactPoint.rollingResistanceImpulse);
+
+                        // Apply the impulses to the bodies of the constraint
+                        applyImpulse(impulseRollingResistance, contactManifold);
+                    }
                 }
             }
             else {  // If it is a new contact point
@@ -392,6 +417,7 @@ void ContactSolver::warmStart() {
                 contactPoint.penetrationImpulse = 0.0;
                 contactPoint.friction1Impulse = 0.0;
                 contactPoint.friction2Impulse = 0.0;
+                contactPoint.rollingResistanceImpulse = Vector3::zero();
             }
         }
 
@@ -456,6 +482,17 @@ void ContactSolver::warmStart() {
 
             // Apply the impulses to the bodies of the constraint
             applyImpulse(impulseTwistFriction, contactManifold);
+
+            // ------ Rolling resistance at the center of the contact manifold ------ //
+
+            // Compute the impulse P = J^T * lambda
+            angularImpulseBody1 = -contactManifold.rollingResistanceImpulse;
+            angularImpulseBody2 = contactManifold.rollingResistanceImpulse;
+            const Impulse impulseRollingResistance(Vector3::zero(), angularImpulseBody1,
+                                                   Vector3::zero(), angularImpulseBody2);
+
+            // Apply the impulses to the bodies of the constraint
+            applyImpulse(impulseRollingResistance, contactManifold);
         }
         else {  // If it is a new contact manifold
 
@@ -463,6 +500,7 @@ void ContactSolver::warmStart() {
             contactManifold.friction1Impulse = 0.0;
             contactManifold.friction2Impulse = 0.0;
             contactManifold.frictionTwistImpulse = 0.0;
+            contactManifold.rollingResistanceImpulse = Vector3::zero();
         }
     }
 }
@@ -604,6 +642,29 @@ void ContactSolver::solve() {
 
                 // Apply the impulses to the bodies of the constraint
                 applyImpulse(impulseFriction2, contactManifold);
+
+                // --------- Rolling resistance constraint --------- //
+
+                if (contactManifold.rollingResistanceFactor > 0) {
+
+                    // Compute J*v
+                    const Vector3 JvRolling = w2 - w1;
+
+                    // Compute the Lagrange multiplier lambda
+                    Vector3 deltaLambdaRolling = contactManifold.inverseRollingResistance * (-JvRolling);
+                    decimal rollingLimit = contactManifold.rollingResistanceFactor * contactPoint.penetrationImpulse;
+                    Vector3 lambdaTempRolling = contactPoint.rollingResistanceImpulse;
+                    contactPoint.rollingResistanceImpulse = clamp(contactPoint.rollingResistanceImpulse +
+                                                                         deltaLambdaRolling, rollingLimit);
+                    deltaLambdaRolling = contactPoint.rollingResistanceImpulse - lambdaTempRolling;
+
+                    // Compute the impulse P=J^T * lambda
+                    const Impulse impulseRolling(Vector3::zero(), -deltaLambdaRolling,
+                                                 Vector3::zero(), deltaLambdaRolling);
+
+                    // Apply the impulses to the bodies of the constraint
+                    applyImpulse(impulseRolling, contactManifold);
+                }
             }
         }
 
@@ -688,6 +749,31 @@ void ContactSolver::solve() {
 
             // Apply the impulses to the bodies of the constraint
             applyImpulse(impulseTwistFriction, contactManifold);
+
+            // --------- Rolling resistance constraint at the center of the contact manifold --------- //
+
+            if (contactManifold.rollingResistanceFactor > 0) {
+
+                // Compute J*v
+                const Vector3 JvRolling = w2 - w1;
+
+                // Compute the Lagrange multiplier lambda
+                Vector3 deltaLambdaRolling = contactManifold.inverseRollingResistance * (-JvRolling);
+                decimal rollingLimit = contactManifold.rollingResistanceFactor * sumPenetrationImpulse;
+                Vector3 lambdaTempRolling = contactManifold.rollingResistanceImpulse;
+                contactManifold.rollingResistanceImpulse = clamp(contactManifold.rollingResistanceImpulse +
+                                                                     deltaLambdaRolling, rollingLimit);
+                deltaLambdaRolling = contactManifold.rollingResistanceImpulse - lambdaTempRolling;
+
+                // Compute the impulse P=J^T * lambda
+                angularImpulseBody1 = -deltaLambdaRolling;
+                angularImpulseBody2 = deltaLambdaRolling;
+                const Impulse impulseRolling(Vector3::zero(), angularImpulseBody1,
+                                             Vector3::zero(), angularImpulseBody2);
+
+                // Apply the impulses to the bodies of the constraint
+                applyImpulse(impulseRolling, contactManifold);
+            }
         }
     }
 }
@@ -708,6 +794,7 @@ void ContactSolver::storeImpulses() {
             contactPoint.externalContact->setPenetrationImpulse(contactPoint.penetrationImpulse);
             contactPoint.externalContact->setFrictionImpulse1(contactPoint.friction1Impulse);
             contactPoint.externalContact->setFrictionImpulse2(contactPoint.friction2Impulse);
+            contactPoint.externalContact->setRollingResistanceImpulse(contactPoint.rollingResistanceImpulse);
 
             contactPoint.externalContact->setFrictionVector1(contactPoint.frictionVector1);
             contactPoint.externalContact->setFrictionVector2(contactPoint.frictionVector2);
@@ -716,6 +803,7 @@ void ContactSolver::storeImpulses() {
         manifold.externalContactManifold->setFrictionImpulse1(manifold.friction1Impulse);
         manifold.externalContactManifold->setFrictionImpulse2(manifold.friction2Impulse);
         manifold.externalContactManifold->setFrictionTwistImpulse(manifold.frictionTwistImpulse);
+        manifold.externalContactManifold->setRollingResistanceImpulse(manifold.rollingResistanceImpulse);
         manifold.externalContactManifold->setFrictionVector1(manifold.frictionVector1);
         manifold.externalContactManifold->setFrictionVector2(manifold.frictionVector2);
     }

@@ -25,14 +25,25 @@
 
 // Libraries
 #include "TestbedApplication.h"
+#include "nanogui/nanogui.h"
+
+using namespace nanogui;
 
 // Main function
 int main(int argc, char** argv) {
 
-    // Create and start the testbed application
-    TestbedApplication& application = TestbedApplication::getInstance();
-    application.init();
-    application.startMainLoop();
+    nanogui::init();
+
+    {
+        // Create and start the testbed application
+        bool isFullscreen = false;
+        nanogui::ref<TestbedApplication> application = new TestbedApplication(isFullscreen);
+        application->setVisible(true);
+
+        nanogui::mainloop();
+    }
+
+    nanogui::shutdown();
 
     return 0;
 }

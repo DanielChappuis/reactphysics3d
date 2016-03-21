@@ -132,6 +132,9 @@ class ContactSolver {
             /// Accumulated split impulse for penetration correction
             decimal penetrationSplitImpulse;
 
+            /// Accumulated rolling resistance impulse
+            Vector3 rollingResistanceImpulse;
+
             /// Normal vector of the contact
             Vector3 normal;
 
@@ -224,11 +227,20 @@ class ContactSolver {
             /// Number of contact points
             uint nbContacts;
 
+            /// True if the body 1 is of type dynamic
+            bool isBody1DynamicType;
+
+            /// True if the body 2 is of type dynamic
+            bool isBody2DynamicType;
+
             /// Mix of the restitution factor for two bodies
             decimal restitutionFactor;
 
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
+
+            /// Rolling resistance factor between the two bodies
+            decimal rollingResistanceFactor;
 
             /// Pointer to the external contact manifold
             ContactManifold* externalContactManifold;
@@ -271,6 +283,9 @@ class ContactSolver {
             /// Matrix K for the twist friction constraint
             decimal inverseTwistFrictionMass;
 
+            /// Matrix K for the rolling resistance constraint
+            Matrix3x3 inverseRollingResistance;
+
             /// First friction direction at contact manifold center
             Vector3 frictionVector1;
 
@@ -291,6 +306,9 @@ class ContactSolver {
 
             /// Twist friction impulse at contact manifold center
             decimal frictionTwistImpulse;
+
+            /// Rolling resistance impulse
+            Vector3 rollingResistanceImpulse;
         };
 
         // -------------------- Constants --------------------- //
@@ -359,6 +377,9 @@ class ContactSolver {
         /// Compute the mixed friction coefficient from the friction coefficient of each body
         decimal computeMixedFrictionCoefficient(RigidBody* body1,
                                                 RigidBody* body2) const;
+
+        /// Compute th mixed rolling resistance factor between two bodies
+        decimal computeMixedRollingResistance(RigidBody* body1, RigidBody* body2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact point. The two vectors have to be
@@ -479,6 +500,12 @@ inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
     // Use the geometric mean to compute the mixed friction coefficient
     return sqrt(body1->getMaterial().getFrictionCoefficient() *
                 body2->getMaterial().getFrictionCoefficient());
+}
+
+// Compute th mixed rolling resistance factor between two bodies
+inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
+                                                            RigidBody* body2) const {
+    return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
 }
 
 // Compute a penetration constraint impulse

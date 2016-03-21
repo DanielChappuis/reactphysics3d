@@ -27,7 +27,7 @@
 #define VERTEX_ARRAY_OBJECT_H
 
 // Libraries
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 #include <cassert>
 #include <iostream>
 
@@ -90,7 +90,8 @@ inline void VertexArrayObject::unbind() const {
 inline bool VertexArrayObject::checkOpenGLExtensions() {
 
     // Check that OpenGL version is at least 3.0 or there the vertex array object extension exists
-    return (GLEW_VERSION_3_0 || GL_ARB_vertex_array_object);
+    //return (GLEW_VERSION_3_0 || GL_ARB_vertex_array_object);
+    return true;
 }
 
 }

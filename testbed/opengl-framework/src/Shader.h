@@ -36,7 +36,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <exception>
-#include <GL/glew.h>
+#include <nanogui/opengl.h>
 
 namespace openglframework {
 
@@ -309,7 +309,8 @@ inline GLuint Shader::getProgramObjectId() const {
 inline bool Shader::checkOpenGLExtensions() {
 
     // Check that GLSL vertex and fragment shaders are available on the platform
-    return (GLEW_VERSION_2_0 || (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader));
+    //return (GLEW_VERSION_2_0 || (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader));
+    return true;
 }
 
 }

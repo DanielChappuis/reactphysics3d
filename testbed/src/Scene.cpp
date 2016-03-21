@@ -90,11 +90,11 @@ bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse,
 }
 
 // Called when a mouse button event occurs
-void Scene::mouseButtonEvent(int button, int action, int mods,
+bool Scene::mouseButtonEvent(int button, bool down, int mods,
                              double mousePosX, double mousePosY) {
 
     // If the mouse button is pressed
-    if (action == GLFW_PRESS) {
+    if (down) {
         mLastMouseX = mousePosX;
         mLastMouseY = mousePosY;
         mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(mousePosX, mousePosY, mLastPointOnSphere);
@@ -102,10 +102,12 @@ void Scene::mouseButtonEvent(int button, int action, int mods,
     else {  // If the mouse button is released
         mIsLastPointOnSphereValid = false;
     }
+
+    return true;
 }
 
 // Called when a mouse motion event occurs
-void Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
+bool Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
                              int rightButtonState, int middleButtonState,
                              int altKeyState) {
 
@@ -132,11 +134,15 @@ void Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
     mLastMouseX = xMouse;
     mLastMouseY = yMouse;
     mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(xMouse, yMouse, mLastPointOnSphere);
+
+    return true;
 }
 
 // Called when a scrolling event occurs
-void Scene::scrollingEvent(float xAxis, float yAxis, float scrollSensitivy) {
+bool Scene::scrollingEvent(float xAxis, float yAxis, float scrollSensitivy) {
     zoom(yAxis * scrollSensitivy);
+
+    return true;
 }
 
 // Zoom the camera
