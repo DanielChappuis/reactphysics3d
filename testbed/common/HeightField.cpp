@@ -148,7 +148,8 @@ void HeightField::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
     shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO

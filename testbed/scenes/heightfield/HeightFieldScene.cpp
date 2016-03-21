@@ -55,13 +55,13 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     for (int i=0; i<NB_BOXES; i++) {
 
         // Position
-        openglframework::Vector3 spherePos(15, 10, 0);
+        openglframework::Vector3 position(15, 10 + 6 * i, 0);
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        mBoxes[i] = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
+        mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld);
 
         // Set the sphere color
-        mBoxes[i]->setColor(mDemoColors[1]);
+        mBoxes[i]->setColor(mDemoColors[2]);
         mBoxes[i]->setSleepingColor(mRedColorDemo);
 
         // Change the material properties of the rigid body
@@ -82,8 +82,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     mHeightField->getRigidBody()->setType(rp3d::STATIC);
 
     // Set the color
-    mHeightField->setColor(mDemoColors[0]);
-    mHeightField->setSleepingColor(mRedColorDemo);
+    mHeightField->setColor(mGreyColorDemo);
+    mHeightField->setSleepingColor(mGreyColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mHeightField->getRigidBody()->getMaterial();

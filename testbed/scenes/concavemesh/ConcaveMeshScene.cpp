@@ -62,7 +62,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     mBox = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
 
     // Set the sphere color
-    mBox->setColor(mDemoColors[1]);
+    mBox->setColor(mDemoColors[0]);
     mBox->setSleepingColor(mRedColorDemo);
 
     // Change the material properties of the rigid body
@@ -82,8 +82,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     mConcaveMesh->getRigidBody()->setType(rp3d::STATIC);
 
     // Set the box color
-    mConcaveMesh->setColor(mDemoColors[0]);
-    mConcaveMesh->setSleepingColor(mRedColorDemo);
+    mConcaveMesh->setColor(mGreyColorDemo);
+    mConcaveMesh->setSleepingColor(mGreyColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mConcaveMesh->getRigidBody()->getMaterial();

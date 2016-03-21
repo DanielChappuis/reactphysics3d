@@ -237,7 +237,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
     // ---------- Create the floor ---------
 
-
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
 
@@ -251,7 +250,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
-
 
     // ---------- Create the triangular mesh ---------- //
 
