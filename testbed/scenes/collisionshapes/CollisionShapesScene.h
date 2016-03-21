@@ -45,7 +45,7 @@ namespace collisionshapesscene {
 // Constants
 const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 5;
-const int NB_CUBES = 5;
+const int NB_SPHERES = 5;
 const int NB_CONES = 5;
 const int NB_CYLINDERS = 5;
 const int NB_CAPSULES = 5;

@@ -101,7 +101,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     }
 
     // Create all the spheres of the scene
-    for (int i=0; i<NB_CUBES; i++) {
+    for (int i=0; i<NB_SPHERES; i++) {
 
         // Position
         float angle = i * 35.0f;
@@ -112,6 +112,9 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         // Create a sphere and a corresponding rigid in the dynamics world
         Sphere* sphere = new Sphere(SPHERE_RADIUS, position , BOX_MASS, mDynamicsWorld,
                                     meshFolderPath);
+
+        // Add some rolling resistance
+        sphere->getRigidBody()->getMaterial().setRollingResistance(0.08);
 
         // Set the box color
         sphere->setColor(mDemoColors[i % mNbDemoColors]);
@@ -138,6 +141,9 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
                               meshFolderPath);
 
+        // Add some rolling resistance
+        cone->getRigidBody()->getMaterial().setRollingResistance(0.08);
+
         // Set the box color
         cone->setColor(mDemoColors[i % mNbDemoColors]);
         cone->setSleepingColor(mRedColorDemo);
@@ -163,6 +169,9 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
                                           CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
 
+        // Add some rolling resistance
+        cylinder->getRigidBody()->getMaterial().setRollingResistance(0.08);
+
         // Set the box color
         cylinder->setColor(mDemoColors[i % mNbDemoColors]);
         cylinder->setSleepingColor(mRedColorDemo);
@@ -187,6 +196,8 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position ,
                                        CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
+
+        capsule->getRigidBody()->getMaterial().setRollingResistance(0.08);
 
         // Set the box color
         capsule->setColor(mDemoColors[i % mNbDemoColors]);
@@ -540,7 +551,7 @@ void CollisionShapesScene::reset() {
     }
 
     // Create all the spheres of the scene
-    for (int i=0; i<NB_CUBES; i++) {
+    for (int i=0; i<NB_SPHERES; i++) {
 
         // Position
         float angle = i * 35.0f;
