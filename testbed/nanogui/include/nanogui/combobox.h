@@ -21,7 +21,8 @@ public:
     ComboBox(Widget *parent);
 
     /// Create a new combo box with the given items
-    ComboBox(Widget *parent, const std::vector<std::string> &items);
+    ComboBox(Widget *parent, const std::vector<std::string> &items,
+             const std::function<void(int)>& callback);
 
     /**
      * \brief Create a new combo box with the given items, providing both short and

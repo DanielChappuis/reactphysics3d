@@ -128,11 +128,10 @@ void Gui::createSimulationPanel() {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     Label* labelScenes = new Label(mSimulationPanel, "Scene","sans-bold");
-    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
-    comboBoxScenes->setFixedWidth(150);
-    comboBoxScenes->setCallback([&, scenes](int index){
+    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames, [&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
+    comboBoxScenes->setFixedWidth(150);
 }
 
 void Gui::createSettingsPanel() {
@@ -316,7 +315,7 @@ void Gui::createSettingsPanel() {
     Label* labelSleepLinearVel = new Label(panelSleepLinearVel, "Sleep linear velocity","sans-bold");
     labelSleepLinearVel->setFixedWidth(120);
     out.str("");
-    out << std::setprecision(1) << std::fixed << (mApp->mEngineSettings.sleepLinearVelocity);
+    out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepLinearVelocity);
     TextBox* textboxSleepLinearVel = new TextBox(panelSleepLinearVel);
     textboxSleepLinearVel->setFixedSize(Vector2i(70, 25));
     textboxSleepLinearVel->setEditable(true);
@@ -327,7 +326,7 @@ void Gui::createSettingsPanel() {
         try {
             float value = std::stof(str);
             std::ostringstream out;
-            out << std::setprecision(1) << std::fixed << std::showpoint << value;
+            out << std::setprecision(2) << std::fixed << std::showpoint << value;
             float finalValue = std::stof(out.str());
 
             if (finalValue < 0 || finalValue > 10000) return false;
@@ -350,18 +349,18 @@ void Gui::createSettingsPanel() {
     Label* labelSleepAngularVel = new Label(panelSleepAngularVel, "Sleep angular velocity","sans-bold");
     labelSleepAngularVel->setFixedWidth(120);
     out.str("");
-    out << std::setprecision(0) << std::fixed << (mApp->mEngineSettings.sleepAngularVelocity);
+    out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepAngularVelocity);
     TextBox* textboxSleepAngularVel = new TextBox(panelSleepAngularVel);
     textboxSleepAngularVel->setFixedSize(Vector2i(70, 25));
     textboxSleepAngularVel->setEditable(true);
     textboxSleepAngularVel->setValue(out.str());
-    textboxSleepAngularVel->setUnits("m/s");
+    textboxSleepAngularVel->setUnits("rad/s");
     textboxSleepAngularVel->setCallback([&, textboxSleepAngularVel](const std::string &str) {
 
         try {
             float value = std::stof(str);
             std::ostringstream out;
-            out << std::setprecision(0) << std::fixed << std::showpoint << value;
+            out << std::setprecision(2) << std::fixed << std::showpoint << value;
             float finalValue = std::stof(out.str());
 
             if (finalValue < 0 || finalValue > 10000) return false;
