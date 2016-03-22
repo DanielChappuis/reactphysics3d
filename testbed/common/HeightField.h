@@ -43,7 +43,7 @@ class HeightField : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Attributes -------------------- //
 
         /// Height field data
-        int mHeightData[NB_POINTS_WIDTH * NB_POINTS_LENGTH];
+        float mHeightData[NB_POINTS_WIDTH * NB_POINTS_LENGTH];
 
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
