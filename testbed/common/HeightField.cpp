@@ -49,7 +49,7 @@ HeightField::HeightField(const openglframework::Vector3 &position,
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
     mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_INT_TYPE);
+                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
