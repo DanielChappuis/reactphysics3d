@@ -285,7 +285,7 @@ void ContactSolver::initializeContactConstraints() {
 
         // Compute the inverse K matrix for the rolling resistance constraint
         manifold.inverseRollingResistance.setToZero();
-        if (manifold.rollingResistanceFactor > 0 && manifold.isBody1DynamicType || manifold.isBody2DynamicType) {
+        if (manifold.rollingResistanceFactor > 0 && (manifold.isBody1DynamicType || manifold.isBody2DynamicType)) {
             manifold.inverseRollingResistance = manifold.inverseInertiaTensorBody1 + manifold.inverseInertiaTensorBody2;
             manifold.inverseRollingResistance = manifold.inverseRollingResistance.getInverse();
         }
