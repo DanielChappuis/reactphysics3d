@@ -55,7 +55,6 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     // ---------- Create the cube ----------- //
 
     // Position
-    rp3d::decimal radius = 2.0;
     openglframework::Vector3 spherePos(15, 10, 0);
 
     // Create a sphere and a corresponding rigid in the dynamics world

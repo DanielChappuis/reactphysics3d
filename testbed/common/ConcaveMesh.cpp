@@ -47,7 +47,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     mScalingMatrix = openglframework::Matrix4::identity();
 
     // For each subpart of the mesh
-    for (int i=0; i<getNbParts(); i++) {
+    for (uint i=0; i<getNbParts(); i++) {
 
         // Vertex and Indices array for the triangle mesh (data in shared and not copied)
         rp3d::TriangleVertexArray* vertexArray =
@@ -104,7 +104,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     mScalingMatrix = openglframework::Matrix4::identity();
 
     // For each subpart of the mesh
-    for (int i=0; i<getNbParts(); i++) {
+    for (uint i=0; i<getNbParts(); i++) {
 
         // Vertex and Indices array for the triangle mesh (data in shared and not copied)
         rp3d::TriangleVertexArray* vertexArray =
@@ -146,7 +146,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
 ConcaveMesh::~ConcaveMesh() {
 
     // Destroy the triangle mesh data for the physics engine
-    for (int i=0; i<mPhysicsTriangleMesh.getNbSubparts(); i++) {
+    for (uint i=0; i<mPhysicsTriangleMesh.getNbSubparts(); i++) {
         delete mPhysicsTriangleMesh.getSubpart(i);
     }
 

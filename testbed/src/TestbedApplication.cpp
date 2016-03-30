@@ -50,8 +50,8 @@ const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
 // Constructor
 TestbedApplication::TestbedApplication(bool isFullscreen)
                    : Screen(Vector2i(1280, 760), "Testbed ReactPhysics3D", true, isFullscreen),
-                     mIsInitialized(false), mFPS(0), mNbFrames(0), mPreviousTime(0),
-                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0), mGui(this) {
+                     mIsInitialized(false), mGui(this), mFPS(0), mNbFrames(0), mPreviousTime(0),
+                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0) {
 
     mCurrentScene = NULL;
     mIsMultisamplingActive = true;
@@ -128,7 +128,7 @@ void TestbedApplication::createScenes() {
 // Remove all the scenes
 void TestbedApplication::destroyScenes() {
 
-    for (int i=0; i<mScenes.size(); i++) {
+    for (uint i=0; i<mScenes.size(); i++) {
         delete mScenes[i];
     }
 

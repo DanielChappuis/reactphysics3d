@@ -124,7 +124,7 @@ void Gui::createSimulationPanel() {
     // Scenes
     std::vector<Scene*> scenes = mApp->getScenes();
     std::vector<std::string> scenesNames;
-    for (int i=0; i<scenes.size(); i++) {
+    for (uint i=0; i<scenes.size(); i++) {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     Label* labelScenes = new Label(mSimulationPanel, "Scene","sans-bold");

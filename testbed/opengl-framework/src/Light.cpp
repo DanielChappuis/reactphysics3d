@@ -53,10 +53,4 @@ void Light::init() {
 
     // Enable the light
     enable();
-
-    // Set the diffuse and specular color
-    GLfloat diffuseColor[] = {mDiffuseColor.r, mDiffuseColor.g, mDiffuseColor.b, mDiffuseColor.a};
-    GLfloat specularColor[] = {mSpecularColor.r,mSpecularColor.g,mSpecularColor.b,mSpecularColor.a};
-    //glLightfv(mLightID, GL_DIFFUSE, diffuseColor);
-    //glLightfv(mLightID, GL_SPECULAR, specularColor);
 }
