@@ -157,8 +157,8 @@ class TestRaycast : public Test {
 
         std::vector<Vector3> mConcaveMeshVertices;
         std::vector<uint> mConcaveMeshIndices;
-
-        float mHeightFieldData[25];
+        TriangleVertexArray* mConcaveMeshVertexArray;
+        float mHeightFieldData[100];
 
     public :
 
@@ -288,16 +288,18 @@ class TestRaycast : public Test {
             mConcaveMeshIndices.push_back(1); mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(5);
             mConcaveMeshIndices.push_back(5); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(6);
             mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(5);
-            TriangleVertexArray* vertexArray =
+            mConcaveMeshVertexArray =
                     new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
                                                   12, &(mConcaveMeshIndices[0]), sizeof(int),
                                                   TriangleVertexArray::VERTEX_FLOAT_TYPE,
                                                   TriangleVertexArray::INDEX_INTEGER_TYPE);
 
+
             // Add the triangle vertex array of the subpart to the triangle mesh
-            mConcaveTriangleMesh.addSubpart(vertexArray);
+            mConcaveTriangleMesh.addSubpart(mConcaveMeshVertexArray);
             mConcaveMeshShape = new ConcaveMeshShape(&mConcaveTriangleMesh);
             mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, mShapeTransform);
+
 
             // Heightfield shape (plane height field at height=4)
             for (int i=0; i<100; i++) mHeightFieldData[i] = 4;
@@ -331,6 +333,8 @@ class TestRaycast : public Test {
             delete mTriangleShape;
             delete mConcaveMeshShape;
             delete mHeightFieldShape;
+
+            delete mConcaveMeshVertexArray;
         }
 
         /// Run the tests
@@ -2193,6 +2197,7 @@ class TestRaycast : public Test {
             mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
             test(mCallback.isHit);
         }
+
 
         void testConcaveMesh() {
 
