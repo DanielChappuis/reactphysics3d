@@ -288,10 +288,12 @@ class TestRaycast : public Test {
             mConcaveMeshIndices.push_back(1); mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(5);
             mConcaveMeshIndices.push_back(5); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(6);
             mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(5);
+            TriangleVertexArray::VertexDataType vertexType = sizeof(decimal) == 4 ? TriangleVertexArray::VERTEX_FLOAT_TYPE :
+                                                                                    TriangleVertexArray::VERTEX_DOUBLE_TYPE;
             mConcaveMeshVertexArray =
                     new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
-                                                  12, &(mConcaveMeshIndices[0]), sizeof(int),
-                                                  TriangleVertexArray::VERTEX_FLOAT_TYPE,
+                                                  12, &(mConcaveMeshIndices[0]), sizeof(uint),
+                                                  vertexType,
                                                   TriangleVertexArray::INDEX_INTEGER_TYPE);
 
 
