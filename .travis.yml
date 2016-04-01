@@ -1,3 +1,9 @@
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "84km/w+VYQlISJYaEAaWUZShqXkYuBPg3zctJu4AIWTJg6LpQ8nzDdSWM0U4U16PNoyy5ppRXULJJmyutZkq8RdC6WWTREHl9M2XQ/WLPedYiDvc1qhh+OudnMDX2n1/fu8U10SulV/bI4hhRBo+NrI5VQ/E+vs3Hnzr00SM2KHMDqBBlVOZZHjUl5bI59s4yNeZUdeyNWwxQAKL6WVdtbeTQNoqTMPd+KkyUQMv6PZJTTWIU+9RevXSmSNGqBUo3IRw05TUEBXqew1YS4wy4UUs0s6pZRAHu9PR/FnWaBVyG/hSOR8i5RpCNWcCvHIJKEz4r0NSFkmpAmq/JOKgV3Sh6MoVmogqhvhvnDC51/9eIlDmPu5olTp3Wd6ayN8MwFrybfVD6B2bn4FO6XmEgVUmzz4g2nYkIQyvWElufp3M76MVuf3Zj34fDK6vKxXsn8AQvautbunMCps1HvkB718oKhl7jgZB1B7uVQRf/SrqSjS8yxHnzOd8f8ogM0RYz4OkapzrbZbvuHgXVlkJazs8/xhJnplNzSLVTA933K4YNO5PmEodkTPNhtP45O50YiwVr9WgwN/8x+I4ZHk5O0ZlrWOr1ZjLdWqVYiG5S6lMFaeKJeFAyX521IT1fmd9njmSgaddkhLeirznuVaXYN+6Mg6ORN1UXmM8yB9NuPM="
+
 language: cpp
 os:
   - linux
@@ -15,6 +21,14 @@ addons:
     - gcc-4.8
     - g++-4.8
     - clang
+  coverity_scan:
+    project:
+      name: "DanielChappuis/reactphysics3d"
+      description: "Build submitted via Travis CI"
+    notification_email: chappuis.daniel@gmail.com
+    build_command_prepend: "mkdir build_directory; cd build_directory; cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False ../"
+    build_command:   "make"
+    branch_pattern: develop | master
 branches:
   only:
     - master
@@ -30,4 +44,3 @@ script:
   - make && make test
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
   - make && make test
-
