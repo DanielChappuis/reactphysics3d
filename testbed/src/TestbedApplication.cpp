@@ -45,7 +45,7 @@ using namespace trianglemeshscene;
 using namespace heightfieldscene;
 
 // Initialization of static variables
-const float TestbedApplication::SCROLL_SENSITIVITY = 0.02f;
+const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 
 // Constructor
 TestbedApplication::TestbedApplication(bool isFullscreen)
