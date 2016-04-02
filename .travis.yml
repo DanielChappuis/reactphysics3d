@@ -37,10 +37,10 @@ script:
   - mkdir build_directory
   - cd build_directory
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
