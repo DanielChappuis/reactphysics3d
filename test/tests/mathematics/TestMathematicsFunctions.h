@@ -109,17 +109,17 @@ class TestMathematicsFunctions : public Test {
             Vector3 c(0, 0, 5);
             decimal u,v,w;
             computeBarycentricCoordinatesInTriangle(a, b, c, a, u, v, w);
-            test(approxEqual(u, 1.0, 0.000001));
-            test(approxEqual(v, 0.0, 0.000001));
-            test(approxEqual(w, 0.0, 0.000001));
+            test(approxEqual(u, 1.0, 0.0001));
+            test(approxEqual(v, 0.0, 0.0001));
+            test(approxEqual(w, 0.0, 0.0001));
             computeBarycentricCoordinatesInTriangle(a, b, c, b, u, v, w);
-            test(approxEqual(u, 0.0, 0.000001));
-            test(approxEqual(v, 1.0, 0.000001));
-            test(approxEqual(w, 0.0, 0.000001));
+            test(approxEqual(u, 0.0, 0.0001));
+            test(approxEqual(v, 1.0, 0.0001));
+            test(approxEqual(w, 0.0, 0.0001));
             computeBarycentricCoordinatesInTriangle(a, b, c, c, u, v, w);
-            test(approxEqual(u, 0.0, 0.000001));
-            test(approxEqual(v, 0.0, 0.000001));
-            test(approxEqual(w, 1.0, 0.000001));
+            test(approxEqual(u, 0.0, 0.0001));
+            test(approxEqual(v, 0.0, 0.0001));
+            test(approxEqual(w, 1.0, 0.0001));
         }
 
  };
