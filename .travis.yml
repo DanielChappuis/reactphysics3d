@@ -26,7 +26,7 @@ addons:
       name: "DanielChappuis/reactphysics3d"
       description: "Build submitted via Travis CI"
     notification_email: chappuis.daniel@gmail.com
-    build_command_prepend: ""
+    build_command_prepend: "cd build_directory; cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False ../"
     build_command:   "make"
     branch_pattern: develop
 branches:
