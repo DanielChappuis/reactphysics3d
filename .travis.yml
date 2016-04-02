@@ -28,7 +28,7 @@ addons:
     notification_email: chappuis.daniel@gmail.com
     build_command_prepend: "mkdir build_directory; cd build_directory; cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False ../"
     build_command:   "make"
-    branch_pattern: develop | master
+    branch_pattern: develop
 branches:
   only:
     - master
