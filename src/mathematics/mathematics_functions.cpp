@@ -47,7 +47,7 @@ void reactphysics3d::computeBarycentricCoordinatesInTriangle(const Vector3& a, c
     decimal denom = d00 * d11 - d01 * d01;
     v = (d11 * d20 - d01 * d21) / denom;
     w = (d00 * d21 - d01 * d20) / denom;
-    u = decimal(1.0) - u - w;
+    u = decimal(1.0) - v - w;
 }
 
 // Clamp a vector such that it is no longer than a given maximum length
