@@ -38,6 +38,10 @@ namespace trianglemeshscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
+const int NB_BOXES_X = 8;
+const int NB_BOXES_Z = 8;
+const float BOX_SIZE = 3.0f;
+const float BOXES_SPACE = 2.0f;
 
 // Class TriangleMeshScene
 class ConcaveMeshScene : public SceneDemo {
@@ -46,7 +50,7 @@ class ConcaveMeshScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        Box* mBox;
+        Box* mBoxes[NB_BOXES_X * NB_BOXES_Z];
 
         /// Concave triangles mesh
         ConcaveMesh* mConcaveMesh;

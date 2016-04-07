@@ -164,7 +164,7 @@ class Vector3 {
         Vector3 normalize() {
             float l = length();
             if(l < std::numeric_limits<float>::epsilon() ) {
-              assert(false);
+              return *this;
               }
             x /= l;
             y /= l;

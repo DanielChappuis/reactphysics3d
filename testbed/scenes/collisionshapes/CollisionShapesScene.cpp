@@ -221,7 +221,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath);
+        ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mDemoColors[i % mNbDemoColors]);

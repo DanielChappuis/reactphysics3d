@@ -116,7 +116,7 @@ RaycastScene::RaycastScene(const std::string& name)
     openglframework::Vector3 position7(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath);
+    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath + "convexmesh.obj");
 
     // Set the color
     mConvexMesh->setColor(mGreyColorDemo);
@@ -126,7 +126,7 @@ RaycastScene::RaycastScene(const std::string& name)
     openglframework::Vector3 position8(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConcaveMesh = new ConcaveMesh(position8, mCollisionWorld, mMeshFolderPath);
+    mConcaveMesh = new ConcaveMesh(position8, mCollisionWorld, mMeshFolderPath + "city.obj");
 
     // Set the color
     mConcaveMesh->setColor(mGreyColorDemo);

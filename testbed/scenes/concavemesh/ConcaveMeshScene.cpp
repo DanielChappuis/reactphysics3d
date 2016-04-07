@@ -52,21 +52,27 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     // Set the number of iterations of the constraint solver
     mDynamicsWorld->setNbIterationsVelocitySolver(15);
 
-    // ---------- Create the cube ----------- //
+    // ---------- Create the boxes ----------- //
 
-    // Position
-    openglframework::Vector3 spherePos(15, 10, 0);
+    for (int i=0; i<NB_BOXES_X; i++) {
 
-    // Create a sphere and a corresponding rigid in the dynamics world
-    mBox = new Box(Vector3(3, 3, 3), spherePos, 80.1, mDynamicsWorld);
+        for (int j=0; j<NB_BOXES_Z; j++) {
 
-    // Set the sphere color
-    mBox->setColor(mDemoColors[0]);
-    mBox->setSleepingColor(mRedColorDemo);
+            // Position
+            openglframework::Vector3 boxPosition(-NB_BOXES_X * BOX_SIZE * BOXES_SPACE / 2 + i * BOX_SIZE * BOXES_SPACE, 30, -NB_BOXES_Z * BOX_SIZE * BOXES_SPACE / 2 + j * BOX_SIZE * BOXES_SPACE);
 
-    // Change the material properties of the rigid body
-    rp3d::Material& sphereMat = mBox->getRigidBody()->getMaterial();
-    sphereMat.setBounciness(rp3d::decimal(0.2));
+            // Create a sphere and a corresponding rigid in the dynamics world
+            mBoxes[i * NB_BOXES_Z + j] = new Box(Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE) * 0.5f, boxPosition, 80.1, mDynamicsWorld);
+
+            // Set the sphere color
+            mBoxes[i * NB_BOXES_Z + j]->setColor(mDemoColors[0]);
+            mBoxes[i * NB_BOXES_Z + j]->setSleepingColor(mRedColorDemo);
+
+            // Change the material properties of the rigid body
+            rp3d::Material& boxMaterial = mBoxes[i * NB_BOXES_Z + j]->getRigidBody()->getMaterial();
+            boxMaterial.setBounciness(rp3d::decimal(0.2));
+        }
+    }
 
     // ---------- Create the triangular mesh ---------- //
 
@@ -75,7 +81,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     rp3d::decimal mass = 1.0;
 
     // Create a convex mesh and a corresponding rigid in the dynamics world
-    mConcaveMesh = new ConcaveMesh(position, mass, mDynamicsWorld, meshFolderPath);
+    mConcaveMesh = new ConcaveMesh(position, mass, mDynamicsWorld, meshFolderPath + "city.obj");
 
     // Set the mesh as beeing static
     mConcaveMesh->getRigidBody()->setType(rp3d::STATIC);
@@ -104,11 +110,14 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
 // Destructor
 ConcaveMeshScene::~ConcaveMeshScene() {
 
-    mDynamicsWorld->destroyRigidBody(mBox->getRigidBody());
     // Destroy the corresponding rigid body from the dynamics world
     mDynamicsWorld->destroyRigidBody(mConcaveMesh->getRigidBody());
 
-    delete mBox;
+    // Destroy the boxes
+    for (int i=0; i<NB_BOXES_X * NB_BOXES_Z; i++) {
+        mDynamicsWorld->destroyRigidBody(mBoxes[i]->getRigidBody());
+        delete mBoxes[i];
+    }
 
     // Destroy the convex mesh
     delete mConcaveMesh;
@@ -143,7 +152,10 @@ void ConcaveMeshScene::update() {
 
     // Update the transform used for the rendering
     mConcaveMesh->updateTransform(mInterpolationFactor);
-    mBox->updateTransform(mInterpolationFactor);
+
+    for (int i=0; i<NB_BOXES_X * NB_BOXES_Z; i++) {
+        mBoxes[i]->updateTransform(mInterpolationFactor);
+    }
 }
 
 // Render the scene in a single pass
@@ -153,7 +165,10 @@ void ConcaveMeshScene::renderSinglePass(Shader& shader, const openglframework::M
     shader.bind();
 
     mConcaveMesh->render(shader, worldToCameraMatrix);
-    mBox->render(shader, worldToCameraMatrix);
+
+    for (int i=0; i<NB_BOXES_X * NB_BOXES_Z; i++) {
+        mBoxes[i]->render(shader, worldToCameraMatrix);
+    }
 
     // Unbind the shader
     shader.unbind();
@@ -163,13 +178,18 @@ void ConcaveMeshScene::renderSinglePass(Shader& shader, const openglframework::M
 void ConcaveMeshScene::reset() {
 
     // Reset the transform
-    rp3d::Quaternion initOrientation(0, 0, 3.141/12);
-    rp3d::Quaternion initOrientation2(0, 0, 3.141/13);
-    //rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
-    rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation2);
+    rp3d::Transform transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity());
     mConcaveMesh->resetTransform(transform);
 
-    rp3d::Vector3 spherePos(2, 15, 0);
-    rp3d::Transform sphereTransform(spherePos, initOrientation2);
-    mBox->resetTransform(sphereTransform);
+    for (int i=0; i<NB_BOXES_X; i++) {
+        for (int j=0; j<NB_BOXES_Z; j++) {
+
+            // Position
+            rp3d::Vector3 boxPosition(-NB_BOXES_X * BOX_SIZE * BOXES_SPACE / 2 + i * BOX_SIZE * BOXES_SPACE, 30, -NB_BOXES_Z * BOX_SIZE * BOXES_SPACE / 2 + j * BOX_SIZE * BOXES_SPACE);
+
+            rp3d::Transform boxTransform(boxPosition, rp3d::Quaternion::identity());
+            mBoxes[i * NB_BOXES_Z + j]->resetTransform(boxTransform);
+        }
+    }
+
 }

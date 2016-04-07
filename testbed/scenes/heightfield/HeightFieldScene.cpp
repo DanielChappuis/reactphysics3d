@@ -57,16 +57,16 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
         // Position
         openglframework::Vector3 position(15, 10 + 6 * i, 0);
 
-        // Create a sphere and a corresponding rigid in the dynamics world
+        // Create a box and a corresponding rigid in the dynamics world
         mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld);
 
-        // Set the sphere color
+        // Set the box color
         mBoxes[i]->setColor(mDemoColors[2]);
         mBoxes[i]->setSleepingColor(mRedColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& sphereMat = mBoxes[i]->getRigidBody()->getMaterial();
-        sphereMat.setBounciness(rp3d::decimal(0.2));
+        rp3d::Material& boxMaterial = mBoxes[i]->getRigidBody()->getMaterial();
+        boxMaterial.setBounciness(rp3d::decimal(0.2));
     }
 
     // ---------- Create the height field ---------- //
@@ -174,15 +174,14 @@ void HeightFieldScene::renderSinglePass(Shader& shader, const openglframework::M
 void HeightFieldScene::reset() {
 
     // Reset the transform
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(rp3d::Vector3(0, 0, 0), initOrientation);
+    rp3d::Transform transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
     mHeightField->resetTransform(transform);
 
     float heightFieldWidth = 10.0f;
     float stepDist = heightFieldWidth / (NB_BOXES + 1);
     for (int i=0; i<NB_BOXES; i++) {
-        rp3d::Vector3 spherePos(-heightFieldWidth * 0.5f + i * stepDist , 14 + 6.0f * i, -heightFieldWidth * 0.5f + i * stepDist);
-        rp3d::Transform sphereTransform(spherePos, initOrientation);
-        mBoxes[i]->resetTransform(sphereTransform);
+        rp3d::Vector3 boxPosition(-heightFieldWidth * 0.5f + i * stepDist , 14 + 6.0f * i, -heightFieldWidth * 0.5f + i * stepDist);
+        rp3d::Transform boxTransform(boxPosition, rp3d::Quaternion::identity());
+        mBoxes[i]->resetTransform(boxTransform);
     }
 }

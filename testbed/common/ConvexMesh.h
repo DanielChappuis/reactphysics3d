@@ -76,11 +76,11 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
 
         /// Constructor
         ConvexMesh(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+                   rp3d::CollisionWorld* world, const std::string& meshPath);
 
         /// Constructor
         ConvexMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
 
         /// Destructor
         ~ConvexMesh();

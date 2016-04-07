@@ -29,13 +29,13 @@
 // Constructor
 ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
                        reactphysics3d::CollisionWorld* world,
-                       const std::string& meshFolderPath)
+                       const std::string& meshPath)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "concavemesh.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);
 
     // Calculate the normals of the mesh
     calculateNormals();
@@ -86,13 +86,13 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
 // Constructor
 ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
                        reactphysics3d::DynamicsWorld* dynamicsWorld,
-                       const std::string& meshFolderPath)
+                       const std::string& meshPath)
            : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "concavemesh.obj", *this);
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);
 
     // Calculate the normals of the mesh
     calculateNormals();
