@@ -34,7 +34,6 @@ branches:
     - master
     - develop
 script:
-  - pwd
   - cd build_directory
   # Build in debug mode with double precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
