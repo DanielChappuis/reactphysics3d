@@ -29,6 +29,19 @@
 using namespace reactphysics3d;
 
 // Constructor
+/// Note that your data will not be copied into the TriangleVertexArray and
+/// therefore, you need to make sure that those data are always valid during
+/// the lifetime of the TriangleVertexArray.
+/**
+ * @param nbVertices Number of vertices in the array
+ * @param verticesStart Pointer to the first vertices of the array
+ * @param verticesStride Number of bytes between the beginning of two consecutive vertices
+ * @param nbTriangles Number of triangles in the array
+ * @param indexesStart Pointer to the first triangle index
+ * @param indexesStride Number of bytes between the beginning of two consecutive triangle indices
+ * @param vertexDataType Type of data for the vertices (float, double)
+ * @param indexDataType Type of data for the indices (short, int)
+ */
 TriangleVertexArray::TriangleVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
                                          uint nbTriangles, void* indexesStart, int indexesStride,
                                          VertexDataType vertexDataType, IndexDataType indexDataType) {

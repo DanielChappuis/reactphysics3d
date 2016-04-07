@@ -39,7 +39,7 @@ namespace reactphysics3d {
  * into the array. It only stores pointer to the data. The purpose is to allow
  * the user to share vertices data between the physics engine and the rendering
  * part. Therefore, make sure that the data pointed by a TriangleVertexArray
- * remain valid during the TriangleVertexArray life.
+ * remains valid during the TriangleVertexArray life.
  */
 class TriangleVertexArray {
 
