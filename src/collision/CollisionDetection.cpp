@@ -374,6 +374,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     OverlappingPair* newPair = new (mWorld->mMemoryAllocator.allocate(sizeof(OverlappingPair)))
                               OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mMemoryAllocator);
     assert(newPair != NULL);
+
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
             mOverlappingPairs.insert(make_pair(pairID, newPair));
     assert(check.second);

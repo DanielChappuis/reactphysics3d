@@ -160,7 +160,7 @@ class HeightFieldShape : public ConcaveShape {
     public:
 
         /// Constructor
-        HeightFieldShape(int nbWidthGridPoints, int nbLengthGridPoints, decimal minHeight, decimal maxHeight,
+        HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                          const void* heightFieldData, HeightDataType dataType,
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
@@ -226,7 +226,7 @@ inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
         case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
         case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
         case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
-        default: assert(false);
+        default: assert(false); return 0;
     }
 }
 
