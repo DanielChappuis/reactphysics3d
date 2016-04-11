@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.5.0                                                                 *
+* Version 0.6.0                                                                 *
 * http://www.reactphysics3d.com                                                 *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
