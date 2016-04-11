@@ -108,10 +108,6 @@ class CollisionDetection : public NarrowPhaseCallback {
         // TODO : Delete this
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
-        /// Narrow-phase Sphere vs Sphere algorithm
-        // TODO : Delete this
-        SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
-
         /// Set of pair of bodies that cannot collide between each other
         std::set<bodyindexpair> mNoCollisionPairs;
 
