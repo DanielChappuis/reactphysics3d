@@ -131,7 +131,7 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
     for (int k=0; k < 3; k++) {
 
         // Get the index of the current vertex in the triangle
-        int vertexIndex;
+        int vertexIndex = 0;
         if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
             vertexIndex = ((uint*)vertexIndexPointer)[k];
         }
@@ -154,6 +154,9 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
             outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
             outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
             outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
+        }
+        else {
+            assert(false);
         }
     }
 }
