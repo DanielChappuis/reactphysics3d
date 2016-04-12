@@ -71,12 +71,15 @@ void ConcaveMeshShape::initBVHTree() {
             for (int k=0; k < 3; k++) {
 
                 // Get the index of the current vertex in the triangle
-                int vertexIndex;
+                int vertexIndex = 0;
                 if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
                     vertexIndex = ((uint*)vertexIndexPointer)[k];
                 }
                 else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
                     vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
+                }
+                else {
+                    assert(false);
                 }
 
                 // Get the vertices components of the triangle
@@ -91,6 +94,9 @@ void ConcaveMeshShape::initBVHTree() {
                     trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
                     trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
                     trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
+                }
+                else {
+                    assert(false);
                 }
             }
 
@@ -131,6 +137,9 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
         }
         else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
             vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
+        }
+        else {
+            assert(false);
         }
 
         // Get the vertices components of the triangle

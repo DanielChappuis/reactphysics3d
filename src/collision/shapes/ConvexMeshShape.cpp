@@ -103,7 +103,7 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
 
             void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
 
-            uint vertexIndex[3];
+            uint vertexIndex[3] = {0, 0, 0};
 
             // For each vertex of the triangle
             for (int k=0; k < 3; k++) {
@@ -114,6 +114,9 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
                 }
                 else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
                     vertexIndex[k] = ((unsigned short*)vertexIndexPointer)[k];
+                }
+                else {
+                    assert(false);
                 }
             }
 
