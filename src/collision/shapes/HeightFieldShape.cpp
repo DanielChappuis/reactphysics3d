@@ -106,7 +106,10 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
    computeMinMaxGridCoordinates(minGridCoords, maxGridCoords, aabb);
 
    // Compute the starting and ending coords of the sub-grid according to the up axis
-   int iMin, iMax, jMin, jMax;
+   int iMin = 0;
+   int iMax = 0;
+   int jMin = 0;
+   int jMax = 0;
    switch(mUpAxis) {
         case 0 : iMin = clamp(minGridCoords[1], 0, mNbColumns - 1);
                  iMax = clamp(maxGridCoords[1], 0, mNbColumns - 1);

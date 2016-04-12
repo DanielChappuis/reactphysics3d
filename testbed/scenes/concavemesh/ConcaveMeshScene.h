@@ -37,7 +37,7 @@
 namespace trianglemeshscene {
 
 // Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
+const float SCENE_RADIUS = 70.0f;                           // Radius of the scene in meters
 const int NB_BOXES_X = 8;
 const int NB_BOXES_Z = 8;
 const float BOX_SIZE = 3.0f;

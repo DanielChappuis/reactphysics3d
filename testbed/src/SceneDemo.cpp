@@ -42,8 +42,7 @@ openglframework::Color SceneDemo::mDemoColors[] = {SceneDemo::mYellowColorDemo, 
 
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled)
-          : Scene(name, isShadowMappingEnabled),
-                     mLight0(0), mIsShadowMappingInitialized(false),
+          : Scene(name, isShadowMappingEnabled), mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),

@@ -92,9 +92,6 @@ class CollisionShapesScene : public SceneDemo {
         /// All the dumbbell of the scene
         std::vector<Dumbbell*> mDumbbells;
 
-        /// Concave triangles mesh
-        ConcaveMesh* mConcaveMesh;
-
         /// Box for the floor
         Box* mFloor;
 

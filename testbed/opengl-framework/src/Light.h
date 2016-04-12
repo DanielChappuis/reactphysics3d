@@ -43,9 +43,6 @@ class Light : public Object3D {
 
         // -------------------- Attributes -------------------- //
 
-        // OpenGL light ID
-        GLuint mLightID;
-
         // Diffuse color of the light
         Color mDiffuseColor;
 
@@ -60,10 +57,10 @@ class Light : public Object3D {
         // -------------------- Methods -------------------- //
 
         // Constructor
-        Light(GLuint id);
+        Light();
 
         // Constructor
-        Light(GLuint id, Color diffuseColor, Color specularColor);
+        Light(Color diffuseColor, Color specularColor);
 
         // Destructor
         virtual ~Light();

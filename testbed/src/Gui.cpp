@@ -97,7 +97,7 @@ void Gui::createSimulationPanel() {
     mSimulationPanel->setFixedWidth(220);
 
     // Scenes/Physics/Rendering buttons
-    Label* labelControls = new Label(mSimulationPanel, "Controls","sans-bold");
+    new Label(mSimulationPanel, "Controls","sans-bold");
     Widget* panelControls = new Widget(mSimulationPanel);
     panelControls->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_PLAY);
@@ -127,7 +127,7 @@ void Gui::createSimulationPanel() {
     for (uint i=0; i<scenes.size(); i++) {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
-    Label* labelScenes = new Label(mSimulationPanel, "Scene","sans-bold");
+    new Label(mSimulationPanel, "Scene","sans-bold");
     ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames, [&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });

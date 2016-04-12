@@ -375,8 +375,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
                               OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mMemoryAllocator);
     assert(newPair != NULL);
 
+#ifndef NDEBUG
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
-            mOverlappingPairs.insert(make_pair(pairID, newPair));
+#endif
+    mOverlappingPairs.insert(make_pair(pairID, newPair));
     assert(check.second);
 
     // Wake up the two bodies

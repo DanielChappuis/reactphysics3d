@@ -36,7 +36,7 @@
 namespace heightfieldscene {
 
 // Constants
-const float SCENE_RADIUS = 30.0f;
+const float SCENE_RADIUS = 50.0f;
 
 // Class HeightFieldScene
 class HeightFieldScene : public SceneDemo {
