@@ -168,8 +168,8 @@ xs
     the ReactPhysics3D header file with the line: \\
 
     \begin{lstlisting}
-     // Include the ReactPhysics3D header file
-     #include "reactphysics3d.h"
+// Include the ReactPhysics3D header file
+#include "reactphysics3d.h"
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -189,9 +189,9 @@ xs
     \texttt{rp3d}. Therefore, you need to include this namespace into your code with the following declaration: \\
 
     \begin{lstlisting}
-     // Use the ReactPhysics3D namespace
-     using namespace reactphysics3d;
-  \end{lstlisting}
+// Use the ReactPhysics3D namespace
+using namespace reactphysics3d;
+    \end{lstlisting}
 
     \vspace{0.6cm}
 
@@ -896,14 +896,15 @@ collisionShape.setIsEdgesInformationUsed(true);
   The following example show how to create a \texttt{TriangleVertexArray}: \\
 
   \begin{lstlisting}
-    const int nbVertices = 8;
-    const int nbTriangles = 12;
-    float vertices[3 * nbVertices] = ...;
-    int indices[3 * nbTriangles] = ...;
-    rp3d::TriangleVertexArray* triangleArray =
-    new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles, indices, sizeof(int),
-    rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-    rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+const int nbVertices = 8;
+const int nbTriangles = 12;
+float vertices[3 * nbVertices] = ...;
+int indices[3 * nbTriangles] = ...;
+rp3d::TriangleVertexArray* triangleArray =
+new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
+indices, sizeof(int),
+rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
+rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -913,13 +914,13 @@ collisionShape.setIsEdgesInformationUsed(true);
   simulate as in the following example: \\
 
   \begin{lstlisting}
-    rp3d::TriangleMesh triangleMesh;
+rp3d::TriangleMesh triangleMesh;
 
-    // Add the triangle vertex array to the triangle mesh
-    triangleMesh.addSubpart(triangleArray);
+// Add the triangle vertex array to the triangle mesh
+triangleMesh.addSubpart(triangleArray);
 
-    // Create the concave mesh shape
-    ConcaveMesh* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
+// Create the concave mesh shape
+ConcaveMesh* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -944,7 +945,7 @@ collisionShape.setIsEdgesInformationUsed(true);
   \texttt{indexRow} and column \texttt{indexColumn} is located at the following position in the array:
 
   \begin{lstlisting}
-    heighFieldValues[indexRow * nbColumns + indexColumn]
+heighFieldValues[indexRow * nbColumns + indexColumn]
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -954,17 +955,17 @@ collisionShape.setIsEdgesInformationUsed(true);
   Here is an example that shows how to create a \texttt{HeightFieldShape}: \\
 
   \begin{lstlisting}
-    const int nbRows = 40;
-    const int nbColumns = 50;
-    float minHeight = 100;
-    float maxHeight = 500;
+const int nbRows = 40;
+const int nbColumns = 50;
+float minHeight = 100;
+float maxHeight = 500;
 
-    // Height values
-    float heightValues[nbRows * nbColumns] = ...;
+// Height values
+float heightValues[nbRows * nbColumns] = ...;
 
-    // Create the heightfield collision shape
-    rp3d::HeightFieldShape = new rp3d::HeightFieldShape(nbColumns, nbRows, minHeight, maxHeight, heightValues,
-    rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+// Create the heightfield collision shape
+rp3d::HeightFieldShape = new rp3d::HeightFieldShape(nbColumns, nbRows, minHeight,
+maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   \end{lstlisting}
 
   \vspace{0.6cm}
