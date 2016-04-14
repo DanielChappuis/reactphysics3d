@@ -8,6 +8,8 @@ Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
 
 Author : Daniel Chappuis
 
+![ReactPhysics3D Testbed Screenshot](https://raw.githubusercontent.com/DanielChappuis/reactphysics3d/develop/documentation/UserManual/images/testbed.png "ReactPhysics3D Testbed Screenshot")
+
 ## Features
 
 ReactPhysics3D has the following features :
