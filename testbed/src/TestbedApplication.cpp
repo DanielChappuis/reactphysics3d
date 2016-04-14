@@ -49,7 +49,7 @@ const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 
 // Constructor
 TestbedApplication::TestbedApplication(bool isFullscreen)
-                   : Screen(Vector2i(1100, 700), "Testbed ReactPhysics3D", true, isFullscreen),
+                   : Screen(Vector2i(1280, 800), "Testbed ReactPhysics3D", true, isFullscreen),
                      mIsInitialized(false), mGui(this), mFPS(0), mNbFrames(0), mPreviousTime(0),
                      mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0) {
 
