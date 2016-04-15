@@ -8,7 +8,7 @@ Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
 
 Author : Daniel Chappuis
 
-<img src="https://raw.githubusercontent.com/DanielChappuis/reactphysics3d/develop/documentation/UserManual/images/testbed.png" alt="Drawing" height="400" />
+<img src="https://raw.githubusercontent.com/DanielChappuis/reactphysics3d/master/documentation/UserManual/images/testbed.png" alt="Drawing" height="400" />
 
 ## Features
 
