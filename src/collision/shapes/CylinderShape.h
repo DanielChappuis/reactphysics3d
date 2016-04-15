@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CYLINDER_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -49,9 +49,9 @@ namespace reactphysics3d {
  * constructor of the cylinder shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class CylinderShape : public CollisionShape {
+class CylinderShape : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
@@ -69,10 +69,6 @@ class CylinderShape : public CollisionShape {
         /// Private assignment operator
         CylinderShape& operator=(const CylinderShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -82,9 +78,6 @@ class CylinderShape : public CollisionShape {
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
-
-        /// Allocate and return a copy of the object
-        virtual CylinderShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -105,20 +98,15 @@ class CylinderShape : public CollisionShape {
         /// Return the height
         decimal getHeight() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two cylinder shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-/// Allocate and return a copy of the object
-inline CylinderShape* CylinderShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) CylinderShape(*this);
-}
 
 // Return the radius
 /**
@@ -134,6 +122,15 @@ inline decimal CylinderShape::getRadius() const {
  */
 inline decimal CylinderShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
+}
+
+// Set the scaling vector of the collision shape
+inline void CylinderShape::setLocalScaling(const Vector3& scaling) {
+
+    mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;
+    mRadius = (mRadius / mScaling.x) * scaling.x;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -171,12 +168,6 @@ inline void CylinderShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
     tensor.setAllValues(diag, 0.0, 0.0, 0.0,
                         decimal(0.5) * mass * mRadius * mRadius, 0.0,
                         0.0, 0.0, diag);
-}
-
-// Test equality between two cylinder shapes
-inline bool CylinderShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const CylinderShape& otherShape = dynamic_cast<const CylinderShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 // Return true if a point is inside the collision shape

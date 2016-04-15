@@ -1,5 +1,5 @@
 \documentclass[a4paper,12pt]{article}
- 
+
 % packages
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
@@ -42,7 +42,7 @@
    \tableofcontents
 
    \newpage
- 
+
 
    \section{Introduction}
 
@@ -54,32 +54,32 @@
    The ReactPhysics3D library has the following features:
 
    \begin{itemize}
-    \item Rigid body dynamics 
-    \item Discrete collision detection 
-    \item Collision shapes (Sphere, Box, Cone, Cylinder, Capsule, Convex Mesh)
+    \item Rigid body dynamics
+    \item Discrete collision detection
+    \item Collision shapes (Sphere, Box, Cone, Cylinder, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
     \item Multiple collision shapes per body
-    \item Broadphase collision detection (Dynamic AABB tree) 
-    \item Narrowphase collision detection (GJK/EPA) 
+    \item Broadphase collision detection (Dynamic AABB tree)
+    \item Narrowphase collision detection (GJK/EPA)
     \item Collision response and friction (Sequential Impulses Solver)
     \item Joints (Ball and Socket, Hinge, Slider, Fixed)
     \item Collision filtering with categories
     \item Ray casting
     \item Sleeping technique for inactive bodies
-    \item Integrated Profiler 
+    \item Integrated Profiler
     \item Multi-platform (Windows, Linux, Mac OS X)
     \item Documentation (User manual and Doxygen API)
-    \item Examples
+    \item Testbed application with demos
     \item Unit tests
    \end{itemize}
 
     \section{License}
-               
+
     The ReactPhysics3D library is released under the open-source ZLib license. For more information, read the "LICENSE" file.
 
     \section{Building the library}
-    \label{sec:building} 
+    \label{sec:building}
 
-    You should use the CMake software to generate the makefiles or the 
+    You should use the CMake software to generate the makefiles or the
     project files for your IDE. CMake can be downloaded at
     \url{http://www.cmake.org} or using your package-management program
     (apt, yum, \dots) on Linux. Then, you will be able to compile the library to create the static library
@@ -87,11 +87,10 @@
     If you have never used cmake before, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
     it contains a lot of useful information. \\
 
-    Note that by default, the library is built in \emph{debugging} mode. In this mode, a lot of debugging information is compiled together with the code.
-    This might cause the application to run much slower that it should be in \emph{release} mode. Therefore, you should not forget to build the library in
-    \emph{release} mode when releasing your final application.
-
-    \subsection{CMake using the command line (Linux and Mac OS X)}  
+    It is also possible to compile the testbed application using CMake. The testbed application contains different
+    demo scenes using the ReactPhysics3D library.
+xs
+    \subsection{CMake using the command line (Linux and Mac OS X)}
 
     Now, we will see how to build the ReactPhysics3D library using the CMake tool with the command line.
     First, create a folder where you want to build the library. Then go into that folder and run
@@ -101,7 +100,7 @@
 
     \begin{sloppypar}
     where \texttt{\textless path\_to\_library\_source\textgreater} must be replaced
-    by the path to the \texttt{reactphysics3d-0.5.0/} folder. It is the folder that
+    by the path to the \texttt{reactphysics3d-0.6.0/} folder. It is the folder that
     contains the \texttt{CMakeLists.txt} file. Running this command will launch the CMake command line interface.
     Hit the 'c' key to configure the project. There, you can also change some predefined variables (see section \ref{sec:cmakevariables} for more details)
     and then, hit the 'c' key again. Once you have set all the values as you like, you can hit the 'g' key to generate the makefiles in the build directory
@@ -111,28 +110,24 @@
     \texttt{/lib} folder with the following command in your build directory: \\
 
     \end{sloppypar}
-    
+
     \texttt{make}
 
     \subsection{CMake using the graphical interface (Linux, Mac OS X and Windows)}
 
-     You can also use the graphical user interface of CMake. To do this, 
+     You can also use the graphical user interface of CMake. To do this,
      run the \texttt{cmake-gui} program. The program will ask you for the
-     source folder which is the \texttt{reactphysics3d-0.5.0/} folder of
+     source folder which is the \texttt{reactphysics3d-0.6.0/} folder of
      the library. You will also have to select a folder where you want to
-     build the library and the examples. Select any empty folder that
+     build the library and the testbed application. Select any empty folder that
      is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to choose an IDE that is on
      your system. For instance, you can select Visual Studio, Qt Creator, XCode, ... Then, you
      can change the compilation options. See section \ref{sec:cmakevariables} to see what are the possible options.
-     Once this is done, you can click on \texttt{Configure} again and finally on \texttt{Generate}. \\ 
-    
+     Once this is done, you can click on \texttt{Configure} again and finally on \texttt{Generate}. \\
+
      Now, if you go into the folder you have chosen to build the
      library, you should be able to open the project file that corresponds to your IDE and compile
      the library. \\
-
-     If your want to run the examples within the Microsoft Visual Studio IDE, you need to make sure that in the
-     \emph{Debugging} section of the \emph{Configuration Properties} of the example projects, the \emph{Working Directory} is set to \texttt{\$(OutDir)}.
-     Otherwise, you might have problems to run the examples.
 
      \subsection{CMake Variables}
      \label{sec:cmakevariables}
@@ -146,10 +141,10 @@
                                                     However, if this variable is set to \texttt{Release}, no debugging information is stored
                                                     and therefore, it will run much faster. This mode must be used when you compile the final
                                                     release of you application.
-                                                   
-         \item[COMPILE\_EXAMPLES] If this variable is \texttt{ON}, the examples of the library will be compiled.
-                                                         The examples use OpenGL for rendering. You will also need to have the GLEW library (\url{http://glew.sourceforge.net/})
-                                                         to run them. Take a look at the section \ref{sec:examples} for more information about the examples.
+
+         \item[COMPILE\_TESTBED] If this variable is \texttt{ON}, the tesbed application of the library will be compiled.
+                                                         The testbed application uses OpenGL for rendering.
+                                                         Take a look at the section \ref{sec:testbed} for more information about the testbed application.
 
          \item[COMPILE\_TESTS] If this variable is \texttt{ON}, the unit tests of the library will be compiled. You will then
                                              be able to launch the tests to make sure that they are running fine on your system.
@@ -163,7 +158,7 @@
           \item[DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the library will be compiled with double floating point precision.
                                                                     Otherwise, the library will be compiled with single precision.
        \end{description}
-       
+
 
     \section{Using ReactPhysics3D in your application}
 
@@ -173,10 +168,10 @@
     the ReactPhysics3D header file with the line: \\
 
     \begin{lstlisting}
-     // Include the ReactPhysics3D header file
-     #include "reactphysics3d.h"
+// Include the ReactPhysics3D header file
+#include "reactphysics3d.h"
   \end{lstlisting}
-   
+
     \vspace{0.6cm}
 
     Note that the \texttt{reactphysics3d.h} header file can be found in the
@@ -186,7 +181,7 @@
 
     Do not forget to also link your application with the ReactPhysics3D
     static library.  \\
-  
+
     Then, you should be able to compile your application using the
     ReactPhysics3D library. \\
 
@@ -194,9 +189,9 @@
     \texttt{rp3d}. Therefore, you need to include this namespace into your code with the following declaration: \\
 
     \begin{lstlisting}
-     // Use the ReactPhysics3D namespace
-     using namespace reactphysics3d;
-  \end{lstlisting}
+// Use the ReactPhysics3D namespace
+using namespace reactphysics3d;
+    \end{lstlisting}
 
     \vspace{0.6cm}
 
@@ -228,7 +223,10 @@ rp3d::CollisionWorld world;
 
     Do not forget to destroy the \texttt{CollisionWorld} instance at the end of your program in order to release the allocated memory. If the object has been created
     statically, it will be destroyed automatically at the end of the scope in which it has been created. If the object has been created dynamically (using the \texttt{new}
-    operator), you need to destroy it with the \texttt{delete} operator.
+    operator), you need to destroy it with the \texttt{delete} operator. \\
+
+    When the \texttt{CollisionWorld} is destroyed, all the bodies that have been added into it and that have not been destroyed already will be destroyed.
+    Therefore, the pointers to the bodies of the world will become invalid after the existence of their \texttt{CollisionWorld}.
 
     \section{Collision Bodies}
 
@@ -286,8 +284,7 @@ body->setTransform(newTransform);
 
     \begin{sloppypar}
     In order to destroy a Collision Body from the world, you need to use the \texttt{CollisionWorld::destroyCollisionBody()} method. You need to use the pointer to the body you
-    want to destroy in argument. Note that after calling that method, the pointer will not be valid anymore and therefore, you should not use it. Note that you must
-    destroy all the bodies at the end of the simulation before you destroy the world. \\
+    want to destroy in argument. Note that after calling that method, the pointer will not be valid anymore and therefore, you should not use it. \\
     \end{sloppypar}
 
     Here is how to destroy a Collision Body: \\
@@ -311,12 +308,8 @@ world.destroyCollisionBody(body);
     \subsection{Creating the Dynamics World}
 
     The first thing you have to do when you want to simulate the dynamics of rigid bodies in time is to create an instance
-    of the \texttt{DynamicsWorld}. You need to specify two parameters when constructing the world. The first one is the gravity acceleration  vector (in $m / s^2$) in the
-    world and
-    the second one is the simulation time step (in seconds). Note that gravity is activated by default when you create the world. The time step is the fixed amount of time
-    used at each internal
-    physics tick. Note that multiple internal physics ticks can be taken at each frame. For real-time applications, a time step of $\frac{1}{60}$ seconds (60 Hz) is usually
-    used. Using a smaller time step makes the simulation more precise but also more expensive to compute. \\
+    of the \texttt{DynamicsWorld}. You need to specify the gravity acceleration vector (in $m / s^2$) in the world as parameter. Note that gravity is
+    activated by default when you create the world. \\
 
     Here is how to create the Dynamics World: \\
 
@@ -324,11 +317,8 @@ world.destroyCollisionBody(body);
 // Gravity vector
 rp3d::Vector3 gravity(0.0, -9.81, 0.0);
 
-// Time step (in seconds)
-rp3d::decimal timeStep = 1.0 / 60.0;
-
 // Create the dynamics world
-rp3d::DynamicsWorld world(gravity, timeStep);
+rp3d::DynamicsWorld world(gravity);
   \end{lstlisting}
 
     \subsection{Customizing the Dynamics World}
@@ -381,42 +371,70 @@ world.enableSleeping(false);
       sleeping. To do this, use the
     \texttt{DynamicsWorld::setTimeBeforeSleep()} method.
    \end{sloppypar}
-    
+
     \subsection{Updating the Dynamics World}
 
-    The first thing you have to do to simulate the dynamics of your world is to start the simulation using the following method: \\
+    The \texttt{DynamicsWorld} is used to simulate physics through time. It has to be updated each time you want to simulate a step forward in time. Most of the time,
+    you want to update the world right before rendering a new frame in a real-time application. \\
+
+    To update the physics world, you need to use the \texttt{DynamicsWorld::update()} method. This method will perform collision detection and update the
+    position and orientation of the bodies and joints. After updating the world, you will be able to get the new position and orientation of your bodies for the next
+    frame to render. This method requires a \emph{timeStep} parameter. This is the amount of time you want to advance the physics simulation (in seconds). \\
+
+    The smaller the time step you pick, the more precise the simulation will be but it can also be more expensive to compute. For a real-time application, you
+    probably want a time step of at most $\frac{1}{60}$ seconds to
+    have at least a 60 Hz framerate. Most of the time, physics engines prefer to work with a constant time step. It means that you should always call
+    the \texttt{DynamicsWorld::update()} method with the same time step parameter. You do not want to use the time between two frames as your time step because it will
+    not be constant. \\
+
+    You can use the following technique. First, you choose a constant time step for the physics. Let say the time step is $\frac{1}{60}$ seconds. Then, at each frame,
+    you compute the time difference between the current frame and the previous one and you accumulate this difference in a variable called \emph{accumulator}. The accumulator
+    is initialized to zero at the beginning of your application and is updated at each frame. The idea is to divide the time in the accumulator in several constant time steps.
+    For instance, if your accumulator contains $0.145$ seconds, it means that we can take $8$ physics steps of $\frac{1}{60}$ seconds during the current frame. Note that
+    $0.012$ seconds will remain in the accumulator and will probably be used in the next frame. As you can see, multiple physics steps can be taken at each frame. It is
+    important to understand that each call to the \texttt{DynamicsWorld::update()} method is done using a constant time step that is not varying with the framerate. \\
+
+    Here is what the code looks like at each frame: \\
 
     \begin{lstlisting}
-// Start the simulation
-world.start();
+
+// Constant physics time step
+const float timeStep = 1.0 / 60.0;
+
+// Get the current system time
+long double currentFrameTime = getCurrentSystemTime();
+
+// Compute the time difference between the two frames
+long double deltaTime  = currentFrameTime - previousFrameTime;
+
+// Update the previous time
+previousFrameTime = currentFrameTime;
+
+// Add the time difference in the accumulator
+accumulator += mDeltaTime;
+
+// While there is enough accumulated time to take
+// one or several physics steps
+while (accumulator >= timeStep) {
+
+    // Update the Dynamics world with a constant time step
+    dynamicsWorld->update(timeStep);
+
+    // Decrease the accumulated time
+    accumulator -= timeStep;
+}
+
     \end{lstlisting}
 
-    \vspace{0.6cm}
-
-    Then, each time you have to compute the next frame to render in your application, you need to update the state of the world. To do that, you simply need to call this method: \\
-
-    \begin{lstlisting}
-// Update the world by taking a simulation step
-world.update();
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    When the \texttt{DynamicsWorld::update()} method is called, collision detection is performed and the position and orientation of the bodies are updated accordingly.
-    After updating the world, you will be able to get the updated position and orientation of the bodies for the next frame. Make sure that you call
-    the \texttt{DynamicsWorld::start()} method before calling the \texttt{DynamicsWorld::update()} method. \\
-
-    You can also use the \texttt{DynamicsWorld::stop()} method to stop the simulation. You will then be able to start it again and continue updating it. \\
-
-    Note that you can get the elapsed time (in seconds) from the beginning of the physics simulation using the \texttt{DynamicsWorld::getPhysicsTime()} method.
-    This can be useful to
-    create some animations.
 
     \subsection{Destroying the Dynamics World}
 
-    Do not forget to destroy the \texttt{DynamicsWorld} instance at the end of your program in order to release the allocated memory. If the object has been created statically, it will
-    automatically be destroyed at the end of the scope in which it has been created. If the object has been created dynamically (using the \texttt{new} operator), you need to destroy
-    it with the \texttt{delete} operator.
+    Do not forget to destroy the \texttt{DynamicsWorld} instance at the end of your program in order to release the allocated memory. If the object has been created
+    statically, it will automatically be destroyed at the end of the scope in which it has been created. If the object has been created dynamically (using the
+    \texttt{new} operator), you need to destroy it with the \texttt{delete} operator. \\
+
+    When the \texttt{DynamicsWorld} is destroyed, all the bodies and joints that have been added into it and that have not been destroyed already will be destroyed.
+    Therefore, the pointers to the bodies and joints of the world will become invalid after the existence of their \texttt{DynamicsWorld}.
 
     \section{Rigid Bodies}
     \label{sec:rigidbody}
@@ -498,6 +516,11 @@ rigidBody->enableGravity(false);
     another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
     \texttt{Material::setFrictionCoefficient()} method. \\
 
+    You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
+    a rolling object on a flat surface for instance. You should use this only with SphereShape,
+    CapsuleShape, CylinderShape or ConeShape collision shapes. By default, rolling resistance is zero but you can
+    set a positive value using the \texttt{Material::setRollingResistance()} method to increase resistance. \\
+
     Here is how to get the material of a rigid body and how to modify some of its properties : \\
 
     \begin{lstlisting}
@@ -528,7 +551,7 @@ material.setFrictionCoefficient(rp3d::decimal(0.2));
 
    \begin{lstlisting}
 // This rigid body cannot sleep
-rigidBody->setIsAllowedToSleep(false); 
+rigidBody->setIsAllowedToSleep(false);
  \end{lstlisting}
 
     \subsubsection{Applying Force or Torque to a Rigid Body}
@@ -540,7 +563,7 @@ rigidBody->setIsAllowedToSleep(false);
     \begin{lstlisting}
 // Force vector (in Newton)
 rp3d::Vector3 force(2.0, 0.0, 0.0);
- 
+
 // Apply a force to the center of the body
 rigidBody->applyForceToCenter(force);
   \end{lstlisting}
@@ -559,7 +582,7 @@ rp3d::Vector3 force(2.0, 0.0, 0.0);
 
 // Point where the force is applied
 rp3d::Vector3 point(4.0, 5.0, 6.0);
- 
+
 // Apply a force to the body
 rigidBody->applyForce(force, point);
   \end{lstlisting}
@@ -849,13 +872,121 @@ for (unsigned int i=0; i<mesh.getNbFaces(); i++) {
 collisionShape.setIsEdgesInformationUsed(true);
   \end{lstlisting}
 
+  \subsection{Concave Mesh Shape}
+
+  \begin{figure}[h]
+      \centering
+      \includegraphics{concavemeshshape.png}
+      \label{fig:concaveshape}
+  \end{figure}
+
+  The \texttt{ConcaveMeshShape} class can be used for a static concave triangular mesh. It can be used to describe an environment for
+  instance. Note that it cannot be used with a dynamic body that is allowed to move. Moreover, make sure to use a \texttt{ConcaveMeshShape} only
+  when you are not able to use a convex shape and also try to limit the number of triangles of that mesh because collision detection
+  with \texttt{ConcaveMeshShape} is quite expensive compared to convex shapes. \\
+
+  In order to create a concave mesh shape, you need to supply a pointer to a \texttt{TriangleMesh}. A \texttt{TriangleMesh} is a class
+  that describes a mesh made of triangles. A \texttt{TriangleMesh} can contain several parts (submeshes). Each part is a set of
+  triangles represented by a \texttt{TriangleVertexArray} object. First, you need to create a \texttt{TriangleVertexArray}. A \texttt{TriangleVertexArray} represents
+  a continuous array of vertices and indexes for a triangular mesh. When you create a \texttt{TriangleVertexArray}, no data is copied
+  into the array. It only stores a pointer to the data. The goal is to allow the user to share vertices data between the physics engine and the rendering
+  part. Therefore, make sure that the data pointed by a \texttt{TriangleVertexArray} remains valid during the whole \texttt{TriangleVertexArray} life.
+  \\
+
+  The following example show how to create a \texttt{TriangleVertexArray}: \\
+
+  \begin{lstlisting}
+const int nbVertices = 8;
+const int nbTriangles = 12;
+float vertices[3 * nbVertices] = ...;
+int indices[3 * nbTriangles] = ...;
+rp3d::TriangleVertexArray* triangleArray =
+new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
+indices, sizeof(int),
+rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
+rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+  \end{lstlisting}
+
+  \vspace{0.6cm}
+
+  Now that we have a \texttt{TriangleVertexArray}, we need to create a \texttt{TriangleMesh} and add the \texttt{TriangleVertexArray}
+  into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape} and add it to the body we want to
+  simulate as in the following example: \\
+
+  \begin{lstlisting}
+rp3d::TriangleMesh triangleMesh;
+
+// Add the triangle vertex array to the triangle mesh
+triangleMesh.addSubpart(triangleArray);
+
+// Create the concave mesh shape
+ConcaveMesh* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
+  \end{lstlisting}
+
+  \vspace{0.6cm}
+
+  Note that the \texttt{TriangleMesh} object also needs to exist during the whole life of the collision shape because its
+  data is not copied into the collision shape.
+
+  \subsection{Heightfield Shape}
+
+  \begin{figure}[h]
+      \centering
+      \includegraphics{heightfieldshape.png}
+      \label{fig:heightfieldshape}
+  \end{figure}
+
+  The \texttt{HeightFieldShape} is a collision shape that can be used to represent a static terrain for instance. You can
+  define a heightfield with a two dimensional grid that has a given height value at each point. \\
+
+  In order to create a \texttt{HeightFieldShape}, you need to have an array with all the height values of your field.
+  You can have height values of type int, float or double. You need to give the number of rows and columns of your two
+  dimensional grid. Note that the height values in your array must be organized such that the value at row
+  \texttt{indexRow} and column \texttt{indexColumn} is located at the following position in the array:
+
+  \begin{lstlisting}
+heighFieldValues[indexRow * nbColumns + indexColumn]
+  \end{lstlisting}
+
+  \vspace{0.6cm}
+
+  Morevover, you need to provide the minimum and maximum height values of your height field. \\
+
+  Here is an example that shows how to create a \texttt{HeightFieldShape}: \\
+
+  \begin{lstlisting}
+const int nbRows = 40;
+const int nbColumns = 50;
+float minHeight = 100;
+float maxHeight = 500;
+
+// Height values
+float heightValues[nbRows * nbColumns] = ...;
+
+// Create the heightfield collision shape
+rp3d::HeightFieldShape = new rp3d::HeightFieldShape(nbColumns, nbRows, minHeight,
+maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+  \end{lstlisting}
+
+  \vspace{0.6cm}
+
+  Note that the array of height values is not copied into the \texttt{HeightFieldShape}. Therefore, you need to make sure
+  it exists during the lifetime of the \texttt{HeightFieldShape} and you must not forget to release its memory when you
+  destroy the collision shape or at the end of your application. \\
+
+  When creating a \texttt{HeightFieldShape}, the origin of the shape will be at the center of its bounding volume.
+  Therefore, if you create a \texttt{HeightFieldShape} with a minimum height of 100 and a maximum height of 500, the
+  maximum coordinates of the shape on the Y axis will be 200 and the minimum coordinates will be -200.
+
     \subsection{Adding a Collision Shape to a body - The Proxy Shape concept}
 
     \begin{sloppypar}
     Now that you know how to create a collision shape, we will see how to add it to a given body. \\
 
-    First, note that when you add a collision shape to a body, the collision shape object that you gave as a parameter
-    will be copied internally. Therefore, you can destroy the collision shape object right after it has been added to the body. \\
+    First note that when you add a collision shape to a body, the shape will not be copied internally. You only give a
+    pointer to the shape in parameter. The shape must exist during the whole lifetime of the body. This way, you can
+    create a collision shape and reuse it for multiple bodies. You are also responsible to destroy the shape at the
+    end when the bodies are not used anymore. \\
 
    In order to add a collision shape to a body, you need to use the \texttt{CollisionBody::addCollisionShape()} method for a Collision Body and the
    \texttt{RigidBody::addCollisionShape()} method for a Rigid Body. You will have to provide the collision shape transform in parameter. This is the
@@ -865,8 +996,6 @@ collisionShape.setIsEdgesInformationUsed(true);
    The \texttt{addCollisionShape()} method returns a pointer to a Proxy Shape. A Proxy Shape is what links a given collision shape to the body it has been added.
    You can use the returned Proxy Shape to get or set parameters of the given collision shape in that particular body. This concept is also called \emph{fixture} in some
    other physics engines. In ReactPhysics3D, a Proxy Shape is represented by the \texttt{ProxyShape} class. \\
-
-    When you create a collision shape, you can add it to multiple bodies. You do not need to create several times the same collision shape. \\
 
     The following example shows how to add a sphere collision shape with a given mass to a rigid body and also how to remove it from the body using the Proxy Shape pointer. \\
     \end{sloppypar}
@@ -885,11 +1014,11 @@ rp3d::decimal mass = rp3d::decimal(4.0);
 
 // Add the collision shape to the rigid body
 rp3d::ProxyShape* proxyShape;
-proxyShape = body->addCollisionShape(shape, transform, mass);
+proxyShape = body->addCollisionShape(&shape, transform, mass);
 
 // If you want to remove the collision shape from the body
 // at some point, you need to use the proxy shape
-body->removeCollisionShape(proxyShape); 
+body->removeCollisionShape(proxyShape);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -900,7 +1029,7 @@ body->removeCollisionShape(proxyShape);
 
     \subsection{Collision filtering}
     \label{sec:collisionfiltering}
-    
+
     By default all the collision shapes of all your bodies are able to collide with each other in the world. However, sometimes we want a body to collide only with a given
     group of bodies and not with other bodies. This is called collision filtering. The idea is to group the collision shapes of bodies into categories. Then we can specify
     for each collision shape against which categories it will be able to collide. \\
@@ -966,7 +1095,7 @@ proxyShapeBody4->setCollideWithMaskBits(CATEGORY2);
     translation and three for the rotation). The different joints can reduce the number of degrees of freedom between two rigid bodies. \\
 
     Some joints have limits to control the range of motion and some joints have motors to automatically move the bodies of the joint at a given speed. \\
-    
+
     \subsection{Ball and Socket Joint}
 
     The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot translate with respect to each other.
@@ -1169,7 +1298,7 @@ joint = dynamic_cast<rp3d::SliderJoint*>(world.createJoint(jointInfo));
   \end{lstlisting}
 
     \vspace{0.6cm}
- 
+
    \begin{sloppypar}
      You can also use the \texttt{SliderJoint::enableLimit()}, \texttt{SliderJoint::\-setMinTranslationLimit()} and \texttt{SliderJoint::setMaxTranslationLimit()} methods to
      enable the limits of the joint after its creation. See the API documentation for more information.
@@ -1388,7 +1517,7 @@ world->raycast(ray, &callbackObject);
     body. The \texttt{RaycastInfo} object will only be valid if the returned value is \emph{true} (a hit occured). \\
 
     \end{sloppypar}
-    
+
     The following example shows how test ray intersection with a body: \\
 
     \begin{lstlisting}
@@ -1432,48 +1561,142 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
 
     \vspace{0.6cm}
 
-    \section{Examples}
-    \label{sec:examples}
+    \section{Testbed application}
+    \label{sec:testbed}
 
-    You can find some demos in the \texttt{examples/} folder of
-    the ReactPhysics3D library. Follow the instructions described in section \ref{sec:building} to
-    compile the examples. Note that OpenGL and the GLEW library are required to run those examples. Studying the examples is a
-    good way to understand how to use the ReactPhysics3D library. \\
+    \begin{figure}[h]
+        \centering
+        \includegraphics{testbed.png}
+        \label{fig:testbed}
+    \end{figure}
 
-    All the examples require some command line arguments to be able to run them. Do not forget to set them in your IDE (Visual Studio, XCode, \dots) or to
-    specify them when you run the example in command line. You can find the command line arguments to use for each example bellow.
+    The testbed application is a graphical interface where you can select and see some demo scenes using the
+    ReactPhysics3D library. \\
 
-    \subsection{Cubes}
+    Follow the instructions described in section \ref{sec:building} to
+    compile the testbed application. Note that OpenGL is required to compile it. \\
 
-    Command line arguments: shaders/ \\
+    The testbed application can be found in the \texttt{testbed/} folder of
+    the ReactPhysics3D library. Do not hesitate to take a look at the code of the demo scenes to better understand how
+    to use the library in your application. \\
 
-    In this example, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
-    the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this demo,
-    the cubes are green when they are active and become red as they get inactive (sleeping).
+    The following subsections describe the demo scenes that can be found in the testbed application.
 
-    \subsection{Collision Shapes}
-    
-    Command line arguments: shaders/ meshes/ \\
-    
-    In this example, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
-    in the ReactPhysics3D library like Cylinders, Capsules, Spheres, Convex Meshes and Cones. Those bodies will fall down to the floor.
+    \subsection{Cubes Scene}
+
+    In this scene, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
+    the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this scene,
+    the cubes will become red as they get inactive (sleeping).
 
     \subsection{Joints}
 
-    Command line arguments: shaders/ \\
-
-    In this example, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
+    In this scene, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
     to set the motor or limits of the joints.
 
-    \subsection{Raycast}
+    \subsection{Collision Shapes Scene}
 
-    Command line arguments: shaders/ meshes/ \\
+    In this scene, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
+    in the ReactPhysics3D library like Cylinders, Capsules, Spheres, Convex Meshes and Cones. Those bodies will fall down to the floor.
 
-    In this example, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
-    It is possible to switch from a collision shape to another using the space key.
+    \subsection{Heightfield Scene}
+
+    In this scene, you will see how to use the Height field collision shape of the library. Several cubes will fall
+    down to the height field.
+
+    \subsection{Raycast Scene}
+
+    In this scene, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
+    It is possible to switch from a collision shape to another using the spacebar key.
+
+    \subsection{Concave Mesh Scene}
+
+    In this scene, you will see how to use the static concave mesh collision shape of the library.
+
+    \section{Retrieving contacts}
+
+    There are several ways to get the contacts information (contact point, normal, penetration depth, \dots) from the \texttt{DynamicsWorld}. \\
+
+    \subsection{Contacts of a given rigid body}
+
+    If you are interested to retrieve all the contacts of a single rigid body, you can use the \texttt{RigidBody::getContactManifoldsList()} method. This method will
+    return a linked list with all the current contact manifolds of the body. A contact manifold can contains several contact points. \\
+
+    Here is an example showing how to get the contact points of a given rigid body: \\
+
+    \begin{lstlisting}
+const ContactManifoldListElement* listElem;
+
+// Get the head of the linked list of contact manifolds of the body
+listElem = rigidbody->getContactManifoldsList();
+
+// For each contact manifold of the body
+for (; listElem != NULL; listElem = listElem->next) {
+    ContactManifold* manifold = listElem->contactManifold;
+
+    // For each contact point of the manifold
+    for (int i=0; i<manifold->getNbContactPoints(); i++) {
+
+        // Get the contact point
+        ContactPoint* point = manifold->getContactPoint(i);
+
+        // Get the world-space contact point on body 1
+        Vector3 pos = point->getWorldPointOnBody1();
+
+        // Get the world-space contact normal
+        Vector3 normal = point->getNormal();
+    }
+}
+    \end{lstlisting}
+
+     \vspace{0.6cm}
+
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
+    each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
+    see how to get all the contact occuring in the physis sub-steps of the engine. Also note that a contact manifold contains some persistent contact points that
+    have may have been there for several frames.
+
+    \subsection{All the contacts of the world}
+
+    If you want to retrieve all the contacts of any rigid body in the world, you can use the \texttt{DynamicsWorld::getContactsList()} method. This method will
+    a \texttt{std::vector} with the list of all the current contact manifolds of the world. A contact manifold may contain several contact points. \\
+
+    The following example shows how to get all the contacts of the world using this method: \\
+
+    \begin{lstlisting}
+std::vector<ContactManifold*> manifolds;
+
+// Get all the contacts of the world
+manifolds = dynamicsWorld->getContactsList();
+std::vector<ContactManifold*>::iterator it;
+
+// For each contact manifold of the body
+for (it = manifolds.begin(); it != manifolds.end(); ++it) {
+    ContactManifold* manifold = *it;
+
+    // For each contact point of the manifold
+    for (int i=0; i<manifold->getNbContactPoints(); i++) {
+
+        // Get the contact point
+        ContactPoint* point = manifold->getContactPoint(i);
+
+        // Get the world-space contact point on body 1
+        Vector3 pos = point->getWorldPointOnBody1();
+
+        // Get the world-space contact normal
+        Vector3 normal = point->getNormal();
+    }
+}
+    \end{lstlisting}
+
+     \vspace{0.6cm}
+
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
+    each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
+    see how to get all the contact occuring in the physis sub-steps of the engine. Also note that a contact manifold contains some persistent contact points that
+    have may have been there for several frames.
 
     \section{Receiving Feedback}
-
+    \label{sec:receiving_feedback}
     Sometimes, you want to receive notifications from the physics engine when a given event happens. The \texttt{EventListener} class can be used for that purpose. In order to use
     it, you need to create a new class that inherits from the \texttt{EventListener} class and overrides some methods that will be called by the ReactPhysics3D library when some events
     occur. You also need to register your class in the physics world using the \texttt{DynamicsWorld::setEventListener()} as in the following code: \\
@@ -1514,5 +1737,5 @@ world.setEventListener(&listener);
     \url{https://github.com/DanielChappuis/reactphysics3d/issues} \\
 
     Thanks a lot for reporting the issues that you find. It will help us to correct and improve the library.
-   
+
 \end{document}

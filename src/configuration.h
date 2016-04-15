@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -51,6 +51,11 @@ typedef long unsigned int luint;
 typedef luint bodyindex;
 typedef std::pair<bodyindex, bodyindex> bodyindexpair;
 
+typedef signed short int16;
+typedef signed int int32;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+
 // ------------------- Enumerations ------------------- //
 
 /// Position correction technique used in the constraint solver (for joints).
@@ -83,14 +88,14 @@ const decimal PI = decimal(3.14159265);
 /// 2*Pi constant
 const decimal PI_TIMES_2 = decimal(6.28318530);
 
-/// Default internal constant timestep in seconds
-const decimal DEFAULT_TIMESTEP = decimal(1.0 / 60.0);
-
 /// Default friction coefficient for a rigid body
 const decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
 
 /// Default bounciness factor for a rigid body
 const decimal DEFAULT_BOUNCINESS = decimal(0.5);
+
+/// Default rolling resistance
+const decimal DEFAULT_ROLLING_RESISTANCE = decimal(0.0);
 
 /// True if the spleeping technique is enabled
 const bool SPLEEPING_ENABLED = true;
@@ -130,6 +135,14 @@ const decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// also inflated in direction of the linear motion of the body by mutliplying the
 /// followin constant with the linear velocity and the elapsed time between two frames.
 const decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
+
+/// Maximum number of contact manifolds in an overlapping pair that involves two
+/// convex collision shapes.
+const int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
+
+/// Maximum number of contact manifolds in an overlapping pair that involves at
+/// least one concave collision shape.
+const int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
 
 }
 

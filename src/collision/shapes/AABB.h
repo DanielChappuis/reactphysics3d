@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -82,6 +82,12 @@ class AABB {
         /// Set the maximum coordinates of the AABB
         void setMax(const Vector3& max);
 
+        /// Return the size of the AABB in the three dimension x, y and z
+        Vector3 getExtent() const;
+
+        /// Inflate each side of the AABB by a given size
+        void inflate(decimal dx, decimal dy, decimal dz);
+
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
 
@@ -95,7 +101,19 @@ class AABB {
         void mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2);
 
         /// Return true if the current AABB contains the AABB given in parameter
-        bool contains(const AABB& aabb);
+        bool contains(const AABB& aabb) const;
+
+        /// Return true if a point is inside the AABB
+        bool contains(const Vector3& point) const;
+
+        /// Return true if the AABB of a triangle intersects the AABB
+        bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
+
+        /// Return true if the ray intersects the AABB
+        bool testRayIntersect(const Ray& ray) const;
+
+        /// Create and return an AABB for a triangle
+        static AABB createAABBForTriangle(const Vector3* trianglePoints);
 
         /// Assignment operator
         AABB& operator=(const AABB& aabb);
@@ -130,6 +148,17 @@ inline void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
 }
 
+// Return the size of the AABB in the three dimension x, y and z
+inline Vector3 AABB::getExtent() const {
+  return  mMaxCoordinates - mMinCoordinates;
+}
+
+// Inflate each side of the AABB by a given size
+inline void AABB::inflate(decimal dx, decimal dy, decimal dz) {
+    mMaxCoordinates += Vector3(dx, dy, dz);
+    mMinCoordinates -= Vector3(dx, dy, dz);
+}
+
 // Return true if the current AABB is overlapping with the AABB in argument.
 /// Two AABBs overlap if they overlap in the three x, y and z axis at the same time
 inline bool AABB::testCollision(const AABB& aabb) const {
@@ -146,6 +175,28 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 inline decimal AABB::getVolume() const {
     const Vector3 diff = mMaxCoordinates - mMinCoordinates;
     return (diff.x * diff.y * diff.z);
+}
+
+// Return true if the AABB of a triangle intersects the AABB
+inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
+
+    if (min3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) > mMaxCoordinates.x) return false;
+    if (min3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) > mMaxCoordinates.y) return false;
+    if (min3(trianglePoints[0].z, trianglePoints[1].z, trianglePoints[2].z) > mMaxCoordinates.z) return false;
+
+    if (max3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) < mMinCoordinates.x) return false;
+    if (max3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) < mMinCoordinates.y) return false;
+    if (max3(trianglePoints[0].z, trianglePoints[1].z, trianglePoints[2].z) < mMinCoordinates.z) return false;
+
+    return true;
+}
+
+// Return true if a point is inside the AABB
+inline bool AABB::contains(const Vector3& point) const {
+
+    return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
+            point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
+            point.z >= mMinCoordinates.z - MACHINE_EPSILON && point.z <= mMaxCoordinates.z + MACHINE_EPSILON);
 }
 
 // Assignment operator

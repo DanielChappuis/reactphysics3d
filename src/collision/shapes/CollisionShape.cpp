@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,21 +32,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type, decimal margin)
-               : mType(type), mNbSimilarCreatedShapes(0), mMargin(margin) {
+CollisionShape::CollisionShape(CollisionShapeType type) : mType(type), mScaling(1.0, 1.0, 1.0) {
     
-}
-
-// Private copy-constructor
-CollisionShape::CollisionShape(const CollisionShape& shape)
-               : mType(shape.mType), mNbSimilarCreatedShapes(shape.mNbSimilarCreatedShapes),
-                 mMargin(shape.mMargin) {
-
 }
 
 // Destructor
 CollisionShape::~CollisionShape() {
-    assert(mNbSimilarCreatedShapes == 0);
+
 }
 
 // Compute the world-space AABB of the collision shape given a transform

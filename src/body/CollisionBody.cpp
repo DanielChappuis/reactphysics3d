@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
  // Libraries
 #include "CollisionBody.h"
 #include "engine/CollisionWorld.h"
-#include "engine/ContactManifold.h"
+#include "collision/ContactManifold.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -41,10 +41,6 @@ CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, 
               : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(NULL),
                 mNbCollisionShapes(0), mContactManifoldsList(NULL), mWorld(world) {
 
-    mInterpolationFactor = 0.0;
-
-    // Initialize the old transform
-    mOldTransform = transform;
 }
 
 // Destructor
@@ -55,30 +51,27 @@ CollisionBody::~CollisionBody() {
     removeAllCollisionShapes();
 }
 
-// Add a collision shape to the body.
-/// When you add a collision shape to the body, an internal copy of this
-/// collision shape will be created internally. Therefore, you can delete it
-/// right after calling this method or use it later to add it to another body.
+// Add a collision shape to the body. Note that you can share a collision
+// shape between several bodies using the same collision shape instance to
+// when you add the shape to the different bodies. Do not forget to delete
+// the collision shape you have created at the end of your program.
 /// This method will return a pointer to a new proxy shape. A proxy shape is
 /// an object that links a collision shape and a given body. You can use the
 /// returned proxy shape to get and set information about the corresponding
 /// collision shape for that body.
 /**
- * @param collisionShape The collision shape you want to add to the body
+ * @param collisionShape A pointer to the collision shape you want to add to the body
  * @param transform The transformation of the collision shape that transforms the
  *        local-space of the collision shape into the local-space of the body
  * @return A pointer to the proxy shape that has been created to link the body to
  *         the new collision shape you have added.
  */
-ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShape,
+ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
                                              const Transform& transform) {
-
-    // Create an internal copy of the collision shape into the world (if it does not exist yet)
-    CollisionShape* newCollisionShape = mWorld.createCollisionShape(collisionShape);
 
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
-                                      sizeof(ProxyShape))) ProxyShape(this, newCollisionShape,
+                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, decimal(1));
 
     // Add it to the list of proxy collision shapes of the body
@@ -92,7 +85,7 @@ ProxyShape* CollisionBody::addCollisionShape(const CollisionShape& collisionShap
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    newCollisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mTransform * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
@@ -122,11 +115,9 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
-        mWorld.removeCollisionShape(proxyShape->mCollisionShape);
         current->~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
         mNbCollisionShapes--;
-        assert(mNbCollisionShapes >= 0);
         return;
     }
 
@@ -144,7 +135,6 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
             }
 
-            mWorld.removeCollisionShape(proxyShape->mCollisionShape);
             elementToRemove->~ProxyShape();
             mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
@@ -154,8 +144,6 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
         // Get the next element in the list
         current = current->mNext;
     }
-
-    assert(mNbCollisionShapes >= 0);
 }
 
 // Remove all the collision shapes
@@ -173,7 +161,6 @@ void CollisionBody::removeAllCollisionShapes() {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
-        mWorld.removeCollisionShape(current->mCollisionShape);
         current->~ProxyShape();
         mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
 
@@ -207,13 +194,20 @@ void CollisionBody::updateBroadPhaseState() const {
     // For all the proxy collision shapes of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
 
-        // Recompute the world-space AABB of the collision shape
-        AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform *shape->getLocalToBodyTransform());
-
-        // Update the broad-phase state for the proxy collision shape
-        mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb);
+        // Update the proxy
+        updateProxyShapeInBroadPhase(shape);
     }
+}
+
+// Update the broad-phase state of a proxy collision shape of the body
+void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
+
+    // Recompute the world-space AABB of the collision shape
+    AABB aabb;
+    proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+
+    // Update the broad-phase state for the proxy collision shape
+    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert);
 }
 
 // Set whether or not the body is active

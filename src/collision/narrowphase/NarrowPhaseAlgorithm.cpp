@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,12 +30,18 @@
 using namespace reactphysics3d;
 
 // Constructor
-NarrowPhaseAlgorithm::NarrowPhaseAlgorithm(MemoryAllocator& memoryAllocator)
-                     :mMemoryAllocator(memoryAllocator), mCurrentOverlappingPair(NULL) {
+NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
+                     : mMemoryAllocator(NULL), mCurrentOverlappingPair(NULL) {
 
 }
 
 // Destructor
 NarrowPhaseAlgorithm::~NarrowPhaseAlgorithm() {
 
+}
+
+// Initalize the algorithm
+void NarrowPhaseAlgorithm::init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator) {
+    mCollisionDetection = collisionDetection;
+    mMemoryAllocator = memoryAllocator;
 }

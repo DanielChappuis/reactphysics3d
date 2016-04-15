@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,9 +27,10 @@
 #define REACTPHYSICS3D_CONVEX_MESH_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
+#include "collision/TriangleMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
@@ -57,9 +58,9 @@ class CollisionWorld;
  * with the addEdge() method. Then, you must use the setIsEdgesInformationUsed(true) method
  * in order to use the edges information for collision detection.
  */
-class ConvexMeshShape : public CollisionShape {
+class ConvexMeshShape : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
@@ -93,9 +94,8 @@ class ConvexMeshShape : public CollisionShape {
         /// Recompute the bounds of the mesh
         void recalculateBounds();
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
 
         /// Return a local support point in a given direction without the object margin.
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
@@ -107,9 +107,6 @@ class ConvexMeshShape : public CollisionShape {
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
-        /// Allocate and return a copy of the object
-        virtual ConvexMeshShape* clone(void* allocatedMemory) const;
-
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
 
@@ -117,8 +114,12 @@ class ConvexMeshShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor to initialize with a array of 3D vertices.
+        /// Constructor to initialize with an array of 3D vertices.
         ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
+                        decimal margin = OBJECT_MARGIN);
+
+        /// Constructor to initialize with a triangle vertex array
+        ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed = true,
                         decimal margin = OBJECT_MARGIN);
 
         /// Constructor.
@@ -132,9 +133,6 @@ class ConvexMeshShape : public CollisionShape {
 
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two collision shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 
         /// Add a vertex into the convex mesh
         void addVertex(const Vector3& vertex);
@@ -150,9 +148,10 @@ class ConvexMeshShape : public CollisionShape {
         void setIsEdgesInformationUsed(bool isEdgesUsed);
 };
 
-// Allocate and return a copy of the object
-inline ConvexMeshShape* ConvexMeshShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) ConvexMeshShape(*this);
+/// Set the scaling vector of the collision shape
+inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
+    ConvexShape::setLocalScaling(scaling);
+    recalculateBounds();
 }
 
 // Return the number of bytes used by the collision shape
@@ -201,12 +200,12 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
     mNbVertices++;
 
     // Update the bounds of the mesh
-    if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
-    if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
-    if (vertex.y > mMaxBounds.y) mMaxBounds.y = vertex.y;
-    if (vertex.y < mMinBounds.y) mMinBounds.y = vertex.y;
-    if (vertex.z > mMaxBounds.z) mMaxBounds.z = vertex.z;
-    if (vertex.z < mMinBounds.z) mMinBounds.z = vertex.z;
+    if (vertex.x * mScaling.x > mMaxBounds.x) mMaxBounds.x = vertex.x * mScaling.x;
+    if (vertex.x * mScaling.x < mMinBounds.x) mMinBounds.x = vertex.x * mScaling.x;
+    if (vertex.y * mScaling.y > mMaxBounds.y) mMaxBounds.y = vertex.y * mScaling.y;
+    if (vertex.y * mScaling.y < mMinBounds.y) mMinBounds.y = vertex.y * mScaling.y;
+    if (vertex.z * mScaling.z > mMaxBounds.z) mMaxBounds.z = vertex.z * mScaling.z;
+    if (vertex.z * mScaling.z < mMinBounds.z) mMinBounds.z = vertex.z * mScaling.z;
 }
 
 // Add an edge into the convex mesh by specifying the two vertex indices of the edge.
@@ -218,9 +217,6 @@ inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
 * @param v2 Index of the second vertex of the edge to add
 */
 inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
-
-    assert(v1 >= 0);
-    assert(v2 >= 0);
 
     // If the entry for vertex v1 does not exist in the adjacency list
     if (mEdgesAdjacencyList.count(v1) == 0) {

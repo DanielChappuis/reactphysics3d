@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,7 +29,9 @@
 // Libraries
 #include "collision/narrowphase/GJK/Simplex.h"
 #include "collision/shapes/CollisionShape.h"
+#include "collision/CollisionShapeInfo.h"
 #include "constraint/ContactPoint.h"
+#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
 #include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
 #include "memory/MemoryAllocator.h"
@@ -86,7 +88,7 @@ class EPAAlgorithm {
         // -------------------- Attributes -------------------- //
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        MemoryAllocator* mMemoryAllocator;
 
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
@@ -112,18 +114,22 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm(MemoryAllocator& memoryAllocator);
+        EPAAlgorithm();
 
         /// Destructor
         ~EPAAlgorithm();
 
+        /// Initalize the algorithm
+        void init(MemoryAllocator* memoryAllocator);
+
         /// Compute the penetration depth with EPA algorithm.
-        bool computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                     ProxyShape* collisionShape1,
+        void computePenetrationDepthAndContactPoints(const Simplex& simplex,
+                                                     CollisionShapeInfo shape1Info,
                                                      const Transform& transform1,
-                                                     ProxyShape* collisionShape2,
+                                                     CollisionShapeInfo shape2Info,
                                                      const Transform& transform2,
-                                                     Vector3& v, ContactPointInfo*& contactInfo);
+                                                     Vector3& v,
+                                                    NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm
@@ -142,6 +148,11 @@ inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** 
         nbTriangles++;
         std::push_heap(&heap[0], &heap[nbTriangles], mTriangleComparison);
     }
+}
+
+// Initalize the algorithm
+inline void EPAAlgorithm::init(MemoryAllocator* memoryAllocator) {
+    mMemoryAllocator = memoryAllocator;
 }
 
 }

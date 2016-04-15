@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.5.0                                                                 *
+* Version 0.6.0                                                                 *
 * http://www.reactphysics3d.com                                                 *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
@@ -50,9 +50,13 @@
 #include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
+#include "collision/shapes/ConcaveMeshShape.h"
+#include "collision/shapes/HeightFieldShape.h"
 #include "collision/shapes/AABB.h"
 #include "collision/ProxyShape.h"
 #include "collision/RaycastInfo.h"
+#include "collision/TriangleMesh.h"
+#include "collision/TriangleVertexArray.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"

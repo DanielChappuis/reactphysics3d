@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,9 +31,12 @@
 #include "tests/mathematics/TestQuaternion.h"
 #include "tests/mathematics/TestMatrix2x2.h"
 #include "tests/mathematics/TestMatrix3x3.h"
+#include "tests/mathematics/TestMathematicsFunctions.h"
 #include "tests/collision/TestPointInside.h"
 #include "tests/collision/TestRaycast.h"
 #include "tests/collision/TestCollisionWorld.h"
+#include "tests/collision/TestAABB.h"
+#include "tests/collision/TestDynamicAABBTree.h"
 
 using namespace reactphysics3d;
 
@@ -49,12 +52,15 @@ int main() {
     testSuite.addTest(new TestQuaternion("Quaternion"));
     testSuite.addTest(new TestMatrix3x3("Matrix3x3"));
     testSuite.addTest(new TestMatrix2x2("Matrix2x2"));
+    testSuite.addTest(new TestMathematicsFunctions("Maths Functions"));
 
     // ---------- Collision Detection tests ---------- //
 
+    testSuite.addTest(new TestAABB("AABB"));
     testSuite.addTest(new TestPointInside("IsPointInside"));
     testSuite.addTest(new TestRaycast("Raycasting"));
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
+    testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
 
     // Run the tests
     testSuite.run();

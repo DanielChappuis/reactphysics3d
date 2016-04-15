@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -35,14 +35,8 @@ using namespace reactphysics3d;
 /**
  * @param radius Radius of the sphere (in meters)
  */
-SphereShape::SphereShape(decimal radius) : CollisionShape(SPHERE, radius), mRadius(radius) {
+SphereShape::SphereShape(decimal radius) : ConvexShape(SPHERE, radius) {
     assert(radius > decimal(0.0));
-}
-
-// Private copy-constructor
-SphereShape::SphereShape(const SphereShape& shape)
-            : CollisionShape(shape), mRadius(shape.mRadius) {
-
 }
 
 // Destructor
@@ -53,11 +47,8 @@ SphereShape::~SphereShape() {
 // Raycast method with feedback information
 bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // We perform the intersection test in world-space
-
-    const Vector3 sphereCenter = proxyShape->getLocalToWorldTransform().getPosition();
-    const Vector3 m = ray.point1 - sphereCenter;
-    decimal c = m.dot(m) - mRadius * mRadius;
+    const Vector3 m = ray.point1;
+    decimal c = m.dot(m) - mMargin * mMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;
@@ -91,7 +82,7 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* 
         raycastInfo.proxyShape = proxyShape;
         raycastInfo.hitFraction = t;
         raycastInfo.worldPoint = ray.point1 + t * rayDirection;
-        raycastInfo.worldNormal = (raycastInfo.worldPoint - sphereCenter).getUnit();
+        raycastInfo.worldNormal = raycastInfo.worldPoint;
 
         return true;
     }

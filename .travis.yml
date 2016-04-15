@@ -1,3 +1,9 @@
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "dDB6D746t1rfr8Evh9nFTu+35MN7UvHZf2RvVpYKFqRRsm2Kk4ET9B21JejZn2MaoYuzQ4Yw3TIXCErqOzFKwcET+2LC8SpA0GMp9eST6T0DtZquP1N/kRh704jN3cTuUo6R8xAxrw5w7g5ZFWREdRVnOHs6A0D3jEiMduBDXOGXuOHxCIARHbTvUxGxFTAh+EcNTgUp3Lq7pLlaTiFiJU20NumdrthFEnxk1ZN6t+mEk9ooG5jDvH//hs3sVrSGJIpbPQJioX1gL/xzgHJtwxG2upFmxm7C9FCwNo7z2zxQomOFyPQw9bZZGb46PPCJQsCJpw/j8QlCphxRKk5suwAGcoCP4zQXiygsXgoTIfkuTYEEEK7+9Gxkl9OaU5kcKKM7sradT7VQSqN9iAtcampA6ChsOPKFIgF1YbqpZrr9tkknFDvne3KraA4Zg8GSiebqXUNdsO1/enZkD+cGvidRDRTlJUHv4Osgr11maQ3uKG2T5QAs39qx0OK/Ctl77ppcZdQmDxFBW5Zu2McuawyGI2u3bCYg4fuFaMhsQ5cxiIp+wiqfMsr3LcX3Ut08fEGa8h2yE4aw7aGCXlLIPDcLLSGbsOSVlCblnlza2INi1VbwYqehT3DQvzP2rnNA+LFlRRIYupvV0heztgwalCOfJWinDQh9FuRRXMFFyfI="
+
 language: cpp
 os:
   - linux
@@ -5,18 +11,39 @@ os:
 compiler:
   - gcc
   - clang
+install:
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.8
+    - g++-4.8
+    - clang
+  coverity_scan:
+    project:
+      name: "DanielChappuis/reactphysics3d"
+      description: "Build submitted via Travis CI"
+    notification_email: chappuis.daniel@gmail.com
+    build_command_prepend: "mkdir build_directory; cd build_directory; cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False ../"
+    build_command: "make"
+    branch_pattern: develop
 branches:
   only:
     - master
     - develop
 script:
-  - mkdir build_directory
   - cd build_directory
+  # Build in debug mode with double precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
+  # Build in debug mode with single precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
+  # Build in release mode with double precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"
+  # Build in release mode with single precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test
+  - make && make test ARGS="-V"

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -132,11 +132,17 @@ struct Vector2 {
         /// Overloaded operator
         Vector2& operator=(const Vector2& vector);
 
+        /// Overloaded less than operator for ordering to be used inside std::set for instance
+        bool operator<(const Vector2& vector) const;
+
         /// Return a vector taking the minimum components of two vectors
         static Vector2 min(const Vector2& vector1, const Vector2& vector2);
 
         /// Return a vector taking the maximum components of two vectors
         static Vector2 max(const Vector2& vector1, const Vector2& vector2);
+
+        /// Return the zero vector
+        static Vector2 zero();
 
         // -------------------- Friends -------------------- //
 
@@ -145,7 +151,9 @@ struct Vector2 {
         friend Vector2 operator-(const Vector2& vector);
         friend Vector2 operator*(const Vector2& vector, decimal number);
         friend Vector2 operator*(decimal number, const Vector2& vector);
+        friend Vector2 operator*(const Vector2& vector1, const Vector2& vector2);
         friend Vector2 operator/(const Vector2& vector, decimal number);
+        friend Vector2 operator/(const Vector2& vector1, const Vector2& vector2);
 };
 
 // Set the vector to zero
@@ -178,7 +186,9 @@ inline decimal Vector2::dot(const Vector2& vector) const {
 // Normalize the vector
 inline void Vector2::normalize() {
     decimal l = length();
-    assert(l > std::numeric_limits<decimal>::epsilon());
+    if (l < MACHINE_EPSILON) {
+        return;
+    }
     x /= l;
     y /= l;
 }
@@ -277,10 +287,22 @@ inline Vector2 operator*(const Vector2& vector, decimal number) {
     return Vector2(number * vector.x, number * vector.y);
 }
 
+// Overloaded operator for multiplication of two vectors
+inline Vector2 operator*(const Vector2& vector1, const Vector2& vector2) {
+    return Vector2(vector1.x * vector2.x, vector1.y * vector2.y);
+}
+
 // Overloaded operator for division by a number
 inline Vector2 operator/(const Vector2& vector, decimal number) {
     assert(number > MACHINE_EPSILON);
     return Vector2(vector.x / number, vector.y / number);
+}
+
+// Overload operator for division between two vectors
+inline Vector2 operator/(const Vector2& vector1, const Vector2& vector2) {
+    assert(vector2.x > MACHINE_EPSILON);
+    assert(vector2.y > MACHINE_EPSILON);
+    return Vector2(vector1.x / vector2.x, vector1.y / vector2.y);
 }
 
 // Overloaded operator for multiplication with a number
@@ -297,6 +319,11 @@ inline Vector2& Vector2::operator=(const Vector2& vector) {
     return *this;
 }
 
+// Overloaded less than operator for ordering to be used inside std::set for instance
+inline bool Vector2::operator<(const Vector2& vector) const {
+    return (x == vector.x ? y < vector.y : x < vector.x);
+}
+
 // Return a vector taking the minimum components of two vectors
 inline Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(std::min(vector1.x, vector2.x),
@@ -307,6 +334,11 @@ inline Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
 inline Vector2 Vector2::max(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(std::max(vector1.x, vector2.x),
                    std::max(vector1.y, vector2.y));
+}
+
+// Return the zero vector
+inline Vector2 Vector2::zero() {
+    return Vector2(0, 0);
 }
 
 }

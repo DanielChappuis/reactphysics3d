@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,7 +32,7 @@ using namespace reactphysics3d;
 
 /// Constructor
 Test::Test(const std::string& name, std::ostream* stream)
-     : mName(name), mOutputStream(stream), mNbPassedTests(0), mNbFailedTests(0) {
+     : mName(name), mNbPassedTests(0), mNbFailedTests(0), mOutputStream(stream) {
 
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,7 +32,6 @@
 #include "ContactSolver.h"
 #include "ConstraintSolver.h"
 #include "body/RigidBody.h"
-#include "Timer.h"
 #include "Island.h"
 #include "configuration.h"
 
@@ -50,9 +49,6 @@ class DynamicsWorld : public CollisionWorld {
     protected :
 
         // -------------------- Attributes -------------------- //
-
-        /// Timer of the physics engine
-        Timer mTimer;
 
         /// Contact solver
         ContactSolver mContactSolver;
@@ -77,6 +73,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Gravity vector of the world
         Vector3 mGravity;
+
+        /// Current frame time step (in seconds)
+        decimal mTimeStep;
 
         /// True if the gravity force is on
         bool mIsGravityEnabled;
@@ -182,22 +181,22 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity, decimal timeStep);
+        DynamicsWorld(const Vector3& mGravity);
 
         /// Destructor
         virtual ~DynamicsWorld();
 
-        /// Start the physics simulation
-        void start();
-
-        /// Stop the physics simulation
-        void stop();
-
         /// Update the physics simulation
-        void update();
+        void update(decimal timeStep);
+
+        /// Get the number of iterations for the velocity constraint solver
+        uint getNbIterationsVelocitySolver() const;
 
         /// Set the number of iterations for the velocity constraint solver
         void setNbIterationsVelocitySolver(uint nbIterations);
+
+        /// Get the number of iterations for the position constraint solver
+        uint getNbIterationsPositionSolver() const;
 
         /// Set the number of iterations for the position constraint solver
         void setNbIterationsPositionSolver(uint nbIterations);
@@ -227,6 +226,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Return the gravity vector of the world
         Vector3 getGravity() const;
 
+        /// Set the gravity vector of the world
+        void setGravity(Vector3& gravity);
+
         /// Return if the gravity is on
         bool isGravityEnabled() const;
 
@@ -238,9 +240,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Return the number of joints in the world
         uint getNbJoints() const;
-
-        /// Return the current physics time (in seconds)
-        long double getPhysicsTime() const;
 
         /// Return an iterator to the beginning of the rigid bodies of the physics world
         std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
@@ -298,6 +297,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Test and report collisions between all shapes of the world
         virtual void testCollision(CollisionCallback* callback);
 
+        /// Return the list of all contacts of the world
+        std::vector<const ContactManifold*> getContactsList() const;
+
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;
@@ -314,14 +316,10 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
     }
 }
 
-// Start the physics simulation
-inline void DynamicsWorld::start() {
-    mTimer.start();
+// Get the number of iterations for the velocity constraint solver
+inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
+    return mNbVelocitySolverIterations;
 }
-
-inline void DynamicsWorld::stop() {
-    mTimer.stop();
-}                
 
 // Set the number of iterations for the velocity constraint solver
 /**
@@ -329,6 +327,11 @@ inline void DynamicsWorld::stop() {
  */
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
+}
+
+// Get the number of iterations for the position constraint solver
+inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
+    return mNbPositionSolverIterations;
 }
 
 // Set the number of iterations for the position constraint solver
@@ -385,6 +388,14 @@ inline Vector3 DynamicsWorld::getGravity() const {
     return mGravity;
 }
 
+// Set the gravity vector of the world
+/**
+ * @param gravity The gravity vector (in meter per seconds squared)
+ */
+inline void DynamicsWorld::setGravity(Vector3& gravity) {
+    mGravity = gravity;
+}
+
 // Return if the gravity is enaled
 /**
  * @return True if the gravity is enabled in the world
@@ -432,14 +443,6 @@ inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator
  */
 inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator() {
     return mRigidBodies.end();
-}
-
-// Return the current physics time (in seconds)
-/**
- * @return The current physics time (in seconds)
- */
-inline long double DynamicsWorld::getPhysicsTime() const {
-    return mTimer.getPhysicsTime();
 }
 
 // Return true if the sleeping technique is enabled

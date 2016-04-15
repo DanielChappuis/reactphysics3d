@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -150,7 +150,7 @@ inline void Timer::start() {
 
         // Get the current system time
         mLastUpdateTime = getCurrentSystemTime();
-        
+
         mAccumulator = 0.0;
         mIsRunning = true;
     }
@@ -184,7 +184,7 @@ inline void Timer::update() {
 
     // Get the current system time
     long double currentTime = getCurrentSystemTime();
-    
+
     // Compute the delta display time between two display frames
     mDeltaTime = currentTime - mLastUpdateTime;
 

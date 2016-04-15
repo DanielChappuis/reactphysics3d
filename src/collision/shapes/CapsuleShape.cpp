@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -37,77 +37,14 @@ using namespace reactphysics3d;
  * @param height The height of the capsule (in meters)
  */
 CapsuleShape::CapsuleShape(decimal radius, decimal height)
-            : CollisionShape(CAPSULE, radius), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+            : ConvexShape(CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Private copy-constructor
-CapsuleShape::CapsuleShape(const CapsuleShape& shape)
-             : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight) {
-
 }
 
 // Destructor
 CapsuleShape::~CapsuleShape() {
 
-}
-
-// Return a local support point in a given direction with the object margin.
-/// A capsule is the convex hull of two spheres S1 and S2. The support point in the direction "d"
-/// of the convex hull of a set of convex objects is the support point "p" in the set of all
-/// support points from all the convex objects with the maximum dot product with the direction "d".
-/// Therefore, in this method, we compute the support points of both top and bottom spheres of
-/// the capsule and return the point with the maximum dot product with the direction vector. Note
-/// that the object margin is implicitly the radius and height of the capsule.
-Vector3 CapsuleShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                     void** cachedCollisionData) const {
-
-    // If the direction vector is not the zero vector
-    if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
-
-        Vector3 unitDirection = direction.getUnit();
-
-        // Support point top sphere
-        Vector3 centerTopSphere(0, mHalfHeight, 0);
-        Vector3 topSpherePoint = centerTopSphere + unitDirection * mRadius;
-        decimal dotProductTop = topSpherePoint.dot(direction);
-
-        // Support point bottom sphere
-        Vector3 centerBottomSphere(0, -mHalfHeight, 0);
-        Vector3 bottomSpherePoint = centerBottomSphere + unitDirection * mRadius;
-        decimal dotProductBottom = bottomSpherePoint.dot(direction);
-
-        // Return the point with the maximum dot product
-        if (dotProductTop > dotProductBottom) {
-            return topSpherePoint;
-        }
-        else {
-            return bottomSpherePoint;
-        }
-    }
-
-    // If the direction vector is the zero vector we return a point on the
-    // boundary of the capsule
-    return Vector3(0, mRadius, 0);
-}
-
-// Return a local support point in a given direction without the object margin.
-Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                        void** cachedCollisionData) const {
-
-    // If the dot product of the direction and the local Y axis (dotProduct = direction.y)
-    // is positive
-    if (direction.y > 0.0) {
-
-        // Return the top sphere center point
-        return Vector3(0, mHalfHeight, 0);
-    }
-    else {
-
-        // Return the bottom sphere center point
-        return Vector3(0, -mHalfHeight, 0);
-    }
 }
 
 // Return the local inertia tensor of the capsule
@@ -121,13 +58,13 @@ void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) co
 	// The inertia tensor formula for a capsule can be found in : Game Engine Gems, Volume 1
 	
     decimal height = mHalfHeight + mHalfHeight;
-	decimal radiusSquare = mRadius * mRadius;
+    decimal radiusSquare = mMargin * mMargin;
 	decimal heightSquare = height * height;
 	decimal radiusSquareDouble = radiusSquare + radiusSquare;
-	decimal factor1 = decimal(2.0) * mRadius / (decimal(4.0) * mRadius + decimal(3.0) * height);
-	decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mRadius + decimal(3.0) * height);
+    decimal factor1 = decimal(2.0) * mMargin / (decimal(4.0) * mMargin + decimal(3.0) * height);
+    decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mMargin + decimal(3.0) * height);
 	decimal sum1 = decimal(0.4) * radiusSquareDouble;
-	decimal sum2 = decimal(0.75) * height * mRadius + decimal(0.5) * heightSquare;
+    decimal sum2 = decimal(0.75) * height * mMargin + decimal(0.5) * heightSquare;
 	decimal sum3 = decimal(0.25) * radiusSquare + decimal(1.0 / 12.0) * heightSquare;
 	decimal IxxAndzz = factor1 * mass * (sum1 + sum2) + factor2 * mass * sum3;
 	decimal Iyy = factor1 * mass * sum1 + factor2 * mass * decimal(0.25) * radiusSquareDouble;
@@ -143,7 +80,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
     const decimal diffYCenterSphere2 = localPoint.y + mHalfHeight;
     const decimal xSquare = localPoint.x * localPoint.x;
     const decimal zSquare = localPoint.z * localPoint.z;
-    const decimal squareRadius = mRadius * mRadius;
+    const decimal squareRadius = mMargin * mMargin;
 
     // Return true if the point is inside the cylinder or one of the two spheres of the capsule
     return ((xSquare + zSquare) < squareRadius &&
@@ -155,18 +92,13 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 // Raycast method with feedback information
 bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // Transform the ray direction and origin in local-space coordinates
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 point1 = worldToLocalTransform * ray.point1;
-    const Vector3 point2 = worldToLocalTransform * ray.point2;
-    const Vector3 n = point2 - point1;
+    const Vector3 n = ray.point2 - ray.point1;
 
     const decimal epsilon = decimal(0.01);
     Vector3 p(decimal(0), -mHalfHeight, decimal(0));
     Vector3 q(decimal(0), mHalfHeight, decimal(0));
     Vector3 d = q - p;
-    Vector3 m = point1 - p;
+    Vector3 m = ray.point1 - p;
     decimal t;
 
     decimal mDotD = m.dot(d);
@@ -174,16 +106,16 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
     decimal dDotD = d.dot(d);
 
     // Test if the segment is outside the cylinder
-    decimal vec1DotD = (point1 - Vector3(decimal(0.0), -mHalfHeight - mRadius, decimal(0.0))).dot(d);
+    decimal vec1DotD = (ray.point1 - Vector3(decimal(0.0), -mHalfHeight - mMargin, decimal(0.0))).dot(d);
     if (vec1DotD < decimal(0.0) && vec1DotD + nDotD < decimal(0.0)) return false;
-    decimal ddotDExtraCaps = decimal(2.0) * mRadius * d.y;
+    decimal ddotDExtraCaps = decimal(2.0) * mMargin * d.y;
     if (vec1DotD > dDotD + ddotDExtraCaps && vec1DotD + nDotD > dDotD + ddotDExtraCaps) return false;
 
     decimal nDotN = n.dot(n);
     decimal mDotN = m.dot(n);
 
     decimal a = dDotD * nDotN - nDotD * nDotD;
-    decimal k = m.dot(m) - mRadius * mRadius;
+    decimal k = m.dot(m) - mMargin * mMargin;
     decimal c = dDotD * k - mDotD * mDotD;
 
     // If the ray is parallel to the capsule axis
@@ -200,13 +132,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             // Check intersection between the ray and the "p" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(point1, point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = proxyShape->getBody();
                 raycastInfo.proxyShape = proxyShape;
                 raycastInfo.hitFraction = hitFraction;
-                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-                Vector3 normalDirection = (hitLocalPoint - p).getUnit();
-                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+                raycastInfo.worldPoint = hitLocalPoint;
+                Vector3 normalDirection = hitLocalPoint - p;
+                raycastInfo.worldNormal = normalDirection;
 
                 return true;
             }
@@ -218,13 +150,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             // Check intersection between the ray and the "q" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(point1, point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = proxyShape->getBody();
                 raycastInfo.proxyShape = proxyShape;
                 raycastInfo.hitFraction = hitFraction;
-                raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-                Vector3 normalDirection = (hitLocalPoint - q).getUnit();
-                raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+                raycastInfo.worldPoint = hitLocalPoint;
+                Vector3 normalDirection = hitLocalPoint - q;
+                raycastInfo.worldNormal = normalDirection;
 
                 return true;
             }
@@ -251,13 +183,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         // Check intersection between the ray and the "p" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(point1, point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = hitFraction;
-            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-            Vector3 normalDirection = (hitLocalPoint - p).getUnit();
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldPoint = hitLocalPoint;
+            Vector3 normalDirection = hitLocalPoint - p;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -269,13 +201,13 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         // Check intersection between the ray and the "q" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(point1, point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = proxyShape->getBody();
             raycastInfo.proxyShape = proxyShape;
             raycastInfo.hitFraction = hitFraction;
-            raycastInfo.worldPoint = localToWorldTransform * hitLocalPoint;
-            Vector3 normalDirection = (hitLocalPoint - q).getUnit();
-            raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+            raycastInfo.worldPoint = hitLocalPoint;
+            Vector3 normalDirection = hitLocalPoint - q;
+            raycastInfo.worldNormal = normalDirection;
 
             return true;
         }
@@ -290,15 +222,15 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
     if (t < decimal(0.0) || t > ray.maxFraction) return false;
 
     // Compute the hit information
-    Vector3 localHitPoint = point1 + t * n;
+    Vector3 localHitPoint = ray.point1 + t * n;
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = t;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint;
+    raycastInfo.worldPoint = localHitPoint;
     Vector3 v = localHitPoint - p;
     Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
     Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * normalDirection;
+    raycastInfo.worldNormal = normalDirection;
 
     return true;
 }
@@ -309,7 +241,7 @@ bool CapsuleShape::raycastWithSphereEndCap(const Vector3& point1, const Vector3&
                                            Vector3& hitLocalPoint, decimal& hitFraction) const {
 
      const Vector3 m = point1 - sphereCenter;
-    decimal c = m.dot(m) - mRadius * mRadius;
+    decimal c = m.dot(m) - mMargin * mMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;

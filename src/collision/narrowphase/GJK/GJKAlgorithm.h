@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,7 +29,7 @@
 // Libraries
 #include "collision/narrowphase/NarrowPhaseAlgorithm.h"
 #include "constraint/ContactPoint.h"
-#include "collision/shapes/CollisionShape.h"
+#include "collision/shapes/ConvexShape.h"
 #include "collision/narrowphase/EPA/EPAAlgorithm.h"
 
 
@@ -75,32 +75,45 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
 
         /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(ProxyShape* collisionShape1,
+        void computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
                                                        const Transform& transform1,
-                                                       ProxyShape* collisionShape2,
+                                                       const CollisionShapeInfo& shape2Info,
                                                        const Transform& transform2,
-                                                       ContactPointInfo*& contactInfo, Vector3& v);
+                                                       NarrowPhaseCallback* narrowPhaseCallback,
+                                                       Vector3& v);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm(MemoryAllocator& memoryAllocator);
+        GJKAlgorithm();
 
         /// Destructor
         ~GJKAlgorithm();
 
-        /// Return true and compute a contact info if the two bounding volumes collide.
-        virtual bool testCollision(ProxyShape* collisionShape1, ProxyShape* collisionShape2,
-                                   ContactPointInfo*& contactInfo);
+        /// Initalize the algorithm
+        virtual void init(CollisionDetection* collisionDetection,
+                          MemoryAllocator* memoryAllocator);
+
+        /// Compute a contact info if the two bounding volumes collide.
+        virtual void testCollision(const CollisionShapeInfo& shape1Info,
+                                   const CollisionShapeInfo& shape2Info,
+                                   NarrowPhaseCallback* narrowPhaseCallback);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
-        bool testPointInside(const Vector3& localPoint, ProxyShape* collisionShape);
+        bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);
 
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
-        bool raycast(const Ray& ray, ProxyShape* collisionShape, RaycastInfo& raycastInfo);
+        bool raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo);
 };
+
+// Initalize the algorithm
+inline void GJKAlgorithm::init(CollisionDetection* collisionDetection,
+                               MemoryAllocator* memoryAllocator) {
+    NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
+    mAlgoEPA.init(memoryAllocator);
+}
 
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_SPHERE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -42,14 +42,12 @@ namespace reactphysics3d {
  * radius of the sphere. Therefore, no need to specify an object margin
  * for a sphere shape.
  */
-class SphereShape : public CollisionShape {
+class SphereShape : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Radius of the sphere
-        decimal mRadius;
 
         // -------------------- Methods -------------------- //
 
@@ -58,10 +56,6 @@ class SphereShape : public CollisionShape {
 
         /// Private assignment operator
         SphereShape& operator=(const SphereShape& shape);
-
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
@@ -72,9 +66,6 @@ class SphereShape : public CollisionShape {
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
-
-        /// Allocate and return a copy of the object
-        virtual SphereShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -92,6 +83,9 @@ class SphereShape : public CollisionShape {
         /// Return the radius of the sphere
         decimal getRadius() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
@@ -99,44 +93,28 @@ class SphereShape : public CollisionShape {
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 
         /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform);
-
-        /// Test equality between two sphere shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
+        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 };
-
-/// Allocate and return a copy of the object
-inline SphereShape* SphereShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) SphereShape(*this);
-}
 
 // Get the radius of the sphere
 /**
  * @return Radius of the sphere (in meters)
  */
 inline decimal SphereShape::getRadius() const {
-    return mRadius;
+    return mMargin;
+}
+
+// Set the scaling vector of the collision shape
+inline void SphereShape::setLocalScaling(const Vector3& scaling) {
+
+    mMargin = (mMargin / mScaling.x) * scaling.x;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
 inline size_t SphereShape::getSizeInBytes() const {
     return sizeof(SphereShape);
-}
-
-// Return a local support point in a given direction with the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
-
-    // If the direction vector is not the zero vector
-    if (direction.lengthSquare() >= MACHINE_EPSILON * MACHINE_EPSILON) {
-
-        // Return the support point of the sphere in the given direction
-        return mMargin * direction.getUnit();
-    }
-
-    // If the direction vector is the zero vector we return a point on the
-    // boundary of the sphere
-    return Vector3(0, mMargin, 0);
 }
 
 // Return a local support point in a given direction without the object margin
@@ -156,12 +134,12 @@ inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& dir
 inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max.x = mRadius;
-    max.y = mRadius;
-    max.z = mRadius;
+    max.x = mMargin;
+    max.y = mMargin;
+    max.z = mMargin;
 
     // Minimum bounds
-    min.x = -mRadius;
+    min.x = -mMargin;
     min.y = min.x;
     min.z = min.x;
 }
@@ -173,7 +151,7 @@ inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
 inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal diag = decimal(0.4) * mass * mRadius * mRadius;
+    decimal diag = decimal(0.4) * mass * mMargin * mMargin;
     tensor.setAllValues(diag, 0.0, 0.0,
                         0.0, diag, 0.0,
                         0.0, 0.0, diag);
@@ -185,25 +163,19 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
  *                  computed in world-space coordinates
  * @param transform Transform used to compute the AABB of the collision shape
  */
-inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) {
+inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
     // Get the local extents in x,y and z direction
-    Vector3 extents(mRadius, mRadius, mRadius);
+    Vector3 extents(mMargin, mMargin, mMargin);
 
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(transform.getPosition() - extents);
     aabb.setMax(transform.getPosition() + extents);
 }
 
-// Test equality between two sphere shapes
-inline bool SphereShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const SphereShape& otherShape = dynamic_cast<const SphereShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius);
-}
-
 // Return true if a point is inside the collision shape
 inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
-    return (localPoint.lengthSquare() < mRadius * mRadius);
+    return (localPoint.lengthSquare() < mMargin * mMargin);
 }
 
 }

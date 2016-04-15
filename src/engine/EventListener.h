@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -53,7 +53,7 @@ class EventListener {
         /**
          * @param contact Information about the contact
          */
-        virtual void beginContact(const ContactPointInfo& contact) {}
+        virtual void beginContact(const ContactPointInfo& contact) {};
 
         /// Called when a new contact point is found between two bodies
         /**

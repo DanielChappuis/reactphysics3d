@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,6 +25,7 @@
 
 // Libraries
 #include "EPAAlgorithm.h"
+#include "engine/Profiler.h"
 #include "collision/narrowphase//GJK/GJKAlgorithm.h"
 #include "TrianglesStore.h"
 
@@ -32,8 +33,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-EPAAlgorithm::EPAAlgorithm(MemoryAllocator& memoryAllocator)
-             : mMemoryAllocator(memoryAllocator) {
+EPAAlgorithm::EPAAlgorithm() {
 
 }
 
@@ -82,12 +82,24 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// intersect. An initial simplex that contains origin has been computed with
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
 /// the correct penetration depth
-bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
-                                                           ProxyShape* collisionShape1,
+void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
+                                                           CollisionShapeInfo shape1Info,
                                                            const Transform& transform1,
-                                                           ProxyShape* collisionShape2,
+                                                           CollisionShapeInfo shape2Info,
                                                            const Transform& transform2,
-                                                           Vector3& v, ContactPointInfo*& contactInfo) {
+                                                           Vector3& v,
+                                                           NarrowPhaseCallback* narrowPhaseCallback) {
+
+    PROFILE("EPAAlgorithm::computePenetrationDepthAndContactPoints()");
+
+    assert(shape1Info.collisionShape->isConvex());
+    assert(shape2Info.collisionShape->isConvex());
+
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
+
+    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
+    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
 
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];  // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];  // Support points of object B in local coordinates
@@ -125,7 +137,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             // Only one point in the simplex (which should be the origin).
             // We have a touching contact with zero penetration depth.
             // We drop that kind of contact. Therefore, we return false
-            return false;
+            return;
 
         case 2: {
             // The simplex returned by GJK is a line segment d containing the origin.
@@ -155,21 +167,21 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             Vector3 v3 = rotationQuat * v2;
 
             // Compute the support point in the direction of v1
-            suppPointsA[2] = collisionShape1->getLocalSupportPointWithMargin(v1);
+            suppPointsA[2] = shape1->getLocalSupportPointWithMargin(v1, shape1CachedCollisionData);
             suppPointsB[2] = body2Tobody1 *
-                       collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v1));
+                       shape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v1), shape2CachedCollisionData);
             points[2] = suppPointsA[2] - suppPointsB[2];
 
             // Compute the support point in the direction of v2
-            suppPointsA[3] = collisionShape1->getLocalSupportPointWithMargin(v2);
+            suppPointsA[3] = shape1->getLocalSupportPointWithMargin(v2, shape1CachedCollisionData);
             suppPointsB[3] = body2Tobody1 *
-                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v2));
+                     shape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v2), shape2CachedCollisionData);
             points[3] = suppPointsA[3] - suppPointsB[3];
 
             // Compute the support point in the direction of v3
-            suppPointsA[4] = collisionShape1->getLocalSupportPointWithMargin(v3);
+            suppPointsA[4] = shape1->getLocalSupportPointWithMargin(v3, shape1CachedCollisionData);
             suppPointsB[4] = body2Tobody1 *
-                            collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v3));
+                            shape2->getLocalSupportPointWithMargin(rotateToBody2 * (-v3), shape2CachedCollisionData);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             // Now we have an hexahedron (two tetrahedron glued together). We can simply keep the
@@ -192,7 +204,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             }
             else {
                 // The origin is not in the initial polytope
-                return false;
+                return;
             }
 
             // The polytope contains now 4 vertices
@@ -222,7 +234,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                    && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                    && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                    return false;
+                    return;
                 }
 
                 // Associate the edges of neighbouring triangle faces
@@ -268,13 +280,13 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             Vector3 n = v1.cross(v2);
 
             // Compute the two new vertices to obtain a hexahedron
-            suppPointsA[3] = collisionShape1->getLocalSupportPointWithMargin(n);
+            suppPointsA[3] = shape1->getLocalSupportPointWithMargin(n, shape1CachedCollisionData);
             suppPointsB[3] = body2Tobody1 *
-                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * (-n));
+                     shape2->getLocalSupportPointWithMargin(rotateToBody2 * (-n), shape2CachedCollisionData);
             points[3] = suppPointsA[3] - suppPointsB[3];
-            suppPointsA[4] = collisionShape1->getLocalSupportPointWithMargin(-n);
+            suppPointsA[4] = shape1->getLocalSupportPointWithMargin(-n, shape1CachedCollisionData);
             suppPointsB[4] = body2Tobody1 *
-                     collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 * n);
+                     shape2->getLocalSupportPointWithMargin(rotateToBody2 * n, shape2CachedCollisionData);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
             TriangleEPA* face0 = NULL;
@@ -307,14 +319,14 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 face3 = triangleStore.newTriangle(points, 1, 4, 2);
             }
             else {
-                return false;
+                return;
             }
 
             // If the constructed tetrahedron is not correct
             if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                return false;
+                return;
             }
 
             // Associate the edges of neighbouring triangle faces
@@ -341,7 +353,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     // can run the EPA algorithm.
 
     if (nbTriangles == 0) {
-        return false;
+        return;
     }
 
     TriangleEPA* triangle = 0;
@@ -364,11 +376,11 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
             // Compute the support point of the Minkowski
             // difference (A-B) in the closest point direction
-            suppPointsA[nbVertices] = collisionShape1->getLocalSupportPointWithMargin(
-                                        triangle->getClosestPoint());
+            suppPointsA[nbVertices] = shape1->getLocalSupportPointWithMargin(
+                                        triangle->getClosestPoint(), shape1CachedCollisionData);
             suppPointsB[nbVertices] = body2Tobody1 *
-                               collisionShape2->getLocalSupportPointWithMargin(rotateToBody2 *
-                                                                (-triangle->getClosestPoint()));
+                               shape2->getLocalSupportPointWithMargin(rotateToBody2 *
+                                                                (-triangle->getClosestPoint()), shape2CachedCollisionData);
             points[nbVertices] = suppPointsA[nbVertices] - suppPointsB[nbVertices];
 
             int indexNewVertex = nbVertices;
@@ -416,11 +428,12 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
     assert(penetrationDepth > 0.0);
+
+    if (normal.lengthSquare() < MACHINE_EPSILON) return;
     
     // Create the contact info object
-    contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
-                          ContactPointInfo(collisionShape1, collisionShape2, normal,
-                                           penetrationDepth, pALocal, pBLocal);
-    
-    return true;
+    ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                 shape2Info.collisionShape, normal, penetrationDepth, pALocal, pBLocal);
+
+    narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
 }

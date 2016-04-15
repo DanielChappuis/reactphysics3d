@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -209,18 +209,15 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
  * @return A pointer to the proxy shape that has been created to link the body to
  *         the new collision shape you have added.
  */
-ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
+ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
     assert(mass > decimal(0.0));
 
-    // Create an internal copy of the collision shape into the world if it is not there yet
-    CollisionShape* newCollisionShape = mWorld.createCollisionShape(collisionShape);
-
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
-                                      sizeof(ProxyShape))) ProxyShape(this, newCollisionShape,
+                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass);
 
     // Add it to the list of proxy collision shapes of the body
@@ -234,7 +231,7 @@ ProxyShape* RigidBody::addCollisionShape(const CollisionShape& collisionShape,
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    newCollisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mTransform * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
@@ -263,6 +260,64 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
+}
+
+// Set the linear velocity of the rigid body.
+/**
+ * @param linearVelocity Linear velocity vector of the body
+ */
+void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
+
+    // If it is a static body, we do nothing
+    if (mType == STATIC) return;
+
+    // Update the linear velocity of the current body state
+    mLinearVelocity = linearVelocity;
+
+    // If the linear velocity is not zero, awake the body
+    if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+}
+
+// Set the angular velocity.
+/**
+* @param angularVelocity The angular velocity vector of the body
+*/
+void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
+
+    // If it is a static body, we do nothing
+    if (mType == STATIC) return;
+
+    // Set the angular velocity
+    mAngularVelocity = angularVelocity;
+
+    // If the velocity is not zero, awake the body
+    if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
+        setIsSleeping(false);
+    }
+}
+
+// Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
+void RigidBody::setTransform(const Transform& transform) {
+
+    // Update the transform of the body
+    mTransform = transform;
+
+    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+
+    // Compute the new center of mass in world-space coordinates
+    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+
+    // Update the linear velocity of the center of mass
+    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all
@@ -342,8 +397,8 @@ void RigidBody::updateBroadPhaseState() const {
 
     PROFILE("RigidBody::updateBroadPhaseState()");
 
-    DynamicsWorld& world = dynamic_cast<DynamicsWorld&>(mWorld);
-    const Vector3 displacement = world.mTimer.getTimeStep() * mLinearVelocity;
+    DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
+ 	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
     // For all the proxy collision shapes of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {

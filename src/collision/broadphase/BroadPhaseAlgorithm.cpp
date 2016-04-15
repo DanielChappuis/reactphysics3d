@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
-                    :mDynamicAABBTree(*this), mNbMovedShapes(0), mNbAllocatedMovedShapes(8),
+                    :mDynamicAABBTree(DYNAMIC_TREE_AABB_GAP), mNbMovedShapes(0), mNbAllocatedMovedShapes(8),
                      mNbNonUsedMovedShapes(0), mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
                      mCollisionDetection(collisionDetection) {
 
@@ -118,7 +118,10 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
-    mDynamicAABBTree.addObject(proxyShape, aabb);
+    int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
+
+    // Set the broad-phase ID of the proxy shape
+    proxyShape->mBroadPhaseID = nodeId;
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
@@ -140,14 +143,14 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
 void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
-                                                    const Vector3& displacement) {
+                                                    const Vector3& displacement, bool forceReinsert) {
 
     int broadPhaseID = proxyShape->mBroadPhaseID;
 
     assert(broadPhaseID >= 0);
 
     // Update the dynamic AABB tree according to the movement of the collision shape
-    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseID, aabb, displacement);
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseID, aabb, displacement, forceReinsert);
 
     // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
     // into the tree).
@@ -172,13 +175,15 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
 
         if (shapeID == -1) continue;
 
-        // Get the fat AABB of the collision shape from the dynamic AABB tree
+        AABBOverlapCallback callback(*this, shapeID);
+
+        // Get the AABB of the shape
         const AABB& shapeAABB = mDynamicAABBTree.getFatAABB(shapeID);
 
         // Ask the dynamic AABB tree to report all collision shapes that overlap with
         // this AABB. The method BroadPhase::notifiyOverlappingPair() will be called
         // by the dynamic AABB tree for each potential overlapping pair.
-        mDynamicAABBTree.reportAllShapesOverlappingWith(shapeID, shapeAABB);
+        mDynamicAABBTree.reportAllShapesOverlappingWithAABB(shapeAABB, callback);
     }
 
     // Reset the array of collision shapes that have move (or have been created) during the
@@ -197,9 +202,11 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
         BroadPhasePair* pair = mPotentialPairs + i;
         i++;
 
+        assert(pair->collisionShape1ID != pair->collisionShape2ID);
+
         // Get the two collision shapes of the pair
-        ProxyShape* shape1 = mDynamicAABBTree.getCollisionShape(pair->collisionShape1ID);
-        ProxyShape* shape2 = mDynamicAABBTree.getCollisionShape(pair->collisionShape2ID);
+        ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape1ID));
+        ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape2ID));
 
         // Notify the collision detection about the overlapping pair
         mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
@@ -234,7 +241,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
 }
 
 // Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-void BroadPhaseAlgorithm::notifyOverlappingPair(int node1ID, int node2ID) {
+void BroadPhaseAlgorithm::notifyOverlappingNodes(int node1ID, int node2ID) {
 
     // If both the nodes are the same, we do not create store the overlapping pair
     if (node1ID == node2ID) return;
@@ -255,4 +262,31 @@ void BroadPhaseAlgorithm::notifyOverlappingPair(int node1ID, int node2ID) {
     mPotentialPairs[mNbPotentialPairs].collisionShape1ID = std::min(node1ID, node2ID);
     mPotentialPairs[mNbPotentialPairs].collisionShape2ID = std::max(node1ID, node2ID);
     mNbPotentialPairs++;
+}
+
+// Called when a overlapping node has been found during the call to
+// DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+void AABBOverlapCallback::notifyOverlappingNode(int nodeId) {
+
+    mBroadPhaseAlgorithm.notifyOverlappingNodes(mReferenceNodeId, nodeId);
+}
+
+// Called for a broad-phase shape that has to be tested for raycast
+decimal BroadPhaseRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+
+    decimal hitFraction = decimal(-1.0);
+
+    // Get the proxy shape from the node
+    ProxyShape* proxyShape = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
+
+    // Check if the raycast filtering mask allows raycast against this shape
+    if ((mRaycastWithCategoryMaskBits & proxyShape->getCollisionCategoryBits()) != 0) {
+
+        // Ask the collision detection to perform a ray cast test against
+        // the proxy shape of this node because the ray is overlapping
+        // with the shape in the broad-phase
+        hitFraction = mRaycastTest.raycastAgainstShape(proxyShape, ray);
+    }
+
+    return hitFraction;
 }

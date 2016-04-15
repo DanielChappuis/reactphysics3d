@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_CONE_SHAPE_H
 
 // Libraries
-#include "CollisionShape.h"
+#include "ConvexShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -49,9 +49,9 @@ namespace reactphysics3d {
  * constructor of the cone shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class ConeShape : public CollisionShape {
+class ConeShape : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
@@ -72,10 +72,6 @@ class ConeShape : public CollisionShape {
         /// Private assignment operator
         ConeShape& operator=(const ConeShape& shape);
 
-        /// Return a local support point in a given direction with the object margin
-        virtual Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                                       void** cachedCollisionData) const;
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -85,9 +81,6 @@ class ConeShape : public CollisionShape {
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
-
-        /// Allocate and return a copy of the object
-        virtual ConeShape* clone(void* allocatedMemory) const;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const;
@@ -108,20 +101,15 @@ class ConeShape : public CollisionShape {
         /// Return the height
         decimal getHeight() const;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling);
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
-
-        /// Test equality between two cone shapes
-        virtual bool isEqualTo(const CollisionShape& otherCollisionShape) const;
 };
-
-// Allocate and return a copy of the object
-inline ConeShape* ConeShape::clone(void* allocatedMemory) const {
-    return new (allocatedMemory) ConeShape(*this);
-}
 
 // Return the radius
 /**
@@ -137,6 +125,15 @@ inline decimal ConeShape::getRadius() const {
  */
 inline decimal ConeShape::getHeight() const {
     return decimal(2.0) * mHalfHeight;
+}
+
+// Set the scaling vector of the collision shape
+inline void ConeShape::setLocalScaling(const Vector3& scaling) {
+
+    mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;
+    mRadius = (mRadius / mScaling.x) * scaling.x;
+
+    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -174,12 +171,6 @@ inline void ConeShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass
     tensor.setAllValues(diagXZ, 0.0, 0.0,
                         0.0, decimal(0.3) * mass * rSquare,
                         0.0, 0.0, 0.0, diagXZ);
-}
-
-// Test equality between two cone shapes
-inline bool ConeShape::isEqualTo(const CollisionShape& otherCollisionShape) const {
-    const ConeShape& otherShape = dynamic_cast<const ConeShape&>(otherCollisionShape);
-    return (mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight);
 }
 
 // Return true if a point is inside the collision shape

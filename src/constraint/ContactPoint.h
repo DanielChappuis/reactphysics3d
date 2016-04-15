@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,6 +28,7 @@
 
 // Libraries
 #include "body/CollisionBody.h"
+#include "collision/CollisionShapeInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "configuration.h"
@@ -48,42 +49,42 @@ struct ContactPointInfo {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ContactPointInfo(const ContactPointInfo& contactInfo);
-
-        /// Private assignment operator
-        ContactPointInfo& operator=(const ContactPointInfo& contactInfo);
-
     public:
 
         // -------------------- Attributes -------------------- //
 
-        /// First proxy collision shape of the contact
+        /// First proxy shape of the contact
         ProxyShape* shape1;
 
-        /// Second proxy collision shape of the contact
+        /// Second proxy shape of the contact
         ProxyShape* shape2;
 
-        /// Normal vector the the collision contact in world space
-        const Vector3 normal;
+        /// First collision shape
+        const CollisionShape* collisionShape1;
+
+        /// Second collision shape
+        const CollisionShape* collisionShape2;
+
+        /// Normalized normal vector of the collision contact in world space
+        Vector3 normal;
 
         /// Penetration depth of the contact
-        const decimal penetrationDepth;
+        decimal penetrationDepth;
 
         /// Contact point of body 1 in local space of body 1
-        const Vector3 localPoint1;
+        Vector3 localPoint1;
 
         /// Contact point of body 2 in local space of body 2
-        const Vector3 localPoint2;
+        Vector3 localPoint2;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const Vector3& normal,
-                         decimal penetrationDepth, const Vector3& localPoint1,
-                         const Vector3& localPoint2)
-            : shape1(proxyShape1), shape2(proxyShape2), normal(normal),
-              penetrationDepth(penetrationDepth), localPoint1(localPoint1),
+        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const CollisionShape* collShape1,
+                         const CollisionShape* collShape2, const Vector3& normal, decimal penetrationDepth,
+                         const Vector3& localPoint1, const Vector3& localPoint2)
+            : shape1(proxyShape1), shape2(proxyShape2), collisionShape1(collShape1), collisionShape2(collShape2),
+              normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1),
               localPoint2(localPoint2) {
 
         }
@@ -106,7 +107,7 @@ class ContactPoint {
         /// Second rigid body of the contact
         CollisionBody* mBody2;
 
-        /// Normal vector of the contact (From body1 toward body2) in world space
+        /// Normalized normal vector of the contact (from body1 toward body2) in world space
         const Vector3 mNormal;
 
         /// Penetration depth
@@ -138,6 +139,9 @@ class ContactPoint {
 
         /// Cached second friction impulse
         decimal mFrictionImpulse2;
+
+        /// Cached rolling resistance impulse
+        Vector3 mRollingResistanceImpulse;
         
         // -------------------- Methods -------------------- //
 
@@ -158,10 +162,10 @@ class ContactPoint {
         ~ContactPoint();
 
         /// Return the reference to the body 1
-        CollisionBody* const getBody1() const;
+        CollisionBody* getBody1() const;
 
         /// Return the reference to the body 2
-        CollisionBody* const getBody2() const;
+        CollisionBody* getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -190,6 +194,9 @@ class ContactPoint {
         /// Return the cached second friction impulse
         decimal getFrictionImpulse2() const;
 
+        /// Return the cached rolling resistance impulse
+        Vector3 getRollingResistanceImpulse() const;
+
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
 
@@ -198,6 +205,9 @@ class ContactPoint {
 
         /// Set the second cached friction impulse
         void setFrictionImpulse2(decimal impulse);
+
+        /// Set the cached rolling resistance impulse
+        void setRollingResistanceImpulse(const Vector3& impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -231,12 +241,12 @@ class ContactPoint {
 };
 
 // Return the reference to the body 1
-inline CollisionBody* const ContactPoint::getBody1() const {
+inline CollisionBody* ContactPoint::getBody1() const {
     return mBody1;
 }
 
 // Return the reference to the body 2
-inline CollisionBody* const ContactPoint::getBody2() const {
+inline CollisionBody* ContactPoint::getBody2() const {
     return mBody2;
 }
 
@@ -285,6 +295,11 @@ inline decimal ContactPoint::getFrictionImpulse2() const {
     return mFrictionImpulse2;
 }
 
+// Return the cached rolling resistance impulse
+inline Vector3 ContactPoint::getRollingResistanceImpulse() const {
+    return mRollingResistanceImpulse;
+}
+
 // Set the cached penetration impulse
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
@@ -298,6 +313,11 @@ inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
 // Set the second cached friction impulse
 inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
     mFrictionImpulse2 = impulse;
+}
+
+// Set the cached rolling resistance impulse
+inline void ContactPoint::setRollingResistanceImpulse(const Vector3& impulse) {
+    mRollingResistanceImpulse = impulse;
 }
 
 // Set the contact world point on body 1

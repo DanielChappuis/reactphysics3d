@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
-          : CollisionShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+          : ConvexShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));
     assert(mHalfHeight > decimal(0.0));
     
@@ -46,33 +46,9 @@ ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
 }
 
-// Private copy-constructor
-ConeShape::ConeShape(const ConeShape& shape)
-          : CollisionShape(shape), mRadius(shape.mRadius), mHalfHeight(shape.mHalfHeight),
-            mSinTheta(shape.mSinTheta){
-
-}
-
 // Destructor
 ConeShape::~ConeShape() {
 
-}
-
-// Return a local support point in a given direction with the object margin
-Vector3 ConeShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                  void** cachedCollisionData) const {
-
-    // Compute the support point without the margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
-
-    // Add the margin to the support point
-    Vector3 unitVec(0.0, -1.0, 0.0);
-    if (direction.lengthSquare() > MACHINE_EPSILON * MACHINE_EPSILON) {
-        unitVec = direction.getUnit();
-    }
-    supportPoint += unitVec * mMargin;
-
-    return supportPoint;
 }
 
 // Return a local support point in a given direction without the object margin
@@ -106,12 +82,7 @@ Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
 // http://www.geometrictools.com/Documentation/IntersectionLineCone.pdf
 bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    // Transform the ray direction and origin in local-space coordinates
-    const Transform localToWorldTransform = proxyShape->getLocalToWorldTransform();
-    const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    const Vector3 point1 = worldToLocalTransform * ray.point1;
-    const Vector3 point2 = worldToLocalTransform * ray.point2;
-    const Vector3 r = point2 - point1;
+    const Vector3 r = ray.point2 - ray.point1;
 
     const decimal epsilon = decimal(0.00001);
     Vector3 V(0, mHalfHeight, 0);
@@ -120,7 +91,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     decimal heightSquare = decimal(4.0) * mHalfHeight * mHalfHeight;
     decimal cosThetaSquare = heightSquare / (heightSquare + mRadius * mRadius);
     decimal factor = decimal(1.0) - cosThetaSquare;
-    Vector3 delta = point1 - V;
+    Vector3 delta = ray.point1 - V;
     decimal c0 = -cosThetaSquare * delta.x * delta.x  + factor * delta.y * delta.y -
                   cosThetaSquare * delta.z * delta.z;
     decimal c1 = -cosThetaSquare * delta.x * r.x + factor * delta.y * r.y - cosThetaSquare * delta.z * r.z;
@@ -166,10 +137,10 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     }
 
     // If the origin of the ray is inside the cone, we return no hit
-    if (testPointInside(point1, NULL)) return false;
+    if (testPointInside(ray.point1, NULL)) return false;
 
-    localHitPoint[0] = point1 + tHit[0] * r;
-    localHitPoint[1] = point1 + tHit[1] * r;
+    localHitPoint[0] = ray.point1 + tHit[0] * r;
+    localHitPoint[1] = ray.point1 + tHit[1] * r;
 
     // Only keep hit points in one side of the double cone (the cone we are interested in)
     if (axis.dot(localHitPoint[0] - V) < decimal(0.0)) {
@@ -191,10 +162,10 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     if (r.y > epsilon) {
 
         // Compute the intersection with the base plane of the cone
-        tHit[2] = (-point1.y - mHalfHeight) / (r.y);
+        tHit[2] = (-ray.point1.y - mHalfHeight) / (r.y);
 
         // Only keep this intersection if it is inside the cone radius
-        localHitPoint[2] = point1 + tHit[2] * r;
+        localHitPoint[2] = ray.point1 + tHit[2] * r;
 
         if ((localHitPoint[2] - centerBase).lengthSquare() > mRadius * mRadius) {
             tHit[2] = decimal(-1.0);
@@ -236,8 +207,8 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     raycastInfo.body = proxyShape->getBody();
     raycastInfo.proxyShape = proxyShape;
     raycastInfo.hitFraction = t;
-    raycastInfo.worldPoint = localToWorldTransform * localHitPoint[hitIndex];
-    raycastInfo.worldNormal = localToWorldTransform.getOrientation() * localNormal[hitIndex];
+    raycastInfo.worldPoint = localHitPoint[hitIndex];
+    raycastInfo.worldNormal = localNormal[hitIndex];
 
     return true;
 }

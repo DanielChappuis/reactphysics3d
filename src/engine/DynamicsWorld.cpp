@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -37,10 +37,9 @@ using namespace std;
 // Constructor
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
- * @param timeStep Time step for an internal physics tick (in seconds)
  */
-DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_TIMESTEP)
-              : CollisionWorld(), mTimer(timeStep),
+DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
+              : CollisionWorld(),
                 mContactSolver(mMapBodyToConstrainedVelocityIndex),
                 mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
@@ -59,6 +58,22 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, decimal timeStep = DEFAULT_
 
 // Destructor
 DynamicsWorld::~DynamicsWorld() {
+
+    // Destroy all the joints that have not been removed
+    std::set<Joint*>::iterator itJoints;
+    for (itJoints = mJoints.begin(); itJoints != mJoints.end();) {
+        std::set<Joint*>::iterator itToRemove = itJoints;
+        ++itJoints;
+        destroyJoint(*itToRemove);
+    }
+
+    // Destroy all the rigid bodies that have not been removed
+    std::set<RigidBody*>::iterator itRigidBodies;
+    for (itRigidBodies = mRigidBodies.begin(); itRigidBodies != mRigidBodies.end();) {
+        std::set<RigidBody*>::iterator itToRemove = itRigidBodies;
+        ++itRigidBodies;
+        destroyRigidBody(*itToRemove);
+    }
 
     // Release the memory allocated for the islands
     for (uint i=0; i<mNbIslands; i++) {
@@ -83,6 +98,9 @@ DynamicsWorld::~DynamicsWorld() {
         delete[] mConstrainedOrientations;
     }
 
+    assert(mJoints.size() == 0);
+    assert(mRigidBodies.size() == 0);
+
 #ifdef IS_PROFILING_ACTIVE
 
     // Print the profiling report
@@ -95,7 +113,10 @@ DynamicsWorld::~DynamicsWorld() {
 }
 
 // Update the physics simulation
-void DynamicsWorld::update() {
+/**
+ * @param timeStep The amount of time to step the simulation by (in seconds)
+ */
+void DynamicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
@@ -104,55 +125,42 @@ void DynamicsWorld::update() {
 
     PROFILE("DynamicsWorld::update()");
 
-    assert(mTimer.getIsRunning());
-    
-    // Compute the time since the last update() call and update the timer
-    mTimer.update();
+    mTimeStep = timeStep;
 
-    // While the time accumulator is not empty
-    while(mTimer.isPossibleToTakeStep()) {
+    // Notify the event listener about the beginning of an internal tick
+    if (mEventListener != NULL) mEventListener->beginInternalTick();
 
-        // Notify the event listener about the beginning of an internal tick
-        if (mEventListener != NULL) mEventListener->beginInternalTick();
+    // Reset all the contact manifolds lists of each body
+    resetContactManifoldListsOfBodies();
 
-        // Reset all the contact manifolds lists of each body
-        resetContactManifoldListsOfBodies();
-		
-        // Compute the collision detection
-        mCollisionDetection.computeCollisionDetection();
+    // Compute the collision detection
+    mCollisionDetection.computeCollisionDetection();
 
-        // Compute the islands (separate groups of bodies with constraints between each others)
-        computeIslands();
+    // Compute the islands (separate groups of bodies with constraints between each others)
+    computeIslands();
 
-        // Integrate the velocities
-        integrateRigidBodiesVelocities();
+    // Integrate the velocities
+    integrateRigidBodiesVelocities();
 
-        // Update the timer
-        mTimer.nextStep();
+    // Solve the contacts and constraints
+    solveContactsAndConstraints();
 
-        // Solve the contacts and constraints
-        solveContactsAndConstraints();
+    // Integrate the position and orientation of each body
+    integrateRigidBodiesPositions();
 
-        // Integrate the position and orientation of each body
-        integrateRigidBodiesPositions();
+    // Solve the position correction for constraints
+    solvePositionCorrection();
 
-        // Solve the position correction for constraints
-        solvePositionCorrection();
+    // Update the state (positions and velocities) of the bodies
+    updateBodiesState();
 
-        // Update the state (positions and velocities) of the bodies
-        updateBodiesState();
+    if (mIsSleepingEnabled) updateSleepingBodies();
 
-        if (mIsSleepingEnabled) updateSleepingBodies();
-
-        // Notify the event listener about the end of an internal tick
-        if (mEventListener != NULL) mEventListener->endInternalTick();
-    }
+    // Notify the event listener about the end of an internal tick
+    if (mEventListener != NULL) mEventListener->endInternalTick();
 
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
-
-    // Compute and set the interpolation factor to all the bodies
-    setInterpolationFactorToAllBodies();
 }
 
 // Integrate position and orientation of the rigid bodies.
@@ -161,8 +169,6 @@ void DynamicsWorld::update() {
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
     PROFILE("DynamicsWorld::integrateRigidBodiesPositions()");
-
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -190,10 +196,10 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
 
             // Update the new constrained position and orientation of the body
-            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * dt;
+            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * mTimeStep;
             mConstrainedOrientations[indexArray] = currentOrientation +
                                                    Quaternion(0, newAngVelocity) *
-                                                   currentOrientation * decimal(0.5) * dt;
+                                                   currentOrientation * decimal(0.5) * mTimeStep;
         }
     }
 }
@@ -229,23 +235,6 @@ void DynamicsWorld::updateBodiesState() {
             // Update the broad-phase state of the body
             bodies[b]->updateBroadPhaseState();
         }
-    }
-}
-
-// Compute and set the interpolation factor to all bodies
-void DynamicsWorld::setInterpolationFactorToAllBodies() {
-
-    PROFILE("DynamicsWorld::setInterpolationFactorToAllBodies()");
-    
-    // Compute the interpolation factor
-    decimal factor = mTimer.computeInterpolationFactor();
-    assert(factor >= 0.0 && factor <= 1.0);
-
-    // Set the factor to all bodies
-    set<RigidBody*>::iterator it;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-
-        (*it)->setInterpolationFactor(factor);
     }
 }
 
@@ -305,8 +294,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     // Initialize the bodies velocity arrays
     initVelocityArrays();
 
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
-
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
 
@@ -323,16 +310,16 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
             // Integrate the external force to get the new velocity of the body
             mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
-                                        dt * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
+                                        mTimeStep * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
             mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
-                                        dt * bodies[b]->getInertiaTensorInverseWorld() *
+                                        mTimeStep * bodies[b]->getInertiaTensorInverseWorld() *
                                         bodies[b]->mExternalTorque;
 
             // If the gravity has to be applied to this rigid body
             if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
 
                 // Integrate the gravity force
-                mConstrainedLinearVelocities[indexBody] += dt * bodies[b]->mMassInverse *
+                mConstrainedLinearVelocities[indexBody] += mTimeStep * bodies[b]->mMassInverse *
                         bodies[b]->getMass() * mGravity;
             }
 
@@ -351,17 +338,10 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             //                 => v2 = v1 * (1 - c * dt)
             decimal linDampingFactor = bodies[b]->getLinearDamping();
             decimal angDampingFactor = bodies[b]->getAngularDamping();
-            decimal linearDamping = clamp(decimal(1.0) - dt * linDampingFactor,
-                                          decimal(0.0), decimal(1.0));
-            decimal angularDamping = clamp(decimal(1.0) - dt * angDampingFactor,
-                                           decimal(0.0), decimal(1.0));
-            mConstrainedLinearVelocities[indexBody] *= clamp(linearDamping, decimal(0.0),
-                                                             decimal(1.0));
-            mConstrainedAngularVelocities[indexBody] *= clamp(angularDamping, decimal(0.0),
-                                                              decimal(1.0));
-
-            // Update the old Transform of the body
-            bodies[b]->updateOldTransform();
+            decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
+            decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
+            mConstrainedLinearVelocities[indexBody] *= linearDamping;
+            mConstrainedAngularVelocities[indexBody] *= angularDamping;
 
             indexBody++;
         }
@@ -372,9 +352,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 void DynamicsWorld::solveContactsAndConstraints() {
 
     PROFILE("DynamicsWorld::solveContactsAndConstraints()");
-
-    // Get the current time step
-    decimal dt = static_cast<decimal>(mTimer.getTimeStep());
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
@@ -399,7 +376,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
         if (isContactsToSolve) {
 
             // Initialize the solver
-            mContactSolver.initializeForIsland(dt, mIslands[islandIndex]);
+            mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
 
             // Warm start the contact solver
             mContactSolver.warmStart();
@@ -409,7 +386,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
         if (isConstraintsToSolve) {
 
             // Initialize the constraint solver
-            mConstraintSolver.initializeForIsland(dt, mIslands[islandIndex]);
+            mConstraintSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
         }
 
         // For each iteration of the velocity solver
@@ -529,7 +506,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case BALLSOCKETJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(BallAndSocketJoint));
-            const BallAndSocketJointInfo& info = dynamic_cast<const BallAndSocketJointInfo&>(
+            const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
             newJoint = new (allocatedMemory) BallAndSocketJoint(info);
             break;
@@ -539,7 +516,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case SLIDERJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
-            const SliderJointInfo& info = dynamic_cast<const SliderJointInfo&>(jointInfo);
+            const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) SliderJoint(info);
             break;
         }
@@ -548,7 +525,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case HINGEJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
-            const HingeJointInfo& info = dynamic_cast<const HingeJointInfo&>(jointInfo);
+            const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) HingeJoint(info);
             break;
         }
@@ -557,7 +534,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         case FIXEDJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(FixedJoint));
-            const FixedJointInfo& info = dynamic_cast<const FixedJointInfo&>(jointInfo);
+            const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) FixedJoint(info);
             break;
         }
@@ -738,6 +715,8 @@ void DynamicsWorld::computeIslands() {
 
                 ContactManifold* contactManifold = contactElement->contactManifold;
 
+                assert(contactManifold->getNbContactPoints() > 0);
+
                 // Check if the current contact manifold has already been added into an island
                 if (contactManifold->isAlreadyInIsland()) continue;
 
@@ -746,8 +725,8 @@ void DynamicsWorld::computeIslands() {
                 contactManifold->mIsAlreadyInIsland = true;
 
                 // Get the other body of the contact manifold
-                RigidBody* body1 = dynamic_cast<RigidBody*>(contactManifold->getBody1());
-                RigidBody* body2 = dynamic_cast<RigidBody*>(contactManifold->getBody2());
+                RigidBody* body1 = static_cast<RigidBody*>(contactManifold->getBody1());
+                RigidBody* body2 = static_cast<RigidBody*>(contactManifold->getBody2());
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
@@ -774,8 +753,8 @@ void DynamicsWorld::computeIslands() {
                 joint->mIsAlreadyInIsland = true;
 
                 // Get the other body of the contact manifold
-                RigidBody* body1 = dynamic_cast<RigidBody*>(joint->getBody1());
-                RigidBody* body2 = dynamic_cast<RigidBody*>(joint->getBody2());
+                RigidBody* body1 = static_cast<RigidBody*>(joint->getBody1());
+                RigidBody* body2 = static_cast<RigidBody*>(joint->getBody2());
                 RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
@@ -811,7 +790,6 @@ void DynamicsWorld::updateSleepingBodies() {
 
     PROFILE("DynamicsWorld::updateSleepingBodies()");
 
-    const decimal dt = static_cast<decimal>(mTimer.getTimeStep());
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
 
@@ -839,7 +817,7 @@ void DynamicsWorld::updateSleepingBodies() {
             else {  // If the body velocity is bellow the sleeping velocity threshold
 
                 // Increase the sleep time
-                bodies[b]->mSleepTime += dt;
+                bodies[b]->mSleepTime += mTimeStep;
                 if (bodies[b]->mSleepTime < minSleepTime) {
                     minSleepTime = bodies[b]->mSleepTime;
                 }
@@ -990,4 +968,31 @@ void DynamicsWorld::testCollision(CollisionCallback* callback) {
 
     // Perform the collision detection and report contacts
     mCollisionDetection.reportCollisionBetweenShapes(callback, emptySet, emptySet);
+}
+
+/// Return the list of all contacts of the world
+std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
+
+    std::vector<const ContactManifold*> contactManifolds;
+
+    // For each currently overlapping pair of bodies
+    std::map<overlappingpairid, OverlappingPair*>::const_iterator it;
+    for (it = mCollisionDetection.mOverlappingPairs.begin();
+         it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
+
+        OverlappingPair* pair = it->second;
+
+        // For each contact manifold of the pair
+        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
+        for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
+
+            ContactManifold* manifold = manifoldSet.getContactManifold(i);
+
+            // Get the contact manifold
+            contactManifolds.push_back(manifold);
+        }
+    }
+
+    // Return all the contact manifold
+    return contactManifolds;
 }

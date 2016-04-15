@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -118,9 +118,6 @@ class RigidBody : public CollisionBody {
         /// Update the broad-phase state for this body (because it has moved for instance)
         virtual void updateBroadPhaseState() const;
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -133,6 +130,9 @@ class RigidBody : public CollisionBody {
 
         /// Set the type of the body (static, kinematic or dynamic)
         void setType(BodyType type);
+
+        /// Set the current position and orientation
+        virtual void setTransform(const Transform& transform);
 
         /// Return the mass of the body
         decimal getMass() const;
@@ -148,6 +148,9 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular velocity.
         void setAngularVelocity(const Vector3& angularVelocity);
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
 
         /// Return the local inertia tensor of the body (in body coordinates)
         const Matrix3x3& getInertiaTensorLocal() const;
@@ -207,7 +210,7 @@ class RigidBody : public CollisionBody {
         void applyTorque(const Vector3& torque);
 
         /// Add a collision shape to the body.
-        virtual ProxyShape* addCollisionShape(const CollisionShape& collisionShape,
+        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
                                               const Transform& transform,
                                               decimal mass);
 
@@ -250,20 +253,6 @@ inline Vector3 RigidBody::getLinearVelocity() const {
  */
 inline Vector3 RigidBody::getAngularVelocity() const {
     return mAngularVelocity;
-}
-
-// Set the angular velocity.
-/// You should only call this method for a kinematic body. Otherwise, it
-/// will do nothing.
-/**
-* @param angularVelocity The angular velocity vector of the body
-*/
-inline void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
-
-    // If it is a kinematic body
-    if (mType == KINEMATIC) {
-        mAngularVelocity = angularVelocity;
-    }
 }
 
 // Return the local inertia tensor of the body (in local-space coordinates)
@@ -310,22 +299,6 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
            mTransform.getOrientation().getMatrix().getTranspose();
 }
 
-// Set the linear velocity of the rigid body.
-/// You should only call this method for a kinematic body. Otherwise, it
-/// will do nothing.
-/**
- * @param linearVelocity Linear velocity vector of the body
- */
-inline void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
-
-    // If it is a kinematic body
-    if (mType == KINEMATIC) {
-
-        // Update the linear velocity of the current body state
-        mLinearVelocity = linearVelocity;
-    }
-}
-
 // Return true if the gravity needs to be applied to this rigid body
 /**
  * @return True if the gravity is applied to the body
@@ -366,7 +339,8 @@ inline decimal RigidBody::getLinearDamping() const {
     return mLinearDamping;
 }
 
-// Set the linear damping factor
+// Set the linear damping factor. This is the ratio of the linear velocity
+// that the body will lose every at seconds of simulation.
 /**
  * @param linearDamping The linear damping factor of this body
  */
@@ -383,7 +357,8 @@ inline decimal RigidBody::getAngularDamping() const {
     return mAngularDamping;
 }
 
-// Set the angular damping factor
+// Set the angular damping factor. This is the ratio of the angular velocity
+// that the body will lose at every seconds of simulation.
 /**
  * @param angularDamping The angular damping factor of this body
  */

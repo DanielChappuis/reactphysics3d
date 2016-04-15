@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,7 +30,7 @@
 #include "memory/MemoryAllocator.h"
 #include "body/RigidBody.h"
 #include "constraint/Joint.h"
-#include "ContactManifold.h"
+#include "collision/ContactManifold.h"
 
 namespace reactphysics3d {
 

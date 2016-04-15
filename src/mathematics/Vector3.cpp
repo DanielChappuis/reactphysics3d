@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -55,7 +55,9 @@ Vector3::~Vector3() {
 Vector3 Vector3::getUnit() const {
     decimal lengthVector = length();
 
-    assert(lengthVector > MACHINE_EPSILON);
+    if (lengthVector < MACHINE_EPSILON) {
+        return *this;
+    }
 
     // Compute and return the unit vector
     decimal lengthInv = decimal(1.0) / lengthVector;

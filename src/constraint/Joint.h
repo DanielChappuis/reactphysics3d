@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -181,10 +181,10 @@ class Joint {
         virtual ~Joint();
 
         /// Return the reference to the body 1
-        RigidBody* const getBody1() const;
+        RigidBody* getBody1() const;
 
         /// Return the reference to the body 2
-        RigidBody* const getBody2() const;
+        RigidBody* getBody2() const;
 
         /// Return true if the constraint is active
         bool isActive() const;
@@ -206,7 +206,7 @@ class Joint {
 /**
  * @return The first body involved in the joint
  */
-inline RigidBody* const Joint::getBody1() const {
+inline RigidBody* Joint::getBody1() const {
     return mBody1;
 }
 
@@ -214,7 +214,7 @@ inline RigidBody* const Joint::getBody1() const {
 /**
  * @return The second body involved in the joint
  */
-inline RigidBody* const Joint::getBody2() const {
+inline RigidBody* Joint::getBody2() const {
     return mBody2;
 }
 

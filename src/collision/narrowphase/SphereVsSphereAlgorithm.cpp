@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,8 +31,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-SphereVsSphereAlgorithm::SphereVsSphereAlgorithm(MemoryAllocator& memoryAllocator)
-                        :NarrowPhaseAlgorithm(memoryAllocator) {
+SphereVsSphereAlgorithm::SphereVsSphereAlgorithm() : NarrowPhaseAlgorithm() {
     
 }
 
@@ -41,21 +40,17 @@ SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
     
 }   
 
-bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
-                                            ProxyShape* collisionShape2,
-                                            ContactPointInfo*& contactInfo) {
+void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
+                                            const CollisionShapeInfo& shape2Info,
+                                            NarrowPhaseCallback* narrowPhaseCallback) {
     
     // Get the sphere collision shapes
-    const CollisionShape* shape1 = collisionShape1->getCollisionShape();
-    const CollisionShape* shape2 = collisionShape2->getCollisionShape();
-    const SphereShape* sphereShape1 = dynamic_cast<const SphereShape*>(shape1);
-    const SphereShape* sphereShape2 = dynamic_cast<const SphereShape*>(shape2);
+    const SphereShape* sphereShape1 = static_cast<const SphereShape*>(shape1Info.collisionShape);
+    const SphereShape* sphereShape2 = static_cast<const SphereShape*>(shape2Info.collisionShape);
 
     // Get the local-space to world-space transforms
-    const Transform transform1 = collisionShape1->getBody()->getTransform() *
-                                 collisionShape1->getLocalToBodyTransform();
-    const Transform transform2 = collisionShape2->getBody()->getTransform() *
-                                 collisionShape2->getLocalToBodyTransform();
+    const Transform& transform1 = shape1Info.shapeToWorldTransform;
+    const Transform& transform2 = shape2Info.shapeToWorldTransform;
 
     // Compute the distance between the centers
     Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
@@ -75,13 +70,11 @@ bool SphereVsSphereAlgorithm::testCollision(ProxyShape* collisionShape1,
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactInfo = new (mMemoryAllocator.allocate(sizeof(ContactPointInfo)))
-                         ContactPointInfo(collisionShape1, collisionShape2,
-                                          vectorBetweenCenters.getUnit(), penetrationDepth,
-                                          intersectionOnBody1, intersectionOnBody2);
-    
-        return true;
+        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                     shape2Info.collisionShape, vectorBetweenCenters.getUnit(), penetrationDepth,
+                                     intersectionOnBody1, intersectionOnBody2);
+
+        // Notify about the new contact
+        narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
     }
-    
-    return false;
 }

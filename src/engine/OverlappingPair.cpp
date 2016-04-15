@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,9 +31,8 @@ using namespace reactphysics3d;
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 MemoryAllocator& memoryAllocator)
-                : mShape1(shape1), mShape2(shape2),
-                  mContactManifold(shape1, shape2, memoryAllocator),
+                                 int nbMaxContactManifolds, MemoryAllocator& memoryAllocator)
+                : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
                   mCachedSeparatingAxis(1.0, 1.0, 1.0) {
     
 }

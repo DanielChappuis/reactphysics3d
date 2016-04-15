@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -57,7 +57,7 @@ void Simplex::addPoint(const Vector3& point, const Vector3& suppPointA, const Ve
         mLastFoundBit <<= 1;
     }
 
-    assert(mLastFound >= 0 && mLastFound < 4);
+    assert(mLastFound < 4);
 
     // Add the point into the simplex
     mPoints[mLastFound] = point;

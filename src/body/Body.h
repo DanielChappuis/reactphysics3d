@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -83,9 +83,6 @@ class Body {
         /// Private assignment operator
         Body& operator=(const Body& body);
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -104,6 +101,9 @@ class Body {
 
         /// Set whether or not the body is allowed to go to sleep
         void setIsAllowedToSleep(bool isAllowedToSleep);
+
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping);
 
         /// Return whether or not the body is sleeping
         bool isSleeping() const;

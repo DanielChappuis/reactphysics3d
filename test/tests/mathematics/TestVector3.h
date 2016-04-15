@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -225,10 +225,18 @@ class TestVector3 : public Test {
             vector4 /= 3;
             test(vector3 == Vector3(60, 330, 620));
             test(vector4 == Vector3(5, 20, 11));
+            Vector3 vector5(21, 80, 45);
+            Vector3 vector6(7, 10, 3);
+            Vector3 vector7 = vector5 * vector6;
+            test(vector7 == Vector3(147, 800, 135));
+            Vector3 vector8 = vector5 / vector6;
+            test(approxEqual(vector8.x, 3));
+            test(approxEqual(vector8.y, 8));
+            test(approxEqual(vector8.z, 15));
 
             // Negative operator
-            Vector3 vector5(-34, 5, 422);
-            Vector3 negative = -vector5;
+            Vector3 vector9(-34, 5, 422);
+            Vector3 negative = -vector9;
             test(negative == Vector3(34, -5, -422));
         }
  };
