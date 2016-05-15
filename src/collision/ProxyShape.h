@@ -102,7 +102,7 @@ class ProxyShape {
                    const Transform& transform, decimal mass);
 
         /// Destructor
-        ~ProxyShape();
+        virtual ~ProxyShape();
 
         /// Return the collision shape
         const CollisionShape* getCollisionShape() const;
