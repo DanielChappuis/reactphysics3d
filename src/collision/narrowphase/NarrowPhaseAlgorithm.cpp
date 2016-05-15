@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 
 // Constructor
 NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
-                     : mMemoryAllocator(NULL), mCurrentOverlappingPair(NULL) {
+                     : mMemoryAllocator(nullptr), mCurrentOverlappingPair(nullptr) {
 
 }
 

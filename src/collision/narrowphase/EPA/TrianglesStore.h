@@ -115,7 +115,7 @@ inline TriangleEPA& TrianglesStore::last() {
 // Create a new triangle
 inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices,
                                                 uint v0,uint v1, uint v2) {
-    TriangleEPA* newTriangle = NULL;
+    TriangleEPA* newTriangle = nullptr;
 
     // If we have not reached the maximum number of triangles
     if (mNbTriangles != MAX_TRIANGLES) {
@@ -123,7 +123,7 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices,
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
             mNbTriangles--;
-            newTriangle = NULL;
+            newTriangle = nullptr;
         }
     }
 

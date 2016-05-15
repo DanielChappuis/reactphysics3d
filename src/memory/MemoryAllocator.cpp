@@ -99,7 +99,7 @@ MemoryAllocator::~MemoryAllocator() {
 void* MemoryAllocator::allocate(size_t size) {
 
     // We cannot allocate zero bytes
-    if (size == 0) return NULL;
+    if (size == 0) return nullptr;
 
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled++;
@@ -117,7 +117,7 @@ void* MemoryAllocator::allocate(size_t size) {
     assert(indexHeap >= 0 && indexHeap < NB_HEAPS);
 
     // If there still are free memory units in the corresponding heap
-    if (mFreeMemoryUnits[indexHeap] != NULL) {
+    if (mFreeMemoryUnits[indexHeap] != nullptr) {
 
         // Return a pointer to the memory unit
         MemoryUnit* unit = mFreeMemoryUnits[indexHeap];
@@ -142,7 +142,7 @@ void* MemoryAllocator::allocate(size_t size) {
         // memory units
         MemoryBlock* newBlock = mMemoryBlocks + mNbCurrentMemoryBlocks;
         newBlock->memoryUnits = (MemoryUnit*) malloc(BLOCK_SIZE);
-        assert(newBlock->memoryUnits != NULL);
+        assert(newBlock->memoryUnits != nullptr);
         size_t unitSize = mUnitSizes[indexHeap];
         uint nbUnits = BLOCK_SIZE / unitSize;
         assert(nbUnits * unitSize <= BLOCK_SIZE);
@@ -152,7 +152,7 @@ void* MemoryAllocator::allocate(size_t size) {
             unit->nextUnit = nextUnit;
         }
         MemoryUnit* lastUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize*(nbUnits-1));
-        lastUnit->nextUnit = NULL;
+        lastUnit->nextUnit = nullptr;
 
         // Add the new allocated block into the list of free memory units in the heap
         mFreeMemoryUnits[indexHeap] = newBlock->memoryUnits->nextUnit;

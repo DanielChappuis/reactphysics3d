@@ -70,6 +70,6 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
         return &mGJKAlgorithm;
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }

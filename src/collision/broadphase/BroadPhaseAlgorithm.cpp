@@ -39,11 +39,11 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
 
     // Allocate memory for the array of non-static proxy shapes IDs
     mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
-    assert(mMovedShapes != NULL);
+    assert(mMovedShapes != nullptr);
 
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
-    assert(mPotentialPairs != NULL);
+    assert(mPotentialPairs != nullptr);
 }
 
 // Destructor
@@ -65,14 +65,14 @@ void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
         mNbAllocatedMovedShapes *= 2;
         int* oldArray = mMovedShapes;
         mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
-        assert(mMovedShapes != NULL);
+        assert(mMovedShapes != nullptr);
         memcpy(mMovedShapes, oldArray, mNbMovedShapes * sizeof(int));
         free(oldArray);
     }
 
     // Store the broad-phase ID into the array of shapes that have moved
     assert(mNbMovedShapes < mNbAllocatedMovedShapes);
-    assert(mMovedShapes != NULL);
+    assert(mMovedShapes != nullptr);
     mMovedShapes[mNbMovedShapes] = broadPhaseID;
     mNbMovedShapes++;
 }
@@ -91,7 +91,7 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
         mNbAllocatedMovedShapes /= 2;
         int* oldArray = mMovedShapes;
         mMovedShapes = (int*) malloc(mNbAllocatedMovedShapes * sizeof(int));
-        assert(mMovedShapes != NULL);
+        assert(mMovedShapes != nullptr);
         uint nbElements = 0;
         for (uint i=0; i<mNbMovedShapes; i++) {
             if (oldArray[i] != -1) {

@@ -34,7 +34,7 @@ using namespace std;
 // Constructor
 CollisionWorld::CollisionWorld()
                : mCollisionDetection(this, mMemoryAllocator), mCurrentBodyID(0),
-                 mEventListener(NULL) {
+                 mEventListener(nullptr) {
 
 }
 
@@ -69,7 +69,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     CollisionBody* collisionBody = new (mMemoryAllocator.allocate(sizeof(CollisionBody)))
                                         CollisionBody(transform, *this, bodyID);
 
-    assert(collisionBody != NULL);
+    assert(collisionBody != nullptr);
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
@@ -208,7 +208,7 @@ void CollisionWorld::testCollision(const CollisionBody* body,
     std::set<uint> shapes1;
 
     // For each shape of the body
-    for (const ProxyShape* shape=body->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes1.insert(shape->mBroadPhaseID);
     }
@@ -234,13 +234,13 @@ void CollisionWorld::testCollision(const CollisionBody* body1,
 
     // Create the sets of shapes
     std::set<uint> shapes1;
-    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes1.insert(shape->mBroadPhaseID);
     }
 
     std::set<uint> shapes2;
-    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes2.insert(shape->mBroadPhaseID);
     }

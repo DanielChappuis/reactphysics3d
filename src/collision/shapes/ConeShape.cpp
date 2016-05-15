@@ -137,7 +137,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     }
 
     // If the origin of the ray is inside the cone, we return no hit
-    if (testPointInside(ray.point1, NULL)) return false;
+    if (testPointInside(ray.point1, nullptr)) return false;
 
     localHitPoint[0] = ray.point1 + tHit[0] * r;
     localHitPoint[1] = ray.point1 + tHit[1] * r;

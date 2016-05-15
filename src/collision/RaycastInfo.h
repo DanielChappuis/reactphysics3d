@@ -83,7 +83,7 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(NULL), proxyShape(NULL) {
+        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), proxyShape(nullptr) {
 
         }
 

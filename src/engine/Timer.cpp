@@ -51,7 +51,7 @@ long double Timer::getCurrentSystemTime() {
     #else
         // Initialize the lastUpdateTime with the current time in seconds
         timeval timeValue;
-        gettimeofday(&timeValue, NULL);
+        gettimeofday(&timeValue, nullptr);
         return (timeValue.tv_sec + (timeValue.tv_usec / 1000000.0));
     #endif
 }

@@ -42,7 +42,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
           : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(NULL) {
+            mJointsList(nullptr) {
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;
@@ -50,7 +50,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
 
 // Destructor
 RigidBody::~RigidBody() {
-    assert(mJointsList == NULL);
+    assert(mJointsList == nullptr);
 }
 
 // Set the type of the body
@@ -168,8 +168,8 @@ void RigidBody::setMass(decimal mass) {
 // Remove a joint from the joints list
 void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint) {
 
-    assert(joint != NULL);
-    assert(mJointsList != NULL);
+    assert(joint != nullptr);
+    assert(mJointsList != nullptr);
 
     // Remove the joint from the linked list of the joints of the first body
     if (mJointsList->joint == joint) {   // If the first element is the one to remove
@@ -180,7 +180,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
     }
     else {  // If the element to remove is not the first one in the list
         JointListElement* currentElement = mJointsList;
-        while (currentElement->next != NULL) {
+        while (currentElement->next != nullptr) {
             if (currentElement->next->joint == joint) {
                 JointListElement* elementToRemove = currentElement->next;
                 currentElement->next = elementToRemove->next;
@@ -213,15 +213,13 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
-    assert(mass > decimal(0.0));
-
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass);
 
     // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == NULL) {
+    if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
     }
     else {
@@ -339,7 +337,7 @@ void RigidBody::recomputeMassInformation() {
     assert(mType == DYNAMIC);
 
     // Compute the total mass of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
         mInitMass += shape->getMass();
         mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
     }
@@ -358,7 +356,7 @@ void RigidBody::recomputeMassInformation() {
     mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
 
     // Compute the total mass and inertia tensor using all the collision shapes
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Get the inertia tensor of the collision shape in its local-space
         Matrix3x3 inertiaTensor;
@@ -401,7 +399,7 @@ void RigidBody::updateBroadPhaseState() const {
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;

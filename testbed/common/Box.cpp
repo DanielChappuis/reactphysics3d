@@ -27,7 +27,7 @@
 #include "Box.h"
 
 // Macros
-#define MEMBER_OFFSET(s,m) ((char *)NULL + (offsetof(s,m)))
+#define MEMBER_OFFSET(s,m) ((char *)nullptr + (offsetof(s,m)))
 
 // Initialize static variables
 openglframework::VertexBufferObject Box::mVBOVertices(GL_ARRAY_BUFFER);

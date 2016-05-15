@@ -46,7 +46,7 @@ void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 
     PROFILE("ConstraintSolver::initializeForIsland()");
 
-    assert(island != NULL);
+    assert(island != nullptr);
     assert(island->getNbBodies() > 0);
     assert(island->getNbJoints() > 0);
 
@@ -76,7 +76,7 @@ void ConstraintSolver::solveVelocityConstraints(Island* island) {
 
     PROFILE("ConstraintSolver::solveVelocityConstraints()");
 
-    assert(island != NULL);
+    assert(island != nullptr);
     assert(island->getNbJoints() > 0);
 
     // For each joint of the island
@@ -93,7 +93,7 @@ void ConstraintSolver::solvePositionConstraints(Island* island) {
 
     PROFILE("ConstraintSolver::solvePositionConstraints()");
 
-    assert(island != NULL);
+    assert(island != nullptr);
     assert(island->getNbJoints() > 0);
 
     // For each joint of the island

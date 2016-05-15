@@ -115,7 +115,7 @@ void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
                                                                             mConvexShape->getType());
 
     // If there is no collision algorithm between those two kinds of shapes
-    if (algo == NULL) return;
+    if (algo == nullptr) return;
 
     // Notify the narrow-phase algorithm about the overlapping pair we are going to test
     algo->setCurrentOverlappingPair(mOverlappingPair);

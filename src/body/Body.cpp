@@ -36,7 +36,7 @@ using namespace reactphysics3d;
  */
 Body::Body(bodyindex id)
      : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(NULL) {
+       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
 
 }
 

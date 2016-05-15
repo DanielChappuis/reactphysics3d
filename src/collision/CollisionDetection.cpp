@@ -140,7 +140,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
                                              contactPoint->getLocalPointOnBody2());
 
                 // Notify the collision callback about this new contact
-                if (callback != NULL) callback->notifyContact(contactInfo);
+                if (callback != nullptr) callback->notifyContact(contactInfo);
             }
         }
     }
@@ -223,7 +223,7 @@ void CollisionDetection::computeNarrowPhase() {
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
 
         // If there is no collision algorithm between those two kinds of shapes
-        if (narrowPhaseAlgorithm == NULL) continue;
+        if (narrowPhaseAlgorithm == nullptr) continue;
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
@@ -325,7 +325,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
 
         // If there is no collision algorithm between those two kinds of shapes
-        if (narrowPhaseAlgorithm == NULL) continue;
+        if (narrowPhaseAlgorithm == nullptr) continue;
 
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
@@ -373,7 +373,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Create the overlapping pair and add it into the set of overlapping pairs
     OverlappingPair* newPair = new (mWorld->mMemoryAllocator.allocate(sizeof(OverlappingPair)))
                               OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mMemoryAllocator);
-    assert(newPair != NULL);
+    assert(newPair != nullptr);
 
 #ifndef NDEBUG
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
@@ -420,14 +420,14 @@ void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, const C
     if (overlappingPair->getNbContactPoints() == 0) {
 
         // Trigger a callback event
-        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(contactInfo);
+        if (mWorld->mEventListener != nullptr) mWorld->mEventListener->beginContact(contactInfo);
     }
 
     // Create a new contact
     createContact(overlappingPair, contactInfo);
 
     // Trigger a callback event for the new contact
-    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(contactInfo);
+    if (mWorld->mEventListener != nullptr) mWorld->mEventListener->newContact(contactInfo);
 }
 
 // Create a new contact
@@ -463,7 +463,7 @@ void CollisionDetection::addAllContactManifoldsToBodies() {
 // in the corresponding contact
 void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
-    assert(pair != NULL);
+    assert(pair != nullptr);
 
     CollisionBody* body1 = pair->getShape1()->getBody();
     CollisionBody* body2 = pair->getShape2()->getBody();

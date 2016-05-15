@@ -231,7 +231,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 TriangleEPA* face3 = triangleStore.newTriangle(points, 1, 3, 2);
 
                 // If the constructed tetrahedron is not correct
-                if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+                if (!((face0 != nullptr) && (face1 != nullptr) && (face2 != nullptr) && (face3 != nullptr)
                    && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                    && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
                     return;
@@ -289,10 +289,10 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                      shape2->getLocalSupportPointWithMargin(rotateToBody2 * n, shape2CachedCollisionData);
             points[4] = suppPointsA[4] - suppPointsB[4];
 
-            TriangleEPA* face0 = NULL;
-            TriangleEPA* face1 = NULL;
-            TriangleEPA* face2 = NULL;
-            TriangleEPA* face3 = NULL;
+            TriangleEPA* face0 = nullptr;
+            TriangleEPA* face1 = nullptr;
+            TriangleEPA* face2 = nullptr;
+            TriangleEPA* face3 = nullptr;
 
             // If the origin is in the first tetrahedron
             if (isOriginInTetrahedron(points[0], points[1],
@@ -323,7 +323,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             }
 
             // If the constructed tetrahedron is not correct
-            if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
+            if (!((face0 != nullptr) && (face1 != nullptr) && (face2 != nullptr) && (face3 != nullptr)
                && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
                 return;

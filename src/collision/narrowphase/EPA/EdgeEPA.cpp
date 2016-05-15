@@ -78,7 +78,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                               getSourceVertexIndex());
 
             // If the triangle has been created
-            if (triangle != NULL) {
+            if (triangle != nullptr) {
                 halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
@@ -103,7 +103,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getSourceVertexIndex());
 
                 // If the triangle has been created
-                if (triangle != NULL) {
+                if (triangle != nullptr) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }
@@ -122,7 +122,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getTargetVertexIndex(),
                                                                   getSourceVertexIndex());
 
-                if (triangle != NULL) {
+                if (triangle != nullptr) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }

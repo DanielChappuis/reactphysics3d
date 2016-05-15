@@ -37,7 +37,7 @@ using namespace reactphysics3d;
  */
 ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass)
            :mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
-            mNext(NULL), mBroadPhaseID(-1), mCachedCollisionData(NULL), mUserData(NULL),
+            mNext(nullptr), mBroadPhaseID(-1), mCachedCollisionData(nullptr), mUserData(nullptr),
             mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
@@ -46,7 +46,7 @@ ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transfo
 ProxyShape::~ProxyShape() {
 
     // Release the cached collision data memory
-    if (mCachedCollisionData != NULL) {
+    if (mCachedCollisionData != nullptr) {
         free(mCachedCollisionData);
     }
 }

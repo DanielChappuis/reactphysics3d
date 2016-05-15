@@ -512,7 +512,7 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
 }
 
 // Set an event listener object to receive events callbacks.
-/// If you use NULL as an argument, the events callbacks will be disabled.
+/// If you use "nullptr" as an argument, the events callbacks will be disabled.
 /**
  * @param eventListener Pointer to the event listener object that will receive
  *                      event callbacks during the simulation

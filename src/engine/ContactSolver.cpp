@@ -40,8 +40,8 @@ const decimal ContactSolver::SLOP= decimal(0.01);
 
 // Constructor
 ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-              :mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
-               mContactConstraints(NULL), mLinearVelocities(NULL), mAngularVelocities(NULL),
+              :mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr),
+               mContactConstraints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
                mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
                mIsSolveFrictionAtContactManifoldCenterActive(true) {
@@ -58,11 +58,11 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
 
     PROFILE("ContactSolver::initializeForIsland()");
 
-    assert(island != NULL);
+    assert(island != nullptr);
     assert(island->getNbBodies() > 0);
     assert(island->getNbContactManifolds() > 0);
-    assert(mSplitLinearVelocities != NULL);
-    assert(mSplitAngularVelocities != NULL);
+    assert(mSplitLinearVelocities != nullptr);
+    assert(mSplitAngularVelocities != nullptr);
 
     // Set the current time step
     mTimeStep = dt;
@@ -70,7 +70,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
     mNbContactManifolds = island->getNbContactManifolds();
 
     mContactConstraints = new ContactManifoldSolver[mNbContactManifolds];
-    assert(mContactConstraints != NULL);
+    assert(mContactConstraints != nullptr);
 
     // For each contact manifold of the island
     ContactManifold** contactManifolds = island->getContactManifold();
@@ -85,8 +85,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         // Get the two bodies of the contact
         RigidBody* body1 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
         RigidBody* body2 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
-        assert(body1 != NULL);
-        assert(body2 != NULL);
+        assert(body1 != nullptr);
+        assert(body2 != nullptr);
 
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
