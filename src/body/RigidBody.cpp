@@ -213,8 +213,6 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
-    assert(mass > decimal(0.0));
-
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
@@ -348,8 +346,8 @@ void RigidBody::recomputeMassInformation() {
         mMassInverse = decimal(1.0) / mInitMass;
     }
     else {
-        mInitMass = decimal(1.0);
-        mMassInverse = decimal(1.0);
+        mCenterOfMassWorld = mTransform.getPosition();
+        return;
     }
 
     // Compute the center of mass
