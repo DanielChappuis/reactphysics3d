@@ -202,8 +202,6 @@ class ConstraintSolver {
 // Set the constrained velocities arrays
 inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                                             Vector3* constrainedAngularVelocities) {
-    assert(constrainedLinearVelocities != NULL);
-    assert(constrainedAngularVelocities != NULL);
     mConstraintSolverData.linearVelocities = constrainedLinearVelocities;
     mConstraintSolverData.angularVelocities = constrainedAngularVelocities;
 }
@@ -211,8 +209,6 @@ inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constraine
 // Set the constrained positions/orientations arrays
 inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                                            Quaternion* constrainedOrientations) {
-    assert(constrainedPositions != NULL);
-    assert(constrainedOrientations != NULL);
     mConstraintSolverData.positions = constrainedPositions;
     mConstraintSolverData.orientations = constrainedOrientations;
 }

@@ -453,8 +453,6 @@ class ContactSolver {
 // Set the split velocities arrays
 inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
                                                     Vector3* splitAngularVelocities) {
-    assert(splitLinearVelocities != NULL);
-    assert(splitAngularVelocities != NULL);
     mSplitLinearVelocities = splitLinearVelocities;
     mSplitAngularVelocities = splitAngularVelocities;
 }
@@ -462,8 +460,6 @@ inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelociti
 // Set the constrained velocities arrays
 inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                                           Vector3* constrainedAngularVelocities) {
-    assert(constrainedLinearVelocities != NULL);
-    assert(constrainedAngularVelocities != NULL);
     mLinearVelocities = constrainedLinearVelocities;
     mAngularVelocities = constrainedAngularVelocities;
 }
