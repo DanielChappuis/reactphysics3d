@@ -181,16 +181,16 @@ void Cylinder::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
     mVBONormals.bind();
 
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
     if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)nullptr);
     }
 
     glDisableVertexAttribArray(vertexPositionLoc);
@@ -272,7 +272,7 @@ void Cylinder::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the velocity of the rigid body
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
+    if (rigidBody != nullptr) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
     }

@@ -257,12 +257,12 @@ void Box::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     mVBONormals.bind();
 
     if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     // Draw the geometry of the box
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -321,7 +321,7 @@ void Box::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the velocity of the rigid body
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
+    if (rigidBody != nullptr) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
     }

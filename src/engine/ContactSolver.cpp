@@ -906,8 +906,8 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 // Clean up the constraint solver
 void ContactSolver::cleanup() {
 
-    if (mContactConstraints != NULL) {
+    if (mContactConstraints != nullptr) {
         delete[] mContactConstraints;
-        mContactConstraints = NULL;
+        mContactConstraints = nullptr;
     }
 }
