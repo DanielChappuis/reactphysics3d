@@ -62,6 +62,9 @@ class TestCollisionBetweenShapesCallback : public NarrowPhaseCallback {
 
         }
 
+        // Destructor
+        virtual ~TestCollisionBetweenShapesCallback() { }
+
         // Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
                                    const ContactPointInfo& contactInfo);
