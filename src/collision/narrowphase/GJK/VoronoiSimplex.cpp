@@ -63,7 +63,7 @@ void VoronoiSimplex::removePoint(int index) {
     mNbPoints--;
     mPoints[index] = mPoints[mNbPoints];
     mSuppPointsA[index] = mSuppPointsA[mNbPoints];
-    mSuppPointsB[index] = mSuppPointsA[mNbPoints];
+    mSuppPointsB[index] = mSuppPointsB[mNbPoints];
 }
 
 // Reduce the simplex (only keep vertices that participate to the point closest to the origin)
@@ -138,6 +138,7 @@ bool VoronoiSimplex::isAffinelyDependent() const {
         case 3: return (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]).lengthSquare() <= epsilon;
 
         // Four points are independent if the tetrahedron volume is larger than zero
+        // Test in three different ways (for more robustness)
         case 4: return std::abs((mPoints[1] - mPoints[0]).dot((mPoints[2] - mPoints[0]).cross(mPoints[3] - mPoints[0]))) <= epsilon;
     }
 
@@ -152,10 +153,10 @@ bool VoronoiSimplex::isAffinelyDependent() const {
 void VoronoiSimplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) {
 
     // Recompute the closest point (if necessary)
-    recomputeClosestPoint();
+    //recomputeClosestPoint();
 
-    pA = mSuppPointsA;
-    pB = mSuppPointsB;
+    pA = mClosestSuppPointA;
+    pB = mClosestSuppPointB;
 }
 
 // Recompute the closest point if the simplex has been modified
@@ -195,38 +196,11 @@ bool VoronoiSimplex::recomputeClosestPoint() {
 
                 {
                     int bitsUsedPoints = 0;
+                    float t;
 
                     // The simplex is a line AB (where A=mPoints[0] and B=mPoints[1].
                     // We need to find the point of that line closest to the origin
-                    Vector3 AP = -mPoints[0];
-                    Vector3 AB = mPoints[1] - mPoints[0];
-                    decimal APDotAB = AP.dot(AB);
-                    decimal t;
-
-                    // If the closest point is on the side of A in the direction of B
-                    if (APDotAB > decimal(0.0)) {
-                        decimal lengthABSquare = AB.lengthSquare();
-
-                        // If the closest point is on the segment AB
-                        if (APDotAB < lengthABSquare) {
-                            t = APDotAB / lengthABSquare;
-
-                            bitsUsedPoints = 3; // 0011 (both A and B are used)
-
-                        }
-                        else {  // If the origin is on the side of B that is not in the direction of A
-                            // Therefore, the closest point is B
-                            t = decimal(1.0);
-
-                            bitsUsedPoints = 2; // 0010 (only B is used)
-                        }
-                    }
-                    else {  // If the origin is on the side of A that is not in the direction of B
-                        // Therefore, the closest point of the line is A
-                        t = decimal(0.0);
-
-                        bitsUsedPoints = 1; // 0001 (only A is used)
-                    }
+                    computeClosestPointOnSegment(mPoints[0], mPoints[1], bitsUsedPoints, t);
 
                     // Compute the closest point
                     mClosestSuppPointA = mSuppPointsA[0] + t * (mSuppPointsA[1] - mSuppPointsA[0]);
@@ -275,10 +249,11 @@ bool VoronoiSimplex::recomputeClosestPoint() {
                     int bitsUsedVertices = 0;
                     Vector2 baryCoordsAB;
                     Vector2 baryCoordsCD;
+                    bool isDegenerate;
 
                     // Compute the point closest to the origin on the tetrahedron
                     bool isOutside = computeClosestPointOnTetrahedron(mPoints[0], mPoints[1], mPoints[2], mPoints[3],
-                                                                      bitsUsedVertices, baryCoordsAB, baryCoordsCD);
+                                                                      bitsUsedVertices, baryCoordsAB, baryCoordsCD, isDegenerate);
 
                     // If the origin is outside the tetrahedron
                     if (isOutside) {
@@ -298,22 +273,27 @@ bool VoronoiSimplex::recomputeClosestPoint() {
                     }
                     else {
 
-                        // The origin is inside the tetrahedron, therefore, the closest point
-                        // is the origin
+                        // If it is a degenerate case
+                        if (isDegenerate) {
+                            mIsClosestPointValid = false;
+                        }
+                        else {
 
-                        setBarycentricCoords(0.0, 0.0, 0.0, 0.0);
+                            // The origin is inside the tetrahedron, therefore, the closest point
+                            // is the origin
 
-                        mClosestSuppPointA.setToZero();
-                        mClosestSuppPointB.setToZero();
-                        mClosestPoint.setToZero();
+                            setBarycentricCoords(0.0, 0.0, 0.0, 0.0);
 
-                        mIsClosestPointValid = true;
+                            mClosestSuppPointA.setToZero();
+                            mClosestSuppPointB.setToZero();
+                            mClosestPoint.setToZero();
 
+                            mIsClosestPointValid = true;
+                        }
                         break;
                     }
 
                     mIsClosestPointValid = checkClosestPointValid();
-
                 }
                 break;
         }
@@ -322,11 +302,45 @@ bool VoronoiSimplex::recomputeClosestPoint() {
     return mIsClosestPointValid;
 }
 
+// Compute point of a line segment that is closest to the origin
+void VoronoiSimplex::computeClosestPointOnSegment(const Vector3& a, const Vector3& b, int& bitUsedVertices,
+                                                  float& t) const {
+
+    Vector3 AP = -a;
+    Vector3 AB = b - a;
+    decimal APDotAB = AP.dot(AB);
+
+    // If the closest point is on the side of A in the direction of B
+    if (APDotAB > decimal(0.0)) {
+        decimal lengthABSquare = AB.lengthSquare();
+
+        // If the closest point is on the segment AB
+        if (APDotAB < lengthABSquare) {
+            t = APDotAB / lengthABSquare;
+
+            bitUsedVertices = 3; // 0011 (both A and B are used)
+
+        }
+        else {  // If the origin is on the side of B that is not in the direction of A
+            // Therefore, the closest point is B
+            t = decimal(1.0);
+
+            bitUsedVertices = 2; // 0010 (only B is used)
+        }
+    }
+    else {  // If the origin is on the side of A that is not in the direction of B
+        // Therefore, the closest point of the line is A
+        t = decimal(0.0);
+
+        bitUsedVertices = 1; // 0001 (only A is used)
+    }
+}
+
 // Compute point on a triangle that is closest to the origin
 /// This implementation is based on the one in the book
 /// "Real-Time Collision Detection" by Christer Ericson.
-void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vector3& b,
-                                   const Vector3& c, int& bitsUsedVertices, Vector3& baryCoordsABC) const {
+void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
+                                                   int& bitsUsedVertices, Vector3& baryCoordsABC) const {
 
     // Check if the origin is in the Voronoi region of vertex A
     Vector3 ab = b - a;
@@ -438,7 +452,9 @@ void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vecto
 /// This method returns true if the origin is outside the tetrahedron.
 bool VoronoiSimplex::computeClosestPointOnTetrahedron(const Vector3& a, const Vector3& b, const Vector3& c,
                                                       const Vector3& d, int& bitsUsedPoints, Vector2& baryCoordsAB,
-                                                      Vector2& baryCoordsCD) const {
+                                                      Vector2& baryCoordsCD, bool& isDegenerate) const {
+
+    isDegenerate = false;
 
     // Start as if the origin was inside the tetrahedron
     bitsUsedPoints = 15;        // 1111 (A, B, C and D are used)
@@ -450,6 +466,15 @@ bool VoronoiSimplex::computeClosestPointOnTetrahedron(const Vector3& a, const Ve
     int isOriginOutsideFaceACD = testOriginOutsideOfPlane(a, c, d, b);
     int isOriginOutsideFaceADB = testOriginOutsideOfPlane(a, d, b, c);
     int isOriginOutsideFaceBDC = testOriginOutsideOfPlane(b, d, c, a);
+
+    // If we have a degenerate tetrahedron
+    if (isOriginOutsideFaceABC < 0 || isOriginOutsideFaceACD < 0 ||
+        isOriginOutsideFaceADB < 0 || isOriginOutsideFaceBDC < 0) {
+
+        // The tetrahedron is degenerate
+        isDegenerate = true;
+        return false;
+    }
 
     if (isOriginOutsideFaceABC == 0 && isOriginOutsideFaceACD == 0 &&
         isOriginOutsideFaceADB == 0 && isOriginOutsideFaceBDC == 0) {
@@ -574,31 +599,20 @@ int VoronoiSimplex::testOriginOutsideOfPlane(const Vector3& a, const Vector3& b,
     decimal signp = (-a).dot(n);
     decimal signd = (d-a).dot(n);
 
-    // This assert is raised if the tetrahedron is degenerate (all points on the same plane)
+    // If the tetrahedron is degenerate (all points on the same plane)
     // This should never happen because after a point is added into the simplex, the user
     // of this class must check that the simplex is not affinely dependent using the
     // isAffinelyDependent() method
-    assert(signd * signd > epsilon * epsilon);
+    if(signd * signd < epsilon * epsilon) {
+        return -1;
+    }
 
     return signp * signd < decimal(0.0);
 }
 
 // Backup the closest point
 void VoronoiSimplex::backupClosestPointInSimplex(Vector3& v) {
-    decimal minDistSquare = DECIMAL_LARGEST;
-    Bits bit;
-
-    for (bit = mAllBits; bit != 0x0; bit--) {
-        if (isSubset(bit, mAllBits) && isProperSubset(bit)) {
-            Vector3 u = computeClosestPointForSubset(bit);
-            decimal distSquare = u.dot(u);
-            if (distSquare < minDistSquare) {
-                minDistSquare = distSquare;
-                mBitsCurrentSimplex = bit;
-                v = u;
-            }
-        }
-    }
+    v = mClosestPoint;
 }
 
 // Return the maximum squared length of a point

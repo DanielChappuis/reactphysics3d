@@ -104,6 +104,10 @@ class VoronoiSimplex {
         /// Return true if the
         bool checkClosestPointValid() const;
 
+        /// Compute point of a line segment that is closest to the origin
+        void computeClosestPointOnSegment(const Vector3& a, const Vector3& b, int& bitUsedVertices,
+                                          float& t) const;
+
         /// Compute point of a triangle that is closest to the origin
         void computeClosestPointOnTriangle(const Vector3& a, const Vector3& b,
                                            const Vector3& c, int& bitsUsedPoints, Vector3& baryCoordsABC) const;
@@ -111,7 +115,8 @@ class VoronoiSimplex {
         /// Compute point of a tetrahedron that is closest to the origin
         bool computeClosestPointOnTetrahedron(const Vector3& a, const Vector3& b,
                                               const Vector3& c, const Vector3& d,
-                                              int& bitsUsedPoints, Vector2& baryCoordsAB, Vector2& baryCoordsCD) const;
+                                              int& bitsUsedPoints, Vector2& baryCoordsAB, Vector2& baryCoordsCD,
+                                              bool& isDegenerate) const;
 
         /// Test if a point is outside of the plane given by the points of the triangle (a, b, c)
         int testOriginOutsideOfPlane(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) const;
@@ -196,6 +201,8 @@ inline bool VoronoiSimplex::computeClosestPoint(Vector3& v) {
 inline bool VoronoiSimplex::checkClosestPointValid() const {
     return mBarycentricCoords[0] >= decimal(0.0) && mBarycentricCoords[1] >= decimal(0.0) &&
            mBarycentricCoords[2] >= decimal(0.0) && mBarycentricCoords[3] >= decimal(0.0);
+}
+
 }
 
 #endif
