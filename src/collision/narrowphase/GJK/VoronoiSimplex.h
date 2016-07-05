@@ -165,7 +165,7 @@ class VoronoiSimplex {
         void backupClosestPointInSimplex(Vector3& point);
 
         /// Compute the closest points "pA" and "pB" of object A and B.
-        void computeClosestPointsOfAandB(Vector3& pA, Vector3& pB);
+        void computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const;
 
         /// Compute the closest point to the origin of the current simplex.
         bool computeClosestPoint(Vector3& v);

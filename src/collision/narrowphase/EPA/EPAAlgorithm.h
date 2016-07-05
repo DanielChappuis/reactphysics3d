@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_EPA_ALGORITHM_H
 
 // Libraries
-#include "collision/narrowphase/GJK/Simplex.h"
+#include "collision/narrowphase/GJK/VoronoiSimplex.h"
 #include "collision/shapes/CollisionShape.h"
 #include "collision/CollisionShapeInfo.h"
 #include "constraint/ContactPoint.h"
@@ -123,13 +123,13 @@ class EPAAlgorithm {
         void init(MemoryAllocator* memoryAllocator);
 
         /// Compute the penetration depth with EPA algorithm.
-        void computePenetrationDepthAndContactPoints(const Simplex& simplex,
+        bool computePenetrationDepthAndContactPoints(const VoronoiSimplex& simplex,
                                                      CollisionShapeInfo shape1Info,
                                                      const Transform& transform1,
                                                      CollisionShapeInfo shape2Info,
                                                      const Transform& transform2,
                                                      Vector3& v,
-                                                    NarrowPhaseCallback* narrowPhaseCallback);
+                                                     NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm

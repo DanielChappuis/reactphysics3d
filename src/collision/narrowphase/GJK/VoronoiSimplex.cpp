@@ -150,10 +150,7 @@ bool VoronoiSimplex::isAffinelyDependent() const {
 ///      pA = sum(lambda_i * a_i)    where "a_i" are the support points of object A
 ///      pB = sum(lambda_i * b_i)    where "b_i" are the support points of object B
 ///      with lambda_i = deltaX_i / deltaX
-void VoronoiSimplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) {
-
-    // Recompute the closest point (if necessary)
-    //recomputeClosestPoint();
+void VoronoiSimplex::computeClosestPointsOfAandB(Vector3& pA, Vector3& pB) const {
 
     pA = mClosestSuppPointA;
     pB = mClosestSuppPointB;
@@ -380,6 +377,7 @@ void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vecto
 
         // The origin is in the Voronoi region of edge AB
         // We return the projection of the origin on the edge AB
+        assert(std::abs(d1 - d3) > MACHINE_EPSILON);
         decimal v = d1 / (d1 - d3);
 
         // Set the barycentric coords of the closest point on the triangle
@@ -410,6 +408,7 @@ void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vecto
 
         // The origin is in the Voronoi region of edge AC
         // We return the projection of the origin on the edge AC
+        assert(std::abs(d2 - d6) > MACHINE_EPSILON);
         decimal w = d2 / (d2 - d6);
 
         // Set the barycentric coords of the closest point on the triangle
@@ -425,6 +424,7 @@ void VoronoiSimplex::computeClosestPointOnTriangle(const Vector3& a, const Vecto
 
         // The origin is in the Voronoi region of edge BC
         // We return the projection of the origin on the edge BC
+        assert(std::abs((d4 - d3) + (d5 - d6)) > MACHINE_EPSILON);
         decimal w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
 
         // Set the barycentric coords of the closest point on the triangle

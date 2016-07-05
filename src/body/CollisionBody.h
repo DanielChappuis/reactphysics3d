@@ -303,4 +303,4 @@ inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
 
 }
 
- #endif
+#endif

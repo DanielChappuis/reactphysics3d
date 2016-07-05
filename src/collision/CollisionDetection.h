@@ -35,9 +35,9 @@
 #include "memory/MemoryAllocator.h"
 #include "constraint/ContactPoint.h"
 #include <vector>
-#include <map>
 #include <set>
 #include <utility>
+#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

@@ -101,6 +101,9 @@ class ConcaveShape : public CollisionShape {
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
 
@@ -116,9 +119,14 @@ inline decimal ConcaveShape::getTriangleMargin() const {
     return mTriangleMargin;
 }
 
-/// Return true if the collision shape is convex, false if it is concave
+// Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {
     return false;
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool ConcaveShape::isPolyhedron() const {
+    return true;
 }
 
 // Return true if a point is inside the collision shape

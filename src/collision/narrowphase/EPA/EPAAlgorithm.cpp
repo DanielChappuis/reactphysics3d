@@ -81,8 +81,9 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// enlarged objects (with margin) where the original objects (without margin)
 /// intersect. An initial simplex that contains origin has been computed with
 /// GJK algorithm. The EPA Algorithm will extend this simplex polytope to find
-/// the correct penetration depth
-void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simplex,
+/// the correct penetration depth. This method returns true if the EPA penetration
+/// depth computation has succeeded and false it has failed.
+bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex& simplex,
                                                            CollisionShapeInfo shape1Info,
                                                            const Transform& transform1,
                                                            CollisionShapeInfo shape2Info,
@@ -91,6 +92,8 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                                                            NarrowPhaseCallback* narrowPhaseCallback) {
 
     PROFILE("EPAAlgorithm::computePenetrationDepthAndContactPoints()");
+
+    decimal gjkPenDepthSquare = v.lengthSquare();
 
     assert(shape1Info.collisionShape->isConvex());
     assert(shape2Info.collisionShape->isConvex());
@@ -118,7 +121,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                               transform1.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
-    unsigned int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
+    int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
 
     // Compute the tolerance
     decimal tolerance = MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
@@ -137,7 +140,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             // Only one point in the simplex (which should be the origin).
             // We have a touching contact with zero penetration depth.
             // We drop that kind of contact. Therefore, we return false
-            return;
+            return true;
 
         case 2: {
             // The simplex returned by GJK is a line segment d containing the origin.
@@ -204,7 +207,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
             }
             else {
                 // The origin is not in the initial polytope
-                return;
+                return false;
             }
 
             // The polytope contains now 4 vertices
@@ -234,7 +237,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                    && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                    && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                    return;
+                    return false;
                 }
 
                 // Associate the edges of neighbouring triangle faces
@@ -319,14 +322,14 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
                 face3 = triangleStore.newTriangle(points, 1, 4, 2);
             }
             else {
-                return;
+                return false;
             }
 
             // If the constructed tetrahedron is not correct
             if (!((face0 != NULL) && (face1 != NULL) && (face2 != NULL) && (face3 != NULL)
                && face0->getDistSquare() > 0.0 && face1->getDistSquare() > 0.0
                && face2->getDistSquare() > 0.0 && face3->getDistSquare() > 0.0)) {
-                return;
+                return false;
             }
 
             // Associate the edges of neighbouring triangle faces
@@ -353,7 +356,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     // can run the EPA algorithm.
 
     if (nbTriangles == 0) {
-        return;
+        return false;
     }
 
     TriangleEPA* triangle = 0;
@@ -368,6 +371,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
         // If the candidate face in the heap is not obsolete
         if (!triangle->getIsObsolete()) {
+
             // If we have reached the maximum number of support points
             if (nbVertices == MAX_SUPPORT_POINTS) {
                 assert(false);
@@ -388,7 +392,7 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
 
             // Update the upper bound of the penetration depth
             decimal wDotv = points[indexNewVertex].dot(triangle->getClosestPoint());
-            assert(wDotv > 0.0);
+
             decimal wDotVSquare = wDotv * wDotv / triangle->getDistSquare();
             if (wDotVSquare < upperBoundSquarePenDepth) {
                 upperBoundSquarePenDepth = wDotVSquare;
@@ -427,13 +431,22 @@ void EPAAlgorithm::computePenetrationDepthAndContactPoints(const Simplex& simple
     Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
     decimal penetrationDepth = v.length();
-    assert(penetrationDepth > 0.0);
 
-    if (normal.lengthSquare() < MACHINE_EPSILON) return;
-    
-    // Create the contact info object
-    ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
-                                 shape2Info.collisionShape, normal, penetrationDepth, pALocal, pBLocal);
+    // If the length of the normal vector is too small, skip this contact point
+    if (normal.lengthSquare() < MACHINE_EPSILON) {
+        return false;
+    }
 
-    narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
+    if (penetrationDepth * penetrationDepth > gjkPenDepthSquare && penetrationDepth > 0) {
+
+        // Create the contact info object
+        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
+                                     shape2Info.collisionShape, normal, penetrationDepth, pALocal, pBLocal);
+
+        narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
+
+        return true;
+    }
+
+    return false;
 }

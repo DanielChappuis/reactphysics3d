@@ -98,6 +98,9 @@ class CylinderShape : public ConvexShape {
         /// Return the height
         decimal getHeight() const;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         /// Set the scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
 
@@ -122,6 +125,11 @@ inline decimal CylinderShape::getRadius() const {
  */
 inline decimal CylinderShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool CylinderShape::isPolyhedron() const {
+    return false;
 }
 
 // Set the scaling vector of the collision shape
