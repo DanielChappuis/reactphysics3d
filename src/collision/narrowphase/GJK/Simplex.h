@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Type definitions
-typedef unsigned int Bits;
+using Bits = unsigned int;
 
 // Class Simplex
 /**

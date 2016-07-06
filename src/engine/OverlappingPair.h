@@ -35,7 +35,7 @@
 namespace reactphysics3d {
 
 // Type for the overlapping pair ID
-typedef std::pair<uint, uint> overlappingpairid;
+using overlappingpairid = std::pair<uint, uint>;
 
 // Class OverlappingPair
 /**

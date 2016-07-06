@@ -46,15 +46,15 @@ namespace reactphysics3d {
 
 // ------------------- Type definitions ------------------- //
 
-typedef unsigned int uint;
-typedef long unsigned int luint;
-typedef luint bodyindex;
-typedef std::pair<bodyindex, bodyindex> bodyindexpair;
+using uint = unsigned int;
+using luint = long unsigned int;
+using bodyindex = luint;
+using bodyindexpair = std::pair<bodyindex, bodyindex>;
 
-typedef signed short int16;
-typedef signed int int32;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
+using int16 = signed short;
+using int32 = signed int;
+using uint16 = unsigned short;
+using uint32 = unsigned int;
 
 // ------------------- Enumerations ------------------- //
 
