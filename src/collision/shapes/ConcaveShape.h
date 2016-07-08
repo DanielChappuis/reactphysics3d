@@ -42,6 +42,9 @@ class TriangleCallback {
 
     public:
 
+        /// Destructor
+        virtual ~TriangleCallback() {}
+
         /// Report a triangle
         virtual void testTriangle(const Vector3* trianglePoints)=0;
 
@@ -70,12 +73,6 @@ class ConcaveShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveShape(const ConcaveShape& shape);
-
-        /// Private assignment operator
-        ConcaveShape& operator=(const ConcaveShape& shape);
-
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
 
@@ -88,6 +85,12 @@ class ConcaveShape : public CollisionShape {
 
         /// Destructor
         virtual ~ConcaveShape();
+
+        /// Deleted copy-constructor
+        ConcaveShape(const ConcaveShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConcaveShape& operator=(const ConcaveShape& shape) = delete;
 
         /// Return the triangle margin
         decimal getTriangleMargin() const;

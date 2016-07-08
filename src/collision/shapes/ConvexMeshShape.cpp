@@ -39,7 +39,7 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride, decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
+                : ConvexShape(CollisionShapeType::CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
     assert(nbVertices > 0);
     assert(stride > 0);
@@ -65,7 +65,7 @@ ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, 
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed, decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mMinBounds(0, 0, 0),
+                : ConvexShape(CollisionShapeType::CONVEX_MESH, margin), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(isEdgesInformationUsed) {
 
     TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
@@ -79,14 +79,14 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
     for (uint v = 0; v < triangleVertexArray->getNbVertices(); v++) {
 
         // Get the vertices components of the triangle
-        if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
+        if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
             const float* vertices = (float*)(verticesStart + v * vertexStride);
 
             Vector3 vertex(vertices[0], vertices[1], vertices[2] );
             vertex = vertex * mScaling;
             mVertices.push_back(vertex);
         }
-        else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
+        else if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
             const double* vertices = (double*)(verticesStart + v * vertexStride);
 
             Vector3 vertex(vertices[0], vertices[1], vertices[2] );
@@ -109,10 +109,10 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
             for (int k=0; k < 3; k++) {
 
                 // Get the index of the current vertex in the triangle
-                if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
+                if (indexType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
                     vertexIndex[k] = ((uint*)vertexIndexPointer)[k];
                 }
-                else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
+                else if (indexType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
                     vertexIndex[k] = ((unsigned short*)vertexIndexPointer)[k];
                 }
                 else {
@@ -135,7 +135,7 @@ ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool 
 /// If you use this constructor, you will need to set the vertices manually one by one using
 /// the addVertex() method.
 ConvexMeshShape::ConvexMeshShape(decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
+                : ConvexShape(CollisionShapeType::CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
                   mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
 
 }

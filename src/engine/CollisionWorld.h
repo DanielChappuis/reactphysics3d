@@ -80,12 +80,6 @@ class CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionWorld(const CollisionWorld& world);
-
-        /// Private assignment operator
-        CollisionWorld& operator=(const CollisionWorld& world);
-
         /// Return the next available body ID
         bodyindex computeNextAvailableBodyID();
 
@@ -101,6 +95,12 @@ class CollisionWorld {
 
         /// Destructor
         virtual ~CollisionWorld();
+
+        /// Deleted copy-constructor
+        CollisionWorld(const CollisionWorld& world) = delete;
+
+        /// Deleted assignment operator
+        CollisionWorld& operator=(const CollisionWorld& world) = delete;
 
         /// Return an iterator to the beginning of the bodies of the physics world
         std::set<CollisionBody*>::iterator getBodiesBeginIterator();

@@ -116,12 +116,6 @@ class CollisionDetection : public NarrowPhaseCallback {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionDetection(const CollisionDetection& collisionDetection);
-
-        /// Private assignment operator
-        CollisionDetection& operator=(const CollisionDetection& collisionDetection);
-
         /// Compute the broad-phase collision detection
         void computeBroadPhase();
 
@@ -150,6 +144,12 @@ class CollisionDetection : public NarrowPhaseCallback {
 
         /// Destructor
         ~CollisionDetection();
+
+        /// Deleted copy-constructor
+        CollisionDetection(const CollisionDetection& collisionDetection) = delete;
+
+        /// Deleted assignment operator
+        CollisionDetection& operator=(const CollisionDetection& collisionDetection) = delete;
 
         /// Set the collision dispatch configuration
         void setCollisionDispatch(CollisionDispatch* collisionDispatch);
@@ -234,7 +234,7 @@ class CollisionDetection : public NarrowPhaseCallback {
 // Return the Narrow-phase collision detection algorithm to use between two types of shapes
 inline NarrowPhaseAlgorithm* CollisionDetection::getCollisionAlgorithm(CollisionShapeType shape1Type,
                                                                        CollisionShapeType shape2Type) const {
-    return mCollisionMatrix[shape1Type][shape2Type];
+    return mCollisionMatrix[static_cast<int>(shape1Type)][static_cast<int>(shape2Type)];
 }
 
 // Set the collision dispatch configuration

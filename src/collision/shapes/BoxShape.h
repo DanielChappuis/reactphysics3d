@@ -61,12 +61,6 @@ class BoxShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        BoxShape(const BoxShape& shape);
-
-        /// Private assignment operator
-        BoxShape& operator=(const BoxShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -89,6 +83,12 @@ class BoxShape : public ConvexShape {
 
         /// Destructor
         virtual ~BoxShape();
+
+        /// Deleted copy-constructor
+        BoxShape(const BoxShape& shape) = delete;
+
+        /// Deleted assignment operator
+        BoxShape& operator=(const BoxShape& shape) = delete;
 
         /// Return the extents of the box
         Vector3 getExtent() const;

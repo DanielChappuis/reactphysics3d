@@ -35,7 +35,7 @@
 namespace reactphysics3d {
 
 /// Enumeration for the type of a constraint
-enum JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
+enum class JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 
 // Class declarations
 struct ConstraintSolverData;
@@ -95,13 +95,13 @@ struct JointInfo {
         /// Constructor
         JointInfo(JointType constraintType)
                       : body1(nullptr), body2(nullptr), type(constraintType),
-                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        positionCorrectionTechnique(JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {}
 
         /// Constructor
         JointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, JointType constraintType)
                       : body1(rigidBody1), body2(rigidBody2), type(constraintType),
-                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        positionCorrectionTechnique(JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {
         }
 
@@ -146,12 +146,6 @@ class Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        Joint(const Joint& constraint);
-
-        /// Private assignment operator
-        Joint& operator=(const Joint& constraint);
-
         /// Return true if the joint has already been added into an island
         bool isAlreadyInIsland() const;
 
@@ -179,6 +173,12 @@ class Joint {
 
         /// Destructor
         virtual ~Joint();
+
+        /// Deleted copy-constructor
+        Joint(const Joint& constraint) = delete;
+
+        /// Deleted assignment operator
+        Joint& operator=(const Joint& constraint) = delete;
 
         /// Return the reference to the body 1
         RigidBody* getBody1() const;

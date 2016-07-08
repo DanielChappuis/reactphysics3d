@@ -53,8 +53,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                               getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
         // Add the triangle vertex array of the subpart to the triangle mesh
         mPhysicsTriangleMesh.addSubpart(vertexArray);
@@ -110,8 +110,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                               getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
         // Add the triangle vertex array of the subpart to the triangle mesh
         mPhysicsTriangleMesh.addSubpart(vertexArray);

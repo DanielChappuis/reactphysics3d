@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-              : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(nullptr),
+              : Body(id), mType(BodyType::DYNAMIC), mTransform(transform), mProxyCollisionShapes(nullptr),
                 mNbCollisionShapes(0), mContactManifoldsList(nullptr), mWorld(world) {
 
 }

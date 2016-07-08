@@ -55,12 +55,6 @@ class CapsuleShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CapsuleShape(const CapsuleShape& shape);
-
-        /// Private assignment operator
-        CapsuleShape& operator=(const CapsuleShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -88,6 +82,12 @@ class CapsuleShape : public ConvexShape {
 
         /// Destructor
         virtual ~CapsuleShape();
+
+        /// Deleted copy-constructor
+        CapsuleShape(const CapsuleShape& shape) = delete;
+
+        /// Deleted assignment operator
+        CapsuleShape& operator=(const CapsuleShape& shape) = delete;
 
         /// Return the radius of the capsule
         decimal getRadius() const;

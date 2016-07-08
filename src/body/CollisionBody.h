@@ -54,7 +54,7 @@ class CollisionWorld;
 /// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
 ///           position is determined by the physics engine. A dynamic body can collide with other
 ///           dynamic, static or kinematic bodies.
-enum BodyType {STATIC, KINEMATIC, DYNAMIC};
+enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
 
 // Class CollisionBody
 /**
@@ -87,12 +87,6 @@ class CollisionBody : public Body {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionBody(const CollisionBody& body);
-
-        /// Private assignment operator
-        CollisionBody& operator=(const CollisionBody& body);
-
         /// Reset the contact manifold lists
         void resetContactManifoldsList();
 
@@ -121,6 +115,12 @@ class CollisionBody : public Body {
 
         /// Destructor
         virtual ~CollisionBody();
+
+        /// Deleted copy-constructor
+        CollisionBody(const CollisionBody& body) = delete;
+
+        /// Deleted assignment operator
+        CollisionBody& operator=(const CollisionBody& body) = delete;
 
         /// Return the type of the body
         BodyType getType() const;
@@ -208,7 +208,7 @@ inline BodyType CollisionBody::getType() const {
 inline void CollisionBody::setType(BodyType type) {
     mType = type;
 
-    if (mType == STATIC) {
+    if (mType == BodyType::STATIC) {
 
         // Update the broad-phase state of the body
         updateBroadPhaseState();

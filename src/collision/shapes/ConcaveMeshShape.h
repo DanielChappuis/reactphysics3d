@@ -120,12 +120,6 @@ class ConcaveMeshShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveMeshShape(const ConcaveMeshShape& shape);
-
-        /// Private assignment operator
-        ConcaveMeshShape& operator=(const ConcaveMeshShape& shape);
-
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
@@ -146,7 +140,13 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh);
 
         /// Destructor
-        ~ConcaveMeshShape();
+        virtual ~ConcaveMeshShape();
+
+        /// Deleted copy-constructor
+        ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;

@@ -245,7 +245,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::STATIC);
+    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

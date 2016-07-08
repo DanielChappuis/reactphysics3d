@@ -61,7 +61,7 @@ using uint32 = unsigned int;
 /// Position correction technique used in the constraint solver (for joints).
 /// BAUMGARTE_JOINTS : Faster but can be innacurate in some situations.
 /// NON_LINEAR_GAUSS_SEIDEL : Slower but more precise. This is the option used by default.
-enum JointsPositionCorrectionTechnique {BAUMGARTE_JOINTS, NON_LINEAR_GAUSS_SEIDEL};
+enum class JointsPositionCorrectionTechnique {BAUMGARTE_JOINTS, NON_LINEAR_GAUSS_SEIDEL};
 
 /// Position correction technique used in the contact solver (for contacts)
 /// BAUMGARTE_CONTACTS : Faster but can be innacurate and can lead to unexpected bounciness
@@ -69,7 +69,7 @@ enum JointsPositionCorrectionTechnique {BAUMGARTE_JOINTS, NON_LINEAR_GAUSS_SEIDE
 ///                      the bodies momentum).
 /// SPLIT_IMPULSES : A bit slower but the error correction factor is not added to the
 ///                 bodies momentum. This is the option used by default.
-enum ContactsPositionCorrectionTechnique {BAUMGARTE_CONTACTS, SPLIT_IMPULSES};
+enum class ContactsPositionCorrectionTechnique {BAUMGARTE_CONTACTS, SPLIT_IMPULSES};
 
 // ------------------- Constants ------------------- //
 

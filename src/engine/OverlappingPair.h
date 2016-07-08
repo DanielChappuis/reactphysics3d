@@ -56,14 +56,6 @@ class OverlappingPair {
 
         /// Cached previous separating axis
         Vector3 mCachedSeparatingAxis;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        OverlappingPair(const OverlappingPair& pair);
-
-        /// Private assignment operator
-        OverlappingPair& operator=(const OverlappingPair& pair);
 
     public:
 
@@ -75,6 +67,12 @@ class OverlappingPair {
 
         /// Destructor
         ~OverlappingPair();
+
+        /// Deleted copy-constructor
+        OverlappingPair(const OverlappingPair& pair) = delete;
+
+        /// Deleted assignment operator
+        OverlappingPair& operator=(const OverlappingPair& pair) = delete;
         
         /// Return the pointer to first proxy collision shape
         ProxyShape* getShape1() const;

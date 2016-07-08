@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 /// Raycast test side for the triangle
-enum TriangleRaycastSide {
+enum class TriangleRaycastSide {
 
     /// Raycast against front triangle
     FRONT,
@@ -65,12 +65,6 @@ class TriangleShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        TriangleShape(const TriangleShape& shape);
-
-        /// Private assignment operator
-        TriangleShape& operator=(const TriangleShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -94,6 +88,12 @@ class TriangleShape : public ConvexShape {
 
         /// Destructor
         virtual ~TriangleShape();
+
+        /// Deleted copy-constructor
+        TriangleShape(const TriangleShape& shape) = delete;
+
+        /// Deleted assignment operator
+        TriangleShape& operator=(const TriangleShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;

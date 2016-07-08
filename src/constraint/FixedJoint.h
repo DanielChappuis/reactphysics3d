@@ -55,7 +55,7 @@ struct FixedJointInfo : public JointInfo {
          */
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
-                       : JointInfo(rigidBody1, rigidBody2, FIXEDJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace){}
 };
 
@@ -116,12 +116,6 @@ class FixedJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        FixedJoint(const FixedJoint& constraint);
-
-        /// Private assignment operator
-        FixedJoint& operator=(const FixedJoint& constraint);
-
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
 
@@ -146,6 +140,12 @@ class FixedJoint : public Joint {
 
         /// Destructor
         virtual ~FixedJoint();
+
+        /// Deleted copy-constructor
+        FixedJoint(const FixedJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        FixedJoint& operator=(const FixedJoint& constraint) = delete;
 };
 
 // Return the number of bytes used by the joint

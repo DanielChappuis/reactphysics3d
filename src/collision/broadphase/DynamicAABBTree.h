@@ -101,6 +101,9 @@ class DynamicAABBTreeOverlapCallback {
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
         virtual void notifyOverlappingNode(int nodeId)=0;
+
+        // Destructor
+        virtual ~DynamicAABBTreeOverlapCallback() {}
 };
 
 // Class DynamicAABBTreeRaycastCallback
@@ -114,6 +117,8 @@ class DynamicAABBTreeRaycastCallback {
 
         // Called when the AABB of a leaf node is hit by a ray
         virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray)=0;
+
+        virtual ~DynamicAABBTreeRaycastCallback() {}
 
 };
 

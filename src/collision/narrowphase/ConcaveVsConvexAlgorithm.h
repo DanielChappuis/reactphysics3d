@@ -72,6 +72,9 @@ class ConvexVsTriangleCallback : public TriangleCallback {
 
     public:
 
+        /// Destructor
+        virtual ~ConvexVsTriangleCallback() {}
+
         /// Set the collision detection pointer
         void setCollisionDetection(CollisionDetection* collisionDetection) {
             mCollisionDetection = collisionDetection;

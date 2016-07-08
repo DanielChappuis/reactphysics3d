@@ -52,15 +52,7 @@ class TrianglesStore {
         TriangleEPA mTriangles[MAX_TRIANGLES];
 
         /// Number of triangles
-        int mNbTriangles;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        TrianglesStore(const TrianglesStore& triangleStore);
-
-        /// Private assignment operator
-        TrianglesStore& operator=(const TrianglesStore& triangleStore);
+        int mNbTriangles;        
         
     public:
 
@@ -71,6 +63,12 @@ class TrianglesStore {
 
         /// Destructor
         ~TrianglesStore();
+
+        /// Deleted copy-constructor
+        TrianglesStore(const TrianglesStore& triangleStore) = delete;
+
+        /// Deleted assignment operator
+        TrianglesStore& operator=(const TrianglesStore& triangleStore) = delete;
 
         /// Clear all the storage
         void clear();

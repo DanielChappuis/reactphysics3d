@@ -51,8 +51,8 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     mPhysicsTriangleVertexArray =
             new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
@@ -101,8 +101,8 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     mPhysicsTriangleVertexArray =
             new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end

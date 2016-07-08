@@ -105,8 +105,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         internalManifold.rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         internalManifold.externalContactManifold = externalManifold;
-        internalManifold.isBody1DynamicType = body1->getType() == DYNAMIC;
-        internalManifold.isBody2DynamicType = body2->getType() == DYNAMIC;
+        internalManifold.isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
+        internalManifold.isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
 
         // If we solve the friction constraints at the center of the contact manifold
         if (mIsSolveFrictionAtContactManifoldCenterActive) {

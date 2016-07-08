@@ -48,12 +48,6 @@ class ConvexShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConvexShape(const ConvexShape& shape);
-
-        /// Private assignment operator
-        ConvexShape& operator=(const ConvexShape& shape);
-
         // Return a local support point in a given direction with the object margin
         Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
                                                void** cachedCollisionData) const;
@@ -74,6 +68,12 @@ class ConvexShape : public CollisionShape {
 
         /// Destructor
         virtual ~ConvexShape();
+
+        /// Deleted copy-constructor
+        ConvexShape(const ConvexShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConvexShape& operator=(const ConvexShape& shape) = delete;
 
         /// Return the current object margin
         decimal getMargin() const;

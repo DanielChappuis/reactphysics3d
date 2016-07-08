@@ -76,7 +76,7 @@ void RigidBody::setType(BodyType type) {
     recomputeMassInformation();
 
     // If it is a static body
-    if (mType == STATIC) {
+    if (mType == BodyType::STATIC) {
 
         // Reset the velocity to zero
         mLinearVelocity.setToZero();
@@ -84,7 +84,7 @@ void RigidBody::setType(BodyType type) {
     }
 
     // If it is a static or a kinematic body
-    if (mType == STATIC || mType == KINEMATIC) {
+    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mMassInverse = decimal(0.0);
@@ -119,7 +119,7 @@ void RigidBody::setType(BodyType type) {
  */
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     mInertiaTensorLocal = inertiaTensorLocal;
 
@@ -134,7 +134,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
  */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
     mCenterOfMassLocal = centerOfMassLocal;
@@ -152,7 +152,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     mInitMass = mass;
 
@@ -267,7 +267,7 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == STATIC) return;
+    if (mType == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
     mLinearVelocity = linearVelocity;
@@ -285,7 +285,7 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == STATIC) return;
+    if (mType == BodyType::STATIC) return;
 
     // Set the angular velocity
     mAngularVelocity = angularVelocity;
@@ -329,12 +329,12 @@ void RigidBody::recomputeMassInformation() {
     mCenterOfMassLocal.setToZero();
 
     // If it is STATIC or KINEMATIC body
-    if (mType == STATIC || mType == KINEMATIC) {
+    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
         mCenterOfMassWorld = mTransform.getPosition();
         return;
     }
 
-    assert(mType == DYNAMIC);
+    assert(mType == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {

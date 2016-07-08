@@ -95,12 +95,6 @@ class EPAAlgorithm {
         
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        EPAAlgorithm(const EPAAlgorithm& algorithm);
-
-        /// Private assignment operator
-        EPAAlgorithm& operator=(const EPAAlgorithm& algorithm);
-
         /// Add a triangle face in the candidate triangle heap
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap, uint& nbTriangles,
                               decimal upperBoundSquarePenDepth);
@@ -118,6 +112,12 @@ class EPAAlgorithm {
 
         /// Destructor
         ~EPAAlgorithm();
+
+        /// Deleted copy-constructor
+        EPAAlgorithm(const EPAAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        EPAAlgorithm& operator=(const EPAAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
         void init(MemoryAllocator* memoryAllocator);

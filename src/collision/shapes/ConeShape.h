@@ -66,12 +66,6 @@ class ConeShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConeShape(const ConeShape& shape);
-
-        /// Private assignment operator
-        ConeShape& operator=(const ConeShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -94,6 +88,12 @@ class ConeShape : public ConvexShape {
 
         /// Destructor
         virtual ~ConeShape();
+
+        /// Deleted copy-constructor
+        ConeShape(const ConeShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConeShape& operator=(const ConeShape& shape) = delete;
 
         /// Return the radius
         decimal getRadius() const;

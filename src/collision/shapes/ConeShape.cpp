@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
-          : ConvexShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+          : ConvexShape(CollisionShapeType::CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));
     assert(mHalfHeight > decimal(0.0));
     

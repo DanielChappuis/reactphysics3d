@@ -83,7 +83,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     mConcaveMesh = new ConcaveMesh(position, mass, mDynamicsWorld, meshFolderPath + "city.obj");
 
     // Set the mesh as beeing static
-    mConcaveMesh->getRigidBody()->setType(rp3d::STATIC);
+    mConcaveMesh->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the box color
     mConcaveMesh->setColor(mGreyColorDemo);

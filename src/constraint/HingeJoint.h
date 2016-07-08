@@ -82,7 +82,7 @@ struct HingeJointInfo : public JointInfo {
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
                                 isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
@@ -101,7 +101,7 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -124,7 +124,7 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
                                decimal initMotorSpeed, decimal initMaxMotorTorque)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -250,12 +250,6 @@ class HingeJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        HingeJoint(const HingeJoint& constraint);
-
-        /// Private assignment operator
-        HingeJoint& operator=(const HingeJoint& constraint);
-
         /// Reset the limits
         void resetLimits();
 
@@ -297,6 +291,12 @@ class HingeJoint : public Joint {
 
         /// Destructor
         virtual ~HingeJoint();
+
+        /// Deleted copy-constructor
+        HingeJoint(const HingeJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        HingeJoint& operator=(const HingeJoint& constraint) = delete;
 
         /// Return true if the limits or the joint are enabled
         bool isLimitEnabled() const;

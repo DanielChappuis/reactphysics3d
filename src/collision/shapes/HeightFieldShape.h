@@ -84,7 +84,7 @@ class HeightFieldShape : public ConcaveShape {
     public:
 
         /// Data type for the height data of the height field
-        enum HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
+        enum class HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
 
     protected:
 
@@ -125,12 +125,6 @@ class HeightFieldShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        HeightFieldShape(const HeightFieldShape& shape);
-
-        /// Private assignment operator
-        HeightFieldShape& operator=(const HeightFieldShape& shape);
-
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
 
@@ -165,7 +159,13 @@ class HeightFieldShape : public ConcaveShape {
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
         /// Destructor
-        ~HeightFieldShape();
+        virtual ~HeightFieldShape();
+
+        /// Deleted copy-constructor
+        HeightFieldShape(const HeightFieldShape& shape) = delete;
+
+        /// Deleted assignment operator
+        HeightFieldShape& operator=(const HeightFieldShape& shape) = delete;
 
         /// Return the number of rows in the height field
         int getNbRows() const;
@@ -223,9 +223,9 @@ inline void HeightFieldShape::setLocalScaling(const Vector3& scaling) {
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     switch(mHeightDataType) {
-        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
+        case HeightDataType::HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
         default: assert(false); return 0;
     }
 }

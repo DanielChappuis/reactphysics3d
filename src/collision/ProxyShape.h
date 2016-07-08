@@ -85,14 +85,6 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ProxyShape(const ProxyShape& proxyShape);
-
-        /// Private assignment operator
-        ProxyShape& operator=(const ProxyShape& proxyShape);
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -102,7 +94,13 @@ class ProxyShape {
                    const Transform& transform, decimal mass);
 
         /// Destructor
-        ~ProxyShape();
+        virtual ~ProxyShape();
+
+        /// Deleted copy-constructor
+        ProxyShape(const ProxyShape& proxyShape) = delete;
+
+        /// Deleted assignment operator
+        ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
 
         /// Return the collision shape
         const CollisionShape* getCollisionShape() const;

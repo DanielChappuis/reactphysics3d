@@ -68,12 +68,6 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        GJKAlgorithm(const GJKAlgorithm& algorithm);
-
-        /// Private assignment operator
-        GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
-
         /// Compute the penetration depth for enlarged objects.
         void computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
                                                        const Transform& transform1,
@@ -91,6 +85,12 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Destructor
         ~GJKAlgorithm();
+
+        /// Deleted copy-constructor
+        GJKAlgorithm(const GJKAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
         virtual void init(CollisionDetection* collisionDetection,

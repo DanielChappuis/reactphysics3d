@@ -57,7 +57,7 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
     // Sphere vs Sphere algorithm
-    if (shape1Type == SPHERE && shape2Type == SPHERE) {
+    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
         return &mSphereVsSphereAlgorithm;
     }
     // Concave vs Convex algorithm

@@ -40,7 +40,7 @@
 namespace reactphysics3d {
     
 /// Type of the collision shape
-enum CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER,
+enum class CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER,
                          CAPSULE, CONVEX_MESH, CONCAVE_MESH, HEIGHTFIELD};
 const int NB_COLLISION_SHAPE_TYPES = 9;
 
@@ -67,12 +67,6 @@ class CollisionShape {
         
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionShape(const CollisionShape& shape);
-
-        /// Private assignment operator
-        CollisionShape& operator=(const CollisionShape& shape);
-
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
@@ -91,6 +85,12 @@ class CollisionShape {
 
         /// Destructor
         virtual ~CollisionShape();
+
+        /// Deleted copy-constructor
+        CollisionShape(const CollisionShape& shape) = delete;
+
+        /// Deleted assignment operator
+        CollisionShape& operator=(const CollisionShape& shape) = delete;
 
         /// Return the type of the collision shapes
         CollisionShapeType getType() const;
@@ -136,7 +136,7 @@ inline CollisionShapeType CollisionShape::getType() const {
 
 // Return true if the collision shape type is a convex shape
 inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
-    return shapeType != CONCAVE_MESH && shapeType != HEIGHTFIELD;
+    return shapeType != CollisionShapeType::CONCAVE_MESH && shapeType != CollisionShapeType::HEIGHTFIELD;
 }
 
 // Return the scaling vector of the collision shape

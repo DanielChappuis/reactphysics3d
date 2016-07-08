@@ -75,14 +75,6 @@ class Island {
         /// Number of bytes allocated for the joints array
         size_t mNbAllocatedBytesJoints;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private assignment operator
-        Island& operator=(const Island& island);
-
-        /// Private copy-constructor
-        Island(const Island& island);
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -93,6 +85,12 @@ class Island {
 
         /// Destructor
         ~Island();
+
+        /// Deleted assignment operator
+        Island& operator=(const Island& island) = delete;
+
+        /// Deleted copy-constructor
+        Island(const Island& island) = delete;
 
         /// Add a body into the island
         void addBody(RigidBody* body);

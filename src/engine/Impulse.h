@@ -41,9 +41,6 @@ struct Impulse {
 
         // -------------------- Methods -------------------- //
 
-        /// Private assignment operator
-        Impulse& operator=(const Impulse& impulse);
-
     public:
 
         // -------------------- Attributes -------------------- //
@@ -78,8 +75,11 @@ struct Impulse {
                 angularImpulseBody1(impulse.angularImpulseBody1),
                 linearImpulseBody2(impulse.linearImpulseBody2),
                 angularImpulseBody2(impulse.angularImpulseBody2) {
-;
+
         }
+
+        /// Deleted assignment operator
+        Impulse& operator=(const Impulse& impulse) = delete;
 };
 
 }

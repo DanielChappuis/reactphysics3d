@@ -209,8 +209,8 @@ void CollisionDetection::computeNarrowPhase() {
         pair->update();
 
         // Check that at least one body is awake and not static
-        bool isBody1Active = !body1->isSleeping() && body1->getType() != STATIC;
-        bool isBody2Active = !body2->isSleeping() && body2->getType() != STATIC;
+        bool isBody1Active = !body1->isSleeping() && body1->getType() != BodyType::STATIC;
+        bool isBody2Active = !body2->isSleeping() && body2->getType() != BodyType::STATIC;
         if (!isBody1Active && !isBody2Active) continue;
 
         // Check if the bodies are in the set of bodies that cannot collide between each other
@@ -220,7 +220,9 @@ void CollisionDetection::computeNarrowPhase() {
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
+        const int shape1Index = static_cast<int>(shape1Type);
+        const int shape2Index = static_cast<int>(shape2Type);
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
 
         // If there is no collision algorithm between those two kinds of shapes
         if (narrowPhaseAlgorithm == nullptr) continue;
@@ -312,7 +314,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         pair->update();
 
         // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
-        if (body1->getType() != DYNAMIC && body2->getType() != DYNAMIC) continue;
+        if (body1->getType() != BodyType::DYNAMIC && body2->getType() != BodyType::DYNAMIC) continue;
         bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
         if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
 
@@ -322,7 +324,9 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
+        const int shape1Index = static_cast<int>(shape1Type);
+        const int shape2Index = static_cast<int>(shape2Type);
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
 
         // If there is no collision algorithm between those two kinds of shapes
         if (narrowPhaseAlgorithm == nullptr) continue;

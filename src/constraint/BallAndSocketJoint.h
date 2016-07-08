@@ -55,7 +55,7 @@ struct BallAndSocketJointInfo : public JointInfo {
          */
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
-                              : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::BALLSOCKETJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace) {}
 };
 
@@ -105,12 +105,6 @@ class BallAndSocketJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        BallAndSocketJoint(const BallAndSocketJoint& constraint);
-
-        /// Private assignment operator
-        BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint);
-
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const;
 
@@ -135,6 +129,12 @@ class BallAndSocketJoint : public Joint {
 
         /// Destructor
         virtual ~BallAndSocketJoint();
+
+        /// Deleted copy-constructor
+        BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint) = delete;
 };
 
 // Return the number of bytes used by the joint

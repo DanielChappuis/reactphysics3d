@@ -130,12 +130,6 @@ class ContactManifold {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ContactManifold(const ContactManifold& contactManifold);
-
-        /// Private assignment operator
-        ContactManifold& operator=(const ContactManifold& contactManifold);
-
         /// Return the index of maximum area
         int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;
 
@@ -161,6 +155,12 @@ class ContactManifold {
 
         /// Destructor
         ~ContactManifold();
+
+        /// Deleted copy-constructor
+        ContactManifold(const ContactManifold& contactManifold) = delete;
+
+        /// Deleted assignment operator
+        ContactManifold& operator=(const ContactManifold& contactManifold) = delete;
 
         /// Return a pointer to the first proxy shape of the contact
         ProxyShape* getShape1() const;

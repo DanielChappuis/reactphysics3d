@@ -47,6 +47,8 @@ class NarrowPhaseCallback {
 
     public:
 
+        virtual ~NarrowPhaseCallback() {}
+
         /// Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
                                    const ContactPointInfo& contactInfo)=0;
@@ -73,14 +75,6 @@ class NarrowPhaseAlgorithm {
 
         /// Overlapping pair of the bodies currently tested for collision
         OverlappingPair* mCurrentOverlappingPair;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm);
-
-        /// Private assignment operator
-        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm);
 
     public :
 
@@ -91,6 +85,12 @@ class NarrowPhaseAlgorithm {
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm();
+
+        /// Deleted copy-constructor
+        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
         virtual void init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);

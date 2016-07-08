@@ -46,14 +46,6 @@ struct RaycastInfo {
 
     private:
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy constructor
-        RaycastInfo(const RaycastInfo& raycastInfo);
-
-        /// Private assignment operator
-        RaycastInfo& operator=(const RaycastInfo& raycastInfo);
-
     public:
 
         // -------------------- Attributes -------------------- //
@@ -91,6 +83,12 @@ struct RaycastInfo {
         ~RaycastInfo() {
 
         }
+
+        /// Deleted copy constructor
+        RaycastInfo(const RaycastInfo& raycastInfo) = delete;
+
+        /// Deleted assignment operator
+        RaycastInfo& operator=(const RaycastInfo& raycastInfo) = delete;
 };
 
 // Class RaycastCallback

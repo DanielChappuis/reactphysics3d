@@ -81,13 +81,13 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
 
     // Compute the inverse mass matrix K^-1
     mInverseMassMatrix.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrix = massMatrix.getInverse();
     }
 
     // Compute the bias "b" of the constraint
     mBiasVector.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         decimal biasFactor = (BETA / constraintSolverData.timeStep);
         mBiasVector = biasFactor * (x2 + mR2World - x1 - mR1World);
     }
@@ -162,7 +162,7 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies center of mass and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
@@ -194,7 +194,7 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
                            skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
                            skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrix.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrix = massMatrix.getInverse();
     }
 

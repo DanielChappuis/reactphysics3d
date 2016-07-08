@@ -288,13 +288,13 @@ class TestRaycast : public Test {
             mConcaveMeshIndices.push_back(1); mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(5);
             mConcaveMeshIndices.push_back(5); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(6);
             mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(5);
-            TriangleVertexArray::VertexDataType vertexType = sizeof(decimal) == 4 ? TriangleVertexArray::VERTEX_FLOAT_TYPE :
-                                                                                    TriangleVertexArray::VERTEX_DOUBLE_TYPE;
+            TriangleVertexArray::VertexDataType vertexType = sizeof(decimal) == 4 ? TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE :
+                                                                                    TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
             mConcaveMeshVertexArray =
                     new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
                                                   12, &(mConcaveMeshIndices[0]), sizeof(uint),
                                                   vertexType,
-                                                  TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                                  TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 
             // Add the triangle vertex array of the subpart to the triangle mesh
@@ -305,7 +305,7 @@ class TestRaycast : public Test {
 
             // Heightfield shape (plane height field at height=4)
             for (int i=0; i<100; i++) mHeightFieldData[i] = 4;
-            mHeightFieldShape = new HeightFieldShape(10, 10, 0, 4, mHeightFieldData, HeightFieldShape::HEIGHT_FLOAT_TYPE);
+            mHeightFieldShape = new HeightFieldShape(10, 10, 0, 4, mHeightFieldData, HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
             mHeightFieldProxyShape = mHeightFieldBody->addCollisionShape(mHeightFieldShape, mShapeTransform);
 
             // Assign proxy shapes to the different categories
@@ -1032,7 +1032,7 @@ class TestRaycast : public Test {
 
             // CollisionWorld::raycast()
             mCallback.reset();
-            mTriangleShape->setRaycastTestType(FRONT);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT);
             mWorld->raycast(ray, &mCallback);
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mTriangleBody);
@@ -1046,7 +1046,7 @@ class TestRaycast : public Test {
             test(approxEqual(mCallback.raycastInfo.worldNormal.z, hitNormal.z, epsilon));
 
             mCallback.reset();
-            mTriangleShape->setRaycastTestType(BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::BACK);
             mWorld->raycast(rayBackward, &mCallback);
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mTriangleBody);
@@ -1060,7 +1060,7 @@ class TestRaycast : public Test {
             test(approxEqual(mCallback.raycastInfo.worldNormal.z, -hitNormal.z, epsilon));
 
             mCallback.reset();
-            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT_AND_BACK);
             mWorld->raycast(ray, &mCallback);
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mTriangleBody);
@@ -1074,7 +1074,7 @@ class TestRaycast : public Test {
             test(approxEqual(mCallback.raycastInfo.worldNormal.z, hitNormal.z, epsilon));
 
             mCallback.reset();
-            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT_AND_BACK);
             mWorld->raycast(rayBackward, &mCallback);
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mTriangleBody);
@@ -1087,7 +1087,7 @@ class TestRaycast : public Test {
             test(approxEqual(mCallback.raycastInfo.worldNormal.y, -hitNormal.y, epsilon));
             test(approxEqual(mCallback.raycastInfo.worldNormal.z, -hitNormal.z, epsilon));
 
-            mTriangleShape->setRaycastTestType(FRONT);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT);
 
             // Correct category filter mask
             mCallback.reset();
@@ -1157,7 +1157,7 @@ class TestRaycast : public Test {
             test(!mCallback.isHit);
 
             // Test backward ray against front triangles (not hit should occur)
-            mTriangleShape->setRaycastTestType(FRONT);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT);
 
             test(!mTriangleBody->raycast(ray4Back, raycastInfo3));
             test(!mTriangleProxyShape->raycast(ray4Back, raycastInfo3));
@@ -1178,7 +1178,7 @@ class TestRaycast : public Test {
             test(!mCallback.isHit);
 
             // Test front ray against back triangles (not hit should occur)
-            mTriangleShape->setRaycastTestType(BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::BACK);
 
             test(!mTriangleBody->raycast(ray4, raycastInfo3));
             test(!mTriangleProxyShape->raycast(ray4, raycastInfo3));
@@ -1201,7 +1201,7 @@ class TestRaycast : public Test {
             // ----- Test raycast hits ----- //
 
             // Test front ray against front triangles
-            mTriangleShape->setRaycastTestType(FRONT);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT);
 
             test(mTriangleBody->raycast(ray4, raycastInfo3));
             test(mTriangleProxyShape->raycast(ray4, raycastInfo3));
@@ -1229,7 +1229,7 @@ class TestRaycast : public Test {
             mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), &mCallback);
 
             // Test back ray against back triangles
-            mTriangleShape->setRaycastTestType(BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::BACK);
 
             test(mTriangleBody->raycast(ray4Back, raycastInfo3));
             test(mTriangleProxyShape->raycast(ray4Back, raycastInfo3));
@@ -1257,7 +1257,7 @@ class TestRaycast : public Test {
             mWorld->raycast(Ray(ray6Back.point1, ray6Back.point2, decimal(0.8)), &mCallback);
 
             // Test front ray against front-back triangles
-            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT_AND_BACK);
 
             test(mTriangleBody->raycast(ray4, raycastInfo3));
             test(mTriangleProxyShape->raycast(ray4, raycastInfo3));
@@ -1285,7 +1285,7 @@ class TestRaycast : public Test {
             mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), &mCallback);
 
             // Test back ray against front-back triangles
-            mTriangleShape->setRaycastTestType(FRONT_AND_BACK);
+            mTriangleShape->setRaycastTestType(TriangleRaycastSide::FRONT_AND_BACK);
 
             test(mTriangleBody->raycast(ray4Back, raycastInfo3));
             test(mTriangleProxyShape->raycast(ray4Back, raycastInfo3));

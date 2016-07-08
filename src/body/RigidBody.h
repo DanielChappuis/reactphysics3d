@@ -103,12 +103,6 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        RigidBody(const RigidBody& body);
-
-        /// Private assignment operator
-        RigidBody& operator=(const RigidBody& body);
-
         /// Remove a joint from the joints list
         void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
 
@@ -127,6 +121,12 @@ class RigidBody : public CollisionBody {
 
         /// Destructor
         virtual ~RigidBody();
+
+        /// Deleted copy-constructor
+        RigidBody(const RigidBody& body) = delete;
+
+        /// Deleted assignment operator
+        RigidBody& operator=(const RigidBody& body) = delete;
 
         /// Set the type of the body (static, kinematic or dynamic)
         void setType(BodyType type);
@@ -407,7 +407,7 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
 inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {
@@ -432,7 +432,7 @@ inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {
@@ -455,7 +455,7 @@ inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 inline void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {

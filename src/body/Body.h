@@ -75,20 +75,18 @@ class Body {
         /// Pointer that can be used to attach user data to the body
         void* mUserData;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        Body(const Body& body);
-
-        /// Private assignment operator
-        Body& operator=(const Body& body);
-
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         Body(bodyindex id);
+
+        /// Deleted copy-constructor
+        Body(const Body& body) = delete;
+
+        /// Deleted assignment operator
+        Body& operator=(const Body& body) = delete;
 
         /// Destructor
         virtual ~Body();

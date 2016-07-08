@@ -139,14 +139,14 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
     // Compute the bias "b" of the translation constraint
     mBTranslation.setToZero();
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBTranslation.x = u.dot(mN1);
         mBTranslation.y = u.dot(mN2);
         mBTranslation *= biasFactor;
@@ -155,13 +155,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
     // Compute the bias "b" of the rotation constraint
     mBRotation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         Quaternion currentOrientationDifference = orientationBody2 * orientationBody1.getInverse();
         currentOrientationDifference.normalize();
         const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
@@ -180,13 +180,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
         // Compute the bias "b" of the lower limit constraint
         mBLowerLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBLowerLimit = biasFactor * lowerLimitError;
         }
 
         // Compute the bias "b" of the upper limit constraint
         mBUpperLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBUpperLimit = biasFactor * upperLimitError;
         }
     }
@@ -433,7 +433,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
@@ -497,7 +497,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -540,7 +540,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 

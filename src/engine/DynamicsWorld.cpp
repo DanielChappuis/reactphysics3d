@@ -503,7 +503,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     switch(jointInfo.type) {
 
         // Ball-and-Socket joint
-        case BALLSOCKETJOINT:
+        case JointType::BALLSOCKETJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(BallAndSocketJoint));
             const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
@@ -513,7 +513,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Slider joint
-        case SLIDERJOINT:
+        case JointType::SLIDERJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
@@ -522,7 +522,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Hinge joint
-        case HINGEJOINT:
+        case JointType::HINGEJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
             const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
@@ -531,7 +531,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Fixed joint
-        case FIXEDJOINT:
+        case JointType::FIXEDJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
@@ -673,7 +673,7 @@ void DynamicsWorld::computeIslands() {
         if (body->mIsAlreadyInIsland) continue;
 
         // If the body is static, we go to the next body
-        if (body->getType() == STATIC) continue;
+        if (body->getType() == BodyType::STATIC) continue;
 
         // If the body is sleeping or inactive, we go to the next body
         if (body->isSleeping() || !body->isActive()) continue;
@@ -706,7 +706,7 @@ void DynamicsWorld::computeIslands() {
 
             // If the current body is static, we do not want to perform the DFS
             // search across that body
-            if (bodyToVisit->getType() == STATIC) continue;
+            if (bodyToVisit->getType() == BodyType::STATIC) continue;
 
             // For each contact manifold in which the current body is involded
             ContactManifoldListElement* contactElement;
@@ -771,7 +771,7 @@ void DynamicsWorld::computeIslands() {
         // can also be included in the other islands
         for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
 
-            if (mIslands[mNbIslands]->mBodies[i]->getType() == STATIC) {
+            if (mIslands[mNbIslands]->mBodies[i]->getType() == BodyType::STATIC) {
                 mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
             }
         }
@@ -803,7 +803,7 @@ void DynamicsWorld::updateSleepingBodies() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Skip static bodies
-            if (bodies[b]->getType() == STATIC) continue;
+            if (bodies[b]->getType() == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
             if (bodies[b]->getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare ||

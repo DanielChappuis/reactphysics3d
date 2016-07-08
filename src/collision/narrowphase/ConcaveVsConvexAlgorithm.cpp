@@ -263,8 +263,8 @@ void SmoothCollisionNarrowPhaseCallback::notifyContact(OverlappingPair* overlapp
     bool isFirstShapeTriangle;
 
     // If the collision shape 1 is the triangle
-    if (contactInfo.collisionShape1->getType() == TRIANGLE) {
-        assert(contactInfo.collisionShape2->getType() != TRIANGLE);
+    if (contactInfo.collisionShape1->getType() == CollisionShapeType::TRIANGLE) {
+        assert(contactInfo.collisionShape2->getType() != CollisionShapeType::TRIANGLE);
 
         const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape1);
         triangleVertices[0] = triangleShape->getVertex(0);
@@ -274,7 +274,7 @@ void SmoothCollisionNarrowPhaseCallback::notifyContact(OverlappingPair* overlapp
         isFirstShapeTriangle = true;
     }
     else {  // If the collision shape 2 is the triangle
-        assert(contactInfo.collisionShape2->getType() == TRIANGLE);
+        assert(contactInfo.collisionShape2->getType() == CollisionShapeType::TRIANGLE);
 
         const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape2);
         triangleVertices[0] = triangleShape->getVertex(0);

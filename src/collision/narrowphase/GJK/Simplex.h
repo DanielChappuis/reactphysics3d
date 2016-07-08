@@ -90,12 +90,6 @@ class Simplex {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        Simplex(const Simplex& simplex);
-
-        /// Private assignment operator
-        Simplex& operator=(const Simplex& simplex);
-
         /// Return true if some bits of "a" overlap with bits of "b"
         bool overlap(Bits a, Bits b) const;
 
@@ -126,6 +120,12 @@ class Simplex {
 
         /// Destructor
         ~Simplex();
+
+        /// Deleted copy-constructor
+        Simplex(const Simplex& simplex) = delete;
+
+        /// Deleted assignment operator
+        Simplex& operator=(const Simplex& simplex) = delete;
 
         /// Return true if the simplex contains 4 points
         bool isFull() const;

@@ -85,12 +85,6 @@ class ConvexMeshShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConvexMeshShape(const ConvexMeshShape& shape);
-
-        /// Private assignment operator
-        ConvexMeshShape& operator=(const ConvexMeshShape& shape);
-
         /// Recompute the bounds of the mesh
         void recalculateBounds();
 
@@ -127,6 +121,12 @@ class ConvexMeshShape : public ConvexShape {
 
         /// Destructor
         virtual ~ConvexMeshShape();
+
+        /// Deleted copy-constructor
+        ConvexMeshShape(const ConvexMeshShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;

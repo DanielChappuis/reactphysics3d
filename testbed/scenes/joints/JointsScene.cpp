@@ -274,7 +274,7 @@ void JointsScene::createBallAndSocketJoints() {
 
         // The fist box cannot move (static body)
         if (i == 0) {
-            mBallAndSocketJointChainBoxes[i]->getRigidBody()->setType(rp3d::STATIC);
+            mBallAndSocketJointChainBoxes[i]->getRigidBody()->setType(rp3d::BodyType::STATIC);
         }
 
         // Add some angular velocity damping
@@ -322,7 +322,7 @@ void JointsScene::createSliderJoint() {
     mSliderJointBottomBox->setSleepingColor(mRedColorDemo);
 
     // The fist box cannot move
-    mSliderJointBottomBox->getRigidBody()->setType(rp3d::STATIC);
+    mSliderJointBottomBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
@@ -476,7 +476,7 @@ void JointsScene::createFloor() {
     mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::STATIC);
+    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();

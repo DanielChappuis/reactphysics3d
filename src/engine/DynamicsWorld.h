@@ -127,12 +127,6 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        DynamicsWorld(const DynamicsWorld& world);
-
-        /// Private assignment operator
-        DynamicsWorld& operator=(const DynamicsWorld& world);
-
         /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
@@ -185,6 +179,12 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Destructor
         virtual ~DynamicsWorld();
+
+        /// Deleted copy-constructor
+        DynamicsWorld(const DynamicsWorld& world) = delete;
+
+        /// Deleted assignment operator
+        DynamicsWorld& operator=(const DynamicsWorld& world) = delete;
 
         /// Update the physics simulation
         void update(decimal timeStep);
@@ -348,7 +348,7 @@ inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
  */
 inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
                               ContactsPositionCorrectionTechnique technique) {
-    if (technique == BAUMGARTE_CONTACTS) {
+    if (technique == ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS) {
         mContactSolver.setIsSplitImpulseActive(false);
     }
     else {
@@ -362,7 +362,7 @@ inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
  */
 inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
                               JointsPositionCorrectionTechnique technique) {
-    if (technique == BAUMGARTE_JOINTS) {
+    if (technique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
     }
     else {

@@ -74,14 +74,6 @@ class TriangleEPA {
         /// Square distance of the point closest point v to the origin
         decimal mDistSquare;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        TriangleEPA(const TriangleEPA& triangle);
-
-        /// Private assignment operator
-        TriangleEPA& operator=(const TriangleEPA& triangle);
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -94,6 +86,12 @@ class TriangleEPA {
 
         /// Destructor
         ~TriangleEPA();
+
+        /// Deleted copy-constructor
+        TriangleEPA(const TriangleEPA& triangle) = delete;
+
+        /// Deleted assignment operator
+        TriangleEPA& operator=(const TriangleEPA& triangle) = delete;
 
         /// Return an adjacent edge of the triangle
         EdgeEPA& getAdjacentEdge(int index);

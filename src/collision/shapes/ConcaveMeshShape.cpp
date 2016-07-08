@@ -30,9 +30,9 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
-                 : ConcaveShape(CONCAVE_MESH) {
+                 : ConcaveShape(CollisionShapeType::CONCAVE_MESH) {
     mTriangleMesh = triangleMesh;
-    mRaycastTestType = FRONT;
+    mRaycastTestType = TriangleRaycastSide::FRONT;
 
     // Insert all the triangles into the dynamic AABB tree
     initBVHTree();
@@ -72,10 +72,10 @@ void ConcaveMeshShape::initBVHTree() {
 
                 // Get the index of the current vertex in the triangle
                 int vertexIndex = 0;
-                if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
+                if (indexType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
                     vertexIndex = ((uint*)vertexIndexPointer)[k];
                 }
-                else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
+                else if (indexType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
                     vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
                 }
                 else {
@@ -83,13 +83,13 @@ void ConcaveMeshShape::initBVHTree() {
                 }
 
                 // Get the vertices components of the triangle
-                if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
+                if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
                     const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
                     trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
                     trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
                     trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
                 }
-                else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
+                else if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
                     const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
                     trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
                     trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
@@ -132,10 +132,10 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
 
         // Get the index of the current vertex in the triangle
         int vertexIndex = 0;
-        if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
+        if (indexType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
             vertexIndex = ((uint*)vertexIndexPointer)[k];
         }
-        else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
+        else if (indexType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
             vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
         }
         else {
@@ -143,13 +143,13 @@ void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 
         }
 
         // Get the vertices components of the triangle
-        if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
+        if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
             const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
             outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
             outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
             outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
         }
-        else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
+        else if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
             const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
             outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
             outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;

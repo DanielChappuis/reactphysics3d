@@ -63,12 +63,6 @@ class CylinderShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CylinderShape(const CylinderShape& shape);
-
-        /// Private assignment operator
-        CylinderShape& operator=(const CylinderShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const;
@@ -91,6 +85,12 @@ class CylinderShape : public ConvexShape {
 
         /// Destructor
         virtual ~CylinderShape();
+
+        /// Deleted copy-constructor
+        CylinderShape(const CylinderShape& shape) = delete;
+
+        /// Deleted assignment operator
+        CylinderShape& operator=(const CylinderShape& shape) = delete;
 
         /// Return the radius
         decimal getRadius() const;
