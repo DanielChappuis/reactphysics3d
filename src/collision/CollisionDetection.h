@@ -64,7 +64,7 @@ class TestCollisionBetweenShapesCallback : public NarrowPhaseCallback {
 
         // Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo);
+                                   const ContactPointInfo& contactInfo) override;
 };
 
 // Class CollisionDetection
@@ -220,7 +220,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         MemoryAllocator& getWorldMemoryAllocator();
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);
+        virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo) override;
 
         /// Create a new contact
         void createContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);

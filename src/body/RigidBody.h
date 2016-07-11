@@ -110,7 +110,7 @@ class RigidBody : public CollisionBody {
         void updateTransformWithCenterOfMass();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
-        virtual void updateBroadPhaseState() const;
+        virtual void updateBroadPhaseState() const override;
 
     public :
 
@@ -120,7 +120,7 @@ class RigidBody : public CollisionBody {
         RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
-        virtual ~RigidBody();
+        virtual ~RigidBody() override;
 
         /// Deleted copy-constructor
         RigidBody(const RigidBody& body) = delete;
@@ -132,7 +132,7 @@ class RigidBody : public CollisionBody {
         void setType(BodyType type);
 
         /// Set the current position and orientation
-        virtual void setTransform(const Transform& transform);
+        virtual void setTransform(const Transform& transform) override;
 
         /// Return the mass of the body
         decimal getMass() const;
@@ -150,7 +150,7 @@ class RigidBody : public CollisionBody {
         void setAngularVelocity(const Vector3& angularVelocity);
 
         /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
+        virtual void setIsSleeping(bool isSleeping) override;
 
         /// Return the local inertia tensor of the body (in body coordinates)
         const Matrix3x3& getInertiaTensorLocal() const;
@@ -215,7 +215,7 @@ class RigidBody : public CollisionBody {
                                               decimal mass);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyShape);
+        virtual void removeCollisionShape(const ProxyShape* proxyShape) override;
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.

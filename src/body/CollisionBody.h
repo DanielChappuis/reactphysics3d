@@ -114,7 +114,7 @@ class CollisionBody : public Body {
         CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
-        virtual ~CollisionBody();
+        virtual ~CollisionBody() override;
 
         /// Deleted copy-constructor
         CollisionBody(const CollisionBody& body) = delete;
@@ -129,7 +129,7 @@ class CollisionBody : public Body {
         void setType(BodyType type);
 
         /// Set whether or not the body is active
-        virtual void setIsActive(bool isActive);
+        virtual void setIsActive(bool isActive) override;
 
         /// Return the current position and orientation
         const Transform& getTransform() const;

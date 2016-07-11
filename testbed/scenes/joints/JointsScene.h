@@ -120,24 +120,24 @@ class JointsScene : public SceneDemo {
         JointsScene(const std::string& name);
 
         /// Destructor
-        virtual ~JointsScene();
+        virtual ~JointsScene() override ;
 
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
-        virtual void updatePhysics();
+        virtual void updatePhysics() override;
 
         /// Take a step for the simulation
-        virtual void update();
+        virtual void update() override;
 
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() const override;
 };
 
 // Return all the contact points of the scene

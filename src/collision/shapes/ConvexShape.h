@@ -67,7 +67,7 @@ class ConvexShape : public CollisionShape {
         ConvexShape(CollisionShapeType type, decimal margin);
 
         /// Destructor
-        virtual ~ConvexShape();
+        virtual ~ConvexShape() override;
 
         /// Deleted copy-constructor
         ConvexShape(const ConvexShape& shape) = delete;
@@ -79,7 +79,7 @@ class ConvexShape : public CollisionShape {
         decimal getMargin() const;
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
 
         // -------------------- Friendship -------------------- //
 

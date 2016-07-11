@@ -120,20 +120,20 @@ class SceneDemo : public Scene {
         SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled = true);
 
         /// Destructor
-        virtual ~SceneDemo();
+        virtual ~SceneDemo() override;
 
         /// Update the scene
-        virtual void update();
+        virtual void update() override;
 
         /// Render the scene (possibly in multiple passes for shadow mapping)
-        virtual void render();
+        virtual void render() override;
 
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix)=0;
+                                      const openglframework::Matrix4& worldToCameraMatrix)=0 ;
 
         /// Enabled/Disable the shadow mapping
-        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+        virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Return all the contact points of the scene
         std::vector<ContactPoint> computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const;

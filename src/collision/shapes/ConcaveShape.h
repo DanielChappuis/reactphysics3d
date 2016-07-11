@@ -74,7 +74,7 @@ class ConcaveShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
     public :
 
@@ -84,7 +84,7 @@ class ConcaveShape : public CollisionShape {
         ConcaveShape(CollisionShapeType type);
 
         /// Destructor
-        virtual ~ConcaveShape();
+        virtual ~ConcaveShape() override;
 
         /// Deleted copy-constructor
         ConcaveShape(const ConcaveShape& shape) = delete;
@@ -102,7 +102,7 @@ class ConcaveShape : public CollisionShape {
         void setRaycastTestType(TriangleRaycastSide testType);
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;

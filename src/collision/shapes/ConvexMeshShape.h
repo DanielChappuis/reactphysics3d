@@ -89,20 +89,20 @@ class ConvexMeshShape : public ConvexShape {
         void recalculateBounds();
 
         /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return a local support point in a given direction without the object margin.
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const;
+                                                          void** cachedCollisionData) const override;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
     public :
 
@@ -120,7 +120,7 @@ class ConvexMeshShape : public ConvexShape {
         ConvexMeshShape(decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~ConvexMeshShape();
+        virtual ~ConvexMeshShape() override;
 
         /// Deleted copy-constructor
         ConvexMeshShape(const ConvexMeshShape& shape) = delete;
@@ -129,10 +129,10 @@ class ConvexMeshShape : public ConvexShape {
         ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape.
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Add a vertex into the convex mesh
         void addVertex(const Vector3& vertex);

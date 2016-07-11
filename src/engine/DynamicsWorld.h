@@ -178,7 +178,7 @@ class DynamicsWorld : public CollisionWorld {
         DynamicsWorld(const Vector3& mGravity);
 
         /// Destructor
-        virtual ~DynamicsWorld();
+        virtual ~DynamicsWorld() override;
 
         /// Deleted copy-constructor
         DynamicsWorld(const DynamicsWorld& world) = delete;
@@ -277,25 +277,25 @@ class DynamicsWorld : public CollisionWorld {
         /// Test and report collisions between a given shape and all the others
         /// shapes of the world
         virtual void testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between two given shapes
         virtual void testCollision(const ProxyShape* shape1,
                                    const ProxyShape* shape2,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between a body and all
         /// the others bodies of the world
         virtual void testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between two bodies
         virtual void testCollision(const CollisionBody* body1,
                                    const CollisionBody* body2,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between all shapes of the world
-        virtual void testCollision(CollisionCallback* callback);
+        virtual void testCollision(CollisionCallback* callback) override;
 
         /// Return the list of all contacts of the world
         std::vector<const ContactManifold*> getContactsList() const;

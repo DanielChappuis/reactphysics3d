@@ -64,7 +64,7 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool getIsHit() const {return mIsHit;}
 
         /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints) override;
 };
 
 
@@ -126,10 +126,10 @@ class HeightFieldShape : public ConcaveShape {
         // -------------------- Methods -------------------- //
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
@@ -159,7 +159,7 @@ class HeightFieldShape : public ConcaveShape {
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
         /// Destructor
-        virtual ~HeightFieldShape();
+        virtual ~HeightFieldShape() override;
 
         /// Deleted copy-constructor
         HeightFieldShape(const HeightFieldShape& shape) = delete;
@@ -177,16 +177,16 @@ class HeightFieldShape : public ConcaveShape {
         HeightDataType getHeightDataType() const;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
 
         // ---------- Friendship ----------- //
 

@@ -83,7 +83,7 @@ class RaycastManager : public rp3d::RaycastCallback {
 
         }
 
-        virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
+        virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override {
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
             mHitPoints.push_back(ContactPoint(position));
@@ -176,21 +176,21 @@ class RaycastScene : public SceneDemo {
         RaycastScene(const std::string& name);
 
         /// Destructor
-        virtual ~RaycastScene();
+        virtual ~RaycastScene() override;
 
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
-        virtual void updatePhysics();
+        virtual void updatePhysics() override;
 
         /// Take a step for the simulation
-        virtual void update();
+        virtual void update() override;
 
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Change the body to raycast
         void changeBody();
@@ -199,16 +199,16 @@ class RaycastScene : public SceneDemo {
         void showHideNormals();
 
         /// Called when a keyboard event occurs
-        virtual bool keyboardEvent(int key, int scancode, int action, int mods);
+        virtual bool keyboardEvent(int key, int scancode, int action, int mods) override;
 
         /// Enabled/Disable the shadow mapping
-        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+        virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Display/Hide the contact points
-        void virtual setIsContactPointsDisplayed(bool display);
+        virtual void setIsContactPointsDisplayed(bool display) override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() const override;
 };
 
 // Display or not the surface normals at hit points

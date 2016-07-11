@@ -73,7 +73,7 @@ class ConvexVsTriangleCallback : public TriangleCallback {
     public:
 
         /// Destructor
-        virtual ~ConvexVsTriangleCallback() {}
+        virtual ~ConvexVsTriangleCallback() override {}
 
         /// Set the collision detection pointer
         void setCollisionDetection(CollisionDetection* collisionDetection) {
@@ -107,7 +107,7 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         }
 
         /// Test collision between a triangle and the convex mesh shape
-        virtual void testTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints) override;
 };
 
 // Class SmoothMeshContactInfo
@@ -172,7 +172,7 @@ class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo);
+                                   const ContactPointInfo& contactInfo) override;
 
 };
 
@@ -218,12 +218,12 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         ConcaveVsConvexAlgorithm();
 
         /// Destructor
-        virtual ~ConcaveVsConvexAlgorithm();
+        virtual ~ConcaveVsConvexAlgorithm() override;
 
         /// Compute a contact info if the two bounding volume collide
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback);
+                                   NarrowPhaseCallback* narrowPhaseCallback) override;
 };
 
 // Add a triangle vertex into the set of processed triangles

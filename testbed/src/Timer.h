@@ -80,7 +80,7 @@ class Timer {
         Timer();
 
         /// Destructor
-        virtual ~Timer();
+        ~Timer();
 
         /// Return the current time of the physics engine
         long double getPhysicsTime() const;

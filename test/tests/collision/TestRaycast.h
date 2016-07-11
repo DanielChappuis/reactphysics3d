@@ -63,7 +63,7 @@ class WorldRaycastCallback : public RaycastCallback {
             shapeToTest = nullptr;
         }
 
-        virtual decimal notifyRaycastHit(const RaycastInfo& info) {
+        virtual decimal notifyRaycastHit(const RaycastInfo& info) override {
 
             if (shapeToTest->getBody()->getID() == info.body->getID()) {
                 raycastInfo.body = info.body;

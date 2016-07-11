@@ -63,7 +63,7 @@ class Matrix3x3 {
                   decimal c1, decimal c2, decimal c3);
 
         /// Destructor
-        virtual ~Matrix3x3();
+        ~Matrix3x3();
 
         /// Copy-constructor
         Matrix3x3(const Matrix3x3& matrix);

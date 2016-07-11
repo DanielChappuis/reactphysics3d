@@ -70,7 +70,7 @@ class WorldCollisionCallback : public CollisionCallback
         }
 
         // This method will be called for contact
-        virtual void notifyContact(const ContactPointInfo& contactPointInfo) {
+        virtual void notifyContact(const ContactPointInfo& contactPointInfo) override {
 
             if (isContactBetweenBodies(boxBody, sphere1Body, contactPointInfo)) {
                 boxCollideWithSphere1 = true;

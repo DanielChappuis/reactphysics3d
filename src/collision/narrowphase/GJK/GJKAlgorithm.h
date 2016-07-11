@@ -94,12 +94,12 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Initalize the algorithm
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator);
+                          MemoryAllocator* memoryAllocator) override;
 
         /// Compute a contact info if the two bounding volumes collide.
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback);
+                                   NarrowPhaseCallback* narrowPhaseCallback) override;
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);

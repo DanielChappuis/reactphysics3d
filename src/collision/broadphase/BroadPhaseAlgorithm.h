@@ -80,7 +80,7 @@ class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId);
+        virtual void notifyOverlappingNode(int nodeId) override;
 
 };
 
@@ -110,10 +110,10 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 
         // Destructor
-        virtual ~BroadPhaseRaycastCallback() {}
+        virtual ~BroadPhaseRaycastCallback() override {}
 
         // Called for a broad-phase shape that has to be tested for raycast
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray);
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override;
 
 };
 

@@ -173,25 +173,25 @@ class TestbedApplication : public Screen {
         TestbedApplication(bool isFullscreen);
 
         /// Destructor
-        virtual ~TestbedApplication();
+        virtual ~TestbedApplication() override;
 
         /// Render the content of the application
-        virtual void drawContents();
+        virtual void drawContents() override;
 
         /// Window resize event handler
-        virtual bool resizeEvent(const Vector2i& size);
+        virtual bool resizeEvent(const Vector2i& size) override;
 
         /// Default keyboard event handler
-        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 
         /// Handle a mouse button event (default implementation: propagate to children)
-        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
 
         /// Handle a mouse motion event (default implementation: propagate to children)
-        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 
         /// Handle a mouse scroll event (default implementation: propagate to children)
-        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
+        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
 
         /// Initialize the application
         void init();
