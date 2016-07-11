@@ -55,7 +55,7 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
     Vector3 w(direction.x, 0.0, direction.z);
-    decimal lengthW = sqrt(direction.x * direction.x + direction.z * direction.z);
+    decimal lengthW = std::sqrt(direction.x * direction.x + direction.z * direction.z);
 
     if (lengthW > MACHINE_EPSILON) {
         if (uDotv < 0.0) supportPoint.y = -mHalfHeight;

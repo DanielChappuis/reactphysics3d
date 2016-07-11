@@ -43,10 +43,10 @@ namespace reactphysics3d {
 // ---------- Constants ---------- //
 
 /// Maximum number of support points of the polytope
-const unsigned int MAX_SUPPORT_POINTS = 100;
+constexpr unsigned int MAX_SUPPORT_POINTS = 100;
 
 /// Maximum number of facets of the polytope
-const unsigned int MAX_FACETS = 200;
+constexpr unsigned int MAX_FACETS = 200;
 
 
 // Class TriangleComparison

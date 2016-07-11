@@ -32,7 +32,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-
 // Constructor
 EdgeEPA::EdgeEPA() {
     

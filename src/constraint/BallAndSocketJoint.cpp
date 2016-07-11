@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Static variables definition
-const decimal BallAndSocketJoint::BETA = decimal(0.2);
+constexpr decimal BallAndSocketJoint::BETA = decimal(0.2);
 
 // Constructor
 BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo)

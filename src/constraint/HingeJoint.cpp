@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
 // Static variables definition
-const decimal HingeJoint::BETA = decimal(0.2);
+constexpr decimal HingeJoint::BETA = decimal(0.2);
 
 // Constructor
 HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)

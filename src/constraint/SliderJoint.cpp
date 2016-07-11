@@ -29,7 +29,7 @@
 using namespace reactphysics3d;
 
 // Static variables definition
-const decimal SliderJoint::BETA = decimal(0.2);
+constexpr decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
 SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)

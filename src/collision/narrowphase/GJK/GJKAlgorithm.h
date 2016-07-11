@@ -37,9 +37,9 @@
 namespace reactphysics3d {
 
 // Constants
-const decimal REL_ERROR = decimal(1.0e-3);
-const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
-const int MAX_ITERATIONS_GJK_RAYCAST = 32;
+constexpr decimal REL_ERROR = decimal(1.0e-3);
+constexpr decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
+constexpr int MAX_ITERATIONS_GJK_RAYCAST = 32;
 
 // Class GJKAlgorithm
 /**
