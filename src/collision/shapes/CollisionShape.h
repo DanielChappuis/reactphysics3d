@@ -84,7 +84,7 @@ class CollisionShape {
         CollisionShape(CollisionShapeType type);
 
         /// Destructor
-        virtual ~CollisionShape();
+        virtual ~CollisionShape() = default;
 
         /// Deleted copy-constructor
         CollisionShape(const CollisionShape& shape) = delete;

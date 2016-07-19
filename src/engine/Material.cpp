@@ -42,8 +42,3 @@ Material::Material(const Material& material)
            mRollingResistance(material.mRollingResistance), mBounciness(material.mBounciness) {
 
 }
-
-// Destructor
-Material::~Material() {
-
-}

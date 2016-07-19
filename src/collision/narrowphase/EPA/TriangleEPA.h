@@ -79,13 +79,13 @@ class TriangleEPA {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TriangleEPA();
+        TriangleEPA() = default;
 
         /// Constructor
         TriangleEPA(uint v1, uint v2, uint v3);
 
         /// Destructor
-        ~TriangleEPA();
+        ~TriangleEPA() = default;
 
         /// Deleted copy-constructor
         TriangleEPA(const TriangleEPA& triangle) = delete;

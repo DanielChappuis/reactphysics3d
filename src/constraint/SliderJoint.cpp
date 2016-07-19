@@ -63,11 +63,6 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
     mSliderAxisBody1.normalize();
 }
 
-// Destructor
-SliderJoint::~SliderJoint() {
-
-}
-
 // Initialize before solving the constraint
 void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 

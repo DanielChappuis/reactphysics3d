@@ -46,9 +46,6 @@ class SphereShape : public ConvexShape {
 
     protected :
 
-        // -------------------- Attributes -------------------- //
-
-
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
@@ -72,7 +69,7 @@ class SphereShape : public ConvexShape {
         SphereShape(decimal radius);
 
         /// Destructor
-        virtual ~SphereShape() override;
+        virtual ~SphereShape() override = default;
 
         /// Deleted copy-constructor
         SphereShape(const SphereShape& shape) = delete;

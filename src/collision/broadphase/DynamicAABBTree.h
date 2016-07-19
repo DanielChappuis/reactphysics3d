@@ -103,7 +103,7 @@ class DynamicAABBTreeOverlapCallback {
         virtual void notifyOverlappingNode(int nodeId)=0;
 
         // Destructor
-        virtual ~DynamicAABBTreeOverlapCallback() {}
+        virtual ~DynamicAABBTreeOverlapCallback() = default;
 };
 
 // Class DynamicAABBTreeRaycastCallback
@@ -118,7 +118,7 @@ class DynamicAABBTreeRaycastCallback {
         // Called when the AABB of a leaf node is hit by a ray
         virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray)=0;
 
-        virtual ~DynamicAABBTreeRaycastCallback() {}
+        virtual ~DynamicAABBTreeRaycastCallback() = default;
 
 };
 

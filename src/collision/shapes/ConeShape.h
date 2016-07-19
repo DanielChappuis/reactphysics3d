@@ -87,7 +87,7 @@ class ConeShape : public ConvexShape {
         ConeShape(decimal mRadius, decimal height, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~ConeShape() override;
+        virtual ~ConeShape() override = default;
 
         /// Deleted copy-constructor
         ConeShape(const ConeShape& shape) = delete;

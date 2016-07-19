@@ -64,11 +64,6 @@ HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)
     mInitOrientationDifferenceInv.inverse();
 }
 
-// Destructor
-HingeJoint::~HingeJoint() {
-
-}
-
 // Initialize before solving the constraint
 void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 

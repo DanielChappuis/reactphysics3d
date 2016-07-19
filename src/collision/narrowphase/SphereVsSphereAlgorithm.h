@@ -49,10 +49,10 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm();
+        SphereVsSphereAlgorithm() = default;
 
         /// Destructor
-        virtual ~SphereVsSphereAlgorithm() override;
+        virtual ~SphereVsSphereAlgorithm() override = default;
 
         /// Deleted copy-constructor
         SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm) = delete;

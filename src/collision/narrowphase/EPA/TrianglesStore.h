@@ -62,7 +62,7 @@ class TrianglesStore {
         TrianglesStore();
 
         /// Destructor
-        ~TrianglesStore();
+        ~TrianglesStore() = default;
 
         /// Deleted copy-constructor
         TrianglesStore(const TrianglesStore& triangleStore) = delete;

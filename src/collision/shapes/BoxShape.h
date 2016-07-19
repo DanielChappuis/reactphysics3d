@@ -82,7 +82,7 @@ class BoxShape : public ConvexShape {
         BoxShape(const Vector3& extent, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~BoxShape() override;
+        virtual ~BoxShape() override = default;
 
         /// Deleted copy-constructor
         BoxShape(const BoxShape& shape) = delete;

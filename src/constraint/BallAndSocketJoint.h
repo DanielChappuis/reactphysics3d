@@ -128,7 +128,7 @@ class BallAndSocketJoint : public Joint {
         BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~BallAndSocketJoint() override;
+        virtual ~BallAndSocketJoint() override = default;
 
         /// Deleted copy-constructor
         BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;

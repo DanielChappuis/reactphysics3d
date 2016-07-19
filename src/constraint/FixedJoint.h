@@ -139,7 +139,7 @@ class FixedJoint : public Joint {
         FixedJoint(const FixedJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~FixedJoint() override;
+        virtual ~FixedJoint() override = default;
 
         /// Deleted copy-constructor
         FixedJoint(const FixedJoint& constraint) = delete;

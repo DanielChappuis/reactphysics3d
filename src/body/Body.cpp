@@ -39,8 +39,3 @@ Body::Body(bodyindex id)
        mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
 
 }
-
-// Destructor
-Body::~Body() {
-
-}

@@ -81,7 +81,7 @@ class CapsuleShape : public ConvexShape {
         CapsuleShape(decimal radius, decimal height);
 
         /// Destructor
-        virtual ~CapsuleShape() override;
+        virtual ~CapsuleShape() override = default;
 
         /// Deleted copy-constructor
         CapsuleShape(const CapsuleShape& shape) = delete;

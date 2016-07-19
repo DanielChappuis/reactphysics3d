@@ -44,10 +44,10 @@ class EventListener {
     public :
 
         /// Constructor
-        EventListener() {}
+        EventListener() = default;
 
         /// Destructor
-        virtual ~EventListener() {}
+        virtual ~EventListener() = default;
 
         /// Called when a new contact point is found between two bodies that were separated before
         /**

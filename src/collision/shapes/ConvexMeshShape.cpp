@@ -140,11 +140,6 @@ ConvexMeshShape::ConvexMeshShape(decimal margin)
 
 }
 
-// Destructor
-ConvexMeshShape::~ConvexMeshShape() {
-
-}
-
 // Return a local support point in a given direction without the object margin.
 /// If the edges information is not used for collision detection, this method will go through
 /// the whole vertices list and pick up the vertex with the largest dot product in the support

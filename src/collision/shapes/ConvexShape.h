@@ -56,9 +56,6 @@ class ConvexShape : public CollisionShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const=0;
 
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -67,7 +64,7 @@ class ConvexShape : public CollisionShape {
         ConvexShape(CollisionShapeType type, decimal margin);
 
         /// Destructor
-        virtual ~ConvexShape() override;
+        virtual ~ConvexShape() override = default;
 
         /// Deleted copy-constructor
         ConvexShape(const ConvexShape& shape) = delete;

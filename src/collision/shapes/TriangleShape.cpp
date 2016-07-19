@@ -47,11 +47,6 @@ TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const
     mRaycastTestType = TriangleRaycastSide::FRONT;
 }
 
-// Destructor
-TriangleShape::~TriangleShape() {
-
-}
-
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.

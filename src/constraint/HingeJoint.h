@@ -290,7 +290,7 @@ class HingeJoint : public Joint {
         HingeJoint(const HingeJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~HingeJoint() override;
+        virtual ~HingeJoint() override = default;
 
         /// Deleted copy-constructor
         HingeJoint(const HingeJoint& constraint) = delete;

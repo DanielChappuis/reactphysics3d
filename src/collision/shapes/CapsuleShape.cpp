@@ -42,11 +42,6 @@ CapsuleShape::CapsuleShape(decimal radius, decimal height)
     assert(height > decimal(0.0));
 }
 
-// Destructor
-CapsuleShape::~CapsuleShape() {
-
-}
-
 // Return the local inertia tensor of the capsule
 /**
  * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space

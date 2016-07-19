@@ -65,7 +65,7 @@ class Transform {
         Transform(const Vector3& position, const Quaternion& orientation);
 
         /// Destructor
-        ~Transform();
+        ~Transform() = default;
 
         /// Copy-constructor
         Transform(const Transform& transform);

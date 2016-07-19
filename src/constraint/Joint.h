@@ -106,7 +106,7 @@ struct JointInfo {
         }
 
         /// Destructor
-        virtual ~JointInfo() {}
+        virtual ~JointInfo() = default;
 
 };
 
@@ -172,7 +172,7 @@ class Joint {
         Joint(const JointInfo& jointInfo);
 
         /// Destructor
-        virtual ~Joint();
+        virtual ~Joint() = default;
 
         /// Deleted copy-constructor
         Joint(const Joint& constraint) = delete;

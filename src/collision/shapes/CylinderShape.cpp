@@ -43,11 +43,6 @@ CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
     assert(height > decimal(0.0));
 }
 
-// Destructor
-CylinderShape::~CylinderShape() {
-
-}
-
 // Return a local support point in a given direction without the object margin
 Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                          void** cachedCollisionData) const {

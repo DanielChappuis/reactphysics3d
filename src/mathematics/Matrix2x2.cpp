@@ -47,11 +47,6 @@ Matrix2x2::Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2) {
     setAllValues(a1, a2, b1, b2);
 }
 
-// Destructor
-Matrix2x2::~Matrix2x2() {
-
-}
-
 // Copy-constructor
 Matrix2x2::Matrix2x2(const Matrix2x2& matrix) {
     setAllValues(matrix.mRows[0][0], matrix.mRows[0][1],

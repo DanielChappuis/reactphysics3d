@@ -59,7 +59,7 @@ class EdgeEPA {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EdgeEPA();
+        EdgeEPA() = default;
 
         /// Constructor
         EdgeEPA(TriangleEPA* ownerTriangle, int index);
@@ -68,7 +68,7 @@ class EdgeEPA {
         EdgeEPA(const EdgeEPA& edge);
 
         /// Destructor
-        ~EdgeEPA();
+        ~EdgeEPA() = default;
 
         /// Return the pointer to the owner triangle
         TriangleEPA* getOwnerTriangle() const;

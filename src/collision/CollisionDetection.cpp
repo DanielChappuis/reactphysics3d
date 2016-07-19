@@ -53,11 +53,6 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& m
     fillInCollisionMatrix();
 }
 
-// Destructor
-CollisionDetection::~CollisionDetection() {
-
-}
-
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
 

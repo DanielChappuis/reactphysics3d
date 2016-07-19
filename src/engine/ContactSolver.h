@@ -413,7 +413,7 @@ class ContactSolver {
         ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
-        virtual ~ContactSolver();
+        ~ContactSolver() = default;
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(decimal dt, Island* island);

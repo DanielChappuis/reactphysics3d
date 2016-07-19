@@ -43,7 +43,7 @@ class TriangleCallback {
     public:
 
         /// Destructor
-        virtual ~TriangleCallback() {}
+        virtual ~TriangleCallback() = default;
 
         /// Report a triangle
         virtual void testTriangle(const Vector3* trianglePoints)=0;
@@ -84,7 +84,7 @@ class ConcaveShape : public CollisionShape {
         ConcaveShape(CollisionShapeType type);
 
         /// Destructor
-        virtual ~ConcaveShape() override;
+        virtual ~ConcaveShape() override = default;
 
         /// Deleted copy-constructor
         ConcaveShape(const ConcaveShape& shape) = delete;

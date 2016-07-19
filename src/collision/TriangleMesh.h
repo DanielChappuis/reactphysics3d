@@ -51,10 +51,10 @@ class TriangleMesh {
     public:
 
         /// Constructor
-        TriangleMesh();
+        TriangleMesh() = default;
 
         /// Destructor
-        ~TriangleMesh();
+        ~TriangleMesh() = default;
 
         /// Add a subpart of the mesh
         void addSubpart(TriangleVertexArray* triangleVertexArray);

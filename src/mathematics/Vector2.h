@@ -64,7 +64,7 @@ struct Vector2 {
         Vector2(const Vector2& vector);
 
         /// Destructor
-        ~Vector2();
+        ~Vector2() = default;
 
         /// Set all the values of the vector
         void setAllValues(decimal newX, decimal newY);

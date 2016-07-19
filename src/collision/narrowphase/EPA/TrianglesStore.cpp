@@ -33,8 +33,3 @@ using namespace reactphysics3d;
 TrianglesStore::TrianglesStore() : mNbTriangles(0) {
     
 }
-
-// Destructor
-TrianglesStore::~TrianglesStore() {
-
-}

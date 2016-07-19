@@ -56,10 +56,10 @@ class DefaultCollisionDispatch : public CollisionDispatch {
     public:
 
         /// Constructor
-        DefaultCollisionDispatch();
+        DefaultCollisionDispatch() = default;
 
         /// Destructor
-        virtual ~DefaultCollisionDispatch() override;
+        virtual ~DefaultCollisionDispatch() override = default;
 
         /// Initialize the collision dispatch configuration
         virtual void init(CollisionDetection* collisionDetection,

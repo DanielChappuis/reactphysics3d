@@ -36,11 +36,6 @@ ConstraintSolver::ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVe
 
 }
 
-// Destructor
-ConstraintSolver::~ConstraintSolver() {
-
-}
-
 // Initialize the constraint solver for a given island
 void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 

@@ -33,16 +33,6 @@
 
 using namespace reactphysics3d;
 
-// Constructor
-ConcaveVsConvexAlgorithm::ConcaveVsConvexAlgorithm() {
-
-}
-
-// Destructor
-ConcaveVsConvexAlgorithm::~ConcaveVsConvexAlgorithm() {
-
-}
-
 // Return true and compute a contact info if the two bounding volumes collide
 void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                              const CollisionShapeInfo& shape2Info,

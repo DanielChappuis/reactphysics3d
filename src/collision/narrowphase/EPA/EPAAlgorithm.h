@@ -108,10 +108,10 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm();
+        EPAAlgorithm() = default;
 
         /// Destructor
-        ~EPAAlgorithm();
+        ~EPAAlgorithm() = default;
 
         /// Deleted copy-constructor
         EPAAlgorithm(const EPAAlgorithm& algorithm) = delete;

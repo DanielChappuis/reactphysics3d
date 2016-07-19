@@ -120,7 +120,7 @@ class ConvexMeshShape : public ConvexShape {
         ConvexMeshShape(decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~ConvexMeshShape() override;
+        virtual ~ConvexMeshShape() override = default;
 
         /// Deleted copy-constructor
         ConvexMeshShape(const ConvexMeshShape& shape) = delete;

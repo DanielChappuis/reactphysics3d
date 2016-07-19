@@ -49,11 +49,6 @@ FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
     mInitOrientationDifferenceInv.inverse();
 }
 
-// Destructor
-FixedJoint::~FixedJoint() {
-
-}
-
 // Initialize before solving the constraint
 void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 

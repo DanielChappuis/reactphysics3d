@@ -173,7 +173,7 @@ class ConstraintSolver {
         ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
-        ~ConstraintSolver();
+        ~ConstraintSolver() = default;
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(decimal dt, Island* island);

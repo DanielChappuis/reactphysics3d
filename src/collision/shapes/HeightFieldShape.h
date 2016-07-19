@@ -159,7 +159,7 @@ class HeightFieldShape : public ConcaveShape {
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
         /// Destructor
-        virtual ~HeightFieldShape() override;
+        virtual ~HeightFieldShape() override = default;
 
         /// Deleted copy-constructor
         HeightFieldShape(const HeightFieldShape& shape) = delete;

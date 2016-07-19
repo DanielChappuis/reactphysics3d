@@ -151,7 +151,7 @@ class ContactPoint {
         ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
-        ~ContactPoint();
+        ~ContactPoint() = default;
 
         /// Deleted copy-constructor
         ContactPoint(const ContactPoint& contact) = delete;

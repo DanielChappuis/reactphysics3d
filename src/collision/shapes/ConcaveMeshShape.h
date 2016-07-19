@@ -140,7 +140,7 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh);
 
         /// Destructor
-        virtual ~ConcaveMeshShape();
+        virtual ~ConcaveMeshShape() = default;
 
         /// Deleted copy-constructor
         ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;

@@ -67,9 +67,7 @@ struct Ray {
         }
 
         /// Destructor
-        ~Ray() {
-
-        }
+        ~Ray() = default;
 
         /// Overloaded assignment operator
         Ray& operator=(const Ray& ray) {

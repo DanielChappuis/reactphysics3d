@@ -36,8 +36,3 @@ ConcaveShape::ConcaveShape(CollisionShapeType type)
                mTriangleMargin(0), mRaycastTestType(TriangleRaycastSide::FRONT) {
 
 }
-
-// Destructor
-ConcaveShape::~ConcaveShape() {
-
-}

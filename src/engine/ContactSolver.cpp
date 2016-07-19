@@ -48,11 +48,6 @@ ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocity
 
 }
 
-// Destructor
-ContactSolver::~ContactSolver() {
-
-}
-
 // Initialize the constraint solver for a given island
 void ContactSolver::initializeForIsland(decimal dt, Island* island) {
 

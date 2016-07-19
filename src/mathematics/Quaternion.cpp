@@ -128,11 +128,6 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
     }
 }
 
-// Destructor
-Quaternion::~Quaternion() {
-
-}
-
 // Compute the rotation angle (in radians) and the rotation axis
 /// This method is used to get the rotation angle (in radian) and the unit
 /// rotation axis of an orientation quaternion.

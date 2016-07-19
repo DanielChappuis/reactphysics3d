@@ -79,7 +79,7 @@ class Timer {
         Timer(double timeStep);
 
         /// Destructor
-        ~Timer();
+        ~Timer() = default;
 
         /// Deleted copy-constructor
         Timer(const Timer& timer) = delete;

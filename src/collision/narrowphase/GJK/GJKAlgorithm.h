@@ -84,7 +84,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm();
 
         /// Destructor
-        ~GJKAlgorithm();
+        ~GJKAlgorithm() = default;
 
         /// Deleted copy-constructor
         GJKAlgorithm(const GJKAlgorithm& algorithm) = delete;

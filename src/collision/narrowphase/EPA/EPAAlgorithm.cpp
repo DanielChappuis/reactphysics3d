@@ -32,16 +32,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Constructor
-EPAAlgorithm::EPAAlgorithm() {
-
-}
-
-// Destructor
-EPAAlgorithm::~EPAAlgorithm() {
-    
-}
-
 // Decide if the origin is in the tetrahedron.
 /// Return 0 if the origin is in the tetrahedron and return the number (1,2,3 or 4) of
 /// the vertex that is wrong if the origin is not in the tetrahedron

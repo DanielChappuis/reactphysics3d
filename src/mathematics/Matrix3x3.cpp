@@ -49,11 +49,6 @@ Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3,
     setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
 }
 
-// Destructor
-Matrix3x3::~Matrix3x3() {
-
-}
-
 // Copy-constructor
 Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
     setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],

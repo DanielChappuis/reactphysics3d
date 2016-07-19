@@ -44,11 +44,6 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     assert(extent.z > decimal(0.0) && extent.z > margin);
 }
 
-// Destructor
-BoxShape::~BoxShape() {
-
-}
-
 // Return the local inertia tensor of the collision shape
 /**
  * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space

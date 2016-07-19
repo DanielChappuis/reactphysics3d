@@ -33,11 +33,6 @@
 using namespace reactphysics3d;
 
 // Constructor
-EdgeEPA::EdgeEPA() {
-    
-}
-
-// Constructor
 EdgeEPA::EdgeEPA(TriangleEPA* ownerTriangle, int index)
         : mOwnerTriangle(ownerTriangle), mIndex(index) {
     assert(index >= 0 && index < 3);
@@ -47,11 +42,6 @@ EdgeEPA::EdgeEPA(TriangleEPA* ownerTriangle, int index)
 EdgeEPA::EdgeEPA(const EdgeEPA& edge) {
     mOwnerTriangle = edge.mOwnerTriangle;
     mIndex = edge.mIndex;
-}
-
-// Destructor
-EdgeEPA::~EdgeEPA() {
-
 }
 
 // Return the index of the source vertex of the edge (vertex starting the edge)

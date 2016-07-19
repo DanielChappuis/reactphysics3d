@@ -34,11 +34,6 @@ Timer::Timer(double timeStep) : mTimeStep(timeStep), mIsRunning(false) {
     assert(timeStep > 0.0);
 }
 
-// Destructor
-Timer::~Timer() {
-
-}
-
 // Return the current time of the system in seconds
 long double Timer::getCurrentSystemTime() {
 

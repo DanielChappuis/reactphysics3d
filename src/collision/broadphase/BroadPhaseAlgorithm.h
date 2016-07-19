@@ -110,7 +110,7 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 
         // Destructor
-        virtual ~BroadPhaseRaycastCallback() override {}
+        virtual ~BroadPhaseRaycastCallback() override = default;
 
         // Called for a broad-phase shape that has to be tested for raycast
         virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override;

@@ -143,7 +143,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator);
 
         /// Destructor
-        ~CollisionDetection();
+        ~CollisionDetection() = default;
 
         /// Deleted copy-constructor
         CollisionDetection(const CollisionDetection& collisionDetection) = delete;

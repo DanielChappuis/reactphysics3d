@@ -73,7 +73,7 @@ class ConvexVsTriangleCallback : public TriangleCallback {
     public:
 
         /// Destructor
-        virtual ~ConvexVsTriangleCallback() override {}
+        virtual ~ConvexVsTriangleCallback() override = default;
 
         /// Set the collision detection pointer
         void setCollisionDetection(CollisionDetection* collisionDetection) {
@@ -191,12 +191,6 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveVsConvexAlgorithm(const ConcaveVsConvexAlgorithm& algorithm);
-
-        /// Private assignment operator
-        ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm);
-
         /// Process the concave triangle mesh collision using the smooth mesh collision algorithm
         void processSmoothMeshCollision(OverlappingPair* overlappingPair,
                                         std::vector<SmoothMeshContactInfo> contactPoints,
@@ -215,10 +209,16 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveVsConvexAlgorithm();
+        ConcaveVsConvexAlgorithm() = default;
 
         /// Destructor
-        virtual ~ConcaveVsConvexAlgorithm() override;
+        virtual ~ConcaveVsConvexAlgorithm() override = default;
+
+        /// Private copy-constructor
+        ConcaveVsConvexAlgorithm(const ConcaveVsConvexAlgorithm& algorithm) = delete;
+
+        /// Private assignment operator
+        ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
         virtual void testCollision(const CollisionShapeInfo& shape1Info,

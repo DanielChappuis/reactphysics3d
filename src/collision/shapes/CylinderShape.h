@@ -84,7 +84,7 @@ class CylinderShape : public ConvexShape {
         CylinderShape(decimal radius, decimal height, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~CylinderShape() override;
+        virtual ~CylinderShape() override = default;
 
         /// Deleted copy-constructor
         CylinderShape(const CylinderShape& shape) = delete;

@@ -38,11 +38,6 @@ ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
     initBVHTree();
 }
 
-// Destructor
-ConcaveMeshShape::~ConcaveMeshShape() {
-
-}
-
 // Insert all the triangles into the dynamic AABB tree
 void ConcaveMeshShape::initBVHTree() {
 

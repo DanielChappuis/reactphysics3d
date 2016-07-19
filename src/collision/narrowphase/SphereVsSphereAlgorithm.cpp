@@ -28,17 +28,7 @@
 #include "collision/shapes/SphereShape.h"
 
 // We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
-
-// Constructor
-SphereVsSphereAlgorithm::SphereVsSphereAlgorithm() : NarrowPhaseAlgorithm() {
-    
-}
-
-// Destructor
-SphereVsSphereAlgorithm::~SphereVsSphereAlgorithm() {
-    
-}   
+using namespace reactphysics3d;  
 
 void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
                                             const CollisionShapeInfo& shape2Info,

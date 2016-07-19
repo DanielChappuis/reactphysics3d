@@ -37,8 +37,3 @@ Joint::Joint(const JointInfo& jointInfo)
     assert(mBody1 != nullptr);
     assert(mBody2 != nullptr);
 }
-
-// Destructor
-Joint::~Joint() {
-
-}

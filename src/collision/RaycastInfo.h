@@ -80,9 +80,7 @@ struct RaycastInfo {
         }
 
         /// Destructor
-        ~RaycastInfo() {
-
-        }
+        ~RaycastInfo() = default;
 
         /// Deleted copy constructor
         RaycastInfo(const RaycastInfo& raycastInfo) = delete;

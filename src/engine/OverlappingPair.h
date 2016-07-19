@@ -66,7 +66,7 @@ class OverlappingPair {
                         int nbMaxContactManifolds, MemoryAllocator& memoryAllocator);
 
         /// Destructor
-        ~OverlappingPair();
+        ~OverlappingPair() = default;
 
         /// Deleted copy-constructor
         OverlappingPair(const OverlappingPair& pair) = delete;

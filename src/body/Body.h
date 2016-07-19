@@ -89,7 +89,7 @@ class Body {
         Body& operator=(const Body& body) = delete;
 
         /// Destructor
-        virtual ~Body();
+        virtual ~Body() = default;
 
         /// Return the ID of the body
         bodyindex getID() const;

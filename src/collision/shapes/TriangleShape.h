@@ -87,7 +87,7 @@ class TriangleShape : public ConvexShape {
                       decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~TriangleShape() override;
+        virtual ~TriangleShape() override = default;
 
         /// Deleted copy-constructor
         TriangleShape(const TriangleShape& shape) = delete;

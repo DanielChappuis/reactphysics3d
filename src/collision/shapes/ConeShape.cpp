@@ -46,11 +46,6 @@ ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
 }
 
-// Destructor
-ConeShape::~ConeShape() {
-
-}
-
 // Return a local support point in a given direction without the object margin
 Vector3 ConeShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                      void** cachedCollisionData) const {

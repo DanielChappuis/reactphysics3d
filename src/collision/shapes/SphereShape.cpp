@@ -39,11 +39,6 @@ SphereShape::SphereShape(decimal radius) : ConvexShape(CollisionShapeType::SPHER
     assert(radius > decimal(0.0));
 }
 
-// Destructor
-SphereShape::~SphereShape() {
-
-}
-
 // Raycast method with feedback information
 bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 

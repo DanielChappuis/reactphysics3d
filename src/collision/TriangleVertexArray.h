@@ -87,7 +87,7 @@ class TriangleVertexArray {
                             VertexDataType vertexDataType, IndexDataType indexDataType);
 
         /// Destructor
-        ~TriangleVertexArray();
+        ~TriangleVertexArray() = default;
 
         /// Return the vertex data type
         VertexDataType getVertexDataType() const;
