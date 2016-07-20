@@ -48,9 +48,6 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsVelocitySolver(15);
-
     // ---------- Create the boxes ----------- //
 
     for (int i=0; i<NB_BOXES_X; i++) {

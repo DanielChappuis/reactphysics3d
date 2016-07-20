@@ -45,9 +45,6 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsVelocitySolver(15);
-
     // ---------- Create the boxes ----------- //
 
     // For each box
