@@ -38,17 +38,12 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConeShape::ConeShape(decimal radius, decimal height, decimal margin)
-          : ConvexShape(CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
+          : ConvexShape(CollisionShapeType::CONE, margin), mRadius(radius), mHalfHeight(height * decimal(0.5)) {
     assert(mRadius > decimal(0.0));
     assert(mHalfHeight > decimal(0.0));
     
     // Compute the sine of the semi-angle at the apex point
     mSinTheta = mRadius / (sqrt(mRadius * mRadius + height * height));
-}
-
-// Destructor
-ConeShape::~ConeShape() {
-
 }
 
 // Return a local support point in a given direction without the object margin
@@ -137,7 +132,7 @@ bool ConeShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pr
     }
 
     // If the origin of the ray is inside the cone, we return no hit
-    if (testPointInside(ray.point1, NULL)) return false;
+    if (testPointInside(ray.point1, nullptr)) return false;
 
     localHitPoint[0] = ray.point1 + tHit[0] * r;
     localHitPoint[1] = ray.point1 + tHit[1] * r;

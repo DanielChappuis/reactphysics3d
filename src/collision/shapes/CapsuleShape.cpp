@@ -37,14 +37,9 @@ using namespace reactphysics3d;
  * @param height The height of the capsule (in meters)
  */
 CapsuleShape::CapsuleShape(decimal radius, decimal height)
-            : ConvexShape(CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
+            : ConvexShape(CollisionShapeType::CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Destructor
-CapsuleShape::~CapsuleShape() {
-
 }
 
 // Return the local inertia tensor of the capsule

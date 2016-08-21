@@ -61,7 +61,7 @@ class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback 
 
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId);
+        virtual void notifyOverlappingNode(int nodeId) override;
 
 };
 
@@ -89,7 +89,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 
         /// Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray);
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override;
 
         /// Raycast all collision shapes that have been collected
         void raycastTriangles();
@@ -120,17 +120,11 @@ class ConcaveMeshShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveMeshShape(const ConcaveMeshShape& shape);
-
-        /// Private assignment operator
-        ConcaveMeshShape& operator=(const ConcaveMeshShape& shape);
-
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
@@ -146,19 +140,25 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh);
 
         /// Destructor
-        ~ConcaveMeshShape();
+        virtual ~ConcaveMeshShape() = default;
+
+        /// Deleted copy-constructor
+        ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
 
         // ---------- Friendship ----------- //
 

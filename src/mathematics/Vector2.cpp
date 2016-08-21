@@ -45,11 +45,6 @@ Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
 
 }
 
-// Destructor
-Vector2::~Vector2() {
-
-}
-
 // Return the corresponding unit vector
 Vector2 Vector2::getUnit() const {
     decimal lengthVector = length();

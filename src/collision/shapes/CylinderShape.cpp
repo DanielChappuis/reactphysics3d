@@ -37,15 +37,10 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 CylinderShape::CylinderShape(decimal radius, decimal height, decimal margin)
-              : ConvexShape(CYLINDER, margin), mRadius(radius),
+              : ConvexShape(CollisionShapeType::CYLINDER, margin), mRadius(radius),
                 mHalfHeight(height/decimal(2.0)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Destructor
-CylinderShape::~CylinderShape() {
-
 }
 
 // Return a local support point in a given direction without the object margin
@@ -55,7 +50,7 @@ Vector3 CylinderShape::getLocalSupportPointWithoutMargin(const Vector3& directio
     Vector3 supportPoint(0.0, 0.0, 0.0);
     decimal uDotv = direction.y;
     Vector3 w(direction.x, 0.0, direction.z);
-    decimal lengthW = sqrt(direction.x * direction.x + direction.z * direction.z);
+    decimal lengthW = std::sqrt(direction.x * direction.x + direction.z * direction.z);
 
     if (lengthW > MACHINE_EPSILON) {
         if (uDotv < 0.0) supportPoint.y = -mHalfHeight;

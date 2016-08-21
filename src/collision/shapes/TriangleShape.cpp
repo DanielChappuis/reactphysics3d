@@ -40,16 +40,11 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3, decimal margin)
-              : ConvexShape(TRIANGLE, margin) {
+              : ConvexShape(CollisionShapeType::TRIANGLE, margin) {
     mPoints[0] = point1;
     mPoints[1] = point2;
     mPoints[2] = point3;
-    mRaycastTestType = FRONT;
-}
-
-// Destructor
-TriangleShape::~TriangleShape() {
-
+    mRaycastTestType = TriangleRaycastSide::FRONT;
 }
 
 // Raycast method with feedback information
@@ -68,32 +63,32 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     // product for this test.
     const Vector3 m = pq.cross(pc);
     decimal u = pb.dot(m);
-    if (mRaycastTestType == FRONT) {
+    if (mRaycastTestType == TriangleRaycastSide::FRONT) {
         if (u < decimal(0.0)) return false;
     }
-    else if (mRaycastTestType == BACK) {
+    else if (mRaycastTestType == TriangleRaycastSide::BACK) {
         if (u > decimal(0.0)) return false;
     }
 
     decimal v = -pa.dot(m);
-    if (mRaycastTestType == FRONT) {
+    if (mRaycastTestType == TriangleRaycastSide::FRONT) {
         if (v < decimal(0.0)) return false;
     }
-    else if (mRaycastTestType == BACK) {
+    else if (mRaycastTestType == TriangleRaycastSide::BACK) {
         if (v > decimal(0.0)) return false;
     }
-    else if (mRaycastTestType == FRONT_AND_BACK) {
+    else if (mRaycastTestType == TriangleRaycastSide::FRONT_AND_BACK) {
         if (!sameSign(u, v)) return false;
     }
 
     decimal w = pa.dot(pq.cross(pb));
-    if (mRaycastTestType == FRONT) {
+    if (mRaycastTestType == TriangleRaycastSide::FRONT) {
         if (w < decimal(0.0)) return false;
     }
-    else if (mRaycastTestType == BACK) {
+    else if (mRaycastTestType == TriangleRaycastSide::BACK) {
         if (w > decimal(0.0)) return false;
     }
-    else if (mRaycastTestType == FRONT_AND_BACK) {
+    else if (mRaycastTestType == TriangleRaycastSide::FRONT_AND_BACK) {
         if (!sameSign(u, w)) return false;
     }
 

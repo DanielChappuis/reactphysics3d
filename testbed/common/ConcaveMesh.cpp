@@ -53,8 +53,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                               getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
         // Add the triangle vertex array of the subpart to the triangle mesh
         mPhysicsTriangleMesh.addSubpart(vertexArray);
@@ -110,8 +110,8 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                               getNbFaces(i), &(mIndices[i][0]), sizeof(int),
-                                              rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
         // Add the triangle vertex array of the subpart to the triangle mesh
         mPhysicsTriangleMesh.addSubpart(vertexArray);
@@ -196,16 +196,16 @@ void ConcaveMesh::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
     mVBONormals.bind();
 
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
     if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)nullptr);
     }
 
     glDisableVertexAttribArray(vertexPositionLoc);
@@ -287,7 +287,7 @@ void ConcaveMesh::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the velocity of the rigid body
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
+    if (rigidBody != nullptr) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
     }

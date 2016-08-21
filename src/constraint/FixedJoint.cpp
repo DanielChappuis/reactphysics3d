@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Static variables definition
-const decimal FixedJoint::BETA = decimal(0.2);
+constexpr decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
 FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
@@ -47,11 +47,6 @@ FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
                                     transform1.getOrientation().getInverse();
     mInitOrientationDifferenceInv.normalize();
     mInitOrientationDifferenceInv.inverse();
-}
-
-// Destructor
-FixedJoint::~FixedJoint() {
-
 }
 
 // Initialize before solving the constraint
@@ -89,27 +84,27 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
     // Compute the inverse mass matrix K^-1 for the 3 translation constraints
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
     // Compute the bias "b" of the constraint for the 3 translation constraints
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
     mBiasTranslation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBiasTranslation = biasFactor * (x2 + mR2World - x1 - mR1World);
     }
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotation = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
     // Compute the bias "b" for the 3 rotation constraints
     mBiasRotation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         Quaternion currentOrientationDifference = orientationBody2 * orientationBody1.getInverse();
         currentOrientationDifference.normalize();
         const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
@@ -222,7 +217,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
@@ -256,7 +251,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
                            skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
                            skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -296,7 +291,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotation = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 

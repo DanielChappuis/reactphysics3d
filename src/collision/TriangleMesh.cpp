@@ -27,13 +27,3 @@
 #include "TriangleMesh.h"
 
 using namespace reactphysics3d;
-
-// Constructor
-TriangleMesh::TriangleMesh() {
-
-}
-
-// Destructor
-TriangleMesh::~TriangleMesh() {
-
-}

@@ -34,11 +34,6 @@ Joint::Joint(const JointInfo& jointInfo)
             mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
             mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 
-    assert(mBody1 != NULL);
-    assert(mBody2 != NULL);
-}
-
-// Destructor
-Joint::~Joint() {
-
+    assert(mBody1 != nullptr);
+    assert(mBody2 != nullptr);
 }

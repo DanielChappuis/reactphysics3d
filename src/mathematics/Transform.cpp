@@ -51,8 +51,3 @@ Transform::Transform(const Transform& transform)
           : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
 
 }
-
-// Destructor
-Transform::~Transform() {
-    
-}

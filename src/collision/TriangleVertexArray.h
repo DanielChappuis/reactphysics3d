@@ -46,10 +46,10 @@ class TriangleVertexArray {
     public:
 
         /// Data type for the vertices in the array
-        enum VertexDataType {VERTEX_FLOAT_TYPE, VERTEX_DOUBLE_TYPE};
+        enum class VertexDataType {VERTEX_FLOAT_TYPE, VERTEX_DOUBLE_TYPE};
 
         /// Data type for the indices in the array
-        enum IndexDataType {INDEX_INTEGER_TYPE, INDEX_SHORT_TYPE};
+        enum class IndexDataType {INDEX_INTEGER_TYPE, INDEX_SHORT_TYPE};
 
     protected:
 
@@ -87,7 +87,7 @@ class TriangleVertexArray {
                             VertexDataType vertexDataType, IndexDataType indexDataType);
 
         /// Destructor
-        ~TriangleVertexArray();
+        ~TriangleVertexArray() = default;
 
         /// Return the vertex data type
         VertexDataType getVertexDataType() const;

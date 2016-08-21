@@ -142,14 +142,6 @@ class ContactPoint {
 
         /// Cached rolling resistance impulse
         Vector3 mRollingResistanceImpulse;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ContactPoint(const ContactPoint& contact);
-
-        /// Private assignment operator
-        ContactPoint& operator=(const ContactPoint& contact);
 
     public :
 
@@ -159,7 +151,13 @@ class ContactPoint {
         ContactPoint(const ContactPointInfo& contactInfo);
 
         /// Destructor
-        ~ContactPoint();
+        ~ContactPoint() = default;
+
+        /// Deleted copy-constructor
+        ContactPoint(const ContactPoint& contact) = delete;
+
+        /// Deleted assignment operator
+        ContactPoint& operator=(const ContactPoint& contact) = delete;
 
         /// Return the reference to the body 1
         CollisionBody* getBody1() const;

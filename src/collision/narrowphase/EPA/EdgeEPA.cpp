@@ -32,12 +32,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-
-// Constructor
-EdgeEPA::EdgeEPA() {
-    
-}
-
 // Constructor
 EdgeEPA::EdgeEPA(TriangleEPA* ownerTriangle, int index)
         : mOwnerTriangle(ownerTriangle), mIndex(index) {
@@ -48,11 +42,6 @@ EdgeEPA::EdgeEPA(TriangleEPA* ownerTriangle, int index)
 EdgeEPA::EdgeEPA(const EdgeEPA& edge) {
     mOwnerTriangle = edge.mOwnerTriangle;
     mIndex = edge.mIndex;
-}
-
-// Destructor
-EdgeEPA::~EdgeEPA() {
-
 }
 
 // Return the index of the source vertex of the edge (vertex starting the edge)
@@ -78,7 +67,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                               getSourceVertexIndex());
 
             // If the triangle has been created
-            if (triangle != NULL) {
+            if (triangle != nullptr) {
                 halfLink(EdgeEPA(triangle, 1), *this);
                 return true;
             }
@@ -103,7 +92,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getSourceVertexIndex());
 
                 // If the triangle has been created
-                if (triangle != NULL) {
+                if (triangle != nullptr) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }
@@ -122,7 +111,7 @@ bool EdgeEPA::computeSilhouette(const Vector3* vertices, uint indexNewVertex,
                                                                   getTargetVertexIndex(),
                                                                   getSourceVertexIndex());
 
-                if (triangle != NULL) {
+                if (triangle != nullptr) {
                     halfLink(EdgeEPA(triangle, 1), *this);
                     return true;
                 }

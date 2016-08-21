@@ -48,12 +48,6 @@ class ConvexShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConvexShape(const ConvexShape& shape);
-
-        /// Private assignment operator
-        ConvexShape& operator=(const ConvexShape& shape);
-
         // Return a local support point in a given direction with the object margin
         Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
                                                void** cachedCollisionData) const;
@@ -61,9 +55,6 @@ class ConvexShape : public CollisionShape {
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const=0;
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
     public :
 
@@ -73,13 +64,19 @@ class ConvexShape : public CollisionShape {
         ConvexShape(CollisionShapeType type, decimal margin);
 
         /// Destructor
-        virtual ~ConvexShape();
+        virtual ~ConvexShape() override = default;
+
+        /// Deleted copy-constructor
+        ConvexShape(const ConvexShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConvexShape& operator=(const ConvexShape& shape) = delete;
 
         /// Return the current object margin
         decimal getMargin() const;
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
 
         // -------------------- Friendship -------------------- //
 

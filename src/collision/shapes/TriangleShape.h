@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 /// Raycast test side for the triangle
-enum TriangleRaycastSide {
+enum class TriangleRaycastSide {
 
     /// Raycast against front triangle
     FRONT,
@@ -65,24 +65,18 @@ class TriangleShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        TriangleShape(const TriangleShape& shape);
-
-        /// Private assignment operator
-        TriangleShape& operator=(const TriangleShape& shape);
-
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const;
+                                                          void** cachedCollisionData) const override;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
     public:
 
@@ -93,19 +87,25 @@ class TriangleShape : public ConvexShape {
                       decimal margin = OBJECT_MARGIN);
 
         /// Destructor
-        virtual ~TriangleShape();
+        virtual ~TriangleShape() override = default;
+
+        /// Deleted copy-constructor
+        TriangleShape(const TriangleShape& shape) = delete;
+
+        /// Deleted assignment operator
+        TriangleShape& operator=(const TriangleShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
+        virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
 
         /// Return the raycast test type (front, back, front-back)
         TriangleRaycastSide getRaycastTestType() const;

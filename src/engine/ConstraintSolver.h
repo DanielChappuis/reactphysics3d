@@ -69,8 +69,8 @@ struct ConstraintSolverData {
 
         /// Constructor
         ConstraintSolverData(const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(NULL), angularVelocities(NULL),
-                            positions(NULL), orientations(NULL),
+                           :linearVelocities(nullptr), angularVelocities(nullptr),
+                            positions(nullptr), orientations(nullptr),
                             mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
 
         }
@@ -173,7 +173,7 @@ class ConstraintSolver {
         ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
 
         /// Destructor
-        ~ConstraintSolver();
+        ~ConstraintSolver() = default;
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(decimal dt, Island* island);
@@ -202,6 +202,10 @@ class ConstraintSolver {
 // Set the constrained velocities arrays
 inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                                             Vector3* constrainedAngularVelocities) {
+
+    assert(constrainedLinearVelocities != nullptr);
+    assert(constrainedAngularVelocities != nullptr);
+
     mConstraintSolverData.linearVelocities = constrainedLinearVelocities;
     mConstraintSolverData.angularVelocities = constrainedAngularVelocities;
 }
@@ -209,6 +213,10 @@ inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constraine
 // Set the constrained positions/orientations arrays
 inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                                            Quaternion* constrainedOrientations) {
+
+    assert(constrainedPositions != nullptr);
+    assert(constrainedOrientations != nullptr);
+
     mConstraintSolverData.positions = constrainedPositions;
     mConstraintSolverData.orientations = constrainedOrientations;
 }

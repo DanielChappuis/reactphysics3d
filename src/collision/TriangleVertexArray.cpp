@@ -54,8 +54,3 @@ TriangleVertexArray::TriangleVertexArray(uint nbVertices, void* verticesStart, i
     mVertexDataType = vertexDataType;
     mIndexDataType = indexDataType;
 }
-
-// Destructor
-TriangleVertexArray::~TriangleVertexArray() {
-
-}

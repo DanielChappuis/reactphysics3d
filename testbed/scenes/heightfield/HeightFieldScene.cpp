@@ -75,7 +75,7 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     mHeightField = new HeightField(position, mass, mDynamicsWorld);
 
     // Set the mesh as beeing static
-    mHeightField->getRigidBody()->setType(rp3d::STATIC);
+    mHeightField->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);

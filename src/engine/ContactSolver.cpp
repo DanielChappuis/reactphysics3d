@@ -34,22 +34,17 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constants initialization
-const decimal ContactSolver::BETA = decimal(0.2);
-const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
-const decimal ContactSolver::SLOP= decimal(0.01);
+constexpr decimal ContactSolver::BETA = decimal(0.2);
+constexpr decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
+constexpr decimal ContactSolver::SLOP= decimal(0.01);
 
 // Constructor
 ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-              :mSplitLinearVelocities(NULL), mSplitAngularVelocities(NULL),
-               mContactConstraints(NULL), mLinearVelocities(NULL), mAngularVelocities(NULL),
+              :mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr),
+               mContactConstraints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
                mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
                mIsSolveFrictionAtContactManifoldCenterActive(true) {
-
-}
-
-// Destructor
-ContactSolver::~ContactSolver() {
 
 }
 
@@ -58,11 +53,11 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
 
     PROFILE("ContactSolver::initializeForIsland()");
 
-    assert(island != NULL);
+    assert(island != nullptr);
     assert(island->getNbBodies() > 0);
     assert(island->getNbContactManifolds() > 0);
-    assert(mSplitLinearVelocities != NULL);
-    assert(mSplitAngularVelocities != NULL);
+    assert(mSplitLinearVelocities != nullptr);
+    assert(mSplitAngularVelocities != nullptr);
 
     // Set the current time step
     mTimeStep = dt;
@@ -70,7 +65,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
     mNbContactManifolds = island->getNbContactManifolds();
 
     mContactConstraints = new ContactManifoldSolver[mNbContactManifolds];
-    assert(mContactConstraints != NULL);
+    assert(mContactConstraints != nullptr);
 
     // For each contact manifold of the island
     ContactManifold** contactManifolds = island->getContactManifold();
@@ -85,8 +80,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         // Get the two bodies of the contact
         RigidBody* body1 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody1());
         RigidBody* body2 = static_cast<RigidBody*>(externalManifold->getContactPoint(0)->getBody2());
-        assert(body1 != NULL);
-        assert(body2 != NULL);
+        assert(body1 != nullptr);
+        assert(body2 != nullptr);
 
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
@@ -105,8 +100,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         internalManifold.rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         internalManifold.externalContactManifold = externalManifold;
-        internalManifold.isBody1DynamicType = body1->getType() == DYNAMIC;
-        internalManifold.isBody2DynamicType = body2->getType() == DYNAMIC;
+        internalManifold.isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
+        internalManifold.isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
 
         // If we solve the friction constraints at the center of the contact manifold
         if (mIsSolveFrictionAtContactManifoldCenterActive) {
@@ -906,8 +901,8 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
 // Clean up the constraint solver
 void ContactSolver::cleanup() {
 
-    if (mContactConstraints != NULL) {
+    if (mContactConstraints != nullptr) {
         delete[] mContactConstraints;
-        mContactConstraints = NULL;
+        mContactConstraints = nullptr;
     }
 }

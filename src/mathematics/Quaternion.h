@@ -82,7 +82,7 @@ struct Quaternion {
         Quaternion(const Matrix3x3& matrix);
 
         /// Destructor
-        ~Quaternion();
+        ~Quaternion() = default;
 
         /// Set all the values
         void setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW);

@@ -33,21 +33,11 @@
 using namespace reactphysics3d;
 
 // Constructor
-TriangleEPA::TriangleEPA() {
-    
-}
-
-// Constructor
 TriangleEPA::TriangleEPA(uint indexVertex1, uint indexVertex2, uint indexVertex3)
             : mIsObsolete(false) {
     mIndicesVertices[0] = indexVertex1;
     mIndicesVertices[1] = indexVertex2;
     mIndicesVertices[2] = indexVertex3;
-}
-
-// Destructor
-TriangleEPA::~TriangleEPA() {
-
 }
 
 // Compute the point v closest to the origin of this triangle

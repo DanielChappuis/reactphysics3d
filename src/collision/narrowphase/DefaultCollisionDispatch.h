@@ -56,18 +56,18 @@ class DefaultCollisionDispatch : public CollisionDispatch {
     public:
 
         /// Constructor
-        DefaultCollisionDispatch();
+        DefaultCollisionDispatch() = default;
 
         /// Destructor
-        virtual ~DefaultCollisionDispatch();
+        virtual ~DefaultCollisionDispatch() override = default;
 
         /// Initialize the collision dispatch configuration
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator);
+                          MemoryAllocator* memoryAllocator) override;
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2);
+        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
 };
 
 }

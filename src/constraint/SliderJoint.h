@@ -77,7 +77,7 @@ struct SliderJointInfo : public JointInfo {
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
@@ -96,7 +96,7 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(false),
@@ -120,7 +120,7 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
                         decimal initMotorSpeed, decimal initMaxMotorForce)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(true),
@@ -262,29 +262,23 @@ class SliderJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        SliderJoint(const SliderJoint& constraint);
-
-        /// Private assignment operator
-        SliderJoint& operator=(const SliderJoint& constraint);
-
         /// Reset the limits
         void resetLimits();
 
         /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
 
         /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
@@ -294,7 +288,13 @@ class SliderJoint : public Joint {
         SliderJoint(const SliderJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~SliderJoint();
+        virtual ~SliderJoint() override = default;
+
+        /// Deleted copy-constructor
+        SliderJoint(const SliderJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        SliderJoint& operator=(const SliderJoint& constraint) = delete;
 
         /// Return true if the limits or the joint are enabled
         bool isLimitEnabled() const;

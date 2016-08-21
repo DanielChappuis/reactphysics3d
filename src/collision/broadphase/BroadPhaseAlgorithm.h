@@ -80,7 +80,7 @@ class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId);
+        virtual void notifyOverlappingNode(int nodeId) override;
 
 };
 
@@ -109,8 +109,11 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
         }
 
+        // Destructor
+        virtual ~BroadPhaseRaycastCallback() override = default;
+
         // Called for a broad-phase shape that has to be tested for raycast
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray);
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override;
 
 };
 
@@ -159,14 +162,6 @@ class BroadPhaseAlgorithm {
 
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm);
-
-        /// Private assignment operator
-        BroadPhaseAlgorithm& operator=(const BroadPhaseAlgorithm& algorithm);
 
     public :
 
@@ -177,6 +172,12 @@ class BroadPhaseAlgorithm {
 
         /// Destructor
         ~BroadPhaseAlgorithm();
+
+        /// Deleted copy-constructor
+        BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        BroadPhaseAlgorithm& operator=(const BroadPhaseAlgorithm& algorithm) = delete;
         
         /// Add a proxy collision shape into the broad-phase collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);

@@ -42,7 +42,7 @@ using namespace reactphysics3d;
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
-                 : ConcaveShape(HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                 : ConcaveShape(CollisionShapeType::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
@@ -72,11 +72,6 @@ HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal mi
         mAABB.setMin(Vector3(-mWidth * decimal(0.5), -mLength * decimal(0.5), -halfHeight));
         mAABB.setMax(Vector3(mWidth * decimal(0.5), mLength * decimal(0.5), halfHeight));
     }
-}
-
-// Destructor
-HeightFieldShape::~HeightFieldShape() {
-
 }
 
 // Return the local bounds of the shape in x, y and z directions.

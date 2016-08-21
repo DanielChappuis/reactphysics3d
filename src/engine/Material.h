@@ -64,7 +64,7 @@ class Material {
         Material(const Material& material);
 
         /// Destructor
-        ~Material();
+        ~Material() = default;
 
         /// Return the bounciness
         decimal getBounciness() const;

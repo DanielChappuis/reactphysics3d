@@ -36,7 +36,7 @@
 namespace reactphysics3d {
 
 // Constants
-const unsigned int MAX_TRIANGLES = 200;     // Maximum number of triangles
+constexpr unsigned int MAX_TRIANGLES = 200;     // Maximum number of triangles
 
 // Class TriangleStore
 /**
@@ -52,15 +52,7 @@ class TrianglesStore {
         TriangleEPA mTriangles[MAX_TRIANGLES];
 
         /// Number of triangles
-        int mNbTriangles;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        TrianglesStore(const TrianglesStore& triangleStore);
-
-        /// Private assignment operator
-        TrianglesStore& operator=(const TrianglesStore& triangleStore);
+        int mNbTriangles;        
         
     public:
 
@@ -70,7 +62,13 @@ class TrianglesStore {
         TrianglesStore();
 
         /// Destructor
-        ~TrianglesStore();
+        ~TrianglesStore() = default;
+
+        /// Deleted copy-constructor
+        TrianglesStore(const TrianglesStore& triangleStore) = delete;
+
+        /// Deleted assignment operator
+        TrianglesStore& operator=(const TrianglesStore& triangleStore) = delete;
 
         /// Clear all the storage
         void clear();
@@ -115,7 +113,7 @@ inline TriangleEPA& TrianglesStore::last() {
 // Create a new triangle
 inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices,
                                                 uint v0,uint v1, uint v2) {
-    TriangleEPA* newTriangle = NULL;
+    TriangleEPA* newTriangle = nullptr;
 
     // If we have not reached the maximum number of triangles
     if (mNbTriangles != MAX_TRIANGLES) {
@@ -123,7 +121,7 @@ inline TriangleEPA* TrianglesStore::newTriangle(const Vector3* vertices,
         new (newTriangle) TriangleEPA(v0, v1, v2);
         if (!newTriangle->computeClosestPoint(vertices)) {
             mNbTriangles--;
-            newTriangle = NULL;
+            newTriangle = nullptr;
         }
     }
 

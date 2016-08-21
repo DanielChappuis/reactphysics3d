@@ -64,7 +64,7 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool getIsHit() const {return mIsHit;}
 
         /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints) override;
 };
 
 
@@ -84,7 +84,7 @@ class HeightFieldShape : public ConcaveShape {
     public:
 
         /// Data type for the height data of the height field
-        enum HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
+        enum class HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
 
     protected:
 
@@ -125,17 +125,11 @@ class HeightFieldShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        HeightFieldShape(const HeightFieldShape& shape);
-
-        /// Private assignment operator
-        HeightFieldShape& operator=(const HeightFieldShape& shape);
-
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
@@ -165,7 +159,13 @@ class HeightFieldShape : public ConcaveShape {
                          int upAxis = 1, decimal integerHeightScale = 1.0f);
 
         /// Destructor
-        ~HeightFieldShape();
+        virtual ~HeightFieldShape() override = default;
+
+        /// Deleted copy-constructor
+        HeightFieldShape(const HeightFieldShape& shape) = delete;
+
+        /// Deleted assignment operator
+        HeightFieldShape& operator=(const HeightFieldShape& shape) = delete;
 
         /// Return the number of rows in the height field
         int getNbRows() const;
@@ -177,16 +177,16 @@ class HeightFieldShape : public ConcaveShape {
         HeightDataType getHeightDataType() const;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
 
         // ---------- Friendship ----------- //
 
@@ -223,9 +223,9 @@ inline void HeightFieldShape::setLocalScaling(const Vector3& scaling) {
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     switch(mHeightDataType) {
-        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
+        case HeightDataType::HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
         default: assert(false); return 0;
     }
 }

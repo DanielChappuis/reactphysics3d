@@ -45,11 +45,11 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
                 mIsSleepingEnabled(SPLEEPING_ENABLED), mGravity(gravity),
-                mIsGravityEnabled(true), mConstrainedLinearVelocities(NULL),
-                mConstrainedAngularVelocities(NULL), mSplitLinearVelocities(NULL),
-                mSplitAngularVelocities(NULL), mConstrainedPositions(NULL),
-                mConstrainedOrientations(NULL), mNbIslands(0),
-                mNbIslandsCapacity(0), mIslands(NULL), mNbBodiesCapacity(0),
+                mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
+                mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
+                mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
+                mConstrainedOrientations(nullptr), mNbIslands(0),
+                mNbIslandsCapacity(0), mIslands(nullptr), mNbBodiesCapacity(0),
                 mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
                 mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
                 mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {
@@ -128,7 +128,7 @@ void DynamicsWorld::update(decimal timeStep) {
     mTimeStep = timeStep;
 
     // Notify the event listener about the beginning of an internal tick
-    if (mEventListener != NULL) mEventListener->beginInternalTick();
+    if (mEventListener != nullptr) mEventListener->beginInternalTick();
 
     // Reset all the contact manifolds lists of each body
     resetContactManifoldListsOfBodies();
@@ -157,7 +157,7 @@ void DynamicsWorld::update(decimal timeStep) {
     if (mIsSleepingEnabled) updateSleepingBodies();
 
     // Notify the event listener about the end of an internal tick
-    if (mEventListener != NULL) mEventListener->endInternalTick();
+    if (mEventListener != nullptr) mEventListener->endInternalTick();
 
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
@@ -256,12 +256,12 @@ void DynamicsWorld::initVelocityArrays() {
         mConstrainedAngularVelocities = new Vector3[mNbBodiesCapacity];
         mConstrainedPositions = new Vector3[mNbBodiesCapacity];
         mConstrainedOrientations = new Quaternion[mNbBodiesCapacity];
-        assert(mSplitLinearVelocities != NULL);
-        assert(mSplitAngularVelocities != NULL);
-        assert(mConstrainedLinearVelocities != NULL);
-        assert(mConstrainedAngularVelocities != NULL);
-        assert(mConstrainedPositions != NULL);
-        assert(mConstrainedOrientations != NULL);
+        assert(mSplitLinearVelocities != nullptr);
+        assert(mSplitAngularVelocities != nullptr);
+        assert(mConstrainedLinearVelocities != nullptr);
+        assert(mConstrainedAngularVelocities != nullptr);
+        assert(mConstrainedPositions != nullptr);
+        assert(mConstrainedOrientations != nullptr);
     }
 
     // Reset the velocities arrays
@@ -448,7 +448,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
                                                                                 *this, bodyID);
-    assert(rigidBody != NULL);
+    assert(rigidBody != nullptr);
 
     // Add the rigid body to the physics world
     mBodies.insert(rigidBody);
@@ -472,7 +472,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
-    for (element = rigidBody->mJointsList; element != NULL; element = element->next) {
+    for (element = rigidBody->mJointsList; element != nullptr; element = element->next) {
         destroyJoint(element->joint);
     }
 
@@ -497,13 +497,13 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
  */
 Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
-    Joint* newJoint = NULL;
+    Joint* newJoint = nullptr;
 
     // Allocate memory to create the new joint
     switch(jointInfo.type) {
 
         // Ball-and-Socket joint
-        case BALLSOCKETJOINT:
+        case JointType::BALLSOCKETJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(BallAndSocketJoint));
             const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
@@ -513,7 +513,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Slider joint
-        case SLIDERJOINT:
+        case JointType::SLIDERJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
@@ -522,7 +522,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Hinge joint
-        case HINGEJOINT:
+        case JointType::HINGEJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(HingeJoint));
             const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
@@ -531,7 +531,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
 
         // Fixed joint
-        case FIXEDJOINT:
+        case JointType::FIXEDJOINT:
         {
             void* allocatedMemory = mMemoryAllocator.allocate(sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
@@ -542,7 +542,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         default:
         {
             assert(false);
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -569,7 +569,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
  */
 void DynamicsWorld::destroyJoint(Joint* joint) {
 
-    assert(joint != NULL);
+    assert(joint != nullptr);
 
     // If the collision between the two bodies of the constraint was disabled
     if (!joint->isCollisionEnabled()) {
@@ -601,7 +601,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 // Add the joint to the list of joints of the two bodies involved in the joint
 void DynamicsWorld::addJointToBody(Joint* joint) {
 
-    assert(joint != NULL);
+    assert(joint != nullptr);
 
     // Add the joint at the beginning of the linked list of joints of the first body
     void* allocatedMemory1 = mMemoryAllocator.allocate(sizeof(JointListElement));
@@ -673,7 +673,7 @@ void DynamicsWorld::computeIslands() {
         if (body->mIsAlreadyInIsland) continue;
 
         // If the body is static, we go to the next body
-        if (body->getType() == STATIC) continue;
+        if (body->getType() == BodyType::STATIC) continue;
 
         // If the body is sleeping or inactive, we go to the next body
         if (body->isSleeping() || !body->isActive()) continue;
@@ -706,11 +706,11 @@ void DynamicsWorld::computeIslands() {
 
             // If the current body is static, we do not want to perform the DFS
             // search across that body
-            if (bodyToVisit->getType() == STATIC) continue;
+            if (bodyToVisit->getType() == BodyType::STATIC) continue;
 
             // For each contact manifold in which the current body is involded
             ContactManifoldListElement* contactElement;
-            for (contactElement = bodyToVisit->mContactManifoldsList; contactElement != NULL;
+            for (contactElement = bodyToVisit->mContactManifoldsList; contactElement != nullptr;
                  contactElement = contactElement->next) {
 
                 ContactManifold* contactManifold = contactElement->contactManifold;
@@ -740,7 +740,7 @@ void DynamicsWorld::computeIslands() {
 
             // For each joint in which the current body is involved
             JointListElement* jointElement;
-            for (jointElement = bodyToVisit->mJointsList; jointElement != NULL;
+            for (jointElement = bodyToVisit->mJointsList; jointElement != nullptr;
                  jointElement = jointElement->next) {
 
                 Joint* joint = jointElement->joint;
@@ -771,7 +771,7 @@ void DynamicsWorld::computeIslands() {
         // can also be included in the other islands
         for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
 
-            if (mIslands[mNbIslands]->mBodies[i]->getType() == STATIC) {
+            if (mIslands[mNbIslands]->mBodies[i]->getType() == BodyType::STATIC) {
                 mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
             }
         }
@@ -803,7 +803,7 @@ void DynamicsWorld::updateSleepingBodies() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Skip static bodies
-            if (bodies[b]->getType() == STATIC) continue;
+            if (bodies[b]->getType() == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
             if (bodies[b]->getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare ||
@@ -916,7 +916,7 @@ void DynamicsWorld::testCollision(const CollisionBody* body,
     std::set<uint> shapes1;
 
     // For each shape of the body
-    for (const ProxyShape* shape=body->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes1.insert(shape->mBroadPhaseID);
     }
@@ -941,13 +941,13 @@ void DynamicsWorld::testCollision(const CollisionBody* body1,
 
     // Create the sets of shapes
     std::set<uint> shapes1;
-    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes1.insert(shape->mBroadPhaseID);
     }
 
     std::set<uint> shapes2;
-    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != NULL;
+    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != nullptr;
          shape = shape->getNext()) {
         shapes2.insert(shape->mBroadPhaseID);
     }

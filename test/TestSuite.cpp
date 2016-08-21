@@ -61,10 +61,10 @@ long TestSuite::getNbFailedTests() const {
 
 // Add a unit test in the test suite
 void TestSuite::addTest(Test* test) {
-    if (test == NULL) {
-        throw std::invalid_argument("Error : You cannot add a NULL test in the test suite.");
+    if (test == nullptr) {
+        throw std::invalid_argument("Error : You cannot add a nullptr test in the test suite.");
     }
-    else if (mOutputStream != NULL && test->getOutputStream() == NULL) {
+    else if (mOutputStream != nullptr && test->getOutputStream() == nullptr) {
         test->setOutputStream(mOutputStream);
     }
 
@@ -80,7 +80,7 @@ void TestSuite::addTestSuite(const TestSuite& testSuite) {
 
     // Add each test of the test suite to the current one
     for (size_t i =0; i < testSuite.mTests.size(); i++) {
-        assert(testSuite.mTests[i] != NULL);
+        assert(testSuite.mTests[i] != nullptr);
         addTest(testSuite.mTests[i]);
     }
 }
@@ -93,7 +93,7 @@ void TestSuite::run() {
 
     // Run all the tests
     for (size_t i=0; i < mTests.size(); i++) {
-        assert(mTests[i] != NULL);
+        assert(mTests[i] != nullptr);
         mTests[i]->run();
     }
 }
@@ -108,7 +108,7 @@ void TestSuite::reset() {
 
 // Display the tests report and return the number of failed tests
 long TestSuite::report() const {
-    if (mOutputStream != NULL) {
+    if (mOutputStream != nullptr) {
         long nbFailedTests = 0;
 
         *mOutputStream << "Test Suite \"" << mName << "\"\n";
@@ -118,7 +118,7 @@ long TestSuite::report() const {
         }
         *mOutputStream << "=" << std::endl;
         for (i=0; i < mTests.size(); i++) {
-            assert(mTests[i] != NULL);
+            assert(mTests[i] != nullptr);
             nbFailedTests += mTests[i]->report();
         }
         for (i=0; i < 70; i++) {
@@ -139,6 +139,6 @@ void TestSuite::clear() {
 
     for (size_t i=0; i<mTests.size(); i++) {
         delete mTests[i];
-        mTests[i] = NULL;
+        mTests[i] = nullptr;
     }
 }

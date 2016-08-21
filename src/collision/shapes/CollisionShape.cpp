@@ -36,11 +36,6 @@ CollisionShape::CollisionShape(CollisionShapeType type) : mType(type), mScaling(
     
 }
 
-// Destructor
-CollisionShape::~CollisionShape() {
-
-}
-
 // Compute the world-space AABB of the collision shape given a transform
 /**
  * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape

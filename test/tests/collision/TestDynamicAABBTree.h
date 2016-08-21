@@ -42,7 +42,7 @@ class OverlapCallback : public DynamicAABBTreeOverlapCallback {
 
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId) {
+        virtual void notifyOverlappingNode(int nodeId) override {
             mOverlapNodes.push_back(nodeId);
         }
 
@@ -62,7 +62,7 @@ class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
         std::vector<int> mHitNodes;
 
         // Called when the AABB of a leaf node is hit by a ray
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override {
             mHitNodes.push_back(nodeId);
             return 1.0;
         }

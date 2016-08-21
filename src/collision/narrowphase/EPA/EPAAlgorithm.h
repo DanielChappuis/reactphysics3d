@@ -43,10 +43,10 @@ namespace reactphysics3d {
 // ---------- Constants ---------- //
 
 /// Maximum number of support points of the polytope
-const unsigned int MAX_SUPPORT_POINTS = 100;
+constexpr unsigned int MAX_SUPPORT_POINTS = 100;
 
 /// Maximum number of facets of the polytope
-const unsigned int MAX_FACETS = 200;
+constexpr unsigned int MAX_FACETS = 200;
 
 
 // Class TriangleComparison
@@ -95,12 +95,6 @@ class EPAAlgorithm {
         
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        EPAAlgorithm(const EPAAlgorithm& algorithm);
-
-        /// Private assignment operator
-        EPAAlgorithm& operator=(const EPAAlgorithm& algorithm);
-
         /// Add a triangle face in the candidate triangle heap
         void addFaceCandidate(TriangleEPA* triangle, TriangleEPA** heap, uint& nbTriangles,
                               decimal upperBoundSquarePenDepth);
@@ -114,10 +108,16 @@ class EPAAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        EPAAlgorithm();
+        EPAAlgorithm() = default;
 
         /// Destructor
-        ~EPAAlgorithm();
+        ~EPAAlgorithm() = default;
+
+        /// Deleted copy-constructor
+        EPAAlgorithm(const EPAAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        EPAAlgorithm& operator=(const EPAAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
         void init(MemoryAllocator* memoryAllocator);

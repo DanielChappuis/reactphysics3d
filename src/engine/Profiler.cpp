@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
 // Initialization of static variables
-ProfileNode Profiler::mRootNode("Root", NULL);
+ProfileNode Profiler::mRootNode("Root", nullptr);
 ProfileNode* Profiler::mCurrentNode = &Profiler::mRootNode;
 long double Profiler::mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0;
 uint Profiler::mFrameCounter = 0;
@@ -39,8 +39,8 @@ uint Profiler::mFrameCounter = 0;
 // Constructor
 ProfileNode::ProfileNode(const char* name, ProfileNode* parentNode)
     :mName(name), mNbTotalCalls(0), mStartingTime(0), mTotalTime(0),
-     mRecursionCounter(0), mParentNode(parentNode), mChildNode(NULL),
-     mSiblingNode(NULL) {
+     mRecursionCounter(0), mParentNode(parentNode), mChildNode(nullptr),
+     mSiblingNode(nullptr) {
     reset();
 }
 
@@ -56,7 +56,7 @@ ProfileNode* ProfileNode::findSubNode(const char* name) {
 
     // Try to find the node among the child nodes
     ProfileNode* child = mChildNode;
-    while (child != NULL) {
+    while (child != nullptr) {
         if (child->mName == name) {
             return child;
         }
@@ -110,12 +110,12 @@ void ProfileNode::reset() {
     mTotalTime = 0.0;
 
     // Reset the child node
-    if (mChildNode != NULL) {
+    if (mChildNode != nullptr) {
         mChildNode->reset();
     }
 
     // Reset the sibling node
-    if (mSiblingNode != NULL) {
+    if (mSiblingNode != nullptr) {
         mSiblingNode->reset();
     }
 }
@@ -123,9 +123,9 @@ void ProfileNode::reset() {
 // Destroy the node
 void ProfileNode::destroy() {
     delete mChildNode;
-    mChildNode = NULL;
+    mChildNode = nullptr;
     delete mSiblingNode;
-    mSiblingNode = NULL;
+    mSiblingNode = nullptr;
 }
 
 // Constructor
@@ -138,12 +138,12 @@ ProfileNodeIterator::ProfileNodeIterator(ProfileNode* startingNode)
 // Enter a given child node
 void ProfileNodeIterator::enterChild(int index) {
     mCurrentChildNode = mCurrentParentNode->getChildNode();
-    while ((mCurrentChildNode != NULL) && (index != 0)) {
+    while ((mCurrentChildNode != nullptr) && (index != 0)) {
         index--;
         mCurrentChildNode = mCurrentChildNode->getSiblingNode();
     }
 
-    if (mCurrentChildNode != NULL) {
+    if (mCurrentChildNode != nullptr) {
         mCurrentParentNode = mCurrentChildNode;
         mCurrentChildNode = mCurrentParentNode->getChildNode();
     }
@@ -151,7 +151,7 @@ void ProfileNodeIterator::enterChild(int index) {
 
 // Enter a given parent node
 void ProfileNodeIterator::enterParent() {
-    if (mCurrentParentNode->getParentNode() != NULL) {
+    if (mCurrentParentNode->getParentNode() != nullptr) {
         mCurrentParentNode = mCurrentParentNode->getParentNode();
     }
     mCurrentChildNode = mCurrentParentNode->getChildNode();

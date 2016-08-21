@@ -51,8 +51,3 @@ ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
     assert(mPenetrationDepth > 0.0);
 
 }
-
-// Destructor
-ContactPoint::~ContactPoint() {
-
-}

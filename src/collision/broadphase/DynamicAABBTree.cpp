@@ -32,7 +32,7 @@
 using namespace reactphysics3d;
 
 // Initialization of static variables
-const int TreeNode::NULL_TREE_NODE = -1;
+constexpr int TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
 DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABBGap) {

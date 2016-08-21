@@ -42,6 +42,9 @@ class TriangleCallback {
 
     public:
 
+        /// Destructor
+        virtual ~TriangleCallback() = default;
+
         /// Report a triangle
         virtual void testTriangle(const Vector3* trianglePoints)=0;
 
@@ -70,14 +73,8 @@ class ConcaveShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveShape(const ConcaveShape& shape);
-
-        /// Private assignment operator
-        ConcaveShape& operator=(const ConcaveShape& shape);
-
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
     public :
 
@@ -87,7 +84,13 @@ class ConcaveShape : public CollisionShape {
         ConcaveShape(CollisionShapeType type);
 
         /// Destructor
-        virtual ~ConcaveShape();
+        virtual ~ConcaveShape() override = default;
+
+        /// Deleted copy-constructor
+        ConcaveShape(const ConcaveShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConcaveShape& operator=(const ConcaveShape& shape) = delete;
 
         /// Return the triangle margin
         decimal getTriangleMargin() const;
@@ -99,7 +102,7 @@ class ConcaveShape : public CollisionShape {
         void setRaycastTestType(TriangleRaycastSide testType);
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
 
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const;

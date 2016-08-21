@@ -41,11 +41,6 @@ GJKAlgorithm::GJKAlgorithm() : NarrowPhaseAlgorithm() {
 
 }
 
-// Destructor
-GJKAlgorithm::~GJKAlgorithm() {
-
-}
-
 // Compute a contact info if the two collision shapes collide.
 /// This method implements the Hybrid Technique for computing the penetration depth by
 /// running the GJK algorithm on original objects (without margin). If the shapes intersect

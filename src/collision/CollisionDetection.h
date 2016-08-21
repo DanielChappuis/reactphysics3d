@@ -67,7 +67,7 @@ class TestCollisionBetweenShapesCallback : public NarrowPhaseCallback {
 
         // Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo);
+                                   const ContactPointInfo& contactInfo) override;
 };
 
 // Class CollisionDetection
@@ -119,12 +119,6 @@ class CollisionDetection : public NarrowPhaseCallback {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionDetection(const CollisionDetection& collisionDetection);
-
-        /// Private assignment operator
-        CollisionDetection& operator=(const CollisionDetection& collisionDetection);
-
         /// Compute the broad-phase collision detection
         void computeBroadPhase();
 
@@ -152,7 +146,13 @@ class CollisionDetection : public NarrowPhaseCallback {
         CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator);
 
         /// Destructor
-        ~CollisionDetection();
+        ~CollisionDetection() = default;
+
+        /// Deleted copy-constructor
+        CollisionDetection(const CollisionDetection& collisionDetection) = delete;
+
+        /// Deleted assignment operator
+        CollisionDetection& operator=(const CollisionDetection& collisionDetection) = delete;
 
         /// Set the collision dispatch configuration
         void setCollisionDispatch(CollisionDispatch* collisionDispatch);
@@ -223,7 +223,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         MemoryAllocator& getWorldMemoryAllocator();
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);
+        virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo) override;
 
         /// Create a new contact
         void createContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo);
@@ -237,7 +237,7 @@ class CollisionDetection : public NarrowPhaseCallback {
 // Return the Narrow-phase collision detection algorithm to use between two types of shapes
 inline NarrowPhaseAlgorithm* CollisionDetection::getCollisionAlgorithm(CollisionShapeType shape1Type,
                                                                        CollisionShapeType shape2Type) const {
-    return mCollisionMatrix[shape1Type][shape2Type];
+    return mCollisionMatrix[static_cast<int>(shape1Type)][static_cast<int>(shape2Type)];
 }
 
 // Set the collision dispatch configuration

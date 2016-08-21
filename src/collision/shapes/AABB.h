@@ -56,7 +56,7 @@ class AABB {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        AABB();
+        AABB() = default;
 
         /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
@@ -65,7 +65,7 @@ class AABB {
         AABB(const AABB& aabb);
 
         /// Destructor
-        ~AABB();
+        ~AABB() = default;
 
         /// Return the center point
         Vector3 getCenter() const;

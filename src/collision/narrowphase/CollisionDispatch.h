@@ -44,10 +44,10 @@ class CollisionDispatch {
     public:
 
         /// Constructor
-        CollisionDispatch() {}
+        CollisionDispatch() = default;
 
         /// Destructor
-        virtual ~CollisionDispatch() {}
+        virtual ~CollisionDispatch() = default;
 
         /// Initialize the collision dispatch configuration
         virtual void init(CollisionDetection* collisionDetection,

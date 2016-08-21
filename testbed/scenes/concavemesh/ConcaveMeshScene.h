@@ -66,24 +66,24 @@ class ConcaveMeshScene : public SceneDemo {
         ConcaveMeshScene(const std::string& name);
 
         /// Destructor
-        virtual ~ConcaveMeshScene();
+        virtual ~ConcaveMeshScene() override;
 
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
-        virtual void updatePhysics();
+        virtual void updatePhysics() override;
 
         /// Update the scene (take a simulation step)
-        virtual void update();
+        virtual void update() override;
 
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() const override;
 };
 
 // Return all the contact points of the scene

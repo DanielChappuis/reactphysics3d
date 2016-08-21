@@ -37,9 +37,9 @@
 namespace reactphysics3d {
 
 // Constants
-const decimal REL_ERROR = decimal(1.0e-3);
-const decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
-const int MAX_ITERATIONS_GJK_RAYCAST = 32;
+constexpr decimal REL_ERROR = decimal(1.0e-3);
+constexpr decimal REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
+constexpr int MAX_ITERATIONS_GJK_RAYCAST = 32;
 
 // Class GJKAlgorithm
 /**
@@ -68,12 +68,6 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        GJKAlgorithm(const GJKAlgorithm& algorithm);
-
-        /// Private assignment operator
-        GJKAlgorithm& operator=(const GJKAlgorithm& algorithm);
-
         /// Compute the penetration depth for enlarged objects.
         bool computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
                                                        const Transform& transform1,
@@ -90,16 +84,22 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         GJKAlgorithm();
 
         /// Destructor
-        ~GJKAlgorithm();
+        ~GJKAlgorithm() = default;
+
+        /// Deleted copy-constructor
+        GJKAlgorithm(const GJKAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator);
+                          MemoryAllocator* memoryAllocator) override;
 
         /// Compute a contact info if the two bounding volumes collide.
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback);
+                                   NarrowPhaseCallback* narrowPhaseCallback) override;
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);

@@ -35,9 +35,4 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                 : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
                   mCachedSeparatingAxis(0.0, 1.0, 0.0) {
     
-}
-
-// Destructor
-OverlappingPair::~OverlappingPair() {
-    
-}                                  
+}                               

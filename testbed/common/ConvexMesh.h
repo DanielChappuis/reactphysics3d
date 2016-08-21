@@ -93,7 +93,7 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
         void resetTransform(const rp3d::Transform& transform);
 
         /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor);
+        virtual void updateTransform(float interpolationFactor) override;
 
         /// Set the scaling of the object
         void setScaling(const openglframework::Vector3& scaling);

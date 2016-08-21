@@ -127,12 +127,6 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        DynamicsWorld(const DynamicsWorld& world);
-
-        /// Private assignment operator
-        DynamicsWorld& operator=(const DynamicsWorld& world);
-
         /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
@@ -184,7 +178,13 @@ class DynamicsWorld : public CollisionWorld {
         DynamicsWorld(const Vector3& mGravity);
 
         /// Destructor
-        virtual ~DynamicsWorld();
+        virtual ~DynamicsWorld() override;
+
+        /// Deleted copy-constructor
+        DynamicsWorld(const DynamicsWorld& world) = delete;
+
+        /// Deleted assignment operator
+        DynamicsWorld& operator=(const DynamicsWorld& world) = delete;
 
         /// Update the physics simulation
         void update(decimal timeStep);
@@ -277,25 +277,25 @@ class DynamicsWorld : public CollisionWorld {
         /// Test and report collisions between a given shape and all the others
         /// shapes of the world
         virtual void testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between two given shapes
         virtual void testCollision(const ProxyShape* shape1,
                                    const ProxyShape* shape2,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between a body and all
         /// the others bodies of the world
         virtual void testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between two bodies
         virtual void testCollision(const CollisionBody* body1,
                                    const CollisionBody* body2,
-                                   CollisionCallback* callback);
+                                   CollisionCallback* callback) override;
 
         /// Test and report collisions between all shapes of the world
-        virtual void testCollision(CollisionCallback* callback);
+        virtual void testCollision(CollisionCallback* callback) override;
 
         /// Return the list of all contacts of the world
         std::vector<const ContactManifold*> getContactsList() const;
@@ -348,7 +348,7 @@ inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
  */
 inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
                               ContactsPositionCorrectionTechnique technique) {
-    if (technique == BAUMGARTE_CONTACTS) {
+    if (technique == ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS) {
         mContactSolver.setIsSplitImpulseActive(false);
     }
     else {
@@ -362,7 +362,7 @@ inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
  */
 inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
                               JointsPositionCorrectionTechnique technique) {
-    if (technique == BAUMGARTE_JOINTS) {
+    if (technique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
     }
     else {
@@ -512,7 +512,7 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
 }
 
 // Set an event listener object to receive events callbacks.
-/// If you use NULL as an argument, the events callbacks will be disabled.
+/// If you use "nullptr" as an argument, the events callbacks will be disabled.
 /**
  * @param eventListener Pointer to the event listener object that will receive
  *                      event callbacks during the simulation

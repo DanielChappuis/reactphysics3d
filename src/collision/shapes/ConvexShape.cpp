@@ -36,11 +36,6 @@ ConvexShape::ConvexShape(CollisionShapeType type, decimal margin)
 
 }
 
-// Destructor
-ConvexShape::~ConvexShape() {
-
-}
-
 // Return a local support point in a given direction with the object margin
 Vector3 ConvexShape::getLocalSupportPointWithMargin(const Vector3& direction,
                                                     void** cachedCollisionData) const {

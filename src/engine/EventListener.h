@@ -44,16 +44,16 @@ class EventListener {
     public :
 
         /// Constructor
-        EventListener() {}
+        EventListener() = default;
 
         /// Destructor
-        virtual ~EventListener() {}
+        virtual ~EventListener() = default;
 
         /// Called when a new contact point is found between two bodies that were separated before
         /**
          * @param contact Information about the contact
          */
-        virtual void beginContact(const ContactPointInfo& contact) {};
+        virtual void beginContact(const ContactPointInfo& contact) {}
 
         /// Called when a new contact point is found between two bodies
         /**

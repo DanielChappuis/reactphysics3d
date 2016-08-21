@@ -42,7 +42,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
           : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(NULL) {
+            mJointsList(nullptr) {
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;
@@ -50,7 +50,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
 
 // Destructor
 RigidBody::~RigidBody() {
-    assert(mJointsList == NULL);
+    assert(mJointsList == nullptr);
 }
 
 // Set the type of the body
@@ -76,7 +76,7 @@ void RigidBody::setType(BodyType type) {
     recomputeMassInformation();
 
     // If it is a static body
-    if (mType == STATIC) {
+    if (mType == BodyType::STATIC) {
 
         // Reset the velocity to zero
         mLinearVelocity.setToZero();
@@ -84,7 +84,7 @@ void RigidBody::setType(BodyType type) {
     }
 
     // If it is a static or a kinematic body
-    if (mType == STATIC || mType == KINEMATIC) {
+    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mMassInverse = decimal(0.0);
@@ -119,7 +119,7 @@ void RigidBody::setType(BodyType type) {
  */
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     mInertiaTensorLocal = inertiaTensorLocal;
 
@@ -134,7 +134,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
  */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
     mCenterOfMassLocal = centerOfMassLocal;
@@ -152,7 +152,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     mInitMass = mass;
 
@@ -168,8 +168,8 @@ void RigidBody::setMass(decimal mass) {
 // Remove a joint from the joints list
 void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint) {
 
-    assert(joint != NULL);
-    assert(mJointsList != NULL);
+    assert(joint != nullptr);
+    assert(mJointsList != nullptr);
 
     // Remove the joint from the linked list of the joints of the first body
     if (mJointsList->joint == joint) {   // If the first element is the one to remove
@@ -180,7 +180,7 @@ void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, cons
     }
     else {  // If the element to remove is not the first one in the list
         JointListElement* currentElement = mJointsList;
-        while (currentElement->next != NULL) {
+        while (currentElement->next != nullptr) {
             if (currentElement->next->joint == joint) {
                 JointListElement* elementToRemove = currentElement->next;
                 currentElement->next = elementToRemove->next;
@@ -219,7 +219,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                                                       transform, mass);
 
     // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == NULL) {
+    if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
     }
     else {
@@ -267,7 +267,7 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == STATIC) return;
+    if (mType == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
     mLinearVelocity = linearVelocity;
@@ -285,7 +285,7 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == STATIC) return;
+    if (mType == BodyType::STATIC) return;
 
     // Set the angular velocity
     mAngularVelocity = angularVelocity;
@@ -329,15 +329,15 @@ void RigidBody::recomputeMassInformation() {
     mCenterOfMassLocal.setToZero();
 
     // If it is STATIC or KINEMATIC body
-    if (mType == STATIC || mType == KINEMATIC) {
+    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
         mCenterOfMassWorld = mTransform.getPosition();
         return;
     }
 
-    assert(mType == DYNAMIC);
+    assert(mType == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
         mInitMass += shape->getMass();
         mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
     }
@@ -356,7 +356,7 @@ void RigidBody::recomputeMassInformation() {
     mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
 
     // Compute the total mass and inertia tensor using all the collision shapes
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Get the inertia tensor of the collision shape in its local-space
         Matrix3x3 inertiaTensor;
@@ -399,7 +399,7 @@ void RigidBody::updateBroadPhaseState() const {
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;

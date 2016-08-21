@@ -72,6 +72,9 @@ class ConvexVsTriangleCallback : public TriangleCallback {
 
     public:
 
+        /// Destructor
+        virtual ~ConvexVsTriangleCallback() override = default;
+
         /// Set the collision detection pointer
         void setCollisionDetection(CollisionDetection* collisionDetection) {
             mCollisionDetection = collisionDetection;
@@ -104,7 +107,7 @@ class ConvexVsTriangleCallback : public TriangleCallback {
         }
 
         /// Test collision between a triangle and the convex mesh shape
-        virtual void testTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints) override;
 };
 
 // Class SmoothMeshContactInfo
@@ -169,7 +172,7 @@ class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo);
+                                   const ContactPointInfo& contactInfo) override;
 
 };
 
@@ -187,12 +190,6 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Attributes -------------------- //        
 
         // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        ConcaveVsConvexAlgorithm(const ConcaveVsConvexAlgorithm& algorithm);
-
-        /// Private assignment operator
-        ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm);
 
         /// Process the concave triangle mesh collision using the smooth mesh collision algorithm
         void processSmoothMeshCollision(OverlappingPair* overlappingPair,
@@ -212,15 +209,21 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveVsConvexAlgorithm();
+        ConcaveVsConvexAlgorithm() = default;
 
         /// Destructor
-        virtual ~ConcaveVsConvexAlgorithm();
+        virtual ~ConcaveVsConvexAlgorithm() override = default;
+
+        /// Private copy-constructor
+        ConcaveVsConvexAlgorithm(const ConcaveVsConvexAlgorithm& algorithm) = delete;
+
+        /// Private assignment operator
+        ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback);
+                                   NarrowPhaseCallback* narrowPhaseCallback) override;
 };
 
 // Add a triangle vertex into the set of processed triangles

@@ -53,11 +53,6 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& m
     fillInCollisionMatrix();
 }
 
-// Destructor
-CollisionDetection::~CollisionDetection() {
-
-}
-
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
 
@@ -140,7 +135,7 @@ void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callbac
                                              contactPoint->getLocalPointOnBody2());
 
                 // Notify the collision callback about this new contact
-                if (callback != NULL) callback->notifyContact(contactInfo);
+                if (callback != nullptr) callback->notifyContact(contactInfo);
             }
         }
     }
@@ -209,8 +204,8 @@ void CollisionDetection::computeNarrowPhase() {
         pair->update();
 
         // Check that at least one body is awake and not static
-        bool isBody1Active = !body1->isSleeping() && body1->getType() != STATIC;
-        bool isBody2Active = !body2->isSleeping() && body2->getType() != STATIC;
+        bool isBody1Active = !body1->isSleeping() && body1->getType() != BodyType::STATIC;
+        bool isBody2Active = !body2->isSleeping() && body2->getType() != BodyType::STATIC;
         if (!isBody1Active && !isBody2Active) continue;
 
         // Check if the bodies are in the set of bodies that cannot collide between each other
@@ -220,10 +215,12 @@ void CollisionDetection::computeNarrowPhase() {
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
+        const int shape1Index = static_cast<int>(shape1Type);
+        const int shape2Index = static_cast<int>(shape2Type);
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
 
         // If there is no collision algorithm between those two kinds of shapes
-        if (narrowPhaseAlgorithm == NULL) continue;
+        if (narrowPhaseAlgorithm == nullptr) continue;
         
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
@@ -312,7 +309,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         pair->update();
 
         // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
-        if (body1->getType() != DYNAMIC && body2->getType() != DYNAMIC) continue;
+        if (body1->getType() != BodyType::DYNAMIC && body2->getType() != BodyType::DYNAMIC) continue;
         bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
         if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
 
@@ -322,10 +319,12 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
         const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Type][shape2Type];
+        const int shape1Index = static_cast<int>(shape1Type);
+        const int shape2Index = static_cast<int>(shape2Type);
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
 
         // If there is no collision algorithm between those two kinds of shapes
-        if (narrowPhaseAlgorithm == NULL) continue;
+        if (narrowPhaseAlgorithm == nullptr) continue;
 
         // Notify the narrow-phase algorithm about the overlapping pair we are going to test
         narrowPhaseAlgorithm->setCurrentOverlappingPair(pair);
@@ -373,7 +372,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Create the overlapping pair and add it into the set of overlapping pairs
     OverlappingPair* newPair = new (mWorld->mMemoryAllocator.allocate(sizeof(OverlappingPair)))
                               OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mMemoryAllocator);
-    assert(newPair != NULL);
+    assert(newPair != nullptr);
 
 #ifndef NDEBUG
     std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
@@ -420,14 +419,14 @@ void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, const C
     if (overlappingPair->getNbContactPoints() == 0) {
 
         // Trigger a callback event
-        if (mWorld->mEventListener != NULL) mWorld->mEventListener->beginContact(contactInfo);
+        if (mWorld->mEventListener != nullptr) mWorld->mEventListener->beginContact(contactInfo);
     }
 
     // Create a new contact
     createContact(overlappingPair, contactInfo);
 
     // Trigger a callback event for the new contact
-    if (mWorld->mEventListener != NULL) mWorld->mEventListener->newContact(contactInfo);
+    if (mWorld->mEventListener != nullptr) mWorld->mEventListener->newContact(contactInfo);
 }
 
 // Create a new contact
@@ -463,7 +462,7 @@ void CollisionDetection::addAllContactManifoldsToBodies() {
 // in the corresponding contact
 void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
-    assert(pair != NULL);
+    assert(pair != nullptr);
 
     CollisionBody* body1 = pair->getShape1()->getBody();
     CollisionBody* body2 = pair->getShape2()->getBody();

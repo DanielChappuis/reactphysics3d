@@ -35,7 +35,7 @@
 namespace reactphysics3d {
 
 // Type for the overlapping pair ID
-typedef std::pair<uint, uint> overlappingpairid;
+using overlappingpairid = std::pair<uint, uint>;
 
 // Class OverlappingPair
 /**
@@ -56,14 +56,6 @@ class OverlappingPair {
 
         /// Cached previous separating axis
         Vector3 mCachedSeparatingAxis;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        OverlappingPair(const OverlappingPair& pair);
-
-        /// Private assignment operator
-        OverlappingPair& operator=(const OverlappingPair& pair);
 
     public:
 
@@ -74,7 +66,13 @@ class OverlappingPair {
                         int nbMaxContactManifolds, MemoryAllocator& memoryAllocator);
 
         /// Destructor
-        ~OverlappingPair();
+        ~OverlappingPair() = default;
+
+        /// Deleted copy-constructor
+        OverlappingPair(const OverlappingPair& pair) = delete;
+
+        /// Deleted assignment operator
+        OverlappingPair& operator=(const OverlappingPair& pair) = delete;
         
         /// Return the pointer to first proxy collision shape
         ProxyShape* getShape1() const;

@@ -269,12 +269,12 @@ class ProfileSample {
 
 // Return true if we are at the root of the profiler tree
 inline bool ProfileNodeIterator::isRoot() {
-    return (mCurrentParentNode->getParentNode() == NULL);
+    return (mCurrentParentNode->getParentNode() == nullptr);
 }
 
 // Return true if we are at the end of a branch of the profiler tree
 inline bool ProfileNodeIterator::isEnd() {
-    return (mCurrentChildNode == NULL);
+    return (mCurrentChildNode == nullptr);
 }
 
 // Return the name of the current node

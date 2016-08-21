@@ -44,28 +44,26 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
 
     protected :
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm);
-
-        /// Private assignment operator
-        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm);
-        
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm();
+        SphereVsSphereAlgorithm() = default;
 
         /// Destructor
-        virtual ~SphereVsSphereAlgorithm();
+        virtual ~SphereVsSphereAlgorithm() override = default;
+
+        /// Deleted copy-constructor
+        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
                                    const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback);
+                                   NarrowPhaseCallback* narrowPhaseCallback) override;
 };
 
 }

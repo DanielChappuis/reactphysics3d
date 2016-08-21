@@ -51,8 +51,8 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     mPhysicsTriangleVertexArray =
             new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
@@ -101,8 +101,8 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     mPhysicsTriangleVertexArray =
             new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
@@ -177,16 +177,16 @@ void ConvexMesh::render(openglframework::Shader& shader,
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
     mVBONormals.bind();
 
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
     if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
 
     // For each part of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
-        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)NULL);
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)nullptr);
     }
 
     glDisableVertexAttribArray(vertexPositionLoc);
@@ -268,7 +268,7 @@ void ConvexMesh::resetTransform(const rp3d::Transform& transform) {
 
     // Reset the velocity of the rigid body
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
+    if (rigidBody != nullptr) {
         rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
         rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
     }
