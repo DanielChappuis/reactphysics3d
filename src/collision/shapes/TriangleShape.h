@@ -117,7 +117,7 @@ class TriangleShape : public ConvexShape {
         Vector3 getVertex(int index) const;
 
         /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const;
+        virtual bool isPolyhedron() const override;
 
         // ---------- Friendship ---------- //
 

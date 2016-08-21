@@ -105,7 +105,7 @@ class ConcaveShape : public CollisionShape {
         virtual bool isConvex() const override;
 
         /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const;
+        virtual bool isPolyhedron() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;

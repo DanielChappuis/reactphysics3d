@@ -141,7 +141,7 @@ class ConvexMeshShape : public ConvexShape {
         void addEdge(uint v1, uint v2);
 
         /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const;
+        virtual bool isPolyhedron() const override;
 
         /// Return true if the edges information is used to speed up the collision detection
         bool isEdgesInformationUsed() const;
