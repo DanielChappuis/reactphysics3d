@@ -34,9 +34,9 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constants initialization
-constexpr decimal ContactSolver::BETA = decimal(0.2);
-constexpr decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
-constexpr decimal ContactSolver::SLOP= decimal(0.01);
+const decimal ContactSolver::BETA = decimal(0.2);
+const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
+const decimal ContactSolver::SLOP= decimal(0.01);
 
 // Constructor
 ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)

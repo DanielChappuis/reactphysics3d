@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Static variables definition
-constexpr decimal FixedJoint::BETA = decimal(0.2);
+const decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
 FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
