@@ -116,6 +116,9 @@ class TriangleShape : public ConvexShape {
         /// Return the coordinates of a given vertex of the triangle
         Vector3 getVertex(int index) const;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         // ---------- Friendship ---------- //
 
         friend class ConcaveMeshRaycastCallback;
@@ -216,6 +219,11 @@ inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
 inline Vector3 TriangleShape::getVertex(int index) const {
     assert(index >= 0 && index < 3);
     return mPoints[index];
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool TriangleShape::isPolyhedron() const {
+    return true;
 }
 
 }

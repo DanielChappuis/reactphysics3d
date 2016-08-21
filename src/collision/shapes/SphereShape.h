@@ -83,6 +83,9 @@ class SphereShape : public ConvexShape {
         /// Return the radius of the sphere
         decimal getRadius() const;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         /// Set the scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
 
@@ -102,6 +105,11 @@ class SphereShape : public ConvexShape {
  */
 inline decimal SphereShape::getRadius() const {
     return mMargin;
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool SphereShape::isPolyhedron() const {
+        return false;
 }
 
 // Set the scaling vector of the collision shape

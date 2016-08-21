@@ -35,9 +35,9 @@
 #include "memory/MemoryAllocator.h"
 #include "constraint/ContactPoint.h"
 #include <vector>
-#include <map>
 #include <set>
 #include <utility>
+#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -61,6 +61,9 @@ class TestCollisionBetweenShapesCallback : public NarrowPhaseCallback {
             : mCollisionCallback(callback) {
 
         }
+
+        // Destructor
+        virtual ~TestCollisionBetweenShapesCallback() { }
 
         // Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,

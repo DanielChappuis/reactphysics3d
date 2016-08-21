@@ -46,9 +46,6 @@ CubesScene::CubesScene(const std::string& name)
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsVelocitySolver(15);
-
     float radius = 2.0f;
 
     // Create all the cubes of the scene

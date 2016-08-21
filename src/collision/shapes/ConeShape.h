@@ -107,6 +107,9 @@ class ConeShape : public ConvexShape {
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
 };
@@ -157,6 +160,11 @@ inline void ConeShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min.x = -max.x;
     min.y = -max.y;
     min.z = min.x;
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool ConeShape::isPolyhedron() const {
+    return false;
 }
 
 // Return the local inertia tensor of the collision shape

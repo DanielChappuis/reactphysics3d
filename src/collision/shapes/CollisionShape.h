@@ -98,6 +98,9 @@ class CollisionShape {
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const=0;
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const=0;
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 

@@ -48,9 +48,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsVelocitySolver(15);
-
     float radius = 3.0f;
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {

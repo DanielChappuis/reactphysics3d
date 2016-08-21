@@ -140,6 +140,9 @@ class ConvexMeshShape : public ConvexShape {
         /// Add an edge into the convex mesh by specifying the two vertex indices of the edge.
         void addEdge(uint v1, uint v2);
 
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const;
+
         /// Return true if the edges information is used to speed up the collision detection
         bool isEdgesInformationUsed() const;
 
@@ -157,6 +160,11 @@ inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {
     return sizeof(ConvexMeshShape);
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool ConvexMeshShape::isPolyhedron() const {
+    return true;
 }
 
 // Return the local bounds of the shape in x, y and z directions
