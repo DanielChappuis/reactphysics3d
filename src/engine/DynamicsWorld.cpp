@@ -353,6 +353,8 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
     PROFILE("DynamicsWorld::solveContactsAndConstraints()");
 
+    // TODO : Do not solve per island but solve every constraints at once
+
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
     mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
@@ -398,7 +400,13 @@ void DynamicsWorld::solveContactsAndConstraints() {
             }
 
             // Solve the contacts
-            if (isContactsToSolve) mContactSolver.solve();
+            if (isContactsToSolve) {
+
+                mContactSolver.resetTotalPenetrationImpulse();
+
+                mContactSolver.solvePenetrationConstraints();
+                mContactSolver.solveFrictionConstraints();
+            }
         }        
 
         // Cache the lambda values in order to use them in the next
