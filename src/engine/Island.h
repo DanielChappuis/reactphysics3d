@@ -114,7 +114,7 @@ class Island {
         RigidBody** getBodies();
 
         /// Return a pointer to the array of contact manifolds
-        ContactManifold** getContactManifold();
+        ContactManifold** getContactManifolds();
 
         /// Return a pointer to the array of joints
         Joint** getJoints();
@@ -164,7 +164,7 @@ inline RigidBody** Island::getBodies() {
 }
 
 // Return a pointer to the array of contact manifolds
-inline ContactManifold** Island::getContactManifold() {
+inline ContactManifold** Island::getContactManifolds() {
     return mContactManifolds;
 }
 

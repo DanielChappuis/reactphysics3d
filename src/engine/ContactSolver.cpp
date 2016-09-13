@@ -38,15 +38,13 @@ const decimal ContactSolver::BETA = decimal(0.2);
 const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP= decimal(0.01);
 
-// TODO : Enable warmstarting again
-
 // Constructor
 ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
               :mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr),
                mContactConstraints(nullptr), mPenetrationConstraints(nullptr),
                mFrictionConstraints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-               mIsWarmStartingActive(false), mIsSplitImpulseActive(true),
+               mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
                mIsSolveFrictionAtContactManifoldCenterActive(true) {
 
 }
@@ -83,7 +81,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
     assert(mFrictionConstraints != nullptr);
 
     // For each contact manifold of the island
-    ContactManifold** contactManifolds = island->getContactManifold();
+    ContactManifold** contactManifolds = island->getContactManifolds();
     for (uint i=0; i<mNbContactManifolds; i++) {
 
         ContactManifold* externalManifold = contactManifolds[i];
@@ -104,6 +102,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
 
         mFrictionConstraints[mNbFrictionConstraints].indexBody1 = indexBody1;
         mFrictionConstraints[mNbFrictionConstraints].indexBody2 = indexBody2;
+        mFrictionConstraints[mNbFrictionConstraints].contactManifold = externalManifold;
 
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
@@ -131,6 +130,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         mFrictionConstraints[mNbFrictionConstraints].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         mFrictionConstraints[mNbFrictionConstraints].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         internalManifold.externalContactManifold = externalManifold;
+        mFrictionConstraints[mNbFrictionConstraints].hasAtLeastOneRestingContactPoint = false;
         //internalManifold.isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
         //internalManifold.isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
 
@@ -167,6 +167,7 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
             mPenetrationConstraints[mNbPenetrationConstraints].massInverseBody2 = body2->mMassInverse;
             mPenetrationConstraints[mNbPenetrationConstraints].restitutionFactor = restitutionFactor;
             mPenetrationConstraints[mNbPenetrationConstraints].indexFrictionConstraint = mNbFrictionConstraints;
+            mPenetrationConstraints[mNbPenetrationConstraints].contactPoint = externalContact;
 
             // Get the contact point on the two bodies
             Vector3 p1 = externalContact->getWorldPointOnBody1();
@@ -178,7 +179,10 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
             //mPenetrationConstraints[penConstIndex].externalContact = externalContact;
             mPenetrationConstraints[mNbPenetrationConstraints].normal = externalContact->getNormal();
             mPenetrationConstraints[mNbPenetrationConstraints].penetrationDepth = externalContact->getPenetrationDepth();
-            //mPenetrationConstraints[penConstIndex].isRestingContact = externalContact->getIsRestingContact();
+            mPenetrationConstraints[mNbPenetrationConstraints].isRestingContact = externalContact->getIsRestingContact();
+
+            mFrictionConstraints[mNbFrictionConstraints].hasAtLeastOneRestingContactPoint |= mPenetrationConstraints[mNbPenetrationConstraints].isRestingContact;
+
             externalContact->setIsRestingContact(true);
             //mPenetrationConstraints[penConstIndex].oldFrictionVector1 = externalContact->getFrictionVector1();
             //mPenetrationConstraints[penConstIndex].oldFrictionVector2 = externalContact->getFrictionVector2();
@@ -467,8 +471,115 @@ void ContactSolver::initializeContactConstraints() {
 /// the solution of the linear system
 void ContactSolver::warmStart() {
 
-    /*
     PROFILE("ContactSolver::warmStart()");
+
+    // Penetration constraints
+    for (uint i=0; i<mNbPenetrationConstraints; i++) {
+
+        // If it is not a new contact (this contact was already existing at last time step)
+        if (mPenetrationConstraints[i].isRestingContact) {
+
+            Vector3 linearImpulse = mPenetrationConstraints[i].normal * mPenetrationConstraints[i].penetrationImpulse;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mPenetrationConstraints[i].indexBody1] += mPenetrationConstraints[i].massInverseBody1 *
+                                                      (-linearImpulse);
+            mAngularVelocities[mPenetrationConstraints[i].indexBody1] += mPenetrationConstraints[i].inverseInertiaTensorBody1 *
+                                                       (-mPenetrationConstraints[i].r1CrossN * mPenetrationConstraints[i].penetrationImpulse);
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mPenetrationConstraints[i].indexBody2] += mPenetrationConstraints[i].massInverseBody2 *
+                                                      linearImpulse;
+            mAngularVelocities[mPenetrationConstraints[i].indexBody2] += mPenetrationConstraints[i].inverseInertiaTensorBody2 *
+                                                       (-mPenetrationConstraints[i].r1CrossN * mPenetrationConstraints[i].penetrationImpulse);
+
+        }
+        else {  // If it is a new contact point
+
+            // Initialize the accumulated impulses to zero
+            mPenetrationConstraints[i].penetrationImpulse = 0.0;
+        }
+    }
+
+    // Friction constraints
+    for (uint i=0; i<mNbFrictionConstraints; i++) {
+
+        // If we solve the friction constraints at the center of the contact manifold and there is
+        // at least one resting contact point in the contact manifold
+        if (mFrictionConstraints[i].hasAtLeastOneRestingContactPoint) {
+
+            // Project the old friction impulses (with old friction vectors) into the new friction
+            // vectors to get the new friction impulses
+            Vector3 oldFrictionImpulse = mFrictionConstraints[i].friction1Impulse * mFrictionConstraints[i].oldFrictionVector1 +
+                                         mFrictionConstraints[i].friction2Impulse * mFrictionConstraints[i].oldFrictionVector2;
+            mFrictionConstraints[i].friction1Impulse = oldFrictionImpulse.dot(mFrictionConstraints[i].frictionVector1);
+            mFrictionConstraints[i].friction2Impulse = oldFrictionImpulse.dot(mFrictionConstraints[i].frictionVector2);
+
+            // ------ First friction constraint at the center of the contact manifold ------ //
+
+            // Compute the impulse P = J^T * lambda
+            Vector3 linearImpulseBody2 = mFrictionConstraints[i].frictionVector1 * mFrictionConstraints[i].friction1Impulse;
+            Vector3 angularImpulseBody1 = -mFrictionConstraints[i].r1CrossT1 * mFrictionConstraints[i].friction1Impulse;
+            Vector3 angularImpulseBody2 = mFrictionConstraints[i].r2CrossT1 * mFrictionConstraints[i].friction1Impulse;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].massInverseBody1 * (-linearImpulseBody2);
+            mAngularVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].inverseInertiaTensorBody1 * angularImpulseBody1;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].massInverseBody2 * linearImpulseBody2;
+            mAngularVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].inverseInertiaTensorBody2 * angularImpulseBody2;
+
+            // ------ Second friction constraint at the center of the contact manifold ----- //
+
+            // Compute the impulse P = J^T * lambda
+            angularImpulseBody1 = -mFrictionConstraints[i].r1CrossT2 * mFrictionConstraints[i].friction2Impulse;
+            linearImpulseBody2 = mFrictionConstraints[i].frictionVector2 * mFrictionConstraints[i].friction2Impulse;
+            angularImpulseBody2 = mFrictionConstraints[i].r2CrossT2 * mFrictionConstraints[i].friction2Impulse;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].massInverseBody1 * (-linearImpulseBody2);
+            mAngularVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].inverseInertiaTensorBody1 * angularImpulseBody1;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mLinearVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].massInverseBody2 * linearImpulseBody2;
+            mAngularVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].inverseInertiaTensorBody2 * angularImpulseBody2;
+
+            // ------ Twist friction constraint at the center of the contact manifold ------ //
+
+            // Compute the impulse P = J^T * lambda
+            angularImpulseBody2 = mFrictionConstraints[i].normal * mFrictionConstraints[i].frictionTwistImpulse;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mAngularVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].inverseInertiaTensorBody1 * (-angularImpulseBody2);
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mAngularVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].inverseInertiaTensorBody2 * angularImpulseBody2;
+
+            // ------ Rolling resistance at the center of the contact manifold ------ //
+
+            // Compute the impulse P = J^T * lambda
+            angularImpulseBody2 = mFrictionConstraints[i].rollingResistanceImpulse;
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mAngularVelocities[mFrictionConstraints[i].indexBody1] += mFrictionConstraints[i].inverseInertiaTensorBody1 * (-angularImpulseBody2);
+
+            // Update the velocities of the body 1 by applying the impulse P
+            mAngularVelocities[mFrictionConstraints[i].indexBody2] += mFrictionConstraints[i].inverseInertiaTensorBody2 * angularImpulseBody2;
+        }
+        else {  // If it is a new contact manifold
+
+            // Initialize the accumulated impulses to zero
+            mFrictionConstraints[i].friction1Impulse = 0.0;
+            mFrictionConstraints[i].friction2Impulse = 0.0;
+            mFrictionConstraints[i].frictionTwistImpulse = 0.0;
+            mFrictionConstraints[i].rollingResistanceImpulse.setToZero();
+        }
+    }
+
+
+    /*
+
 
     // Check that warm starting is active
     if (!mIsWarmStartingActive) return;
@@ -1143,6 +1254,24 @@ void ContactSolver::solveFrictionConstraints() {
 // Store the computed impulses to use them to
 // warm start the solver at the next iteration
 void ContactSolver::storeImpulses() {
+
+    // Penetration constraints
+    for (uint i=0; i<mNbPenetrationConstraints; i++) {
+
+        mPenetrationConstraints[i].contactPoint->setPenetrationImpulse(mPenetrationConstraints[i].penetrationImpulse);
+
+    }
+
+    // Friction constraints
+    for (uint i=0; i<mNbFrictionConstraints; i++) {
+
+        mFrictionConstraints[i].contactManifold->setFrictionImpulse1(mFrictionConstraints[i].friction1Impulse);
+        mFrictionConstraints[i].contactManifold->setFrictionImpulse2(mFrictionConstraints[i].friction2Impulse);
+        mFrictionConstraints[i].contactManifold->setFrictionTwistImpulse(mFrictionConstraints[i].frictionTwistImpulse);
+        mFrictionConstraints[i].contactManifold->setRollingResistanceImpulse(mFrictionConstraints[i].rollingResistanceImpulse);
+        mFrictionConstraints[i].contactManifold->setFrictionVector1(mFrictionConstraints[i].frictionVector1);
+        mFrictionConstraints[i].contactManifold->setFrictionVector2(mFrictionConstraints[i].frictionVector2);
+    }
 
     /*
     // For each contact manifold

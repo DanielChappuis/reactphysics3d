@@ -381,7 +381,9 @@ void DynamicsWorld::solveContactsAndConstraints() {
             mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
 
             // Warm start the contact solver
-            mContactSolver.warmStart();
+            if (mContactSolver.IsWarmStartingActive()) {
+                mContactSolver.warmStart();
+            }
         }
 
         // If there are constraints

@@ -114,6 +114,8 @@ class ContactSolver {
 
         struct PenetrationConstraint {
 
+            // TODO : Pack bools into a single value
+
             /// Index of body 1 in the constraint solver
             uint indexBody1;
 
@@ -167,9 +169,17 @@ class ContactSolver {
 
             /// Index of the corresponding friction constraint
             uint indexFrictionConstraint;
+
+            /// Pointer to the corresponding contact point
+            ContactPoint* contactPoint;
+
+            /// True if this constraint is for a resting contact
+            bool isRestingContact;
         };
 
         struct FrictionConstraint {
+
+            // TODO : Pack bools into a single value
 
             /// Index of body 1 in the constraint solver
             uint indexBody1;
@@ -260,6 +270,12 @@ class ContactSolver {
 
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
+
+            /// Pointer to the corresponding contact manifold
+            ContactManifold* contactManifold;
+
+            /// True if the original contact manifold has at least one resting contact
+            bool hasAtLeastOneRestingContactPoint;
         };
 
         // Structure ContactPointSolver
@@ -639,6 +655,9 @@ class ContactSolver {
 
         /// Clean up the constraint solver
         void cleanup();
+
+        /// Return true if warmstarting is active
+        bool IsWarmStartingActive() const;
 };
 
 // Set the split velocities arrays
@@ -729,6 +748,11 @@ inline const Impulse ContactSolver::computeFriction2Impulse(decimal deltaLambda,
                    -contactPoint.r1CrossT2 * deltaLambda,
                    contactPoint.frictionVector2 * deltaLambda,
                    contactPoint.r2CrossT2 * deltaLambda);
+}
+
+// Return true if warmstarting is active
+inline bool ContactSolver::IsWarmStartingActive() const {
+    return mIsWarmStartingActive;
 }
 
 }
