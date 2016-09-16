@@ -832,7 +832,7 @@ void ContactSolver::solvePenetrationConstraints() {
             mPenetrationConstraints[i].penetrationSplitImpulse = std::max(
                         mPenetrationConstraints[i].penetrationSplitImpulse +
                         deltaLambdaSplit, decimal(0.0));
-            deltaLambda = mPenetrationConstraints[i].penetrationSplitImpulse - lambdaTempSplit;
+            deltaLambdaSplit = mPenetrationConstraints[i].penetrationSplitImpulse - lambdaTempSplit;
 
             // Update the velocities of the body 1 by applying the impulse P=J^T * lambda
             Vector3 linearImpulse = mPenetrationConstraints[i].normal * deltaLambdaSplit;
