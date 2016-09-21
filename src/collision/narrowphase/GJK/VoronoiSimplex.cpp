@@ -563,7 +563,6 @@ bool VoronoiSimplex::computeClosestPointOnTetrahedron(const Vector3& a, const Ve
         if (squareDist < closestSquareDistance) {
 
             // Use it as the current closest point
-            closestSquareDistance = squareDist;
             baryCoordsAB.setAllValues(0.0, triangleBaryCoords[0]);
             baryCoordsCD.setAllValues(triangleBaryCoords[2], triangleBaryCoords[1]);
             bitsUsedPoints = mapTriangleUsedVerticesToTetrahedron(tempUsedVertices, 1, 3, 2);

@@ -41,7 +41,7 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator)
+CollisionDetection::CollisionDetection(CollisionWorld* world, PoolAllocator& memoryAllocator)
                    : mMemoryAllocator(memoryAllocator),
                      mWorld(world), mBroadPhaseAlgorithm(*this),
                      mIsCollisionShapesAdded(false) {
@@ -189,7 +189,7 @@ void CollisionDetection::computeNarrowPhase() {
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
-            mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
             continue;
         }
@@ -294,7 +294,7 @@ void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* call
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
-            mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
             continue;
         }
@@ -370,8 +370,8 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
                                                                       shape2->getCollisionShape()->getType());
 
     // Create the overlapping pair and add it into the set of overlapping pairs
-    OverlappingPair* newPair = new (mWorld->mMemoryAllocator.allocate(sizeof(OverlappingPair)))
-                              OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mMemoryAllocator);
+    OverlappingPair* newPair = new (mWorld->mPoolAllocator.allocate(sizeof(OverlappingPair)))
+                              OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mPoolAllocator);
     assert(newPair != nullptr);
 
 #ifndef NDEBUG
@@ -400,7 +400,7 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
-            mWorld->mMemoryAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
         }
         else {
@@ -434,7 +434,7 @@ void CollisionDetection::createContact(OverlappingPair* overlappingPair,
                                        const ContactPointInfo& contactInfo) {
 
     // Create a new contact
-    ContactPoint* contact = new (mWorld->mMemoryAllocator.allocate(sizeof(ContactPoint)))
+    ContactPoint* contact = new (mWorld->mPoolAllocator.allocate(sizeof(ContactPoint)))
                                  ContactPoint(contactInfo);
 
     // Add the contact to the contact manifold set of the corresponding overlapping pair
@@ -477,7 +477,7 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
         // Add the contact manifold at the beginning of the linked
         // list of contact manifolds of the first body
-        void* allocatedMemory1 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+        void* allocatedMemory1 = mWorld->mPoolAllocator.allocate(sizeof(ContactManifoldListElement));
         ContactManifoldListElement* listElement1 = new (allocatedMemory1)
                                                       ContactManifoldListElement(contactManifold,
                                                                          body1->mContactManifoldsList);
@@ -485,7 +485,7 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 
         // Add the contact manifold at the beginning of the linked
         // list of the contact manifolds of the second body
-        void* allocatedMemory2 = mWorld->mMemoryAllocator.allocate(sizeof(ContactManifoldListElement));
+        void* allocatedMemory2 = mWorld->mPoolAllocator.allocate(sizeof(ContactManifoldListElement));
         ContactManifoldListElement* listElement2 = new (allocatedMemory2)
                                                       ContactManifoldListElement(contactManifold,
                                                                          body2->mContactManifoldsList);
@@ -520,8 +520,8 @@ EventListener* CollisionDetection::getWorldEventListener() {
 }
 
 /// Return a reference to the world memory allocator
-MemoryAllocator& CollisionDetection::getWorldMemoryAllocator() {
-  return mWorld->mMemoryAllocator;
+PoolAllocator& CollisionDetection::getWorldMemoryAllocator() {
+  return mWorld->mPoolAllocator;
 }
 
 // Called by a narrow-phase collision algorithm when a new contact has been found

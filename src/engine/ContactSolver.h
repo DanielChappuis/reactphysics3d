@@ -31,6 +31,7 @@
 #include "configuration.h"
 #include "constraint/Joint.h"
 #include "collision/ContactManifold.h"
+#include "memory/SingleFrameAllocator.h"
 #include "Island.h"
 #include "Impulse.h"
 #include <map>
@@ -278,228 +279,6 @@ class ContactSolver {
             bool hasAtLeastOneRestingContactPoint;
         };
 
-        // Structure ContactPointSolver
-        /**
-         * Contact solver internal data structure that to store all the
-         * information relative to a contact point
-         */
-        struct ContactPointSolver {
-
-            /// Index of body 1 in the constraint solver
-            uint indexBody1;
-
-            /// Index of body 2 in the constraint solver
-            uint indexBody2;
-
-            /// Inverse of the mass of body 1
-            decimal massInverseBody1;
-
-            /// Inverse of the mass of body 2
-            decimal massInverseBody2;
-
-            /// Inverse inertia tensor of body 1
-            Matrix3x3 inverseInertiaTensorBody1;
-
-            /// Inverse inertia tensor of body 2
-            Matrix3x3 inverseInertiaTensorBody2;
-
-            /// Point on body 1 where to apply the friction constraints
-            Vector3 frictionPointBody1;
-
-            /// Point on body 2 where to apply the friction constraints
-            Vector3 frictionPointBody2;
-
-            /// Accumulated normal impulse
-            decimal penetrationImpulse;
-
-            /// Accumulated impulse in the 1st friction direction
-            decimal friction1Impulse;
-
-            /// Accumulated impulse in the 2nd friction direction
-            decimal friction2Impulse;
-
-            /// Accumulated split impulse for penetration correction
-            decimal penetrationSplitImpulse;
-
-            /// Accumulated rolling resistance impulse
-            Vector3 rollingResistanceImpulse;
-
-            /// Normal vector of the contact
-            Vector3 normal;
-
-            /// First friction vector in the tangent plane
-            //Vector3 frictionVector1;
-
-            /// Second friction vector in the tangent plane
-            //Vector3 frictionVector2;
-
-            /// Old first friction vector in the tangent plane
-            Vector3 oldFrictionVector1;
-
-            /// Old second friction vector in the tangent plane
-            Vector3 oldFrictionVector2;
-
-            /// Vector from the body 1 center to the contact point
-            Vector3 r1;
-
-            /// Vector from the body 2 center to the contact point
-            Vector3 r2;
-
-            /// Cross product of r1 with 1st friction vector
-            //Vector3 r1CrossT1;
-
-            /// Cross product of r1 with 2nd friction vector
-            //Vector3 r1CrossT2;
-
-            /// Cross product of r2 with 1st friction vector
-            //Vector3 r2CrossT1;
-
-            /// Cross product of r2 with 2nd friction vector
-            //Vector3 r2CrossT2;
-
-            /// Cross product of r1 with the contact normal
-            //Vector3 r1CrossN;
-
-            /// Cross product of r2 with the contact normal
-            //Vector3 r2CrossN;
-
-            /// Penetration depth
-            decimal penetrationDepth;
-
-            /// Velocity restitution bias
-            decimal restitutionBias;
-
-            /// Inverse of the matrix K for the penenetration
-            //decimal inversePenetrationMass;
-
-            /// Inverse of the matrix K for the 1st friction
-            decimal inverseFriction1Mass;
-
-            /// Inverse of the matrix K for the 2nd friction
-            decimal inverseFriction2Mass;
-
-            /// True if the contact was existing last time step
-            bool isRestingContact;
-
-            /// Pointer to the external contact
-            ContactPoint* externalContact;
-        };
-
-        // Structure ContactManifoldSolver
-        /**
-         * Contact solver internal data structure to store all the
-         * information relative to a contact manifold.
-         */
-        struct ContactManifoldSolver {
-
-            /// Index of body 1 in the constraint solver
-            //uint indexBody1;
-
-            /// Index of body 2 in the constraint solver
-            //uint indexBody2;
-
-            /// Inverse of the mass of body 1
-            //decimal massInverseBody1;
-
-            // Inverse of the mass of body 2
-            //decimal massInverseBody2;
-
-            /// Inverse inertia tensor of body 1
-            //Matrix3x3 inverseInertiaTensorBody1;
-
-            /// Inverse inertia tensor of body 2
-            //Matrix3x3 inverseInertiaTensorBody2;
-
-            /// Contact point constraints
-            //ContactPointSolver contacts[MAX_CONTACT_POINTS_IN_MANIFOLD];
-
-            /// Number of contact points
-            //uint nbContacts;
-
-            /// True if the body 1 is of type dynamic
-            //bool isBody1DynamicType;
-
-            /// True if the body 2 is of type dynamic
-            //bool isBody2DynamicType;
-
-            /// Mix of the restitution factor for two bodies
-            //decimal restitutionFactor;
-
-            /// Mix friction coefficient for the two bodies
-            //decimal frictionCoefficient;
-
-            /// Rolling resistance factor between the two bodies
-            decimal rollingResistanceFactor;
-
-            /// Pointer to the external contact manifold
-            ContactManifold* externalContactManifold;
-
-            // - Variables used when friction constraints are apply at the center of the manifold-//
-
-            /// Average normal vector of the contact manifold
-            //Vector3 normal;
-
-            /// Point on body 1 where to apply the friction constraints
-            //Vector3 frictionPointBody1;
-
-            /// Point on body 2 where to apply the friction constraints
-            //Vector3 frictionPointBody2;
-
-            /// R1 vector for the friction constraints
-            //Vector3 r1Friction;
-
-            /// R2 vector for the friction constraints
-            //Vector3 r2Friction;
-
-            /// Cross product of r1 with 1st friction vector
-            //Vector3 r1CrossT1;
-
-            /// Cross product of r1 with 2nd friction vector
-            //Vector3 r1CrossT2;
-
-            /// Cross product of r2 with 1st friction vector
-            //Vector3 r2CrossT1;
-
-            /// Cross product of r2 with 2nd friction vector
-            //Vector3 r2CrossT2;
-
-            /// Matrix K for the first friction constraint
-            //decimal inverseFriction1Mass;
-
-            /// Matrix K for the second friction constraint
-            //decimal inverseFriction2Mass;
-
-            /// Matrix K for the twist friction constraint
-            //decimal inverseTwistFrictionMass;
-
-            /// Matrix K for the rolling resistance constraint
-            //Matrix3x3 inverseRollingResistance;
-
-            /// First friction direction at contact manifold center
-            //Vector3 frictionVector1;
-
-            /// Second friction direction at contact manifold center
-            //Vector3 frictionVector2;
-
-            /// Old 1st friction direction at contact manifold center
-            //Vector3 oldFrictionVector1;
-
-            /// Old 2nd friction direction at contact manifold center
-            //Vector3 oldFrictionVector2;
-
-            /// First friction direction impulse at manifold center
-            //decimal friction1Impulse;
-
-            /// Second friction direction impulse at manifold center
-            //decimal friction2Impulse;
-
-            /// Twist friction impulse at contact manifold center
-            //decimal frictionTwistImpulse;
-
-            /// Rolling resistance impulse
-            //Vector3 rollingResistanceImpulse;
-        };
-
         // -------------------- Constants --------------------- //
 
         /// Beta value for the penetration depth position correction without split impulses
@@ -519,11 +298,11 @@ class ContactSolver {
         /// Split angular velocities for the position contact solver (split impulse)
         Vector3* mSplitAngularVelocities;
 
+        /// Reference to the single frame memory allocator
+        SingleFrameAllocator& mSingleFrameAllocator;
+
         /// Current time step
         decimal mTimeStep;
-
-        /// Contact constraints
-        ContactManifoldSolver* mContactConstraints;
 
         PenetrationConstraint* mPenetrationConstraints;
 
@@ -532,9 +311,6 @@ class ContactSolver {
         uint mNbPenetrationConstraints;
 
         uint mNbFrictionConstraints;
-
-        /// Number of contact constraints
-        uint mNbContactManifolds;
 
         /// Array of linear velocities
         Vector3* mLinearVelocities;
@@ -557,8 +333,8 @@ class ContactSolver {
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the contact constraints before solving the system
-        void initializeContactConstraints();
+        /// Initialize the constraint solver for a given island
+        void initializeForIsland(Island* island);
 
         /// Apply an impulse to the two bodies of a constraint
         //void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
@@ -608,13 +384,17 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex,
+                      SingleFrameAllocator& singleFrameAllocator);
 
         /// Destructor
         ~ContactSolver() = default;
 
-        /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, Island* island);
+        /// Initialize the contact constraints
+        void init(Island** islands, uint nbIslands, decimal timeStep);
+
+        /// Solve the contact constraints of one iteration of the solve
+        void solve();
 
         /// Set the split velocities arrays
         void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
@@ -652,9 +432,6 @@ class ContactSolver {
         /// Activate or deactivate the solving of friction constraints at the center of
         /// the contact manifold instead of solving them at each contact point
         void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
-
-        /// Clean up the constraint solver
-        void cleanup();
 
         /// Return true if warmstarting is active
         bool IsWarmStartingActive() const;

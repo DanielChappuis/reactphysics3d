@@ -166,7 +166,7 @@ void RigidBody::setMass(decimal mass) {
 }
 
 // Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint) {
+void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint) {
 
     assert(joint != nullptr);
     assert(mJointsList != nullptr);
@@ -214,7 +214,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          decimal mass) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass);
 

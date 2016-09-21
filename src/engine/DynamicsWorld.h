@@ -50,6 +50,9 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
+        /// Single frame Memory allocator
+        SingleFrameAllocator mSingleFrameAllocator;
+
         /// Contact solver
         ContactSolver mContactSolver;
 

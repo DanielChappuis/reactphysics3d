@@ -174,8 +174,10 @@ SET (REACTPHYSICS3D_SOURCES
     "src/mathematics/Vector3.h"
     "src/mathematics/Ray.h"
     "src/mathematics/Vector3.cpp"
-    "src/memory/MemoryAllocator.h"
-    "src/memory/MemoryAllocator.cpp"
+    "src/memory/PoolAllocator.h"
+    "src/memory/PoolAllocator.cpp"
+    "src/memory/SingleFrameAllocator.h"
+    "src/memory/SingleFrameAllocator.cpp"
     "src/memory/Stack.h"
 )
 

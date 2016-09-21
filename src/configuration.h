@@ -144,6 +144,9 @@ constexpr int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
 /// least one concave collision shape.
 constexpr int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
 
+/// Size (in bytes) of the single frame allocator
+constexpr size_t SIZE_SINGLE_FRAME_ALLOCATOR_BYTES = 1048576;
+
 }
 
 #endif

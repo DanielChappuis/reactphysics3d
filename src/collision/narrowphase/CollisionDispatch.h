@@ -51,7 +51,7 @@ class CollisionDispatch {
 
         /// Initialize the collision dispatch configuration
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator) {
+                          PoolAllocator* memoryAllocator) {
 
         }
 

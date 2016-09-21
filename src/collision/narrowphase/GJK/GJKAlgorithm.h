@@ -94,7 +94,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Initalize the algorithm
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator) override;
+                          PoolAllocator* memoryAllocator) override;
 
         /// Compute a contact info if the two bounding volumes collide.
         virtual void testCollision(const CollisionShapeInfo& shape1Info,
@@ -110,7 +110,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
 
 // Initalize the algorithm
 inline void GJKAlgorithm::init(CollisionDetection* collisionDetection,
-                               MemoryAllocator* memoryAllocator) {
+                               PoolAllocator* memoryAllocator) {
     NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
     mAlgoEPA.init(memoryAllocator);
 }

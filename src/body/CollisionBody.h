@@ -34,7 +34,7 @@
 #include "collision/shapes/AABB.h"
 #include "collision/shapes/CollisionShape.h"
 #include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "configuration.h"
 
 /// Namespace reactphysics3d

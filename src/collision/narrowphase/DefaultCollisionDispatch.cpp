@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 
 /// Initialize the collision dispatch configuration
 void DefaultCollisionDispatch::init(CollisionDetection* collisionDetection,
-                                    MemoryAllocator* memoryAllocator) {
+                                    PoolAllocator* memoryAllocator) {
 
     // Initialize the collision algorithms
     mSphereVsSphereAlgorithm.init(collisionDetection, memoryAllocator);

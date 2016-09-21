@@ -63,7 +63,7 @@ class DefaultCollisionDispatch : public CollisionDispatch {
 
         /// Initialize the collision dispatch configuration
         virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator) override;
+                          PoolAllocator* memoryAllocator) override;
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.

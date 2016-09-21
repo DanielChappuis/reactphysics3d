@@ -31,7 +31,7 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -126,7 +126,7 @@ class ContactManifold {
         bool mIsAlreadyInIsland;
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        PoolAllocator& mMemoryAllocator;
 
         // -------------------- Methods -------------------- //
 
@@ -151,7 +151,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
-                        MemoryAllocator& memoryAllocator, short int normalDirectionId);
+                        PoolAllocator& memoryAllocator, short int normalDirectionId);
 
         /// Destructor
         ~ContactManifold();

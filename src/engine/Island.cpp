@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               MemoryAllocator& memoryAllocator)
+               PoolAllocator& memoryAllocator)
        : mBodies(nullptr), mContactManifolds(nullptr), mJoints(nullptr), mNbBodies(0),
          mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
 

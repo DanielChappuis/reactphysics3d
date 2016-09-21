@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_ISLAND_H
 
 // Libraries
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "body/RigidBody.h"
 #include "constraint/Joint.h"
 #include "collision/ContactManifold.h"
@@ -64,7 +64,7 @@ class Island {
         uint mNbJoints;
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        PoolAllocator& mMemoryAllocator;
 
         /// Number of bytes allocated for the bodies array
         size_t mNbAllocatedBytesBodies;
@@ -81,7 +81,7 @@ class Island {
 
         /// Constructor
         Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               MemoryAllocator& memoryAllocator);
+               PoolAllocator& memoryAllocator);
 
         /// Destructor
         ~Island();
