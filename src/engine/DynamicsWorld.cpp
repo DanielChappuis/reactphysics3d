@@ -49,8 +49,7 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
                 mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
                 mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
                 mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
-                mConstrainedOrientations(nullptr), mNbIslands(0),
-                mNbIslandsCapacity(0), mIslands(nullptr), mNbBodiesCapacity(0),
+                mConstrainedOrientations(nullptr), mNbIslands(0), mIslands(nullptr),
                 mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
                 mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
                 mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {
@@ -74,29 +73,6 @@ DynamicsWorld::~DynamicsWorld() {
         std::set<RigidBody*>::iterator itToRemove = itRigidBodies;
         ++itRigidBodies;
         destroyRigidBody(*itToRemove);
-    }
-
-    // Release the memory allocated for the islands
-    for (uint i=0; i<mNbIslands; i++) {
-
-        // Call the island destructor
-        mIslands[i]->~Island();
-
-        // Release the allocated memory for the island
-        mPoolAllocator.release(mIslands[i], sizeof(Island));
-    }
-    if (mNbIslandsCapacity > 0) {
-        mPoolAllocator.release(mIslands, sizeof(Island*) * mNbIslandsCapacity);
-    }
-
-    // Release the memory allocated for the bodies velocity arrays
-    if (mNbBodiesCapacity > 0) {
-        delete[] mSplitLinearVelocities;
-        delete[] mSplitAngularVelocities;
-        delete[] mConstrainedLinearVelocities;
-        delete[] mConstrainedAngularVelocities;
-        delete[] mConstrainedPositions;
-        delete[] mConstrainedOrientations;
     }
 
     assert(mJoints.size() == 0);
@@ -245,31 +221,26 @@ void DynamicsWorld::updateBodiesState() {
 // Initialize the bodies velocities arrays for the next simulation step.
 void DynamicsWorld::initVelocityArrays() {
 
+    PROFILE("DynamicsWorld::initVelocityArrays()");
+
     // Allocate memory for the bodies velocity arrays
     uint nbBodies = mRigidBodies.size();
-    if (mNbBodiesCapacity != nbBodies && nbBodies > 0) {
-        if (mNbBodiesCapacity > 0) {
-            delete[] mSplitLinearVelocities;
-            delete[] mSplitAngularVelocities;
-        }
-        mNbBodiesCapacity = nbBodies;
-        // TODO : Use better memory allocation here
-        mSplitLinearVelocities = new Vector3[mNbBodiesCapacity];
-        mSplitAngularVelocities = new Vector3[mNbBodiesCapacity];
-        mConstrainedLinearVelocities = new Vector3[mNbBodiesCapacity];
-        mConstrainedAngularVelocities = new Vector3[mNbBodiesCapacity];
-        mConstrainedPositions = new Vector3[mNbBodiesCapacity];
-        mConstrainedOrientations = new Quaternion[mNbBodiesCapacity];
-        assert(mSplitLinearVelocities != nullptr);
-        assert(mSplitAngularVelocities != nullptr);
-        assert(mConstrainedLinearVelocities != nullptr);
-        assert(mConstrainedAngularVelocities != nullptr);
-        assert(mConstrainedPositions != nullptr);
-        assert(mConstrainedOrientations != nullptr);
-    }
+
+    mSplitLinearVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
+    mSplitAngularVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
+    mConstrainedLinearVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
+    mConstrainedAngularVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
+    mConstrainedPositions = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
+    mConstrainedOrientations = static_cast<Quaternion*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Quaternion)));
+    assert(mSplitLinearVelocities != nullptr);
+    assert(mSplitAngularVelocities != nullptr);
+    assert(mConstrainedLinearVelocities != nullptr);
+    assert(mConstrainedAngularVelocities != nullptr);
+    assert(mConstrainedPositions != nullptr);
+    assert(mConstrainedOrientations != nullptr);
 
     // Reset the velocities arrays
-    for (uint i=0; i<mNbBodiesCapacity; i++) {
+    for (uint i=0; i<nbBodies; i++) {
         mSplitLinearVelocities[i].setToZero();
         mSplitAngularVelocities[i].setToZero();
     }
@@ -652,24 +623,9 @@ void DynamicsWorld::computeIslands() {
 
     uint nbBodies = mRigidBodies.size();
 
-    // Clear all the islands
-    for (uint i=0; i<mNbIslands; i++) {
-
-        // Call the island destructor
-        mIslands[i]->~Island();
-
-        // Release the allocated memory for the island
-        mPoolAllocator.release(mIslands[i], sizeof(Island));
-    }
-
-    // Allocate and create the array of islands
-    if (mNbIslandsCapacity != nbBodies && nbBodies > 0) {
-        if (mNbIslandsCapacity > 0) {
-            mPoolAllocator.release(mIslands, sizeof(Island*) * mNbIslandsCapacity);
-        }
-        mNbIslandsCapacity = nbBodies;
-        mIslands = (Island**)mPoolAllocator.allocate(sizeof(Island*) * mNbIslandsCapacity);
-    }
+    // Allocate and create the array of islands pointer. This memory is allocated
+    // in the single frame allocator
+    mIslands = static_cast<Island**>(mSingleFrameAllocator.allocate(sizeof(Island*) * nbBodies));
     mNbIslands = 0;
 
     int nbContactManifolds = 0;
@@ -685,7 +641,7 @@ void DynamicsWorld::computeIslands() {
 
     // Create a stack (using an array) for the rigid bodies to visit during the Depth First Search
     size_t nbBytesStack = sizeof(RigidBody*) * nbBodies;
-    RigidBody** stackBodiesToVisit = (RigidBody**)mPoolAllocator.allocate(nbBytesStack);
+    RigidBody** stackBodiesToVisit = static_cast<RigidBody**>(mSingleFrameAllocator.allocate(nbBytesStack));
 
     // For each rigid body of the world
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
@@ -708,10 +664,9 @@ void DynamicsWorld::computeIslands() {
         body->mIsAlreadyInIsland = true;
 
         // Create the new island
-        void* allocatedMemoryIsland = mPoolAllocator.allocate(sizeof(Island));
-        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies,
-                                                                  nbContactManifolds,
-                                                                  mJoints.size(), mPoolAllocator);
+        void* allocatedMemoryIsland = mSingleFrameAllocator.allocate(sizeof(Island));
+        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies, nbContactManifolds, mJoints.size(),
+                                                                  mSingleFrameAllocator);
 
         // While there are still some bodies to visit in the stack
         while (stackIndex > 0) {
@@ -801,9 +756,6 @@ void DynamicsWorld::computeIslands() {
 
         mNbIslands++;
      }
-
-    // Release the allocated memory for the stack of bodies to visit
-    mPoolAllocator.release(stackBodiesToVisit, nbBytesStack);
 }
 
 // Put bodies to sleep if needed.

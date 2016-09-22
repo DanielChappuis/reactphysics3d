@@ -29,26 +29,18 @@
 using namespace reactphysics3d;
 
 // Constructor
-Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               PoolAllocator& memoryAllocator)
+Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints, SingleFrameAllocator& allocator)
        : mBodies(nullptr), mContactManifolds(nullptr), mJoints(nullptr), mNbBodies(0),
-         mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
+         mNbContactManifolds(0), mNbJoints(0) {
 
-    // Allocate memory for the arrays
-    mNbAllocatedBytesBodies = sizeof(RigidBody*) * nbMaxBodies;
-    mBodies = (RigidBody**) mMemoryAllocator.allocate(mNbAllocatedBytesBodies);
-    mNbAllocatedBytesContactManifolds = sizeof(ContactManifold*) * nbMaxContactManifolds;
-    mContactManifolds = (ContactManifold**) mMemoryAllocator.allocate(
-                                                                mNbAllocatedBytesContactManifolds);
-    mNbAllocatedBytesJoints = sizeof(Joint*) * nbMaxJoints;
-    mJoints = (Joint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
+    // Allocate memory for the arrays on the single frame allocator
+    mBodies = static_cast<RigidBody**>(allocator.allocate(sizeof(RigidBody*) * nbMaxBodies));
+    mContactManifolds = static_cast<ContactManifold**>(allocator.allocate(sizeof(ContactManifold*) * nbMaxContactManifolds));
+    mJoints = static_cast<Joint**>(allocator.allocate(sizeof(Joint*) * nbMaxJoints));
 }
 
 // Destructor
 Island::~Island() {
-
-    // Release the memory of the arrays
-    mMemoryAllocator.release(mBodies, mNbAllocatedBytesBodies);
-    mMemoryAllocator.release(mContactManifolds, mNbAllocatedBytesContactManifolds);
-    mMemoryAllocator.release(mJoints, mNbAllocatedBytesJoints);
+    // This destructor is never called because memory is allocated on the
+    // single frame allocator
 }

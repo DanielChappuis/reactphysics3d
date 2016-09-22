@@ -109,14 +109,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Number of islands in the world
         uint mNbIslands;
 
-        /// Current allocated capacity for the islands
-        uint mNbIslandsCapacity;
-
         /// Array with all the islands of awaken bodies
         Island** mIslands;
-
-        /// Current allocated capacity for the bodies
-        uint mNbBodiesCapacity;
 
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
