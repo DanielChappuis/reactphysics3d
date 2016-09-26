@@ -46,6 +46,9 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;
+
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
 }
 
 // Destructor
@@ -90,11 +93,15 @@ void RigidBody::setType(BodyType type) {
         mMassInverse = decimal(0.0);
         mInertiaTensorLocal.setToZero();
         mInertiaTensorLocalInverse.setToZero();
+        mInertiaTensorInverseWorld.setToZero();
 
     }
     else {  // If it is a dynamic body
         mMassInverse = decimal(1.0) / mInitMass;
         mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+
+        // Update the world inverse inertia tensor
+        updateInertiaTensorInverseWorld();
     }
 
     // Awake the body
@@ -125,6 +132,9 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
     // Compute the inverse local inertia tensor
     mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
@@ -314,6 +324,9 @@ void RigidBody::setTransform(const Transform& transform) {
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
 
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
+
     // Update the broad-phase state of the body
     updateBroadPhaseState();
 }
@@ -326,6 +339,7 @@ void RigidBody::recomputeMassInformation() {
     mMassInverse = decimal(0.0);
     mInertiaTensorLocal.setToZero();
     mInertiaTensorLocalInverse.setToZero();
+    mInertiaTensorInverseWorld.setToZero();
     mCenterOfMassLocal.setToZero();
 
     // If it is STATIC or KINEMATIC body
@@ -385,6 +399,9 @@ void RigidBody::recomputeMassInformation() {
 
     // Compute the local inverse inertia tensor
     mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);

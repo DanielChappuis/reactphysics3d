@@ -115,8 +115,6 @@ class ContactSolver {
 
         struct PenetrationConstraint {
 
-            // TODO : Pack bools into a single value
-
             /// Index of body 1 in the constraint solver
             uint indexBody1;
 
@@ -143,9 +141,6 @@ class ContactSolver {
 
             /// Velocity restitution bias
             decimal restitutionBias;
-
-            /// Mix of the restitution factor for two bodies
-            decimal restitutionFactor;
 
             /// Accumulated normal impulse
             decimal penetrationImpulse;
@@ -180,8 +175,6 @@ class ContactSolver {
 
         struct FrictionConstraint {
 
-            // TODO : Pack bools into a single value
-
             /// Index of body 1 in the constraint solver
             uint indexBody1;
 
@@ -193,12 +186,6 @@ class ContactSolver {
 
             /// R2 vector for the friction constraints
             Vector3 r2Friction;
-
-            /// Point on body 1 where to apply the friction constraints
-            Vector3 frictionPointBody1;
-
-            /// Point on body 2 where to apply the friction constraints
-            Vector3 frictionPointBody2;
 
             /// Average normal vector of the contact manifold
             Vector3 normal;

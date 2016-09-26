@@ -212,6 +212,9 @@ void DynamicsWorld::updateBodiesState() {
             // Update the transform of the body (using the new center of mass and new orientation)
             bodies[b]->updateTransformWithCenterOfMass();
 
+            // Update the world inverse inertia tensor of the body
+            bodies[b]->updateInertiaTensorInverseWorld();
+
             // Update the broad-phase state of the body
             bodies[b]->updateBroadPhaseState();
         }
