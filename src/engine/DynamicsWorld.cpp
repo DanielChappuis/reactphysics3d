@@ -331,8 +331,6 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
     PROFILE("DynamicsWorld::solveContactsAndConstraints()");
 
-    // TODO : Do not solve per island but solve every constraints at once
-
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
     mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
@@ -342,28 +340,25 @@ void DynamicsWorld::solveContactsAndConstraints() {
     mConstraintSolver.setConstrainedPositionsArrays(mConstrainedPositions,
                                                     mConstrainedOrientations);
 
-    // Initialize the contact solver
-    mContactSolver.init(mIslands, mNbIslands, mTimeStep);
+    // ---------- Solve velocity constraints for joints and contacts ---------- //
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
 
         // Check if there are contacts and constraints to solve
         bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
-        //bool isContactsToSolve = mIslands[islandIndex]->getNbContactManifolds() > 0;
-        //if (!isConstraintsToSolve && !isContactsToSolve) continue;
+        bool isContactsToSolve = mIslands[islandIndex]->getNbContactManifolds() > 0;
+        if (!isConstraintsToSolve && !isContactsToSolve) continue;
 
         // If there are contacts in the current island
-//        if (isContactsToSolve) {
+        if (isContactsToSolve) {
 
-//            // Initialize the solver
-//            mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
+            // Initialize the solver
+            mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
 
-//            // Warm start the contact solver
-//            if (mContactSolver.IsWarmStartingActive()) {
-//                mContactSolver.warmStart();
-//            }
-//        }
+            // Warm start the contact solver
+            mContactSolver.warmStart();
+        }
 
         // If there are constraints
         if (isConstraintsToSolve) {
@@ -371,40 +366,26 @@ void DynamicsWorld::solveContactsAndConstraints() {
             // Initialize the constraint solver
             mConstraintSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
         }
-    }
 
         // For each iteration of the velocity solver
         for (uint i=0; i<mNbVelocitySolverIterations; i++) {
 
-            for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
-                // Solve the constraints
-                bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
-                if (isConstraintsToSolve) {
-                    mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
-                }
+            // Solve the constraints
+            if (isConstraintsToSolve) {
+                mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
             }
 
-            mContactSolver.solve();
-
             // Solve the contacts
-//            if (isContactsToSolve) {
-
-//                mContactSolver.resetTotalPenetrationImpulse();
-
-//                mContactSolver.solvePenetrationConstraints();
-//                mContactSolver.solveFrictionConstraints();
-//            }
-        }        
+            if (isContactsToSolve) mContactSolver.solve();
+        }
 
         // Cache the lambda values in order to use them in the next
         // step and cleanup the contact solver
-//        if (isContactsToSolve) {
-//            mContactSolver.storeImpulses();
-//            mContactSolver.cleanup();
-//        }
-    //}
-
-    mContactSolver.storeImpulses();
+        if (isContactsToSolve) {
+            mContactSolver.storeImpulses();
+            mContactSolver.cleanup();
+        }
+    }
 }
 
 // Solve the position error correction of the constraints
