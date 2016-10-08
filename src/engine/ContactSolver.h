@@ -356,9 +356,6 @@ class ContactSolver {
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the contact constraints before solving the system
-        void initializeContactConstraints();
-
         /// Apply an impulse to the two bodies of a constraint
         void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
 
