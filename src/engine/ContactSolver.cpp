@@ -45,8 +45,7 @@ ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocity
                mContactConstraints(nullptr), mSingleFrameAllocator(allocator),
                mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-               mIsWarmStartingActive(true), mIsSplitImpulseActive(true),
-               mIsSolveFrictionAtContactManifoldCenterActive(true) {
+               mIsSplitImpulseActive(true) {
 
 }
 
@@ -105,11 +104,8 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
         internalManifold.isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
         internalManifold.isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
 
-        // If we solve the friction constraints at the center of the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive) {
-            internalManifold.frictionPointBody1 = Vector3::zero();
-            internalManifold.frictionPointBody2 = Vector3::zero();
-        }
+        internalManifold.frictionPointBody1 = Vector3::zero();
+        internalManifold.frictionPointBody2 = Vector3::zero();
 
         // For each  contact point of the contact manifold
         for (uint c=0; c<externalManifold->getNbContactPoints(); c++) {
@@ -137,40 +133,22 @@ void ContactSolver::initializeForIsland(decimal dt, Island* island) {
             contactPoint.friction2Impulse = 0.0;
             contactPoint.rollingResistanceImpulse = Vector3::zero();
 
-            // If we solve the friction constraints at the center of the contact manifold
-            if (mIsSolveFrictionAtContactManifoldCenterActive) {
-                internalManifold.frictionPointBody1 += p1;
-                internalManifold.frictionPointBody2 += p2;
-            }
+            internalManifold.frictionPointBody1 += p1;
+            internalManifold.frictionPointBody2 += p2;
         }
 
-        // If we solve the friction constraints at the center of the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive) {
 
-            internalManifold.frictionPointBody1 /=static_cast<decimal>(internalManifold.nbContacts);
-            internalManifold.frictionPointBody2 /=static_cast<decimal>(internalManifold.nbContacts);
-            internalManifold.r1Friction = internalManifold.frictionPointBody1 - x1;
-            internalManifold.r2Friction = internalManifold.frictionPointBody2 - x2;
-            internalManifold.oldFrictionVector1 = externalManifold->getFrictionVector1();
-            internalManifold.oldFrictionVector2 = externalManifold->getFrictionVector2();
+        internalManifold.frictionPointBody1 /=static_cast<decimal>(internalManifold.nbContacts);
+        internalManifold.frictionPointBody2 /=static_cast<decimal>(internalManifold.nbContacts);
+        internalManifold.r1Friction = internalManifold.frictionPointBody1 - x1;
+        internalManifold.r2Friction = internalManifold.frictionPointBody2 - x2;
+        internalManifold.oldFrictionVector1 = externalManifold->getFrictionVector1();
+        internalManifold.oldFrictionVector2 = externalManifold->getFrictionVector2();
 
-            // If warm starting is active
-            if (mIsWarmStartingActive) {
-
-                // Initialize the accumulated impulses with the previous step accumulated impulses
-                internalManifold.friction1Impulse = externalManifold->getFrictionImpulse1();
-                internalManifold.friction2Impulse = externalManifold->getFrictionImpulse2();
-                internalManifold.frictionTwistImpulse = externalManifold->getFrictionTwistImpulse();
-            }
-            else {
-
-                // Initialize the accumulated impulses to zero
-                internalManifold.friction1Impulse = 0.0;
-                internalManifold.friction2Impulse = 0.0;
-                internalManifold.frictionTwistImpulse = 0.0;
-                internalManifold.rollingResistanceImpulse = Vector3(0, 0, 0);
-            }
-        }
+        // Initialize the accumulated impulses with the previous step accumulated impulses
+        internalManifold.friction1Impulse = externalManifold->getFrictionImpulse1();
+        internalManifold.friction2Impulse = externalManifold->getFrictionImpulse2();
+        internalManifold.frictionTwistImpulse = externalManifold->getFrictionTwistImpulse();
     }
 
     // Fill-in all the matrices needed to solve the LCP problem
@@ -190,9 +168,7 @@ void ContactSolver::initializeContactConstraints() {
         Matrix3x3& I2 = manifold.inverseInertiaTensorBody2;
 
         // If we solve the friction constraints at the center of the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive) {
-            manifold.normal = Vector3(0.0, 0.0, 0.0);
-        }
+        manifold.normal.setToZero();
 
         // Get the velocities of the bodies
         const Vector3& v1 = mLinearVelocities[manifold.indexBody1];
@@ -220,37 +196,6 @@ void ContactSolver::initializeContactConstraints() {
                                                                           massPenetration :
                                                                           decimal(0.0);
 
-            // If we do not solve the friction constraints at the center of the contact manifold
-            if (!mIsSolveFrictionAtContactManifoldCenterActive) {
-
-                // Compute the friction vectors
-                computeFrictionVectors(deltaV, contactPoint);
-
-                contactPoint.r1CrossT1 = contactPoint.r1.cross(contactPoint.frictionVector1);
-                contactPoint.r1CrossT2 = contactPoint.r1.cross(contactPoint.frictionVector2);
-                contactPoint.r2CrossT1 = contactPoint.r2.cross(contactPoint.frictionVector1);
-                contactPoint.r2CrossT2 = contactPoint.r2.cross(contactPoint.frictionVector2);
-
-                // Compute the inverse mass matrix K for the friction
-                // constraints at each contact point
-                decimal friction1Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
-                                        ((I1 * contactPoint.r1CrossT1).cross(contactPoint.r1)).dot(
-                                        contactPoint.frictionVector1) +
-                                        ((I2 * contactPoint.r2CrossT1).cross(contactPoint.r2)).dot(
-                                        contactPoint.frictionVector1);
-                decimal friction2Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
-                                        ((I1 * contactPoint.r1CrossT2).cross(contactPoint.r1)).dot(
-                                        contactPoint.frictionVector2) +
-                                        ((I2 * contactPoint.r2CrossT2).cross(contactPoint.r2)).dot(
-                                        contactPoint.frictionVector2);
-                friction1Mass > 0.0 ? contactPoint.inverseFriction1Mass = decimal(1.0) /
-                                                                          friction1Mass :
-                                                                          decimal(0.0);
-                friction2Mass > 0.0 ? contactPoint.inverseFriction2Mass = decimal(1.0) /
-                                                                          friction2Mass :
-                                                                          decimal(0.0);
-            }
-
             // Compute the restitution velocity bias "b". We compute this here instead
             // of inside the solve() method because we need to use the velocity difference
             // at the beginning of the contact. Note that if it is a resting contact (normal
@@ -261,23 +206,16 @@ void ContactSolver::initializeContactConstraints() {
                 contactPoint.restitutionBias = manifold.restitutionFactor * deltaVDotN;
             }
 
-            // If the warm starting of the contact solver is active
-            if (mIsWarmStartingActive) {
-
-                // Get the cached accumulated impulses from the previous step
-                contactPoint.penetrationImpulse = externalContact->getPenetrationImpulse();
-                contactPoint.friction1Impulse = externalContact->getFrictionImpulse1();
-                contactPoint.friction2Impulse = externalContact->getFrictionImpulse2();
-                contactPoint.rollingResistanceImpulse = externalContact->getRollingResistanceImpulse();
-            }
+            // Get the cached accumulated impulses from the previous step
+            contactPoint.penetrationImpulse = externalContact->getPenetrationImpulse();
+            contactPoint.friction1Impulse = externalContact->getFrictionImpulse1();
+            contactPoint.friction2Impulse = externalContact->getFrictionImpulse2();
+            contactPoint.rollingResistanceImpulse = externalContact->getRollingResistanceImpulse();
 
             // Initialize the split impulses to zero
             contactPoint.penetrationSplitImpulse = 0.0;
 
-            // If we solve the friction constraints at the center of the contact manifold
-            if (mIsSolveFrictionAtContactManifoldCenterActive) {
-                manifold.normal += contactPoint.normal;
-            }
+            manifold.normal += contactPoint.normal;
         }
 
         // Compute the inverse K matrix for the rolling resistance constraint
@@ -287,45 +225,41 @@ void ContactSolver::initializeContactConstraints() {
             manifold.inverseRollingResistance = manifold.inverseRollingResistance.getInverse();
         }
 
-        // If we solve the friction constraints at the center of the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive) {
+        manifold.normal.normalize();
 
-            manifold.normal.normalize();
+        Vector3 deltaVFrictionPoint = v2 + w2.cross(manifold.r2Friction) -
+                                      v1 - w1.cross(manifold.r1Friction);
 
-            Vector3 deltaVFrictionPoint = v2 + w2.cross(manifold.r2Friction) -
-                                          v1 - w1.cross(manifold.r1Friction);
+        // Compute the friction vectors
+        computeFrictionVectors(deltaVFrictionPoint, manifold);
 
-            // Compute the friction vectors
-            computeFrictionVectors(deltaVFrictionPoint, manifold);
-
-            // Compute the inverse mass matrix K for the friction constraints at the center of
-            // the contact manifold
-            manifold.r1CrossT1 = manifold.r1Friction.cross(manifold.frictionVector1);
-            manifold.r1CrossT2 = manifold.r1Friction.cross(manifold.frictionVector2);
-            manifold.r2CrossT1 = manifold.r2Friction.cross(manifold.frictionVector1);
-            manifold.r2CrossT2 = manifold.r2Friction.cross(manifold.frictionVector2);
-            decimal friction1Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
-                                    ((I1 * manifold.r1CrossT1).cross(manifold.r1Friction)).dot(
-                                    manifold.frictionVector1) +
-                                    ((I2 * manifold.r2CrossT1).cross(manifold.r2Friction)).dot(
-                                    manifold.frictionVector1);
-            decimal friction2Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
-                                    ((I1 * manifold.r1CrossT2).cross(manifold.r1Friction)).dot(
-                                    manifold.frictionVector2) +
-                                    ((I2 * manifold.r2CrossT2).cross(manifold.r2Friction)).dot(
-                                    manifold.frictionVector2);
-            decimal frictionTwistMass = manifold.normal.dot(manifold.inverseInertiaTensorBody1 *
-                                           manifold.normal) +
-                                        manifold.normal.dot(manifold.inverseInertiaTensorBody2 *
-                                           manifold.normal);
-            friction1Mass > 0.0 ? manifold.inverseFriction1Mass = decimal(1.0)/friction1Mass
-                                                                         : decimal(0.0);
-            friction2Mass > 0.0 ? manifold.inverseFriction2Mass = decimal(1.0)/friction2Mass
-                                                                         : decimal(0.0);
-            frictionTwistMass > 0.0 ? manifold.inverseTwistFrictionMass = decimal(1.0) /
-                                                                                 frictionTwistMass :
-                                                                                 decimal(0.0);
-        }
+        // Compute the inverse mass matrix K for the friction constraints at the center of
+        // the contact manifold
+        manifold.r1CrossT1 = manifold.r1Friction.cross(manifold.frictionVector1);
+        manifold.r1CrossT2 = manifold.r1Friction.cross(manifold.frictionVector2);
+        manifold.r2CrossT1 = manifold.r2Friction.cross(manifold.frictionVector1);
+        manifold.r2CrossT2 = manifold.r2Friction.cross(manifold.frictionVector2);
+        decimal friction1Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                ((I1 * manifold.r1CrossT1).cross(manifold.r1Friction)).dot(
+                                manifold.frictionVector1) +
+                                ((I2 * manifold.r2CrossT1).cross(manifold.r2Friction)).dot(
+                                manifold.frictionVector1);
+        decimal friction2Mass = manifold.massInverseBody1 + manifold.massInverseBody2 +
+                                ((I1 * manifold.r1CrossT2).cross(manifold.r1Friction)).dot(
+                                manifold.frictionVector2) +
+                                ((I2 * manifold.r2CrossT2).cross(manifold.r2Friction)).dot(
+                                manifold.frictionVector2);
+        decimal frictionTwistMass = manifold.normal.dot(manifold.inverseInertiaTensorBody1 *
+                                       manifold.normal) +
+                                    manifold.normal.dot(manifold.inverseInertiaTensorBody2 *
+                                       manifold.normal);
+        friction1Mass > 0.0 ? manifold.inverseFriction1Mass = decimal(1.0)/friction1Mass
+                                                                     : decimal(0.0);
+        friction2Mass > 0.0 ? manifold.inverseFriction2Mass = decimal(1.0)/friction2Mass
+                                                                     : decimal(0.0);
+        frictionTwistMass > 0.0 ? manifold.inverseTwistFrictionMass = decimal(1.0) /
+                                                                             frictionTwistMass :
+                                                                             decimal(0.0);
     }
 }
 
@@ -334,9 +268,6 @@ void ContactSolver::initializeContactConstraints() {
 /// at the beginning. With this technique, we will converge faster towards
 /// the solution of the linear system
 void ContactSolver::warmStart() {
-
-    // Check that warm starting is active
-    if (!mIsWarmStartingActive) return;
 
     // For each constraint
     for (uint c=0; c<mNbContactManifolds; c++) {
@@ -362,51 +293,6 @@ void ContactSolver::warmStart() {
 
                 // Apply the impulse to the bodies of the constraint
                 applyImpulse(impulsePenetration, contactManifold);
-
-                // If we do not solve the friction constraints at the center of the contact manifold
-                if (!mIsSolveFrictionAtContactManifoldCenterActive) {
-
-                    // Project the old friction impulses (with old friction vectors) into
-                    // the new friction vectors to get the new friction impulses
-                    Vector3 oldFrictionImpulse = contactPoint.friction1Impulse *
-                                                 contactPoint.oldFrictionVector1 +
-                                                 contactPoint.friction2Impulse *
-                                                 contactPoint.oldFrictionVector2;
-                    contactPoint.friction1Impulse = oldFrictionImpulse.dot(
-                                                       contactPoint.frictionVector1);
-                    contactPoint.friction2Impulse = oldFrictionImpulse.dot(
-                                                       contactPoint.frictionVector2);
-
-                    // --------- Friction 1 --------- //
-
-                    // Compute the impulse P = J^T * lambda
-                    const Impulse impulseFriction1 = computeFriction1Impulse(
-                                                       contactPoint.friction1Impulse, contactPoint);
-
-                    // Apply the impulses to the bodies of the constraint
-                    applyImpulse(impulseFriction1, contactManifold);
-
-                    // --------- Friction 2 --------- //
-
-                    // Compute the impulse P=J^T * lambda
-                   const Impulse impulseFriction2 = computeFriction2Impulse(
-                                                       contactPoint.friction2Impulse, contactPoint);
-
-                    // Apply the impulses to the bodies of the constraint
-                    applyImpulse(impulseFriction2, contactManifold);
-
-                    // ------ Rolling resistance------ //
-
-                    if (contactManifold.rollingResistanceFactor > 0) {
-
-                        // Compute the impulse P = J^T * lambda
-                        const Impulse impulseRollingResistance(Vector3::zero(), -contactPoint.rollingResistanceImpulse,
-                                                               Vector3::zero(), contactPoint.rollingResistanceImpulse);
-
-                        // Apply the impulses to the bodies of the constraint
-                        applyImpulse(impulseRollingResistance, contactManifold);
-                    }
-                }
             }
             else {  // If it is a new contact point
 
@@ -420,7 +306,7 @@ void ContactSolver::warmStart() {
 
         // If we solve the friction constraints at the center of the contact manifold and there is
         // at least one resting contact point in the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive && atLeastOneRestingContactPoint) {
+        if (atLeastOneRestingContactPoint) {
 
             // Project the old friction impulses (with old friction vectors) into the new friction
             // vectors to get the new friction impulses
@@ -588,189 +474,110 @@ void ContactSolver::solve() {
 
                 applySplitImpulse(splitImpulsePenetration, contactManifold);
             }
-
-            // If we do not solve the friction constraints at the center of the contact manifold
-            if (!mIsSolveFrictionAtContactManifoldCenterActive) {
-
-                // --------- Friction 1 --------- //
-
-                // Compute J*v
-                deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
-                Jv = deltaV.dot(contactPoint.frictionVector1);
-
-                // Compute the Lagrange multiplier lambda
-                deltaLambda = -Jv;
-                deltaLambda *= contactPoint.inverseFriction1Mass;
-                decimal frictionLimit = contactManifold.frictionCoefficient *
-                        contactPoint.penetrationImpulse;
-                lambdaTemp = contactPoint.friction1Impulse;
-                contactPoint.friction1Impulse = std::max(-frictionLimit,
-                                                         std::min(contactPoint.friction1Impulse
-                                                                  + deltaLambda, frictionLimit));
-                deltaLambda = contactPoint.friction1Impulse - lambdaTemp;
-
-                // Compute the impulse P=J^T * lambda
-                const Impulse impulseFriction1 = computeFriction1Impulse(deltaLambda,
-                                                                         contactPoint);
-
-                // Apply the impulses to the bodies of the constraint
-                applyImpulse(impulseFriction1, contactManifold);
-
-                // --------- Friction 2 --------- //
-
-                // Compute J*v
-                deltaV = v2 + w2.cross(contactPoint.r2) - v1 - w1.cross(contactPoint.r1);
-                Jv = deltaV.dot(contactPoint.frictionVector2);
-
-                // Compute the Lagrange multiplier lambda
-                deltaLambda = -Jv;
-                deltaLambda *= contactPoint.inverseFriction2Mass;
-                frictionLimit = contactManifold.frictionCoefficient *
-                        contactPoint.penetrationImpulse;
-                lambdaTemp = contactPoint.friction2Impulse;
-                contactPoint.friction2Impulse = std::max(-frictionLimit,
-                                                         std::min(contactPoint.friction2Impulse
-                                                                  + deltaLambda, frictionLimit));
-                deltaLambda = contactPoint.friction2Impulse - lambdaTemp;
-
-                // Compute the impulse P=J^T * lambda
-                const Impulse impulseFriction2 = computeFriction2Impulse(deltaLambda,
-                                                                         contactPoint);
-
-                // Apply the impulses to the bodies of the constraint
-                applyImpulse(impulseFriction2, contactManifold);
-
-                // --------- Rolling resistance constraint --------- //
-
-                if (contactManifold.rollingResistanceFactor > 0) {
-
-                    // Compute J*v
-                    const Vector3 JvRolling = w2 - w1;
-
-                    // Compute the Lagrange multiplier lambda
-                    Vector3 deltaLambdaRolling = contactManifold.inverseRollingResistance * (-JvRolling);
-                    decimal rollingLimit = contactManifold.rollingResistanceFactor * contactPoint.penetrationImpulse;
-                    Vector3 lambdaTempRolling = contactPoint.rollingResistanceImpulse;
-                    contactPoint.rollingResistanceImpulse = clamp(contactPoint.rollingResistanceImpulse +
-                                                                         deltaLambdaRolling, rollingLimit);
-                    deltaLambdaRolling = contactPoint.rollingResistanceImpulse - lambdaTempRolling;
-
-                    // Compute the impulse P=J^T * lambda
-                    const Impulse impulseRolling(Vector3::zero(), -deltaLambdaRolling,
-                                                 Vector3::zero(), deltaLambdaRolling);
-
-                    // Apply the impulses to the bodies of the constraint
-                    applyImpulse(impulseRolling, contactManifold);
-                }
-            }
         }
 
-        // If we solve the friction constraints at the center of the contact manifold
-        if (mIsSolveFrictionAtContactManifoldCenterActive) {
+        // ------ First friction constraint at the center of the contact manifol ------ //
 
-            // ------ First friction constraint at the center of the contact manifol ------ //
+        // Compute J*v
+        Vector3 deltaV = v2 + w2.cross(contactManifold.r2Friction)
+                - v1 - w1.cross(contactManifold.r1Friction);
+        decimal Jv = deltaV.dot(contactManifold.frictionVector1);
 
-            // Compute J*v
-            Vector3 deltaV = v2 + w2.cross(contactManifold.r2Friction)
-                    - v1 - w1.cross(contactManifold.r1Friction);
-            decimal Jv = deltaV.dot(contactManifold.frictionVector1);
+        // Compute the Lagrange multiplier lambda
+        decimal deltaLambda = -Jv * contactManifold.inverseFriction1Mass;
+        decimal frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+        lambdaTemp = contactManifold.friction1Impulse;
+        contactManifold.friction1Impulse = std::max(-frictionLimit,
+                                                    std::min(contactManifold.friction1Impulse +
+                                                             deltaLambda, frictionLimit));
+        deltaLambda = contactManifold.friction1Impulse - lambdaTemp;
 
-            // Compute the Lagrange multiplier lambda
-            decimal deltaLambda = -Jv * contactManifold.inverseFriction1Mass;
-            decimal frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-            lambdaTemp = contactManifold.friction1Impulse;
-            contactManifold.friction1Impulse = std::max(-frictionLimit,
-                                                        std::min(contactManifold.friction1Impulse +
-                                                                 deltaLambda, frictionLimit));
-            deltaLambda = contactManifold.friction1Impulse - lambdaTemp;
+        // Compute the impulse P=J^T * lambda
+        Vector3 linearImpulseBody1 = -contactManifold.frictionVector1 * deltaLambda;
+        Vector3 angularImpulseBody1 = -contactManifold.r1CrossT1 * deltaLambda;
+        Vector3 linearImpulseBody2 = contactManifold.frictionVector1 * deltaLambda;
+        Vector3 angularImpulseBody2 = contactManifold.r2CrossT1 * deltaLambda;
+        const Impulse impulseFriction1(linearImpulseBody1, angularImpulseBody1,
+                                       linearImpulseBody2, angularImpulseBody2);
 
-            // Compute the impulse P=J^T * lambda
-            Vector3 linearImpulseBody1 = -contactManifold.frictionVector1 * deltaLambda;
-            Vector3 angularImpulseBody1 = -contactManifold.r1CrossT1 * deltaLambda;
-            Vector3 linearImpulseBody2 = contactManifold.frictionVector1 * deltaLambda;
-            Vector3 angularImpulseBody2 = contactManifold.r2CrossT1 * deltaLambda;
-            const Impulse impulseFriction1(linearImpulseBody1, angularImpulseBody1,
+        // Apply the impulses to the bodies of the constraint
+        applyImpulse(impulseFriction1, contactManifold);
+
+        // ------ Second friction constraint at the center of the contact manifol ----- //
+
+        // Compute J*v
+        deltaV = v2 + w2.cross(contactManifold.r2Friction)
+                - v1 - w1.cross(contactManifold.r1Friction);
+        Jv = deltaV.dot(contactManifold.frictionVector2);
+
+        // Compute the Lagrange multiplier lambda
+        deltaLambda = -Jv * contactManifold.inverseFriction2Mass;
+        frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+        lambdaTemp = contactManifold.friction2Impulse;
+        contactManifold.friction2Impulse = std::max(-frictionLimit,
+                                                    std::min(contactManifold.friction2Impulse +
+                                                             deltaLambda, frictionLimit));
+        deltaLambda = contactManifold.friction2Impulse - lambdaTemp;
+
+        // Compute the impulse P=J^T * lambda
+        linearImpulseBody1 = -contactManifold.frictionVector2 * deltaLambda;
+        angularImpulseBody1 = -contactManifold.r1CrossT2 * deltaLambda;
+        linearImpulseBody2 = contactManifold.frictionVector2 * deltaLambda;
+        angularImpulseBody2 = contactManifold.r2CrossT2 * deltaLambda;
+        const Impulse impulseFriction2(linearImpulseBody1, angularImpulseBody1,
+                                       linearImpulseBody2, angularImpulseBody2);
+
+        // Apply the impulses to the bodies of the constraint
+        applyImpulse(impulseFriction2, contactManifold);
+
+        // ------ Twist friction constraint at the center of the contact manifol ------ //
+
+        // Compute J*v
+        deltaV = w2 - w1;
+        Jv = deltaV.dot(contactManifold.normal);
+
+        deltaLambda = -Jv * (contactManifold.inverseTwistFrictionMass);
+        frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
+        lambdaTemp = contactManifold.frictionTwistImpulse;
+        contactManifold.frictionTwistImpulse = std::max(-frictionLimit,
+                                                        std::min(contactManifold.frictionTwistImpulse
+                                                                 + deltaLambda, frictionLimit));
+        deltaLambda = contactManifold.frictionTwistImpulse - lambdaTemp;
+
+        // Compute the impulse P=J^T * lambda
+        linearImpulseBody1 = Vector3(0.0, 0.0, 0.0);
+        angularImpulseBody1 = -contactManifold.normal * deltaLambda;
+        linearImpulseBody2 = Vector3(0.0, 0.0, 0.0);;
+        angularImpulseBody2 = contactManifold.normal * deltaLambda;
+        const Impulse impulseTwistFriction(linearImpulseBody1, angularImpulseBody1,
                                            linearImpulseBody2, angularImpulseBody2);
 
-            // Apply the impulses to the bodies of the constraint
-            applyImpulse(impulseFriction1, contactManifold);
+        // Apply the impulses to the bodies of the constraint
+        applyImpulse(impulseTwistFriction, contactManifold);
 
-            // ------ Second friction constraint at the center of the contact manifol ----- //
+        // --------- Rolling resistance constraint at the center of the contact manifold --------- //
+
+        if (contactManifold.rollingResistanceFactor > 0) {
 
             // Compute J*v
-            deltaV = v2 + w2.cross(contactManifold.r2Friction)
-                    - v1 - w1.cross(contactManifold.r1Friction);
-            Jv = deltaV.dot(contactManifold.frictionVector2);
+            const Vector3 JvRolling = w2 - w1;
 
             // Compute the Lagrange multiplier lambda
-            deltaLambda = -Jv * contactManifold.inverseFriction2Mass;
-            frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-            lambdaTemp = contactManifold.friction2Impulse;
-            contactManifold.friction2Impulse = std::max(-frictionLimit,
-                                                        std::min(contactManifold.friction2Impulse +
-                                                                 deltaLambda, frictionLimit));
-            deltaLambda = contactManifold.friction2Impulse - lambdaTemp;
+            Vector3 deltaLambdaRolling = contactManifold.inverseRollingResistance * (-JvRolling);
+            decimal rollingLimit = contactManifold.rollingResistanceFactor * sumPenetrationImpulse;
+            Vector3 lambdaTempRolling = contactManifold.rollingResistanceImpulse;
+            contactManifold.rollingResistanceImpulse = clamp(contactManifold.rollingResistanceImpulse +
+                                                                 deltaLambdaRolling, rollingLimit);
+            deltaLambdaRolling = contactManifold.rollingResistanceImpulse - lambdaTempRolling;
 
             // Compute the impulse P=J^T * lambda
-            linearImpulseBody1 = -contactManifold.frictionVector2 * deltaLambda;
-            angularImpulseBody1 = -contactManifold.r1CrossT2 * deltaLambda;
-            linearImpulseBody2 = contactManifold.frictionVector2 * deltaLambda;
-            angularImpulseBody2 = contactManifold.r2CrossT2 * deltaLambda;
-            const Impulse impulseFriction2(linearImpulseBody1, angularImpulseBody1,
-                                           linearImpulseBody2, angularImpulseBody2);
+            angularImpulseBody1 = -deltaLambdaRolling;
+            angularImpulseBody2 = deltaLambdaRolling;
+            const Impulse impulseRolling(Vector3::zero(), angularImpulseBody1,
+                                         Vector3::zero(), angularImpulseBody2);
 
             // Apply the impulses to the bodies of the constraint
-            applyImpulse(impulseFriction2, contactManifold);
-
-            // ------ Twist friction constraint at the center of the contact manifol ------ //
-
-            // Compute J*v
-            deltaV = w2 - w1;
-            Jv = deltaV.dot(contactManifold.normal);
-
-            deltaLambda = -Jv * (contactManifold.inverseTwistFrictionMass);
-            frictionLimit = contactManifold.frictionCoefficient * sumPenetrationImpulse;
-            lambdaTemp = contactManifold.frictionTwistImpulse;
-            contactManifold.frictionTwistImpulse = std::max(-frictionLimit,
-                                                            std::min(contactManifold.frictionTwistImpulse
-                                                                     + deltaLambda, frictionLimit));
-            deltaLambda = contactManifold.frictionTwistImpulse - lambdaTemp;
-
-            // Compute the impulse P=J^T * lambda
-            linearImpulseBody1 = Vector3(0.0, 0.0, 0.0);
-            angularImpulseBody1 = -contactManifold.normal * deltaLambda;
-            linearImpulseBody2 = Vector3(0.0, 0.0, 0.0);;
-            angularImpulseBody2 = contactManifold.normal * deltaLambda;
-            const Impulse impulseTwistFriction(linearImpulseBody1, angularImpulseBody1,
-                                               linearImpulseBody2, angularImpulseBody2);
-
-            // Apply the impulses to the bodies of the constraint
-            applyImpulse(impulseTwistFriction, contactManifold);
-
-            // --------- Rolling resistance constraint at the center of the contact manifold --------- //
-
-            if (contactManifold.rollingResistanceFactor > 0) {
-
-                // Compute J*v
-                const Vector3 JvRolling = w2 - w1;
-
-                // Compute the Lagrange multiplier lambda
-                Vector3 deltaLambdaRolling = contactManifold.inverseRollingResistance * (-JvRolling);
-                decimal rollingLimit = contactManifold.rollingResistanceFactor * sumPenetrationImpulse;
-                Vector3 lambdaTempRolling = contactManifold.rollingResistanceImpulse;
-                contactManifold.rollingResistanceImpulse = clamp(contactManifold.rollingResistanceImpulse +
-                                                                     deltaLambdaRolling, rollingLimit);
-                deltaLambdaRolling = contactManifold.rollingResistanceImpulse - lambdaTempRolling;
-
-                // Compute the impulse P=J^T * lambda
-                angularImpulseBody1 = -deltaLambdaRolling;
-                angularImpulseBody2 = deltaLambdaRolling;
-                const Impulse impulseRolling(Vector3::zero(), angularImpulseBody1,
-                                             Vector3::zero(), angularImpulseBody2);
-
-                // Apply the impulses to the bodies of the constraint
-                applyImpulse(impulseRolling, contactManifold);
-            }
+            applyImpulse(impulseRolling, contactManifold);
         }
     }
 }

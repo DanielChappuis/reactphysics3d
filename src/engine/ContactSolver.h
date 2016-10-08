@@ -351,15 +351,8 @@ class ContactSolver {
         /// Reference to the map of rigid body to their index in the constrained velocities array
         const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
 
-        /// True if the warm starting of the solver is active
-        bool mIsWarmStartingActive;
-
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
-
-        /// True if we solve 3 friction constraints at the contact manifold center only
-        /// instead of 2 friction constraints at each contact point
-        bool mIsSolveFrictionAtContactManifoldCenterActive;
 
         // -------------------- Methods -------------------- //
 
@@ -446,10 +439,6 @@ class ContactSolver {
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
 
-        /// Activate or deactivate the solving of friction constraints at the center of
-        /// the contact manifold instead of solving them at each contact point
-        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
-
         /// Clean up the constraint solver
         void cleanup();
 };
@@ -484,12 +473,6 @@ inline bool ContactSolver::isSplitImpulseActive() const {
 // Activate or Deactivate the split impulses for contacts
 inline void ContactSolver::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
-}
-
-// Activate or deactivate the solving of friction constraints at the center of
-// the contact manifold instead of solving them at each contact point
-inline void ContactSolver::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mIsSolveFrictionAtContactManifoldCenterActive = isActive;
 }
 
 // Compute the collision restitution factor from the restitution factor of each body

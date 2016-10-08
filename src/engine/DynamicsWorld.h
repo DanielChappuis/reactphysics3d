@@ -204,10 +204,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Set the position correction technique used for joints
         void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
 
-        /// Activate or deactivate the solving of friction constraints at the center of
-        /// the contact manifold instead of solving them at each contact point
-        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
-
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
 
@@ -365,16 +361,6 @@ inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
     else {
         mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
-}
-
-// Activate or deactivate the solving of friction constraints at the center of
-// the contact manifold instead of solving them at each contact point
-/**
- * @param isActive True if you want the friction to be solved at the center of
- *                 the contact manifold and false otherwise
- */
-inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Return the gravity vector of the world
