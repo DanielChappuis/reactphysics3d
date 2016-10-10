@@ -356,13 +356,6 @@ class ContactSolver {
 
         // -------------------- Methods -------------------- //
 
-        /// Apply an impulse to the two bodies of a constraint
-        void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
-
-        /// Apply an impulse to the two bodies of a constraint
-        void applySplitImpulse(const Impulse& impulse,
-                               const ContactManifoldSolver& manifold);
-
         /// Compute the collision restitution factor from the restitution factor of each body
         decimal computeMixedRestitutionFactor(RigidBody *body1,
                                               RigidBody *body2) const;
@@ -385,18 +378,6 @@ class ContactSolver {
         /// such that : t1 x t2 = contactNormal.
         void computeFrictionVectors(const Vector3& deltaVelocity,
                                     ContactManifoldSolver& contactPoint) const;
-
-        /// Compute a penetration constraint impulse
-        const Impulse computePenetrationImpulse(decimal deltaLambda,
-                                                const ContactPointSolver& contactPoint) const;
-
-        /// Compute the first friction constraint impulse
-        const Impulse computeFriction1Impulse(decimal deltaLambda,
-                                              const ContactPointSolver& contactPoint) const;
-
-        /// Compute the second friction constraint impulse
-        const Impulse computeFriction2Impulse(decimal deltaLambda,
-                                              const ContactPointSolver& contactPoint) const;
 
    public:
 
@@ -486,7 +467,7 @@ inline decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
 inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
                                                               RigidBody *body2) const {
     // Use the geometric mean to compute the mixed friction coefficient
-    return sqrt(body1->getMaterial().getFrictionCoefficient() *
+    return std::sqrt(body1->getMaterial().getFrictionCoefficient() *
                 body2->getMaterial().getFrictionCoefficient());
 }
 
@@ -494,34 +475,6 @@ inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
 inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
                                                             RigidBody* body2) const {
     return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
-}
-
-// Compute a penetration constraint impulse
-inline const Impulse ContactSolver::computePenetrationImpulse(decimal deltaLambda,
-                                                          const ContactPointSolver& contactPoint)
-                                                          const {
-    return Impulse(-contactPoint.normal * deltaLambda, -contactPoint.r1CrossN * deltaLambda,
-                   contactPoint.normal * deltaLambda, contactPoint.r2CrossN * deltaLambda);
-}
-
-// Compute the first friction constraint impulse
-inline const Impulse ContactSolver::computeFriction1Impulse(decimal deltaLambda,
-                                                        const ContactPointSolver& contactPoint)
-                                                        const {
-    return Impulse(-contactPoint.frictionVector1 * deltaLambda,
-                   -contactPoint.r1CrossT1 * deltaLambda,
-                   contactPoint.frictionVector1 * deltaLambda,
-                   contactPoint.r2CrossT1 * deltaLambda);
-}
-
-// Compute the second friction constraint impulse
-inline const Impulse ContactSolver::computeFriction2Impulse(decimal deltaLambda,
-                                                        const ContactPointSolver& contactPoint)
-                                                        const {
-    return Impulse(-contactPoint.frictionVector2 * deltaLambda,
-                   -contactPoint.r1CrossT2 * deltaLambda,
-                   contactPoint.frictionVector2 * deltaLambda,
-                   contactPoint.r2CrossT2 * deltaLambda);
 }
 
 }
