@@ -147,7 +147,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/DynamicsWorld.h"
     "src/engine/DynamicsWorld.cpp"
     "src/engine/EventListener.h"
-    "src/engine/Impulse.h"
     "src/engine/Island.h"
     "src/engine/Island.cpp"
     "src/engine/Material.h"

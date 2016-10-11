@@ -32,7 +32,6 @@
 #include "constraint/Joint.h"
 #include "collision/ContactManifold.h"
 #include "Island.h"
-#include "Impulse.h"
 #include <map>
 #include <set>
 
