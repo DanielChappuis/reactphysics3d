@@ -220,11 +220,8 @@ class ContactSolver {
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
 
-            /// Contact point constraints
-            ContactPointSolver contacts[MAX_CONTACT_POINTS_IN_MANIFOLD];
-
             /// Number of contact points
-            uint nbContacts;
+            short int nbContacts;
 
             /// True if the body 1 is of type dynamic
             bool isBody1DynamicType;
@@ -335,6 +332,12 @@ class ContactSolver {
         /// Contact constraints
         ContactManifoldSolver* mContactConstraints;
 
+        /// Contact points
+        ContactPointSolver* mContactPoints;
+
+        /// Number of contact point constraints
+        uint mNbContactPoints;
+
         /// Number of contact constraints
         uint mNbContactManifolds;
 
@@ -378,6 +381,9 @@ class ContactSolver {
         void computeFrictionVectors(const Vector3& deltaVelocity,
                                     ContactManifoldSolver& contactPoint) const;
 
+        /// Warm start the solver.
+        void warmStart();
+
    public:
 
         // -------------------- Methods -------------------- //
@@ -389,8 +395,11 @@ class ContactSolver {
         /// Destructor
         ~ContactSolver() = default;
 
+        /// Initialize the contact constraints
+        void init(Island** islands, uint nbIslands, decimal timeStep);
+
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, Island* island);
+        void initializeForIsland(Island* island);
 
         /// Set the split velocities arrays
         void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
@@ -399,9 +408,6 @@ class ContactSolver {
         /// Set the constrained velocities arrays
         void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                             Vector3* constrainedAngularVelocities);
-
-        /// Warm start the solver.
-        void warmStart();
 
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
@@ -415,9 +421,6 @@ class ContactSolver {
 
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
-
-        /// Clean up the constraint solver
-        void cleanup();
 };
 
 // Set the split velocities arrays
