@@ -134,15 +134,12 @@ void ContactSolver::initializeForIsland(Island* island) {
         mContactConstraints[mNbContactManifolds].massInverseBody1 = body1->mMassInverse;
         mContactConstraints[mNbContactManifolds].massInverseBody2 = body2->mMassInverse;
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold->getNbContactPoints();
-        mContactConstraints[mNbContactManifolds].restitutionFactor = computeMixedRestitutionFactor(body1, body2);
         mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         mContactConstraints[mNbContactManifolds].externalContactManifold = externalManifold;
-        mContactConstraints[mNbContactManifolds].isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
-        mContactConstraints[mNbContactManifolds].isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
         mContactConstraints[mNbContactManifolds].normal.setToZero();
-        mContactConstraints[mNbContactManifolds].frictionPointBody1 = Vector3::zero();
-        mContactConstraints[mNbContactManifolds].frictionPointBody2 = Vector3::zero();
+        mContactConstraints[mNbContactManifolds].frictionPointBody1.setToZero();
+        mContactConstraints[mNbContactManifolds].frictionPointBody2.setToZero();
 
         // Get the velocities of the bodies
         const Vector3& v1 = mLinearVelocities[mContactConstraints[mNbContactManifolds].indexBody1];
@@ -168,13 +165,8 @@ void ContactSolver::initializeForIsland(Island* island) {
             mContactPoints[mNbContactPoints].penetrationDepth = externalContact->getPenetrationDepth();
             mContactPoints[mNbContactPoints].isRestingContact = externalContact->getIsRestingContact();
             externalContact->setIsRestingContact(true);
-            mContactPoints[mNbContactPoints].oldFrictionVector1 = externalContact->getFrictionVector1();
-            mContactPoints[mNbContactPoints].oldFrictionVector2 = externalContact->getFrictionVector2();
             mContactPoints[mNbContactPoints].penetrationImpulse = externalContact->getPenetrationImpulse();
             mContactPoints[mNbContactPoints].penetrationSplitImpulse = 0.0;
-            mContactPoints[mNbContactPoints].friction1Impulse = externalContact->getFrictionImpulse1();
-            mContactPoints[mNbContactPoints].friction2Impulse = externalContact->getFrictionImpulse2();
-            mContactPoints[mNbContactPoints].rollingResistanceImpulse = externalContact->getRollingResistanceImpulse();
 
             mContactConstraints[mNbContactManifolds].frictionPointBody1 += p1;
             mContactConstraints[mNbContactManifolds].frictionPointBody2 += p2;
@@ -197,8 +189,9 @@ void ContactSolver::initializeForIsland(Island* island) {
             // velocity bellow a given threshold), we do not add a restitution velocity bias
             mContactPoints[mNbContactPoints].restitutionBias = 0.0;
             decimal deltaVDotN = deltaV.dot(mContactPoints[mNbContactPoints].normal);
+            const decimal restitutionFactor = computeMixedRestitutionFactor(body1, body2);
             if (deltaVDotN < -RESTITUTION_VELOCITY_THRESHOLD) {
-                mContactPoints[mNbContactPoints].restitutionBias = mContactConstraints[mNbContactManifolds].restitutionFactor * deltaVDotN;
+                mContactPoints[mNbContactPoints].restitutionBias = restitutionFactor * deltaVDotN;
             }
 
             mContactConstraints[mNbContactManifolds].normal += mContactPoints[mNbContactPoints].normal;
@@ -219,8 +212,10 @@ void ContactSolver::initializeForIsland(Island* island) {
         mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold->getFrictionTwistImpulse();
 
         // Compute the inverse K matrix for the rolling resistance constraint
+        bool isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
+        bool isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
         mContactConstraints[mNbContactManifolds].inverseRollingResistance.setToZero();
-        if (mContactConstraints[mNbContactManifolds].rollingResistanceFactor > 0 && (mContactConstraints[mNbContactManifolds].isBody1DynamicType || mContactConstraints[mNbContactManifolds].isBody2DynamicType)) {
+        if (mContactConstraints[mNbContactManifolds].rollingResistanceFactor > 0 && (isBody1DynamicType || isBody2DynamicType)) {
             mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 + mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2;
             mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getInverse();
         }
@@ -296,9 +291,6 @@ void ContactSolver::warmStart() {
 
                 // Initialize the accumulated impulses to zero
                 mContactPoints[contactPointIndex].penetrationImpulse = 0.0;
-                mContactPoints[contactPointIndex].friction1Impulse = 0.0;
-                mContactPoints[contactPointIndex].friction2Impulse = 0.0;
-                mContactPoints[contactPointIndex].rollingResistanceImpulse = Vector3::zero();
             }
 
             contactPointIndex++;
@@ -594,12 +586,6 @@ void ContactSolver::storeImpulses() {
         for (short int i=0; i<mContactConstraints[c].nbContacts; i++) {
 
             mContactPoints[contactPointIndex].externalContact->setPenetrationImpulse(mContactPoints[contactPointIndex].penetrationImpulse);
-            mContactPoints[contactPointIndex].externalContact->setFrictionImpulse1(mContactPoints[contactPointIndex].friction1Impulse);
-            mContactPoints[contactPointIndex].externalContact->setFrictionImpulse2(mContactPoints[contactPointIndex].friction2Impulse);
-            mContactPoints[contactPointIndex].externalContact->setRollingResistanceImpulse(mContactPoints[contactPointIndex].rollingResistanceImpulse);
-
-            mContactPoints[contactPointIndex].externalContact->setFrictionVector1(mContactPoints[contactPointIndex].frictionVector1);
-            mContactPoints[contactPointIndex].externalContact->setFrictionVector2(mContactPoints[contactPointIndex].frictionVector2);
 
             contactPointIndex++;
         }
@@ -611,36 +597,6 @@ void ContactSolver::storeImpulses() {
         mContactConstraints[c].externalContactManifold->setFrictionVector1(mContactConstraints[c].frictionVector1);
         mContactConstraints[c].externalContactManifold->setFrictionVector2(mContactConstraints[c].frictionVector2);
     }
-}
-
-// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
-// for a contact point. The two vectors have to be such that : t1 x t2 = contactNormal.
-void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
-                                           ContactPointSolver& contactPoint) const {
-
-    assert(contactPoint.normal.length() > 0.0);
-
-    // Compute the velocity difference vector in the tangential plane
-    Vector3 normalVelocity = deltaVelocity.dot(contactPoint.normal) * contactPoint.normal;
-    Vector3 tangentVelocity = deltaVelocity - normalVelocity;
-
-    // If the velocty difference in the tangential plane is not zero
-    decimal lengthTangenVelocity = tangentVelocity.length();
-    if (lengthTangenVelocity > MACHINE_EPSILON) {
-
-        // Compute the first friction vector in the direction of the tangent
-        // velocity difference
-        contactPoint.frictionVector1 = tangentVelocity / lengthTangenVelocity;
-    }
-    else {
-
-        // Get any orthogonal vector to the normal as the first friction vector
-        contactPoint.frictionVector1 = contactPoint.normal.getOneUnitOrthogonalVector();
-    }
-
-    // The second friction vector is computed by the cross product of the firs
-    // friction vector and the contact normal
-    contactPoint.frictionVector2 =contactPoint.normal.cross(contactPoint.frictionVector1).getUnit();
 }
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane

@@ -128,20 +128,8 @@ class ContactPoint {
         /// True if the contact is a resting contact (exists for more than one time step)
         bool mIsRestingContact;
 
-        /// Two orthogonal vectors that span the tangential friction plane
-        Vector3 mFrictionVectors[2];
-
         /// Cached penetration impulse
         decimal mPenetrationImpulse;
-
-        /// Cached first friction impulse
-        decimal mFrictionImpulse1;
-
-        /// Cached second friction impulse
-        decimal mFrictionImpulse2;
-
-        /// Cached rolling resistance impulse
-        Vector3 mRollingResistanceImpulse;
 
     public :
 
@@ -186,26 +174,8 @@ class ContactPoint {
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
 
-        /// Return the cached first friction impulse
-        decimal getFrictionImpulse1() const;
-
-        /// Return the cached second friction impulse
-        decimal getFrictionImpulse2() const;
-
-        /// Return the cached rolling resistance impulse
-        Vector3 getRollingResistanceImpulse() const;
-
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
-
-        /// Set the first cached friction impulse
-        void setFrictionImpulse1(decimal impulse);
-
-        /// Set the second cached friction impulse
-        void setFrictionImpulse2(decimal impulse);
-
-        /// Set the cached rolling resistance impulse
-        void setRollingResistanceImpulse(const Vector3& impulse);
 
         /// Set the contact world point on body 1
         void setWorldPointOnBody1(const Vector3& worldPoint);
@@ -218,18 +188,6 @@ class ContactPoint {
 
         /// Set the mIsRestingContact variable
         void setIsRestingContact(bool isRestingContact);
-
-        /// Get the first friction vector
-        Vector3 getFrictionVector1() const;
-
-        /// Set the first friction vector
-        void setFrictionVector1(const Vector3& frictionVector1);
-
-        /// Get the second friction vector
-        Vector3 getFrictionVector2() const;
-
-        /// Set the second friction vector
-        void setFrictionVector2(const Vector3& frictionVector2);
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
@@ -283,39 +241,9 @@ inline decimal ContactPoint::getPenetrationImpulse() const {
     return mPenetrationImpulse;
 }
 
-// Return the cached first friction impulse
-inline decimal ContactPoint::getFrictionImpulse1() const {
-    return mFrictionImpulse1;
-}
-
-// Return the cached second friction impulse
-inline decimal ContactPoint::getFrictionImpulse2() const {
-    return mFrictionImpulse2;
-}
-
-// Return the cached rolling resistance impulse
-inline Vector3 ContactPoint::getRollingResistanceImpulse() const {
-    return mRollingResistanceImpulse;
-}
-
 // Set the cached penetration impulse
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
-}
-
-// Set the first cached friction impulse
-inline void ContactPoint::setFrictionImpulse1(decimal impulse) {
-    mFrictionImpulse1 = impulse;
-}
-
-// Set the second cached friction impulse
-inline void ContactPoint::setFrictionImpulse2(decimal impulse) {
-    mFrictionImpulse2 = impulse;
-}
-
-// Set the cached rolling resistance impulse
-inline void ContactPoint::setRollingResistanceImpulse(const Vector3& impulse) {
-    mRollingResistanceImpulse = impulse;
 }
 
 // Set the contact world point on body 1
@@ -336,26 +264,6 @@ inline bool ContactPoint::getIsRestingContact() const {
 // Set the mIsRestingContact variable
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
-}
-
-// Get the first friction vector
-inline Vector3 ContactPoint::getFrictionVector1() const {
-    return mFrictionVectors[0];
-}
-
-// Set the first friction vector
-inline void ContactPoint::setFrictionVector1(const Vector3& frictionVector1) {
-    mFrictionVectors[0] = frictionVector1;
-}
-
-// Get the second friction vector
-inline Vector3 ContactPoint::getFrictionVector2() const {
-    return mFrictionVectors[1];
-}
-
-// Set the second friction vector
-inline void ContactPoint::setFrictionVector2(const Vector3& frictionVector2) {
-    mFrictionVectors[1] = frictionVector2;
 }
 
 // Return the penetration depth of the contact

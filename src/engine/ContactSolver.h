@@ -122,32 +122,11 @@ class ContactSolver {
             /// Accumulated normal impulse
             decimal penetrationImpulse;
 
-            /// Accumulated impulse in the 1st friction direction
-            decimal friction1Impulse;
-
-            /// Accumulated impulse in the 2nd friction direction
-            decimal friction2Impulse;
-
             /// Accumulated split impulse for penetration correction
             decimal penetrationSplitImpulse;
 
-            /// Accumulated rolling resistance impulse
-            Vector3 rollingResistanceImpulse;
-
             /// Normal vector of the contact
             Vector3 normal;
-
-            /// First friction vector in the tangent plane
-            Vector3 frictionVector1;
-
-            /// Second friction vector in the tangent plane
-            Vector3 frictionVector2;
-
-            /// Old first friction vector in the tangent plane
-            Vector3 oldFrictionVector1;
-
-            /// Old second friction vector in the tangent plane
-            Vector3 oldFrictionVector2;
 
             /// Vector from the body 1 center to the contact point
             Vector3 r1;
@@ -188,11 +167,11 @@ class ContactSolver {
             /// Inverse of the matrix K for the 2nd friction
             decimal inverseFriction2Mass;
 
-            /// True if the contact was existing last time step
-            bool isRestingContact;
-
             /// Pointer to the external contact
             ContactPoint* externalContact;
+
+            /// True if the contact was existing last time step
+            bool isRestingContact;
         };
 
         // Structure ContactManifoldSolver
@@ -222,15 +201,6 @@ class ContactSolver {
 
             /// Number of contact points
             short int nbContacts;
-
-            /// True if the body 1 is of type dynamic
-            bool isBody1DynamicType;
-
-            /// True if the body 2 is of type dynamic
-            bool isBody2DynamicType;
-
-            /// Mix of the restitution factor for two bodies
-            decimal restitutionFactor;
 
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
@@ -368,12 +338,6 @@ class ContactSolver {
 
         /// Compute th mixed rolling resistance factor between two bodies
         decimal computeMixedRollingResistance(RigidBody* body1, RigidBody* body2) const;
-
-        /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
-        /// plane for a contact point. The two vectors have to be
-        /// such that : t1 x t2 = contactNormal.
-        void computeFrictionVectors(const Vector3& deltaVelocity,
-                                    ContactPointSolver &contactPoint) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be
