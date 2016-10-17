@@ -119,11 +119,8 @@ class ContactSolver {
          */
         struct ContactPointSolver {
 
-            /// Accumulated normal impulse
-            decimal penetrationImpulse;
-
-            /// Accumulated split impulse for penetration correction
-            decimal penetrationSplitImpulse;
+            /// Pointer to the external contact
+            ContactPoint* externalContact;
 
             /// Normal vector of the contact
             Vector3 normal;
@@ -134,41 +131,26 @@ class ContactSolver {
             /// Vector from the body 2 center to the contact point
             Vector3 r2;
 
-            /// Cross product of r1 with 1st friction vector
-            Vector3 r1CrossT1;
-
-            /// Cross product of r1 with 2nd friction vector
-            Vector3 r1CrossT2;
-
-            /// Cross product of r2 with 1st friction vector
-            Vector3 r2CrossT1;
-
-            /// Cross product of r2 with 2nd friction vector
-            Vector3 r2CrossT2;
-
-            /// Cross product of r1 with the contact normal
-            Vector3 r1CrossN;
-
-            /// Cross product of r2 with the contact normal
-            Vector3 r2CrossN;
-
             /// Penetration depth
             decimal penetrationDepth;
 
             /// Velocity restitution bias
             decimal restitutionBias;
 
+            /// Accumulated normal impulse
+            decimal penetrationImpulse;
+
+            /// Accumulated split impulse for penetration correction
+            decimal penetrationSplitImpulse;
+
             /// Inverse of the matrix K for the penenetration
             decimal inversePenetrationMass;
 
-            /// Inverse of the matrix K for the 1st friction
-            decimal inverseFriction1Mass;
+            /// Cross product of r1 with the contact normal
+            Vector3 r1CrossN;
 
-            /// Inverse of the matrix K for the 2nd friction
-            decimal inverseFriction2Mass;
-
-            /// Pointer to the external contact
-            ContactPoint* externalContact;
+            /// Cross product of r2 with the contact normal
+            Vector3 r2CrossN;
 
             /// True if the contact was existing last time step
             bool isRestingContact;
@@ -181,11 +163,14 @@ class ContactSolver {
          */
         struct ContactManifoldSolver {
 
+            /// Pointer to the external contact manifold
+            ContactManifold* externalContactManifold;
+
             /// Index of body 1 in the constraint solver
-            uint indexBody1;
+            int32 indexBody1;
 
             /// Index of body 2 in the constraint solver
-            uint indexBody2;
+            int32 indexBody2;
 
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
@@ -199,17 +184,11 @@ class ContactSolver {
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
 
-            /// Number of contact points
-            short int nbContacts;
-
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
 
             /// Rolling resistance factor between the two bodies
             decimal rollingResistanceFactor;
-
-            /// Pointer to the external contact manifold
-            ContactManifold* externalContactManifold;
 
             // - Variables used when friction constraints are apply at the center of the manifold-//
 
@@ -275,6 +254,9 @@ class ContactSolver {
 
             /// Rolling resistance impulse
             Vector3 rollingResistanceImpulse;
+
+            /// Number of contact points
+            int8 nbContacts;
         };
 
         // -------------------- Constants --------------------- //
