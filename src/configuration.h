@@ -30,6 +30,7 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
+#include <cstdint>
 #include "decimal.h"
 
 // Windows platform
@@ -51,10 +52,9 @@ using luint = long unsigned int;
 using bodyindex = luint;
 using bodyindexpair = std::pair<bodyindex, bodyindex>;
 
-using int16 = signed short;
-using int32 = signed int;
-using uint16 = unsigned short;
-using uint32 = unsigned int;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
 
 // ------------------- Enumerations ------------------- //
 
