@@ -262,6 +262,8 @@ void ContactSolver::initializeForIsland(Island* island) {
 /// the solution of the linear system
 void ContactSolver::warmStart() {
 
+    PROFILE("ContactSolver::warmStart()");
+
     uint contactPointIndex = 0;
 
     // For each constraint
@@ -578,6 +580,8 @@ void ContactSolver::solve() {
 // warm start the solver at the next iteration
 void ContactSolver::storeImpulses() {
 
+    PROFILE("ContactSolver::storeImpulses()");
+
     uint contactPointIndex = 0;
 
     // For each contact manifold
@@ -603,6 +607,8 @@ void ContactSolver::storeImpulses() {
 // for a contact manifold. The two vectors have to be such that : t1 x t2 = contactNormal.
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactManifoldSolver& contact) const {
+
+    PROFILE("ContactSolver::computeFrictionVectors()");
 
     assert(contact.normal.length() > decimal(0.0));
 
