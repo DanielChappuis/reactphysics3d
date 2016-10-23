@@ -147,10 +147,10 @@ class ContactSolver {
             decimal inversePenetrationMass;
 
             /// Cross product of r1 with the contact normal
-            Vector3 r1CrossN;
+            Vector3 i1TimesR1CrossN;
 
             /// Cross product of r2 with the contact normal
-            Vector3 r2CrossN;
+            Vector3 i2TimesR2CrossN;
 
             /// True if the contact was existing last time step
             bool isRestingContact;
