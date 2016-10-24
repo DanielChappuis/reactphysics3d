@@ -23,65 +23,58 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_IMPULSE_H
-#define REACTPHYSICS3D_IMPULSE_H
-
 // Libraries
-#include "mathematics/mathematics.h"
+#include "SingleFrameAllocator.h"
+#include <cstdlib>
+#include <cassert>
 
-namespace reactphysics3d {
+using namespace reactphysics3d;
 
-// Structure Impulse
-/**
- * Represents an impulse that we can apply to bodies in the contact or constraint solver.
- */
-struct Impulse {
+// Constructor
+SingleFrameAllocator::SingleFrameAllocator(size_t totalSizeBytes)
+    : mTotalSizeBytes(totalSizeBytes), mCurrentOffset(0) {
 
-    private:
-
-        // -------------------- Methods -------------------- //
-
-    public:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Linear impulse applied to the first body
-        const Vector3 linearImpulseBody1;
-
-        /// Angular impulse applied to the first body
-        const Vector3 angularImpulseBody1;
-
-        /// Linear impulse applied to the second body
-        const Vector3 linearImpulseBody2;
-
-        /// Angular impulse applied to the second body
-        const Vector3 angularImpulseBody2;
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        Impulse(const Vector3& initLinearImpulseBody1, const Vector3& initAngularImpulseBody1,
-                const Vector3& initLinearImpulseBody2, const Vector3& initAngularImpulseBody2)
-            : linearImpulseBody1(initLinearImpulseBody1),
-              angularImpulseBody1(initAngularImpulseBody1),
-              linearImpulseBody2(initLinearImpulseBody2),
-              angularImpulseBody2(initAngularImpulseBody2) {
-
-        }
-
-        /// Copy-constructor
-        Impulse(const Impulse& impulse)
-              : linearImpulseBody1(impulse.linearImpulseBody1),
-                angularImpulseBody1(impulse.angularImpulseBody1),
-                linearImpulseBody2(impulse.linearImpulseBody2),
-                angularImpulseBody2(impulse.angularImpulseBody2) {
-
-        }
-
-        /// Deleted assignment operator
-        Impulse& operator=(const Impulse& impulse) = delete;
-};
-
+    // Allocate a whole block of memory at the beginning
+    mMemoryBufferStart = static_cast<char*>(malloc(mTotalSizeBytes));
+    assert(mMemoryBufferStart != nullptr);
 }
 
-#endif
+// Destructor
+SingleFrameAllocator::~SingleFrameAllocator() {
+
+    // Release the memory allocated at the beginning
+    free(mMemoryBufferStart);
+}
+
+
+// Allocate memory of a given size (in bytes) and return a pointer to the
+// allocated memory.
+void* SingleFrameAllocator::allocate(size_t size) {
+
+    // Check that there is enough remaining memory in the buffer
+    if (static_cast<size_t>(mCurrentOffset) + size > mTotalSizeBytes) {
+
+        // This should never occur. If it does, you must increase the initial
+        // size of memory of this allocator
+        assert(false);
+
+        // Return null
+        return nullptr;
+    }
+
+    // Next available memory location
+    void* nextAvailableMemory = mMemoryBufferStart + mCurrentOffset;
+
+    // Increment the offset
+    mCurrentOffset += size;
+
+    // Return the next available memory location
+    return nextAvailableMemory;
+}
+
+// Reset the marker of the current allocated memory
+void SingleFrameAllocator::reset() {
+
+    // Reset the current offset at the beginning of the block
+    mCurrentOffset = 0;
+}

@@ -65,17 +65,17 @@ Vector3 Vector3::getOneUnitOrthogonalVector() const {
     assert(length() > MACHINE_EPSILON);
 
     // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
+    Vector3 vectorAbs(std::fabs(x), std::fabs(y), std::fabs(z));
     int minElement = vectorAbs.getMinAxis();
 
     if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
+        return Vector3(0.0, -z, y) / std::sqrt(y*y + z*z);
     }
     else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
+        return Vector3(-z, 0.0, x) / std::sqrt(x*x + z*z);
     }
     else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
+        return Vector3(-y, x, 0.0) / std::sqrt(x*x + y*y);
     }
 
 }

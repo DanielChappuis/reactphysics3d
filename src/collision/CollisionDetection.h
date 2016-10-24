@@ -32,7 +32,7 @@
 #include "engine/OverlappingPair.h"
 #include "engine/EventListener.h"
 #include "narrowphase/DefaultCollisionDispatch.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "constraint/ContactPoint.h"
 #include <vector>
 #include <set>
@@ -93,7 +93,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         NarrowPhaseAlgorithm* mCollisionMatrix[NB_COLLISION_SHAPE_TYPES][NB_COLLISION_SHAPE_TYPES];
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        PoolAllocator& mMemoryAllocator;
 
         /// Pointer to the physics world
         CollisionWorld* mWorld;
@@ -143,7 +143,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world, MemoryAllocator& memoryAllocator);
+        CollisionDetection(CollisionWorld* world, PoolAllocator& memoryAllocator);
 
         /// Destructor
         ~CollisionDetection() = default;
@@ -220,7 +220,7 @@ class CollisionDetection : public NarrowPhaseCallback {
         EventListener* getWorldEventListener();
 
         /// Return a reference to the world memory allocator
-        MemoryAllocator& getWorldMemoryAllocator();
+        PoolAllocator& getWorldMemoryAllocator();
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair, const ContactPointInfo& contactInfo) override;

@@ -34,7 +34,7 @@
 #include "mathematics/Ray.h"
 #include "AABB.h"
 #include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

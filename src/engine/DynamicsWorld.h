@@ -50,6 +50,9 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
+        /// Single frame Memory allocator
+        SingleFrameAllocator mSingleFrameAllocator;
+
         /// Contact solver
         ContactSolver mContactSolver;
 
@@ -106,14 +109,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Number of islands in the world
         uint mNbIslands;
 
-        /// Current allocated capacity for the islands
-        uint mNbIslandsCapacity;
-
         /// Array with all the islands of awaken bodies
         Island** mIslands;
-
-        /// Current allocated capacity for the bodies
-        uint mNbBodiesCapacity;
 
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
@@ -206,10 +203,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Set the position correction technique used for joints
         void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
-
-        /// Activate or deactivate the solving of friction constraints at the center of
-        /// the contact manifold instead of solving them at each contact point
-        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
@@ -368,16 +361,6 @@ inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
     else {
         mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
-}
-
-// Activate or deactivate the solving of friction constraints at the center of
-// the contact manifold instead of solving them at each contact point
-/**
- * @param isActive True if you want the friction to be solved at the center of
- *                 the contact manifold and false otherwise
- */
-inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Return the gravity vector of the world

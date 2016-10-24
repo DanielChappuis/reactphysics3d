@@ -184,7 +184,7 @@ inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
 
 // Return the length of the vector
 inline decimal Vector3::length() const {
-    return sqrt(x*x + y*y + z*z);
+    return std::sqrt(x*x + y*y + z*z);
 }
 
 // Return the square of the length of the vector

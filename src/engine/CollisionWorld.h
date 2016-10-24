@@ -39,7 +39,7 @@
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
 #include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
@@ -72,8 +72,8 @@ class CollisionWorld {
         /// List of free ID for rigid bodies
         std::vector<luint> mFreeBodiesIDs;
 
-        /// Memory allocator
-        MemoryAllocator mMemoryAllocator;
+        /// Pool Memory allocator
+        PoolAllocator mPoolAllocator;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;

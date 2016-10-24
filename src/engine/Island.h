@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_ISLAND_H
 
 // Libraries
-#include "memory/MemoryAllocator.h"
+#include "memory/SingleFrameAllocator.h"
 #include "body/RigidBody.h"
 #include "constraint/Joint.h"
 #include "collision/ContactManifold.h"
@@ -63,25 +63,13 @@ class Island {
         /// Current number of joints in the island
         uint mNbJoints;
 
-        /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
-
-        /// Number of bytes allocated for the bodies array
-        size_t mNbAllocatedBytesBodies;
-
-        /// Number of bytes allocated for the contact manifolds array
-        size_t mNbAllocatedBytesContactManifolds;
-
-        /// Number of bytes allocated for the joints array
-        size_t mNbAllocatedBytesJoints;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               MemoryAllocator& memoryAllocator);
+               SingleFrameAllocator& allocator);
 
         /// Destructor
         ~Island();
@@ -114,7 +102,7 @@ class Island {
         RigidBody** getBodies();
 
         /// Return a pointer to the array of contact manifolds
-        ContactManifold** getContactManifold();
+        ContactManifold** getContactManifolds();
 
         /// Return a pointer to the array of joints
         Joint** getJoints();
@@ -164,7 +152,7 @@ inline RigidBody** Island::getBodies() {
 }
 
 // Return a pointer to the array of contact manifolds
-inline ContactManifold** Island::getContactManifold() {
+inline ContactManifold** Island::getContactManifolds() {
     return mContactManifolds;
 }
 

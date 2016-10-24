@@ -63,7 +63,7 @@ class OverlappingPair {
 
         /// Constructor
         OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                        int nbMaxContactManifolds, MemoryAllocator& memoryAllocator);
+                        int nbMaxContactManifolds, PoolAllocator& memoryAllocator);
 
         /// Destructor
         ~OverlappingPair() = default;

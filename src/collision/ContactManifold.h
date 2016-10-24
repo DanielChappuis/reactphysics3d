@@ -31,7 +31,7 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -102,7 +102,7 @@ class ContactManifold {
         short int mNormalDirectionId;
 
         /// Number of contacts in the cache
-        uint mNbContactPoints;
+        int8 mNbContactPoints;
 
         /// First friction vector of the contact manifold
         Vector3 mFrictionVector1;
@@ -126,7 +126,7 @@ class ContactManifold {
         bool mIsAlreadyInIsland;
 
         /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
+        PoolAllocator& mMemoryAllocator;
 
         // -------------------- Methods -------------------- //
 
@@ -151,7 +151,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
-                        MemoryAllocator& memoryAllocator, short int normalDirectionId);
+                        PoolAllocator& memoryAllocator, short int normalDirectionId);
 
         /// Destructor
         ~ContactManifold();
@@ -187,7 +187,7 @@ class ContactManifold {
         void clear();
 
         /// Return the number of contact points in the manifold
-        uint getNbContactPoints() const;
+        int8 getNbContactPoints() const;
 
         /// Return the first friction vector at the center of the contact manifold
         const Vector3& getFrictionVector1() const;
@@ -264,7 +264,7 @@ inline short int ContactManifold::getNormalDirectionId() const {
 }
 
 // Return the number of contact points in the manifold
-inline uint ContactManifold::getNbContactPoints() const {
+inline int8 ContactManifold::getNbContactPoints() const {
     return mNbContactPoints;
 }
 

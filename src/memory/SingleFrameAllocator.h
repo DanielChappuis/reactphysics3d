@@ -23,24 +23,54 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_SINGLE_FRAME_ALLOCATOR_H
+#define REACTPHYSICS3D_SINGLE_FRAME_ALLOCATOR_H
+
 // Libraries
-#include "Island.h"
+#include <cstring>
+#include "configuration.h"
 
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints, SingleFrameAllocator& allocator)
-       : mBodies(nullptr), mContactManifolds(nullptr), mJoints(nullptr), mNbBodies(0),
-         mNbContactManifolds(0), mNbJoints(0) {
+// Class SingleFrameAllocator
+/**
+ * This class represent a memory allocator used to efficiently allocate
+ * memory on the heap that is used during a single frame.
+ */
+class SingleFrameAllocator {
 
-    // Allocate memory for the arrays on the single frame allocator
-    mBodies = static_cast<RigidBody**>(allocator.allocate(sizeof(RigidBody*) * nbMaxBodies));
-    mContactManifolds = static_cast<ContactManifold**>(allocator.allocate(sizeof(ContactManifold*) * nbMaxContactManifolds));
-    mJoints = static_cast<Joint**>(allocator.allocate(sizeof(Joint*) * nbMaxJoints));
+    private :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Total size (in bytes) of memory of the allocator
+        size_t mTotalSizeBytes;
+
+        /// Pointer to the beginning of the allocated memory block
+        char* mMemoryBufferStart;
+
+        /// Pointer to the next available memory location in the buffer
+        int mCurrentOffset;
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        SingleFrameAllocator(size_t totalSizeBytes);
+
+        /// Destructor
+        ~SingleFrameAllocator();
+
+        /// Allocate memory of a given size (in bytes)
+        void* allocate(size_t size);
+
+        /// Reset the marker of the current allocated memory
+        void reset();
+
+};
+
 }
 
-// Destructor
-Island::~Island() {
-    // This destructor is never called because memory is allocated on the
-    // single frame allocator
-}
+#endif

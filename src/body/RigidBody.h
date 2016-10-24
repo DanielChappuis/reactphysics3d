@@ -31,7 +31,7 @@
 #include "CollisionBody.h"
 #include "engine/Material.h"
 #include "mathematics/mathematics.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -83,6 +83,9 @@ class RigidBody : public CollisionBody {
         /// Inverse of the inertia tensor of the body
         Matrix3x3 mInertiaTensorLocalInverse;
 
+        /// Inverse of the world inertia tensor of the body
+        Matrix3x3 mInertiaTensorInverseWorld;
+
         /// Inverse of the mass of the body
         decimal mMassInverse;
 
@@ -104,13 +107,16 @@ class RigidBody : public CollisionBody {
         // -------------------- Methods -------------------- //
 
         /// Remove a joint from the joints list
-        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
+        void removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint);
 
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
         virtual void updateBroadPhaseState() const override;
+
+        /// Update the world inverse inertia tensor of the body
+        void updateInertiaTensorInverseWorld();
 
     public :
 
@@ -291,12 +297,19 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
  */
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
-    // TODO : DO NOT RECOMPUTE THE MATRIX MULTIPLICATION EVERY TIME. WE NEED TO STORE THE
-    //        INVERSE WORLD TENSOR IN THE CLASS AND UPLDATE IT WHEN THE ORIENTATION OF THE BODY CHANGES
-
     // Compute and return the inertia tensor in world coordinates
-    return mTransform.getOrientation().getMatrix() * mInertiaTensorLocalInverse *
-           mTransform.getOrientation().getMatrix().getTranspose();
+    return mInertiaTensorInverseWorld;
+}
+
+// Update the world inverse inertia tensor of the body
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
+inline void RigidBody::updateInertiaTensorInverseWorld() {
+    Matrix3x3 orientation = mTransform.getOrientation().getMatrix();
+    mInertiaTensorInverseWorld = orientation * mInertiaTensorLocalInverse * orientation.getTranspose();
 }
 
 // Return true if the gravity needs to be applied to this rigid body

@@ -34,7 +34,7 @@
 #include "collision/narrowphase/NarrowPhaseAlgorithm.h"
 #include "mathematics/mathematics.h"
 #include "TriangleEPA.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include <algorithm>
 
 /// ReactPhysics3D namespace
@@ -88,7 +88,7 @@ class EPAAlgorithm {
         // -------------------- Attributes -------------------- //
 
         /// Reference to the memory allocator
-        MemoryAllocator* mMemoryAllocator;
+        PoolAllocator* mMemoryAllocator;
 
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
@@ -120,7 +120,7 @@ class EPAAlgorithm {
         EPAAlgorithm& operator=(const EPAAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
-        void init(MemoryAllocator* memoryAllocator);
+        void init(PoolAllocator* memoryAllocator);
 
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const VoronoiSimplex& simplex,
@@ -151,7 +151,7 @@ inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** 
 }
 
 // Initalize the algorithm
-inline void EPAAlgorithm::init(MemoryAllocator* memoryAllocator) {
+inline void EPAAlgorithm::init(PoolAllocator* memoryAllocator) {
     mMemoryAllocator = memoryAllocator;
 }
 

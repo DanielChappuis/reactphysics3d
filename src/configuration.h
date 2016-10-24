@@ -30,6 +30,7 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
+#include <cstdint>
 #include "decimal.h"
 
 // Windows platform
@@ -51,10 +52,9 @@ using luint = long unsigned int;
 using bodyindex = luint;
 using bodyindexpair = std::pair<bodyindex, bodyindex>;
 
-using int16 = signed short;
-using int32 = signed int;
-using uint16 = unsigned short;
-using uint32 = unsigned int;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
 
 // ------------------- Enumerations ------------------- //
 
@@ -143,6 +143,9 @@ constexpr int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
 /// Maximum number of contact manifolds in an overlapping pair that involves at
 /// least one concave collision shape.
 constexpr int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
+
+/// Size (in bytes) of the single frame allocator
+constexpr size_t SIZE_SINGLE_FRAME_ALLOCATOR_BYTES = 15728640; // 15 Mb
 
 }
 

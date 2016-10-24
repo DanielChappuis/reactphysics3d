@@ -29,7 +29,7 @@
 // Libraries
 #include "body/Body.h"
 #include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "engine/OverlappingPair.h"
 #include "collision/CollisionShapeInfo.h"
 
@@ -71,7 +71,7 @@ class NarrowPhaseAlgorithm {
         CollisionDetection* mCollisionDetection;
 
         /// Pointer to the memory allocator
-        MemoryAllocator* mMemoryAllocator;
+        PoolAllocator* mMemoryAllocator;
 
         /// Overlapping pair of the bodies currently tested for collision
         OverlappingPair* mCurrentOverlappingPair;
@@ -93,7 +93,7 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
         /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
+        virtual void init(CollisionDetection* collisionDetection, PoolAllocator* memoryAllocator);
         
         /// Set the current overlapping pair of bodies
         void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
