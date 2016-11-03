@@ -32,8 +32,7 @@ using namespace std;
 
 // Constructor
 ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
-             : mBody1(contactInfo.shape1->getBody()), mBody2(contactInfo.shape2->getBody()),
-               mNormal(contactInfo.normal),
+             : mNormal(contactInfo.normal),
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnBody1(contactInfo.localPoint1),
                mLocalPointOnBody2(contactInfo.localPoint2),

@@ -101,12 +101,6 @@ class ContactPoint {
 
         // -------------------- Attributes -------------------- //
 
-        /// First rigid body of the contact
-        CollisionBody* mBody1;
-
-        /// Second rigid body of the contact
-        CollisionBody* mBody2;
-
         /// Normalized normal vector of the contact (from body1 toward body2) in world space
         const Vector3 mNormal;
 
@@ -146,12 +140,6 @@ class ContactPoint {
 
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
-
-        /// Return the reference to the body 1
-        CollisionBody* getBody1() const;
-
-        /// Return the reference to the body 2
-        CollisionBody* getBody2() const;
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -195,16 +183,6 @@ class ContactPoint {
         /// Return the number of bytes used by the contact point
         size_t getSizeInBytes() const;
 };
-
-// Return the reference to the body 1
-inline CollisionBody* ContactPoint::getBody1() const {
-    return mBody1;
-}
-
-// Return the reference to the body 2
-inline CollisionBody* ContactPoint::getBody2() const {
-    return mBody2;
-}
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {

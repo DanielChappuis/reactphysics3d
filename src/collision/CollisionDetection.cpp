@@ -433,6 +433,8 @@ void CollisionDetection::notifyContact(OverlappingPair* overlappingPair, const C
 void CollisionDetection::createContact(OverlappingPair* overlappingPair,
                                        const ContactPointInfo& contactInfo) {
 
+    PROFILE("CollisionDetection::createContact()");
+
     // Create a new contact
     ContactPoint* contact = new (mWorld->mPoolAllocator.allocate(sizeof(ContactPoint)))
                                  ContactPoint(contactInfo);
