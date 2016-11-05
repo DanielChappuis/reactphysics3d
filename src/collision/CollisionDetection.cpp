@@ -439,6 +439,9 @@ void CollisionDetection::createContact(OverlappingPair* overlappingPair,
     ContactPoint* contact = new (mWorld->mPoolAllocator.allocate(sizeof(ContactPoint)))
                                  ContactPoint(contactInfo);
 
+    contact->updateWorldContactPoints(overlappingPair->getShape1()->getLocalToWorldTransform(),
+                                      overlappingPair->getShape2()->getLocalToWorldTransform());
+
     // Add the contact to the contact manifold set of the corresponding overlapping pair
     overlappingPair->addContact(contact);
 

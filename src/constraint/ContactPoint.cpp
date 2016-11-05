@@ -36,12 +36,6 @@ ContactPoint::ContactPoint(const ContactPointInfo& contactInfo)
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnBody1(contactInfo.localPoint1),
                mLocalPointOnBody2(contactInfo.localPoint2),
-               mWorldPointOnBody1(contactInfo.shape1->getBody()->getTransform() *
-                                  contactInfo.shape1->getLocalToBodyTransform() *
-                                  contactInfo.localPoint1),
-               mWorldPointOnBody2(contactInfo.shape2->getBody()->getTransform() *
-                                  contactInfo.shape2->getLocalToBodyTransform() *
-                                  contactInfo.localPoint2),
                mIsRestingContact(false) {
 
     assert(mPenetrationDepth > decimal(0.0));

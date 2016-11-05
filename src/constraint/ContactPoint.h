@@ -53,6 +53,8 @@ struct ContactPointInfo {
 
         // -------------------- Attributes -------------------- //
 
+        // TODO : Check if we really need the shape1, shape2, collisionShape1 and collisionShape2 fields
+
         /// First proxy shape of the contact
         ProxyShape* shape1;
 
@@ -141,11 +143,14 @@ class ContactPoint {
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
 
+        /// Update the world contact points
+        void updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform);
+
+        /// Update the penetration depth
+        void updatePenetrationDepth();
+
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
-
-        /// Set the penetration depth of the contact
-        void setPenetrationDepth(decimal penetrationDepth);
 
         /// Return the contact local point on body 1
         Vector3 getLocalPointOnBody1() const;
@@ -165,12 +170,6 @@ class ContactPoint {
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
 
-        /// Set the contact world point on body 1
-        void setWorldPointOnBody1(const Vector3& worldPoint);
-
-        /// Set the contact world point on body 2
-        void setWorldPointOnBody2(const Vector3& worldPoint);
-
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
@@ -184,14 +183,20 @@ class ContactPoint {
         size_t getSizeInBytes() const;
 };
 
+// Update the world contact points
+inline void ContactPoint::updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform) {
+    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
+    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
+}
+
+// Update the penetration depth
+inline void ContactPoint::updatePenetrationDepth() {
+    mPenetrationDepth = (mWorldPointOnBody1 - mWorldPointOnBody2).dot(mNormal);
+}
+
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
-}
-
-// Set the penetration depth of the contact
-inline void ContactPoint::setPenetrationDepth(decimal penetrationDepth) {
-    this->mPenetrationDepth = penetrationDepth;
 }
 
 // Return the contact point on body 1
@@ -222,16 +227,6 @@ inline decimal ContactPoint::getPenetrationImpulse() const {
 // Set the cached penetration impulse
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
-}
-
-// Set the contact world point on body 1
-inline void ContactPoint::setWorldPointOnBody1(const Vector3& worldPoint) {
-    mWorldPointOnBody1 = worldPoint;
-}
-
-// Set the contact world point on body 2
-inline void ContactPoint::setWorldPointOnBody2(const Vector3& worldPoint) {
-    mWorldPointOnBody2 = worldPoint;
 }
 
 // Return true if the contact is a resting contact

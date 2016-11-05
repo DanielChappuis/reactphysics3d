@@ -110,12 +110,9 @@ void ContactManifold::update(const Transform& transform1, const Transform& trans
 
     // Update the world coordinates and penetration depth of the contact points in the manifold
     for (uint i=0; i<mNbContactPoints; i++) {
-        mContactPoints[i]->setWorldPointOnBody1(transform1 *
-                                                mContactPoints[i]->getLocalPointOnBody1());
-        mContactPoints[i]->setWorldPointOnBody2(transform2 *
-                                                mContactPoints[i]->getLocalPointOnBody2());
-        mContactPoints[i]->setPenetrationDepth((mContactPoints[i]->getWorldPointOnBody1() -
-                  mContactPoints[i]->getWorldPointOnBody2()).dot(mContactPoints[i]->getNormal()));
+
+        mContactPoints[i]->updateWorldContactPoints(transform1, transform2);
+        mContactPoints[i]->updatePenetrationDepth();
     }
 
     const decimal squarePersistentContactThreshold = PERSISTENT_CONTACT_DIST_THRESHOLD *
