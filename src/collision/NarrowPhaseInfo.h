@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_COLLISION_SHAPE_INFO_H
-#define REACTPHYSICS3D_COLLISION_SHAPE_INFO_H
+#ifndef REACTPHYSICS3D_NARROW_PHASE_INFO_H
+#define REACTPHYSICS3D_NARROW_PHASE_INFO_H
 
 // Libraries
 #include "shapes/CollisionShape.h"
@@ -34,37 +34,48 @@ namespace reactphysics3d {
 
 class OverlappingPair;
 
-// Class CollisionShapeInfo
+// Class NarrowPhaseInfo
 /**
  * This structure regroups different things about a collision shape. This is
  * used to pass information about a collision shape to a collision algorithm.
  */
-struct CollisionShapeInfo {
+struct NarrowPhaseInfo {
 
     public:
 
         /// Broadphase overlapping pair
         OverlappingPair* overlappingPair;
 
-        /// Proxy shape
-        ProxyShape* proxyShape;
+        /// Pointer to the first collision shape to test collision with
+        const CollisionShape* collisionShape1;
 
-        /// Pointer to the collision shape
-        const CollisionShape* collisionShape;
+        /// Pointer to the second collision shape to test collision with
+        const CollisionShape* collisionShape2;
 
-        /// Transform that maps from collision shape local-space to world-space
-        Transform shapeToWorldTransform;
+        /// Transform that maps from collision shape 1 local-space to world-space
+        Transform shape1ToWorldTransform;
+
+        /// Transform that maps from collision shape 2 local-space to world-space
+        Transform shape2ToWorldTransform;
 
         /// Cached collision data of the proxy shape
-        void** cachedCollisionData;
+        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
+        void** cachedCollisionData1;
+
+        /// Cached collision data of the proxy shape
+        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
+        void** cachedCollisionData2;
+
+        /// Pointer to the next element in the linked list
+        NarrowPhaseInfo* next;
 
         /// Constructor
-        CollisionShapeInfo(ProxyShape* proxyCollisionShape, const CollisionShape* shape,
-                           const Transform& shapeLocalToWorldTransform, OverlappingPair* pair,
-                           void** cachedData)
-              : overlappingPair(pair), proxyShape(proxyCollisionShape), collisionShape(shape),
-                shapeToWorldTransform(shapeLocalToWorldTransform),
-                cachedCollisionData(cachedData) {
+        NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* shape1,
+                        const CollisionShape* shape2, const Transform& shape1Transform,
+                        const Transform& shape2Transform, void** cachedData1, void** cachedData2)
+              : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
+                shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
+                cachedCollisionData1(cachedData1), cachedCollisionData2(cachedData2), next(nullptr) {
 
         }
 };

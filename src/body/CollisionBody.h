@@ -153,6 +153,9 @@ class CollisionBody : public Body {
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
+        /// Test if the collision body overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Compute and return the AABB of the body by merging all proxy shapes AABBs
         AABB getAABB() const;
 
@@ -299,6 +302,15 @@ inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 */
 inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mTransform.getOrientation().getInverse() * worldVector;
+}
+
+/// Test if the collision body overlaps with a given AABB
+/**
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getAABB());
 }
 
 }

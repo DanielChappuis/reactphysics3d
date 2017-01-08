@@ -31,7 +31,7 @@
 #include "constraint/ContactPoint.h"
 #include "memory/PoolAllocator.h"
 #include "engine/OverlappingPair.h"
-#include "collision/CollisionShapeInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -67,21 +67,12 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the collision detection object
-        CollisionDetection* mCollisionDetection;
-
-        /// Pointer to the memory allocator
-        PoolAllocator* mMemoryAllocator;
-
-        /// Overlapping pair of the bodies currently tested for collision
-        OverlappingPair* mCurrentOverlappingPair;
-
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm();
+        NarrowPhaseAlgorithm() = default;
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm() = default;
@@ -92,22 +83,9 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection, PoolAllocator* memoryAllocator);
-        
-        /// Set the current overlapping pair of bodies
-        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
-
         /// Compute a contact info if the two bounding volume collide
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback)=0;
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactPointInfo& contactPointInfo)=0;
 };
-
-// Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
-    mCurrentOverlappingPair = overlappingPair;
-}      
 
 }
 

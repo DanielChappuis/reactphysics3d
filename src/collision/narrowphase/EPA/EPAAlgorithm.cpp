@@ -74,25 +74,22 @@ int EPAAlgorithm::isOriginInTetrahedron(const Vector3& p1, const Vector3& p2,
 /// the correct penetration depth. This method returns true if the EPA penetration
 /// depth computation has succeeded and false it has failed.
 bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex& simplex,
-                                                           CollisionShapeInfo shape1Info,
-                                                           const Transform& transform1,
-                                                           CollisionShapeInfo shape2Info,
-                                                           const Transform& transform2,
+                                                           const NarrowPhaseInfo* narrowPhaseInfo,
                                                            Vector3& v,
-                                                           NarrowPhaseCallback* narrowPhaseCallback) {
+                                                           ContactPointInfo& contactPointInfo) {
 
     PROFILE("EPAAlgorithm::computePenetrationDepthAndContactPoints()");
 
     decimal gjkPenDepthSquare = v.lengthSquare();
 
-    assert(shape1Info.collisionShape->isConvex());
-    assert(shape2Info.collisionShape->isConvex());
+    assert(narrowPhaseInfo->collisionShape1->isConvex());
+    assert(narrowPhaseInfo->collisionShape2->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
-    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
-    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
+    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
+    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
 
     Vector3 suppPointsA[MAX_SUPPORT_POINTS];  // Support points of object A in local coordinates
     Vector3 suppPointsB[MAX_SUPPORT_POINTS];  // Support points of object B in local coordinates
@@ -103,12 +100,12 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex&
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.getInverse() * transform2;
+    Transform body2Tobody1 = narrowPhaseInfo->shape1ToWorldTransform.getInverse() * narrowPhaseInfo->shape2ToWorldTransform;
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
-    Quaternion rotateToBody2 = transform2.getOrientation().getInverse() *
-                              transform1.getOrientation();
+    Quaternion rotateToBody2 = narrowPhaseInfo->shape2ToWorldTransform.getOrientation().getInverse() *
+                              narrowPhaseInfo->shape1ToWorldTransform.getOrientation();
 
     // Get the simplex computed previously by the GJK algorithm
     int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
@@ -416,7 +413,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex&
     } while(nbTriangles > 0 && triangleHeap[0]->getDistSquare() <= upperBoundSquarePenDepth);
 
     // Compute the contact info
-    v = transform1.getOrientation() * triangle->getClosestPoint();
+    v = narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * triangle->getClosestPoint();
     Vector3 pALocal = triangle->computeClosestPointOfObject(suppPointsA);
     Vector3 pBLocal = body2Tobody1.getInverse() * triangle->computeClosestPointOfObject(suppPointsB);
     Vector3 normal = v.getUnit();
@@ -430,10 +427,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex&
     if (penetrationDepth * penetrationDepth > gjkPenDepthSquare && penetrationDepth > 0) {
 
         // Create the contact info object
-        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
-                                     shape2Info.collisionShape, normal, penetrationDepth, pALocal, pBLocal);
-
-        narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
+        contactPointInfo.init(normal, penetrationDepth, pALocal, pBLocal);
 
         return true;
     }

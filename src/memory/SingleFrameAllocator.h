@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_SINGLE_FRAME_ALLOCATOR_H
 
 // Libraries
-#include <cstring>
+#include "Allocator.h"
 #include "configuration.h"
 
 /// ReactPhysics3D namespace
@@ -38,7 +38,7 @@ namespace reactphysics3d {
  * This class represent a memory allocator used to efficiently allocate
  * memory on the heap that is used during a single frame.
  */
-class SingleFrameAllocator {
+class SingleFrameAllocator : public Allocator {
 
     private :
 
@@ -61,13 +61,18 @@ class SingleFrameAllocator {
         SingleFrameAllocator(size_t totalSizeBytes);
 
         /// Destructor
-        ~SingleFrameAllocator();
+        virtual ~SingleFrameAllocator() override;
 
         /// Allocate memory of a given size (in bytes)
-        void* allocate(size_t size);
+        virtual void* allocate(size_t size) override;
+
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size) override { }
 
         /// Reset the marker of the current allocated memory
-        void reset();
+        virtual void reset();
+
+
 
 };
 

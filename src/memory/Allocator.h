@@ -23,20 +23,34 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_ALLOCATOR_H
+#define REACTPHYSICS3D_ALLOCATOR_H
+
 // Libraries
-#include "NarrowPhaseAlgorithm.h"
+#include <cstring>
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-NarrowPhaseAlgorithm::NarrowPhaseAlgorithm()
-                     : mMemoryAllocator(nullptr), mCurrentOverlappingPair(nullptr) {
+// Class Allocator
+/**
+ * Abstract class with the basic interface of all the derived memory allocators
+ */
+class Allocator {
+
+    public:
+
+        /// Destructor
+        virtual ~Allocator() = default;
+
+        /// Allocate memory of a given size (in bytes) and return a pointer to the
+        /// allocated memory.
+        virtual void* allocate(size_t size)=0;
+
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size)=0;
+};
 
 }
 
-// Initalize the algorithm
-void NarrowPhaseAlgorithm::init(CollisionDetection* collisionDetection, PoolAllocator* memoryAllocator) {
-    mCollisionDetection = collisionDetection;
-    mMemoryAllocator = memoryAllocator;
-}
+#endif

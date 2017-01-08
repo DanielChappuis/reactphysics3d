@@ -49,11 +49,6 @@ class CollisionDispatch {
         /// Destructor
         virtual ~CollisionDispatch() = default;
 
-        /// Initialize the collision dispatch configuration
-        virtual void init(CollisionDetection* collisionDetection,
-                          PoolAllocator* memoryAllocator) {
-
-        }
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.

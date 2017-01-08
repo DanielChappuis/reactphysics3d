@@ -28,7 +28,7 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "collision/CollisionShapeInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "configuration.h"
@@ -53,20 +53,6 @@ struct ContactPointInfo {
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : Check if we really need the shape1, shape2, collisionShape1 and collisionShape2 fields
-
-        /// First proxy shape of the contact
-        ProxyShape* shape1;
-
-        /// Second proxy shape of the contact
-        ProxyShape* shape2;
-
-        /// First collision shape
-        const CollisionShape* collisionShape1;
-
-        /// Second collision shape
-        const CollisionShape* collisionShape2;
-
         /// Normalized normal vector of the collision contact in world space
         Vector3 normal;
 
@@ -82,13 +68,18 @@ struct ContactPointInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const CollisionShape* collShape1,
-                         const CollisionShape* collShape2, const Vector3& normal, decimal penetrationDepth,
-                         const Vector3& localPoint1, const Vector3& localPoint2)
-            : shape1(proxyShape1), shape2(proxyShape2), collisionShape1(collShape1), collisionShape2(collShape2),
-              normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1),
-              localPoint2(localPoint2) {
+        ContactPointInfo() = default;
 
+        /// Destructor
+        ~ContactPointInfo() = default;
+
+        /// Initialize the contact point info
+        void init(const Vector3& contactNormal, decimal penDepth,
+                  const Vector3& localPt1, const Vector3& localPt2) {
+            normal = contactNormal;
+            penetrationDepth = penDepth;
+            localPoint1 = localPt1;
+            localPoint2 = localPt2;
         }
 };
 

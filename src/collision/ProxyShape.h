@@ -126,6 +126,12 @@ class ProxyShape {
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
 
+        /// Return the AABB of the proxy shape in world-space
+        const AABB getWorldAABB() const;
+
+        /// Test if the proxy shape overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Return true if a point is inside the collision shape
         bool testPointInside(const Vector3& worldPoint);
 
@@ -176,7 +182,7 @@ class ProxyShape {
 };
 
 // Return the pointer to the cached collision data
-inline void** ProxyShape::getCachedCollisionData()  {
+inline void** ProxyShape::getCachedCollisionData() {
     return &mCachedCollisionData;
 }
 
@@ -249,6 +255,16 @@ inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
 }
 
+// Return the AABB of the proxy shape in world-space
+/**
+ * @return The AABB of the proxy shape in world-space
+ */
+inline const AABB ProxyShape::getWorldAABB() const {
+    AABB aabb;
+    mCollisionShape->computeAABB(aabb, getLocalToWorldTransform());
+    return aabb;
+}
+
 // Return the next proxy shape in the linked list of proxy shapes
 /**
  * @return Pointer to the next proxy shape in the linked list of proxy shapes
@@ -318,6 +334,15 @@ inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
 
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);
+}
+
+/// Test if the proxy shape overlaps with a given AABB
+/**
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getWorldAABB());
 }
 
 }

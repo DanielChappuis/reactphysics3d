@@ -36,11 +36,6 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Constructor
-GJKAlgorithm::GJKAlgorithm() : NarrowPhaseAlgorithm() {
-
-}
-
 // Compute a contact info if the two collision shapes collide.
 /// This method implements the Hybrid Technique for computing the penetration depth by
 /// running the GJK algorithm on original objects (without margin). If the shapes intersect
@@ -50,9 +45,8 @@ GJKAlgorithm::GJKAlgorithm() : NarrowPhaseAlgorithm() {
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
-                                 const CollisionShapeInfo& shape2Info,
-                                 NarrowPhaseCallback* narrowPhaseCallback) {
+bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                 ContactPointInfo& contactPointInfo) {
 
     PROFILE("GJKAlgorithm::testCollision()");
     
@@ -65,20 +59,20 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
     decimal prevDistSquare;
     bool contactFound = false;
 
-    assert(shape1Info.collisionShape->isConvex());
-    assert(shape2Info.collisionShape->isConvex());
+    assert(narrowPhaseInfo->collisionShape1->isConvex());
+    assert(narrowPhaseInfo->collisionShape2->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
-    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
-    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
+    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
+    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
 
     bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
 
     // Get the local-space to world-space transforms
-    const Transform transform1 = shape1Info.shapeToWorldTransform;
-    const Transform transform2 = shape2Info.shapeToWorldTransform;
+    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
@@ -92,13 +86,13 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
     // Initialize the margin (sum of margins of both objects)
     decimal margin = shape1->getMargin() + shape2->getMargin();
     decimal marginSquare = margin * margin;
-    assert(margin > 0.0);
+    assert(margin > decimal(0.0));
 
     // Create a simplex set
     VoronoiSimplex simplex;
 
     // Get the previous point V (last cached separating axis)
-    Vector3 v = mCurrentOverlappingPair->getCachedSeparatingAxis();
+    Vector3 v = narrowPhaseInfo->overlappingPair->getCachedSeparatingAxis();
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -116,13 +110,13 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
         vDotw = v.dot(w);
         
         // If the enlarge objects (with margins) do not intersect
-        if (vDotw > 0.0 && vDotw * vDotw > distSquare * marginSquare) {
+        if (vDotw > decimal(0.0) && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            mCurrentOverlappingPair->setCachedSeparatingAxis(v);
+            narrowPhaseInfo->overlappingPair->setCachedSeparatingAxis(v);
             
             // No intersection, we return
-            return;
+            return false;
         }
 
         // If the objects intersect only in the margins
@@ -188,8 +182,7 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
         // again but on the enlarged objects to compute a simplex polytope that contains
         // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
         // the correct penetration depth and contact points between the enlarged objects.
-        isEPAResultValid = computePenetrationDepthForEnlargedObjects(shape1Info, transform1, shape2Info,
-                                                                     transform2, narrowPhaseCallback, v);
+        isEPAResultValid = computePenetrationDepthForEnlargedObjects(narrowPhaseInfo, contactPointInfo, v);
     }
 
     if ((contactFound || !isEPAResultValid) && distSquare > MACHINE_EPSILON) {
@@ -200,7 +193,7 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
         // Project those two points on the margins to have the closest points of both
         // object with the margins
         decimal dist = std::sqrt(distSquare);
-        assert(dist > 0.0);
+        assert(dist > decimal(0.0));
         pA = (pA - (shape1->getMargin() / dist) * v);
         pB = body2Tobody1.getInverse() * (pB + (shape2->getMargin() / dist) * v);
 
@@ -209,21 +202,22 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
         decimal penetrationDepth = margin - dist;
 
         // If the penetration depth is negative (due too numerical errors), there is no contact
-        if (penetrationDepth <= 0.0) {
-            return;
+        if (penetrationDepth <= decimal(0.0)) {
+            return false;
         }
 
         // Do not generate a contact point with zero normal length
         if (normal.lengthSquare() < MACHINE_EPSILON) {
-            return;
+            return false;
         }
 
         // Create the contact info object
-        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
-                                     shape2Info.collisionShape, normal, penetrationDepth, pA, pB);
+        contactPointInfo.init(normal, penetrationDepth, pA, pB);
 
-        narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
+        return true;
     }
+
+    return false;
 }
 
 /// This method runs the GJK algorithm on the two enlarged objects (with margin)
@@ -231,11 +225,8 @@ void GJKAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
 /// assumed to intersect in the original objects (without margin). Therefore such
 /// a polytope must exist. Then, we give that polytope to the EPA algorithm to
 /// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
-                                                             const Transform& transform1,
-                                                             const CollisionShapeInfo& shape2Info,
-                                                             const Transform& transform2,
-                                                             NarrowPhaseCallback* narrowPhaseCallback,
+bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowPhaseInfo* narrowPhaseInfo,
+                                                             ContactPointInfo& contactPointInfo,
                                                              Vector3& v) {
     PROFILE("GJKAlgorithm::computePenetrationDepthForEnlargedObjects()");
 
@@ -247,24 +238,24 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
     decimal distSquare = DECIMAL_LARGEST;
     decimal prevDistSquare;
 
-    assert(shape1Info.collisionShape->isConvex());
-    assert(shape2Info.collisionShape->isConvex());
+    assert(narrowPhaseInfo->collisionShape1->isConvex());
+    assert(narrowPhaseInfo->collisionShape2->isConvex());
 
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(shape1Info.collisionShape);
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(shape2Info.collisionShape);
+    const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
+    const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
     bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
 
-    void** shape1CachedCollisionData = shape1Info.cachedCollisionData;
-    void** shape2CachedCollisionData = shape2Info.cachedCollisionData;
+    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
+    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
 
     // Transform a point from local space of body 2 to local space
     // of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2ToBody1 = transform1.getInverse() * transform2;
+    Transform body2ToBody1 = narrowPhaseInfo->shape1ToWorldTransform.getInverse() * narrowPhaseInfo->shape2ToWorldTransform;
 
     // Matrix that transform a direction from local space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
-                              transform1.getOrientation().getMatrix();
+    Matrix3x3 rotateToBody2 = narrowPhaseInfo->shape2ToWorldTransform.getOrientation().getMatrix().getTranspose() *
+                              narrowPhaseInfo->shape1ToWorldTransform.getOrientation().getMatrix();
     
     do {
         // Compute the support points for the enlarged object A and B
@@ -277,7 +268,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
         vDotw = v.dot(w);
 
         // If the enlarge objects do not intersect
-        if (vDotw > 0.0) {
+        if (vDotw > decimal(0.0)) {
 
             // No intersection, we return
             return false;
@@ -308,9 +299,7 @@ bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const CollisionShap
     // Give the simplex computed with GJK algorithm to the EPA algorithm
     // which will compute the correct penetration depth and contact points
     // between the two enlarged objects
-    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, shape1Info,
-                                                            transform1, shape2Info, transform2,
-                                                            v, narrowPhaseCallback);
+    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, narrowPhaseInfo, v, contactPointInfo);
 }
 
 // Use the GJK Algorithm to find if a point is inside a convex collision shape
@@ -377,7 +366,6 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
     // The point is inside the collision shape
     return true;
 }
-
 
 // Ray casting algorithm agains a convex collision shape using the GJK Algorithm
 /// This method implements the GJK ray casting algorithm described by Gino Van Den Bergen in
