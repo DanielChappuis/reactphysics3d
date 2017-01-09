@@ -28,6 +28,7 @@
 
 // Libraries
 #include "reactphysics3d.h"
+#include "Test.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -70,28 +71,28 @@ class WorldCollisionCallback : public CollisionCallback
         }
 
         // This method will be called for contact
-        virtual void notifyContact(const ContactPointInfo& contactPointInfo) override {
+        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override {
 
-            if (isContactBetweenBodies(boxBody, sphere1Body, contactPointInfo)) {
+            if (isContactBetweenBodies(boxBody, sphere1Body, collisionCallbackInfo)) {
                 boxCollideWithSphere1 = true;
             }
-            else if (isContactBetweenBodies(boxBody, cylinderBody, contactPointInfo)) {
+            else if (isContactBetweenBodies(boxBody, cylinderBody, collisionCallbackInfo)) {
                 boxCollideWithCylinder = true;
             }
-            else if (isContactBetweenBodies(sphere1Body, cylinderBody, contactPointInfo)) {
+            else if (isContactBetweenBodies(sphere1Body, cylinderBody, collisionCallbackInfo)) {
                 sphere1CollideWithCylinder = true;
             }
-            else if (isContactBetweenBodies(sphere1Body, sphere2Body, contactPointInfo)) {
+            else if (isContactBetweenBodies(sphere1Body, sphere2Body, collisionCallbackInfo)) {
                 sphere1CollideWithSphere2 = true;
             }
         }
 
         bool isContactBetweenBodies(const CollisionBody* body1, const CollisionBody* body2,
-                                     const ContactPointInfo& contactPointInfo) {
-            return (contactPointInfo.shape1->getBody()->getID() == body1->getID() &&
-                    contactPointInfo.shape2->getBody()->getID() == body2->getID()) ||
-                   (contactPointInfo.shape2->getBody()->getID() == body1->getID() &&
-                    contactPointInfo.shape1->getBody()->getID() == body2->getID());
+                                    const CollisionCallbackInfo& collisionCallbackInfo) {
+            return (collisionCallbackInfo.body1->getID() == body1->getID() &&
+                    collisionCallbackInfo.body2->getID() == body2->getID()) ||
+                   (collisionCallbackInfo.body2->getID() == body1->getID() &&
+                    collisionCallbackInfo.body1->getID() == body2->getID());
         }
 };
 
@@ -197,10 +198,10 @@ class TestCollisionWorld : public Test {
             test(!mWorld->testAABBOverlap(mSphere1Body, mCylinderBody));
             test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
 
-            test(mWorld->testAABBOverlap(mBoxProxyShape, mSphere1ProxyShape));
-            test(mWorld->testAABBOverlap(mBoxProxyShape, mCylinderProxyShape));
-            test(!mWorld->testAABBOverlap(mSphere1ProxyShape, mCylinderProxyShape));
-            test(!mWorld->testAABBOverlap(mSphere1ProxyShape, mSphere2ProxyShape));
+            test(mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
+            test(mBoxProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
+            test(!mSphere1ProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
+            test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
 
             mCollisionCallback.reset();
             mWorld->testCollision(mCylinderBody, &mCollisionCallback);
@@ -218,20 +219,6 @@ class TestCollisionWorld : public Test {
 
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody, mCylinderBody, &mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(mCollisionCallback.boxCollideWithCylinder);
-            test(!mCollisionCallback.sphere1CollideWithCylinder);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
-
-            mCollisionCallback.reset();
-            mWorld->testCollision(mCylinderProxyShape, &mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(mCollisionCallback.boxCollideWithCylinder);
-            test(!mCollisionCallback.sphere1CollideWithCylinder);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
-
-            mCollisionCallback.reset();
-            mWorld->testCollision(mBoxProxyShape, mCylinderProxyShape, &mCollisionCallback);
             test(!mCollisionCallback.boxCollideWithSphere1);
             test(mCollisionCallback.boxCollideWithCylinder);
             test(!mCollisionCallback.sphere1CollideWithCylinder);
@@ -282,10 +269,10 @@ class TestCollisionWorld : public Test {
             test(!mWorld->testAABBOverlap(mSphere1Body, mCylinderBody));
             test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
 
-            test(!mWorld->testAABBOverlap(mBoxProxyShape, mSphere1ProxyShape));
-            test(!mWorld->testAABBOverlap(mBoxProxyShape, mCylinderProxyShape));
-            test(!mWorld->testAABBOverlap(mSphere1ProxyShape, mCylinderProxyShape));
-            test(!mWorld->testAABBOverlap(mSphere1ProxyShape, mSphere2ProxyShape));
+            test(!mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
+            test(!mBoxProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
+            test(!mSphere1ProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
+            test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
 
             mBoxBody->setIsActive(true);
             mCylinderBody->setIsActive(true);
