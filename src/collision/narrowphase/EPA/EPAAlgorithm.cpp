@@ -127,7 +127,7 @@ bool EPAAlgorithm::computePenetrationDepthAndContactPoints(const VoronoiSimplex&
             // Only one point in the simplex (which should be the origin).
             // We have a touching contact with zero penetration depth.
             // We drop that kind of contact. Therefore, we return false
-            return true;
+            return false;
 
         case 2: {
             // The simplex returned by GJK is a line segment d containing the origin.
