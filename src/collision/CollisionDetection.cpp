@@ -230,11 +230,11 @@ void CollisionDetection::computeMiddlePhase() {
             // Add all the narrow-phase info object reported by the callback into the
             // list of all the narrow-phase info object
             while (narrowPhaseInfo != nullptr) {
-                NarrowPhaseInfo* head = mNarrowPhaseInfoList;
+                NarrowPhaseInfo* next = narrowPhaseInfo->next;
+                narrowPhaseInfo->next = mNarrowPhaseInfoList;
                 mNarrowPhaseInfoList = narrowPhaseInfo;
-                mNarrowPhaseInfoList->next = head;
 
-                narrowPhaseInfo = narrowPhaseInfo->next;
+                narrowPhaseInfo = next;
             }
         }
         // Concave vs Concave shape
