@@ -173,8 +173,6 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
     } while((isPolytopeShape && !simplex.isFull()) || (!isPolytopeShape && !simplex.isFull() &&
             distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
 
-    bool isEPAResultValid = false;
-
     // If no contact has been found (penetration case)
     if (!contactFound) {
 
@@ -182,10 +180,14 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
         // again but on the enlarged objects to compute a simplex polytope that contains
         // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
         // the correct penetration depth and contact points between the enlarged objects.
-        isEPAResultValid = computePenetrationDepthForEnlargedObjects(narrowPhaseInfo, contactPointInfo, v);
+        if(computePenetrationDepthForEnlargedObjects(narrowPhaseInfo, contactPointInfo, v)) {
+
+            // A contact has been found with EPA algorithm, we return true
+            return true;
+        }
     }
 
-    if ((contactFound || !isEPAResultValid) && distSquare > MACHINE_EPSILON) {
+    if (contactFound && distSquare > MACHINE_EPSILON) {
 
         // Compute the closet points of both objects (without the margins)
         simplex.computeClosestPointsOfAandB(pA, pB);
