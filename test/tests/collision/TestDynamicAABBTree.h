@@ -34,7 +34,7 @@
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
-class OverlapCallback : public DynamicAABBTreeOverlapCallback {
+class TestOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public :
 
@@ -86,10 +86,8 @@ class TestDynamicAABBTree : public Test {
 
         // ---------- Atributes ---------- //
 
-        OverlapCallback mOverlapCallback;
+        TestOverlapCallback mOverlapCallback;
         DynamicTreeRaycastCallback mRaycastCallback;
-
-
 
     public :
 

@@ -40,7 +40,6 @@ using namespace std;
  */
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
               : CollisionWorld(),
-                mSingleFrameAllocator(SIZE_SINGLE_FRAME_ALLOCATOR_BYTES),
                 mContactSolver(mMapBodyToConstrainedVelocityIndex, mSingleFrameAllocator),
                 mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
@@ -827,117 +826,6 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
             (*it)->setIsSleeping(false);
         }
     }
-}
-
-// Test and report collisions between a given shape and all the others
-// shapes of the world.
-/// This method should be called after calling the
-/// DynamicsWorld::update() method that will compute the collisions.
-/**
- * @param shape Pointer to the proxy shape to test
- * @param callback Pointer to the object with the callback method
- */
-void DynamicsWorld::testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback) {
-
-    // Create the sets of shapes
-    std::set<uint> shapes;
-    shapes.insert(shape->mBroadPhaseID);
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.reportCollisionBetweenShapes(callback, shapes, emptySet);
-}
-
-// Test and report collisions between two given shapes.
-/// This method should be called after calling the
-/// DynamicsWorld::update() method that will compute the collisions.
-/**
- * @param shape1 Pointer to the first proxy shape to test
- * @param shape2 Pointer to the second proxy shape to test
- * @param callback Pointer to the object with the callback method
- */
-void DynamicsWorld::testCollision(const ProxyShape* shape1,
-                                   const ProxyShape* shape2,
-                                   CollisionCallback* callback) {
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-    shapes1.insert(shape1->mBroadPhaseID);
-    std::set<uint> shapes2;
-    shapes2.insert(shape2->mBroadPhaseID);
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.reportCollisionBetweenShapes(callback, shapes1, shapes2);
-}
-
-// Test and report collisions between a body and all the others bodies of the
-// world.
-/// This method should be called after calling the
-/// DynamicsWorld::update() method that will compute the collisions.
-/**
- * @param body Pointer to the first body to test
- * @param callback Pointer to the object with the callback method
- */
-void DynamicsWorld::testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback) {
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-
-    // For each shape of the body
-    for (const ProxyShape* shape=body->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes1.insert(shape->mBroadPhaseID);
-    }
-
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.reportCollisionBetweenShapes(callback, shapes1, emptySet);
-}
-
-// Test and report collisions between two bodies.
-/// This method should be called after calling the
-/// DynamicsWorld::update() method that will compute the collisions.
-/**
- * @param body1 Pointer to the first body to test
- * @param body2 Pointer to the second body to test
- * @param callback Pointer to the object with the callback method
- */
-void DynamicsWorld::testCollision(const CollisionBody* body1,
-                                   const CollisionBody* body2,
-                                   CollisionCallback* callback) {
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes1.insert(shape->mBroadPhaseID);
-    }
-
-    std::set<uint> shapes2;
-    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes2.insert(shape->mBroadPhaseID);
-    }
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.reportCollisionBetweenShapes(callback, shapes1, shapes2);
-}
-
-// Test and report collisions between all shapes of the world.
-/// This method should be called after calling the
-/// DynamicsWorld::update() method that will compute the collisions.
-/**
- * @param callback Pointer to the object with the callback method
- */
-void DynamicsWorld::testCollision(CollisionCallback* callback) {
-
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.reportCollisionBetweenShapes(callback, emptySet, emptySet);
 }
 
 /// Return the list of all contacts of the world

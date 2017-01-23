@@ -28,7 +28,7 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "collision/CollisionShapeInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "configuration.h"
@@ -53,18 +53,6 @@ struct ContactPointInfo {
 
         // -------------------- Attributes -------------------- //
 
-        /// First proxy shape of the contact
-        ProxyShape* shape1;
-
-        /// Second proxy shape of the contact
-        ProxyShape* shape2;
-
-        /// First collision shape
-        const CollisionShape* collisionShape1;
-
-        /// Second collision shape
-        const CollisionShape* collisionShape2;
-
         /// Normalized normal vector of the collision contact in world space
         Vector3 normal;
 
@@ -80,13 +68,18 @@ struct ContactPointInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(ProxyShape* proxyShape1, ProxyShape* proxyShape2, const CollisionShape* collShape1,
-                         const CollisionShape* collShape2, const Vector3& normal, decimal penetrationDepth,
-                         const Vector3& localPoint1, const Vector3& localPoint2)
-            : shape1(proxyShape1), shape2(proxyShape2), collisionShape1(collShape1), collisionShape2(collShape2),
-              normal(normal), penetrationDepth(penetrationDepth), localPoint1(localPoint1),
-              localPoint2(localPoint2) {
+        ContactPointInfo() = default;
 
+        /// Destructor
+        ~ContactPointInfo() = default;
+
+        /// Initialize the contact point info
+        void init(const Vector3& contactNormal, decimal penDepth,
+                  const Vector3& localPt1, const Vector3& localPt2) {
+            normal = contactNormal;
+            penetrationDepth = penDepth;
+            localPoint1 = localPt1;
+            localPoint2 = localPt2;
         }
 };
 
@@ -100,12 +93,6 @@ class ContactPoint {
     private :
 
         // -------------------- Attributes -------------------- //
-
-        /// First rigid body of the contact
-        CollisionBody* mBody1;
-
-        /// Second rigid body of the contact
-        CollisionBody* mBody2;
 
         /// Normalized normal vector of the contact (from body1 toward body2) in world space
         const Vector3 mNormal;
@@ -147,17 +134,14 @@ class ContactPoint {
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
 
-        /// Return the reference to the body 1
-        CollisionBody* getBody1() const;
+        /// Update the world contact points
+        void updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform);
 
-        /// Return the reference to the body 2
-        CollisionBody* getBody2() const;
+        /// Update the penetration depth
+        void updatePenetrationDepth();
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
-
-        /// Set the penetration depth of the contact
-        void setPenetrationDepth(decimal penetrationDepth);
 
         /// Return the contact local point on body 1
         Vector3 getLocalPointOnBody1() const;
@@ -177,12 +161,6 @@ class ContactPoint {
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
 
-        /// Set the contact world point on body 1
-        void setWorldPointOnBody1(const Vector3& worldPoint);
-
-        /// Set the contact world point on body 2
-        void setWorldPointOnBody2(const Vector3& worldPoint);
-
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
@@ -196,24 +174,20 @@ class ContactPoint {
         size_t getSizeInBytes() const;
 };
 
-// Return the reference to the body 1
-inline CollisionBody* ContactPoint::getBody1() const {
-    return mBody1;
+// Update the world contact points
+inline void ContactPoint::updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform) {
+    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
+    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
 }
 
-// Return the reference to the body 2
-inline CollisionBody* ContactPoint::getBody2() const {
-    return mBody2;
+// Update the penetration depth
+inline void ContactPoint::updatePenetrationDepth() {
+    mPenetrationDepth = (mWorldPointOnBody1 - mWorldPointOnBody2).dot(mNormal);
 }
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
-}
-
-// Set the penetration depth of the contact
-inline void ContactPoint::setPenetrationDepth(decimal penetrationDepth) {
-    this->mPenetrationDepth = penetrationDepth;
 }
 
 // Return the contact point on body 1
@@ -244,16 +218,6 @@ inline decimal ContactPoint::getPenetrationImpulse() const {
 // Set the cached penetration impulse
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
-}
-
-// Set the contact world point on body 1
-inline void ContactPoint::setWorldPointOnBody1(const Vector3& worldPoint) {
-    mWorldPointOnBody1 = worldPoint;
-}
-
-// Set the contact world point on body 2
-inline void ContactPoint::setWorldPointOnBody2(const Vector3& worldPoint) {
-    mWorldPointOnBody2 = worldPoint;
 }
 
 // Return true if the contact is a resting contact

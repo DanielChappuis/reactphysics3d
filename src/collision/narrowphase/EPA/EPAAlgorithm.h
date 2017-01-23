@@ -29,7 +29,7 @@
 // Libraries
 #include "collision/narrowphase/GJK/VoronoiSimplex.h"
 #include "collision/shapes/CollisionShape.h"
-#include "collision/CollisionShapeInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "constraint/ContactPoint.h"
 #include "collision/narrowphase/NarrowPhaseAlgorithm.h"
 #include "mathematics/mathematics.h"
@@ -87,9 +87,6 @@ class EPAAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the memory allocator
-        PoolAllocator* mMemoryAllocator;
-
         /// Triangle comparison operator
         TriangleComparison mTriangleComparison;
         
@@ -119,17 +116,11 @@ class EPAAlgorithm {
         /// Deleted assignment operator
         EPAAlgorithm& operator=(const EPAAlgorithm& algorithm) = delete;
 
-        /// Initalize the algorithm
-        void init(PoolAllocator* memoryAllocator);
-
         /// Compute the penetration depth with EPA algorithm.
         bool computePenetrationDepthAndContactPoints(const VoronoiSimplex& simplex,
-                                                     CollisionShapeInfo shape1Info,
-                                                     const Transform& transform1,
-                                                     CollisionShapeInfo shape2Info,
-                                                     const Transform& transform2,
+                                                     const NarrowPhaseInfo* narrowPhaseInfo,
                                                      Vector3& v,
-                                                     NarrowPhaseCallback* narrowPhaseCallback);
+                                                     ContactPointInfo &contactPointInfo);
 };
 
 // Add a triangle face in the candidate triangle heap in the EPA algorithm
@@ -148,11 +139,6 @@ inline void EPAAlgorithm::addFaceCandidate(TriangleEPA* triangle, TriangleEPA** 
         nbTriangles++;
         std::push_heap(&heap[0], &heap[nbTriangles], mTriangleComparison);
     }
-}
-
-// Initalize the algorithm
-inline void EPAAlgorithm::init(PoolAllocator* memoryAllocator) {
-    mMemoryAllocator = memoryAllocator;
 }
 
 }

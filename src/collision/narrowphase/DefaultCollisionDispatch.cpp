@@ -29,16 +29,6 @@
 
 using namespace reactphysics3d;
 
-/// Initialize the collision dispatch configuration
-void DefaultCollisionDispatch::init(CollisionDetection* collisionDetection,
-                                    PoolAllocator* memoryAllocator) {
-
-    // Initialize the collision algorithms
-    mSphereVsSphereAlgorithm.init(collisionDetection, memoryAllocator);
-    mGJKAlgorithm.init(collisionDetection, memoryAllocator);
-    mConcaveVsConvexAlgorithm.init(collisionDetection, memoryAllocator);
-}
-
 // Select and return the narrow-phase collision detection algorithm to
 // use between two types of collision shapes.
 NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int type2) {
@@ -46,18 +36,13 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
     CollisionShapeType shape1Type = static_cast<CollisionShapeType>(type1);
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
-    // Sphere vs Sphere algorithm
-    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
-        return &mSphereVsSphereAlgorithm;
-    }
-    // Concave vs Convex algorithm
-    else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-             (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
-        return &mConcaveVsConvexAlgorithm;
-    }
     // Convex vs Convex algorithm (GJK algorithm)
-    else if (CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) {
+    if (CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) {
         return &mGJKAlgorithm;
+    }
+    // Sphere vs Sphere algorithm
+    else if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
+        return &mSphereVsSphereAlgorithm;
     }
     else {
         return nullptr;

@@ -80,7 +80,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/narrowphase/GJK/GJKAlgorithm.h"
     "src/collision/narrowphase/GJK/GJKAlgorithm.cpp"
     "src/collision/narrowphase/NarrowPhaseAlgorithm.h"
-    "src/collision/narrowphase/NarrowPhaseAlgorithm.cpp"
     "src/collision/narrowphase/SphereVsSphereAlgorithm.h"
     "src/collision/narrowphase/SphereVsSphereAlgorithm.cpp"
     "src/collision/narrowphase/ConcaveVsConvexAlgorithm.h"
@@ -121,7 +120,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/TriangleMesh.cpp"
     "src/collision/CollisionDetection.h"
     "src/collision/CollisionDetection.cpp"
-    "src/collision/CollisionShapeInfo.h"
+    "src/collision/NarrowPhaseInfo.h"
     "src/collision/ContactManifold.h"
     "src/collision/ContactManifold.cpp"
     "src/collision/ContactManifoldSet.h"
@@ -173,11 +172,13 @@ SET (REACTPHYSICS3D_SOURCES
     "src/mathematics/Vector3.h"
     "src/mathematics/Ray.h"
     "src/mathematics/Vector3.cpp"
+    "src/memory/Allocator.h"
     "src/memory/PoolAllocator.h"
     "src/memory/PoolAllocator.cpp"
     "src/memory/SingleFrameAllocator.h"
     "src/memory/SingleFrameAllocator.cpp"
-    "src/memory/Stack.h"
+    "src/containers/Stack.h"
+    "src/containers/LinkedList.h"
 )
 
 # Create the library

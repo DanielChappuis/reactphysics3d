@@ -30,6 +30,7 @@
 #include "NarrowPhaseAlgorithm.h"
 #include "collision/shapes/ConvexShape.h"
 #include "collision/shapes/ConcaveShape.h"
+#include "memory/SingleFrameAllocator.h"
 #include <unordered_map>
 
 /// Namespace ReactPhysics3D
@@ -37,73 +38,43 @@ namespace reactphysics3d {
 
 // Class ConvexVsTriangleCallback
 /**
- * This class is used to encapsulate a callback method for
- * collision detection between the triangle of a concave mesh shape
- * and a convex shape.
+ * This class is used to report a collision between the triangle
+ * of a concave mesh shape and a convex shape during the
+ * middle-phase algorithm
  */
-class ConvexVsTriangleCallback : public TriangleCallback {
+class MiddlePhaseTriangleCallback : public TriangleCallback {
 
     protected:
-
-        /// Pointer to the collision detection object
-        CollisionDetection* mCollisionDetection;
-
-        /// Narrow-phase collision callback
-        NarrowPhaseCallback* mNarrowPhaseCallback;
-
-        /// Convex collision shape to test collision with
-        const ConvexShape* mConvexShape;
-
-        /// Concave collision shape
-        const ConcaveShape* mConcaveShape;
-
-        /// Proxy shape of the convex collision shape
-        ProxyShape* mConvexProxyShape;
-
-        /// Proxy shape of the concave collision shape
-        ProxyShape* mConcaveProxyShape;
 
         /// Broadphase overlapping pair
         OverlappingPair* mOverlappingPair;
 
-        /// Used to sort ContactPointInfos according to their penetration depth
-        static bool contactsDepthCompare(const ContactPointInfo& contact1,
-                                         const ContactPointInfo& contact2);
+        /// Pointer to the concave proxy shape
+        ProxyShape* mConcaveProxyShape;
+
+        /// Pointer to the convex proxy shape
+        ProxyShape* mConvexProxyShape;
+
+        /// Pointer to the concave collision shape
+        const ConcaveShape* mConcaveShape;
+
+        /// Reference to the single-frame memory allocator
+        Allocator& mAllocator;
 
     public:
 
-        /// Destructor
-        virtual ~ConvexVsTriangleCallback() override = default;
+        /// Pointer to the first element of the linked-list of narrow-phase info
+        NarrowPhaseInfo* narrowPhaseInfoList;
 
-        /// Set the collision detection pointer
-        void setCollisionDetection(CollisionDetection* collisionDetection) {
-            mCollisionDetection = collisionDetection;
-        }
+        /// Constructor
+        MiddlePhaseTriangleCallback(OverlappingPair* overlappingPair,
+                                    ProxyShape* concaveProxyShape,
+                                    ProxyShape* convexProxyShape, const ConcaveShape* concaveShape,
+                                    Allocator& allocator)
+            :mOverlappingPair(overlappingPair), mConcaveProxyShape(concaveProxyShape),
+             mConvexProxyShape(convexProxyShape), mConcaveShape(concaveShape),
+             mAllocator(allocator), narrowPhaseInfoList(nullptr) {
 
-        /// Set the narrow-phase collision callback
-        void setNarrowPhaseCallback(NarrowPhaseCallback* callback) {
-            mNarrowPhaseCallback = callback;
-        }
-
-        /// Set the convex collision shape to test collision with
-        void setConvexShape(const ConvexShape* convexShape) {
-            mConvexShape = convexShape;
-        }
-
-        /// Set the concave collision shape
-        void setConcaveShape(const ConcaveShape* concaveShape) {
-            mConcaveShape = concaveShape;
-        }
-
-        /// Set the broadphase overlapping pair
-        void setOverlappingPair(OverlappingPair* overlappingPair) {
-            mOverlappingPair = overlappingPair;
-        }
-
-        /// Set the proxy shapes of the two collision shapes
-        void setProxyShapes(ProxyShape* convexProxyShape, ProxyShape* concaveProxyShape) {
-            mConvexProxyShape = convexProxyShape;
-            mConcaveProxyShape = concaveProxyShape;
         }
 
         /// Test collision between a triangle and the convex mesh shape
@@ -148,13 +119,14 @@ struct ContactsDepthCompare {
 //    return contact1.contactInfo.penetrationDepth < contact2.contactInfo.penetrationDepth;
 //}
 
+// TODO : Delete this
 // Class SmoothCollisionNarrowPhaseCallback
 /**
  * This class is used as a narrow-phase callback to get narrow-phase contacts
  * of the concave triangle mesh to temporary store them in order to be used in
  * the smooth mesh collision algorithm if this one is enabled.
  */
-class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
+class SmoothCollisionNarrowPhaseCallback {
 
     private:
 
@@ -169,13 +141,9 @@ class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
 
         }
 
-
-        /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo) override;
-
 };
 
+// TODO : Delete this
 // Class ConcaveVsConvexAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
@@ -183,7 +151,7 @@ class SmoothCollisionNarrowPhaseCallback : public NarrowPhaseCallback {
  * to use the GJK collision detection algorithm to compute the collision between
  * the convex shape and each of the triangles in the concave shape.
  */
-class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
+class ConcaveVsConvexAlgorithm {
 
     protected :
 
@@ -212,7 +180,7 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         ConcaveVsConvexAlgorithm() = default;
 
         /// Destructor
-        virtual ~ConcaveVsConvexAlgorithm() override = default;
+        ~ConcaveVsConvexAlgorithm() = default;
 
         /// Private copy-constructor
         ConcaveVsConvexAlgorithm(const ConcaveVsConvexAlgorithm& algorithm) = delete;
@@ -221,9 +189,8 @@ class ConcaveVsConvexAlgorithm : public NarrowPhaseAlgorithm {
         ConcaveVsConvexAlgorithm& operator=(const ConcaveVsConvexAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback) override;
+        void testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   NarrowPhaseCallback* narrowPhaseCallback);
 };
 
 // Add a triangle vertex into the set of processed triangles

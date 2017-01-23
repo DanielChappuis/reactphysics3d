@@ -47,9 +47,6 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         /// Sphere vs Sphere collision algorithm
         SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
 
-        /// Concave vs Convex collision algorithm
-        ConcaveVsConvexAlgorithm mConcaveVsConvexAlgorithm;
-
         /// GJK Algorithm
         GJKAlgorithm mGJKAlgorithm;
 
@@ -60,10 +57,6 @@ class DefaultCollisionDispatch : public CollisionDispatch {
 
         /// Destructor
         virtual ~DefaultCollisionDispatch() override = default;
-
-        /// Initialize the collision dispatch configuration
-        virtual void init(CollisionDetection* collisionDetection,
-                          PoolAllocator* memoryAllocator) override;
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.

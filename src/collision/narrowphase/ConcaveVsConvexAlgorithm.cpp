@@ -33,93 +33,110 @@
 
 using namespace reactphysics3d;
 
-// Return true and compute a contact info if the two bounding volumes collide
-void ConcaveVsConvexAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
-                                             const CollisionShapeInfo& shape2Info,
-                                             NarrowPhaseCallback* narrowPhaseCallback) {
-
-    ProxyShape* convexProxyShape;
-    ProxyShape* concaveProxyShape;
-    const ConvexShape* convexShape;
-    const ConcaveShape* concaveShape;
-
-    // Collision shape 1 is convex, collision shape 2 is concave
-    if (shape1Info.collisionShape->isConvex()) {
-        convexProxyShape = shape1Info.proxyShape;
-        convexShape = static_cast<const ConvexShape*>(shape1Info.collisionShape);
-        concaveProxyShape = shape2Info.proxyShape;
-        concaveShape = static_cast<const ConcaveShape*>(shape2Info.collisionShape);
-    }
-    else {  // Collision shape 2 is convex, collision shape 1 is concave
-        convexProxyShape = shape2Info.proxyShape;
-        convexShape = static_cast<const ConvexShape*>(shape2Info.collisionShape);
-        concaveProxyShape = shape1Info.proxyShape;
-        concaveShape = static_cast<const ConcaveShape*>(shape1Info.collisionShape);
-    }
-
-    // Set the parameters of the callback object
-    ConvexVsTriangleCallback convexVsTriangleCallback;
-    convexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
-    convexVsTriangleCallback.setConvexShape(convexShape);
-    convexVsTriangleCallback.setConcaveShape(concaveShape);
-    convexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
-    convexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
-
-    // Compute the convex shape AABB in the local-space of the convex shape
-    AABB aabb;
-    convexShape->computeAABB(aabb, convexProxyShape->getLocalToWorldTransform());
-
-    // If smooth mesh collision is enabled for the concave mesh
-    if (concaveShape->getIsSmoothMeshCollisionEnabled()) {
-
-        std::vector<SmoothMeshContactInfo> contactPoints;
-
-        SmoothCollisionNarrowPhaseCallback smoothNarrowPhaseCallback(contactPoints);
-
-        convexVsTriangleCallback.setNarrowPhaseCallback(&smoothNarrowPhaseCallback);
-
-        // Call the convex vs triangle callback for each triangle of the concave shape
-        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
-
-        // Run the smooth mesh collision algorithm
-        processSmoothMeshCollision(shape1Info.overlappingPair, contactPoints, narrowPhaseCallback);
-    }
-    else {
-
-        convexVsTriangleCallback.setNarrowPhaseCallback(narrowPhaseCallback);
-
-        // Call the convex vs triangle callback for each triangle of the concave shape
-        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
-    }
-}
-
-// Test collision between a triangle and the convex mesh shape
-void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
+// Report collision between a triangle of a concave shape and the convex mesh shape (for middle-phase)
+void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints) {
 
     // Create a triangle collision shape
     decimal margin = mConcaveShape->getTriangleMargin();
-    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+    TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
+                                   TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
 
-    // Select the collision algorithm to use between the triangle and the convex shape
-    NarrowPhaseAlgorithm* algo = mCollisionDetection->getCollisionAlgorithm(triangleShape.getType(),
-                                                                            mConvexShape->getType());
-
-    // If there is no collision algorithm between those two kinds of shapes
-    if (algo == nullptr) return;
-
-    // Notify the narrow-phase algorithm about the overlapping pair we are going to test
-    algo->setCurrentOverlappingPair(mOverlappingPair);
-
-    // Create the CollisionShapeInfo objects
-    CollisionShapeInfo shapeConvexInfo(mConvexProxyShape, mConvexShape, mConvexProxyShape->getLocalToWorldTransform(),
-                                       mOverlappingPair, mConvexProxyShape->getCachedCollisionData());
-    CollisionShapeInfo shapeConcaveInfo(mConcaveProxyShape, &triangleShape,
-                                        mConcaveProxyShape->getLocalToWorldTransform(),
-                                        mOverlappingPair, mConcaveProxyShape->getCachedCollisionData());
-
-    // Use the collision algorithm to test collision between the triangle and the other convex shape
-    algo->testCollision(shapeConvexInfo, shapeConcaveInfo, mNarrowPhaseCallback);
+    // Create a narrow phase info for the narrow-phase collision detection
+    NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;
+    narrowPhaseInfoList = new (mAllocator.allocate(sizeof(NarrowPhaseInfo)))
+                           NarrowPhaseInfo(mOverlappingPair, mConvexProxyShape->getCollisionShape(),
+                           triangleShape, mConvexProxyShape->getLocalToWorldTransform(),
+                           mConcaveProxyShape->getLocalToWorldTransform(), mConvexProxyShape->getCachedCollisionData(),
+                           mConcaveProxyShape->getCachedCollisionData());
+    narrowPhaseInfoList->next = firstNarrowPhaseInfo;
 }
+
+// Return true and compute a contact info if the two bounding volumes collide
+void ConcaveVsConvexAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                             NarrowPhaseCallback* narrowPhaseCallback) {
+
+//    ProxyShape* convexProxyShape;
+//    ProxyShape* concaveProxyShape;
+//    const ConvexShape* convexShape;
+//    const ConcaveShape* concaveShape;
+
+//    // Collision shape 1 is convex, collision shape 2 is concave
+//    if (shape1Info.collisionShape->isConvex()) {
+//        convexProxyShape = shape1Info.proxyShape;
+//        convexShape = static_cast<const ConvexShape*>(shape1Info.collisionShape);
+//        concaveProxyShape = shape2Info.proxyShape;
+//        concaveShape = static_cast<const ConcaveShape*>(shape2Info.collisionShape);
+//    }
+//    else {  // Collision shape 2 is convex, collision shape 1 is concave
+//        convexProxyShape = shape2Info.proxyShape;
+//        convexShape = static_cast<const ConvexShape*>(shape2Info.collisionShape);
+//        concaveProxyShape = shape1Info.proxyShape;
+//        concaveShape = static_cast<const ConcaveShape*>(shape1Info.collisionShape);
+//    }
+
+//    // Set the parameters of the callback object
+//    ConvexVsTriangleCallback convexVsTriangleCallback;
+//    convexVsTriangleCallback.setCollisionDetection(mCollisionDetection);
+//    convexVsTriangleCallback.setConvexShape(convexShape);
+//    convexVsTriangleCallback.setConcaveShape(concaveShape);
+//    convexVsTriangleCallback.setProxyShapes(convexProxyShape, concaveProxyShape);
+//    convexVsTriangleCallback.setOverlappingPair(shape1Info.overlappingPair);
+
+//    // Compute the convex shape AABB in the local-space of the convex shape
+//    AABB aabb;
+//    convexShape->computeAABB(aabb, convexProxyShape->getLocalToWorldTransform());
+
+//    // If smooth mesh collision is enabled for the concave mesh
+//    if (concaveShape->getIsSmoothMeshCollisionEnabled()) {
+
+//        std::vector<SmoothMeshContactInfo> contactPoints;
+
+//        SmoothCollisionNarrowPhaseCallback smoothNarrowPhaseCallback(contactPoints);
+
+//        convexVsTriangleCallback.setNarrowPhaseCallback(&smoothNarrowPhaseCallback);
+
+//        // Call the convex vs triangle callback for each triangle of the concave shape
+//        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
+
+//        // Run the smooth mesh collision algorithm
+//        processSmoothMeshCollision(shape1Info.overlappingPair, contactPoints, narrowPhaseCallback);
+//    }
+//    else {
+
+//        convexVsTriangleCallback.setNarrowPhaseCallback(narrowPhaseCallback);
+
+//        // Call the convex vs triangle callback for each triangle of the concave shape
+//        concaveShape->testAllTriangles(convexVsTriangleCallback, aabb);
+//    }
+}
+
+//// Test collision between a triangle and the convex mesh shape
+//void ConvexVsTriangleCallback::testTriangle(const Vector3* trianglePoints) {
+
+//    // Create a triangle collision shape
+//    decimal margin = mConcaveShape->getTriangleMargin();
+//    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+
+//    // Select the collision algorithm to use between the triangle and the convex shape
+//    NarrowPhaseAlgorithm* algo = mCollisionDetection->getCollisionAlgorithm(triangleShape.getType(),
+//                                                                            mConvexShape->getType());
+
+//    // If there is no collision algorithm between those two kinds of shapes
+//    if (algo == nullptr) return;
+
+//    // Notify the narrow-phase algorithm about the overlapping pair we are going to test
+//    algo->setCurrentOverlappingPair(mOverlappingPair);
+
+//    // Create the CollisionShapeInfo objects
+//    CollisionShapeInfo shapeConvexInfo(mConvexProxyShape, mConvexShape, mConvexProxyShape->getLocalToWorldTransform(),
+//                                       mOverlappingPair, mConvexProxyShape->getCachedCollisionData());
+//    CollisionShapeInfo shapeConcaveInfo(mConcaveProxyShape, &triangleShape,
+//                                        mConcaveProxyShape->getLocalToWorldTransform(),
+//                                        mOverlappingPair, mConcaveProxyShape->getCachedCollisionData());
+
+//    // Use the collision algorithm to test collision between the triangle and the other convex shape
+//    algo->testCollision(shapeConvexInfo, shapeConcaveInfo, mNarrowPhaseCallback);
+//}
 
 // Process the concave triangle mesh collision using the smooth mesh collision algorithm described
 // by Pierre Terdiman (http://www.codercorner.com/MeshContacts.pdf). This is used to avoid the collision
@@ -246,36 +263,37 @@ bool ConcaveVsConvexAlgorithm::hasVertexBeenProcessed(const std::unordered_multi
     return false;
 }
 
-// Called by a narrow-phase collision algorithm when a new contact has been found
-void SmoothCollisionNarrowPhaseCallback::notifyContact(OverlappingPair* overlappingPair,
-                                                       const ContactPointInfo& contactInfo) {
-    Vector3 triangleVertices[3];
-    bool isFirstShapeTriangle;
 
-    // If the collision shape 1 is the triangle
-    if (contactInfo.collisionShape1->getType() == CollisionShapeType::TRIANGLE) {
-        assert(contactInfo.collisionShape2->getType() != CollisionShapeType::TRIANGLE);
+//// Called by a narrow-phase collision algorithm when a new contact has been found
+//void SmoothCollisionNarrowPhaseCallback::notifyContact(OverlappingPair* overlappingPair,
+//                                                       const ContactPointInfo& contactInfo) {
+//    Vector3 triangleVertices[3];
+//    bool isFirstShapeTriangle;
 
-        const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape1);
-        triangleVertices[0] = triangleShape->getVertex(0);
-        triangleVertices[1] = triangleShape->getVertex(1);
-        triangleVertices[2] = triangleShape->getVertex(2);
+//    // If the collision shape 1 is the triangle
+//    if (contactInfo.collisionShape1->getType() == CollisionShapeType::TRIANGLE) {
+//        assert(contactInfo.collisionShape2->getType() != CollisionShapeType::TRIANGLE);
 
-        isFirstShapeTriangle = true;
-    }
-    else {  // If the collision shape 2 is the triangle
-        assert(contactInfo.collisionShape2->getType() == CollisionShapeType::TRIANGLE);
+//        const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape1);
+//        triangleVertices[0] = triangleShape->getVertex(0);
+//        triangleVertices[1] = triangleShape->getVertex(1);
+//        triangleVertices[2] = triangleShape->getVertex(2);
 
-        const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape2);
-        triangleVertices[0] = triangleShape->getVertex(0);
-        triangleVertices[1] = triangleShape->getVertex(1);
-        triangleVertices[2] = triangleShape->getVertex(2);
+//        isFirstShapeTriangle = true;
+//    }
+//    else {  // If the collision shape 2 is the triangle
+//        assert(contactInfo.collisionShape2->getType() == CollisionShapeType::TRIANGLE);
 
-        isFirstShapeTriangle = false;
-    }
-    SmoothMeshContactInfo smoothContactInfo(contactInfo, isFirstShapeTriangle, triangleVertices[0], triangleVertices[1], triangleVertices[2]);
+//        const TriangleShape* triangleShape = static_cast<const TriangleShape*>(contactInfo.collisionShape2);
+//        triangleVertices[0] = triangleShape->getVertex(0);
+//        triangleVertices[1] = triangleShape->getVertex(1);
+//        triangleVertices[2] = triangleShape->getVertex(2);
 
-    // Add the narrow-phase contact into the list of contact to process for
-    // smooth mesh collision
-    mContactPoints.push_back(smoothContactInfo);
-}
+//        isFirstShapeTriangle = false;
+//    }
+//    SmoothMeshContactInfo smoothContactInfo(contactInfo, isFirstShapeTriangle, triangleVertices[0], triangleVertices[1], triangleVertices[2]);
+
+//    // Add the narrow-phase contact into the list of contact to process for
+//    // smooth mesh collision
+//    mContactPoints.push_back(smoothContactInfo);
+//}

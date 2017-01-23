@@ -23,49 +23,102 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_LINKED_LIST_H
+#define REACTPHYSICS3D_LINKED_LIST_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
+#include "memory/Allocator.h"
 
-
-/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Class SphereVsSphereAlgorithm
+// Class LinkedList
 /**
- * This class is used to compute the narrow-phase collision detection
- * between two sphere collision shapes.
- */
-class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
+ * This class represents a simple generic linked list.
+  */
+template<typename T>
+class LinkedList {
 
-    protected :
+    public:
 
-    public :
+        /// Element of the linked list
+        struct ListElement {
+
+            /// Data of the list element
+            T data;
+
+            /// Pointer to the next element of the list
+            ListElement* next;
+
+            /// Constructor
+            ListElement(T elementData, ListElement* nextElement)
+                : data(elementData), next(nextElement) {
+
+            }
+        };
+
+    private:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer to the first element of the list
+        ListElement* mListHead;
+
+        /// Memory allocator used to allocate the list elements
+        Allocator& mAllocator;
+
+    public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereAlgorithm() = default;
+        LinkedList(Allocator& allocator) : mListHead(nullptr), mAllocator(allocator) {
+
+        }
 
         /// Destructor
-        virtual ~SphereVsSphereAlgorithm() override = default;
+        ~LinkedList() {
+            reset();
+        }
 
-        /// Deleted copy-constructor
-        SphereVsSphereAlgorithm(const SphereVsSphereAlgorithm& algorithm) = delete;
+        /// Return the first element of the list
+        ListElement* getListHead() const;
 
-        /// Deleted assignment operator
-        SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm) = delete;
+        /// Insert an element at the beginning of the linked list
+        void insert(const T& data);
 
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                   ContactPointInfo& contactPointInfo) override;
+        /// Remove all the elements of the list
+        void reset();
+
 };
+
+// Return the first element of the list
+template<typename T>
+inline typename LinkedList<T>::ListElement* LinkedList<T>::getListHead() const {
+    return mListHead;
+}
+
+// Insert an element at the beginning of the linked list
+template<typename T>
+inline void LinkedList<T>::insert(const T& data) {
+    ListElement* element = new (mAllocator.allocate(sizeof(ListElement))) ListElement(data, mListHead);
+    mListHead = element;
+}
+
+// Remove all the elements of the list
+template<typename T>
+inline void LinkedList<T>::reset() {
+
+    // Release all the list elements
+    ListElement* element = mListHead;
+    while (element != nullptr) {
+        ListElement* nextElement = element->next;
+        mAllocator.release(element, sizeof(ListElement));
+        element = nextElement;
+    }
+
+    mListHead = nullptr;
+}
 
 }
 
 #endif
-

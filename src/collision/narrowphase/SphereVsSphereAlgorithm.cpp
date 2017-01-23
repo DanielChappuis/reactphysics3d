@@ -30,17 +30,16 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info,
-                                            const CollisionShapeInfo& shape2Info,
-                                            NarrowPhaseCallback* narrowPhaseCallback) {
+bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                            ContactPointInfo& contactPointInfo) {
     
     // Get the sphere collision shapes
-    const SphereShape* sphereShape1 = static_cast<const SphereShape*>(shape1Info.collisionShape);
-    const SphereShape* sphereShape2 = static_cast<const SphereShape*>(shape2Info.collisionShape);
+    const SphereShape* sphereShape1 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
+    const SphereShape* sphereShape2 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape2);
 
     // Get the local-space to world-space transforms
-    const Transform& transform1 = shape1Info.shapeToWorldTransform;
-    const Transform& transform2 = shape2Info.shapeToWorldTransform;
+    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
 
     // Compute the distance between the centers
     Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
@@ -60,11 +59,11 @@ void SphereVsSphereAlgorithm::testCollision(const CollisionShapeInfo& shape1Info
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        ContactPointInfo contactInfo(shape1Info.proxyShape, shape2Info.proxyShape, shape1Info.collisionShape,
-                                     shape2Info.collisionShape, vectorBetweenCenters.getUnit(), penetrationDepth,
-                                     intersectionOnBody1, intersectionOnBody2);
+        contactPointInfo.init(vectorBetweenCenters.getUnit(), penetrationDepth,
+                              intersectionOnBody1, intersectionOnBody2);
 
-        // Notify about the new contact
-        narrowPhaseCallback->notifyContact(shape1Info.overlappingPair, contactInfo);
+        return true;
     }
+
+    return false;
 }

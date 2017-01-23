@@ -69,11 +69,8 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
-                                                       const Transform& transform1,
-                                                       const CollisionShapeInfo& shape2Info,
-                                                       const Transform& transform2,
-                                                       NarrowPhaseCallback* narrowPhaseCallback,
+        bool computePenetrationDepthForEnlargedObjects(const NarrowPhaseInfo* narrowPhaseInfo,
+                                                       ContactPointInfo& contactPointInfo,
                                                        Vector3& v);
 
     public :
@@ -81,7 +78,7 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm();
+        GJKAlgorithm() = default;
 
         /// Destructor
         ~GJKAlgorithm() = default;
@@ -92,14 +89,9 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
-        /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection,
-                          PoolAllocator* memoryAllocator) override;
-
         /// Compute a contact info if the two bounding volumes collide.
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback) override;
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   ContactPointInfo& contactPointInfo) override;
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);
@@ -107,13 +99,6 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
         bool raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo);
 };
-
-// Initalize the algorithm
-inline void GJKAlgorithm::init(CollisionDetection* collisionDetection,
-                               PoolAllocator* memoryAllocator) {
-    NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
-    mAlgoEPA.init(memoryAllocator);
-}
 
 }
 

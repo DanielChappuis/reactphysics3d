@@ -33,7 +33,8 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mPoolAllocator), mCurrentBodyID(0),
+               : mSingleFrameAllocator(SIZE_SINGLE_FRAME_ALLOCATOR_BYTES),
+                 mCollisionDetection(this, mPoolAllocator, mSingleFrameAllocator), mCurrentBodyID(0),
                  mEventListener(nullptr) {
 
 }
@@ -148,119 +149,18 @@ bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
     return body1AABB.testCollision(body2AABB);
 }
 
-// Test and report collisions between a given shape and all the others
-// shapes of the world.
+// Report all the bodies that overlap with the aabb in parameter
 /**
- * @param shape Pointer to the proxy shape to test
- * @param callback Pointer to the object with the callback method
+ * @param aabb AABB used to test for overlap
+ * @param overlapCallback Pointer to the callback class to report overlap
+ * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
  */
-void CollisionWorld::testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback) {
-
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
-    // Create the sets of shapes
-    std::set<uint> shapes;
-    shapes.insert(shape->mBroadPhaseID);
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.testCollisionBetweenShapes(callback, shapes, emptySet);
+inline void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
+    mCollisionDetection.testAABBOverlap(aabb, overlapCallback, categoryMaskBits);
 }
 
-// Test and report collisions between two given shapes
-/**
- * @param shape1 Pointer to the first proxy shape to test
- * @param shape2 Pointer to the second proxy shape to test
- * @param callback Pointer to the object with the callback method
- */
-void CollisionWorld::testCollision(const ProxyShape* shape1,
-                                   const ProxyShape* shape2,
-                                   CollisionCallback* callback) {
-
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-    shapes1.insert(shape1->mBroadPhaseID);
-    std::set<uint> shapes2;
-    shapes2.insert(shape2->mBroadPhaseID);
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, shapes2);
-}
-
-// Test and report collisions between a body and all the others bodies of the
-// world
-/**
- * @param body Pointer to the first body to test
- * @param callback Pointer to the object with the callback method
- */
-void CollisionWorld::testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback) {
-
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-
-    // For each shape of the body
-    for (const ProxyShape* shape=body->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes1.insert(shape->mBroadPhaseID);
-    }
-
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, emptySet);
-}
-
-// Test and report collisions between two bodies
-/**
- * @param body1 Pointer to the first body to test
- * @param body2 Pointer to the second body to test
- * @param callback Pointer to the object with the callback method
- */
-void CollisionWorld::testCollision(const CollisionBody* body1,
-                                   const CollisionBody* body2,
-                                   CollisionCallback* callback) {
-
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
-    // Create the sets of shapes
-    std::set<uint> shapes1;
-    for (const ProxyShape* shape=body1->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes1.insert(shape->mBroadPhaseID);
-    }
-
-    std::set<uint> shapes2;
-    for (const ProxyShape* shape=body2->getProxyShapesList(); shape != nullptr;
-         shape = shape->getNext()) {
-        shapes2.insert(shape->mBroadPhaseID);
-    }
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.testCollisionBetweenShapes(callback, shapes1, shapes2);
-}
-
-// Test and report collisions between all shapes of the world
-/**
- * @param callback Pointer to the object with the callback method
- */
-void CollisionWorld::testCollision(CollisionCallback* callback) {
-
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
-    std::set<uint> emptySet;
-
-    // Perform the collision detection and report contacts
-    mCollisionDetection.testCollisionBetweenShapes(callback, emptySet, emptySet);
+// Return true if two bodies overlap
+bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
+    return mCollisionDetection.testOverlap(body1, body2);
 }
 
