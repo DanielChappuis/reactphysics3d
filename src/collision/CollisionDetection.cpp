@@ -605,7 +605,7 @@ NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(ProxyShape
         computeConvexVsConcaveMiddlePhase(&pair, mMemoryAllocator, &narrowPhaseInfo);
     }
 
-    return nullptr;
+    return narrowPhaseInfo;
 }
 
 // Report all the bodies that overlap with the aabb in parameter
@@ -976,7 +976,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
 
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         OverlappingPair* pair = it->second;
 
