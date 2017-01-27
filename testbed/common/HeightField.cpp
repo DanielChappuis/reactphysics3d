@@ -30,7 +30,7 @@
 // Constructor
 HeightField::HeightField(const openglframework::Vector3 &position,
                        reactphysics3d::CollisionWorld* world)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -73,7 +73,7 @@ HeightField::HeightField(const openglframework::Vector3 &position,
 // Constructor
 HeightField::HeightField(const openglframework::Vector3 &position, float mass,
                        reactphysics3d::DynamicsWorld* dynamicsWorld)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 

@@ -30,7 +30,7 @@
 ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
                        reactphysics3d::CollisionWorld* world,
                        const std::string& meshPath)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -87,7 +87,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
 ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
                        reactphysics3d::DynamicsWorld* dynamicsWorld,
                        const std::string& meshPath)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 

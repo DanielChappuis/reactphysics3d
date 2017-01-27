@@ -33,7 +33,7 @@
 
 
 // Class HeightField
-class HeightField : public openglframework::Mesh, public PhysicsObject {
+class HeightField : public PhysicsObject {
 
     private :
 

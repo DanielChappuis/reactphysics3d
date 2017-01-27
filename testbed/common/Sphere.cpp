@@ -37,7 +37,7 @@ int Sphere::totalNbSpheres = 0;
 Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                reactphysics3d::CollisionWorld* world,
                const std::string& meshFolderPath)
-       : openglframework::Mesh(), mRadius(radius) {
+       : mRadius(radius) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
@@ -86,7 +86,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
 Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                float mass, reactphysics3d::DynamicsWorld* world,
                const std::string& meshFolderPath)
-       : openglframework::Mesh(), mRadius(radius) {
+       : mRadius(radius) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);

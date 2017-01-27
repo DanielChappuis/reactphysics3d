@@ -195,19 +195,19 @@ void CubesScene::reset() {
 
     float radius = 2.0f;
 
-    for (int i=0; i<NB_CUBES; i++) {
+//    for (int i=0; i<NB_CUBES; i++) {
 
-        // Position of the cubes
-        float angle = i * 30.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          10 + i * (BOX_SIZE.y + 0.3f),
-                                          0);
+//        // Position of the cubes
+//        float angle = i * 30.0f;
+//        openglframework::Vector3 position(radius * cos(angle),
+//                                          10 + i * (BOX_SIZE.y + 0.3f),
+//                                          0);
 
-        // Initial position and orientation of the rigid body
-        rp3d::Vector3 initPosition(position.x, position.y, position.z);
-        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-        rp3d::Transform transform(initPosition, initOrientation);
+//        // Initial position and orientation of the rigid body
+//        rp3d::Vector3 initPosition(position.x, position.y, position.z);
+//        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
+//        rp3d::Transform transform(initPosition, initOrientation);
 
-        mBoxes[i]->resetTransform(transform);
-    }
+//        mBoxes[i]->resetTransform(transform);
+//    }
 }

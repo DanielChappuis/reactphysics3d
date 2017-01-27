@@ -37,7 +37,7 @@ int Cylinder::totalNbCylinders = 0;
 Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& position,
                    reactphysics3d::CollisionWorld* world,
                    const std::string& meshFolderPath)
-     : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+     : mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cylinder.obj", *this);
@@ -85,7 +85,7 @@ Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& p
 Cylinder::Cylinder(float radius, float height, const openglframework::Vector3& position,
            float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                    const std::string& meshFolderPath)
-     : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+     : mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cylinder.obj", *this);

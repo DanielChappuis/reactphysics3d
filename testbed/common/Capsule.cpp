@@ -37,7 +37,7 @@ int Capsule::totalNbCapsules = 0;
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  reactphysics3d::CollisionWorld* world,
                  const std::string& meshFolderPath)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+        : mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);
@@ -86,7 +86,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
                  float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
                  const std::string& meshFolderPath)
-        : openglframework::Mesh(), mRadius(radius), mHeight(height) {
+        : mRadius(radius), mHeight(height) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "capsule.obj", *this);

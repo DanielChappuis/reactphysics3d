@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class Cone
-class Cone : public openglframework::Mesh, public PhysicsObject {
+class Cone : public PhysicsObject {
 
     private :
 

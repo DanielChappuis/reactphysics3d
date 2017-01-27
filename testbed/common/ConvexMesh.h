@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class ConvexMesh
-class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
+class ConvexMesh : public PhysicsObject {
 
     private :
 

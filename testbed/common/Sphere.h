@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class Sphere
-class Sphere : public openglframework::Mesh, public PhysicsObject {
+class Sphere : public PhysicsObject {
 
     private :
 

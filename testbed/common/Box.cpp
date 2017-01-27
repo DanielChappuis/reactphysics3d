@@ -39,8 +39,7 @@ int Box::totalNbBoxes = 0;
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
-    : openglframework::Mesh() {
+         reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
@@ -94,8 +93,7 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-         float mass, reactphysics3d::DynamicsWorld* world, const std::string& meshFolderPath)
-    : openglframework::Mesh() {
+         float mass, reactphysics3d::DynamicsWorld* world, const std::string& meshFolderPath) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);

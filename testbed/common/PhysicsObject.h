@@ -31,7 +31,7 @@
 #include "reactphysics3d.h"
 
 // Class PhysicsObject
-class PhysicsObject {
+class PhysicsObject : public openglframework::Mesh {
 
     protected:
 

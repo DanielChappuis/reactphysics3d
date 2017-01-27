@@ -35,8 +35,7 @@ int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
-         : openglframework::Mesh() {
+                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
@@ -106,8 +105,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
 
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
-         : openglframework::Mesh() {
+                   reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);

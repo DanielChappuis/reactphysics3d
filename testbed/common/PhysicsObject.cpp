@@ -27,7 +27,7 @@
 #include "PhysicsObject.h"
 
 /// Constructor
-PhysicsObject::PhysicsObject() {
+PhysicsObject::PhysicsObject() : openglframework::Mesh() {
 
     mColor = openglframework::Color(1, 1, 1, 1);
     mSleepingColor = openglframework::Color(1, 0, 0, 1);
