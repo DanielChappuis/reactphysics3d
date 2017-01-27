@@ -150,8 +150,11 @@ Sphere::~Sphere() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Sphere::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix) {
+void Sphere::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireFrame) {
+
+    if (wireFrame) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
 
     // Bind the shader
     shader.bind();
@@ -205,6 +208,10 @@ void Sphere::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
+
+    if (wireFrame) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

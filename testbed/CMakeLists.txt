@@ -110,6 +110,8 @@ SET(SCENES_SOURCES
     scenes/raycast/RaycastScene.cpp
     scenes/collisionshapes/CollisionShapesScene.h
     scenes/collisionshapes/CollisionShapesScene.cpp
+    scenes/collisiondetection/CollisionDetectionScene.h
+    scenes/collisiondetection/CollisionDetectionScene.cpp
     scenes/concavemesh/ConcaveMeshScene.h
     scenes/concavemesh/ConcaveMeshScene.cpp
     scenes/heightfield/HeightFieldScene.h

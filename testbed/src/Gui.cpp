@@ -402,6 +402,13 @@ void Gui::createSettingsPanel() {
         mApp->mIsShadowMappingEnabled = value;
     });
 
+    // Enable/Disable wireframe mode
+    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Wireframe");
+    checkboxWireframe->setChecked(mApp->mIsWireframeEnabled);
+    checkboxWireframe->setCallback([&](bool value) {
+        mApp->mIsWireframeEnabled = value;
+    });
+
     mPhysicsPanel->setVisible(true);
     mRenderingPanel->setVisible(false);
 }

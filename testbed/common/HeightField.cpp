@@ -131,7 +131,11 @@ HeightField::~HeightField() {
 
 // Render the sphere at the correct position and with the correct orientation
 void HeightField::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix) {
+                    const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) {
+
+    if (wireframe) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
 
     // Bind the shader
     shader.bind();
@@ -185,6 +189,10 @@ void HeightField::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
+
+    if (wireframe) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }
 
 // Compute the heights of the height field

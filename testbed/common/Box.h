@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class Box
-class Box : public openglframework::Object3D, public PhysicsObject {
+class Box : public openglframework::Mesh, public PhysicsObject {
 
 	private :
 
@@ -47,20 +47,20 @@ class Box : public openglframework::Object3D, public PhysicsObject {
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
-		/// Vertex Buffer Object for the vertices data used to render the box with OpenGL
-		static openglframework::VertexBufferObject mVBOVertices;
+        /// Vertex Buffer Object for the vertices data
+        static openglframework::VertexBufferObject mVBOVertices;
 
-		/// Vertex Buffer Object for the normales used to render the box with OpenGL
-		static openglframework::VertexBufferObject mVBONormals;
+        /// Vertex Buffer Object for the normals data
+        static openglframework::VertexBufferObject mVBONormals;
 
-		/// Vertex Array Object for the vertex data
-		static openglframework::VertexArrayObject mVAO;
+        /// Vertex Buffer Object for the texture coords
+        static openglframework::VertexBufferObject mVBOTextureCoords;
 
-		/// Vertices coordinates of the triangles of the box
-		static GLfloat mCubeVertices[108];
+        /// Vertex Buffer Object for the indices
+        static openglframework::VertexBufferObject mVBOIndices;
 
-		/// Vertices normals of the triangles of the box
-		static GLfloat mCubeNormals[108];
+        /// Vertex Array Object for the vertex data
+        static openglframework::VertexArrayObject mVAO;
 
 		/// Total number of boxes created
 		static int totalNbBoxes;
@@ -68,7 +68,7 @@ class Box : public openglframework::Object3D, public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Create a the VAO and VBOs to render to box with OpenGL
-		static void createVBOAndVAO();
+        void createVBOAndVAO();
 
 	public :
 
@@ -76,17 +76,17 @@ class Box : public openglframework::Object3D, public PhysicsObject {
 
 		/// Constructor
 		Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-				reactphysics3d::CollisionWorld* world);
+                reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
 
 		/// Constructor
 		Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-				float mass, reactphysics3d::DynamicsWorld *world);
+                float mass, reactphysics3d::DynamicsWorld *world, const std::string& meshFolderPath);
 
 		/// Destructor
 		~Box();
 
 		/// Render the cube at the correct position and with the correct orientation
-		void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
+        void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireframe);
 
 		/// Set the position of the box
 		void resetTransform(const rp3d::Transform& transform);

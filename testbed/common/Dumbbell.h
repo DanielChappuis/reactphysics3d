@@ -95,7 +95,7 @@ class Dumbbell : public openglframework::Mesh, public PhysicsObject {
 
         /// Render the sphere at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
+                    const openglframework::Matrix4& worldToCameraMatrix, bool wireframe);
 
         /// Set the position of the box
         void resetTransform(const rp3d::Transform& transform);

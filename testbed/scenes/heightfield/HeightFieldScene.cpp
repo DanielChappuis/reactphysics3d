@@ -54,7 +54,7 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
         openglframework::Vector3 position(15, 10 + 6 * i, 0);
 
         // Create a box and a corresponding rigid in the dynamics world
-        mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld);
+        mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld, mMeshFolderPath);
 
         // Set the box color
         mBoxes[i]->setColor(mDemoColors[2]);
@@ -156,10 +156,10 @@ void HeightFieldScene::renderSinglePass(Shader& shader, const openglframework::M
     // Bind the shader
     shader.bind();
 
-    mHeightField->render(shader, worldToCameraMatrix);
+    mHeightField->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     for (int i=0; i<NB_BOXES; i++) {
-       mBoxes[i]->render(shader, worldToCameraMatrix);
+       mBoxes[i]->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Unbind the shader

@@ -83,7 +83,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
                                           radius * sin(angle));
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+        Box* box = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
         // Set the box color
         box->setColor(mDemoColors[i % mNbDemoColors]);
@@ -235,7 +235,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
     // ---------- Create the floor ---------
 
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);
@@ -461,43 +461,43 @@ void CollisionShapesScene::renderSinglePass(openglframework::Shader& shader,
 
     // Render all the boxes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the sphere of the scene
     for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the cones of the scene
     for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the cylinders of the scene
     for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the capsules of the scene
     for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the convex meshes of the scene
     for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
          it != mConvexMeshes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render all the dumbbells of the scene
     for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
          it != mDumbbells.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render the floor
-    mFloor->render(shader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     //mConcaveMesh->render(shader, worldToCameraMatrix);
 

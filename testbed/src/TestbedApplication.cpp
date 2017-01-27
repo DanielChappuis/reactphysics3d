@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <sstream>
 #include "cubes/CubesScene.h"
+#include "collisiondetection/CollisionDetectionScene.h"
 #include "joints/JointsScene.h"
 #include "collisionshapes/CollisionShapesScene.h"
 #include "heightfield/HeightFieldScene.h"
@@ -43,6 +44,7 @@ using namespace raycastscene;
 using namespace collisionshapesscene;
 using namespace trianglemeshscene;
 using namespace heightfieldscene;
+using namespace collisiondetectionscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -63,6 +65,7 @@ TestbedApplication::TestbedApplication(bool isFullscreen)
     mIsShadowMappingEnabled = true;
     mIsVSyncEnabled = false;
     mIsContactPointsDisplayed = false;
+    mIsWireframeEnabled = false;
 
     init();
 
@@ -113,7 +116,11 @@ void TestbedApplication::createScenes() {
     RaycastScene* raycastScene = new RaycastScene("Raycast");
     mScenes.push_back(raycastScene);
 
-    // Raycast scene
+    // Collision Detection scene
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection");
+    mScenes.push_back(collisionDetectionScene);
+
+    // Concave Mesh scene
     ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh");
     mScenes.push_back(concaveMeshScene);
 
@@ -194,6 +201,9 @@ void TestbedApplication::update() {
 
     // Display/Hide contact points
     mCurrentScene->setIsContactPointsDisplayed(mIsContactPointsDisplayed);
+
+    // Enable/Disable wireframe mode
+    mCurrentScene->setIsWireframeEnabled(mIsWireframeEnabled);
 
     // Update the scene
     mCurrentScene->update();

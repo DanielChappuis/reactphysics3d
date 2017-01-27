@@ -163,17 +163,17 @@ void JointsScene::renderSinglePass(openglframework::Shader& shader,
     shader.bind();
 
     // Render all the boxes
-    mSliderJointBottomBox->render(shader, worldToCameraMatrix);
-    mSliderJointTopBox->render(shader, worldToCameraMatrix);
-    mPropellerBox->render(shader, worldToCameraMatrix);
-    mFixedJointBox1->render(shader, worldToCameraMatrix);
-    mFixedJointBox2->render(shader, worldToCameraMatrix);
+    mSliderJointBottomBox->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    mSliderJointTopBox->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    mPropellerBox->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    mFixedJointBox1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    mFixedJointBox2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mBallAndSocketJointChainBoxes[i]->render(shader, worldToCameraMatrix);
+        mBallAndSocketJointChainBoxes[i]->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render the floor
-    mFloor->render(shader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     // Unbind the shader
     shader.unbind();
@@ -263,7 +263,7 @@ void JointsScene::createBallAndSocketJoints() {
 
         // Create a box and a corresponding rigid in the dynamics world
         mBallAndSocketJointChainBoxes[i] = new Box(boxDimension, positionBox , boxMass,
-                                                   mDynamicsWorld);
+                                                   mDynamicsWorld, mMeshFolderPath);
 
         // Set the box color
         mBallAndSocketJointChainBoxes[i]->setColor(mDemoColors[i % mNbDemoColors]);
@@ -312,7 +312,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mSliderJointBottomBox = new Box(box1Dimension, positionBox1 , BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mSliderJointBottomBox->setColor(mBlueColorDemo);
@@ -332,7 +332,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
-    mSliderJointTopBox = new Box(box2Dimension, positionBox2, BOX_MASS, mDynamicsWorld);
+    mSliderJointTopBox = new Box(box2Dimension, positionBox2, BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mSliderJointTopBox->setColor(mOrangeColorDemo);
@@ -372,7 +372,7 @@ void JointsScene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mPropellerBox = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mPropellerBox->setColor(mYellowColorDemo);
@@ -411,7 +411,7 @@ void JointsScene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mFixedJointBox1->setColor(mPinkColorDemo);
@@ -427,7 +427,7 @@ void JointsScene::createFixedJoints() {
     openglframework::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld);
+    mFixedJointBox2 = new Box(boxDimension, positionBox2 , BOX_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mFixedJointBox2->setColor(mBlueColorDemo);
@@ -466,7 +466,7 @@ void JointsScene::createFloor() {
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mMeshFolderPath);
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);

@@ -58,7 +58,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name)
             openglframework::Vector3 boxPosition(-NB_BOXES_X * BOX_SIZE * BOXES_SPACE / 2 + i * BOX_SIZE * BOXES_SPACE, 30, -NB_BOXES_Z * BOX_SIZE * BOXES_SPACE / 2 + j * BOX_SIZE * BOXES_SPACE);
 
             // Create a sphere and a corresponding rigid in the dynamics world
-            mBoxes[i * NB_BOXES_Z + j] = new Box(Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE) * 0.5f, boxPosition, 80.1, mDynamicsWorld);
+            mBoxes[i * NB_BOXES_Z + j] = new Box(Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE) * 0.5f, boxPosition, 80.1, mDynamicsWorld, mMeshFolderPath);
 
             // Set the sphere color
             mBoxes[i * NB_BOXES_Z + j]->setColor(mDemoColors[0]);
@@ -160,10 +160,10 @@ void ConcaveMeshScene::renderSinglePass(Shader& shader, const openglframework::M
     // Bind the shader
     shader.bind();
 
-    mConcaveMesh->render(shader, worldToCameraMatrix);
+    mConcaveMesh->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     for (int i=0; i<NB_BOXES_X * NB_BOXES_Z; i++) {
-        mBoxes[i]->render(shader, worldToCameraMatrix);
+        mBoxes[i]->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Unbind the shader

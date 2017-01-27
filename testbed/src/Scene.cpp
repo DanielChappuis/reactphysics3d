@@ -33,7 +33,7 @@ using namespace openglframework;
 Scene::Scene(const std::string& name, bool isShadowMappingEnabled)
       : mName(name), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
-        mIsContactPointsDisplayed(true) {
+        mIsContactPointsDisplayed(true), mIsWireframeEnabled(false) {
 
 }
 

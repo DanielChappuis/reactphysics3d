@@ -109,6 +109,9 @@ class TestbedApplication : public Screen {
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
 
+        /// True if the wireframe rendering is enabled
+        bool mIsWireframeEnabled;
+
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
 

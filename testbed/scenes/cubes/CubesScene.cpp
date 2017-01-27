@@ -48,33 +48,35 @@ CubesScene::CubesScene(const std::string& name)
 
     float radius = 2.0f;
 
-    // Create all the cubes of the scene
-    for (int i=0; i<NB_CUBES; i++) {
+    //// Create all the cubes of the scene
+    //for (int i=0; i<NB_CUBES; i++) {
 
-        // Position of the cubes
-        float angle = i * 30.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          30 + i * (BOX_SIZE.y + 0.3f),
-                                          0);
+    //    // Position of the cubes
+    //    float angle = i * 30.0f;
+    //    openglframework::Vector3 position(radius * cos(angle),
+    //                                      30 + i * (BOX_SIZE.y + 0.3f),
+    //                                      0);
 
-        // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+    //    // Create a cube and a corresponding rigid in the dynamics world
+    //    Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
 
-        // Set the box color
-        cube->setColor(mDemoColors[i % mNbDemoColors]);
-        cube->setSleepingColor(mRedColorDemo);
+    //    // Set the box color
+    //    cube->setColor(mDemoColors[i % mNbDemoColors]);
+    //    cube->setSleepingColor(mRedColorDemo);
 
-        // Change the material properties of the rigid body
-        rp3d::Material& material = cube->getRigidBody()->getMaterial();
-        material.setBounciness(rp3d::decimal(0.4));
+    //    // Change the material properties of the rigid body
+    //    rp3d::Material& material = cube->getRigidBody()->getMaterial();
+    //    material.setBounciness(rp3d::decimal(0.4));
 
-        // Add the box the list of box in the scene
-        mBoxes.push_back(cube);
-    }
+    //    // Add the box the list of box in the scene
+    //    mBoxes.push_back(cube);
+    //}
+
+	// ------------------------- FLOOR ----------------------- //
 
     // Create the floor
     openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mMeshFolderPath);
     mFloor->setColor(mGreyColorDemo);
     mFloor->setSleepingColor(mGreyColorDemo);
 
@@ -82,8 +84,24 @@ CubesScene::CubesScene(const std::string& name)
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the floor rigid body
-    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
-    material.setBounciness(rp3d::decimal(0.3));
+    //rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
+    //material.setBounciness(rp3d::decimal(0.3));
+
+	// ------------------------- BOX ----------------------- //
+
+	// Create a cube and a corresponding rigid in the dynamics world
+    Box* cube = new Box(BOX_SIZE, Vector3(0, 10, 0), BOX_MASS, mDynamicsWorld, mMeshFolderPath);
+
+	// Set the box color
+	cube->setColor(mDemoColors[0]);
+	cube->setSleepingColor(mRedColorDemo);
+
+	// Change the material properties of the rigid body
+	//rp3d::Material& material = cube->getRigidBody()->getMaterial();
+	//material.setBounciness(rp3d::decimal(0.4));
+
+	// Add the box the list of box in the scene
+	mBoxes.push_back(cube);
 
     // Get the physics engine parameters
     mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
@@ -162,11 +180,11 @@ void CubesScene::renderSinglePass(Shader& shader, const openglframework::Matrix4
 
     // Render all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
     // Render the floor
-    mFloor->render(shader, worldToCameraMatrix);
+    mFloor->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     // Unbind the shader
     shader.unbind();

@@ -108,6 +108,9 @@ class Scene {
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
 
+        /// True if we render shapes in wireframe mode
+        bool mIsWireframeEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -199,6 +202,12 @@ class Scene {
         /// Display/Hide the contact points
         void virtual setIsContactPointsDisplayed(bool display);
 
+        /// Return true if wireframe rendering is enabled
+        bool getIsWireframeEnabled() const;
+
+        /// Enable/disbale wireframe rendering
+        void setIsWireframeEnabled(bool isEnabled);
+
         /// Return all the contact points of the scene
         std::vector<ContactPoint> virtual getContactPoints() const;
 };
@@ -265,6 +274,16 @@ inline void Scene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
 // Display/Hide the contact points
 inline void Scene::setIsContactPointsDisplayed(bool display) {
     mIsContactPointsDisplayed = display;
+}
+
+// Return true if wireframe rendering is enabled
+inline bool Scene::getIsWireframeEnabled() const {
+    return mIsWireframeEnabled;
+}
+
+// Enable/disbale wireframe rendering
+inline void Scene::setIsWireframeEnabled(bool isEnabled) {
+    mIsWireframeEnabled = isEnabled;
 }
 
 // Return all the contact points of the scene
