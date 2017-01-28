@@ -162,12 +162,6 @@ class TestbedApplication : public Screen {
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
 
-        /// Enable/Disable shadow mapping
-        void enableShadows(bool enable);
-
-        /// Display/Hide contact points
-        void displayContactPoints(bool display);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -250,16 +244,6 @@ inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
     if (mTimer.isRunning()) {
         mSinglePhysicsStepEnabled = false;
     }
-}
-
-// Enable/Disable shadow mapping
-inline void TestbedApplication::enableShadows(bool enable) {
-    mIsShadowMappingEnabled = enable;
-}
-
-/// Display/Hide contact points
-inline void TestbedApplication::displayContactPoints(bool display) {
-    mIsContactPointsDisplayed = display;
 }
 
 // Enable/Disable Vertical synchronization

@@ -68,8 +68,11 @@ class PhysicsObject : public openglframework::Mesh {
         /// Set the sleeping color of the box
         void setSleepingColor(const openglframework::Color& color);
 
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
+        /// Get the transform
+        const rp3d::Transform& getTransform() const;
+
+        /// Set the transform
+        void setTransform(const rp3d::Transform& transform);
 
         /// Return a pointer to the collision body of the box
         reactphysics3d::CollisionBody* getCollisionBody();
@@ -89,6 +92,11 @@ inline void PhysicsObject::setColor(const openglframework::Color& color) {
 // Set the sleeping color of the box
 inline void PhysicsObject::setSleepingColor(const openglframework::Color& color) {
     mSleepingColor = color;
+}
+
+// Get the transform
+inline const rp3d::Transform& PhysicsObject::getTransform() const {
+    return mBody->getTransform();
 }
 
 // Return a pointer to the collision body of the box

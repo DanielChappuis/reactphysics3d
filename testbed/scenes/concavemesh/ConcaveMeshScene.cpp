@@ -175,7 +175,7 @@ void ConcaveMeshScene::reset() {
 
     // Reset the transform
     rp3d::Transform transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity());
-    mConcaveMesh->resetTransform(transform);
+    mConcaveMesh->setTransform(transform);
 
     for (int i=0; i<NB_BOXES_X; i++) {
         for (int j=0; j<NB_BOXES_Z; j++) {
@@ -184,7 +184,7 @@ void ConcaveMeshScene::reset() {
             rp3d::Vector3 boxPosition(-NB_BOXES_X * BOX_SIZE * BOXES_SPACE / 2 + i * BOX_SIZE * BOXES_SPACE, 30, -NB_BOXES_Z * BOX_SIZE * BOXES_SPACE / 2 + j * BOX_SIZE * BOXES_SPACE);
 
             rp3d::Transform boxTransform(boxPosition, rp3d::Quaternion::identity());
-            mBoxes[i * NB_BOXES_Z + j]->resetTransform(boxTransform);
+            mBoxes[i * NB_BOXES_Z + j]->setTransform(boxTransform);
         }
     }
 

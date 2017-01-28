@@ -524,7 +524,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mDumbbells[i]->resetTransform(transform);
+        mDumbbells[i]->setTransform(transform);
     }
 
     // Create all the boxes of the scene
@@ -542,7 +542,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mBoxes[i]->resetTransform(transform);
+        mBoxes[i]->setTransform(transform);
     }
 
     // Create all the spheres of the scene
@@ -560,7 +560,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mSpheres[i]->resetTransform(transform);
+        mSpheres[i]->setTransform(transform);
     }
 
     // Create all the cones of the scene
@@ -578,7 +578,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mCones[i]->resetTransform(transform);
+        mCones[i]->setTransform(transform);
     }
 
     // Create all the cylinders of the scene
@@ -596,7 +596,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mCylinders[i]->resetTransform(transform);
+        mCylinders[i]->setTransform(transform);
     }
 
     // Create all the capsules of the scene
@@ -614,7 +614,7 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mCapsules[i]->resetTransform(transform);
+        mCapsules[i]->setTransform(transform);
     }
 
     // Create all the convex meshes of the scene
@@ -632,6 +632,6 @@ void CollisionShapesScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Reset the transform
-        mConvexMeshes[i]->resetTransform(transform);
+        mConvexMeshes[i]->setTransform(transform);
     }
 }

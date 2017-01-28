@@ -69,7 +69,7 @@ openglframework::Matrix4 PhysicsObject::computeTransform(float interpolationFact
 }
 
 // Reset the transform
-void PhysicsObject::resetTransform(const rp3d::Transform& transform) {
+void PhysicsObject::setTransform(const rp3d::Transform& transform) {
 
     // Reset the transform
     mBody->setTransform(transform);

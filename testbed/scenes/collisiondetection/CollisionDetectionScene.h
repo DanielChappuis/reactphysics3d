@@ -146,8 +146,7 @@ class CollisionDetectionScene : public SceneDemo {
         //ConcaveMesh* mConcaveMesh;
         //HeightField* mHeightField;
 
-        std::vector<openglframework::Object3D*> mAllShapesObjects;
-        std::vector<PhysicsObject*> mAllShapesPhysicsObjects;
+        std::vector<PhysicsObject*> mAllShapes;
 
         int mSelectedShapeIndex;
 

@@ -171,13 +171,13 @@ void HeightFieldScene::reset() {
 
     // Reset the transform
     rp3d::Transform transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
-    mHeightField->resetTransform(transform);
+    mHeightField->setTransform(transform);
 
     float heightFieldWidth = 10.0f;
     float stepDist = heightFieldWidth / (NB_BOXES + 1);
     for (int i=0; i<NB_BOXES; i++) {
         rp3d::Vector3 boxPosition(-heightFieldWidth * 0.5f + i * stepDist , 14 + 6.0f * i, -heightFieldWidth * 0.5f + i * stepDist);
         rp3d::Transform boxTransform(boxPosition, rp3d::Quaternion::identity());
-        mBoxes[i]->resetTransform(boxTransform);
+        mBoxes[i]->setTransform(boxTransform);
     }
 }

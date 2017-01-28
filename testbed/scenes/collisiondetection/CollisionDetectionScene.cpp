@@ -54,8 +54,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 
     // Create a sphere and a corresponding collision body in the dynamics world
     mSphere1 = new Sphere(6, position1, mCollisionWorld, mMeshFolderPath);
-    mAllShapesObjects.push_back(mSphere1);
-    mAllShapesPhysicsObjects.push_back(mSphere1);
+    mAllShapes.push_back(mSphere1);
 
     // Set the color
     mSphere1->setColor(mGreyColorDemo);
@@ -66,8 +65,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 
     // Create a sphere and a corresponding collision body in the dynamics world
     mSphere2 = new Sphere(4, position2, mCollisionWorld, mMeshFolderPath);
-    mAllShapesObjects.push_back(mSphere2);
-    mAllShapesPhysicsObjects.push_back(mSphere2);
+    mAllShapes.push_back(mSphere2);
 
     // Set the color
     mSphere2->setColor(mGreyColorDemo);
@@ -139,7 +137,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     // Create the VBO and VAO to render the lines
     createVBOAndVAO(mPhongShader);
 
-    mAllShapesPhysicsObjects[mSelectedShapeIndex]->setColor(mBlueColorDemo);
+    mAllShapes[mSelectedShapeIndex]->setColor(mBlueColorDemo);
 }
 
 // Reset the scene
@@ -332,12 +330,12 @@ void CollisionDetectionScene::selectNextShape() {
 
     int previousIndex = mSelectedShapeIndex;
     mSelectedShapeIndex++;
-    if (mSelectedShapeIndex >= mAllShapesPhysicsObjects.size()) {
+    if (mSelectedShapeIndex >= mAllShapes.size()) {
         mSelectedShapeIndex = 0;
     }
 
-    mAllShapesPhysicsObjects[previousIndex]->setColor(mGreyColorDemo);
-    mAllShapesPhysicsObjects[mSelectedShapeIndex]->setColor(mBlueColorDemo);
+    mAllShapes[previousIndex]->setColor(mGreyColorDemo);
+    mAllShapes[mSelectedShapeIndex]->setColor(mBlueColorDemo);
 }
 
 // Called when a keyboard event occurs
@@ -349,10 +347,68 @@ bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, i
         return true;
     }
 
+    float stepDist = 0.5f;
+    float stepAngle = 20 * (3.14f / 180.0f);
+
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        rp3d::Transform transform = mAllShapesPhysicsObjects[mSelectedShapeIndex]->getCollisionBody()->getTransform();
-        transform.setPosition(transform.getPosition() + rp3d::Vector3(1, 0, 0));
-        mAllShapesObjects[mSelectedShapeIndex]->translateWorld(openglframework::Vector3(1, 0, 0));
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(stepDist, 0, 0));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(-stepDist, 0, 0));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(0, stepDist, 0));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(0, -stepDist, 0));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(0, 0, stepDist));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setPosition(transform.getPosition() + rp3d::Vector3(0, 0, -stepDist));
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(0, stepAngle, 0) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(0, -stepAngle, 0) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(stepAngle, 0, 0) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(-stepAngle, 0, 0) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(0, 0, stepAngle) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
+    }
+    else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+        rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
+        transform.setOrientation(rp3d::Quaternion(0, 0, -stepAngle) * transform.getOrientation());
+        mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
 
     return false;

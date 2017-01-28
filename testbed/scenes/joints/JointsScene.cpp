@@ -193,7 +193,7 @@ void JointsScene::reset() {
         rp3d::Transform transform(initPosition, initOrientation);
 
         // Create a box and a corresponding rigid in the dynamics world
-        mBallAndSocketJointChainBoxes[i]->resetTransform(transform);
+        mBallAndSocketJointChainBoxes[i]->setTransform(transform);
 
         positionBox.y -= boxDimension.y + 0.5f;
     }
@@ -207,7 +207,7 @@ void JointsScene::reset() {
     rp3d::Transform transformBottomBox(initPosition, initOrientation);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mSliderJointBottomBox->resetTransform(transformBottomBox);
+    mSliderJointBottomBox->setTransform(transformBottomBox);
 
     // Position of the box
     openglframework::Vector3 positionBox2(0, 4.2f, 0);
@@ -216,7 +216,7 @@ void JointsScene::reset() {
     rp3d::Transform transformTopBox(initPosition, initOrientation);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mSliderJointTopBox->resetTransform(transformTopBox);
+    mSliderJointTopBox->setTransform(transformTopBox);
 
     // --------------- Propeller Hinge joint --------------- //
 
@@ -227,7 +227,7 @@ void JointsScene::reset() {
     rp3d::Transform transformHingeBox(initPosition, initOrientation);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mPropellerBox->resetTransform(transformHingeBox);
+    mPropellerBox->setTransform(transformHingeBox);
 
     // --------------- Fixed joint --------------- //
 
@@ -238,7 +238,7 @@ void JointsScene::reset() {
     rp3d::Transform transformFixedBox1(initPosition, initOrientation);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox1->resetTransform(transformFixedBox1);
+    mFixedJointBox1->setTransform(transformFixedBox1);
 
     // Position of the box
     positionBox2 = openglframework::Vector3(-5, 7, 0);
@@ -247,7 +247,7 @@ void JointsScene::reset() {
     rp3d::Transform transformFixedBox2(initPosition, initOrientation);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2->resetTransform(transformFixedBox2);
+    mFixedJointBox2->setTransform(transformFixedBox2);
 }
 
 // Create the boxes and joints for the Ball-and-Socket joint example
