@@ -37,13 +37,7 @@ int Cone::totalNbCones = 0;
 Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
            reactphysics3d::CollisionWorld* world,
            const std::string& meshFolderPath)
-     : mRadius(radius), mHeight(height) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cone.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+     : PhysicsObject(meshFolderPath + "cone.obj"), mRadius(radius), mHeight(height) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -85,13 +79,7 @@ Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
 Cone::Cone(float radius, float height, const openglframework::Vector3 &position,
            float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
            const std::string& meshFolderPath)
-     : mRadius(radius), mHeight(height) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cone.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+     : PhysicsObject(meshFolderPath + "cone.obj"), mRadius(radius), mHeight(height) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -267,24 +255,6 @@ void Cone::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void Cone::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != nullptr) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
 }
 
 // Set the scaling of the object

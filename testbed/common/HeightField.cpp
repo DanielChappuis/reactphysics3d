@@ -328,24 +328,6 @@ void HeightField::createVBOAndVAO() {
     mVAO.unbind();
 }
 
-// Reset the transform
-void HeightField::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
-}
-
 // Set the scaling of the object
 void HeightField::setScaling(const openglframework::Vector3& scaling) {
 

@@ -27,7 +27,6 @@
 #define COLLISION_DETECTION_SCENE_H
 
 // Libraries
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include "openglframework.h"
 #include "reactphysics3d.h"

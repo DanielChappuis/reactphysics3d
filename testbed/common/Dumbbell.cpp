@@ -35,13 +35,8 @@ int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
+         : PhysicsObject(meshFolderPath + "dumbbell.obj") {
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
@@ -105,13 +100,8 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
 
 // Constructor
 Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "dumbbell.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+                   reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
+         : PhysicsObject(meshFolderPath + "dumbbell.obj"){
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
@@ -307,24 +297,6 @@ void Dumbbell::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void Dumbbell::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
 }
 
 // Set the scaling of the object

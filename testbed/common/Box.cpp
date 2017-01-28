@@ -39,13 +39,8 @@ int Box::totalNbBoxes = 0;
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+         reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
+    : PhysicsObject(meshFolderPath + "cube.obj") {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -93,7 +88,8 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 
 // Constructor
 Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-         float mass, reactphysics3d::DynamicsWorld* world, const std::string& meshFolderPath) {
+         float mass, reactphysics3d::DynamicsWorld* world, const std::string& meshFolderPath)
+    : PhysicsObject(meshFolderPath + "cube.obj") {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
@@ -282,24 +278,6 @@ void Box::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void Box::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != nullptr) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
 }
 
 // Set the scaling of the object

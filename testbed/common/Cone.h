@@ -96,9 +96,6 @@ class Cone : public PhysicsObject {
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix, bool wireframe);
 
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
-
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
 

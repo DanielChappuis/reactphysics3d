@@ -56,6 +56,9 @@ class PhysicsObject : public openglframework::Mesh {
         /// Constructor
         PhysicsObject();
 
+        /// Constructor
+        PhysicsObject(const std::string& meshPath);
+
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor)=0;
 
@@ -64,6 +67,9 @@ class PhysicsObject : public openglframework::Mesh {
 
         /// Set the sleeping color of the box
         void setSleepingColor(const openglframework::Color& color);
+
+        /// Set the position of the box
+        void resetTransform(const rp3d::Transform& transform);
 
         /// Return a pointer to the collision body of the box
         reactphysics3d::CollisionBody* getCollisionBody();
