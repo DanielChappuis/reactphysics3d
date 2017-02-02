@@ -33,6 +33,8 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
+#include "Cone.h"
+#include "Cylinder.h"
 #include "Capsule.h"
 #include "Line.h"
 #include "ConvexMesh.h"
@@ -136,6 +138,8 @@ class CollisionDetectionScene : public SceneDemo {
         //Box* mBox;
         Sphere* mSphere1;
         Sphere* mSphere2;
+		Capsule* mCapsule1;
+		Capsule* mCapsule2;
         //Cone* mCone;
         //Cylinder* mCylinder;
         //Capsule* mCapsule;

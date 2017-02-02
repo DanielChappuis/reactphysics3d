@@ -38,7 +38,7 @@ namespace reactphysics3d {
 // Class CapsuleVsCapsuleAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
- * between two capsule collision shapes.
+ * between two capsules collision shapes.
  */
 class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 
@@ -49,16 +49,16 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CapsuleVsCapsuleAlgorithm() = default;
+		CapsuleVsCapsuleAlgorithm() = default;
 
         /// Destructor
         virtual ~CapsuleVsCapsuleAlgorithm() override = default;
 
         /// Deleted copy-constructor
-        CapsuleVsCapsuleAlgorithm(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
+		CapsuleVsCapsuleAlgorithm(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Deleted assignment operator
-        CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
+		CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
         virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,

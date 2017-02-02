@@ -78,6 +78,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/narrowphase/SphereVsSphereAlgorithm.cpp"
     "src/collision/narrowphase/CapsuleVsCapsuleAlgorithm.h"
     "src/collision/narrowphase/CapsuleVsCapsuleAlgorithm.cpp"
+    "src/collision/narrowphase/SphereVsCapsuleAlgorithm.h"
+    "src/collision/narrowphase/SphereVsCapsuleAlgorithm.cpp"
     "src/collision/narrowphase/ConcaveVsConvexAlgorithm.h"
     "src/collision/narrowphase/ConcaveVsConvexAlgorithm.cpp"
     "src/collision/narrowphase/SphereVsConvexMeshAlgorithm.h"

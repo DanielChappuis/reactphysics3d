@@ -26,6 +26,7 @@
 // Libraries
 #include "mathematics_functions.h"
 #include "Vector3.h"
+#include <cassert>
 
 using namespace reactphysics3d;
 
@@ -50,10 +51,152 @@ void reactphysics3d::computeBarycentricCoordinatesInTriangle(const Vector3& a, c
     u = decimal(1.0) - v - w;
 }
 
-// Clamp a vector such that it is no longer than a given maximum length
+/// Clamp a vector such that it is no longer than a given maximum length
 Vector3 reactphysics3d::clamp(const Vector3& vector, decimal maxLength) {
     if (vector.lengthSquare() > maxLength * maxLength) {
         return vector.getUnit() * maxLength;
     }
     return vector;
 }
+
+/// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
+Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC) {
+
+	const Vector3 ab = segPointB - segPointA;
+
+	decimal abLengthSquare = ab.lengthSquare();
+
+	// If the segment has almost zero length
+	if (abLengthSquare < MACHINE_EPSILON) {
+
+		// Return one end-point of the segment as the closest point
+		return segPointA;
+	}
+
+	// Project point C onto "AB" line
+	decimal t = (pointC - segPointA).dot(ab) / abLengthSquare;
+
+	// If projected point onto the line is outside the segment, clamp it to the segment
+	if (t < decimal(0.0)) t = decimal(0.0);
+	if (t > decimal(1.0)) t = decimal(1.0);
+
+	// Return the closest point on the segment
+	return segPointA + t * ab;
+}
+
+/// Compute the closest points between two segments
+/// This method uses the technique described in the book Real-Time
+/// collision detection by Christer Ericson.
+void computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
+										   const Vector3& seg2PointA, const Vector3& seg2PointB,
+										   Vector3& closestPointSeg1, Vector3& closestPointSeg2) {
+
+	const Vector3 d1 = seg1PointB - seg1PointA;
+	const Vector3 d2 = seg2PointB - seg2PointA;
+	const Vector3 r = seg1PointA - seg2PointA;
+	decimal a = d1.lengthSquare();
+	decimal e = d2.lengthSquare();
+	decimal f = d2.dot(r);
+	decimal s, t;
+
+	// If both segments degenerate into points
+	if (a <= MACHINE_EPSILON && e <= MACHINE_EPSILON) {
+
+		closestPointSeg1 = seg1PointA;
+		closestPointSeg2 = seg2PointA;
+		return;
+	}
+	if (a <= MACHINE_EPSILON) {   // If first segment degenerates into a point
+		
+		s = decimal(0.0);
+
+		// Compute the closest point on second segment
+		t = clamp(f / e, decimal(0.0), decimal(1.0));
+	}
+	else {
+
+		decimal c = d1.dot(r);
+
+		// If the second segment degenerates into a point
+		if (e <= MACHINE_EPSILON) {
+
+			t = decimal(0.0);
+			s = clamp(-c / a, decimal(0.0), decimal(1.0));
+		}
+		else {
+
+			decimal b = d1.dot(d2);
+			decimal denom = a * e - b * b;
+
+			// If the segments are not parallel
+			if (denom != decimal(0.0)) {
+
+				// Compute the closest point on line 1 to line 2 and
+				// clamp to first segment.
+				s = clamp((b * f - c * e) / denom, decimal(0.0), decimal(1.0));
+			}
+			else {
+
+				// Pick an arbitrary point on first segment
+				s = decimal(0.0);
+			}
+
+			// Compute the point on line 2 closest to the closest point
+			// we have just found
+			t = (b * s + f) / e;
+
+			// If this closest point is inside second segment (t in [0, 1]), we are done.
+			// Otherwise, we clamp the point to the second segment and compute again the
+			// closest point on segment 1
+			if (t < decimal(0.0)) {
+				t = decimal(0.0);
+				s = clamp(-c / a, decimal(0.0), decimal(1.0));
+			}
+			else if (t > decimal(1.0)) {
+				t = decimal(1.0);
+				s = clamp((b - c) / a, decimal(0.0), decimal(1.0));
+			}
+		}
+	}
+
+	// Compute the closest points on both segments
+	closestPointSeg1 = seg1PointA + d1 * s;
+	closestPointSeg2 = seg2PointA + d2 * t;
+}
+
+/// Compute the intersection between a plane and a segment
+// Let the plane define by the equation planeNormal.dot(X) = planeD with X a point on the plane and "planeNormal" the plane normal. This method
+// computes the intersection P between the plane and the segment (segA, segB). The method returns the value "t" such
+// that P = segA + t * (segB - segA). Note that it only returns a value in [0, 1] if there is an intersection. Otherwise,
+// there is no intersection between the plane and the segment.
+decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal) {
+
+	const decimal parallelEpsilon = decimal(0.0001);
+	decimal t = decimal(-1);
+
+	// Segment AB
+	const Vector3 ab = segB - segA;
+
+	decimal nDotAB = planeNormal.dot(ab);
+
+	// If the segment is not parallel to the plane
+	if (nDotAB > parallelEpsilon) {
+		t = (planeD - planeNormal.dot(segA)) / nDotAB;
+	}
+
+	return t;
+}
+
+/// Compute the distance between a point "point" and a line given by the points "linePointA" and "linePointB"
+decimal computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
+	
+	decimal distAB = (linePointB - linePointA).length();
+
+	if (distAB < MACHINE_EPSILON) {
+		return (point - linePointA).length();
+	}
+
+	return ((point - linePointA).cross(point - linePointB)).length() / distAB;
+}
+
+

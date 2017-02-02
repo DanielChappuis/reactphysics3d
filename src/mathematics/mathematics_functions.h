@@ -78,10 +78,26 @@ inline bool sameSign(decimal a, decimal b) {
 /// Clamp a vector such that it is no longer than a given maximum length
 Vector3 clamp(const Vector3& vector, decimal maxLength);
 
+// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
+Vector3 computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC);
+
+// Compute the closest points between two segments
+void computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
+										   const Vector3& seg2PointA, const Vector3& seg2PointB,
+										   Vector3& closestPointSeg1, Vector3& closestPointSeg2);
+
 /// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
 void computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
                                              const Vector3& p, decimal& u, decimal& v, decimal& w);
 
+/// Compute the intersection between a plane and a segment
+decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal);
+
+/// Compute the distance between a point and a line
+decimal computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
+
 }
+
+
 
 #endif
