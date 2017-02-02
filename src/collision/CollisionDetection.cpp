@@ -300,9 +300,7 @@ void CollisionDetection::computeNarrowPhase() {
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = currentNarrowPhaseInfo->collisionShape1->getType();
         const CollisionShapeType shape2Type = currentNarrowPhaseInfo->collisionShape2->getType();
-        const int shape1Index = static_cast<int>(shape1Type);
-        const int shape2Index = static_cast<int>(shape2Type);
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
         // If there is no collision algorithm between those two kinds of shapes, skip it
         if (narrowPhaseAlgorithm != nullptr) {
@@ -461,6 +459,17 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Check if the collision filtering allows collision between the two shapes
     if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
         (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
+
+    // Make sure the shape with the smallest collision shape type comes first
+    const uint shape1TypeIndex = static_cast<const uint>(shape1->getCollisionShape()->getType());
+    const uint shape2TypeIndex = static_cast<const uint>(shape2->getCollisionShape()->getType());
+    if (shape2TypeIndex > shape1TypeIndex) {
+
+        // Swap the two shapes
+        ProxyShape* temp = shape1;
+        shape1 = shape2;
+        shape2 = temp;
+    }
 
     // Compute the overlapping pair ID
     overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
@@ -681,9 +690,7 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
                     if (!isColliding) {
 
                         // Select the narrow phase algorithm to use according to the two collision shapes
-                        const int shape1Index = static_cast<int>(shape1Type);
-                        const int shape2Index = static_cast<int>(shape2Type);
-                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                         // If there is a collision algorithm for those two kinds of shapes
                         if (narrowPhaseAlgorithm != nullptr) {
@@ -771,9 +778,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                         if (!isColliding) {
 
                             // Select the narrow phase algorithm to use according to the two collision shapes
-                            const int shape1Index = static_cast<int>(shape1Type);
-                            const int shape2Index = static_cast<int>(shape2Type);
-                            NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                            NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                             // If there is a collision algorithm for those two kinds of shapes
                             if (narrowPhaseAlgorithm != nullptr) {
@@ -846,9 +851,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                 while (narrowPhaseInfo != nullptr) {
 
                     // Select the narrow phase algorithm to use according to the two collision shapes
-                    const int shape1Index = static_cast<int>(shape1Type);
-                    const int shape2Index = static_cast<int>(shape2Type);
-                    NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                    NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                     // If there is a collision algorithm for those two kinds of shapes
                     if (narrowPhaseAlgorithm != nullptr) {
@@ -926,9 +929,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                     while (narrowPhaseInfo != nullptr) {
 
                         // Select the narrow phase algorithm to use according to the two collision shapes
-                        const int shape1Index = static_cast<int>(shape1Type);
-                        const int shape2Index = static_cast<int>(shape2Type);
-                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                         // If there is a collision algorithm for those two kinds of shapes
                         if (narrowPhaseAlgorithm != nullptr) {
@@ -999,9 +1000,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
             while (narrowPhaseInfo != nullptr) {
 
                 // Select the narrow phase algorithm to use according to the two collision shapes
-                const int shape1Index = static_cast<int>(shape1Type);
-                const int shape2Index = static_cast<int>(shape2Type);
-                NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                 // If there is a collision algorithm for those two kinds of shapes
                 if (narrowPhaseAlgorithm != nullptr) {

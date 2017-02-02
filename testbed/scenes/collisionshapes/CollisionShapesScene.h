@@ -32,8 +32,6 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
 #include "Capsule.h"
 #include "ConvexMesh.h"
 #include "ConcaveMesh.h"
@@ -46,8 +44,6 @@ namespace collisionshapesscene {
 const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 5;
 const int NB_SPHERES = 5;
-const int NB_CONES = 5;
-const int NB_CYLINDERS = 5;
 const int NB_CAPSULES = 5;
 const int NB_MESHES = 3;
 const int NB_COMPOUND_SHAPES = 3;
@@ -79,10 +75,6 @@ class CollisionShapesScene : public SceneDemo {
         std::vector<Box*> mBoxes;
 
         std::vector<Sphere*> mSpheres;
-
-        std::vector<Cone*> mCones;
-
-        std::vector<Cylinder*> mCylinders;
 
         std::vector<Capsule*> mCapsules;
 

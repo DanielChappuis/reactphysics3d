@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
                                  ContactPointInfo& contactPointInfo) {
 
     PROFILE("GJKAlgorithm::testCollision()");
@@ -101,8 +101,7 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
               
         // Compute the support points for original objects (without margins) A and B
         suppA = shape1->getLocalSupportPointWithoutMargin(-v, shape1CachedCollisionData);
-        suppB = body2Tobody1 *
-                     shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v, shape2CachedCollisionData);
+        suppB = body2Tobody1 * shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v, shape2CachedCollisionData);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -116,7 +115,7 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
             narrowPhaseInfo->overlappingPair->setCachedSeparatingAxis(v);
             
             // No intersection, we return
-            return false;
+            return GJKResult::SEPARATED;
         }
 
         // If the objects intersect only in the margins
@@ -135,7 +134,8 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
 
             // Contact point has been found
             contactFound = true;
-            break;
+
+            return GJKResult::INTERPENETRATE;
         }
 
         // Compute the point of the simplex closest to the origin
@@ -144,13 +144,14 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
 
             // Contact point has been found
             contactFound = true;
-            break;
+
+            return GJKResult::INTERPENETRATE;
         }
 
         // Closest point is almost the origin, go to EPA algorithm
         // Vector v to small to continue computing support points
         if (v.lengthSquare() < MACHINE_EPSILON) {
-            break;
+            return GJKResult::INTERPENETRATE;
         }
 
         // Store and update the squared distance of the closest point
@@ -173,20 +174,6 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
     } while((isPolytopeShape && !simplex.isFull()) || (!isPolytopeShape && !simplex.isFull() &&
             distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
 
-    // If no contact has been found (penetration case)
-    if (!contactFound) {
-
-        // The objects (without margins) intersect. Therefore, we run the GJK algorithm
-        // again but on the enlarged objects to compute a simplex polytope that contains
-        // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
-        // the correct penetration depth and contact points between the enlarged objects.
-        if(computePenetrationDepthForEnlargedObjects(narrowPhaseInfo, contactPointInfo, v)) {
-
-            // A contact has been found with EPA algorithm, we return true
-            return true;
-        }
-    }
-
     if (contactFound && distSquare > MACHINE_EPSILON) {
 
         // Compute the closet points of both objects (without the margins)
@@ -205,103 +192,21 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
 
         // If the penetration depth is negative (due too numerical errors), there is no contact
         if (penetrationDepth <= decimal(0.0)) {
-            return false;
+            return GJKResult::INTERPENETRATE;
         }
 
         // Do not generate a contact point with zero normal length
         if (normal.lengthSquare() < MACHINE_EPSILON) {
-            return false;
+            return GJKResult::INTERPENETRATE;
         }
 
         // Create the contact info object
         contactPointInfo.init(normal, penetrationDepth, pA, pB);
 
-        return true;
+        return GJKResult::COLLIDE_IN_MARGIN;
     }
 
-    return false;
-}
-
-/// This method runs the GJK algorithm on the two enlarged objects (with margin)
-/// to compute a simplex polytope that contains the origin. The two objects are
-/// assumed to intersect in the original objects (without margin). Therefore such
-/// a polytope must exist. Then, we give that polytope to the EPA algorithm to
-/// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                             ContactPointInfo& contactPointInfo,
-                                                             Vector3& v) {
-    PROFILE("GJKAlgorithm::computePenetrationDepthForEnlargedObjects()");
-
-    VoronoiSimplex simplex;
-    Vector3 suppA;
-    Vector3 suppB;
-    Vector3 w;
-    decimal vDotw;
-    decimal distSquare = DECIMAL_LARGEST;
-    decimal prevDistSquare;
-
-    assert(narrowPhaseInfo->collisionShape1->isConvex());
-    assert(narrowPhaseInfo->collisionShape2->isConvex());
-
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
-
-    bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
-
-    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
-    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
-
-    // Transform a point from local space of body 2 to local space
-    // of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2ToBody1 = narrowPhaseInfo->shape1ToWorldTransform.getInverse() * narrowPhaseInfo->shape2ToWorldTransform;
-
-    // Matrix that transform a direction from local space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = narrowPhaseInfo->shape2ToWorldTransform.getOrientation().getMatrix().getTranspose() *
-                              narrowPhaseInfo->shape1ToWorldTransform.getOrientation().getMatrix();
-    
-    do {
-        // Compute the support points for the enlarged object A and B
-        suppA = shape1->getLocalSupportPointWithMargin(-v, shape1CachedCollisionData);
-        suppB = body2ToBody1 * shape2->getLocalSupportPointWithMargin(rotateToBody2 * v, shape2CachedCollisionData);
-
-        // Compute the support point for the Minkowski difference A-B
-        w = suppA - suppB;
-
-        vDotw = v.dot(w);
-
-        // If the enlarge objects do not intersect
-        if (vDotw > decimal(0.0)) {
-
-            // No intersection, we return
-            return false;
-        }
-
-        // Add the new support point to the simplex
-        simplex.addPoint(w, suppA, suppB);
-
-        if (simplex.isAffinelyDependent()) {
-            return false;
-        }
-
-        if (!simplex.computeClosestPoint(v)) {
-            return false;
-        }
-
-        // Store and update the square distance
-        prevDistSquare = distSquare;
-        distSquare = v.lengthSquare();
-
-        if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
-            return false;
-        }
-
-    } while((!simplex.isFull() && isPolytopeShape) || (!isPolytopeShape && !simplex.isFull() &&
-            distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
-
-    // Give the simplex computed with GJK algorithm to the EPA algorithm
-    // which will compute the correct penetration depth and contact points
-    // between the two enlarged objects
-    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, narrowPhaseInfo, v, contactPointInfo);
+    return GJKResult::SEPARATED;
 }
 
 // Use the GJK Algorithm to find if a point is inside a convex collision shape

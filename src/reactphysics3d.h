@@ -46,8 +46,6 @@
 #include "collision/shapes/CollisionShape.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConeShape.h"
-#include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/ConcaveMeshShape.h"

@@ -40,8 +40,7 @@
 namespace reactphysics3d {
     
 /// Type of the collision shape
-enum class CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER,
-                         CAPSULE, CONVEX_MESH, CONCAVE_MESH, HEIGHTFIELD};
+enum class CollisionShapeType {TRIANGLE, BOX, SPHERE, CAPSULE, CONVEX_MESH, CONCAVE_MESH, HEIGHTFIELD};
 const int NB_COLLISION_SHAPE_TYPES = 9;
 
 // Declarations

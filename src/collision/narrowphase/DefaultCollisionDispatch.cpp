@@ -33,18 +33,22 @@ using namespace reactphysics3d;
 // use between two types of collision shapes.
 NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int type2) {
 
+
     CollisionShapeType shape1Type = static_cast<CollisionShapeType>(type1);
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
     // Convex vs Convex algorithm (GJK algorithm)
-    if (CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) {
-        return &mGJKAlgorithm;
-    }
-    // Sphere vs Sphere algorithm
-    else if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
-        return &mSphereVsSphereAlgorithm;
-    }
-    else {
+    if (type1 > type2) {
         return nullptr;
     }
+    // Sphere vs Sphere algorithm
+    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
+        return &mSphereVsSphereAlgorithm;
+    }
+    // Sphere vs Convex shapes (convex Mesh, BoxShape) algorithm
+    if (shape1Type == CollisionShapeType::SPHERE && CollisionShape::isConvex(shape2Type)) {
+        return &mSphereVsConvexMeshAlgorithm;
+    }
+
+    return nullptr;
 }

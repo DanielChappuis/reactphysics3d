@@ -23,53 +23,64 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
+#ifndef REACTPHYSICS3D_POLYHEDRON_MESH_H
+#define REACTPHYSICS3D_POLYHEDRON_MESH_H
 
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "mathematics/mathematics.h"
+#include "HalfEdgeStructure.h"
+#include <vector>
 
 namespace reactphysics3d {
 
-// Class DefaultCollisionDispatch
+// Class PolyhedronMesh
 /**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
+ * This class describes a polyhedron mesh made of faces and vertices.
+ * The faces do not have to be triangle
  */
-class DefaultCollisionDispatch : public CollisionDispatch {
+class PolyhedronMesh {
 
-    protected:
+    private:
 
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
+        /// Half-edge structure of the mesh
+        HalfEdgeStructure mHalfEdgeStructure;
 
-        /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
+        /// True if the half-edge structure has been generated
+        bool mIsFinalized;
 
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
+        /// All the vertices
+        std::vector<const Vector3> mVertices;
+
+        /// All the indexes of the face vertices
+        std::vector<std::vector<uint>> mFaces;
 
     public:
 
         /// Constructor
-        DefaultCollisionDispatch() = default;
+        PolyhedronMesh();
 
         /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
+        ~PolyhedronMesh() = default;
 
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
+        /// Add a vertex into the polyhedron
+        uint addVertex(const Vector3& vertex);
+
+        /// Add a face into the polyhedron
+        void addFace(std::vector<uint> faceVertices);
+
+        /// Call this method when you are done adding vertices and faces
+        void finalize();
+
+        /// Return the half-edge structure of the mesh
+        const HalfEdgeStructure& getHalfEdgeStructure() const;
 };
+
+// Return the half-edge structure of the mesh
+inline const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {
+    return mHalfEdgeStructure;
+}
 
 }
 
 #endif
-
-
 

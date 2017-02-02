@@ -125,62 +125,6 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
         mSpheres.push_back(sphere);
     }
 
-    // Create all the cones of the scene
-    for (int i=0; i<NB_CONES; i++) {
-
-        // Position
-        float angle = i * 50.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          35 + i * (CONE_HEIGHT + 0.3f),
-                                          radius * sin(angle));
-
-        // Create a cone and a corresponding rigid in the dynamics world
-        Cone* cone = new Cone(CONE_RADIUS, CONE_HEIGHT, position, CONE_MASS, mDynamicsWorld,
-                              meshFolderPath);
-
-        // Add some rolling resistance
-        cone->getRigidBody()->getMaterial().setRollingResistance(0.08);
-
-        // Set the box color
-        cone->setColor(mDemoColors[i % mNbDemoColors]);
-        cone->setSleepingColor(mRedColorDemo);
-
-        // Change the material properties of the rigid body
-        rp3d::Material& material = cone->getRigidBody()->getMaterial();
-        material.setBounciness(rp3d::decimal(0.2));
-
-        // Add the cone the list of sphere in the scene
-        mCones.push_back(cone);
-    }
-
-    // Create all the cylinders of the scene
-    for (int i=0; i<NB_CYLINDERS; i++) {
-
-        // Position
-        float angle = i * 35.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          25 + i * (CYLINDER_HEIGHT + 0.3f),
-                                          radius * sin(angle));
-
-        // Create a cylinder and a corresponding rigid in the dynamics world
-        Cylinder* cylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position ,
-                                          CYLINDER_MASS, mDynamicsWorld, meshFolderPath);
-
-        // Add some rolling resistance
-        cylinder->getRigidBody()->getMaterial().setRollingResistance(0.08);
-
-        // Set the box color
-        cylinder->setColor(mDemoColors[i % mNbDemoColors]);
-        cylinder->setSleepingColor(mRedColorDemo);
-
-        // Change the material properties of the rigid body
-        rp3d::Material& material = cylinder->getRigidBody()->getMaterial();
-        material.setBounciness(rp3d::decimal(0.2));
-
-        // Add the cylinder the list of sphere in the scene
-        mCylinders.push_back(cylinder);
-    }
-
     // Create all the capsules of the scene
     for (int i=0; i<NB_CAPSULES; i++) {
 
@@ -306,26 +250,6 @@ CollisionShapesScene::~CollisionShapesScene() {
         delete (*it);
     }
 
-    // Destroy all the cones of the scene
-    for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the sphere
-        delete (*it);
-    }
-
-    // Destroy all the cylinders of the scene
-    for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the sphere
-        delete (*it);
-    }
-
     // Destroy all the capsules of the scene
     for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
 
@@ -410,20 +334,6 @@ void CollisionShapesScene::update() {
         (*it)->updateTransform(mInterpolationFactor);
     }
 
-    // Update the position and orientation of the cones
-    for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the cylinders
-    for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
     // Update the position and orientation of the capsules
     for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
 
@@ -466,16 +376,6 @@ void CollisionShapesScene::renderSinglePass(openglframework::Shader& shader,
 
     // Render all the sphere of the scene
     for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the cones of the scene
-    for (std::vector<Cone*>::iterator it = mCones.begin(); it != mCones.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the cylinders of the scene
-    for (std::vector<Cylinder*>::iterator it = mCylinders.begin(); it != mCylinders.end(); ++it) {
         (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     }
 
@@ -561,42 +461,6 @@ void CollisionShapesScene::reset() {
 
         // Reset the transform
         mSpheres[i]->setTransform(transform);
-    }
-
-    // Create all the cones of the scene
-    for (int i=0; i<NB_CONES; i++) {
-
-        // Position
-        float angle = i * 50.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          35 + i * (CONE_HEIGHT + 0.3f),
-                                          radius * sin(angle));
-
-        // Initial position and orientation of the rigid body
-        rp3d::Vector3 initPosition(position.x, position.y, position.z);
-        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-        rp3d::Transform transform(initPosition, initOrientation);
-
-        // Reset the transform
-        mCones[i]->setTransform(transform);
-    }
-
-    // Create all the cylinders of the scene
-    for (int i=0; i<NB_CYLINDERS; i++) {
-
-        // Position
-        float angle = i * 35.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          25 + i * (CYLINDER_HEIGHT + 0.3f),
-                                          radius * sin(angle));
-
-        // Initial position and orientation of the rigid body
-        rp3d::Vector3 initPosition(position.x, position.y, position.z);
-        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-        rp3d::Transform transform(initPosition, initOrientation);
-
-        // Reset the transform
-        mCylinders[i]->setTransform(transform);
     }
 
     // Create all the capsules of the scene

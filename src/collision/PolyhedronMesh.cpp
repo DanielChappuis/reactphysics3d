@@ -23,53 +23,40 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "PolyhedronMesh.h"
 
-namespace reactphysics3d {
+using namespace reactphysics3d;
 
-// Class DefaultCollisionDispatch
-/**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
- */
-class DefaultCollisionDispatch : public CollisionDispatch {
 
-    protected:
-
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
-
-        /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
-
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
-
-    public:
-
-        /// Constructor
-        DefaultCollisionDispatch() = default;
-
-        /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
-
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
-};
+// Constructor
+PolyhedronMesh::PolyhedronMesh() : mIsFinalized(false) {
 
 }
 
-#endif
+// Add a vertex into the polyhedron.
+// This method returns the index of the vertex that you need to use
+// to add faces.
+uint PolyhedronMesh::addVertex(const Vector3& vertex) {
+    mVertices.push_back(vertex);
+    return mVertices.size() - 1;
+}
 
+// Add a face into the polyhedron.
+// A face is a list of vertices indices (returned by addVertex() method).
+// The order of the indices are important. You need to specify the vertices of
+// of the face sorted counter-clockwise as seen from the outside of the polyhedron.
+void PolyhedronMesh::addFace(std::vector<uint> faceVertices) {
+    mFaces.push_back(faceVertices);
+}
 
+// Call this method when you are done adding vertices and faces
+void PolyhedronMesh::finalize() {
 
+    if (mIsFinalized) return;
+
+    // Initialize the half-edge structure
+    mHalfEdgeStructure.init(mVertices, mFaces);
+
+    mIsFinalized = true;
+}

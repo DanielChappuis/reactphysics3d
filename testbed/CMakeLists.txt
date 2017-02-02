@@ -74,8 +74,6 @@ SET(TESTBED_SOURCES
 SET(COMMON_SOURCES
     common/Box.h
     common/Box.cpp
-    common/Cone.h
-    common/Cone.cpp
     common/Sphere.h
     common/Sphere.cpp
     common/Line.h
@@ -86,8 +84,6 @@ SET(COMMON_SOURCES
     common/ConvexMesh.cpp
     common/ConcaveMesh.h
     common/ConcaveMesh.cpp
-    common/Cylinder.h
-    common/Cylinder.cpp
     common/Dumbbell.h
     common/Dumbbell.cpp
     common/HeightField.h

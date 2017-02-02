@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
+#include <cassert>
 #include "OverlappingPair.h"
 
 using namespace reactphysics3d;
-
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
@@ -35,4 +35,6 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                 : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
                   mCachedSeparatingAxis(0.0, 1.0, 0.0) {
     
+    assert(static_cast<uint>(shape1->getCollisionShape()->getType()) <=
+                             static_cast<uint>(shape2->getCollisionShape()->getType()));
 }                               

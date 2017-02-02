@@ -31,7 +31,7 @@
 #include "reactphysics3d.h"
 #include "PhysicsObject.h"
 
-// Class Sphere
+// Class Dumbbell
 class Dumbbell : public PhysicsObject {
 
     private :
@@ -42,9 +42,9 @@ class Dumbbell : public PhysicsObject {
         float mDistanceBetweenSphere;
 
         /// Collision shapes
-        rp3d::CylinderShape* mCylinderShape;
+        rp3d::CapsuleShape* mCapsuleShape;
         rp3d::SphereShape* mSphereShape;
-        rp3d::ProxyShape* mProxyShapeCylinder;
+        rp3d::ProxyShape* mProxyShapeCapsule;
         rp3d::ProxyShape* mProxyShapeSphere1;
         rp3d::ProxyShape* mProxyShapeSphere2;
 

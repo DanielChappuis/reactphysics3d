@@ -53,13 +53,13 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     const rp3d::decimal massSphere = rp3d::decimal(2.0);
     mSphereShape = new rp3d::SphereShape(radiusSphere);
 
-    // Create a cylinder collision shape for the middle of the dumbbell
+    // Create a capsule collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
-    const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
+    const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
+    const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
     const rp3d::decimal massCylinder = rp3d::decimal(1.0);
-    mCylinderShape = new rp3d::CylinderShape(radiusCylinder, heightCylinder);
+    mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -84,7 +84,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
     mProxyShapeSphere1 = body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
     mProxyShapeSphere2 = body->addCollisionShape(mSphereShape, transformSphereShape2, massSphere);
-    mProxyShapeCylinder = body->addCollisionShape(mCylinderShape, transformCylinderShape, massCylinder);
+    mProxyShapeCapsule = body->addCollisionShape(mCapsuleShape, transformCylinderShape, massCylinder);
 
     mBody = body;
 
@@ -120,9 +120,9 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Create a cylinder collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::decimal radiusCylinder = rp3d::decimal(0.5);
-    const rp3d::decimal heightCylinder = rp3d::decimal(8.0);
-    mCylinderShape = new rp3d::CylinderShape(radiusCylinder, heightCylinder);
+    const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
+    const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
+    mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -145,7 +145,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
     mProxyShapeSphere1 = mBody->addCollisionShape(mSphereShape, transformSphereShape1);
     mProxyShapeSphere2 = mBody->addCollisionShape(mSphereShape, transformSphereShape2);
-    mProxyShapeCylinder = mBody->addCollisionShape(mCylinderShape, transformCylinderShape);
+    mProxyShapeCapsule = mBody->addCollisionShape(mCapsuleShape, transformCylinderShape);
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -173,7 +173,7 @@ Dumbbell::~Dumbbell() {
         mVAO.destroy();
     }
     delete mSphereShape;
-    delete mCylinderShape;
+    delete mCapsuleShape;
     totalNbDumbbells--;
 }
 
@@ -304,7 +304,7 @@ void Dumbbell::setScaling(const openglframework::Vector3& scaling) {
 
     // Scale the collision shape
     rp3d::Vector3 newScaling(scaling.x, scaling.y, scaling.z);
-    mProxyShapeCylinder->setLocalScaling(newScaling);
+    mProxyShapeCapsule->setLocalScaling(newScaling);
     mProxyShapeSphere1->setLocalScaling(newScaling);
     mProxyShapeSphere2->setLocalScaling(newScaling);
 

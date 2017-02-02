@@ -34,8 +34,6 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
 #include "Capsule.h"
 #include "Line.h"
 #include "ConvexMesh.h"
@@ -141,8 +139,6 @@ class RaycastScene : public SceneDemo {
         /// All objects on the scene
         Box* mBox;
         Sphere* mSphere;
-        Cone* mCone;
-        Cylinder* mCylinder;
         Capsule* mCapsule;
         ConvexMesh* mConvexMesh;
         Dumbbell* mDumbbell;

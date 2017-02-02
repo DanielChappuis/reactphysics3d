@@ -79,28 +79,6 @@ RaycastScene::RaycastScene(const std::string& name)
     mSphere->setColor(mGreyColorDemo);
     mSphere->setSleepingColor(mRedColorDemo);
 
-    // ---------- Cone ---------- //
-    openglframework::Vector3 position4(0, 0, 0);
-
-    // Create a cone and a corresponding collision body in the dynamics world
-    mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
-                     mMeshFolderPath);
-
-    // Set the color
-    mCone->setColor(mGreyColorDemo);
-    mCone->setSleepingColor(mRedColorDemo);
-
-    // ---------- Cylinder ---------- //
-    openglframework::Vector3 position5(0, 0, 0);
-
-    // Create a cylinder and a corresponding collision body in the dynamics world
-    mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
-                             mCollisionWorld, mMeshFolderPath);
-
-    // Set the color
-    mCylinder->setColor(mGreyColorDemo);
-    mCylinder->setSleepingColor(mRedColorDemo);
-
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
 
@@ -188,8 +166,6 @@ void RaycastScene::changeBody() {
 
     mSphere->getCollisionBody()->setIsActive(false);
     mBox->getCollisionBody()->setIsActive(false);
-    mCone->getCollisionBody()->setIsActive(false);
-    mCylinder->getCollisionBody()->setIsActive(false);
     mCapsule->getCollisionBody()->setIsActive(false);
     mConvexMesh->getCollisionBody()->setIsActive(false);
     mDumbbell->getCollisionBody()->setIsActive(false);
@@ -201,19 +177,15 @@ void RaycastScene::changeBody() {
                 break;
         case 1: mBox->getCollisionBody()->setIsActive(true);
                 break;
-        case 2: mCone->getCollisionBody()->setIsActive(true);
+        case 2: mCapsule->getCollisionBody()->setIsActive(true);
                 break;
-        case 3: mCylinder->getCollisionBody()->setIsActive(true);
+        case 3: mConvexMesh->getCollisionBody()->setIsActive(true);
                 break;
-        case 4: mCapsule->getCollisionBody()->setIsActive(true);
+        case 4: mDumbbell->getCollisionBody()->setIsActive(true);
                 break;
-        case 5: mConvexMesh->getCollisionBody()->setIsActive(true);
+        case 5: mConcaveMesh->getCollisionBody()->setIsActive(true);
                 break;
-        case 6: mDumbbell->getCollisionBody()->setIsActive(true);
-                break;
-        case 7: mConcaveMesh->getCollisionBody()->setIsActive(true);
-                break;
-        case 8: mHeightField->getCollisionBody()->setIsActive(true);
+        case 6: mHeightField->getCollisionBody()->setIsActive(true);
                 break;
 
     }
@@ -237,16 +209,6 @@ RaycastScene::~RaycastScene() {
     // Destroy the sphere
     mCollisionWorld->destroyCollisionBody(mSphere->getCollisionBody());
     delete mSphere;
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCone->getCollisionBody());
-    delete mCone;
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCylinder->getCollisionBody());
-
-    // Destroy the sphere
-    delete mCylinder;
 
     // Destroy the corresponding rigid body from the dynamics world
     mCollisionWorld->destroyCollisionBody(mCapsule->getCollisionBody());
@@ -378,8 +340,6 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader,
     // Render the shapes
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mSphere->getCollisionBody()->isActive()) mSphere->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mCone->getCollisionBody()->isActive()) mCone->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mCylinder->getCollisionBody()->isActive()) mCylinder->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix, mIsWireframeEnabled);

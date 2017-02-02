@@ -23,13 +23,45 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_SAT_ALGORITHM_H
+#define REACTPHYSICS3D_SAT_ALGORITHM_H
+
 // Libraries
-#include "TrianglesStore.h"
+#include "constraint/ContactPoint.h"
 
-// We use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-TrianglesStore::TrianglesStore() : mNbTriangles(0) {
-    
+// Class SATAlgorithm
+class SATAlgorithm {
+
+    private :
+
+        // -------------------- Attributes -------------------- //
+
+        // -------------------- Methods -------------------- //
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        SATAlgorithm() = default;
+
+        /// Destructor
+        ~SATAlgorithm() = default;
+
+        /// Deleted copy-constructor
+        SATAlgorithm(const SATAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        SATAlgorithm& operator=(const SATAlgorithm& algorithm) = delete;
+
+        /// Compute a contact info if the two bounding volumes collide.
+        bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                ContactPointInfo& contactPointInfo);
+};
+
 }
+
+#endif

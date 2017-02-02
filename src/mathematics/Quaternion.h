@@ -199,7 +199,7 @@ inline Vector3 Quaternion::getVectorV() const {
 
 // Return the length of the quaternion (inline)
 inline decimal Quaternion::length() const {
-    return sqrt(x*x + y*y + z*z + w*w);
+    return std::sqrt(x*x + y*y + z*z + w*w);
 }
 
 // Return the square of the length of the quaternion

@@ -124,6 +124,10 @@ class CollisionDetection {
         /// Fill-in the collision detection matrix
         void fillInCollisionMatrix();
 
+        /// Return the corresponding narrow-phase algorithm
+        NarrowPhaseAlgorithm* selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
+                                                         const CollisionShapeType& shape2Type) const;
+
         /// Add all the contact manifold of colliding pairs to their bodies
         void addAllContactManifoldsToBodies();
 
@@ -152,10 +156,6 @@ class CollisionDetection {
 
         /// Set the collision dispatch configuration
         void setCollisionDispatch(CollisionDispatch* collisionDispatch);
-
-        /// Return the Narrow-phase collision detection algorithm to use between two types of shapes
-        NarrowPhaseAlgorithm* getCollisionAlgorithm(CollisionShapeType shape1Type,
-                                                    CollisionShapeType shape2Type) const;
 
         /// Add a proxy collision shape to the collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
@@ -231,12 +231,6 @@ class CollisionDetection {
         friend class ConvexMeshShape;
 };
 
-// Return the Narrow-phase collision detection algorithm to use between two types of shapes
-inline NarrowPhaseAlgorithm* CollisionDetection::getCollisionAlgorithm(CollisionShapeType shape1Type,
-                                                                       CollisionShapeType shape2Type) const {
-    return mCollisionMatrix[static_cast<int>(shape1Type)][static_cast<int>(shape2Type)];
-}
-
 // Set the collision dispatch configuration
 inline void CollisionDetection::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
     mCollisionDispatch = collisionDispatch;
@@ -278,6 +272,18 @@ inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape
 inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
                                                           const Vector3& displacement, bool forceReinsert) {
     mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
+}
+
+// Return the corresponding narrow-phase algorithm
+inline NarrowPhaseAlgorithm* CollisionDetection::selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
+                                                                            const CollisionShapeType& shape2Type) const {
+
+    const unsigned int shape1Index = static_cast<unsigned int>(shape1Type);
+    const unsigned int shape2Index = static_cast<unsigned int>(shape2Type);
+
+    assert(shape1Index <= shape2Index);
+
+    return mCollisionMatrix[shape1Index][shape2Index];
 }
 
 // Ray casting method

@@ -31,9 +31,7 @@
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConeShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
-#include "collision/shapes/CylinderShape.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -65,10 +63,8 @@ class TestPointInside : public Test {
         BoxShape* mBoxShape;
         SphereShape* mSphereShape;
         CapsuleShape* mCapsuleShape;
-        ConeShape* mConeShape;
         ConvexMeshShape* mConvexMeshShape;
         ConvexMeshShape* mConvexMeshShapeBodyEdgesInfo;
-        CylinderShape* mCylinderShape;
 
         // Transform
         Transform mBodyTransform;
@@ -128,9 +124,6 @@ class TestPointInside : public Test {
             mCapsuleShape = new CapsuleShape(2, 10);
             mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
 
-            mConeShape = new ConeShape(2, 6, 0);
-            mConeProxyShape = mConeBody->addCollisionShape(mConeShape, mShapeTransform);
-
             mConvexMeshShape = new ConvexMeshShape(0.0);             // Box of dimension (2, 3, 4)
             mConvexMeshShape->addVertex(Vector3(-2, -3, -4));
             mConvexMeshShape->addVertex(Vector3(2, -3, -4));
@@ -168,15 +161,12 @@ class TestPointInside : public Test {
                                                                      mConvexMeshShapeBodyEdgesInfo,
                                                                      mShapeTransform);
 
-            mCylinderShape = new CylinderShape(3, 8, 0);
-            mCylinderProxyShape = mCylinderBody->addCollisionShape(mCylinderShape, mShapeTransform);
-
-            // Compound shape is a cylinder and a sphere
+            // Compound shape is a capsule and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundBody->addCollisionShape(mCylinderShape, mShapeTransform);
+            mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
             mCompoundBody->addCollisionShape(mSphereShape, shapeTransform2);
         }
 
@@ -185,10 +175,8 @@ class TestPointInside : public Test {
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;
-            delete mConeShape;
             delete mConvexMeshShape;
             delete mConvexMeshShapeBodyEdgesInfo;
-            delete mCylinderShape;
         }
 
         /// Run the tests
@@ -196,9 +184,7 @@ class TestPointInside : public Test {
             testBox();
             testSphere();
             testCapsule();
-            testCone();
             testConvexMesh();
-            testCylinder();
             testCompound();
         }
 
@@ -407,83 +393,6 @@ class TestPointInside : public Test {
             test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, -5, -1.7)));
         }
 
-        /// Test the ProxyConeShape::testPointInside() and
-        /// CollisionBody::testPointInside() methods
-        void testCone() {
-
-            // Tests with CollisionBody
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-0.9, 0, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0.9)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -0.9)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0.6, 0, -0.7)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0.6, 0, 0.7)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-0.6, 0, -0.7)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-0.6, 0, 0.7)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(1.96, -2.9, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-1.96, -2.9, 0)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 1.96)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, -1.96)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(1.3, -2.9, -1.4)));
-            test(mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-1.3, -2.9, 1.4)));
-
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(1.1, 0, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-1.1, 0, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 1.1)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -1.1)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0.8, 0, -0.8)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0.8, 0, 0.8)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-0.8, 0, -0.8)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-0.8, 0, 0.8)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(1.97, -2.9, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-1.97, -2.9, 0)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 1.97)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, -1.97)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, -2.9, -1.5)));
-            test(!mConeBody->testPointInside(mLocalShapeToWorld * Vector3(-1.5, -2.9, 1.5)));
-
-            // Tests with ProxyConeShape
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-0.9, 0, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0.9)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -0.9)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.6, 0, -0.7)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.6, 0, 0.7)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-0.6, 0, -0.7)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-0.6, 0, 0.7)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.96, -2.9, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.96, -2.9, 0)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 1.96)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, -1.96)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.3, -2.9, -1.4)));
-            test(mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.3, -2.9, 1.4)));
-
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.1, 0, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.1, 0, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 1.1)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -1.1)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.8, 0, -0.8)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.8, 0, 0.8)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-0.8, 0, -0.8)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-0.8, 0, 0.8)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.97, -2.9, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.97, -2.9, 0)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 1.97)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, -1.97)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, -2.9, -1.5)));
-            test(!mConeProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.5, -2.9, 1.5)));
-        }
-
         /// Test the ProxyConvexMeshShape::testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testConvexMesh() {
@@ -597,127 +506,11 @@ class TestPointInside : public Test {
             test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
         }
 
-        /// Test the ProxyCylinderShape::testPointInside() and
-        /// CollisionBody::testPointInside() methods
-        void testCylinder() {
-
-            // Tests with CollisionBody
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.9, 0, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 0, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, 0, 1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, 0, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 0, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 0, 1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.9, 3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, -2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, 3.9, 1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, 3.9, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 3.9, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 3.9, 1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.9, -3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.9, -3.9, 0)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, -2.9)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, -3.9, 1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(1.7, -3.9, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, -1.7)));
-            test(mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, 1.7)));
-
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 4.1, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, 2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-1.3, 0, 2.8)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 3.9, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 3.9, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, -3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 3.9, 2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, 3.9, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 3.9, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 3.9, 2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, -3.9, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -3.9, 0)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, -3.1)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, -3.9, 2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(2.2, -3.9, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, -3.9, -2.2)));
-            test(!mCylinderBody->testPointInside(mLocalShapeToWorld * Vector3(-2.2, -3.9, 2.2)));
-
-            // Tests with ProxyCylinderShape
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.9, 0, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 0, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, 0, 1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, 0, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 0, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 0, 1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.9, 3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, -2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, 3.9, 1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, 3.9, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 3.9, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, 3.9, 1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.9, -3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.9, -3.9, 0)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, -2.9)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, -3.9, 1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.7, -3.9, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, -1.7)));
-            test(mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -3.9, 1.7)));
-
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 4.1, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -4.1, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, 2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 0, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 0, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.3, 0, 2.8)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 3.9, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 3.9, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, -3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 3.9, 2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, 3.9, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 3.9, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, 3.9, 2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, -3.9, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -3.9, 0)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, -3.1)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, -3.9, 2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.2, -3.9, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, -3.9, -2.2)));
-            test(!mCylinderProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.2, -3.9, 2.2)));
-        }
-
         /// Test the CollisionBody::testPointInside() method
         void testCompound() {
 
-            // Points on the cylinder
+            // Points on the capsule
+            // TODO : Previous it was a cylinder (not a capsule). Maybe those tests are wrong now
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 0)));
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 0)));

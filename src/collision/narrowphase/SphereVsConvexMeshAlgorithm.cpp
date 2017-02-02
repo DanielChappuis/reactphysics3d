@@ -23,53 +23,40 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
 #include "SphereVsConvexMeshAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "SAT/SATAlgorithm.h"
+#include "collision/shapes/SphereShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
 
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-// Class DefaultCollisionDispatch
-/**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
- */
-class DefaultCollisionDispatch : public CollisionDispatch {
+bool SphereVsConvexMeshAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                            ContactPointInfo& contactPointInfo) {
 
-    protected:
+    // Get the local-space to world-space transforms
+    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
 
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
+    // First, we run the GJK algorithm
+    GJKAlgorithm gjkAlgorithm;
+    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactPointInfo);
 
-        /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
+    // If we have found a contact point inside the margins (shallow penetration)
+    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
+        // Return true
+        return true;
+    }
 
-    public:
+    // If we have overlap even without the margins (deep penetration)
+    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
-        /// Constructor
-        DefaultCollisionDispatch() = default;
+        // Run the SAT algorithm to find the separating axis and compute contact point
+        SATAlgorithm satAlgorithm;
+        return satAlgorithm.testCollision(narrowPhaseInfo, contactPointInfo);
+    }
 
-        /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
-
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
-};
-
+    return false;
 }
-
-#endif
-
-
-

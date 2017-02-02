@@ -23,53 +23,21 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "SATAlgorithm.h"
+#include "constraint/ContactPoint.h"
+#include "configuration.h"
+#include "engine/Profiler.h"
+#include <algorithm>
+#include <cmath>
+#include <cfloat>
+#include <cassert>
 
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-// Class DefaultCollisionDispatch
-/**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
- */
-class DefaultCollisionDispatch : public CollisionDispatch {
+bool SATAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                 ContactPointInfo& contactPointInfo) {
 
-    protected:
-
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
-
-        /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
-
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
-
-    public:
-
-        /// Constructor
-        DefaultCollisionDispatch() = default;
-
-        /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
-
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
-};
 
 }
-
-#endif
-
-
-

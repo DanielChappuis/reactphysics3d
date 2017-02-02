@@ -23,53 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
+#ifndef REACTPHYSICS3D_CAPSULE_VS_CAPSULE_ALGORITHM_H
+#define	REACTPHYSICS3D_CAPSULE_VS_CAPSULE_ALGORITHM_H
 
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "NarrowPhaseAlgorithm.h"
 
+
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Class DefaultCollisionDispatch
+// Class CapsuleVsCapsuleAlgorithm
 /**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
+ * This class is used to compute the narrow-phase collision detection
+ * between two capsule collision shapes.
  */
-class DefaultCollisionDispatch : public CollisionDispatch {
+class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 
-    protected:
+    protected :
 
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
+    public :
 
-        /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
-
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
-
-    public:
+        // -------------------- Methods -------------------- //
 
         /// Constructor
-        DefaultCollisionDispatch() = default;
+        CapsuleVsCapsuleAlgorithm() = default;
 
         /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
+        virtual ~CapsuleVsCapsuleAlgorithm() override = default;
 
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
+        /// Deleted copy-constructor
+        CapsuleVsCapsuleAlgorithm(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
+
+        /// Compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   ContactPointInfo& contactPointInfo) override;
 };
 
 }
 
 #endif
-
-
 
