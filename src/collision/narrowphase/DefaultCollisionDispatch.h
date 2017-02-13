@@ -31,6 +31,8 @@
 #include "ConcaveVsConvexAlgorithm.h"
 #include "SphereVsSphereAlgorithm.h"
 #include "SphereVsConvexMeshAlgorithm.h"
+#include "SphereVsCapsuleAlgorithm.h"
+#include "CapsuleVsCapsuleAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
 
 namespace reactphysics3d {
@@ -51,8 +53,11 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         /// Sphere vs Convex Mesh collision algorithm
         SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
 
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
+        /// Sphere vs Capsule collision algorithm
+        SphereVsCapsuleAlgorithm mSphereVsCapsuleAlgorithm;
+
+        /// Capsule vs Capsule collision algorithm
+        CapsuleVsCapsuleAlgorithm mCapsuleVsCapsuleAlgorithm;
 
     public:
 

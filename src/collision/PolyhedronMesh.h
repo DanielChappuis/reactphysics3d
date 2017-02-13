@@ -49,7 +49,7 @@ class PolyhedronMesh {
         bool mIsFinalized;
 
         /// All the vertices
-        std::vector<const Vector3> mVertices;
+        std::vector<Vector3> mVertices;
 
         /// All the indexes of the face vertices
         std::vector<std::vector<uint>> mFaces;

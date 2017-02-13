@@ -50,6 +50,7 @@
 #include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/ConcaveMeshShape.h"
 #include "collision/shapes/HeightFieldShape.h"
+#include "collision/PolyhedronMesh.h"
 #include "collision/shapes/AABB.h"
 #include "collision/ProxyShape.h"
 #include "collision/RaycastInfo.h"

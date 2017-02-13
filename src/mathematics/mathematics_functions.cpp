@@ -87,7 +87,7 @@ Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, c
 /// Compute the closest points between two segments
 /// This method uses the technique described in the book Real-Time
 /// collision detection by Christer Ericson.
-void computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
+void reactphysics3d::computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
 										   const Vector3& seg2PointA, const Vector3& seg2PointB,
 										   Vector3& closestPointSeg1, Vector3& closestPointSeg2) {
 
@@ -169,7 +169,7 @@ void computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vect
 // computes the intersection P between the plane and the segment (segA, segB). The method returns the value "t" such
 // that P = segA + t * (segB - segA). Note that it only returns a value in [0, 1] if there is an intersection. Otherwise,
 // there is no intersection between the plane and the segment.
-decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal) {
+decimal reactphysics3d::computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal) {
 
 	const decimal parallelEpsilon = decimal(0.0001);
 	decimal t = decimal(-1);
@@ -188,7 +188,7 @@ decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB
 }
 
 /// Compute the distance between a point "point" and a line given by the points "linePointA" and "linePointB"
-decimal computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
+decimal reactphysics3d::computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
 	
 	decimal distAB = (linePointB - linePointA).length();
 

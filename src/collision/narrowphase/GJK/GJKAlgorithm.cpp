@@ -26,6 +26,7 @@
 // Libraries
 #include "GJKAlgorithm.h"
 #include "constraint/ContactPoint.h"
+#include "engine/OverlappingPair.h"
 #include "configuration.h"
 #include "engine/Profiler.h"
 #include <algorithm>

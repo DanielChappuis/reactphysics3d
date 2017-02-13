@@ -54,11 +54,11 @@ class HalfEdgeStructure {
         };
 
         struct Vertex {
-            const Vector3 point;    // Coordinates of the vertex
+            Vector3 point;    // Coordinates of the vertex
             uint edgeIndex;         // Index of one edge emanting from this vertex
 
             /// Constructor
-            Vertex(const Vector3& p) { point = p;}
+            Vertex(Vector3& p) { point = p;}
         };
 
     private:
@@ -81,7 +81,7 @@ class HalfEdgeStructure {
         ~HalfEdgeStructure() = default;
 
         /// Initialize the structure
-        void init(std::vector<const Vector3> vertices, std::vector<std::vector<uint>> faces);
+        void init(std::vector<Vector3> vertices, std::vector<std::vector<uint>> faces);
 
         /// Return the number of faces
         uint getNbFaces() const;
