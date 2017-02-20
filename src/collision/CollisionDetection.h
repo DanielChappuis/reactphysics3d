@@ -179,12 +179,6 @@ class CollisionDetection {
         /// Compute the collision detection
         void computeCollisionDetection();
 
-        // TODO : Remove this method
-        /// Report collision between two sets of shapes
-        //void reportCollisionBetweenShapes(CollisionCallback* callback,
-        //                                  const std::set<uint>& shapes1,
-        //                                  const std::set<uint>& shapes2) ;
-
         /// Ray casting method
         void raycast(RaycastCallback* raycastCallback, const Ray& ray,
                      unsigned short raycastWithCategoryMaskBits) const;
@@ -209,12 +203,6 @@ class CollisionDetection {
 
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
-
-        // TODO : Remove this method
-        /// Compute the narrow-phase collision detection
-        //void computeNarrowPhaseBetweenShapes(CollisionCallback* callback,
-        //                                     const std::set<uint>& shapes1,
-        //                                     const std::set<uint>& shapes2);
 
         /// Return a pointer to the world
         CollisionWorld* getWorld();

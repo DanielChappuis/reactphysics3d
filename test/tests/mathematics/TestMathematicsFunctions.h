@@ -150,19 +150,19 @@ class TestMathematicsFunctions : public Test {
 			test(approxEqual(closestSeg2.z, 0.0, 0.000001));
 			computeClosestPointBetweenTwoSegments(Vector3(1, -4, -5), Vector3(1, 4, -5), Vector3(-6, 5, -5), Vector3(6, 5, -5), closestSeg1, closestSeg2);
 			test(approxEqual(closestSeg1.x, 1.0, 0.000001));
-			test(approxEqual(closestSeg1.y, 5.0, 0.000001));
+            test(approxEqual(closestSeg1.y, 4.0, 0.000001));
 			test(approxEqual(closestSeg1.z, -5.0, 0.000001));
 			test(approxEqual(closestSeg2.x, 1.0, 0.000001));
 			test(approxEqual(closestSeg2.y, 5.0, 0.000001));
 			test(approxEqual(closestSeg2.z, -5.0, 0.000001));
 
 			// Test computePlaneSegmentIntersection();
-			test(approxEqual(computePlaneSegmentIntersection(Vector3(-6, 3, 0), Vector3(6, 3, 0), 0.0, Vector3(-1, 0, 0)), 0.5, 0.000001));
+            test(approxEqual(computePlaneSegmentIntersection(Vector3(-6, 3, 0), Vector3(6, 3, 0), 0.0, Vector3(-1, 0, 0)), 0.5, 0.000001));
 			test(approxEqual(computePlaneSegmentIntersection(Vector3(-6, 3, 0), Vector3(6, 3, 0), 0.0, Vector3(1, 0, 0)), 0.5, 0.000001));
 			test(approxEqual(computePlaneSegmentIntersection(Vector3(5, 12, 0), Vector3(5, 4, 0), 6, Vector3(0, 1, 0)), 0.75, 0.000001));
 			test(approxEqual(computePlaneSegmentIntersection(Vector3(5, 4, 8), Vector3(9, 14, 8), 4, Vector3(0, 1, 0)), 0.0, 0.000001));
 			decimal tIntersect = computePlaneSegmentIntersection(Vector3(5, 4, 0), Vector3(9, 4, 0), 4, Vector3(0, 1, 0));
-			test(tIntersect < 0.0 && tIntersect > 1.0);
+            test(tIntersect < 0.0 || tIntersect > 1.0);
 
 			// Test computeDistancePointToLineDistance()
 			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, 0, 0), Vector3(14, 0, 0), Vector3(5, 3, 0)), 3.0, 0.000001));

@@ -171,7 +171,7 @@ class TestPointInside : public Test {
         }
 
         /// Destructor
-        ~TestPointInside() {
+        virtual ~TestPointInside() {
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;

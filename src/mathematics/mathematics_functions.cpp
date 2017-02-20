@@ -171,16 +171,16 @@ void reactphysics3d::computeClosestPointBetweenTwoSegments(const Vector3& seg1Po
 // there is no intersection between the plane and the segment.
 decimal reactphysics3d::computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal) {
 
-	const decimal parallelEpsilon = decimal(0.0001);
+    const decimal parallelEpsilon = decimal(0.0001);
 	decimal t = decimal(-1);
 
 	// Segment AB
 	const Vector3 ab = segB - segA;
 
-	decimal nDotAB = planeNormal.dot(ab);
+    decimal nDotAB = planeNormal.dot(ab);
 
 	// If the segment is not parallel to the plane
-	if (nDotAB > parallelEpsilon) {
+    if (std::abs(nDotAB) > parallelEpsilon) {
 		t = (planeD - planeNormal.dot(segA)) / nDotAB;
 	}
 

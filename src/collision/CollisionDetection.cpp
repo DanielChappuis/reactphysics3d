@@ -463,7 +463,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Make sure the shape with the smallest collision shape type comes first
     const uint shape1TypeIndex = static_cast<const uint>(shape1->getCollisionShape()->getType());
     const uint shape2TypeIndex = static_cast<const uint>(shape2->getCollisionShape()->getType());
-    if (shape2TypeIndex > shape1TypeIndex) {
+    if (shape1TypeIndex > shape2TypeIndex) {
 
         // Swap the two shapes
         ProxyShape* temp = shape1;

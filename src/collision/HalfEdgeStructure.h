@@ -43,7 +43,7 @@ class HalfEdgeStructure {
     public:
 
         struct Edge {
-            uint vertexIndex;       // Index of the vertex at the end of the edge
+            uint vertexIndex;       // Index of the vertex at the beginning of the edge
             uint twinEdgeIndex;     // Index of the twin edge
             uint faceIndex;         // Adjacent face index of the edge
             uint nextEdgeIndex;     // Index of the next edge
@@ -54,7 +54,7 @@ class HalfEdgeStructure {
         };
 
         struct Vertex {
-            Vector3 point;    // Coordinates of the vertex
+            Vector3 point;          // Coordinates of the vertex
             uint edgeIndex;         // Index of one edge emanting from this vertex
 
             /// Constructor
@@ -86,8 +86,8 @@ class HalfEdgeStructure {
         /// Return the number of faces
         uint getNbFaces() const;
 
-        /// Return the number of edges
-        uint getNbEdges() const;
+        /// Return the number of half-edges
+        uint getNbHalfEdges() const;
 
         /// Return the number of vertices
         uint getNbVertices() const;
@@ -109,7 +109,7 @@ inline uint HalfEdgeStructure::getNbFaces() const {
 }
 
 // Return the number of edges
-inline uint HalfEdgeStructure::getNbEdges() const {
+inline uint HalfEdgeStructure::getNbHalfEdges() const {
     return mEdges.size();
 }
 

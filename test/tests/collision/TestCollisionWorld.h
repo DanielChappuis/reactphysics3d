@@ -103,7 +103,6 @@ class TestCollisionWorld : public Test {
         CollisionBody* mBoxBody;
         CollisionBody* mSphere1Body;
         CollisionBody* mSphere2Body;
-        CollisionBody* mCylinderBody;
 
         // Collision shapes
         BoxShape* mBoxShape;
@@ -113,7 +112,6 @@ class TestCollisionWorld : public Test {
         ProxyShape* mBoxProxyShape;
         ProxyShape* mSphere1ProxyShape;
         ProxyShape* mSphere2ProxyShape;
-        ProxyShape* mCylinderProxyShape;
 
         // Collision callback class
         WorldCollisionCallback mCollisionCallback;
@@ -147,16 +145,14 @@ class TestCollisionWorld : public Test {
             mBoxProxyShape->setCollisionCategoryBits(CATEGORY_1);
             mSphere1ProxyShape->setCollisionCategoryBits(CATEGORY_1);
             mSphere2ProxyShape->setCollisionCategoryBits(CATEGORY_2);
-            mCylinderProxyShape->setCollisionCategoryBits(CATEGORY_3);
 
             mCollisionCallback.boxBody = mBoxBody;
             mCollisionCallback.sphere1Body = mSphere1Body;
             mCollisionCallback.sphere2Body = mSphere2Body;
-            mCollisionCallback.cylinderBody = mCylinderBody;
         }
 
         /// Destructor
-        ~TestCollisionWorld() {
+        virtual ~TestCollisionWorld() {
             delete mBoxShape;
             delete mSphereShape;
         }
@@ -175,17 +171,12 @@ class TestCollisionWorld : public Test {
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
             test(mWorld->testAABBOverlap(mBoxBody, mSphere1Body));
-            test(mWorld->testAABBOverlap(mBoxBody, mCylinderBody));
-            test(!mWorld->testAABBOverlap(mSphere1Body, mCylinderBody));
             test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
 
             test(mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
-            test(mBoxProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
-            test(!mSphere1ProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
             test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCylinderBody, &mCollisionCallback);
             test(!mCollisionCallback.boxCollideWithSphere1);
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
@@ -195,7 +186,6 @@ class TestCollisionWorld : public Test {
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody, mCylinderBody, &mCollisionCallback);
             test(!mCollisionCallback.boxCollideWithSphere1);
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
@@ -213,7 +203,6 @@ class TestCollisionWorld : public Test {
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody, mCylinderBody, &mCollisionCallback);
             test(!mCollisionCallback.boxCollideWithSphere1);
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
@@ -224,7 +213,6 @@ class TestCollisionWorld : public Test {
 
             mCollisionCallback.reset();
             mBoxBody->setIsActive(false);
-            mCylinderBody->setIsActive(false);
             mSphere1Body->setIsActive(false);
             mSphere2Body->setIsActive(false);
             mWorld->testCollision(&mCollisionCallback);
@@ -232,17 +220,12 @@ class TestCollisionWorld : public Test {
             test(!mCollisionCallback.sphere1CollideWithSphere2);
 
             test(!mWorld->testAABBOverlap(mBoxBody, mSphere1Body));
-            test(!mWorld->testAABBOverlap(mBoxBody, mCylinderBody));
-            test(!mWorld->testAABBOverlap(mSphere1Body, mCylinderBody));
             test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
 
             test(!mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
-            test(!mBoxProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
-            test(!mSphere1ProxyShape->testAABBOverlap(mCylinderProxyShape->getWorldAABB()));
             test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
 
             mBoxBody->setIsActive(true);
-            mCylinderBody->setIsActive(true);
             mSphere1Body->setIsActive(true);
             mSphere2Body->setIsActive(true);
 
@@ -251,7 +234,6 @@ class TestCollisionWorld : public Test {
             mBoxProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_3);
             mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_2);
             mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_1);
-            mCylinderProxyShape->setCollideWithMaskBits(CATEGORY_1);
 
             mCollisionCallback.reset();
             mWorld->testCollision(&mCollisionCallback);
@@ -269,7 +251,6 @@ class TestCollisionWorld : public Test {
             mBoxProxyShape->setCollideWithMaskBits(CATEGORY_2);
             mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_2);
             mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_3);
-            mCylinderProxyShape->setCollideWithMaskBits(CATEGORY_1);
 
             mCollisionCallback.reset();
             mWorld->testCollision(&mCollisionCallback);
@@ -282,7 +263,6 @@ class TestCollisionWorld : public Test {
             mBoxProxyShape->setCollideWithMaskBits(0xFFFF);
             mSphere1ProxyShape->setCollideWithMaskBits(0xFFFF);
             mSphere2ProxyShape->setCollideWithMaskBits(0xFFFF);
-            mCylinderProxyShape->setCollideWithMaskBits(0xFFFF);
         }
  };
 

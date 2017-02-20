@@ -38,6 +38,8 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
     std::map<edgeKey, edgeKey> nextEdges;
     std::map<edgeKey, uint> mapEdgeToStartVertex;
     std::map<edgeKey, uint> mapEdgeToIndex;
+    std::map<uint, edgeKey> mapEdgeIndexToKey;
+    std::map<uint, edgeKey> mapFaceIndexToEdgeKey;
 
     // For each vertices
     for (uint v=0; v<vertices.size(); v++) {
@@ -86,24 +88,27 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
             mapEdgeToStartVertex.insert(std::make_pair(pairV1V2, v1Index));
             mapEdgeToStartVertex.insert(std::make_pair(pairV2V1, v2Index));
 
+            mapFaceIndexToEdgeKey.insert(std::make_pair(f, pairV1V2));
+
             auto itEdge = edges.find(pairV2V1);
             if (itEdge != edges.end()) {
 
                 const uint edgeIndex = mEdges.size();
-                mEdges.push_back(itEdge->second);
-                mEdges.push_back(edge);
 
                 itEdge->second.twinEdgeIndex = edgeIndex + 1;
-
                 edge.twinEdgeIndex = edgeIndex;
 
-                mVertices[v1Index].edgeIndex = edgeIndex;
-                mVertices[v2Index].edgeIndex = edgeIndex + 1;
+                mapEdgeIndexToKey[edgeIndex] = pairV2V1;
+                mapEdgeIndexToKey[edgeIndex + 1] = pairV1V2;
+
+                mVertices[v1Index].edgeIndex = edgeIndex + 1;
+                mVertices[v2Index].edgeIndex = edgeIndex;
 
                 mapEdgeToIndex.insert(std::make_pair(pairV1V2, edgeIndex + 1));
                 mapEdgeToIndex.insert(std::make_pair(pairV2V1, edgeIndex));
 
-                face.edgeIndex = edgeIndex + 1;
+                mEdges.push_back(itEdge->second);
+                mEdges.push_back(edge);
             }
 
             currentFaceEdges.push_back(pairV1V2);
@@ -111,8 +116,12 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
     }
 
     // Set next edges
-    std::map<edgeKey, Edge>::iterator it;
-    for (it = edges.begin(); it != edges.end(); ++it) {
-        it->second.nextEdgeIndex = mapEdgeToIndex[nextEdges[it->first]];
+    for (uint i=0; i < mEdges.size(); i++) {
+        mEdges[i].nextEdgeIndex = mapEdgeToIndex[nextEdges[mapEdgeIndexToKey[i]]];
+    }
+
+    // Set face edge
+    for (uint f=0; f < faces.size(); f++) {
+        mFaces[f].edgeIndex = mapEdgeToIndex[mapFaceIndexToEdgeKey[f]];
     }
 }

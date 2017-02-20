@@ -109,7 +109,6 @@ class TestRaycast : public Test {
         CollisionBody* mBoxBody;
         CollisionBody* mSphereBody;
         CollisionBody* mCapsuleBody;
-        CollisionBody* mConeBody;
         CollisionBody* mConvexMeshBody;
         CollisionBody* mConvexMeshBodyEdgesInfo;
         CollisionBody* mCylinderBody;
@@ -138,12 +137,10 @@ class TestRaycast : public Test {
         ProxyShape* mBoxProxyShape;
         ProxyShape* mSphereProxyShape;
         ProxyShape* mCapsuleProxyShape;
-        ProxyShape* mConeProxyShape;
         ProxyShape* mConvexMeshProxyShape;
         ProxyShape* mConvexMeshProxyShapeEdgesInfo;
-        ProxyShape* mCylinderProxyShape;
         ProxyShape* mCompoundSphereProxyShape;
-        ProxyShape* mCompoundCylinderProxyShape;
+        ProxyShape* mCompoundCapsuleProxyShape;
         ProxyShape* mTriangleProxyShape;
         ProxyShape* mConcaveMeshProxyShape;
         ProxyShape* mHeightFieldProxyShape;
@@ -177,7 +174,6 @@ class TestRaycast : public Test {
             mBoxBody = mWorld->createCollisionBody(mBodyTransform);
             mSphereBody = mWorld->createCollisionBody(mBodyTransform);
             mCapsuleBody = mWorld->createCollisionBody(mBodyTransform);
-            mConeBody = mWorld->createCollisionBody(mBodyTransform);
             mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
             mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
             mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
@@ -253,7 +249,7 @@ class TestRaycast : public Test {
             Quaternion orientationShape2(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundCylinderProxyShape = mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
+            mCompoundCapsuleProxyShape = mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
             mCompoundSphereProxyShape = mCompoundBody->addCollisionShape(mSphereShape, shapeTransform2);
 
             // Concave Mesh shape
@@ -284,7 +280,7 @@ class TestRaycast : public Test {
                     new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
                                                   12, &(mConcaveMeshIndices[0]), sizeof(uint),
                                                   vertexType,
-                                                  TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+                                                 TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 
             // Add the triangle vertex array of the subpart to the triangle mesh
@@ -302,19 +298,17 @@ class TestRaycast : public Test {
             mBoxProxyShape->setCollisionCategoryBits(CATEGORY1);
             mSphereProxyShape->setCollisionCategoryBits(CATEGORY1);
             mCapsuleProxyShape->setCollisionCategoryBits(CATEGORY1);
-            mConeProxyShape->setCollisionCategoryBits(CATEGORY2);
             mConvexMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
             mConvexMeshProxyShapeEdgesInfo->setCollisionCategoryBits(CATEGORY2);
-            mCylinderProxyShape->setCollisionCategoryBits(CATEGORY2);
             mCompoundSphereProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mCompoundCylinderProxyShape->setCollisionCategoryBits(CATEGORY2);
+            mCompoundCapsuleProxyShape->setCollisionCategoryBits(CATEGORY2);
             mTriangleProxyShape->setCollisionCategoryBits(CATEGORY1);
             mConcaveMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
             mHeightFieldProxyShape->setCollisionCategoryBits(CATEGORY2);
         }
 
         /// Destructor
-        ~TestRaycast() {
+        virtual ~TestRaycast() {
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;
@@ -1647,7 +1641,7 @@ class TestRaycast : public Test {
             Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
             Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
-            mCallback.shapeToTest = mCompoundCylinderProxyShape;
+            mCallback.shapeToTest = mCompoundCapsuleProxyShape;
 
             test(mCompoundBody->raycast(ray11, raycastInfo));
             mCallback.reset();

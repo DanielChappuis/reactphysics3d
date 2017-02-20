@@ -37,6 +37,7 @@
 #include "tests/collision/TestCollisionWorld.h"
 #include "tests/collision/TestAABB.h"
 #include "tests/collision/TestDynamicAABBTree.h"
+#include "tests/collision/TestHalfEdgeStructure.h"
 
 using namespace reactphysics3d;
 
@@ -61,6 +62,7 @@ int main() {
     testSuite.addTest(new TestRaycast("Raycasting"));
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
     testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
+    testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
 
     // Run the tests
     testSuite.run();
