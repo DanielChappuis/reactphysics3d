@@ -37,7 +37,7 @@
 using namespace reactphysics3d;
 
 bool SATAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                 ContactPointInfo& contactPointInfo) {
+                                 ContactManifoldInfo& contactManifoldInfo) {
 
 
 }

@@ -31,6 +31,7 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 #include "memory/PoolAllocator.h"
 
 /// ReactPhysics3D namespace
@@ -130,18 +131,6 @@ class ContactManifold {
 
         // -------------------- Methods -------------------- //
 
-        /// Return the index of maximum area
-        int getMaxArea(decimal area0, decimal area1, decimal area2, decimal area3) const;
-
-        /// Return the index of the contact with the larger penetration depth.
-        int getIndexOfDeepestPenetration(ContactPoint* newContact) const;
-
-        /// Return the index that will be removed.
-        int getIndexToRemove(int indexMaxPenetration, const Vector3& newPoint) const;
-
-        /// Remove a contact point from the manifold
-        void removeContactPoint(uint index);
-
         /// Return true if the contact manifold has already been added into an island
         bool isAlreadyInIsland() const;
         
@@ -150,7 +139,7 @@ class ContactManifold {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
+        ContactManifold(const ContactManifoldInfo& manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
                         PoolAllocator& memoryAllocator, short int normalDirectionId);
 
         /// Destructor
@@ -176,12 +165,6 @@ class ContactManifold {
 
         /// Return the normal direction Id
         short int getNormalDirectionId() const;
-
-        /// Add a contact point to the manifold
-        void addContactPoint(ContactPoint* contact);
-
-        /// Update the contact manifold.
-        void update(const Transform& transform1, const Transform& transform2);
 
         /// Clear the contact manifold
         void clear();
@@ -230,6 +213,12 @@ class ContactManifold {
 
         /// Return the largest depth of all the contact points
         decimal getLargestContactDepth() const;
+
+        /// Add a contact point
+        void addContactPoint(const ContactPointInfo* contactPointInfo);
+
+        /// Remove a contact point
+        void removeContactPoint(int index);
 
         // -------------------- Friendship -------------------- //
 

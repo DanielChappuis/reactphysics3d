@@ -60,6 +60,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/body/CollisionBody.cpp"
     "src/body/RigidBody.h"
     "src/body/RigidBody.cpp"
+    "src/collision/ContactPointInfo.h"
+    "src/collision/ContactManifoldInfo.h"
     "src/collision/broadphase/BroadPhaseAlgorithm.h"
     "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
     "src/collision/broadphase/DynamicAABBTree.h"

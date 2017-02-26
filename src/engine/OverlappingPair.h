@@ -80,11 +80,8 @@ class OverlappingPair {
         /// Return the pointer to second body
         ProxyShape* getShape2() const;
 
-        /// Add a contact to the contact cache
-        void addContact(ContactPoint* contact);
-
-        /// Update the contact cache
-        void update();
+        /// Add a contact manifold
+        void addContactManifold(const ContactManifoldInfo& contactManifoldInfo);
 
         /// Return the cached separating axis
         Vector3 getCachedSeparatingAxis() const;
@@ -123,13 +120,8 @@ inline ProxyShape* OverlappingPair::getShape2() const {
 }                
 
 // Add a contact to the contact manifold
-inline void OverlappingPair::addContact(ContactPoint* contact) {
-    mContactManifoldSet.addContactPoint(contact);
-}
-
-// Update the contact manifold
-inline void OverlappingPair::update() {
-    mContactManifoldSet.update();
+inline void OverlappingPair::addContactManifold(const ContactManifoldInfo& contactManifoldInfo) {
+    mContactManifoldSet.addContactManifold(contactManifoldInfo);
 }
 
 // Return the cached separating axis

@@ -27,7 +27,8 @@
 #define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "collision/shapes/ConvexShape.h"
 #include "VoronoiSimplex.h"
 
@@ -87,7 +88,7 @@ class GJKAlgorithm {
 
         /// Compute a contact info if the two bounding volumes collide.
         GJKResult testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                        ContactPointInfo& contactPointInfo);
+                                ContactManifoldInfo& contactManifoldInfo);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);

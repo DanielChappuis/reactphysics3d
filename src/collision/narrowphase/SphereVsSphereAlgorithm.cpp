@@ -31,8 +31,11 @@
 using namespace reactphysics3d;  
 
 bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                            ContactPointInfo& contactPointInfo) {
+                                            ContactManifoldInfo& contactManifoldInfo) {
     
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
+    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
+
     // Get the sphere collision shapes
     const SphereShape* sphereShape1 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
     const SphereShape* sphereShape2 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape2);
@@ -49,7 +52,7 @@ bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseIn
     decimal sumRadius = sphereShape1->getRadius() + sphereShape2->getRadius();
     
     // If the sphere collision shapes intersect
-    if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
+    if (squaredDistanceBetweenCenters < sumRadius * sumRadius) {
         Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
         Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
         Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
@@ -59,8 +62,8 @@ bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseIn
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactPointInfo.init(vectorBetweenCenters.getUnit(), penetrationDepth,
-                              intersectionOnBody1, intersectionOnBody2);
+        contactManifoldInfo.addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
+                                            intersectionOnBody1, intersectionOnBody2);
 
         return true;
     }

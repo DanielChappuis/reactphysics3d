@@ -31,14 +31,17 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactPointInfo& contactPointInfo) {
+bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
     
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
+    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+
     // Get the collision shapes
     const SphereShape* sphereShape = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
     const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(narrowPhaseInfo->collisionShape2);
 
     // Get the transform from sphere local-space to capsule local-space
-	const Transform sphereToCapsuleSpaceTransform = narrowPhaseInfo->shape1ToWorldTransform * narrowPhaseInfo->shape2ToWorldTransform.getInverse();
+    const Transform sphereToCapsuleSpaceTransform = narrowPhaseInfo->shape2ToWorldTransform.getInverse() * narrowPhaseInfo->shape1ToWorldTransform;
 
 	// Transform the center of the sphere into the local-space of the capsule shape
 	const Vector3 sphereCenter = sphereToCapsuleSpaceTransform.getPosition();
@@ -58,7 +61,7 @@ bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseI
     decimal sumRadius = sphereShape->getRadius() + capsuleShape->getRadius();
     
     // If the collision shapes overlap
-    if (sphereSegmentDistanceSquare <= sumRadius * sumRadius && sphereSegmentDistanceSquare > MACHINE_EPSILON) {
+    if (sphereSegmentDistanceSquare < sumRadius * sumRadius && sphereSegmentDistanceSquare > MACHINE_EPSILON) {
 
 		decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
 		sphereCenterToSegment /= sphereSegmentDistance;
@@ -71,7 +74,7 @@ bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseI
         decimal penetrationDepth = sumRadius - sphereSegmentDistance;
         
         // Create the contact info object
-        contactPointInfo.init(normalWorld, penetrationDepth, contactPointSphereLocal, contactPointCapsuleLocal);
+        contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointSphereLocal, contactPointCapsuleLocal);
 
         return true;
     }

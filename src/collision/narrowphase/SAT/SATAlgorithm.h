@@ -27,7 +27,8 @@
 #define REACTPHYSICS3D_SAT_ALGORITHM_H
 
 // Libraries
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -59,7 +60,7 @@ class SATAlgorithm {
 
         /// Compute a contact info if the two bounding volumes collide.
         bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                ContactPointInfo& contactPointInfo);
+                                ContactManifoldInfo& contactManifoldInfo);
 };
 
 }

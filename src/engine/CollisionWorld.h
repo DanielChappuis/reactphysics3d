@@ -247,16 +247,16 @@ class CollisionCallback {
         struct CollisionCallbackInfo {
 
             public:
-                const ContactPointInfo& contactPoint;
+                const ContactManifoldInfo& contactManifold;
                 CollisionBody* body1;
                 CollisionBody* body2;
                 const ProxyShape* proxyShape1;
                 const ProxyShape* proxyShape2;
 
                 // Constructor
-                CollisionCallbackInfo(const ContactPointInfo& point, CollisionBody* b1, CollisionBody* b2,
+                CollisionCallbackInfo(const ContactManifoldInfo& manifold, CollisionBody* b1, CollisionBody* b2,
                                       const ProxyShape* proxShape1, const ProxyShape* proxShape2) :
-                    contactPoint(point), body1(b1), body2(b2),
+                    contactManifold(manifold), body1(b1), body2(b2),
                     proxyShape1(proxShape1), proxyShape2(proxShape2) {
 
                 }

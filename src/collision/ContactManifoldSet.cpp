@@ -43,92 +43,147 @@ ContactManifoldSet::~ContactManifoldSet() {
     clear();
 }
 
-// Add a contact point to the manifold set
-void ContactManifoldSet::addContactPoint(ContactPoint* contact) {
+void ContactManifoldSet::addContactManifold(const ContactManifoldInfo& contactManifoldInfo) {
 
-    // Compute an Id corresponding to the normal direction (using a cubemap)
-    short int normalDirectionId = computeCubemapNormalId(contact->getNormal());
+    assert(contactManifoldInfo.getFirstContactPointInfo() != nullptr);
 
     // If there is no contact manifold yet
     if (mNbManifolds == 0) {
 
-        createManifold(normalDirectionId);
-        mManifolds[0]->addContactPoint(contact);
-        assert(mManifolds[mNbManifolds-1]->getNbContactPoints() > 0);
-        for (int i=0; i<mNbManifolds; i++) {
-            assert(mManifolds[i]->getNbContactPoints() > 0);
+        // If the maximum number of manifold is 1
+        if (mNbMaxManifolds == 1) {
+            createManifold(contactManifoldInfo, 0);
+        }
+        else {
+
+            // Compute an Id corresponding to the normal direction (using a cubemap)
+            short int normalDirectionId = computeCubemapNormalId(contactManifoldInfo.getFirstContactPointInfo()->normal);
+
+            createManifold(contactManifoldInfo, normalDirectionId);
+        }
+    }
+    else {   // If there is already at least one contact manifold in the set
+
+        // If the maximum number of manifold is 1
+        if (mNbMaxManifolds == 1) {
+
+            // Replace the old manifold with the new one
+            updateManifoldWithNewOne(0, contactManifoldInfo);
+        }
+        else {
+
+            // Compute an Id corresponding to the normal direction (using a cubemap)
+            short int normalDirectionId = computeCubemapNormalId(contactManifoldInfo.getFirstContactPointInfo()->normal);
+
+            // Select the manifold with the most similar normal (if exists)
+            int similarManifoldIndex = 0;
+            if (mNbMaxManifolds > 1) {
+                similarManifoldIndex = selectManifoldWithSimilarNormal(normalDirectionId);
+            }
+
+            // If a similar manifold has been found
+            if (similarManifoldIndex != -1) {
+
+                // Replace the old manifold with the new one
+                updateManifoldWithNewOne(similarManifoldIndex, contactManifoldInfo);
+            }
+            else {
+
+                // If we have not reach the maximum number of manifolds
+                if (mNbManifolds < mNbMaxManifolds) {
+
+                    // Create the new contact manifold
+                    createManifold(contactManifoldInfo, normalDirectionId);
+                }
+                else {
+
+                    decimal newManifoldPenDepth = contactManifoldInfo.getLargestPenetrationDepth();
+
+                    // We have reached the maximum number of manifold, we do not
+                    // want to keep the manifold with the smallest penetration detph
+                    int smallestPenDepthManifoldIndex = getManifoldWithSmallestContactPenetrationDepth(newManifoldPenDepth);
+
+                    // If the manifold with the smallest penetration depth is not the new one,
+                    // we have to keep the new manifold and remove the one with the smallest depth
+                    if (smallestPenDepthManifoldIndex >= 0) {
+                        removeManifold(smallestPenDepthManifoldIndex);
+                        createManifold(contactManifoldInfo, normalDirectionId);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Update a previous similar manifold with a new one
+void ContactManifoldSet::updateManifoldWithNewOne(int oldManifoldIndex, const ContactManifoldInfo& newManifold) {
+
+   // For each contact point of the previous manifold
+   for (int i=0; i<mManifolds[oldManifoldIndex]->getNbContactPoints(); ) {
+
+       ContactPoint* contactPoint = mManifolds[oldManifoldIndex]->getContactPoint(i);
+
+       // For each contact point in the new manifold
+       ContactPointInfo* newPoint = newManifold.getFirstContactPointInfo();
+       bool needToRemovePoint = true;
+       while (newPoint != nullptr) {
+
+            // If the new contact point is similar (very close) to the old contact point
+            if (!newPoint->isUsed && contactPoint->isSimilarWithContactPoint(newPoint)) {
+
+                // Replace (update) the old contact point with the new one
+                contactPoint->update(newPoint, mManifolds[oldManifoldIndex]->getShape1()->getLocalToWorldTransform(),
+                                               mManifolds[oldManifoldIndex]->getShape2()->getLocalToWorldTransform());
+                needToRemovePoint = false;
+                newPoint->isUsed = true;
+                break;
+            }
+
+            newPoint = newPoint->next;
+       }
+
+       // If no new contact point is similar to the old one
+       if (needToRemovePoint) {
+
+           // Remove the old contact point
+           mManifolds[oldManifoldIndex]->removeContactPoint(i);
+       }
+       else {
+           i++;
+       }
+   }
+
+   // For each point of the new manifold that have not been used yet (to update
+   // an existing point in the previous manifold), add it into the previous manifold
+   const ContactPointInfo* newPointInfo = newManifold.getFirstContactPointInfo();
+   while (newPointInfo != nullptr) {
+
+        if (!newPointInfo->isUsed) {
+            mManifolds[oldManifoldIndex]->addContactPoint(newPointInfo);
         }
 
-        return;
-    }
+        newPointInfo = newPointInfo->next;
+   }
+}
 
-    // Select the manifold with the most similar normal (if exists)
-    int similarManifoldIndex = 0;
-    if (mNbMaxManifolds > 1) {
-        similarManifoldIndex = selectManifoldWithSimilarNormal(normalDirectionId);
-    }
-
-    // If a similar manifold has been found
-    if (similarManifoldIndex != -1) {
-
-        // Add the contact point to that similar manifold
-        mManifolds[similarManifoldIndex]->addContactPoint(contact);
-        assert(mManifolds[similarManifoldIndex]->getNbContactPoints() > 0);
-
-        return;
-    }
-
-    // If the maximum number of manifold has not been reached yet
-    if (mNbManifolds < mNbMaxManifolds) {
-
-        // Create a new manifold for the contact point
-        createManifold(normalDirectionId);
-        mManifolds[mNbManifolds-1]->addContactPoint(contact);
-        for (int i=0; i<mNbManifolds; i++) {
-            assert(mManifolds[i]->getNbContactPoints() > 0);
-        }
-
-        return;
-    }
+// Return the manifold with the smallest contact penetration depth
+int ContactManifoldSet::getManifoldWithSmallestContactPenetrationDepth(decimal initDepth) const {
 
     // The contact point will be in a new contact manifold, we now have too much
-    // manifolds condidates. We need to remove one. We choose to keep the manifolds
-    // with the largest contact depth among their points
-    int smallestDepthIndex = -1;
-    decimal minDepth = contact->getPenetrationDepth();
+    // manifolds condidates. We need to remove one. We choose to remove the manifold
+    // with the smallest contact depth among their points
+    int smallestDepthManifoldIndex = -1;
+    decimal minDepth = initDepth;
     assert(mNbManifolds == mNbMaxManifolds);
     for (int i=0; i<mNbManifolds; i++) {
         decimal depth = mManifolds[i]->getLargestContactDepth();
         if (depth < minDepth) {
             minDepth = depth;
-            smallestDepthIndex = i;
+            smallestDepthManifoldIndex = i;
         }
     }
 
-    // If we do not want to keep to new manifold (not created yet) with the
-    // new contact point
-    if (smallestDepthIndex == -1) {
-
-        // Delete the new contact
-        contact->~ContactPoint();
-        mMemoryAllocator.release(contact, sizeof(ContactPoint));
-
-        return;
-    }
-
-    assert(smallestDepthIndex >= 0 && smallestDepthIndex < mNbManifolds);
-
-    // Here we need to replace an existing manifold with a new one (that contains
-    // the new contact point)
-    removeManifold(smallestDepthIndex);
-    createManifold(normalDirectionId);
-    mManifolds[mNbManifolds-1]->addContactPoint(contact);
-    assert(mManifolds[mNbManifolds-1]->getNbContactPoints() > 0);
-    for (int i=0; i<mNbManifolds; i++) {
-        assert(mManifolds[i]->getNbContactPoints() > 0);
-    }
-
-    return;
+    return smallestDepthManifoldIndex;
 }
 
 // Return the index of the contact manifold with a similar average normal.
@@ -154,7 +209,7 @@ short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) cons
 
     int faceNo;
     decimal u, v;
-    decimal max = max3(fabs(normal.x), fabs(normal.y), fabs(normal.z));
+    decimal max = max3(std::fabs(normal.x), std::fabs(normal.y), std::fabs(normal.z));
     Vector3 normalScaled = normal / max;
 
     if (normalScaled.x >= normalScaled.y && normalScaled.x >= normalScaled.z) {
@@ -173,29 +228,13 @@ short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) cons
         v = normalScaled.y;
     }
 
-    int indexU = floor(((u + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
-    int indexV = floor(((v + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
+    int indexU = std::floor(((u + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
+    int indexV = std::floor(((v + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
     if (indexU == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexU--;
     if (indexV == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexV--;
 
     const int nbSubDivInFace = CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS;
     return faceNo * 200 + indexU * nbSubDivInFace + indexV;
-}
-
-// Update the contact manifolds
-void ContactManifoldSet::update() {
-
-    for (int i=mNbManifolds-1; i>=0; i--) {
-
-        // Update the contact manifold
-        mManifolds[i]->update(mShape1->getBody()->getTransform() * mShape1->getLocalToBodyTransform(),
-                              mShape2->getBody()->getTransform() * mShape2->getLocalToBodyTransform());
-
-        // Remove the contact manifold if has no contact points anymore
-        if (mManifolds[i]->getNbContactPoints() == 0) {
-            removeManifold(i);
-        }
-    }
 }
 
 // Clear the contact manifold set
@@ -210,11 +249,11 @@ void ContactManifoldSet::clear() {
 }
 
 // Create a new contact manifold and add it to the set
-void ContactManifoldSet::createManifold(short int normalDirectionId) {
+void ContactManifoldSet::createManifold(const ContactManifoldInfo& manifoldInfo, short int normalDirectionId) {
     assert(mNbManifolds < mNbMaxManifolds);
 
     mManifolds[mNbManifolds] = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
-                                    ContactManifold(mShape1, mShape2, mMemoryAllocator, normalDirectionId);
+                                    ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator, normalDirectionId);
     mNbManifolds++;
 }
 

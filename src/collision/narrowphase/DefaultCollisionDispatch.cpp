@@ -45,7 +45,7 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
         return &mSphereVsSphereAlgorithm;
     }
     // Sphere vs Capsule algorithm
-    if (shape1Type == CollisionShapeType::CAPSULE && shape2Type == CollisionShapeType::SPHERE) {
+    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::CAPSULE) {
         return &mSphereVsCapsuleAlgorithm;
     }
     // Capsule vs Capsule algorithm

@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_EVENT_LISTENER_H
 
 // Libraries
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 
 namespace reactphysics3d {
 
@@ -53,13 +53,13 @@ class EventListener {
         /**
          * @param contact Information about the contact
          */
-        virtual void beginContact(const ContactPointInfo& contact) {}
+        virtual void beginContact(const ContactManifoldInfo& contactManifold) {}
 
         /// Called when a new contact point is found between two bodies
         /**
          * @param contact Information about the contact
          */
-        virtual void newContact(const ContactPointInfo& contact) {}
+        virtual void newContact(const ContactManifoldInfo& contactManifold) {}
 
         /// Called at the beginning of an internal tick of the simulation step.
         /// Each time the DynamicsWorld::update() method is called, the physics

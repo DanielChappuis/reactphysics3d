@@ -62,7 +62,7 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Compute a contact info if the two bounding volume collide
         virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                   ContactPointInfo& contactPointInfo) override;
+                                   ContactManifoldInfo& contactManifoldInfo) override;
 };
 
 }

@@ -29,59 +29,12 @@
 // Libraries
 #include "body/CollisionBody.h"
 #include "collision/NarrowPhaseInfo.h"
+#include "collision/ContactPointInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-
-// Structure ContactPointInfo
-/**
- * This structure contains informations about a collision contact
- * computed during the narrow-phase collision detection. Those
- * informations are used to compute the contact set for a contact
- * between two bodies.
- */
-struct ContactPointInfo {
-
-    private:
-
-        // -------------------- Methods -------------------- //
-
-    public:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Normalized normal vector of the collision contact in world space
-        Vector3 normal;
-
-        /// Penetration depth of the contact
-        decimal penetrationDepth;
-
-        /// Contact point of body 1 in local space of body 1
-        Vector3 localPoint1;
-
-        /// Contact point of body 2 in local space of body 2
-        Vector3 localPoint2;
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ContactPointInfo() = default;
-
-        /// Destructor
-        ~ContactPointInfo() = default;
-
-        /// Initialize the contact point info
-        void init(const Vector3& contactNormal, decimal penDepth,
-                  const Vector3& localPt1, const Vector3& localPt2) {
-            normal = contactNormal;
-            penetrationDepth = penDepth;
-            localPoint1 = localPt1;
-            localPoint2 = localPt2;
-        }
-};
 
 // Class ContactPoint
 /**
@@ -95,16 +48,16 @@ class ContactPoint {
         // -------------------- Attributes -------------------- //
 
         /// Normalized normal vector of the contact (from body1 toward body2) in world space
-        const Vector3 mNormal;
+        Vector3 mNormal;
 
         /// Penetration depth
         decimal mPenetrationDepth;
 
         /// Contact point on body 1 in local space of body 1
-        const Vector3 mLocalPointOnBody1;
+        Vector3 mLocalPointOnBody1;
 
         /// Contact point on body 2 in local space of body 2
-        const Vector3 mLocalPointOnBody2;
+        Vector3 mLocalPointOnBody2;
 
         /// Contact point on body 1 in world space
         Vector3 mWorldPointOnBody1;
@@ -123,7 +76,8 @@ class ContactPoint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(const ContactPointInfo& contactInfo);
+        ContactPoint(const ContactPointInfo* contactInfo, const Transform& body1Transform,
+                     const Transform& body2Transform);
 
         /// Destructor
         ~ContactPoint() = default;
@@ -134,11 +88,9 @@ class ContactPoint {
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
 
-        /// Update the world contact points
-        void updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform);
-
-        /// Update the penetration depth
-        void updatePenetrationDepth();
+        /// Update the contact point with a new one that is similar (very close)
+        void update(const ContactPointInfo* contactInfo, const Transform& body1Transform,
+                    const Transform& body2Transform);
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -158,6 +110,9 @@ class ContactPoint {
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
 
+        /// Return true if the contact point is similar (close enougth) to another given contact point
+        bool isSimilarWithContactPoint(const ContactPointInfo* contactPoint) const;
+
         /// Set the cached penetration impulse
         void setPenetrationImpulse(decimal impulse);
 
@@ -173,17 +128,6 @@ class ContactPoint {
         /// Return the number of bytes used by the contact point
         size_t getSizeInBytes() const;
 };
-
-// Update the world contact points
-inline void ContactPoint::updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform) {
-    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
-    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
-}
-
-// Update the penetration depth
-inline void ContactPoint::updatePenetrationDepth() {
-    mPenetrationDepth = (mWorldPointOnBody1 - mWorldPointOnBody2).dot(mNormal);
-}
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {
@@ -213,6 +157,12 @@ inline Vector3 ContactPoint::getWorldPointOnBody2() const {
 // Return the cached penetration impulse
 inline decimal ContactPoint::getPenetrationImpulse() const {
     return mPenetrationImpulse;
+}
+
+// Return true if the contact point is similar (close enougth) to another given contact point
+inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
+    return (localContactPointBody1->localPoint1 - mLocalPointOnBody1).lengthSquare() <= (PERSISTENT_CONTACT_DIST_THRESHOLD *
+            PERSISTENT_CONTACT_DIST_THRESHOLD);
 }
 
 // Set the cached penetration impulse

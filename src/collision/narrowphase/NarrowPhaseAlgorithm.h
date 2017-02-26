@@ -28,7 +28,7 @@
 
 // Libraries
 #include "body/Body.h"
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 #include "memory/PoolAllocator.h"
 #include "engine/OverlappingPair.h"
 #include "collision/NarrowPhaseInfo.h"
@@ -84,7 +84,7 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactPointInfo& contactPointInfo)=0;
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo)=0;
 };
 
 }

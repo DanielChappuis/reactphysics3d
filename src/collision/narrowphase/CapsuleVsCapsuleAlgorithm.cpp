@@ -30,8 +30,11 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactPointInfo& contactPointInfo) {
+bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
     
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
+    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+
 	const decimal parallelEpsilon = decimal(0.001);
 
     // Get the capsule collision shapes
@@ -39,7 +42,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
     const CapsuleShape* capsuleShape2 = static_cast<const CapsuleShape*>(narrowPhaseInfo->collisionShape2);
 
 	// Get the transform from capsule 1 local-space to capsule 2 local-space
-	const Transform capsule1ToCapsule2SpaceTransform = narrowPhaseInfo->shape1ToWorldTransform * narrowPhaseInfo->shape2ToWorldTransform.getInverse();
+    const Transform capsule1ToCapsule2SpaceTransform = narrowPhaseInfo->shape2ToWorldTransform.getInverse() * narrowPhaseInfo->shape1ToWorldTransform;
 
 	// Compute the end-points of the inner segment of the first capsule
 	Vector3 capsule1SegA(0, -capsuleShape1->getHeight() * decimal(0.5), 0);
@@ -63,7 +66,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 
 		// If the distance between the two segments is larger than the sum of the capsules radius (we do not have overlapping)
 		const decimal segmentsDistance = computeDistancePointToLineDistance(capsule1SegA, capsule1SegB, capsule2SegA);
-		if (segmentsDistance > sumRadius || segmentsDistance < MACHINE_EPSILON) {
+        if (segmentsDistance >= sumRadius || segmentsDistance < MACHINE_EPSILON) {
 
 			// The capsule are parallel but their inner segment distance is larger than the sum of the capsules radius.
 			// Therefore, we do not have overlap. If the inner segments overlap, we do not report any collision.
@@ -102,8 +105,9 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 			Vector3 segment1ToSegment2 = (capsule2SegA - capsule1SegA);
 			Vector3 segment1ToSegment2Normalized = segment1ToSegment2.getUnit();
 
-			const Vector3 contactPointACapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
-			const Vector3 contactPointBCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+            Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
+            const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+            const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
 			const Vector3 contactPointACapsule2Local = clipPointA - segment1ToSegment2Normalized * capsuleShape2->getRadius();
 			const Vector3 contactPointBCapsule2Local = clipPointB - segment1ToSegment2Normalized * capsuleShape2->getRadius();
 
@@ -112,9 +116,10 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 			decimal penetrationDepth = sumRadius - segmentsDistance;
 
 			// Create the contact info object
-			// TODO : Make sure we create two contact points at the same time (same method here)
-			contactPointInfo.init(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointBCapsule1Local);
-			contactPointInfo.init(normalWorld, penetrationDepth, contactPointACapsule2Local, contactPointBCapsule2Local);
+            contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
+            contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
+
+            return true;
 		}
 	}
 
@@ -129,7 +134,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 	const decimal closestPointsDistanceSquare = closestPointsSeg1ToSeg2.lengthSquare();
 	
 	// If the collision shapes overlap
-	if (closestPointsDistanceSquare <= sumRadius * sumRadius && closestPointsDistanceSquare > MACHINE_EPSILON) {
+    if (closestPointsDistanceSquare < sumRadius * sumRadius && closestPointsDistanceSquare > MACHINE_EPSILON) {
 
 		decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
 		closestPointsSeg1ToSeg2 /= closestPointsDistance;
@@ -142,7 +147,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 		decimal penetrationDepth = sumRadius - closestPointsDistance;
 
 		// Create the contact info object
-		contactPointInfo.init(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+        contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
 
 		return true;
 	}

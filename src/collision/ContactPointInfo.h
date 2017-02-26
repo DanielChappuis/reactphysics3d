@@ -23,40 +23,66 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_CONTACT_POINT_INFO_H
+#define REACTPHYSICS3D_CONTACT_POINT_INFO_H
+
 // Libraries
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
+#include "body/CollisionBody.h"
+#include "mathematics/mathematics.h"
+#include "configuration.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-bool SphereVsConvexMeshAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                ContactManifoldInfo& contactManifoldInfo) {
+// Structure ContactPointInfo
+/**
+ * This structure contains informations about a collision contact
+ * computed during the narrow-phase collision detection. Those
+ * informations are used to compute the contact set for a contact
+ * between two bodies.
+ */
+struct ContactPointInfo {
 
-    // Get the local-space to world-space transforms
-    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
-    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
+    private:
 
-    // First, we run the GJK algorithm
-    GJKAlgorithm gjkAlgorithm;
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+        // -------------------- Methods -------------------- //
 
-    // If we have found a contact point inside the margins (shallow penetration)
-    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+    public:
 
-        // Return true
-        return true;
-    }
+        // -------------------- Attributes -------------------- //
 
-    // If we have overlap even without the margins (deep penetration)
-    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+        /// Normalized normal vector of the collision contact in world space
+        Vector3 normal;
 
-        // Run the SAT algorithm to find the separating axis and compute contact point
-        SATAlgorithm satAlgorithm;
-        return satAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
-    }
+        /// Penetration depth of the contact
+        decimal penetrationDepth;
 
-    return false;
+        /// Contact point of body 1 in local space of body 1
+        Vector3 localPoint1;
+
+        /// Contact point of body 2 in local space of body 2
+        Vector3 localPoint2;
+
+        /// Pointer to the next contact point info
+        ContactPointInfo* next;
+
+        /// True if the contact point has already been inserted into a manifold
+        bool isUsed;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactPointInfo(const Vector3& contactNormal, decimal penDepth,
+                         const Vector3& localPt1, const Vector3& localPt2)
+                         : normal(contactNormal), penetrationDepth(penDepth),
+                           localPoint1(localPt1), localPoint2(localPt2), next(nullptr), isUsed(false) {
+
+        }
+
+        /// Destructor
+        ~ContactPointInfo() = default;
+};
+
 }
+
+#endif

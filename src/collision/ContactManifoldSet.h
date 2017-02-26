@@ -69,7 +69,7 @@ class ContactManifoldSet {
         // -------------------- Methods -------------------- //
 
         /// Create a new contact manifold and add it to the set
-        void createManifold(short normalDirectionId);
+        void createManifold(const ContactManifoldInfo& manifoldInfo, short normalDirectionId);
 
         /// Remove a contact manifold from the set
         void removeManifold(int index);
@@ -82,6 +82,12 @@ class ContactManifoldSet {
         // normal vector into of the of the bucket and returns a unique Id for the bucket
         short int computeCubemapNormalId(const Vector3& normal) const;
 
+        /// Return the manifold with the smallest contact penetration depth
+        int getManifoldWithSmallestContactPenetrationDepth(decimal initDepth) const;
+
+        /// Update a previous similar manifold with a new one
+        void updateManifoldWithNewOne(int oldManifoldIndex, const ContactManifoldInfo& newManifold);
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -93,17 +99,14 @@ class ContactManifoldSet {
         /// Destructor
         ~ContactManifoldSet();
 
+        /// Add a contact manifold in the set
+        void addContactManifold(const ContactManifoldInfo& contactManifoldInfo);
+
         /// Return the first proxy shape
         ProxyShape* getShape1() const;
 
         /// Return the second proxy shape
         ProxyShape* getShape2() const;
-
-        /// Add a contact point to the manifold set
-        void addContactPoint(ContactPoint* contact);
-
-        /// Update the contact manifolds
-        void update();
 
         /// Clear the contact manifold set
         void clear();
