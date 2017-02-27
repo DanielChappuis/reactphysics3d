@@ -51,8 +51,8 @@ const float CONE_RADIUS = 3.0f;
 const float CONE_HEIGHT = 5.0f;
 const float CYLINDER_RADIUS = 3.0f;
 const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 3.0f;
-const float CAPSULE_HEIGHT = 5.0f;
+const float CAPSULE_RADIUS = 1.0f;
+const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 5.0f;
 const int NB_RAYS = 100;
 const float RAY_LENGTH = 30.0f;
@@ -83,21 +83,29 @@ class ContactManager : public rp3d::CollisionCallback {
         /// This method will be called for each reported contact point
         virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override {
 
-            rp3d::Vector3 point1 = collisionCallbackInfo.contactPoint.localPoint1;
-            point1 = collisionCallbackInfo.proxyShape1->getLocalToWorldTransform() * point1;
-            openglframework::Vector3 position1(point1.x, point1.y, point1.z);
-            mContactPoints.push_back(ContactPoint(position1));
+            // For each contact point
+            rp3d::ContactPointInfo* contactPointInfo = collisionCallbackInfo.contactManifold.getFirstContactPointInfo();
+            while (contactPointInfo != nullptr) {
 
-            rp3d::Vector3 point2 = collisionCallbackInfo.contactPoint.localPoint2;
-            point2 = collisionCallbackInfo.proxyShape2->getLocalToWorldTransform() * point2;
-            openglframework::Vector3 position2(point2.x, point2.y, point2.z);
-            mContactPoints.push_back(ContactPoint(position2));
+                rp3d::Vector3 point1 = contactPointInfo->localPoint1;
+                point1 = collisionCallbackInfo.proxyShape1->getLocalToWorldTransform() * point1;
+                openglframework::Vector3 position1(point1.x, point1.y, point1.z);
+                mContactPoints.push_back(ContactPoint(position1));
 
-            // Create a line to display the normal at hit point
-            rp3d::Vector3 n = collisionCallbackInfo.contactPoint.normal;
-            openglframework::Vector3 normal(n.x, n.y, n.z);
-            Line* normalLine = new Line(position1, position1 + normal);
-            mNormals.push_back(normalLine);
+
+                rp3d::Vector3 point2 = contactPointInfo->localPoint2;
+                point2 = collisionCallbackInfo.proxyShape2->getLocalToWorldTransform() * point2;
+                openglframework::Vector3 position2(point2.x, point2.y, point2.z);
+                mContactPoints.push_back(ContactPoint(position2));
+
+                // Create a line to display the normal at hit point
+                rp3d::Vector3 n = contactPointInfo->normal;
+                openglframework::Vector3 normal(n.x, n.y, n.z);
+                Line* normalLine = new Line(position1, position1 + normal);
+                mNormals.push_back(normalLine);
+
+                contactPointInfo = contactPointInfo->next;
+            }
         }
 
         void resetPoints() {

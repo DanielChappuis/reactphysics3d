@@ -82,6 +82,17 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mCapsule1->setColor(mGreyColorDemo);
 	mCapsule1->setSleepingColor(mRedColorDemo);
 
+    // ---------- Capsule 2 ---------- //
+    openglframework::Vector3 position4(-4, 0, 0);
+
+    // Create a cylinder and a corresponding collision body in the dynamics world
+    mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position4, mCollisionWorld, mMeshFolderPath);
+    mAllShapes.push_back(mCapsule2);
+
+    // Set the color
+    mCapsule2->setColor(mGreyColorDemo);
+    mCapsule2->setSleepingColor(mRedColorDemo);
+
     // ---------- Cone ---------- //
     //openglframework::Vector3 position4(0, 0, 0);
 
@@ -162,6 +173,12 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 
     mCollisionWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
+
+    mCollisionWorld->destroyCollisionBody(mCapsule1->getCollisionBody());
+    delete mCapsule1;
+
+    mCollisionWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
+    delete mCapsule2;
 
     /*
     // Destroy the corresponding rigid body from the dynamics world
@@ -285,6 +302,7 @@ void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
     if (mSphere1->getCollisionBody()->isActive()) mSphere1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mSphere2->getCollisionBody()->isActive()) mSphere2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mCapsule1->getCollisionBody()->isActive()) mCapsule1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    if (mCapsule2->getCollisionBody()->isActive()) mCapsule2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     /*
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
