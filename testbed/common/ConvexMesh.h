@@ -41,7 +41,11 @@ class ConvexMesh : public PhysicsObject {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
-        rp3d::TriangleVertexArray* mPhysicsTriangleVertexArray;
+        rp3d::PolygonVertexArray::PolygonFace* mPolygonFaces;
+
+        rp3d::PolygonVertexArray* mPolygonVertexArray;
+
+        rp3d::PolyhedronMesh* mPolyhedronMesh;
 
         /// Collision shape
         rp3d::ConvexMeshShape* mConvexShape;

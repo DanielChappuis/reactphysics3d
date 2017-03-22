@@ -40,17 +40,36 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-
     // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-    mPhysicsTriangleVertexArray =
+    /*mPolygonVertexArray =
             new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), sizeof(int),
                                           rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);*/
+
+    // Polygon faces descriptions for the polyhedron
+    mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
+    rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+    for (int f=0; f < getNbFaces(0); f++) {
+        face->indexBase = f * 3;
+        face->nbVertices = 3;
+        face++;
+    }
+
+    // Create the polygon vertex array
+    mPolygonVertexArray =
+            new rp3d::PolygonVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
+                                         &(mIndices[0][0]), sizeof(int),
+                                         getNbFaces(0), mPolygonFaces,
+                                         rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                         rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+    // Create the polyhedron mesh
+    mPolyhedronMesh = new rp3d::PolyhedronMesh(mPolygonVertexArray);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(mPhysicsTriangleVertexArray);
+    mConvexShape = new rp3d::ConvexMeshShape(mPolyhedronMesh);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -85,16 +104,29 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position, float mass,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-    mPhysicsTriangleVertexArray =
-            new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                          getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+    // Polygon faces descriptions for the polyhedron
+    mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
+    rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+    for (int f=0; f < getNbFaces(0); f++) {
+        face->indexBase = f * 3;
+        face->nbVertices = 3;
+        face++;
+    }
+
+    // Create the polygon vertex array
+    mPolygonVertexArray =
+            new rp3d::PolygonVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
+                                         &(mIndices[0][0]), sizeof(int),
+                                         getNbFaces(0), mPolygonFaces,
+                                         rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                         rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+    // Create the polyhedron mesh
+    mPolyhedronMesh = new rp3d::PolyhedronMesh(mPolygonVertexArray);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(mPhysicsTriangleVertexArray);
+    mConvexShape = new rp3d::ConvexMeshShape(mPolyhedronMesh);
 
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
@@ -128,7 +160,9 @@ ConvexMesh::~ConvexMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mPhysicsTriangleVertexArray;
+    delete mPolyhedronMesh;
+    delete mPolygonVertexArray;
+    delete[] mPolygonFaces;
     delete mConvexShape;
 }
 

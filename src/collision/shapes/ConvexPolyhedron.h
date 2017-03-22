@@ -23,62 +23,46 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SAT_ALGORITHM_H
-#define REACTPHYSICS3D_SAT_ALGORITHM_H
+#ifndef REACTPHYSICS3D_CONVEX_POLYHEDRON_H
+#define REACTPHYSICS3D_CONVEX_POLYHEDRON_H
 
 // Libraries
-#include "collision/ContactManifoldInfo.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "ConvexShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class SATAlgorithm
-class SATAlgorithm {
+// Class ConvexPolyhedron
+/**
+ * This abstract class represents a convex polyhedron collision shape associated with a
+ * body that is used during the narrow-phase collision detection.
+ */
+class ConvexPolyhedron : public ConvexShape {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
         // -------------------- Methods -------------------- //
-
-        /// Return true if the arcs AB and CD on the Gauss Map intersect
-        bool testGaussMapArcsIntersect(const Vector3& a, const Vector3& b,
-                                       const Vector3& c, const Vector3& d) const;
-
-        /// Test collision between a sphere and a convex mesh
-        bool testCollisionSphereVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between a triangle and a convex mesh
-        bool testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between two convex meshes
-        bool testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SATAlgorithm() = default;
+        ConvexPolyhedron(decimal margin);
 
         /// Destructor
-        ~SATAlgorithm() = default;
+        virtual ~ConvexPolyhedron() override = default;
 
         /// Deleted copy-constructor
-        SATAlgorithm(const SATAlgorithm& algorithm) = delete;
+        ConvexPolyhedron(const ConvexPolyhedron& shape) = delete;
 
         /// Deleted assignment operator
-        SATAlgorithm& operator=(const SATAlgorithm& algorithm) = delete;
-
-        /// Compute a contact info if the two bounding volumes collide.
-        bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                ContactManifoldInfo& contactManifoldInfo);
+        ConvexPolyhedron& operator=(const ConvexPolyhedron& shape) = delete;
 };
 
 }
 
 #endif
+

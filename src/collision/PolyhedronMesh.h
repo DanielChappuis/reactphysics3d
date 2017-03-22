@@ -29,6 +29,7 @@
 // Libraries
 #include "mathematics/mathematics.h"
 #include "HalfEdgeStructure.h"
+#include "collision/PolygonVertexArray.h"
 #include <vector>
 
 namespace reactphysics3d {
@@ -36,44 +37,50 @@ namespace reactphysics3d {
 // Class PolyhedronMesh
 /**
  * This class describes a polyhedron mesh made of faces and vertices.
- * The faces do not have to be triangle
+ * The faces do not have to be triangles.
  */
 class PolyhedronMesh {
 
     private:
 
+        // -------------------- Attributes -------------------- //
+
+        /// Pointer the the polygon vertex array with vertices and faces
+        /// of the mesh
+        PolygonVertexArray* mPolygonVertexArray;
+
         /// Half-edge structure of the mesh
         HalfEdgeStructure mHalfEdgeStructure;
 
-        /// True if the half-edge structure has been generated
-        bool mIsFinalized;
+        // -------------------- Methods -------------------- //
 
-        /// All the vertices
-        std::vector<Vector3> mVertices;
-
-        /// All the indexes of the face vertices
-        std::vector<std::vector<uint>> mFaces;
+        /// Create the half-edge structure of the mesh
+        void createHalfEdgeStructure();
 
     public:
 
+        // -------------------- Methods -------------------- //
+
         /// Constructor
-        PolyhedronMesh();
+        PolyhedronMesh(PolygonVertexArray* polygonVertexArray);
 
         /// Destructor
         ~PolyhedronMesh() = default;
 
-        /// Add a vertex into the polyhedron
-        uint addVertex(const Vector3& vertex);
+        /// Return the number of vertices
+        uint getNbVertices() const;
 
-        /// Add a face into the polyhedron
-        void addFace(std::vector<uint> faceVertices);
-
-        /// Call this method when you are done adding vertices and faces
-        void finalize();
+        /// Return a vertex
+        Vector3 getVertex(uint index) const;
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
 };
+
+// Return the number of vertices
+inline uint PolyhedronMesh::getNbVertices() const {
+    return mHalfEdgeStructure.getNbVertices();
+}
 
 // Return the half-edge structure of the mesh
 inline const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {

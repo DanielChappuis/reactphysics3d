@@ -43,19 +43,28 @@ class TestHalfEdgeStructure : public Test {
         void testCube() {
 
             // Create the half-edge structure for a cube
-            std::vector<rp3d::Vector3> vertices;
-            std::vector<std::vector<uint>> faces;
             rp3d::HalfEdgeStructure cubeStructure;
 
+            rp3d::Vector3 vertices[8] = {
+                rp3d::Vector3(-0.5, -0.5, 0.5),
+                rp3d::Vector3(0.5, -0.5, 0.5),
+                rp3d::Vector3(0.5, 0.5, 0.5),
+                rp3d::Vector3(-0.5, 0.5, 0.5),
+                rp3d::Vector3(-0.5, -0.5, -0.5),
+                rp3d::Vector3(0.5, -0.5, -0.5),
+                rp3d::Vector3(0.5, 0.5, -0.5),
+                rp3d::Vector3(-0.5, 0.5, -0.5)
+            };
+
             // Vertices
-            vertices.push_back(rp3d::Vector3(-0.5, -0.5, 0.5));
-            vertices.push_back(rp3d::Vector3(0.5, -0.5, 0.5));
-            vertices.push_back(rp3d::Vector3(0.5, 0.5, 0.5));
-            vertices.push_back(rp3d::Vector3(-0.5, 0.5, 0.5));
-            vertices.push_back(rp3d::Vector3(-0.5, -0.5, -0.5));
-            vertices.push_back(rp3d::Vector3(0.5, -0.5, -0.5));
-            vertices.push_back(rp3d::Vector3(0.5, 0.5, -0.5));
-            vertices.push_back(rp3d::Vector3(-0.5, 0.5, -0.5));
+            cubeStructure.addVertex(0);
+            cubeStructure.addVertex(1);
+            cubeStructure.addVertex(2);
+            cubeStructure.addVertex(3);
+            cubeStructure.addVertex(4);
+            cubeStructure.addVertex(5);
+            cubeStructure.addVertex(6);
+            cubeStructure.addVertex(7);
 
             // Faces
             std::vector<uint> face0;
@@ -71,14 +80,14 @@ class TestHalfEdgeStructure : public Test {
             std::vector<uint> face5;
             face5.push_back(2); face5.push_back(6); face5.push_back(7); face5.push_back(3);
 
-            faces.push_back(face0);
-            faces.push_back(face1);
-            faces.push_back(face2);
-            faces.push_back(face3);
-            faces.push_back(face4);
-            faces.push_back(face5);
+            cubeStructure.addFace(face0);
+            cubeStructure.addFace(face1);
+            cubeStructure.addFace(face2);
+            cubeStructure.addFace(face3);
+            cubeStructure.addFace(face4);
+            cubeStructure.addFace(face5);
 
-            cubeStructure.init(vertices, faces);
+            cubeStructure.init();
 
             // --- Test that the half-edge structure of the cube is valid --- //
 
@@ -87,44 +96,44 @@ class TestHalfEdgeStructure : public Test {
             test(cubeStructure.getNbHalfEdges() == 24);
 
             // Test vertices
-            test(cubeStructure.getVertex(0).point.x == -0.5);
-            test(cubeStructure.getVertex(0).point.y == -0.5);
-            test(cubeStructure.getVertex(0).point.z == 0.5);
+            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].x == -0.5);
+            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].y == -0.5);
+            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].z == 0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(0).edgeIndex).vertexIndex == 0);
 
-            test(cubeStructure.getVertex(1).point.x == 0.5);
-            test(cubeStructure.getVertex(1).point.y == -0.5);
-            test(cubeStructure.getVertex(1).point.z == 0.5);
+            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].x == 0.5);
+            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].y == -0.5);
+            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].z == 0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(1).edgeIndex).vertexIndex == 1);
 
-            test(cubeStructure.getVertex(2).point.x == 0.5);
-            test(cubeStructure.getVertex(2).point.y == 0.5);
-            test(cubeStructure.getVertex(2).point.z == 0.5);
+            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].x == 0.5);
+            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].y == 0.5);
+            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].z == 0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(2).edgeIndex).vertexIndex == 2);
 
-            test(cubeStructure.getVertex(3).point.x == -0.5);
-            test(cubeStructure.getVertex(3).point.y == 0.5);
-            test(cubeStructure.getVertex(3).point.z == 0.5);
+            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].x == -0.5);
+            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].y == 0.5);
+            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].z == 0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(3).edgeIndex).vertexIndex == 3);
 
-            test(cubeStructure.getVertex(4).point.x == -0.5);
-            test(cubeStructure.getVertex(4).point.y == -0.5);
-            test(cubeStructure.getVertex(4).point.z == -0.5);
+            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].x == -0.5);
+            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].y == -0.5);
+            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].z == -0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(4).edgeIndex).vertexIndex == 4);
 
-            test(cubeStructure.getVertex(5).point.x == 0.5);
-            test(cubeStructure.getVertex(5).point.y == -0.5);
-            test(cubeStructure.getVertex(5).point.z == -0.5);
+            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].x == 0.5);
+            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].y == -0.5);
+            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].z == -0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(5).edgeIndex).vertexIndex == 5);
 
-            test(cubeStructure.getVertex(6).point.x == 0.5);
-            test(cubeStructure.getVertex(6).point.y == 0.5);
-            test(cubeStructure.getVertex(6).point.z == -0.5);
+            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].x == 0.5);
+            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].y == 0.5);
+            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].z == -0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(6).edgeIndex).vertexIndex == 6);
 
-            test(cubeStructure.getVertex(7).point.x == -0.5);
-            test(cubeStructure.getVertex(7).point.y == 0.5);
-            test(cubeStructure.getVertex(7).point.z == -0.5);
+            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].x == -0.5);
+            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].y == 0.5);
+            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].z == -0.5);
             test(cubeStructure.getHalfEdge(cubeStructure.getVertex(7).edgeIndex).vertexIndex == 7);
 
             // Test faces
@@ -158,15 +167,21 @@ class TestHalfEdgeStructure : public Test {
         void testTetrahedron() {
 
             // Create the half-edge structure for a tetrahedron
-            std::vector<rp3d::Vector3> vertices;
             std::vector<std::vector<uint>> faces;
             rp3d::HalfEdgeStructure tetrahedron;
 
             // Vertices
-            vertices.push_back(rp3d::Vector3(1, -1, -1));
-            vertices.push_back(rp3d::Vector3(-1, -1, -1));
-            vertices.push_back(rp3d::Vector3(0, -1, 1));
-            vertices.push_back(rp3d::Vector3(0, 1, 0));
+            rp3d::Vector3 vertices[4] = {
+                rp3d::Vector3(1, -1, -1),
+                rp3d::Vector3(-1, -1, -1),
+                rp3d::Vector3(0, -1, 1),
+                rp3d::Vector3(0, 1, 0)
+            };
+
+            tetrahedron.addVertex(0);
+            tetrahedron.addVertex(1);
+            tetrahedron.addVertex(2);
+            tetrahedron.addVertex(3);
 
             // Faces
             std::vector<uint> face0;
@@ -178,12 +193,12 @@ class TestHalfEdgeStructure : public Test {
             std::vector<uint> face3;
             face3.push_back(0); face3.push_back(2); face3.push_back(3);
 
-            faces.push_back(face0);
-            faces.push_back(face1);
-            faces.push_back(face2);
-            faces.push_back(face3);
+            tetrahedron.addFace(face0);
+            tetrahedron.addFace(face1);
+            tetrahedron.addFace(face2);
+            tetrahedron.addFace(face3);
 
-            tetrahedron.init(vertices, faces);
+            tetrahedron.init();
 
             // --- Test that the half-edge structure of the tetrahedron is valid --- //
 
@@ -192,24 +207,24 @@ class TestHalfEdgeStructure : public Test {
             test(tetrahedron.getNbHalfEdges() == 12);
 
             // Test vertices
-            test(tetrahedron.getVertex(0).point.x == 1);
-            test(tetrahedron.getVertex(0).point.y == -1);
-            test(tetrahedron.getVertex(0).point.z == -1);
+            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].x == 1);
+            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].y == -1);
+            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].z == -1);
             test(tetrahedron.getHalfEdge(tetrahedron.getVertex(0).edgeIndex).vertexIndex == 0);
 
-            test(tetrahedron.getVertex(1).point.x == -1);
-            test(tetrahedron.getVertex(1).point.y == -1);
-            test(tetrahedron.getVertex(1).point.z == -1);
+            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].x == -1);
+            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].y == -1);
+            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].z == -1);
             test(tetrahedron.getHalfEdge(tetrahedron.getVertex(1).edgeIndex).vertexIndex == 1);
 
-            test(tetrahedron.getVertex(2).point.x == 0);
-            test(tetrahedron.getVertex(2).point.y == -1);
-            test(tetrahedron.getVertex(2).point.z == 1);
+            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].x == 0);
+            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].y == -1);
+            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].z == 1);
             test(tetrahedron.getHalfEdge(tetrahedron.getVertex(2).edgeIndex).vertexIndex == 2);
 
-            test(tetrahedron.getVertex(3).point.x == 0);
-            test(tetrahedron.getVertex(3).point.y == 1);
-            test(tetrahedron.getVertex(3).point.z == 0);
+            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].x == 0);
+            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].y == 1);
+            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].z == 0);
             test(tetrahedron.getHalfEdge(tetrahedron.getVertex(3).edgeIndex).vertexIndex == 3);
 
             // Test faces

@@ -23,47 +23,15 @@
 *                                                                               *
 ********************************************************************************/
 
-
-/********************************************************************************
-* ReactPhysics3D                                                                *
-* Version 0.6.0                                                                 *
-* http://www.reactphysics3d.com                                                 *
-* Daniel Chappuis                                                               *
-********************************************************************************/
-
-#ifndef REACTPHYSICS3D_H
-#define REACTPHYSICS3D_H
-
 // Libraries
-#include "configuration.h"
-#include "mathematics/mathematics.h"
-#include "body/CollisionBody.h"
-#include "body/RigidBody.h"
-#include "engine/DynamicsWorld.h"
-#include "engine/CollisionWorld.h"
-#include "engine/Material.h"
-#include "engine/EventListener.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
-#include "collision/shapes/ConcaveMeshShape.h"
-#include "collision/shapes/HeightFieldShape.h"
-#include "collision/PolyhedronMesh.h"
-#include "collision/shapes/AABB.h"
-#include "collision/ProxyShape.h"
-#include "collision/RaycastInfo.h"
-#include "collision/TriangleMesh.h"
-#include "collision/PolyhedronMesh.h"
-#include "collision/TriangleVertexArray.h"
-#include "collision/PolygonVertexArray.h"
-#include "constraint/BallAndSocketJoint.h"
-#include "constraint/SliderJoint.h"
-#include "constraint/HingeJoint.h"
-#include "constraint/FixedJoint.h"
+#include "ConvexPolyhedron.h"
 
-/// Alias to the ReactPhysics3D namespace
-namespace rp3d = reactphysics3d;
 
-#endif
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
+
+// Constructor
+ConvexPolyhedron::ConvexPolyhedron(decimal margin)
+            : ConvexShape(CollisionShapeType::CONVEX_POLYHEDRON, margin) {
+
+}

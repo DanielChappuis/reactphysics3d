@@ -50,15 +50,19 @@ class HalfEdgeStructure {
         };
 
         struct Face {
-            uint edgeIndex;         // Index of an half-edge of the face
+            uint edgeIndex;                     // Index of an half-edge of the face
+            std::vector<uint> faceVertices;     // Index of the vertices of the face
+
+            /// Constructor
+            Face(std::vector<uint> vertices) : faceVertices(vertices) {}
         };
 
         struct Vertex {
-            Vector3 point;          // Coordinates of the vertex
+            uint vertexPointIndex;  // Index of the vertex point in the origin vertex array
             uint edgeIndex;         // Index of one edge emanting from this vertex
 
             /// Constructor
-            Vertex(Vector3& p) { point = p;}
+            Vertex(uint vertexCoordsIndex) : vertexPointIndex(vertexCoordsIndex) { }
         };
 
     private:
@@ -80,8 +84,14 @@ class HalfEdgeStructure {
         /// Destructor
         ~HalfEdgeStructure() = default;
 
-        /// Initialize the structure
-        void init(std::vector<Vector3> vertices, std::vector<std::vector<uint>> faces);
+        /// Initialize the structure (when all vertices and faces have been added)
+        void init();
+
+        /// Add a vertex
+        uint addVertex(uint vertexPointIndex);
+
+        /// Add a face
+        void addFace(std::vector<uint> faceVertices);
 
         /// Return the number of faces
         uint getNbFaces() const;
@@ -98,10 +108,25 @@ class HalfEdgeStructure {
         /// Return a given edge
         Edge getHalfEdge(uint index) const;
 
-        /// Retunr a given vertex
+        /// Return a given vertex
         Vertex getVertex(uint index) const;
 
 };
+
+// Add a vertex
+inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
+    Vertex vertex(vertexPointIndex);
+    mVertices.push_back(vertex);
+    return mVertices.size() - 1;
+}
+
+// Add a face
+inline void HalfEdgeStructure::addFace(std::vector<uint> faceVertices) {
+
+    // Create a new face
+    Face face(faceVertices);
+    mFaces.push_back(face);
+}
 
 // Return the number of faces
 inline uint HalfEdgeStructure::getNbFaces() const {

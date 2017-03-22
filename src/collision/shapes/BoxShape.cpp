@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 BoxShape::BoxShape(const Vector3& extent, decimal margin)
-         : ConvexShape(CollisionShapeType::BOX, margin), mExtent(extent - Vector3(margin, margin, margin)) {
+         : ConvexPolyhedron(margin), mExtent(extent - Vector3(margin, margin, margin)) {
     assert(extent.x > decimal(0.0) && extent.x > margin);
     assert(extent.y > decimal(0.0) && extent.y > margin);
     assert(extent.z > decimal(0.0) && extent.z > margin);

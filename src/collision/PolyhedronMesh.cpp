@@ -30,33 +30,70 @@ using namespace reactphysics3d;
 
 
 // Constructor
-PolyhedronMesh::PolyhedronMesh() : mIsFinalized(false) {
+PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
+   mPolygonVertexArray = polygonVertexArray;
+
+   // Create the half-edge structure of the mesh
+   createHalfEdgeStructure();
 }
 
-// Add a vertex into the polyhedron.
-// This method returns the index of the vertex that you need to use
-// to add faces.
-uint PolyhedronMesh::addVertex(const Vector3& vertex) {
-    mVertices.push_back(vertex);
-    return mVertices.size() - 1;
-}
+// Create the half-edge structure of the mesh
+void PolyhedronMesh::createHalfEdgeStructure() {
 
-// Add a face into the polyhedron.
-// A face is a list of vertices indices (returned by addVertex() method).
-// The order of the indices are important. You need to specify the vertices of
-// of the face sorted counter-clockwise as seen from the outside of the polyhedron.
-void PolyhedronMesh::addFace(std::vector<uint> faceVertices) {
-    mFaces.push_back(faceVertices);
-}
+    // For each vertex of the mesh
+    for (uint v=0; v < mPolygonVertexArray->getNbVertices(); v++) {
+        mHalfEdgeStructure.addVertex(v);
+    }
 
-// Call this method when you are done adding vertices and faces
-void PolyhedronMesh::finalize() {
+    // For each polygon face of the mesh
+    for (uint f=0; f < mPolygonVertexArray->getNbFaces(); f++) {
 
-    if (mIsFinalized) return;
+        // Get the polygon face
+        PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
+
+        std::vector<uint> faceVertices;
+
+        // For each vertex of the face
+        for (uint v=0; v < face->nbVertices; v++) {
+            faceVertices.push_back(mPolygonVertexArray->getVertexIndexInFace(f, v));
+        }
+
+        // Addd the face into the half-edge structure
+        mHalfEdgeStructure.addFace(faceVertices);
+    }
 
     // Initialize the half-edge structure
-    mHalfEdgeStructure.init(mVertices, mFaces);
+    mHalfEdgeStructure.init();
+}
 
-    mIsFinalized = true;
+/// Return a vertex
+Vector3 PolyhedronMesh::getVertex(uint index) const {
+    assert(index < getNbVertices());
+
+    // Get the vertex index in the array with all vertices
+    uint vertexIndex = mHalfEdgeStructure.getVertex(index).vertexPointIndex;
+
+    PolygonVertexArray::VertexDataType vertexType = mPolygonVertexArray->getVertexDataType();
+    unsigned char* verticesStart = mPolygonVertexArray->getVerticesStart();
+    int vertexStride = mPolygonVertexArray->getVerticesStride();
+
+    Vector3 vertex;
+    if (vertexType == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
+        const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else if (vertexType == PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
+        const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else {
+        assert(false);
+    }
+
+    return vertex;
 }

@@ -26,6 +26,7 @@
 // Libraries
 #include "SATAlgorithm.h"
 #include "constraint/ContactPoint.h"
+#include "collision/PolyhedronMesh.h"
 #include "configuration.h"
 #include "engine/Profiler.h"
 #include <algorithm>
@@ -36,8 +37,60 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-bool SATAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                 ContactManifoldInfo& contactManifoldInfo) {
+bool SATAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
+
+    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+
+    switch (narrowPhaseInfo->collisionShape1->getType()) {
+        case CollisionShapeType::CONVEX_POLYHEDRON:
+            return testCollisionConvexMeshVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
+        case CollisionShapeType::SPHERE:
+            return testCollisionSphereVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
+        case CollisionShapeType::CAPSULE:
+            return testCollisionCapsuleVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
+        case CollisionShapeType::TRIANGLE:
+            return testCollisionTriangleVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
+        default: assert(false);
+    }
+
+    return false;
+}
+
+// Test collision between a sphere and a convex mesh
+bool SATAlgorithm::testCollisionSphereVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+
+}
+
+// Test collision between a capsule and a convex mesh
+bool SATAlgorithm::testCollisionCapsuleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+
+}
+
+// Test collision between a triangle and a convex mesh
+bool SATAlgorithm::testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+
+}
+
+// Test collision between two convex meshes
+bool SATAlgorithm::testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+
+}
 
 
+// Return true if the arcs AB and CD on the Gauss Map (unit sphere) intersect
+/// This is used to know if the edge between faces with normal A and B on first polyhedron
+/// and edge between faces with normal C and D on second polygon create a face on the Minkowski
+/// sum of both polygons. If this is the case, it means that the cross product of both edges
+/// might be a separating axis.
+bool SATAlgorithm::testGaussMapArcsIntersect(const Vector3& a, const Vector3& b,
+                                             const Vector3& c, const Vector3& d) const {
+    const Vector3 bCrossA = b.cross(a);
+    const Vector3 dCrossC = d.cross(c);
+
+    const decimal cba = c.dot(bCrossA);
+    const decimal dba = d.dot(bCrossA);
+    const decimal adc = a.dot(dCrossC);
+    const decimal bdc = b.dot(dCrossC);
+
+    return cba * dba < decimal(0.0) && adc * bdc < decimal(0.0) && cba * bdc > decimal(0.0);
 }

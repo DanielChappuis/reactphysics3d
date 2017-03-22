@@ -29,8 +29,8 @@
 
 using namespace reactphysics3d;
 
-// Initialize the structure
-void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vector<uint>> faces) {
+// Initialize the structure (when all vertices and faces have been added)
+void HalfEdgeStructure::init() {
 
     using edgeKey = std::pair<uint, uint>;
 
@@ -41,30 +41,19 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
     std::map<uint, edgeKey> mapEdgeIndexToKey;
     std::map<uint, edgeKey> mapFaceIndexToEdgeKey;
 
-    // For each vertices
-    for (uint v=0; v<vertices.size(); v++) {
-        Vertex vertex(vertices[v]);
-        mVertices.push_back(vertex);
-    }
-
     // For each face
-    for (uint f=0; f<faces.size(); f++) {
+    for (uint f=0; f<mFaces.size(); f++) {
 
-        // Create a new face
-        Face face;
-        mFaces.push_back(face);
-
-        // Vertices of the current face
-        std::vector<uint>& faceVertices = faces[f];
+        Face face = mFaces[f];
 
         std::vector<edgeKey> currentFaceEdges;
 
         edgeKey firstEdgeKey;
 
         // For each vertex of the face
-        for (uint v=0; v < faceVertices.size(); v++) {
-            uint v1Index = faceVertices[v];
-            uint v2Index = faceVertices[v == (faceVertices.size() - 1) ? 0 : v + 1];
+        for (uint v=0; v < face.faceVertices.size(); v++) {
+            uint v1Index = face.faceVertices[v];
+            uint v2Index = face.faceVertices[v == (face.faceVertices.size() - 1) ? 0 : v + 1];
 
             const edgeKey pairV1V2 = std::make_pair(v1Index, v2Index);
 
@@ -78,7 +67,7 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
             else if (v >= 1) {
                 nextEdges.insert(std::make_pair(currentFaceEdges[currentFaceEdges.size() - 1], pairV1V2));
             }
-            if (v == (faceVertices.size() - 1)) {
+            if (v == (face.faceVertices.size() - 1)) {
                 nextEdges.insert(std::make_pair(pairV1V2, firstEdgeKey));
             }
             edges.insert(std::make_pair(pairV1V2, edge));
@@ -121,7 +110,7 @@ void HalfEdgeStructure::init(std::vector<Vector3> vertices, std::vector<std::vec
     }
 
     // Set face edge
-    for (uint f=0; f < faces.size(); f++) {
+    for (uint f=0; f < mFaces.size(); f++) {
         mFaces[f].edgeIndex = mapEdgeToIndex[mapFaceIndexToEdgeKey[f]];
     }
 }

@@ -23,47 +23,53 @@
 *                                                                               *
 ********************************************************************************/
 
-
-/********************************************************************************
-* ReactPhysics3D                                                                *
-* Version 0.6.0                                                                 *
-* http://www.reactphysics3d.com                                                 *
-* Daniel Chappuis                                                               *
-********************************************************************************/
-
-#ifndef REACTPHYSICS3D_H
-#define REACTPHYSICS3D_H
-
 // Libraries
-#include "configuration.h"
-#include "mathematics/mathematics.h"
-#include "body/CollisionBody.h"
-#include "body/RigidBody.h"
-#include "engine/DynamicsWorld.h"
-#include "engine/CollisionWorld.h"
-#include "engine/Material.h"
-#include "engine/EventListener.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
-#include "collision/shapes/ConcaveMeshShape.h"
-#include "collision/shapes/HeightFieldShape.h"
-#include "collision/PolyhedronMesh.h"
-#include "collision/shapes/AABB.h"
-#include "collision/ProxyShape.h"
-#include "collision/RaycastInfo.h"
-#include "collision/TriangleMesh.h"
-#include "collision/PolyhedronMesh.h"
-#include "collision/TriangleVertexArray.h"
-#include "collision/PolygonVertexArray.h"
-#include "constraint/BallAndSocketJoint.h"
-#include "constraint/SliderJoint.h"
-#include "constraint/HingeJoint.h"
-#include "constraint/FixedJoint.h"
+#include "PolygonVertexArray.h"
 
-/// Alias to the ReactPhysics3D namespace
-namespace rp3d = reactphysics3d;
+using namespace reactphysics3d;
 
-#endif
+// Constructor
+/// Note that your data will not be copied into the PolygonVertexArray and
+/// therefore, you need to make sure that those data are always valid during
+/// the lifetime of the PolygonVertexArray.
+/**
+ */
+PolygonVertexArray::PolygonVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
+                                       void* indexesStart, int indexesStride,
+                                       uint nbFaces, PolygonFace* facesStart,
+                                       VertexDataType vertexDataType, IndexDataType indexDataType) {
+    mNbVertices = nbVertices;
+    mVerticesStart = reinterpret_cast<unsigned char*>(verticesStart);
+    mVerticesStride = verticesStride;
+    mIndicesStart = reinterpret_cast<unsigned char*>(indexesStart);
+    mIndicesStride = indexesStride;
+    mNbFaces = nbFaces;
+    mPolygonFacesStart = facesStart;
+    mVertexDataType = vertexDataType;
+    mIndexDataType = indexDataType;
+}
+
+// Return the vertex index of a given vertex in a face
+uint PolygonVertexArray::getVertexIndexInFace(uint faceIndex, uint noVertexInFace) const {
+
+    assert(faceIndex < mNbFaces);
+
+    // Get the face
+    PolygonFace* face = getPolygonFace(faceIndex);
+
+    assert(noVertexInFace < face->nbVertices);
+
+    void* vertexIndexPointer = mIndicesStart + (face->indexBase + noVertexInFace) * mIndicesStride;
+
+    if (mIndexDataType == PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
+        return *((uint*)vertexIndexPointer);
+    }
+    else if (mIndexDataType == PolygonVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
+        return *((unsigned short*)vertexIndexPointer);
+    }
+    else {
+        assert(false);
+    }
+
+    return 0;
+}
