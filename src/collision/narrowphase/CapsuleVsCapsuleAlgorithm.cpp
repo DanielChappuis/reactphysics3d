@@ -66,60 +66,60 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 
 		// If the distance between the two segments is larger than the sum of the capsules radius (we do not have overlapping)
 		const decimal segmentsDistance = computeDistancePointToLineDistance(capsule1SegA, capsule1SegB, capsule2SegA);
-        if (segmentsDistance >= sumRadius || segmentsDistance < MACHINE_EPSILON) {
+        if (segmentsDistance >= sumRadius) {
 
 			// The capsule are parallel but their inner segment distance is larger than the sum of the capsules radius.
 			// Therefore, we do not have overlap. If the inner segments overlap, we do not report any collision.
 			return false;
 		}
 
-		// Compute the planes that goes through the extrem points of the inner segment of capsule 1
-		decimal d1 = seg1.dot(capsule1SegA);
-		decimal d2 = -seg1.dot(capsule1SegB);
+		// If the distance between the two segments is larger than zero (inner segments of capsules are not overlapping)
+		// If the inner segments are overlapping, we cannot compute a contact normal (unknown direction). In this case,
+		// we skip the parallel contact points calculation (there might still be contact in the spherical caps of the capsules)
+		if (segmentsDistance > MACHINE_EPSILON) {
 
-		// Clip the inner segment of capsule 2 with the two planes that go through extreme points of inner
-		// segment of capsule 1
-		decimal t1 = computePlaneSegmentIntersection(capsule2SegB, capsule2SegA, d1, seg1);
-		decimal t2 = computePlaneSegmentIntersection(capsule2SegA, capsule2SegB, d2, -seg1);
+			// Compute the planes that goes through the extreme points of the inner segment of capsule 1
+			decimal d1 = seg1.dot(capsule1SegA);
+			decimal d2 = -seg1.dot(capsule1SegB);
 
-		bool isClipValid = false;	// True if the segments were overlapping (the clip segment is valid)
+			// Clip the inner segment of capsule 2 with the two planes that go through extreme points of inner
+			// segment of capsule 1
+			decimal t1 = computePlaneSegmentIntersection(capsule2SegB, capsule2SegA, d1, seg1);
+			decimal t2 = computePlaneSegmentIntersection(capsule2SegA, capsule2SegB, d2, -seg1);
 
-		// Clip the inner segment of capsule 2
-		Vector3 clipPointA, clipPointB;
-		if (t1 >= decimal(0.0)) {
+			// If the segments were overlapping (the clip segment is valid)
+			if (t1 > decimal(0.0) && t2 > decimal(0.0)) {
 
-			if (t1 > decimal(1.0)) t1 = decimal(1.0);
-			clipPointA = capsule2SegB - t1 * seg2;
-			isClipValid = true;
-		}
-		if (t2 >= decimal(0.0) && t2 <= decimal(1.0)) {
+				// Clip the inner segment of capsule 2
+				if (t1 > decimal(1.0)) t1 = decimal(1.0);
+				const Vector3 clipPointA = capsule2SegB - t1 * seg2;
+				if (t2 > decimal(1.0)) t2 = decimal(1.0);
+				const Vector3 clipPointB = capsule2SegA + t2 * seg2;
 
-			if (t2 > decimal(1.0)) t2 = decimal(1.0);
-			clipPointB = capsule2SegA + t2 * seg2;
-			isClipValid = true;
-		}
+				// Project point capsule2SegA onto line of innner segment of capsule 1
+				const Vector3 seg1Normalized = seg1.getUnit();
+				Vector3 pointOnInnerSegCapsule1 = capsule1SegA + seg1Normalized.dot(capsule2SegA - capsule1SegA) * seg1Normalized;
 
-		// If we have a valid clip segment
-		if (isClipValid) {
+				// Compute a perpendicular vector from segment 1 to segment 2
+				Vector3 segment1ToSegment2 = (capsule2SegA - pointOnInnerSegCapsule1);
+				Vector3 segment1ToSegment2Normalized = segment1ToSegment2.getUnit();
 
-			Vector3 segment1ToSegment2 = (capsule2SegA - capsule1SegA);
-			Vector3 segment1ToSegment2Normalized = segment1ToSegment2.getUnit();
+				Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
+				const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+				const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+				const Vector3 contactPointACapsule2Local = clipPointA - segment1ToSegment2Normalized * capsuleShape2->getRadius();
+				const Vector3 contactPointBCapsule2Local = clipPointB - segment1ToSegment2Normalized * capsuleShape2->getRadius();
 
-            Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
-            const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
-            const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
-			const Vector3 contactPointACapsule2Local = clipPointA - segment1ToSegment2Normalized * capsuleShape2->getRadius();
-			const Vector3 contactPointBCapsule2Local = clipPointB - segment1ToSegment2Normalized * capsuleShape2->getRadius();
+				const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * segment1ToSegment2Normalized;
 
-			const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * segment1ToSegment2Normalized;
+				decimal penetrationDepth = sumRadius - segmentsDistance;
 
-			decimal penetrationDepth = sumRadius - segmentsDistance;
+				// Create the contact info object
+				contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
+				contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
 
-			// Create the contact info object
-            contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
-            contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
-
-            return true;
+				return true;
+			}
 		}
 	}
 
