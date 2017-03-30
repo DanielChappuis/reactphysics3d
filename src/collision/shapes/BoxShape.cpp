@@ -42,6 +42,37 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     assert(extent.x > decimal(0.0) && extent.x > margin);
     assert(extent.y > decimal(0.0) && extent.y > margin);
     assert(extent.z > decimal(0.0) && extent.z > margin);
+
+    // Vertices
+    mHalfEdgeStructure.addVertex(0);
+    mHalfEdgeStructure.addVertex(1);
+    mHalfEdgeStructure.addVertex(2);
+    mHalfEdgeStructure.addVertex(3);
+    mHalfEdgeStructure.addVertex(4);
+    mHalfEdgeStructure.addVertex(5);
+    mHalfEdgeStructure.addVertex(6);
+    mHalfEdgeStructure.addVertex(7);
+
+    // Faces
+    std::vector<uint> face0;
+    face0.push_back(0); face0.push_back(1); face0.push_back(2); face0.push_back(3);
+    std::vector<uint> face1;
+    face0.push_back(1); face0.push_back(5); face0.push_back(6); face0.push_back(2);
+    std::vector<uint> face2;
+    face0.push_back(4); face0.push_back(7); face0.push_back(6); face0.push_back(5);
+    std::vector<uint> face3;
+    face0.push_back(4); face0.push_back(0); face0.push_back(3); face0.push_back(7);
+    std::vector<uint> face4;
+    face0.push_back(4); face0.push_back(5); face0.push_back(1); face0.push_back(0);
+    std::vector<uint> face5;
+    face0.push_back(2); face0.push_back(6); face0.push_back(7); face0.push_back(3);
+
+    mHalfEdgeStructure.addFace(face0);
+    mHalfEdgeStructure.addFace(face1);
+    mHalfEdgeStructure.addFace(face2);
+    mHalfEdgeStructure.addFace(face3);
+    mHalfEdgeStructure.addFace(face4);
+    mHalfEdgeStructure.addFace(face5);
 }
 
 // Return the local inertia tensor of the collision shape

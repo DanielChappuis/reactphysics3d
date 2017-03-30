@@ -59,6 +59,9 @@ class BoxShape : public ConvexPolyhedron {
         /// Extent sizes of the box in the x, y and z direction
         Vector3 mExtent;
 
+        /// Half-edge structure of the polyhedron
+        HalfEdgeStructure mHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
@@ -99,11 +102,32 @@ class BoxShape : public ConvexPolyhedron {
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
-        /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const override;
-
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+
+        /// Return the number of faces of the polyhedron
+        virtual uint getNbFaces() const override;
+
+        /// Return a given face of the polyhedron
+        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const override;
+
+        /// Return the number of vertices of the polyhedron
+        virtual uint getNbVertices() const override;
+
+        /// Return a given vertex of the polyhedron
+        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const override;
+
+        /// Return the number of half-edges of the polyhedron
+        virtual uint getNbHalfEdges() const override;
+
+        /// Return a given half-edge of the polyhedron
+        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const override;
+
+        /// Return the position of a given vertex
+        virtual Vector3 getVertexPosition(uint vertexIndex) const override;
+
+        /// Return the normal vector of a given face of the polyhedron
+        virtual Vector3 getFaceNormal(uint faceIndex) const override;
 };
 
 // Return the extents of the box
@@ -137,11 +161,6 @@ inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min = -max;
 }
 
-// Return true if the collision shape is a polyhedron
-inline bool BoxShape::isPolyhedron() const {
-    return true;
-}
-
 // Return the number of bytes used by the collision shape
 inline size_t BoxShape::getSizeInBytes() const {
     return sizeof(BoxShape);
@@ -161,6 +180,71 @@ inline bool BoxShape::testPointInside(const Vector3& localPoint, ProxyShape* pro
     return (localPoint.x < mExtent[0] && localPoint.x > -mExtent[0] &&
             localPoint.y < mExtent[1] && localPoint.y > -mExtent[1] &&
             localPoint.z < mExtent[2] && localPoint.z > -mExtent[2]);
+}
+
+// Return the number of faces of the polyhedron
+inline uint BoxShape::getNbFaces() const {
+    return 6;
+}
+
+// Return a given face of the polyhedron
+inline HalfEdgeStructure::Face BoxShape::getFace(uint faceIndex) const {
+    assert(faceIndex < mHalfEdgeStructure.getNbFaces());
+    return mHalfEdgeStructure.getFace(faceIndex);
+}
+
+// Return the number of vertices of the polyhedron
+inline uint BoxShape::getNbVertices() const {
+    return 8;
+}
+
+// Return a given vertex of the polyhedron
+inline HalfEdgeStructure::Vertex BoxShape::getVertex(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mHalfEdgeStructure.getVertex(vertexIndex);
+}
+
+// Return the position of a given vertex
+inline Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+
+    Vector3 extent = getExtent();
+
+    switch(vertexIndex) {
+        case 0: return Vector3(-extent.x, -extent.y, extent.z);
+        case 1: return Vector3(extent.x, -extent.y, extent.z);
+        case 2: return Vector3(extent.x, extent.y, extent.z);
+        case 3: return Vector3(-extent.x, extent.y, extent.z);
+        case 4: return Vector3(-extent.x, -extent.y, -extent.z);
+        case 5: return Vector3(extent.x, -extent.y, -extent.z);
+        case 6: return Vector3(extent.x, extent.y, -extent.z);
+        case 7: return Vector3(-extent.x, extent.y, -extent.z);
+    }
+}
+
+// Return the normal vector of a given face of the polyhedron
+inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
+    assert(faceIndex < getNbFaces());
+
+    switch(faceIndex) {
+        case 0: return Vector3(0, 0, 1);
+        case 1: return Vector3(1, 0, 0);
+        case 2: return Vector3(0, 0, -1);
+        case 3: return Vector3(-1, 0, 0);
+        case 4: return Vector3(0, -1, 0);
+        case 5: return Vector3(0, 1, 0);
+    }
+}
+
+// Return the number of half-edges of the polyhedron
+inline uint BoxShape::getNbHalfEdges() const {
+    return 24;
+}
+
+// Return a given half-edge of the polyhedron
+inline HalfEdgeStructure::Edge BoxShape::getHalfEdge(uint edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+    return mHalfEdgeStructure.getHalfEdge(edgeIndex);
 }
 
 }

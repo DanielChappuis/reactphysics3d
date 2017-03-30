@@ -84,7 +84,7 @@ class ConvexShape : public CollisionShape {
         friend class EPAAlgorithm;
 };
 
-/// Return true if the collision shape is convex, false if it is concave
+// Return true if the collision shape is convex, false if it is concave
 inline bool ConvexShape::isConvex() const {
     return true;
 }

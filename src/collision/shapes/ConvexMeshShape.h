@@ -119,8 +119,29 @@ class ConvexMeshShape : public ConvexPolyhedron {
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
-        /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const override;
+        /// Return the number of faces of the polyhedron
+        virtual uint getNbFaces() const override;
+
+        /// Return a given face of the polyhedron
+        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const override;
+
+        /// Return the number of vertices of the polyhedron
+        virtual uint getNbVertices() const override;
+
+        /// Return a given vertex of the polyhedron
+        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const override;
+
+        /// Return the number of half-edges of the polyhedron
+        virtual uint getNbHalfEdges() const override;
+
+        /// Return a given half-edge of the polyhedron
+        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const override;
+
+        /// Return the position of a given vertex
+        virtual Vector3 getVertexPosition(uint vertexIndex) const override;
+
+        /// Return the normal vector of a given face of the polyhedron
+        virtual Vector3 getFaceNormal(uint faceIndex) const override;
 };
 
 /// Set the scaling vector of the collision shape
@@ -132,11 +153,6 @@ inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {
     return sizeof(ConvexMeshShape);
-}
-
-// Return true if the collision shape is a polyhedron
-inline bool ConvexMeshShape::isPolyhedron() const {
-    return true;
 }
 
 // Return the local bounds of the shape in x, y and z directions
@@ -176,6 +192,51 @@ inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
     // Use the GJK algorithm to test if the point is inside the convex mesh
     return proxyShape->mBody->mWorld.mCollisionDetection.
            mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
+}
+
+// Return the number of faces of the polyhedron
+inline uint ConvexMeshShape::getNbFaces() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbFaces();
+}
+
+// Return a given face of the polyhedron
+inline HalfEdgeStructure::Face ConvexMeshShape::getFace(uint faceIndex) const {
+    assert(faceIndex < getNbFaces());
+    return mPolyhedronMesh->getHalfEdgeStructure().getFace(faceIndex);
+}
+
+// Return the number of vertices of the polyhedron
+inline uint ConvexMeshShape::getNbVertices() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbVertices();
+}
+
+// Return a given vertex of the polyhedron
+inline HalfEdgeStructure::Vertex ConvexMeshShape::getVertex(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mPolyhedronMesh->getHalfEdgeStructure().getVertex(vertexIndex);
+}
+
+// Return the number of half-edges of the polyhedron
+inline uint ConvexMeshShape::getNbHalfEdges() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbHalfEdges();
+}
+
+// Return a given half-edge of the polyhedron
+inline HalfEdgeStructure::Edge ConvexMeshShape::getHalfEdge(uint edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+    return mPolyhedronMesh->getHalfEdgeStructure().getHalfEdge(edgeIndex);
+}
+
+// Return the position of a given vertex
+inline Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mPolyhedronMesh->getVertex(vertexIndex);
+}
+
+// Return the normal vector of a given face of the polyhedron
+inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
+    assert(faceIndex < getNbFaces());
+    return mPolyhedronMesh->getFaceNormal(faceIndex);
 }
 
 }

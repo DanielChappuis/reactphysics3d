@@ -28,6 +28,7 @@
 
 // Libraries
 #include "ConvexShape.h"
+#include "collision/HalfEdgeStructure.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -60,7 +61,39 @@ class ConvexPolyhedron : public ConvexShape {
 
         /// Deleted assignment operator
         ConvexPolyhedron& operator=(const ConvexPolyhedron& shape) = delete;
+
+        /// Return the number of faces of the polyhedron
+        virtual uint getNbFaces() const=0;
+
+        /// Return a given face of the polyhedron
+        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const=0;
+
+        /// Return the number of vertices of the polyhedron
+        virtual uint getNbVertices() const=0;
+
+        /// Return a given vertex of the polyhedron
+        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const=0;
+
+        /// Return the position of a given vertex
+        virtual Vector3 getVertexPosition(uint vertexIndex) const=0;
+
+        /// Return the normal vector of a given face of the polyhedron
+        virtual Vector3 getFaceNormal(uint faceIndex) const=0;
+
+        /// Return the number of half-edges of the polyhedron
+        virtual uint getNbHalfEdges() const=0;
+
+        /// Return a given half-edge of the polyhedron
+        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const=0;
+
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const override;
 };
+
+// Return true if the collision shape is a polyhedron
+inline bool ConvexPolyhedron::isPolyhedron() const {
+    return true;
+}
 
 }
 

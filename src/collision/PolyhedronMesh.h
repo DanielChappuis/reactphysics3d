@@ -52,10 +52,16 @@ class PolyhedronMesh {
         /// Half-edge structure of the mesh
         HalfEdgeStructure mHalfEdgeStructure;
 
+        /// Array with the face normals
+        Vector3* mFacesNormals;
+
         // -------------------- Methods -------------------- //
 
         /// Create the half-edge structure of the mesh
         void createHalfEdgeStructure();
+
+        /// Compute the faces normals
+        void computeFacesNormals();
 
     public:
 
@@ -65,13 +71,16 @@ class PolyhedronMesh {
         PolyhedronMesh(PolygonVertexArray* polygonVertexArray);
 
         /// Destructor
-        ~PolyhedronMesh() = default;
+        ~PolyhedronMesh();
 
         /// Return the number of vertices
         uint getNbVertices() const;
 
         /// Return a vertex
         Vector3 getVertex(uint index) const;
+
+        /// Return a face normal
+        Vector3 getFaceNormal(uint faceIndex) const;
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
@@ -80,6 +89,12 @@ class PolyhedronMesh {
 // Return the number of vertices
 inline uint PolyhedronMesh::getNbVertices() const {
     return mHalfEdgeStructure.getNbVertices();
+}
+
+// Return a face normal
+inline Vector3 PolyhedronMesh::getFaceNormal(uint faceIndex) const {
+    assert(faceIndex < mHalfEdgeStructure.getNbFaces());
+    return mFacesNormals[faceIndex];
 }
 
 // Return the half-edge structure of the mesh

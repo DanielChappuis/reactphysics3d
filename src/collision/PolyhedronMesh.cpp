@@ -36,6 +36,17 @@ PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
    // Create the half-edge structure of the mesh
    createHalfEdgeStructure();
+
+   // Create the face normals array
+   mFacesNormals = new Vector3[mHalfEdgeStructure.getNbFaces()];
+
+   // Compute the faces normals
+   computeFacesNormals();
+}
+
+// Destructor
+PolyhedronMesh::~PolyhedronMesh() {
+    delete[] mFacesNormals;
 }
 
 // Create the half-edge structure of the mesh
@@ -58,6 +69,8 @@ void PolyhedronMesh::createHalfEdgeStructure() {
         for (uint v=0; v < face->nbVertices; v++) {
             faceVertices.push_back(mPolygonVertexArray->getVertexIndexInFace(f, v));
         }
+
+        assert(faceVertices.size() >= 3);
 
         // Addd the face into the half-edge structure
         mHalfEdgeStructure.addFace(faceVertices);
@@ -96,4 +109,18 @@ Vector3 PolyhedronMesh::getVertex(uint index) const {
     }
 
     return vertex;
+}
+
+void PolyhedronMesh::computeFacesNormals() {
+
+    // For each face
+    for (uint f=0; f < mHalfEdgeStructure.getNbFaces(); f++) {
+        HalfEdgeStructure::Face face = mHalfEdgeStructure.getFace(f);
+
+        assert(face.faceVertices.size() >= 3);
+
+        const Vector3 vec1 = getVertex(face.faceVertices[1]) - getVertex(face.faceVertices[0]);
+        const Vector3 vec2 = getVertex(face.faceVertices[2]) - getVertex(face.faceVertices[0]);
+        mFacesNormals[f] = vec1.cross(vec2);
+    }
 }
