@@ -111,6 +111,7 @@ Vector3 PolyhedronMesh::getVertex(uint index) const {
     return vertex;
 }
 
+// Compute the faces normals
 void PolyhedronMesh::computeFacesNormals() {
 
     // For each face
@@ -122,5 +123,6 @@ void PolyhedronMesh::computeFacesNormals() {
         const Vector3 vec1 = getVertex(face.faceVertices[1]) - getVertex(face.faceVertices[0]);
         const Vector3 vec2 = getVertex(face.faceVertices[2]) - getVertex(face.faceVertices[0]);
         mFacesNormals[f] = vec1.cross(vec2);
+        mFacesNormals[f].normalize();
     }
 }

@@ -23,49 +23,15 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
-
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
+#include "ConvexPolyhedronShape.h"
 
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-// Class SphereVsConvexMeshAlgorithm
-/**
- * This class is used to compute the narrow-phase collision detection
- * between a sphere and a convex mesh.
- */
-class SphereVsConvexMeshAlgorithm : public NarrowPhaseAlgorithm {
-
-    protected :
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        SphereVsConvexMeshAlgorithm() = default;
-
-        /// Destructor
-        virtual ~SphereVsConvexMeshAlgorithm() override = default;
-
-        /// Deleted copy-constructor
-        SphereVsConvexMeshAlgorithm(const SphereVsConvexMeshAlgorithm& algorithm) = delete;
-
-        /// Deleted assignment operator
-        SphereVsConvexMeshAlgorithm& operator=(const SphereVsConvexMeshAlgorithm& algorithm) = delete;
-
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                   ContactManifoldInfo& contactManifoldInfo) override;
-};
+// Constructor
+ConvexPolyhedronShape::ConvexPolyhedronShape(decimal margin)
+            : ConvexShape(CollisionShapeType::CONVEX_POLYHEDRON, margin) {
 
 }
-
-#endif
-

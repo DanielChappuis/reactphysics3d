@@ -33,12 +33,12 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class ConvexPolyhedron
+// Class ConvexPolyhedronShape
 /**
  * This abstract class represents a convex polyhedron collision shape associated with a
  * body that is used during the narrow-phase collision detection.
  */
-class ConvexPolyhedron : public ConvexShape {
+class ConvexPolyhedronShape : public ConvexShape {
 
     protected :
 
@@ -51,16 +51,16 @@ class ConvexPolyhedron : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexPolyhedron(decimal margin);
+        ConvexPolyhedronShape(decimal margin);
 
         /// Destructor
-        virtual ~ConvexPolyhedron() override = default;
+        virtual ~ConvexPolyhedronShape() override = default;
 
         /// Deleted copy-constructor
-        ConvexPolyhedron(const ConvexPolyhedron& shape) = delete;
+        ConvexPolyhedronShape(const ConvexPolyhedronShape& shape) = delete;
 
         /// Deleted assignment operator
-        ConvexPolyhedron& operator=(const ConvexPolyhedron& shape) = delete;
+        ConvexPolyhedronShape& operator=(const ConvexPolyhedronShape& shape) = delete;
 
         /// Return the number of faces of the polyhedron
         virtual uint getNbFaces() const=0;
@@ -91,7 +91,7 @@ class ConvexPolyhedron : public ConvexShape {
 };
 
 // Return true if the collision shape is a polyhedron
-inline bool ConvexPolyhedron::isPolyhedron() const {
+inline bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
 

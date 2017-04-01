@@ -30,7 +30,7 @@
 #include "CollisionDispatch.h"
 #include "ConcaveVsConvexAlgorithm.h"
 #include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexMeshAlgorithm.h"
+#include "SphereVsConvexPolyhedronAlgorithm.h"
 #include "SphereVsCapsuleAlgorithm.h"
 #include "CapsuleVsCapsuleAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
@@ -51,7 +51,7 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
 
         /// Sphere vs Convex Mesh collision algorithm
-        SphereVsConvexMeshAlgorithm mSphereVsConvexMeshAlgorithm;
+        SphereVsConvexPolyhedronAlgorithm mSphereVsConvexPolyhedronAlgorithm;
 
         /// Sphere vs Capsule collision algorithm
         SphereVsCapsuleAlgorithm mSphereVsCapsuleAlgorithm;

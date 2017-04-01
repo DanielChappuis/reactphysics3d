@@ -24,14 +24,39 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConvexPolyhedron.h"
-
+#include "SphereVsConvexPolyhedronAlgorithm.h"
+#include "SAT/SATAlgorithm.h"
+#include "collision/shapes/SphereShape.h"
+#include "collision/shapes/ConvexMeshShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Constructor
-ConvexPolyhedron::ConvexPolyhedron(decimal margin)
-            : ConvexShape(CollisionShapeType::CONVEX_POLYHEDRON, margin) {
+bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                                ContactManifoldInfo& contactManifoldInfo) {
 
+    // Get the local-space to world-space transforms
+    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
+
+    // First, we run the GJK algorithm
+    GJKAlgorithm gjkAlgorithm;
+    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+
+    // If we have found a contact point inside the margins (shallow penetration)
+    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+
+        // Return true
+        return true;
+    }
+
+    // If we have overlap even without the margins (deep penetration)
+    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+
+        // Run the SAT algorithm to find the separating axis and compute contact point
+        SATAlgorithm satAlgorithm;
+        return satAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+    }
+
+    return false;
 }

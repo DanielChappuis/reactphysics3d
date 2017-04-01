@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cfloat>
-#include "ConvexPolyhedron.h"
+#include "ConvexPolyhedronShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
@@ -50,7 +50,7 @@ namespace reactphysics3d {
  * constructor of the box shape. Otherwise, it is recommended to use the
  * default margin distance by not using the "margin" parameter in the constructor.
  */
-class BoxShape : public ConvexPolyhedron {
+class BoxShape : public ConvexPolyhedronShape {
 
     protected :
 

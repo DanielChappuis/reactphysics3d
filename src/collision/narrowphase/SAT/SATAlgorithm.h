@@ -47,7 +47,7 @@ class SATAlgorithm {
                                        const Vector3& c, const Vector3& d) const;
 
         /// Test collision between a sphere and a convex mesh
-        bool testCollisionSphereVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+        bool testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
 
         /// Test collision between a capsule and a convex mesh
         bool testCollisionCapsuleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;

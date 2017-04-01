@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 BoxShape::BoxShape(const Vector3& extent, decimal margin)
-         : ConvexPolyhedron(margin), mExtent(extent - Vector3(margin, margin, margin)) {
+         : ConvexPolyhedronShape(margin), mExtent(extent - Vector3(margin, margin, margin)) {
     assert(extent.x > decimal(0.0) && extent.x > margin);
     assert(extent.y > decimal(0.0) && extent.y > margin);
     assert(extent.z > decimal(0.0) && extent.z > margin);
@@ -57,15 +57,15 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     std::vector<uint> face0;
     face0.push_back(0); face0.push_back(1); face0.push_back(2); face0.push_back(3);
     std::vector<uint> face1;
-    face0.push_back(1); face0.push_back(5); face0.push_back(6); face0.push_back(2);
+    face1.push_back(1); face0.push_back(5); face0.push_back(6); face0.push_back(2);
     std::vector<uint> face2;
-    face0.push_back(4); face0.push_back(7); face0.push_back(6); face0.push_back(5);
+    face2.push_back(4); face0.push_back(7); face0.push_back(6); face0.push_back(5);
     std::vector<uint> face3;
-    face0.push_back(4); face0.push_back(0); face0.push_back(3); face0.push_back(7);
+    face3.push_back(4); face0.push_back(0); face0.push_back(3); face0.push_back(7);
     std::vector<uint> face4;
-    face0.push_back(4); face0.push_back(5); face0.push_back(1); face0.push_back(0);
+    face4.push_back(4); face0.push_back(5); face0.push_back(1); face0.push_back(0);
     std::vector<uint> face5;
-    face0.push_back(2); face0.push_back(6); face0.push_back(7); face0.push_back(3);
+    face5.push_back(2); face0.push_back(6); face0.push_back(7); face0.push_back(3);
 
     mHalfEdgeStructure.addFace(face0);
     mHalfEdgeStructure.addFace(face1);

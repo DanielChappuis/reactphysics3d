@@ -23,40 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
+#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
+
 // Libraries
-#include "SphereVsConvexMeshAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "NarrowPhaseAlgorithm.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
 
-bool SphereVsConvexMeshAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                ContactManifoldInfo& contactManifoldInfo) {
+/// Namespace ReactPhysics3D
+namespace reactphysics3d {
 
-    // Get the local-space to world-space transforms
-    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
-    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
+// Class SphereVsConvexPolyhedronAlgorithm
+/**
+ * This class is used to compute the narrow-phase collision detection
+ * between a sphere and a convex polyhedron.
+ */
+class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 
-    // First, we run the GJK algorithm
-    GJKAlgorithm gjkAlgorithm;
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+    protected :
 
-    // If we have found a contact point inside the margins (shallow penetration)
-    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+    public :
 
-        // Return true
-        return true;
-    }
+        // -------------------- Methods -------------------- //
 
-    // If we have overlap even without the margins (deep penetration)
-    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+        /// Constructor
+        SphereVsConvexPolyhedronAlgorithm() = default;
 
-        // Run the SAT algorithm to find the separating axis and compute contact point
-        SATAlgorithm satAlgorithm;
-        return satAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
-    }
+        /// Destructor
+        virtual ~SphereVsConvexPolyhedronAlgorithm() override = default;
 
-    return false;
+        /// Deleted copy-constructor
+        SphereVsConvexPolyhedronAlgorithm(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   ContactManifoldInfo& contactManifoldInfo) override;
+};
+
 }
+
+#endif
+
