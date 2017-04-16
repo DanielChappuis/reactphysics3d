@@ -266,8 +266,15 @@ inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, con
 inline NarrowPhaseAlgorithm* CollisionDetection::selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
                                                                             const CollisionShapeType& shape2Type) const {
 
-    const unsigned int shape1Index = static_cast<unsigned int>(shape1Type);
-    const unsigned int shape2Index = static_cast<unsigned int>(shape2Type);
+    uint shape1Index = static_cast<unsigned int>(shape1Type);
+    uint shape2Index = static_cast<unsigned int>(shape2Type);
+
+    // Swap the shape types if necessary
+    if (shape1Index > shape2Index) {
+        const uint tempIndex = shape1Index;
+        shape1Index = shape2Index;
+        shape2Index = tempIndex;
+    }
 
     assert(shape1Index <= shape2Index);
 

@@ -23,16 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_CAPSULE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+#define	REACTPHYSICS3D_CAPSULE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+
 // Libraries
-#include <cassert>
-#include "OverlappingPair.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "NarrowPhaseAlgorithm.h"
 
-using namespace reactphysics3d;
 
-// Constructor
-OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 int nbMaxContactManifolds, PoolAllocator& memoryAllocator)
-                : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
-                  mCachedSeparatingAxis(0.0, 1.0, 0.0) {
-    
-}                               
+/// Namespace ReactPhysics3D
+namespace reactphysics3d {
+
+// Class CapsuleVsConvexPolyhedronAlgorithm
+/**
+ * This class is used to compute the narrow-phase collision detection
+ * between a capsule and a convex polyhedron.
+ */
+class CapsuleVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
+
+    protected :
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        CapsuleVsConvexPolyhedronAlgorithm() = default;
+
+        /// Destructor
+        virtual ~CapsuleVsConvexPolyhedronAlgorithm() override = default;
+
+        /// Deleted copy-constructor
+        CapsuleVsConvexPolyhedronAlgorithm(const CapsuleVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        CapsuleVsConvexPolyhedronAlgorithm& operator=(const CapsuleVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Compute a contact info if the two bounding volume collide
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   ContactManifoldInfo& contactManifoldInfo) override;
+};
+
+}
+
+#endif
+

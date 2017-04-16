@@ -25,15 +25,14 @@
 
 // Libraries
 #include "SphereVsConvexPolyhedronAlgorithm.h"
+#include "GJK/GJKAlgorithm.h"
 #include "SAT/SATAlgorithm.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                ContactManifoldInfo& contactManifoldInfo) {
+                                                      ContactManifoldInfo& contactManifoldInfo) {
 
     // Get the local-space to world-space transforms
     const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
@@ -55,7 +54,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* nar
 
         // Run the SAT algorithm to find the separating axis and compute contact point
         SATAlgorithm satAlgorithm;
-        return satAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+        return satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
     }
 
     return false;

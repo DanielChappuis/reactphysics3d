@@ -32,23 +32,30 @@
 using namespace reactphysics3d;  
 
 bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
-    
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
-    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+
+    bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
+
+    assert(isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
+    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
+    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
     // Get the collision shapes
-    const SphereShape* sphereShape = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
-    const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(narrowPhaseInfo->collisionShape2);
+    const SphereShape* sphereShape = static_cast<const SphereShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
+    const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape2 : narrowPhaseInfo->collisionShape1);
 
     // Get the transform from sphere local-space to capsule local-space
-    const Transform sphereToCapsuleSpaceTransform = narrowPhaseInfo->shape2ToWorldTransform.getInverse() * narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& sphereToWorldTransform = isSphereShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
+    const Transform& capsuleToWorldTransform = isSphereShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform worldToCapsuleTransform = capsuleToWorldTransform.getInverse();
+    const Transform sphereToCapsuleSpaceTransform = worldToCapsuleTransform * sphereToWorldTransform;
 
 	// Transform the center of the sphere into the local-space of the capsule shape
 	const Vector3 sphereCenter = sphereToCapsuleSpaceTransform.getPosition();
 
 	// Compute the end-points of the inner segment of the capsule
-	const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
-	const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+    const decimal capsuleHalfHeight = capsuleShape->getHeight() * decimal(0.5);
+    const Vector3 capsuleSegA(0, -capsuleHalfHeight, 0);
+    const Vector3 capsuleSegB(0, capsuleHalfHeight, 0);
 
     // Compute the point on the inner capsule segment that is the closes to center of sphere
 	const Vector3 closestPointOnSegment = computeClosestPointOnSegment(capsuleSegA, capsuleSegB, sphereCenter);
@@ -69,12 +76,18 @@ bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseI
 		const Vector3 contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
 		const Vector3 contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
 		
-		const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * sphereCenterToSegment;
+        Vector3 normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
        
         decimal penetrationDepth = sumRadius - sphereSegmentDistance;
+
+        if (!isSphereShape1) {
+            normalWorld = -normalWorld;
+        }
         
         // Create the contact info object
-        contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointSphereLocal, contactPointCapsuleLocal);
+        contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth,
+                                            isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,
+                                            isSphereShape1 ? contactPointCapsuleLocal : contactPointSphereLocal);
 
         return true;
     }

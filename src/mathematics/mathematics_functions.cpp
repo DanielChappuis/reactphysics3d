@@ -27,6 +27,7 @@
 #include "mathematics_functions.h"
 #include "Vector3.h"
 #include <cassert>
+#include <vector>
 
 using namespace reactphysics3d;
 
@@ -187,7 +188,7 @@ decimal reactphysics3d::computePlaneSegmentIntersection(const Vector3& segA, con
 	return t;
 }
 
-/// Compute the distance between a point "point" and a line given by the points "linePointA" and "linePointB"
+// Compute the distance between a point "point" and a line given by the points "linePointA" and "linePointB"
 decimal reactphysics3d::computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
 	
 	decimal distAB = (linePointB - linePointA).length();
@@ -197,6 +198,150 @@ decimal reactphysics3d::computeDistancePointToLineDistance(const Vector3& linePo
 	}
 
 	return ((point - linePointA).cross(point - linePointB)).length() / distAB;
+}
+
+// Clip a segment against multiple planes and return the clipped segment vertices
+// This method implements the Sutherland–Hodgman clipping algorithm
+std::vector<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const std::vector<Vector3>& planesPoints,
+                                                           const std::vector<Vector3>& planesNormals) {
+
+    assert(planesPoints.size() == planesNormals.size());
+
+    std::vector<Vector3> inputVertices = {segA, segB};
+    std::vector<Vector3> outputVertices;
+
+    // For each clipping plane
+    for (uint p=0; p<planesPoints.size(); p++) {
+
+        // If there is no more vertices, stop
+        if (inputVertices.empty()) return inputVertices;
+
+        assert(inputVertices.size() == 2);
+
+        outputVertices.clear();
+
+        Vector3& v1 = inputVertices[0];
+        Vector3& v2 = inputVertices[1];
+
+        decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
+        decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
+
+        // If the second vertex is in front of the clippling plane
+        if (v2DotN >= decimal(0.0)) {
+
+            // If the first vertex is not in front of the clippling plane
+            if (v1DotN < decimal(0.0)) {
+
+                // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
+                decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
+
+                if (t >= decimal(0) && t <= decimal(1.0)) {
+                    outputVertices.push_back(v1 + t * (v2 - v1));
+                }
+                else {
+                    outputVertices.push_back(v2);
+                }
+            }
+            else {
+                outputVertices.push_back(v1);
+            }
+
+            // Add the second vertex
+            outputVertices.push_back(v2);
+        }
+        else {  // If the second vertex is behind the clipping plane
+
+            // If the first vertex is in front of the clippling plane
+            if (v1DotN >= decimal(0.0)) {
+
+                outputVertices.push_back(v1);
+
+                // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
+                decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
+
+                if (t >= decimal(0.0) && t <= decimal(1.0)) {
+                    outputVertices.push_back(v1 + t * (v2 - v1));
+                }
+            }
+        }
+
+        inputVertices = outputVertices;
+    }
+
+    return outputVertices;
+}
+
+/// Clip a polygon against multiple planes and return the clipped polygon vertices
+/// This method implements the Sutherland–Hodgman clipping algorithm
+std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vector3>& polygonVertices, const std::vector<Vector3>& planesPoints,
+                                                           const std::vector<Vector3>& planesNormals) {
+
+    assert(planesPoints.size() == planesNormals.size());
+
+    std::vector<Vector3> inputVertices(polygonVertices);
+    std::vector<Vector3> outputVertices;
+
+    // For each clipping plane
+    for (uint p=0; p<planesPoints.size(); p++) {
+
+        outputVertices.clear();
+
+        uint vStart = inputVertices.size() - 1;
+
+        // For each edge of the polygon
+        for (uint vEnd = 0; vEnd<inputVertices.size(); vEnd++) {
+
+            Vector3& v1 = inputVertices[vStart];
+            Vector3& v2 = inputVertices[vEnd];
+
+            decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
+            decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
+
+            // If the second vertex is in front of the clippling plane
+            if (v2DotN >= decimal(0.0)) {
+
+                // If the first vertex is not in front of the clippling plane
+                if (v1DotN < decimal(0.0)) {
+
+                    // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
+                    decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
+
+                    if (t >= decimal(0) && t <= decimal(1.0)) {
+                        outputVertices.push_back(v1 + t * (v2 - v1));
+                    }
+                    else {
+                        outputVertices.push_back(v2);
+                    } 
+                }
+
+                // Add the second vertex
+                outputVertices.push_back(v2);
+            }
+            else {  // If the second vertex is behind the clipping plane
+
+                // If the first vertex is in front of the clippling plane
+                if (v1DotN >= decimal(0.0)) {
+
+                    // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
+                    decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
+
+                    if (t >= decimal(0.0) && t <= decimal(1.0)) {
+                        outputVertices.push_back(v1 + t * (v2 - v1));
+                    }
+                    else {
+                        outputVertices.push_back(v1);
+                    }
+                }
+            }
+
+            vStart = vEnd;
+        }
+
+        inputVertices = outputVertices;
+    }
+
+    return outputVertices;
 }
 
 

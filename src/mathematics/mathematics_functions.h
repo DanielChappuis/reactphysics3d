@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <vector>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -96,8 +97,16 @@ decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB
 /// Compute the distance between a point and a line
 decimal computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
 
-}
+/// Clip a segment against multiple planes and return the clipped segment vertices
+std::vector<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const std::vector<Vector3>& planesPoints,
+                                                           const std::vector<Vector3>& planesNormals);
 
+/// Clip a polygon against multiple planes and return the clipped polygon vertices
+std::vector<Vector3> clipPolygonWithPlanes(const std::vector<Vector3>& polygonVertices, const std::vector<Vector3>& planesPoints,
+                                           const std::vector<Vector3>& planesNormals);
+
+}
 
 
 #endif

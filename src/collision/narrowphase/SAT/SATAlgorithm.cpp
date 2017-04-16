@@ -39,39 +39,25 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-bool SATAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
-
-    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-
-    switch (narrowPhaseInfo->collisionShape1->getType()) {
-        case CollisionShapeType::CONVEX_POLYHEDRON:
-            return testCollisionConvexMeshVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
-        case CollisionShapeType::SPHERE:
-            return testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
-        case CollisionShapeType::CAPSULE:
-            return testCollisionCapsuleVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
-        case CollisionShapeType::TRIANGLE:
-            return testCollisionTriangleVsConvexMesh(narrowPhaseInfo, contactManifoldInfo);
-        default: assert(false);
-    }
-
-    return false;
-}
-
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
-    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+    bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
+
+    assert(isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
     // Get the capsule collision shapes
-    const SphereShape* sphere = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
-    const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(narrowPhaseInfo->collisionShape2);
+    const SphereShape* sphere = static_cast<const SphereShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
+    const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape2 : narrowPhaseInfo->collisionShape1);
 
+    const Transform& sphereToWorldTransform = isSphereShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
+    const Transform& polyhedronToWorldTransform = isSphereShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
 
     // Get the transform from sphere local-space to polyhedron local-space
-    const Transform sphereToPolyhedronSpaceTransform = narrowPhaseInfo->shape2ToWorldTransform.getInverse() *
-                                                       narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform worldToPolyhedronTransform = polyhedronToWorldTransform.getInverse();
+    const Transform sphereToPolyhedronSpaceTransform = worldToPolyhedronTransform * sphereToWorldTransform;
 
     // Transform the center of the sphere into the local-space of the convex polyhedron
     const Vector3 sphereCenter = sphereToPolyhedronSpaceTransform.getPosition();
@@ -105,18 +91,24 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
     }
 
     const Vector3 minFaceNormal = polyhedron->getFaceNormal(minFaceIndex);
-    const Vector3 normalWorld = -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minFaceNormal);
-    const Vector3 contactPointSphereLocal = narrowPhaseInfo->shape1ToWorldTransform.getInverse() * normalWorld * sphere->getRadius();
+    Vector3 normalWorld = -(polyhedronToWorldTransform.getOrientation() * minFaceNormal);
+    const Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse() * normalWorld * sphere->getRadius();
     const Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
 
+    if (!isSphereShape1) {
+        normalWorld = -normalWorld;
+    }
+
     // Create the contact info object
-    contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth, contactPointSphereLocal, contactPointPolyhedronLocal);
+    contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+                                        isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
+                                        isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
 
     return true;
 }
 
 // Test collision between a capsule and a convex mesh
-bool SATAlgorithm::testCollisionCapsuleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);

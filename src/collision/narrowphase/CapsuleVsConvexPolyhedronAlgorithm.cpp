@@ -24,15 +24,38 @@
 ********************************************************************************/
 
 // Libraries
-#include <cassert>
-#include "OverlappingPair.h"
+#include "CapsuleVsConvexPolyhedronAlgorithm.h"
+#include "SAT/SATAlgorithm.h"
+#include "GJK/GJKAlgorithm.h"
 
+// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Constructor
-OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 int nbMaxContactManifolds, PoolAllocator& memoryAllocator)
-                : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
-                  mCachedSeparatingAxis(0.0, 1.0, 0.0) {
-    
-}                               
+bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                                       ContactManifoldInfo& contactManifoldInfo) {
+
+    // Get the local-space to world-space transforms
+    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
+
+    // First, we run the GJK algorithm
+    GJKAlgorithm gjkAlgorithm;
+    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+
+    // If we have found a contact point inside the margins (shallow penetration)
+    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+
+        // Return true
+        return true;
+    }
+
+    // If we have overlap even without the margins (deep penetration)
+    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+
+        // Run the SAT algorithm to find the separating axis and compute contact point
+        SATAlgorithm satAlgorithm;
+        return satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
+    }
+
+    return false;
+}

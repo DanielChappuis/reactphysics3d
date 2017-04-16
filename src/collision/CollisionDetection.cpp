@@ -288,17 +288,6 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
         (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
 
-    // Make sure the shape with the smallest collision shape type comes first
-    const uint shape1TypeIndex = static_cast<const uint>(shape1->getCollisionShape()->getType());
-    const uint shape2TypeIndex = static_cast<const uint>(shape2->getCollisionShape()->getType());
-    if (shape1TypeIndex > shape2TypeIndex) {
-
-        // Swap the two shapes
-        ProxyShape* temp = shape1;
-        shape1 = shape2;
-        shape2 = temp;
-    }
-
     // Compute the overlapping pair ID
     overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
 

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_MESH_ALGORITHM_H
+#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
 
 // Libraries
 #include "body/Body.h"

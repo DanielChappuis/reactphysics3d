@@ -27,8 +27,6 @@
 #define TEST_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
-#include "Test.h"
-#include "mathematics/mathematics_functions.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -170,6 +168,94 @@ class TestMathematicsFunctions : public Test {
 			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 0), Vector3(10, -5, 0), Vector3(-43, 254, 0)), 259.0, 0.000001));
 			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(6, -5, 8)), 0.0, 0.000001));
 			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(10, -5, -5)), 0.0, 0.000001));
+
+
+            // Test clipSegmentWithPlanes()
+            std::vector<Vector3> segmentVertices;
+            segmentVertices.push_back(Vector3(-6, 3, 0));
+            segmentVertices.push_back(Vector3(8, 3, 0));
+
+            std::vector<Vector3> planesNormals;
+            std::vector<Vector3> planesPoints;
+            planesNormals.push_back(Vector3(-1, 0, 0));
+            planesPoints.push_back(Vector3(4, 0, 0));
+
+            std::vector<Vector3> clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1],
+                                                                             planesPoints, planesNormals);
+            test(clipSegmentVertices.size() == 2);
+            test(approxEqual(clipSegmentVertices[0].x, -6, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].x, 4, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].z, 0, 0.000001));
+
+            segmentVertices.clear();
+            segmentVertices.push_back(Vector3(8, 3, 0));
+            segmentVertices.push_back(Vector3(-6, 3, 0));
+
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            test(clipSegmentVertices.size() == 2);
+            test(approxEqual(clipSegmentVertices[0].x, 4, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].x, -6, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].z, 0, 0.000001));
+
+            segmentVertices.clear();
+            segmentVertices.push_back(Vector3(-6, 3, 0));
+            segmentVertices.push_back(Vector3(3, 3, 0));
+
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            test(clipSegmentVertices.size() == 2);
+            test(approxEqual(clipSegmentVertices[0].x, -6, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].x, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].y, 3, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].z, 0, 0.000001));
+
+            segmentVertices.clear();
+            segmentVertices.push_back(Vector3(5, 3, 0));
+            segmentVertices.push_back(Vector3(8, 3, 0));
+
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            test(clipSegmentVertices.size() == 0);
+
+            // Test clipPolygonWithPlanes()
+            std::vector<Vector3> polygonVertices;
+            polygonVertices.push_back(Vector3(-4, 2, 0));
+            polygonVertices.push_back(Vector3(7, 2, 0));
+            polygonVertices.push_back(Vector3(7, 4, 0));
+            polygonVertices.push_back(Vector3(-4, 4, 0));
+
+            planesNormals.clear();
+            planesPoints.clear();
+            planesNormals.push_back(Vector3(1, 0, 0));
+            planesPoints.push_back(Vector3(0, 0, 0));
+            planesNormals.push_back(Vector3(0, 1, 0));
+            planesPoints.push_back(Vector3(0, 0, 0));
+            planesNormals.push_back(Vector3(-1, 0, 0));
+            planesPoints.push_back(Vector3(10, 0, 0));
+            planesNormals.push_back(Vector3(0, -1, 0));
+            planesPoints.push_back(Vector3(10, 5, 0));
+
+            clipSegmentVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
+            test(clipSegmentVertices.size() == 4);
+            test(approxEqual(clipSegmentVertices[0].x, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].y, 2, 0.000001));
+            test(approxEqual(clipSegmentVertices[0].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].x, 7, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].y, 2, 0.000001));
+            test(approxEqual(clipSegmentVertices[1].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[2].x, 7, 0.000001));
+            test(approxEqual(clipSegmentVertices[2].y, 4, 0.000001));
+            test(approxEqual(clipSegmentVertices[2].z, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[3].x, 0, 0.000001));
+            test(approxEqual(clipSegmentVertices[3].y, 4, 0.000001));
+            test(approxEqual(clipSegmentVertices[3].z, 0, 0.000001));
+
         }
 
  };

@@ -300,8 +300,8 @@ class TestRaycast : public Test {
             mBoxProxyShape->setCollisionCategoryBits(CATEGORY1);
             mSphereProxyShape->setCollisionCategoryBits(CATEGORY1);
             mCapsuleProxyShape->setCollisionCategoryBits(CATEGORY1);
-            mConvexMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mConvexMeshProxyShapeEdgesInfo->setCollisionCategoryBits(CATEGORY2);
+            //mConvexMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
+            //mConvexMeshProxyShapeEdgesInfo->setCollisionCategoryBits(CATEGORY2);
             mCompoundSphereProxyShape->setCollisionCategoryBits(CATEGORY2);
             mCompoundCapsuleProxyShape->setCollisionCategoryBits(CATEGORY2);
             mTriangleProxyShape->setCollisionCategoryBits(CATEGORY1);
@@ -1787,7 +1787,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             test(!mConcaveMeshBody->raycast(ray1, raycastInfo3));
-            test(!mConvexMeshProxyShape->raycast(ray1, raycastInfo3));
+            //test(!mConvexMeshProxyShape->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             test(!mCallback.isHit);

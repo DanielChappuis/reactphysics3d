@@ -46,18 +46,6 @@ class SATAlgorithm {
         bool testGaussMapArcsIntersect(const Vector3& a, const Vector3& b,
                                        const Vector3& c, const Vector3& d) const;
 
-        /// Test collision between a sphere and a convex mesh
-        bool testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between a triangle and a convex mesh
-        bool testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test collision between two convex meshes
-        bool testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -74,9 +62,18 @@ class SATAlgorithm {
         /// Deleted assignment operator
         SATAlgorithm& operator=(const SATAlgorithm& algorithm) = delete;
 
-        /// Compute a contact info if the two bounding volumes collide.
-        bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                ContactManifoldInfo& contactManifoldInfo);
+        /// Test collision between a sphere and a convex mesh
+        bool testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+
+        /// Test collision between a capsule and a convex mesh
+        bool testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+
+        /// Test collision between a triangle and a convex mesh
+        bool testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+
+        /// Test collision between two convex meshes
+        bool testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+
 };
 
 }
