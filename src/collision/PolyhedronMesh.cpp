@@ -42,6 +42,9 @@ PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
    // Compute the faces normals
    computeFacesNormals();
+
+   // Compute the centroid
+   computeCentroid();
 }
 
 // Destructor
@@ -125,4 +128,16 @@ void PolyhedronMesh::computeFacesNormals() {
         mFacesNormals[f] = vec1.cross(vec2);
         mFacesNormals[f].normalize();
     }
+}
+
+// Compute the centroid of the polyhedron
+void PolyhedronMesh::computeCentroid() {
+
+    mCentroid.setToZero();
+
+    for (uint v=0; v < getNbVertices(); v++) {
+        mCentroid += getVertex(v);
+    }
+
+    mCentroid /= getNbVertices();
 }

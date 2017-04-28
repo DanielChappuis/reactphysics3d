@@ -55,6 +55,9 @@ class PolyhedronMesh {
         /// Array with the face normals
         Vector3* mFacesNormals;
 
+        /// Centroid of the polyhedron
+        Vector3 mCentroid;
+
         // -------------------- Methods -------------------- //
 
         /// Create the half-edge structure of the mesh
@@ -62,6 +65,9 @@ class PolyhedronMesh {
 
         /// Compute the faces normals
         void computeFacesNormals();
+
+        /// Compute the centroid of the polyhedron
+        void computeCentroid() ;
 
     public:
 
@@ -84,6 +90,9 @@ class PolyhedronMesh {
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
+
+        /// Return the centroid of the polyhedron
+        Vector3 getCentroid() const;
 };
 
 // Return the number of vertices
@@ -100,6 +109,11 @@ inline Vector3 PolyhedronMesh::getFaceNormal(uint faceIndex) const {
 // Return the half-edge structure of the mesh
 inline const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {
     return mHalfEdgeStructure;
+}
+
+// Return the centroid of the polyhedron
+inline Vector3 PolyhedronMesh::getCentroid() const {
+    return mCentroid;
 }
 
 }

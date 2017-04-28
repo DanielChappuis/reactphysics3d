@@ -128,6 +128,9 @@ class BoxShape : public ConvexPolyhedronShape {
 
         /// Return the normal vector of a given face of the polyhedron
         virtual Vector3 getFaceNormal(uint faceIndex) const override;
+
+        /// Return the centroid of the polyhedron
+        virtual Vector3 getCentroid() const override;
 };
 
 // Return the extents of the box
@@ -234,6 +237,11 @@ inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
         case 4: return Vector3(0, -1, 0);
         case 5: return Vector3(0, 1, 0);
     }
+}
+
+// Return the centroid of the box
+inline Vector3 BoxShape::getCentroid() const {
+    return Vector3::zero();
 }
 
 // Return the number of half-edges of the polyhedron

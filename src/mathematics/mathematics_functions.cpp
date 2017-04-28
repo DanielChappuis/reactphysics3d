@@ -60,6 +60,11 @@ Vector3 reactphysics3d::clamp(const Vector3& vector, decimal maxLength) {
     return vector;
 }
 
+/// Return true if two vectors are parallel
+bool reactphysics3d::areParallelVectors(const Vector3& vector1, const Vector3& vector2) {
+    return vector1.cross(vector2).lengthSquare() < decimal(0.00001);
+}
+
 /// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
 Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC) {
 

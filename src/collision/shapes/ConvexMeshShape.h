@@ -142,6 +142,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Return the normal vector of a given face of the polyhedron
         virtual Vector3 getFaceNormal(uint faceIndex) const override;
+
+        /// Return the centroid of the polyhedron
+        virtual Vector3 getCentroid() const override;
 };
 
 /// Set the scaling vector of the collision shape
@@ -237,6 +240,11 @@ inline Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
 inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
     assert(faceIndex < getNbFaces());
     return mPolyhedronMesh->getFaceNormal(faceIndex);
+}
+
+// Return the centroid of the polyhedron
+inline Vector3 ConvexMeshShape::getCentroid() const {
+    return mPolyhedronMesh->getCentroid();
 }
 
 }

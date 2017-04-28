@@ -81,7 +81,7 @@ class ConvexShape : public CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class GJKAlgorithm;
-        friend class EPAAlgorithm;
+        friend class SATAlgorithm;
 };
 
 // Return true if the collision shape is convex, false if it is concave

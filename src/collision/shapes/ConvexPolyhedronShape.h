@@ -88,6 +88,9 @@ class ConvexPolyhedronShape : public ConvexShape {
 
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
+
+        /// Return the centroid of the polyhedron
+        virtual Vector3 getCentroid() const=0;
 };
 
 // Return true if the collision shape is a polyhedron

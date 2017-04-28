@@ -31,12 +31,11 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// Compute the narrow-phase collision detection a sphere and a convex polyhedron
+// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
+// by Dirk Gregorius.
 bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
                                                       ContactManifoldInfo& contactManifoldInfo) {
-
-    // Get the local-space to world-space transforms
-    const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
-    const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;

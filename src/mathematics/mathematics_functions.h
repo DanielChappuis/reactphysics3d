@@ -76,6 +76,9 @@ inline bool sameSign(decimal a, decimal b) {
     return a * b >= decimal(0.0);
 }
 
+/// Return true if two vectors are parallel
+bool areParallelVectors(const Vector3& vector1, const Vector3& vector2);
+
 /// Clamp a vector such that it is no longer than a given maximum length
 Vector3 clamp(const Vector3& vector, decimal maxLength);
 

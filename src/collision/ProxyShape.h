@@ -175,7 +175,6 @@ class ProxyShape {
         friend class CollisionDetection;
         friend class CollisionWorld;
         friend class DynamicsWorld;
-        friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
 

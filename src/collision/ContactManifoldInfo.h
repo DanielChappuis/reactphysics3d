@@ -64,15 +64,8 @@ class ContactManifoldInfo {
         /// Destructor
         ~ContactManifoldInfo() {
 
-            // Delete all the contact points in the linked list
-            ContactPointInfo* element = mContactPointsList;
-            while(element != nullptr) {
-                ContactPointInfo* elementToDelete = element;
-                element = element->next;
-
-                // Delete the current element
-                mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
-            }
+            // Remove all the contact points
+            reset();
         }
 
         /// Deleted copy-constructor
@@ -94,6 +87,22 @@ class ContactManifoldInfo {
             // Add it into the linked list of contact points
             contactPointInfo->next = mContactPointsList;
             mContactPointsList = contactPointInfo;
+        }
+
+        /// Remove all the contact points
+        void reset() {
+
+            // Delete all the contact points in the linked list
+            ContactPointInfo* element = mContactPointsList;
+            while(element != nullptr) {
+                ContactPointInfo* elementToDelete = element;
+                element = element->next;
+
+                // Delete the current element
+                mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
+            }
+
+            mContactPointsList = nullptr;
         }
 
         /// Get the first contact point info of the linked list of contact points

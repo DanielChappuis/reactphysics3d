@@ -31,6 +31,9 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
+// Compute the narrow-phase collision detection between a sphere and a capsule
+// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
+// by Dirk Gregorius.
 bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
 
     bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;

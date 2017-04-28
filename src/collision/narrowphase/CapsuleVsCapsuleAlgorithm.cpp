@@ -30,12 +30,13 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
+// Compute the narrow-phase collision detection between two capsules
+// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
+// by Dirk Gregorius.
 bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
     
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
-
-	const decimal parallelEpsilon = decimal(0.001);
 
     // Get the capsule collision shapes
     const CapsuleShape* capsuleShape1 = static_cast<const CapsuleShape*>(narrowPhaseInfo->collisionShape1);
@@ -62,7 +63,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 	decimal sumRadius = capsuleShape2->getRadius() + capsuleShape1->getRadius();
 
 	// If the two capsules are parallel (we create two contact points)
-	if (seg1.cross(seg2).lengthSquare() < parallelEpsilon * parallelEpsilon) {
+    if (areParallelVectors(seg1, seg2)) {
 
 		// If the distance between the two segments is larger than the sum of the capsules radius (we do not have overlapping)
 		const decimal segmentsDistance = computeDistancePointToLineDistance(capsule1SegA, capsule1SegB, capsule2SegA);

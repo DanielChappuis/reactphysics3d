@@ -60,7 +60,7 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
         /// Deleted assignment operator
 		CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
 
-        /// Compute a contact info if the two bounding volume collide
+        /// Compute the narrow-phase collision detection between two capsules
         virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
                                    ContactManifoldInfo& contactManifoldInfo) override;
 };

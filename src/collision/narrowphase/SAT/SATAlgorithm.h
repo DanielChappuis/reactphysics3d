@@ -29,6 +29,7 @@
 // Libraries
 #include "collision/ContactManifoldInfo.h"
 #include "collision/NarrowPhaseInfo.h"
+#include "collision/shapes/ConvexPolyhedronShape.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -67,6 +68,17 @@ class SATAlgorithm {
 
         /// Test collision between a capsule and a convex mesh
         bool testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+
+        /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
+        void computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
+                                                       decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
+                                                       const Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
+                                                       const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
+                                                       ContactManifoldInfo& contactManifoldInfo, bool isCapsuleShape1) const;
+
+        // This method returns true if an edge of a polyhedron and a capsule forms a face of the Minkowski Difference
+        bool isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, const Vector3& edgeAdjacentFace1Normal,
+                                          const Vector3& edgeAdjacentFace2Normal) const;
 
         /// Test collision between a triangle and a convex mesh
         bool testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
