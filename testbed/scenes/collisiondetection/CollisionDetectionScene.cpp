@@ -60,6 +60,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere1->setColor(mGreyColorDemo);
     mSphere1->setSleepingColor(mRedColorDemo);
 
+    /*
     // ---------- Sphere 2 ---------- //
     openglframework::Vector3 position2(4, 0, 0);
 
@@ -92,6 +93,17 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     // Set the color
     mCapsule2->setColor(mGreyColorDemo);
     mCapsule2->setSleepingColor(mRedColorDemo);
+*/
+    // ---------- Box 1 ---------- //
+    openglframework::Vector3 position5(4, 5, 0);
+
+    // Create a box and a corresponding collision body in the dynamics world
+    mBox1 = new Box(BOX_SIZE, position5, mCollisionWorld, mMeshFolderPath);
+    mAllShapes.push_back(mBox1);
+
+    // Set the color
+    mBox1->setColor(mGreyColorDemo);
+    mBox1->setSleepingColor(mRedColorDemo);
 
     // ---------- Cone ---------- //
     //openglframework::Vector3 position4(0, 0, 0);
@@ -171,6 +183,7 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     mCollisionWorld->destroyCollisionBody(mSphere1->getCollisionBody());
     delete mSphere1;
 
+    /*
     mCollisionWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
 
@@ -179,6 +192,10 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 
     mCollisionWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
+    */
+
+    mCollisionWorld->destroyCollisionBody(mBox1->getCollisionBody());
+    delete mBox1;
 
     /*
     // Destroy the corresponding rigid body from the dynamics world
@@ -300,9 +317,12 @@ void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
 
     // Render the shapes
     if (mSphere1->getCollisionBody()->isActive()) mSphere1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    /*
     if (mSphere2->getCollisionBody()->isActive()) mSphere2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mCapsule1->getCollisionBody()->isActive()) mCapsule1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mCapsule2->getCollisionBody()->isActive()) mCapsule2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+    */
+    if (mBox1->getCollisionBody()->isActive()) mBox1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     /*
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
