@@ -66,7 +66,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
     if (areParallelVectors(seg1, seg2)) {
 
 		// If the distance between the two segments is larger than the sum of the capsules radius (we do not have overlapping)
-		const decimal segmentsDistance = computeDistancePointToLineDistance(capsule1SegA, capsule1SegB, capsule2SegA);
+		const decimal segmentsDistance = computePointToLineDistance(capsule1SegA, capsule1SegB, capsule2SegA);
         if (segmentsDistance >= sumRadius) {
 
 			// The capsule are parallel but their inner segment distance is larger than the sum of the capsules radius.

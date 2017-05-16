@@ -162,13 +162,12 @@ class TestMathematicsFunctions : public Test {
 			decimal tIntersect = computePlaneSegmentIntersection(Vector3(5, 4, 0), Vector3(9, 4, 0), 4, Vector3(0, 1, 0));
             test(tIntersect < 0.0 || tIntersect > 1.0);
 
-			// Test computeDistancePointToLineDistance()
-			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, 0, 0), Vector3(14, 0, 0), Vector3(5, 3, 0)), 3.0, 0.000001));
-			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 0), Vector3(10, -5, 0), Vector3(4, 3, 0)), 8.0, 0.000001));
-			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 0), Vector3(10, -5, 0), Vector3(-43, 254, 0)), 259.0, 0.000001));
-			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(6, -5, 8)), 0.0, 0.000001));
-			test(approxEqual(computeDistancePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(10, -5, -5)), 0.0, 0.000001));
-
+            // Test computePointToLineDistance()
+            test(approxEqual(computePointToLineDistance(Vector3(6, 0, 0), Vector3(14, 0, 0), Vector3(5, 3, 0)), 3.0, 0.000001));
+            test(approxEqual(computePointToLineDistance(Vector3(6, -5, 0), Vector3(10, -5, 0), Vector3(4, 3, 0)), 8.0, 0.000001));
+            test(approxEqual(computePointToLineDistance(Vector3(6, -5, 0), Vector3(10, -5, 0), Vector3(-43, 254, 0)), 259.0, 0.000001));
+            test(approxEqual(computePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(6, -5, 8)), 0.0, 0.000001));
+            test(approxEqual(computePointToLineDistance(Vector3(6, -5, 8), Vector3(10, -5, -5), Vector3(10, -5, -5)), 0.0, 0.000001));
 
             // Test clipSegmentWithPlanes()
             std::vector<Vector3> segmentVertices;

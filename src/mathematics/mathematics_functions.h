@@ -98,7 +98,7 @@ void computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b,
 decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal);
 
 /// Compute the distance between a point and a line
-decimal computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
+decimal computePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
 
 /// Clip a segment against multiple planes and return the clipped segment vertices
 std::vector<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,

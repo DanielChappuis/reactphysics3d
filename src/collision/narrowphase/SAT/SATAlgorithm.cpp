@@ -169,8 +169,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
     const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
     const Vector3 capsuleSegmentAxis = capsuleSegB - capsuleSegA;
 
-    // For each direction that is the cross product of the capsule inner segment and
-    // an edge of the polyhedron
+    // For each direction that is the cross product of the capsule inner segment and an edge of the polyhedron
     for (uint e = 0; e < polyhedron->getNbHalfEdges(); e += 2) {
 
         // Get an edge from the polyhedron (convert it into the capsule local-space)
@@ -326,18 +325,327 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
     return capsuleSegment.dot(edgeAdjacentFace1Normal) * capsuleSegment.dot(edgeAdjacentFace2Normal) < decimal(0.0);
 }
 
-// Test collision between a triangle and a convex mesh
-bool SATAlgorithm::testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
-
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::TRIANGLE);
-    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-}
-
-// Test collision between two convex meshes
-bool SATAlgorithm::testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+// Test collision between two convex polyhedrons
+bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+
+    const ConvexPolyhedronShape* polyhedron1 = static_cast<const ConvexPolyhedronShape*>(narrowPhaseInfo->collisionShape1);
+    const ConvexPolyhedronShape* polyhedron2 = static_cast<const ConvexPolyhedronShape*>(narrowPhaseInfo->collisionShape2);
+
+    const Transform polyhedron1ToPolyhedron2 = narrowPhaseInfo->shape2ToWorldTransform.getInverse() * narrowPhaseInfo->shape1ToWorldTransform;
+    const Transform polyhedron2ToPolyhedron1 = polyhedron1ToPolyhedron2.getInverse();
+
+    decimal minPenetrationDepth = DECIMAL_LARGEST;
+    uint minFaceIndex = 0;
+    bool isMinPenetrationFaceNormal = false;
+    bool isMinPenetrationFaceNormalPolyhedron1 = false;
+    Vector3 separatingEdge1A, separatingEdge1B;
+    Vector3 separatingEdge2A, separatingEdge2B;
+    Vector3 minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+
+    // Test all the face normals of the polyhedron 1 for separating axis
+    uint faceIndex;
+    decimal penetrationDepth = testFaceDirectionPolyhedronVsPolyhedron(polyhedron1, polyhedron2, polyhedron1ToPolyhedron2, faceIndex);
+    if (penetrationDepth <= decimal(0.0)) {
+
+        // We have found a separating axis
+        return false;
+    }
+    if (penetrationDepth < minPenetrationDepth) {
+        isMinPenetrationFaceNormal = true;
+        minPenetrationDepth = penetrationDepth;
+        minFaceIndex = faceIndex;
+        isMinPenetrationFaceNormalPolyhedron1 = true;
+    }
+
+    // Test all the face normals of the polyhedron 2 for separating axis
+    penetrationDepth = testFaceDirectionPolyhedronVsPolyhedron(polyhedron2, polyhedron1, polyhedron2ToPolyhedron1, faceIndex);
+    if (penetrationDepth <= decimal(0.0)) {
+
+        // We have found a separating axis
+        return false;
+    }
+    if (penetrationDepth < minPenetrationDepth) {
+        isMinPenetrationFaceNormal = true;
+        minPenetrationDepth = penetrationDepth;
+        minFaceIndex = faceIndex;
+        isMinPenetrationFaceNormalPolyhedron1 = false;
+    }
+
+    // Test the cross products of edges of polyhedron 1 with edges of polyhedron 2 for separating axis
+    for (uint i=0; i < polyhedron1->getNbHalfEdges(); i += 2) {
+
+        // Get an edge of polyhedron 1
+        HalfEdgeStructure::Edge edge1 = polyhedron1->getHalfEdge(i);
+
+        const Vector3 edge1A = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(edge1.vertexIndex);
+        const Vector3 edge1B = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.nextEdgeIndex).vertexIndex);
+        const Vector3 edge1Direction = edge1B - edge1A;
+
+        for (uint j=0; j < polyhedron2->getNbHalfEdges(); j += 2) {
+
+            // Get an edge of polyhedron 2
+            HalfEdgeStructure::Edge edge2 = polyhedron2->getHalfEdge(j);
+
+            const Vector3 edge2A = polyhedron2->getVertexPosition(edge2.vertexIndex);
+            const Vector3 edge2B = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.nextEdgeIndex).vertexIndex);
+            const Vector3 edge2Direction = edge2B - edge2A;
+
+            // If the two edges build a minkowski face (and the cross product is
+            // therefore a candidate for separating axis
+            if (testEdgesBuildMinkowskiFace(polyhedron1, edge1, polyhedron2, edge2, polyhedron1ToPolyhedron2)) {
+
+                Vector3 separatingAxisPolyhedron2Space;
+
+                // Compute the penetration depth
+                decimal penetrationDepth = computeDistanceBetweenEdges(edge1A, edge2A, polyhedron2->getCentroid(),
+                                                                       edge1Direction, edge2Direction, separatingAxisPolyhedron2Space);
+
+                if (penetrationDepth <= decimal(0.0)) {
+
+                    // We have found a separating axis
+                    return false;
+                }
+
+                if (penetrationDepth < minPenetrationDepth) {
+                    minPenetrationDepth = penetrationDepth;
+                    isMinPenetrationFaceNormalPolyhedron1 = false;
+                    isMinPenetrationFaceNormal = false;
+                    separatingEdge1A = edge1A;
+                    separatingEdge1B = edge1B;
+                    separatingEdge2A = edge2A;
+                    separatingEdge2B = edge2B;
+                    minEdgeVsEdgeSeparatingAxisPolyhedron2Space = separatingAxisPolyhedron2Space;
+                }
+
+            }
+        }
+    }
+
+    assert(minPenetrationDepth > decimal(0.0));
+    assert((isMinPenetrationFaceNormal && minFaceIndex >= 0) || !isMinPenetrationFaceNormal);
+
+    // If the separation axis is a face normal
+    if (isMinPenetrationFaceNormal) {
+
+        const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
+        const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
+        const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
+        const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
+
+        const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
+        const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
+
+        // Compute the world normal
+        const Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
+                                                                            -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
+
+        // Get the reference face
+        HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
+
+        // Find the incident face on the other polyhedron (most anti-parallel face)
+        uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
+
+        // Get the incident face
+        HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
+
+        std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
+        std::vector<Vector3> planesNormals;     // Normals of the clipping planes
+        std::vector<Vector3> planesPoints;      // Points on the clipping planes
+
+        // Get all the vertices of the incident face (in the reference local-space)
+        std::vector<uint>::const_iterator it;
+        for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
+            const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
+            polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
+        }
+
+        // Get the reference face clipping planes
+        uint currentEdgeIndex = referenceFace.edgeIndex;
+        uint firstEdgeIndex = currentEdgeIndex;
+        do {
+
+            // Get the adjacent edge
+            HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
+
+            // Get the twin edge
+            HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+
+            // Get the adjacent face normal (and negate it to have a clipping plane)
+            Vector3 faceNormal = -referencePolyhedron->getFaceNormal(twinEdge.faceIndex);
+
+            // Get a vertex of the clipping plane (vertex of the adjacent edge)
+            Vector3 faceVertex = referencePolyhedron->getVertexPosition(edge.vertexIndex);
+
+            planesNormals.push_back(faceNormal);
+            planesPoints.push_back(faceVertex);
+
+            // Go to the next adjacent edge of the reference face
+            currentEdgeIndex = edge.nextEdgeIndex;
+
+        } while (currentEdgeIndex != firstEdgeIndex);
+
+        // Clip the reference faces with the adjacent planes of the reference face
+        std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
+
+        // We only keep the clipped points that are below the reference face
+        const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(firstEdgeIndex);
+        std::vector<Vector3>::const_iterator itPoints;
+        for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
+
+            // If the clip point is bellow the reference face
+            if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
+
+                // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
+                const Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
+
+                // Project the contact point onto the reference face
+                Vector3 contactPointReferencePolyhedron = (*itPoints) + axisReferenceSpace * minPenetrationDepth;
+
+                // Create a new contact point
+                contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
+                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
+            }
+        }
+    }
+    else {    // If we have an edge vs edge contact
+
+        // Compute the closest points between the two edges (in the local-space of poylhedron 2)
+        Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;
+        computeClosestPointBetweenTwoSegments(separatingEdge1A, separatingEdge1B, separatingEdge2A, separatingEdge2B,
+                                              closestPointPolyhedron1Edge, closestPointPolyhedron2Edge);
+
+        // Compute the contact point on polyhedron 1 edge in the local-space of polyhedron 1
+        const Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
+
+        // Compute the world normal
+        const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+
+        // Create the contact point
+        contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+                                            closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
+    }
+
+    return true;
+}
+
+// Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector
+// This is used to find the incident face on a polyhedron of a given reference face of another polyhedron
+uint SATAlgorithm::findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const {
+
+    decimal minDotProduct = DECIMAL_LARGEST;
+    uint mostAntiParallelFace = 0;
+
+    // For each face of the polyhedron
+    for (uint i=0; i < polyhedron->getNbFaces(); i++) {
+
+        // Get the face normal
+        decimal dotProduct = polyhedron->getFaceNormal(i).dot(direction);
+        if (dotProduct < minDotProduct) {
+            minDotProduct = dotProduct;
+            mostAntiParallelFace = i;
+        }
+    }
+
+    return mostAntiParallelFace;
+}
+
+// Compute and return the distance between the two edges in the direction of the candidate separating axis
+decimal SATAlgorithm::computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
+                                                  const Vector3& edge1Direction, const Vector3& edge2Direction,
+                                                  Vector3& outSeparatingAxisPolyhedron2Space) const {
+
+    // If the two edges are parallel
+    if (areParallelVectors(edge1Direction, edge2Direction)) {
+
+        // Return a large penetration depth to skip those edges
+        return DECIMAL_LARGEST;
+    }
+
+    // Compute the candidate separating axis (cross product between two polyhedrons edges)
+    Vector3 axis = edge1Direction.cross(edge2Direction).getUnit();
+
+    // Make sure the axis direction is going from first to second polyhedron
+    if (axis.dot(edge2A - polyhedron2Centroid) > decimal(0.0)) {
+        axis = -axis;
+    }
+
+    outSeparatingAxisPolyhedron2Space = axis;
+
+    // Compute and return the distance between the edges
+    return -axis.dot(edge2A - edge1A);
+}
+
+// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
+decimal SATAlgorithm::testFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1,
+                                                              const ConvexPolyhedronShape* polyhedron2,
+                                                              const Transform& polyhedron1ToPolyhedron2,
+                                                              uint& minFaceIndex) const {
+
+    decimal minPenetrationDepth = DECIMAL_LARGEST;
+
+    // For each face of the first polyhedron
+    for (uint f = 0; f < polyhedron1->getNbFaces(); f++) {
+
+        HalfEdgeStructure::Face face = polyhedron1->getFace(f);
+
+        // Get the face normal
+        const Vector3 faceNormal = polyhedron1->getFaceNormal(f);
+
+        // Convert the face normal into the local-space of polyhedron 2
+        const Vector3 faceNormalPolyhedron2Space = polyhedron1ToPolyhedron2.getOrientation() * faceNormal;
+
+        // Get the support point of polyhedron 2 in the inverse direction of face normal
+        const Vector3 supportPoint = polyhedron2->getLocalSupportPointWithoutMargin(-faceNormalPolyhedron2Space, nullptr);
+
+        // Compute the penetration depth
+        const Vector3 faceVertex = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(face.faceVertices[0]);
+        decimal penetrationDepth = (faceVertex - supportPoint).dot(faceNormalPolyhedron2Space);
+
+        // If the penetration depth is negative, we have found a separating axis
+        if (penetrationDepth <= decimal(0.0)) {
+            return penetrationDepth;
+        }
+
+        // Check if we have found a new minimum penetration axis
+        if (penetrationDepth < minPenetrationDepth) {
+            minPenetrationDepth = penetrationDepth;
+            minFaceIndex = f;
+        }
+    }
+
+    return minPenetrationDepth;
+}
+
+
+// Return true if two edges of two polyhedrons build a minkowski face (and can therefore be a separating axis)
+bool SATAlgorithm::testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* polyhedron1, const HalfEdgeStructure::Edge& edge1,
+                                               const ConvexPolyhedronShape* polyhedron2, const HalfEdgeStructure::Edge& edge2,
+                                               const Transform& polyhedron1ToPolyhedron2) const {
+
+    const Vector3 a = polyhedron1ToPolyhedron2 * polyhedron1->getFaceNormal(edge1.faceIndex);
+    const Vector3 b = polyhedron1ToPolyhedron2 * polyhedron1->getFaceNormal(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).faceIndex);
+
+    const Vector3 c = polyhedron2->getFaceNormal(edge2.faceIndex);
+    const Vector3 d = polyhedron2->getFaceNormal(polyhedron2->getHalfEdge(edge2.twinEdgeIndex).faceIndex);
+
+    // Compute b.cross(a) using the edge direction
+    const Vector3 edge1Vertex1 = polyhedron1->getVertexPosition(edge1.vertexIndex);
+    const Vector3 edge1Vertex2 = polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).vertexIndex);
+    const Vector3 bCrossA = polyhedron1ToPolyhedron2.getOrientation() * (edge1Vertex2 - edge1Vertex1);
+
+    // Compute d.cross(c) using the edge direction
+    const Vector3 edge2Vertex1 = polyhedron2->getVertexPosition(edge2.vertexIndex);
+    const Vector3 edge2Vertex2 = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.twinEdgeIndex).vertexIndex);
+    const Vector3 dCrossC = edge2Vertex2 - edge2Vertex1;
+
+    // Test if the two arcs of the Gauss Map intersect (therefore forming a minkowski face)
+    // Note that we negate the normals of the second polyhedron because we are looking at the
+    // Gauss map of the minkowski difference of the polyhedrons
+    return testGaussMapArcsIntersect(a, b, -c, -d, bCrossA, dCrossC);
 }
 
 
@@ -346,10 +654,8 @@ bool SATAlgorithm::testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* na
 /// and edge between faces with normal C and D on second polygon create a face on the Minkowski
 /// sum of both polygons. If this is the case, it means that the cross product of both edges
 /// might be a separating axis.
-bool SATAlgorithm::testGaussMapArcsIntersect(const Vector3& a, const Vector3& b,
-                                             const Vector3& c, const Vector3& d) const {
-    const Vector3 bCrossA = b.cross(a);
-    const Vector3 dCrossC = d.cross(c);
+bool SATAlgorithm::testGaussMapArcsIntersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d,
+                                             const Vector3& bCrossA, const Vector3& dCrossC) const {
 
     const decimal cba = c.dot(bCrossA);
     const decimal dba = d.dot(bCrossA);

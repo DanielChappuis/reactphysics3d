@@ -43,9 +43,23 @@ class SATAlgorithm {
 
         // -------------------- Methods -------------------- //
 
+        /// Return true if two edges of two polyhedrons build a minkowski face (and can therefore be a separating axis)
+        bool testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* polyhedron1, const HalfEdgeStructure::Edge& edge1,
+                                         const ConvexPolyhedronShape* polyhedron2, const HalfEdgeStructure::Edge& edge2,
+                                         const Transform& polyhedron1ToPolyhedron2) const;
+
         /// Return true if the arcs AB and CD on the Gauss Map intersect
         bool testGaussMapArcsIntersect(const Vector3& a, const Vector3& b,
-                                       const Vector3& c, const Vector3& d) const;
+                                       const Vector3& c, const Vector3& d,
+                                       const Vector3& bCrossA, const Vector3& dCrossC) const;
+
+        // Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector
+        uint findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const;
+
+        /// Compute and return the distance between the two edges in the direction of the candidate separating axis
+        decimal computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
+                                            const Vector3& edge1Direction, const Vector3& edge2Direction,
+                                            Vector3& outSeparatingAxis) const;
 
     public :
 
@@ -80,12 +94,12 @@ class SATAlgorithm {
         bool isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, const Vector3& edgeAdjacentFace1Normal,
                                           const Vector3& edgeAdjacentFace2Normal) const;
 
-        /// Test collision between a triangle and a convex mesh
-        bool testCollisionTriangleVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
         /// Test collision between two convex meshes
-        bool testCollisionConvexMeshVsConvexMesh(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+        bool testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
 
+        /// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
+        decimal testFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
+                                                        const Transform& polyhedron1ToPolyhedron2, uint& minFaceIndex) const;
 };
 
 }

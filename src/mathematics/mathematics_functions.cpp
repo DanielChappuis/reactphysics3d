@@ -194,7 +194,7 @@ decimal reactphysics3d::computePlaneSegmentIntersection(const Vector3& segA, con
 }
 
 // Compute the distance between a point "point" and a line given by the points "linePointA" and "linePointB"
-decimal reactphysics3d::computeDistancePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
+decimal reactphysics3d::computePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point) {
 	
 	decimal distAB = (linePointB - linePointA).length();
 
