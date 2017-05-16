@@ -41,6 +41,11 @@ class SATAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
+        /// Bias used to make sure the SAT algorithm returns the same penetration axis between frames
+        /// when there are multiple separating axis with the same penetration depth. The goal is to
+        /// make sure the contact manifold does not change too much between frames.
+        static const decimal SAME_SEPARATING_AXIS_BIAS;
+
         // -------------------- Methods -------------------- //
 
         /// Return true if two edges of two polyhedrons build a minkowski face (and can therefore be a separating axis)

@@ -39,6 +39,9 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// Static variables initialization
+const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
+
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
@@ -353,7 +356,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
         // We have found a separating axis
         return false;
     }
-    if (penetrationDepth < minPenetrationDepth) {
+    if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
         isMinPenetrationFaceNormal = true;
         minPenetrationDepth = penetrationDepth;
         minFaceIndex = faceIndex;
@@ -367,7 +370,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
         // We have found a separating axis
         return false;
     }
-    if (penetrationDepth < minPenetrationDepth) {
+    if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
         isMinPenetrationFaceNormal = true;
         minPenetrationDepth = penetrationDepth;
         minFaceIndex = faceIndex;
@@ -409,7 +412,8 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
                     return false;
                 }
 
-                if (penetrationDepth < minPenetrationDepth) {
+                if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
+
                     minPenetrationDepth = penetrationDepth;
                     isMinPenetrationFaceNormalPolyhedron1 = false;
                     isMinPenetrationFaceNormal = false;
