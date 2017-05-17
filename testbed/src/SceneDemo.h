@@ -73,6 +73,9 @@ class SceneDemo : public Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
+		/// Constant color shader
+		openglframework::Shader mColorShader;
+
         // TODO : Delete this
         openglframework::Shader mQuadShader;
 

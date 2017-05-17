@@ -82,13 +82,16 @@ class RaycastManager : public rp3d::RaycastCallback {
         }
 
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override {
+
+			rp3d::Vector3 n = raycastInfo.worldNormal;
+			openglframework::Vector3 normal(n.x, n.y, n.z);
+
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            mHitPoints.push_back(ContactPoint(position));
+            mHitPoints.push_back(ContactPoint(position, normal, openglframework::Color::red()));
 
             // Create a line to display the normal at hit point
-            rp3d::Vector3 n = raycastInfo.worldNormal;
-            openglframework::Vector3 normal(n.x, n.y, n.z);
+			// TODO : Remove the mNormals because the VisualContactPoint is now able to display the contact normal on its own
             Line* normalLine = new Line(position, position + normal);
             mNormals.push_back(normalLine);
 
@@ -134,8 +137,6 @@ class RaycastScene : public SceneDemo {
         /// True if the hit points normals are displayed
         bool mAreNormalsDisplayed;
 
-        /// Raycast manager
-
         /// All objects on the scene
         Box* mBox;
         Sphere* mSphere;
@@ -161,7 +162,7 @@ class RaycastScene : public SceneDemo {
         void createLines();
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
 
     public:

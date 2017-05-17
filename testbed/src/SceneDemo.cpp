@@ -46,6 +46,7 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMa
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
+					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/") {
 
     shadowMapTextureLevel++;
@@ -83,6 +84,11 @@ SceneDemo::~SceneDemo() {
     mShadowMapTexture.destroy();
     mFBOShadowMap.destroy();
     mVBOQuad.destroy();
+
+	mDepthShader.destroy();
+	mPhongShader.destroy();
+	mQuadShader.destroy();
+	mColorShader.destroy();
 
     // Destroy the contact points
     removeAllContactPoints();
@@ -156,7 +162,7 @@ void SceneDemo::render() {
     if (mIsShadowMappingEnabled) mShadowMapTexture.bind();
     const GLuint textureUnit = 0;
 
-    // Set the variables of the shader
+    // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix);
     mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix);
@@ -166,6 +172,12 @@ void SceneDemo::render() {
     mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
+	mPhongShader.unbind();
+
+	// Set the variables of the color shader
+	mColorShader.bind();
+	mColorShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
+	mColorShader.unbind();
 
     // Set the viewport to render the scene
     glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
@@ -289,20 +301,19 @@ void SceneDemo::updateContactPoints() {
         for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
 
             // Create a visual contact point for rendering
-            VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath);
+            VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
             mContactPoints.push_back(point);
         }
     }
 }
 
 // Render the contact points
-void SceneDemo::renderContactPoints(openglframework::Shader& shader,
-                                    const openglframework::Matrix4& worldToCameraMatrix) {
+void SceneDemo::renderContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the raycast hit points
     for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
          it != mContactPoints.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
+        (*it)->render(mColorShader, worldToCameraMatrix);
     }
 }
 
@@ -335,7 +346,9 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(const rp3d::Dyn
 
             rp3d::ContactPoint* contactPoint = manifold->getContactPoint(i);
             rp3d::Vector3 point = contactPoint->getWorldPointOnBody1();
-            ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z));
+			rp3d::Vector3 normalWorld = contactPoint->getNormal();
+			openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
+            ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());
             contactPoints.push_back(contact);
         }
 

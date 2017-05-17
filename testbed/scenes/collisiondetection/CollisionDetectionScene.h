@@ -58,7 +58,7 @@ const int NB_RAYS = 100;
 const float RAY_LENGTH = 30.0f;
 const int NB_BODIES = 9;
 
-// Raycast manager
+// Contact manager
 class ContactManager : public rp3d::CollisionCallback {
 
     private:
@@ -66,16 +66,12 @@ class ContactManager : public rp3d::CollisionCallback {
         /// All the visual contact points
         std::vector<ContactPoint> mContactPoints;
 
-        /// All the normals at contact points
-        std::vector<Line*> mNormals;
-
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 
    public:
 
-        ContactManager(openglframework::Shader& shader,
-                       const std::string& meshFolderPath)
+        ContactManager(openglframework::Shader& shader, const std::string& meshFolderPath)
             : mMeshFolderPath(meshFolderPath) {
 
         }
@@ -87,22 +83,20 @@ class ContactManager : public rp3d::CollisionCallback {
             rp3d::ContactPointInfo* contactPointInfo = collisionCallbackInfo.contactManifold.getFirstContactPointInfo();
             while (contactPointInfo != nullptr) {
 
+				// Contact normal
+				rp3d::Vector3 normal = contactPointInfo->normal;
+				openglframework::Vector3 contactNormal(normal.x, normal.y, normal.z);
+
                 rp3d::Vector3 point1 = contactPointInfo->localPoint1;
                 point1 = collisionCallbackInfo.proxyShape1->getLocalToWorldTransform() * point1;
+				
                 openglframework::Vector3 position1(point1.x, point1.y, point1.z);
-                mContactPoints.push_back(ContactPoint(position1));
-
+                mContactPoints.push_back(ContactPoint(position1, contactNormal, openglframework::Color::red()));
 
                 rp3d::Vector3 point2 = contactPointInfo->localPoint2;
                 point2 = collisionCallbackInfo.proxyShape2->getLocalToWorldTransform() * point2;
                 openglframework::Vector3 position2(point2.x, point2.y, point2.z);
-                mContactPoints.push_back(ContactPoint(position2));
-
-                // Create a line to display the normal at hit point
-                rp3d::Vector3 n = contactPointInfo->normal;
-                openglframework::Vector3 normal(n.x, n.y, n.z);
-                Line* normalLine = new Line(position1, position1 + normal);
-                mNormals.push_back(normalLine);
+                mContactPoints.push_back(ContactPoint(position2, contactNormal, openglframework::Color::blue()));
 
                 contactPointInfo = contactPointInfo->next;
             }
@@ -111,13 +105,6 @@ class ContactManager : public rp3d::CollisionCallback {
         void resetPoints() {
 
             mContactPoints.clear();
-
-            // Destroy all the normals
-            for (std::vector<Line*>::iterator it = mNormals.begin();
-                 it != mNormals.end(); ++it) {
-                delete (*it);
-            }
-            mNormals.clear();
         }
 
         std::vector<ContactPoint> getContactPoints() const {
@@ -146,7 +133,6 @@ class CollisionDetectionScene : public SceneDemo {
         Sphere* mSphere2;
 		Capsule* mCapsule1;
 		Capsule* mCapsule2;
-        Box* mBox1;
         //Cone* mCone;
         //Cylinder* mCylinder;
         //Capsule* mCapsule;
@@ -161,18 +147,6 @@ class CollisionDetectionScene : public SceneDemo {
 
         /// Collision world used for the physics simulation
         rp3d::CollisionWorld* mCollisionWorld;
-
-        /// All the points to render the lines
-        std::vector<openglframework::Vector3> mLinePoints;
-
-        /// Vertex Buffer Object for the vertices data
-        openglframework::VertexBufferObject mVBOVertices;
-
-        /// Vertex Array Object for the vertex data
-        openglframework::VertexArrayObject mVAO;
-
-        /// Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
 
         /// Select the next shape
         void selectNextShape();

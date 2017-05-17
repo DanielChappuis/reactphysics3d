@@ -34,7 +34,7 @@ using namespace collisiondetectionscene;
 CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
        : SceneDemo(name, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mContactManager(mPhongShader, mMeshFolderPath),
-         mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
+         mAreNormalsDisplayed(false) {
 
     mSelectedShapeIndex = 0;
     mIsContactPointsDisplayed = true;
@@ -60,7 +60,6 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere1->setColor(mGreyColorDemo);
     mSphere1->setSleepingColor(mRedColorDemo);
 
-    /*
     // ---------- Sphere 2 ---------- //
     openglframework::Vector3 position2(4, 0, 0);
 
@@ -93,17 +92,6 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     // Set the color
     mCapsule2->setColor(mGreyColorDemo);
     mCapsule2->setSleepingColor(mRedColorDemo);
-*/
-    // ---------- Box 1 ---------- //
-    openglframework::Vector3 position5(4, 5, 0);
-
-    // Create a box and a corresponding collision body in the dynamics world
-    mBox1 = new Box(BOX_SIZE, position5, mCollisionWorld, mMeshFolderPath);
-    mAllShapes.push_back(mBox1);
-
-    // Set the color
-    mBox1->setColor(mGreyColorDemo);
-    mBox1->setSleepingColor(mRedColorDemo);
 
     // ---------- Cone ---------- //
     //openglframework::Vector3 position4(0, 0, 0);
@@ -158,9 +146,6 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     //mHeightField->setColor(mGreyColorDemo);
     //mHeightField->setSleepingColor(mRedColorDemo);
 
-    // Create the VBO and VAO to render the lines
-    //createVBOAndVAO(mPhongShader);
-
     mAllShapes[mSelectedShapeIndex]->setColor(mBlueColorDemo);
 }
 
@@ -172,9 +157,6 @@ void CollisionDetectionScene::reset() {
 // Destructor
 CollisionDetectionScene::~CollisionDetectionScene() {
 
-    // Destroy the shader
-    mPhongShader.destroy();
-
     // Destroy the box rigid body from the dynamics world
     //mCollisionWorld->destroyCollisionBody(mBox->getCollisionBody());
     //delete mBox;
@@ -183,7 +165,6 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     mCollisionWorld->destroyCollisionBody(mSphere1->getCollisionBody());
     delete mSphere1;
 
-    /*
     mCollisionWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
 
@@ -192,10 +173,6 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 
     mCollisionWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
-    */
-
-    mCollisionWorld->destroyCollisionBody(mBox1->getCollisionBody());
-    delete mBox1;
 
     /*
     // Destroy the corresponding rigid body from the dynamics world
@@ -246,10 +223,6 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 
     // Destroy the collision world
     delete mCollisionWorld;
-
-    // Destroy the VBOs and VAO
-    mVBOVertices.destroy();
-    mVAO.destroy();
 }
 
 // Update the physics world (take a simulation step)
@@ -272,57 +245,11 @@ void CollisionDetectionScene::update() {
 void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
                                     const openglframework::Matrix4& worldToCameraMatrix) {
 
-    /*
-    // Bind the VAO
-    mVAO.bind();
-
-    // Bind the shader
-    shader.bind();
-
-    mVBOVertices.bind();
-
-    // Set the model to camera matrix
-    const Matrix4 localToCameraMatrix = Matrix4::identity();
-    shader.setMatrix4x4Uniform("localToWorldMatrix", localToCameraMatrix);
-    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
-
-    // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
-    // model-view matrix)
-    const openglframework::Matrix3 normalMatrix =
-                       localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
-
-    // Set the vertex color
-    openglframework::Vector4 color(1, 0, 0, 1);
-    shader.setVector4Uniform("vertexColor", color, false);
-
-    // Get the location of shader attribute variables
-    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
-
-    glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
-
-    // Draw the lines
-    glDrawArrays(GL_LINES, 0, NB_RAYS);
-
-    glDisableVertexAttribArray(vertexPositionLoc);
-
-    mVBOVertices.unbind();
-
-    // Unbind the VAO
-    mVAO.unbind();
-
-    shader.unbind();
-    */
-
     // Render the shapes
     if (mSphere1->getCollisionBody()->isActive()) mSphere1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    /*
     if (mSphere2->getCollisionBody()->isActive()) mSphere2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mCapsule1->getCollisionBody()->isActive()) mCapsule1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mCapsule2->getCollisionBody()->isActive()) mCapsule2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    */
-    if (mBox1->getCollisionBody()->isActive()) mBox1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     /*
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
@@ -335,34 +262,6 @@ void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
     if (mHeightField->getCollisionBody()->isActive()) mHeightField->render(shader, worldToCameraMatrix);
     */
 
-    shader.unbind();
-}
-
-// Create the Vertex Buffer Objects used to render with OpenGL.
-/// We create two VBOs (one for vertices and one for indices)
-void CollisionDetectionScene::createVBOAndVAO(openglframework::Shader& shader) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Create the VBO for the vertices data
-    mVBOVertices.create();
-    mVBOVertices.bind();
-    size_t sizeVertices = mLinePoints.size() * sizeof(openglframework::Vector3);
-    mVBOVertices.copyDataIntoVBO(sizeVertices, &mLinePoints[0], GL_STATIC_DRAW);
-    mVBOVertices.unbind();
-
-    // Create the VAO for both VBOs
-    mVAO.create();
-    mVAO.bind();
-
-    // Bind the VBO of vertices
-    mVBOVertices.bind();
-
-    // Unbind the VAO
-    mVAO.unbind();
-
-    // Unbind the shader
     shader.unbind();
 }
 

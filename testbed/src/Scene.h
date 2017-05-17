@@ -34,9 +34,12 @@ struct ContactPoint {
 
     public:
         openglframework::Vector3 point;
+		openglframework::Vector3 normal;
+		openglframework::Color color;
 
         /// Constructor
-        ContactPoint(const openglframework::Vector3& pointWorld) : point(pointWorld) {
+        ContactPoint(const openglframework::Vector3& pointWorld, const openglframework::Vector3& normalWorld, const openglframework::Color colorPoint)
+			        : point(pointWorld), normal(normalWorld), color(colorPoint) {
 
         }
 };
