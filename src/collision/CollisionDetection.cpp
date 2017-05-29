@@ -241,7 +241,7 @@ void CollisionDetection::computeNarrowPhase() {
 
         // If there is no collision algorithm between those two kinds of shapes, skip it
         if (narrowPhaseAlgorithm != nullptr) {
-        
+
             // Use the narrow-phase collision detection algorithm to check
             // if there really is a collision. If a collision occurs, the
             // notifyContact() callback method will be called.
@@ -268,7 +268,15 @@ void CollisionDetection::computeNarrowPhase() {
 
                 // Trigger a callback event for the new contact
                 if (mWorld->mEventListener != nullptr) mWorld->mEventListener->newContact(contactManifoldInfo);
+
+                currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasColliding = true;
             }
+            else {
+                currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasColliding = false;
+            }
+
+            // The previous frame collision info is now valid
+            currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().isValid = true;
         }
 
         currentNarrowPhaseInfo = currentNarrowPhaseInfo->next;
@@ -834,6 +842,9 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
                         // Report the contact to the user
                         callback->notifyContact(collisionInfo);
                     }
+
+                    // The previous frame collision info is now valid
+                    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().isValid = true;
                 }
 
                 NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;

@@ -37,6 +37,51 @@ namespace reactphysics3d {
 // Type for the overlapping pair ID
 using overlappingpairid = std::pair<uint, uint>;
 
+// Structure LastFrameCollisionInfo
+/**
+ * This structure contains collision info about the last frame.
+ * This is used for temporal coherence between frames.
+ */
+struct LastFrameCollisionInfo {
+
+    /// True if we have information about the previous frame
+    bool isValid;
+
+    /// True if the two shapes were colliding in the previous frame
+    bool wasColliding;
+
+    /// True if we were using GJK algorithm to check for collision in the previous frame
+    bool wasUsingGJK;
+
+    /// True if we were using SAT algorithm to check for collision in the previous frame
+    bool wasUsingSAT;
+
+    /// True if there was a narrow-phase collision
+    /// in the previous frame
+    bool wasCollidingLastFrame;
+
+    // ----- GJK Algorithm -----
+
+    /// Previous separating axis
+    Vector3 gjkSeparatingAxis;
+
+    // SAT Algorithm
+    bool satIsAxisFacePolyhedron1;
+    bool satIsAxisFacePolyhedron2;
+    uint satMinAxisFaceIndex;
+    uint satMinEdge1Index;
+    uint satMinEdge2Index;
+
+    /// Constructor
+    LastFrameCollisionInfo() {
+
+        isValid = false;
+        wasColliding = false;
+        wasUsingSAT = false;
+        wasUsingGJK = false;
+    }
+};
+
 // Class OverlappingPair
 /**
  * This class represents a pair of two proxy collision shapes that are overlapping
@@ -54,8 +99,8 @@ class OverlappingPair {
         /// Set of persistent contact manifolds
         ContactManifoldSet mContactManifoldSet;
 
-        /// Cached previous separating axis
-        Vector3 mCachedSeparatingAxis;
+        /// Collision information about the last frame (for temporal coherence)
+        LastFrameCollisionInfo mLastFrameCollisionInfo;
 
     public:
 
@@ -83,11 +128,8 @@ class OverlappingPair {
         /// Add a contact manifold
         void addContactManifold(const ContactManifoldInfo& contactManifoldInfo);
 
-        /// Return the cached separating axis
-        Vector3 getCachedSeparatingAxis() const;
-
-        /// Set the cached separating axis
-        void setCachedSeparatingAxis(const Vector3& axis);
+        /// Return the last frame collision info
+        LastFrameCollisionInfo& getLastFrameCollisionInfo();
 
         /// Return the number of contacts in the cache
         uint getNbContactPoints() const;
@@ -124,16 +166,10 @@ inline void OverlappingPair::addContactManifold(const ContactManifoldInfo& conta
     mContactManifoldSet.addContactManifold(contactManifoldInfo);
 }
 
-// Return the cached separating axis
-inline Vector3 OverlappingPair::getCachedSeparatingAxis() const {
-    return mCachedSeparatingAxis;
+// Return the last frame collision info
+inline LastFrameCollisionInfo& OverlappingPair::getLastFrameCollisionInfo() {
+    return mLastFrameCollisionInfo;
 }
-
-// Set the cached separating axis
-inline void OverlappingPair::setCachedSeparatingAxis(const Vector3& axis) {
-    mCachedSeparatingAxis = axis;
-}
-
 
 // Return the number of contact points in the contact manifold
 inline uint OverlappingPair::getNbContactPoints() const {

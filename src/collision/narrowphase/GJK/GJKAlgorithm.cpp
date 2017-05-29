@@ -93,7 +93,14 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(const NarrowPhaseInfo* narro
     VoronoiSimplex simplex;
 
     // Get the previous point V (last cached separating axis)
-    Vector3 v = narrowPhaseInfo->overlappingPair->getCachedSeparatingAxis();
+    Vector3 v;
+    LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
+    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingGJK) {
+        v = lastFrameInfo.gjkSeparatingAxis;
+    }
+    else {
+        v.setAllValues(0, 1, 0);
+    }
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -113,7 +120,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(const NarrowPhaseInfo* narro
         if (vDotw > decimal(0.0) && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            narrowPhaseInfo->overlappingPair->setCachedSeparatingAxis(v);
+            narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().gjkSeparatingAxis = v;
             
             // No intersection, we return
             return GJKResult::SEPARATED;

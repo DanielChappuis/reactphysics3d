@@ -23,66 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
+#ifndef REACTPHYSICS3D_CONVEX_POLYHEDRON_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+#define	REACTPHYSICS3D_CONVEX_POLYHEDRON_VS_CONVEX_POLYHEDRON_ALGORITHM_H
 
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexPolyhedronAlgorithm.h"
-#include "SphereVsCapsuleAlgorithm.h"
-#include "CapsuleVsCapsuleAlgorithm.h"
-#include "CapsuleVsConvexPolyhedronAlgorithm.h"
-#include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
+#include "body/Body.h"
+#include "constraint/ContactPoint.h"
+#include "NarrowPhaseAlgorithm.h"
 
+
+/// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Class DefaultCollisionDispatch
+// Class ConvexPolyhedronVsConvexPolyhedronAlgorithm
 /**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
+ * This class is used to compute the narrow-phase collision detection
+ * between two convex polyhedra.
  */
-class DefaultCollisionDispatch : public CollisionDispatch {
+class ConvexPolyhedronVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 
-    protected:
+    protected :
 
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
+    public :
 
-        /// Capsule vs Capsule collision algorithm
-        CapsuleVsCapsuleAlgorithm mCapsuleVsCapsuleAlgorithm;
-
-        /// Sphere vs Capsule collision algorithm
-        SphereVsCapsuleAlgorithm mSphereVsCapsuleAlgorithm;
-
-        /// Sphere vs Convex Polyhedron collision algorithm
-        SphereVsConvexPolyhedronAlgorithm mSphereVsConvexPolyhedronAlgorithm;
-
-        /// Capsule vs Convex Polyhedron collision algorithm
-        CapsuleVsConvexPolyhedronAlgorithm mCapsuleVsConvexPolyhedronAlgorithm;
-
-        /// Convex Polyhedron vs Convex Polyhedron collision algorithm
-        ConvexPolyhedronVsConvexPolyhedronAlgorithm mConvexPolyhedronVsConvexPolyhedronAlgorithm;
-
-    public:
+        // -------------------- Methods -------------------- //
 
         /// Constructor
-        DefaultCollisionDispatch() = default;
+        ConvexPolyhedronVsConvexPolyhedronAlgorithm() = default;
 
         /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
+        virtual ~ConvexPolyhedronVsConvexPolyhedronAlgorithm() override = default;
 
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
+        /// Deleted copy-constructor
+        ConvexPolyhedronVsConvexPolyhedronAlgorithm(const ConvexPolyhedronVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Deleted assignment operator
+        ConvexPolyhedronVsConvexPolyhedronAlgorithm& operator=(const ConvexPolyhedronVsConvexPolyhedronAlgorithm& algorithm) = delete;
+
+        /// Compute the narrow-phase collision detection between two convex polyhedra
+        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                   ContactManifoldInfo& contactManifoldInfo) override;
 };
 
 }
 
 #endif
-
-
 

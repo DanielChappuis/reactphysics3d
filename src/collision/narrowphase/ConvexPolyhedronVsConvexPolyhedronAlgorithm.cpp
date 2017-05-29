@@ -23,66 +23,26 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-#define	REACTPHYSICS3D_DEFAULT_COLLISION_DISPATCH_H
-
 // Libraries
-#include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
-#include "SphereVsSphereAlgorithm.h"
-#include "SphereVsConvexPolyhedronAlgorithm.h"
-#include "SphereVsCapsuleAlgorithm.h"
-#include "CapsuleVsCapsuleAlgorithm.h"
-#include "CapsuleVsConvexPolyhedronAlgorithm.h"
 #include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
+#include "SAT/SATAlgorithm.h"
 
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-// Class DefaultCollisionDispatch
-/**
- * This is the default collision dispatch configuration use in ReactPhysics3D.
- * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
- */
-class DefaultCollisionDispatch : public CollisionDispatch {
+// Compute the narrow-phase collision detection between two convex polyhedra
+// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
+// by Dirk Gregorius.
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
+                                                                ContactManifoldInfo& contactManifoldInfo) {
 
-    protected:
+    // Run the SAT algorithm to find the separating axis and compute contact point
+    SATAlgorithm satAlgorithm;
+    bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
 
-        /// Sphere vs Sphere collision algorithm
-        SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
+    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
+    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
 
-        /// Capsule vs Capsule collision algorithm
-        CapsuleVsCapsuleAlgorithm mCapsuleVsCapsuleAlgorithm;
-
-        /// Sphere vs Capsule collision algorithm
-        SphereVsCapsuleAlgorithm mSphereVsCapsuleAlgorithm;
-
-        /// Sphere vs Convex Polyhedron collision algorithm
-        SphereVsConvexPolyhedronAlgorithm mSphereVsConvexPolyhedronAlgorithm;
-
-        /// Capsule vs Convex Polyhedron collision algorithm
-        CapsuleVsConvexPolyhedronAlgorithm mCapsuleVsConvexPolyhedronAlgorithm;
-
-        /// Convex Polyhedron vs Convex Polyhedron collision algorithm
-        ConvexPolyhedronVsConvexPolyhedronAlgorithm mConvexPolyhedronVsConvexPolyhedronAlgorithm;
-
-    public:
-
-        /// Constructor
-        DefaultCollisionDispatch() = default;
-
-        /// Destructor
-        virtual ~DefaultCollisionDispatch() override = default;
-
-        /// Select and return the narrow-phase collision detection algorithm to
-        /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
-};
-
+    return isColliding;
 }
-
-#endif
-
-
-

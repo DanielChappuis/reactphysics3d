@@ -56,6 +56,15 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
     if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
         return &mSphereVsConvexPolyhedronAlgorithm;
     }
+    // Capsule vs Convex Polyhedron algorithm
+    if (shape1Type == CollisionShapeType::CAPSULE && shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
+        return &mCapsuleVsConvexPolyhedronAlgorithm;
+    }
+    // Convex Polyhedron vs Convex Polyhedron algorithm
+    if (shape1Type == CollisionShapeType::CONVEX_POLYHEDRON &&
+        shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
+        return &mConvexPolyhedronVsConvexPolyhedronAlgorithm;
+    }
 
     return nullptr;
 }

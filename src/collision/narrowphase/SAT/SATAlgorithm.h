@@ -66,6 +66,17 @@ class SATAlgorithm {
                                             const Vector3& edge1Direction, const Vector3& edge2Direction,
                                             Vector3& outSeparatingAxis) const;
 
+        /// Return the penetration depth between two polyhedra along a face normal axis of the first polyhedron
+        decimal testSingleFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1,
+                                                              const ConvexPolyhedronShape* polyhedron2,
+                                                              const Transform& polyhedron1ToPolyhedron2,
+                                                              uint faceIndex) const;
+
+
+        /// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
+        decimal testFacesDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
+                                                        const Transform& polyhedron1ToPolyhedron2, uint& minFaceIndex) const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -101,10 +112,6 @@ class SATAlgorithm {
 
         /// Test collision between two convex meshes
         bool testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
-
-        /// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
-        decimal testFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
-                                                        const Transform& polyhedron1ToPolyhedron2, uint& minFaceIndex) const;
 };
 
 }

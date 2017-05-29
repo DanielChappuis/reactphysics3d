@@ -60,7 +60,7 @@ class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
 
-        /// Compute the narrow-phase collision detection a sphere and a convex polyhedron
+        /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
         virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
                                    ContactManifoldInfo& contactManifoldInfo) override;
 };
