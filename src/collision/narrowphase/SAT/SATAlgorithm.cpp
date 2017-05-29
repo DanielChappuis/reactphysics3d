@@ -48,9 +48,10 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
 
     bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
 
-    assert(isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+           narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE ||
+           narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
     // Get the capsule collision shapes
     const SphereShape* sphere = static_cast<const SphereShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
@@ -116,9 +117,10 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
 
     bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
-    assert(isCapsuleShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(!isCapsuleShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(!isCapsuleShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+           narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE ||
+           narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
 
     // Get the collision shapes
     const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);

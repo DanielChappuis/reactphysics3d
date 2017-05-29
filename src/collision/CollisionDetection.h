@@ -136,7 +136,7 @@ class CollisionDetection {
                                                NarrowPhaseInfo** firstNarrowPhaseInfo);
 
         /// Compute the middle-phase collision detection between two proxy shapes
-        NarrowPhaseInfo* computeMiddlePhaseForProxyShapes(ProxyShape* shape1, ProxyShape* shape2);
+        NarrowPhaseInfo* computeMiddlePhaseForProxyShapes(OverlappingPair* pair);
    
     public :
 

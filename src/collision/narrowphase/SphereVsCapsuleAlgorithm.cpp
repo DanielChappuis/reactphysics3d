@@ -39,8 +39,6 @@ bool SphereVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseI
     bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
 
     assert(isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
-    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
-    assert(!isSphereShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
     // Get the collision shapes
     const SphereShape* sphereShape = static_cast<const SphereShape*>(isSphereShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
