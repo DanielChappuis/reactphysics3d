@@ -50,10 +50,10 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mCollisionWorld = new rp3d::CollisionWorld();
 
     // ---------- Sphere 1 ---------- //
-    openglframework::Vector3 position1(0, 0, 0);
+    openglframework::Vector3 position1(12, 0, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere1 = new Sphere(6, position1, mCollisionWorld, mMeshFolderPath);
+    mSphere1 = new Sphere(4, position1, mCollisionWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere1);
 
     // Set the color
@@ -61,10 +61,10 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere1->setSleepingColor(mRedColorDemo);
 
     // ---------- Sphere 2 ---------- //
-    openglframework::Vector3 position2(4, 0, 0);
+    openglframework::Vector3 position2(0, 0, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere2 = new Sphere(4, position2, mCollisionWorld, mMeshFolderPath);
+    mSphere2 = new Sphere(2, position2, mCollisionWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere2);
 
     // Set the color
@@ -72,7 +72,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere2->setSleepingColor(mRedColorDemo);
 
 	// ---------- Capsule 1 ---------- //
-	openglframework::Vector3 position3(4, 0, 0);
+	openglframework::Vector3 position3(8, 0, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
 	mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position3, mCollisionWorld, mMeshFolderPath);
@@ -83,7 +83,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mCapsule1->setSleepingColor(mRedColorDemo);
 
     // ---------- Capsule 2 ---------- //
-    openglframework::Vector3 position4(-4, 0, 0);
+    openglframework::Vector3 position4(-8, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position4, mCollisionWorld, mMeshFolderPath);
@@ -92,6 +92,28 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     // Set the color
     mCapsule2->setColor(mGreyColorDemo);
     mCapsule2->setSleepingColor(mRedColorDemo);
+
+	// ---------- Box 1 ---------- //
+	openglframework::Vector3 position5(0, -12, 0);
+
+	// Create a cylinder and a corresponding collision body in the dynamics world
+	mBox1 = new Box(BOX_SIZE, position5, mCollisionWorld, mMeshFolderPath);
+	mAllShapes.push_back(mBox1);
+
+	// Set the color
+	mBox1->setColor(mGreyColorDemo);
+	mBox1->setSleepingColor(mRedColorDemo);
+
+	// ---------- Box 2 ---------- //
+	openglframework::Vector3 position6(0, 12, 0);
+
+	// Create a cylinder and a corresponding collision body in the dynamics world
+	mBox2 = new Box(openglframework::Vector3(3, 2, 5), position6, mCollisionWorld, mMeshFolderPath);
+	mAllShapes.push_back(mBox2);
+
+	// Set the color
+	mBox2->setColor(mGreyColorDemo);
+	mBox2->setSleepingColor(mRedColorDemo);
 
     // ---------- Cone ---------- //
     //openglframework::Vector3 position4(0, 0, 0);
@@ -174,6 +196,12 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     mCollisionWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
 
+	mCollisionWorld->destroyCollisionBody(mBox1->getCollisionBody());
+	delete mBox1;
+
+	mCollisionWorld->destroyCollisionBody(mBox2->getCollisionBody());
+	delete mBox2;
+
     /*
     // Destroy the corresponding rigid body from the dynamics world
     mCollisionWorld->destroyCollisionBody(mCone->getCollisionBody());
@@ -250,6 +278,8 @@ void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
     if (mSphere2->getCollisionBody()->isActive()) mSphere2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mCapsule1->getCollisionBody()->isActive()) mCapsule1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
     if (mCapsule2->getCollisionBody()->isActive()) mCapsule2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+	if (mBox1->getCollisionBody()->isActive()) mBox1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+	if (mBox2->getCollisionBody()->isActive()) mBox2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     /*
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
@@ -286,8 +316,8 @@ bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, i
         return true;
     }
 
-    float stepDist = 0.5f;
-    float stepAngle = 20 * (3.14f / 180.0f);
+    float stepDist = 0.2f;
+    float stepAngle = 15 * (3.14f / 180.0f);
 
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();

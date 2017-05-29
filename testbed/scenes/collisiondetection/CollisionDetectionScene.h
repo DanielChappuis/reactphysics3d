@@ -133,6 +133,8 @@ class CollisionDetectionScene : public SceneDemo {
         Sphere* mSphere2;
 		Capsule* mCapsule1;
 		Capsule* mCapsule2;
+		Box* mBox1;
+		Box* mBox2;
         //Cone* mCone;
         //Cylinder* mCylinder;
         //Capsule* mCapsule;
