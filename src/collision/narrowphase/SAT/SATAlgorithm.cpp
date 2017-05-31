@@ -71,27 +71,64 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
     decimal minPenetrationDepth = DECIMAL_LARGEST;
     uint minFaceIndex = 0;
 
-    // For each face of the convex mesh
-    for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
+    // True if the shapes were overlapping in the previous frame and are
+    // still overlapping on the same axis in this frame
+    bool isTemporalCoherenceValid = false;
 
-        // Get the face
-        HalfEdgeStructure::Face face = polyhedron->getFace(f);
+    LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
 
-        // Get the face normal
-        const Vector3 faceNormal = polyhedron->getFaceNormal(f);
+    // If the last frame collision info is valid and was also using SAT algorithm
+    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
 
-        Vector3 sphereCenterToFacePoint = polyhedron->getVertexPosition(face.faceVertices[0]) - sphereCenter;
-        decimal penetrationDepth = sphereCenterToFacePoint.dot(faceNormal) + sphere->getRadius();
+        // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
+        // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
+        // the shapes are still separated along this axis, we directly exit with no collision.
 
-        // If the penetration depth is negative, we have found a separating axis
+        // Compute the penetration depth of the shapes along the face normal direction
+        decimal penetrationDepth = computePolyhedronFaceVsSpherePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
+                                                                                 sphere, sphereCenter);
+
+        // If the previous axis is a separating axis
         if (penetrationDepth <= decimal(0.0)) {
+
+            // Return no collision
             return false;
         }
 
-        // Check if we have found a new minimum penetration axis
-        if (penetrationDepth < minPenetrationDepth) {
+        // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+        // we will skip the entire SAT algorithm because the minimum separating axis did not change
+        isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+
+        if (isTemporalCoherenceValid) {
+
             minPenetrationDepth = penetrationDepth;
-            minFaceIndex = f;
+            minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
+        }
+    }
+
+    // We the shapes are still overlapping in the same axis as in
+    // the previous frame, we skip the whole SAT algorithm
+    if (!isTemporalCoherenceValid) {
+
+        // For each face of the convex mesh
+        for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
+
+            // Compute the penetration depth of the shapes along the face normal direction
+            decimal penetrationDepth = computePolyhedronFaceVsSpherePenetrationDepth(f, polyhedron, sphere, sphereCenter);
+
+            // If the penetration depth is negative, we have found a separating axis
+            if (penetrationDepth <= decimal(0.0)) {
+
+                lastFrameInfo.satMinAxisFaceIndex = f;
+
+                return false;
+            }
+
+            // Check if we have found a new minimum penetration axis
+            if (penetrationDepth < minPenetrationDepth) {
+                minPenetrationDepth = penetrationDepth;
+                minFaceIndex = f;
+            }
         }
     }
 
@@ -109,7 +146,25 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
                                         isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
                                         isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
 
+    lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
+
     return true;
+}
+
+// Compute the penetration depth between a face of the polyhedron and a sphere along the polyhedron face normal direction
+decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceIndex, const ConvexPolyhedronShape* polyhedron,
+                                                                    const SphereShape* sphere, const Vector3& sphereCenter) const {
+
+    // Get the face
+    HalfEdgeStructure::Face face = polyhedron->getFace(faceIndex);
+
+    // Get the face normal
+    const Vector3 faceNormal = polyhedron->getFaceNormal(faceIndex);
+
+    Vector3 sphereCenterToFacePoint = polyhedron->getVertexPosition(face.faceVertices[0]) - sphereCenter;
+    decimal penetrationDepth = sphereCenterToFacePoint.dot(faceNormal) + sphere->getRadius();
+
+    return penetrationDepth;
 }
 
 // Test collision between a capsule and a convex mesh
@@ -131,6 +186,11 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
 
     const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
 
+    // Compute the end-points of the inner segment of the capsule
+    const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
+    const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+    const Vector3 capsuleSegmentAxis = capsuleSegB - capsuleSegA;
+
     // Minimum penetration depth
     decimal minPenetrationDepth = DECIMAL_LARGEST;
     uint minFaceIndex = 0;
@@ -140,80 +200,151 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
     Vector3 separatingPolyhedronEdgeVertex1;
     Vector3 separatingPolyhedronEdgeVertex2;
 
-    // For each face of the convex mesh
-    for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
+    // True if the shapes were overlapping in the previous frame and are
+    // still overlapping on the same axis in this frame
+    bool isTemporalCoherenceValid = false;
 
-        // Get the face
-        HalfEdgeStructure::Face face = polyhedron->getFace(f);
+    LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
 
-        // Get the face normal
-        const Vector3 faceNormal = polyhedron->getFaceNormal(f);
+    // If the last frame collision info is valid and was also using SAT algorithm
+    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
 
-        // Compute the penetration depth (using the capsule support in the direction opposite to the face normal)
-        const Vector3 faceNormalCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
-        const Vector3 capsuleSupportPoint = capsuleShape->getLocalSupportPointWithMargin(-faceNormalCapsuleSpace, nullptr);
-        const Vector3 pointOnPolyhedronFace = polyhedronToCapsuleTransform * polyhedron->getVertexPosition(face.faceVertices[0]);
-        const Vector3 capsuleSupportPointToFacePoint =  pointOnPolyhedronFace - capsuleSupportPoint;
-        const decimal penetrationDepth = capsuleSupportPointToFacePoint.dot(faceNormal);
+        // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
+        // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
+        // the shapes are still separated along this axis, we directly exit with no collision.
 
-        // If the penetration depth is negative, we have found a separating axis
-        if (penetrationDepth <= decimal(0.0)) {
-            return false;
+        // If the previous minimum separation axis was a face normal of the polyhedron
+        if (lastFrameInfo.satIsAxisFacePolyhedron1) {
+
+            Vector3 outFaceNormalCapsuleSpace;
+
+            // Compute the penetration depth along the polyhedron face normal direction
+            const decimal penetrationDepth = computePolyhedronFaceVsCapsulePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
+                                                                                            capsuleShape, polyhedronToCapsuleTransform,
+                                                                                            outFaceNormalCapsuleSpace);
+
+            // If the previous axis is a separating axis
+            if (penetrationDepth <= decimal(0.0)) {
+
+                // Return no collision
+                return false;
+            }
+
+            // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+            // we will skip the entire SAT algorithm because the minimum separating axis did not change
+            isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+
+            if (isTemporalCoherenceValid) {
+
+                minPenetrationDepth = penetrationDepth;
+                minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
+                isMinPenetrationFaceNormal = true;
+                separatingAxisCapsuleSpace = outFaceNormalCapsuleSpace;
+            }
         }
+        else {   // If the previous minimum separation axis the cross product of the capsule inner segment and an edge of the polyhedron
 
-        // Check if we have found a new minimum penetration axis
-        if (penetrationDepth < minPenetrationDepth) {
-            minPenetrationDepth = penetrationDepth;
-            minFaceIndex = f;
-            isMinPenetrationFaceNormal = true;
-            separatingAxisCapsuleSpace = faceNormalCapsuleSpace;
+            // Get an edge from the polyhedron (convert it into the capsule local-space)
+            HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(lastFrameInfo.satMinEdge1Index);
+            const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
+            const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
+            const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
+
+            Vector3 outAxis;
+
+            // Compute the penetration depth along this axis
+            const decimal penetrationDepth = computeEdgeVsCapsuleInnerSegmentPenetrationDepth(polyhedron, capsuleShape,
+                                                                                              capsuleSegmentAxis, edgeVertex1,
+                                                                                              edgeDirectionCapsuleSpace,
+                                                                                              polyhedronToCapsuleTransform,
+                                                                                              outAxis);
+
+            // If the previous axis is a separating axis
+            if (penetrationDepth <= decimal(0.0)) {
+
+                // Return no collision
+                return false;
+            }
+
+            // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+            // we will skip the entire SAT algorithm because the minimum separating axis did not change
+            isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+
+            if (isTemporalCoherenceValid) {
+
+                minPenetrationDepth = penetrationDepth;
+                minEdgeIndex = lastFrameInfo.satMinEdge1Index;
+                isMinPenetrationFaceNormal = false;
+                separatingAxisCapsuleSpace = outAxis;
+                separatingPolyhedronEdgeVertex1 = edgeVertex1;
+                separatingPolyhedronEdgeVertex2 = edgeVertex2;
+            }
         }
     }
 
-    // Compute the end-points of the inner segment of the capsule
-    const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
-    const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
-    const Vector3 capsuleSegmentAxis = capsuleSegB - capsuleSegA;
+    // We the shapes are still overlapping in the same axis as in
+    // the previous frame, we skip the whole SAT algorithm
+    if (!isTemporalCoherenceValid) {
 
-    // For each direction that is the cross product of the capsule inner segment and an edge of the polyhedron
-    for (uint e = 0; e < polyhedron->getNbHalfEdges(); e += 2) {
+        // For each face of the convex mesh
+        for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
 
-        // Get an edge from the polyhedron (convert it into the capsule local-space)
-        HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(e);
-        const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
-        const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
-        const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
+            Vector3 outFaceNormalCapsuleSpace;
 
-        HalfEdgeStructure::Edge twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
-        const Vector3 adjacentFace1Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(edge.faceIndex);
-        const Vector3 adjacentFace2Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(twinEdge.faceIndex);
+            // Compute the penetration depth
+            const decimal penetrationDepth = computePolyhedronFaceVsCapsulePenetrationDepth(f, polyhedron, capsuleShape,
+                                                                                            polyhedronToCapsuleTransform,
+                                                                                            outFaceNormalCapsuleSpace);
 
-        // Check using the Gauss Map if this edge cross product can be as separating axis
-        if (isMinkowskiFaceCapsuleVsEdge(capsuleSegmentAxis, adjacentFace1Normal, adjacentFace2Normal)) {
+            // If the penetration depth is negative, we have found a separating axis
+            if (penetrationDepth <= decimal(0.0)) {
 
-            // Compute the axis to test (cross product between capsule inner segment and polyhedron edge)
-            Vector3 axis = capsuleSegmentAxis.cross(edgeDirectionCapsuleSpace);
+                lastFrameInfo.satIsAxisFacePolyhedron1 = true;
+                lastFrameInfo.satMinAxisFaceIndex = f;
 
-            // Skip separating axis test if polyhedron edge is parallel to the capsule inner segment
-            if (axis.lengthSquare() >= decimal(0.00001)) {
+                return false;
+            }
 
-                const Vector3 polyhedronCentroid = polyhedronToCapsuleTransform * polyhedron->getCentroid();
-                const Vector3 pointOnPolyhedronEdge = polyhedronToCapsuleTransform * edgeVertex1;
+            // Check if we have found a new minimum penetration axis
+            if (penetrationDepth < minPenetrationDepth) {
+                minPenetrationDepth = penetrationDepth;
+                minFaceIndex = f;
+                isMinPenetrationFaceNormal = true;
+                separatingAxisCapsuleSpace = outFaceNormalCapsuleSpace;
+            }
+        }
 
-                // Swap axis direction if necessary such that it points out of the polyhedron
-                if (axis.dot(pointOnPolyhedronEdge - polyhedronCentroid) < 0) {
-                    axis = -axis;
-                }
+        // For each direction that is the cross product of the capsule inner segment and an edge of the polyhedron
+        for (uint e = 0; e < polyhedron->getNbHalfEdges(); e += 2) {
 
-                axis.normalize();
+            // Get an edge from the polyhedron (convert it into the capsule local-space)
+            HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(e);
+            const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
+            const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
+            const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
+
+            HalfEdgeStructure::Edge twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
+            const Vector3 adjacentFace1Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(edge.faceIndex);
+            const Vector3 adjacentFace2Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(twinEdge.faceIndex);
+
+            // Check using the Gauss Map if this edge cross product can be as separating axis
+            if (isMinkowskiFaceCapsuleVsEdge(capsuleSegmentAxis, adjacentFace1Normal, adjacentFace2Normal)) {
+
+                Vector3 outAxis;
 
                 // Compute the penetration depth
-                const Vector3 capsuleSupportPoint = capsuleShape->getLocalSupportPointWithMargin(-axis, nullptr);
-                const Vector3 capsuleSupportPointToEdgePoint = pointOnPolyhedronEdge - capsuleSupportPoint;
-                const decimal penetrationDepth = capsuleSupportPointToEdgePoint.dot(axis);
+                const decimal penetrationDepth = computeEdgeVsCapsuleInnerSegmentPenetrationDepth(polyhedron, capsuleShape,
+                                                                                                  capsuleSegmentAxis, edgeVertex1,
+                                                                                                  edgeDirectionCapsuleSpace,
+                                                                                                  polyhedronToCapsuleTransform,
+                                                                                                  outAxis);
 
                 // If the penetration depth is negative, we have found a separating axis
                 if (penetrationDepth <= decimal(0.0)) {
+
+                    lastFrameInfo.satIsAxisFacePolyhedron1 = false;
+                    lastFrameInfo.satMinEdge1Index = e;
+
                     return false;
                 }
 
@@ -222,12 +353,13 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
                     minPenetrationDepth = penetrationDepth;
                     minEdgeIndex = e;
                     isMinPenetrationFaceNormal = false;
-                    separatingAxisCapsuleSpace = axis;
+                    separatingAxisCapsuleSpace = outAxis;
                     separatingPolyhedronEdgeVertex1 = edgeVertex1;
                     separatingPolyhedronEdgeVertex2 = edgeVertex2;
                 }
             }
         }
+
     }
 
     // Convert the inner capsule segment points into the polyhedron local-space
@@ -246,6 +378,9 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
                                                   polyhedronToCapsuleTransform, normalWorld, separatingAxisCapsuleSpace,
                                                   capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                   contactManifoldInfo, isCapsuleShape1);
+
+         lastFrameInfo.satIsAxisFacePolyhedron1 = true;
+         lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
     }
     else {   // The separating axis is the cross product of a polyhedron edge and the inner capsule segment
 
@@ -264,9 +399,66 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
         contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
                                             isCapsuleShape1 ? contactPointCapsule : closestPointPolyhedronEdge,
                                             isCapsuleShape1 ? closestPointPolyhedronEdge : contactPointCapsule);
+
+         lastFrameInfo.satIsAxisFacePolyhedron1 = false;
+         lastFrameInfo.satMinEdge1Index = minEdgeIndex;
     }
 
     return true;
+}
+
+// Compute the penetration depth when the separating axis is the cross product of polyhedron edge and capsule inner segment
+decimal SATAlgorithm::computeEdgeVsCapsuleInnerSegmentPenetrationDepth(const ConvexPolyhedronShape* polyhedron, const CapsuleShape* capsule,
+                                                                       const Vector3& capsuleSegmentAxis, const Vector3& edgeVertex1,
+                                                                       const Vector3& edgeDirectionCapsuleSpace,
+                                                                       const Transform& polyhedronToCapsuleTransform, Vector3& outAxis) const {
+
+    decimal penetrationDepth = DECIMAL_LARGEST;
+
+    // Compute the axis to test (cross product between capsule inner segment and polyhedron edge)
+    outAxis = capsuleSegmentAxis.cross(edgeDirectionCapsuleSpace);
+
+    // Skip separating axis test if polyhedron edge is parallel to the capsule inner segment
+    if (outAxis.lengthSquare() >= decimal(0.00001)) {
+
+        const Vector3 polyhedronCentroid = polyhedronToCapsuleTransform * polyhedron->getCentroid();
+        const Vector3 pointOnPolyhedronEdge = polyhedronToCapsuleTransform * edgeVertex1;
+
+        // Swap axis direction if necessary such that it points out of the polyhedron
+        if (outAxis.dot(pointOnPolyhedronEdge - polyhedronCentroid) < 0) {
+            outAxis = -outAxis;
+        }
+
+        outAxis.normalize();
+
+        // Compute the penetration depth
+        const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outAxis, nullptr);
+        const Vector3 capsuleSupportPointToEdgePoint = pointOnPolyhedronEdge - capsuleSupportPoint;
+        penetrationDepth = capsuleSupportPointToEdgePoint.dot(outAxis);
+    }
+
+    return penetrationDepth;
+}
+
+// Compute the penetration depth between the face of a polyhedron and a capsule along the polyhedron face normal direction
+decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhedronFaceIndex, const ConvexPolyhedronShape* polyhedron,
+                                                                     const CapsuleShape* capsule, const Transform& polyhedronToCapsuleTransform,
+                                                                     Vector3& outFaceNormalCapsuleSpace) const {
+
+    // Get the face
+    HalfEdgeStructure::Face face = polyhedron->getFace(polyhedronFaceIndex);
+
+    // Get the face normal
+    const Vector3 faceNormal = polyhedron->getFaceNormal(polyhedronFaceIndex);
+
+    // Compute the penetration depth (using the capsule support in the direction opposite to the face normal)
+    outFaceNormalCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
+    const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outFaceNormalCapsuleSpace, nullptr);
+    const Vector3 pointOnPolyhedronFace = polyhedronToCapsuleTransform * polyhedron->getVertexPosition(face.faceVertices[0]);
+    const Vector3 capsuleSupportPointToFacePoint =  pointOnPolyhedronFace - capsuleSupportPoint;
+    const decimal penetrationDepth = capsuleSupportPointToFacePoint.dot(faceNormal);
+
+    return penetrationDepth;
 }
 
 // Compute the two contact points between a polyhedron and a capsule when the separating
@@ -424,47 +616,42 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
                 HalfEdgeStructure::Edge edge1 = polyhedron1->getHalfEdge(lastFrameInfo.satMinEdge1Index);
                 HalfEdgeStructure::Edge edge2 = polyhedron2->getHalfEdge(lastFrameInfo.satMinEdge2Index);
 
-                // If the two edges build a minkowski face (and the cross product is
-                // therefore a candidate for separating axis
-                if (testEdgesBuildMinkowskiFace(polyhedron1, edge1, polyhedron2, edge2, polyhedron1ToPolyhedron2)) {
+                Vector3 separatingAxisPolyhedron2Space;
 
-                    Vector3 separatingAxisPolyhedron2Space;
+                const Vector3 edge1A = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(edge1.vertexIndex);
+                const Vector3 edge1B = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.nextEdgeIndex).vertexIndex);
+                const Vector3 edge1Direction = edge1B - edge1A;
+                const Vector3 edge2A = polyhedron2->getVertexPosition(edge2.vertexIndex);
+                const Vector3 edge2B = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.nextEdgeIndex).vertexIndex);
+                const Vector3 edge2Direction = edge2B - edge2A;
 
-                    const Vector3 edge1A = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(edge1.vertexIndex);
-                    const Vector3 edge1B = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.nextEdgeIndex).vertexIndex);
-                    const Vector3 edge1Direction = edge1B - edge1A;
-                    const Vector3 edge2A = polyhedron2->getVertexPosition(edge2.vertexIndex);
-                    const Vector3 edge2B = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.nextEdgeIndex).vertexIndex);
-                    const Vector3 edge2Direction = edge2B - edge2A;
+                // Compute the penetration depth
+                decimal penetrationDepth = computeDistanceBetweenEdges(edge1A, edge2A, polyhedron2->getCentroid(),
+                                                                       edge1Direction, edge2Direction, separatingAxisPolyhedron2Space);
 
-                    // Compute the penetration depth
-                    decimal penetrationDepth = computeDistanceBetweenEdges(edge1A, edge2A, polyhedron2->getCentroid(),
-                                                                           edge1Direction, edge2Direction, separatingAxisPolyhedron2Space);
+                // If the previous axis is a separating axis
+                if (penetrationDepth <= decimal(0.0)) {
 
-                    // If the previous axis is a separating axis
-                    if (penetrationDepth <= decimal(0.0)) {
+                    // Return no collision
+                    return false;
+                }
 
-                        // Return no collision
-                        return false;
-                    }
+                // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+                // we will skip the entire SAT algorithm because the minimum separating axis did not change
+                isTemporalCoherenceValid = lastFrameInfo.wasColliding;
 
-                    // The two shapes are overlapping as in the previous frame and on the same axis, therefore
-                    // we will skip the entire SAT algorithm because the minimum separating axis did not change
-                    isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+                if (isTemporalCoherenceValid) {
 
-                    if (isTemporalCoherenceValid) {
-
-                        minPenetrationDepth = penetrationDepth;
-                        isMinPenetrationFaceNormal = false;
-                        isMinPenetrationFaceNormalPolyhedron1 = false;
-                        minSeparatingEdge1Index = lastFrameInfo.satMinEdge1Index;
-                        minSeparatingEdge2Index = lastFrameInfo.satMinEdge2Index;
-                        separatingEdge1A = edge1A;
-                        separatingEdge1B = edge1B;
-                        separatingEdge2A = edge2A;
-                        separatingEdge2B = edge2B;
-                        minEdgeVsEdgeSeparatingAxisPolyhedron2Space = separatingAxisPolyhedron2Space;
-                    }
+                    minPenetrationDepth = penetrationDepth;
+                    isMinPenetrationFaceNormal = false;
+                    isMinPenetrationFaceNormalPolyhedron1 = false;
+                    minSeparatingEdge1Index = lastFrameInfo.satMinEdge1Index;
+                    minSeparatingEdge2Index = lastFrameInfo.satMinEdge2Index;
+                    separatingEdge1A = edge1A;
+                    separatingEdge1B = edge1B;
+                    separatingEdge2A = edge2A;
+                    separatingEdge2B = edge2B;
+                    minEdgeVsEdgeSeparatingAxisPolyhedron2Space = separatingAxisPolyhedron2Space;
                 }
             }
         }
@@ -472,7 +659,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
 
     // We the shapes are still overlapping in the same axis as in
     // the previous frame, we skip the whole SAT algorithm
-    if (isTemporalCoherenceValid) {
+    if (!isTemporalCoherenceValid) {
 
         // Test all the face normals of the polyhedron 1 for separating axis
         uint faceIndex;

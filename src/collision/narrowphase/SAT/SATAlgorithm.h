@@ -31,8 +31,12 @@
 #include "collision/NarrowPhaseInfo.h"
 #include "collision/shapes/ConvexPolyhedronShape.h"
 
+
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+class CapsuleShape;
+class SphereShape;
 
 // Class SATAlgorithm
 class SATAlgorithm {
@@ -76,6 +80,21 @@ class SATAlgorithm {
         /// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
         decimal testFacesDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
                                                         const Transform& polyhedron1ToPolyhedron2, uint& minFaceIndex) const;
+
+        /// Compute the penetration depth between a face of the polyhedron and a sphere along the polyhedron face normal direction
+        decimal computePolyhedronFaceVsSpherePenetrationDepth(uint faceIndex, const ConvexPolyhedronShape* polyhedron,
+                                                              const SphereShape* sphere, const Vector3& sphereCenter) const;
+
+        /// Compute the penetration depth between the face of a polyhedron and a capsule along the polyhedron face normal direction
+        decimal computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhedronFaceIndex, const ConvexPolyhedronShape* polyhedron,
+                                                               const CapsuleShape* capsule, const Transform& polyhedronToCapsuleTransform,
+                                                               Vector3& outFaceNormalCapsuleSpace) const;
+
+        /// Compute the penetration depth when the separating axis is the cross product of polyhedron edge and capsule inner segment
+        decimal computeEdgeVsCapsuleInnerSegmentPenetrationDepth(const ConvexPolyhedronShape* polyhedron, const CapsuleShape* capsule,
+                                                                 const Vector3& capsuleSegmentAxis, const Vector3& edgeVertex1,
+                                                                 const Vector3& edgeDirectionCapsuleSpace,
+                                                                 const Transform& polyhedronToCapsuleTransform, Vector3& outAxis) const;
 
     public :
 
