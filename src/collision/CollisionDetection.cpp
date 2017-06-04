@@ -248,8 +248,8 @@ void CollisionDetection::computeNarrowPhase() {
             ContactManifoldInfo contactManifoldInfo(mSingleFrameAllocator);
             if (narrowPhaseAlgorithm->testCollision(currentNarrowPhaseInfo, contactManifoldInfo)) {
 
-                // Reduce the number of points in the contact manifold
-                contactManifoldInfo.reduce();
+                // Reduce the number of points in the contact manifold (if necessary)
+                contactManifoldInfo.reduce(currentNarrowPhaseInfo->shape1ToWorldTransform);
 
                 // If it is the first contact since the pairs are overlapping
                 if (currentNarrowPhaseInfo->overlappingPair->getNbContactPoints() == 0) {
@@ -696,6 +696,9 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                         ContactManifoldInfo contactManifoldInfo(mMemoryAllocator);
                         if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactManifoldInfo)) {
 
+                            // Reduce the number of points in the contact manifold (if necessary)
+                            contactManifoldInfo.reduce(narrowPhaseInfo->shape1ToWorldTransform);
+
                             CollisionCallback::CollisionCallbackInfo collisionInfo(contactManifoldInfo, body1, body2,
                                                                                    body1ProxyShape, body2ProxyShape);
 
@@ -777,6 +780,9 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                             ContactManifoldInfo contactManifoldInfo(mMemoryAllocator);
                             if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactManifoldInfo)) {
 
+                                // Reduce the number of points in the contact manifold (if necessary)
+                                contactManifoldInfo.reduce(narrowPhaseInfo->shape1ToWorldTransform);
+
                                 CollisionCallback::CollisionCallbackInfo collisionInfo(contactManifoldInfo, body,
                                                                                        proxyShape->getBody(), bodyProxyShape,
                                                                                        proxyShape);
@@ -847,6 +853,9 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
                     // notifyContact() callback method will be called.
                     ContactManifoldInfo contactManifoldInfo(mMemoryAllocator);
                     if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactManifoldInfo)) {
+
+                        // Reduce the number of points in the contact manifold (if necessary)
+                        contactManifoldInfo.reduce(narrowPhaseInfo->shape1ToWorldTransform);
 
                         CollisionCallback::CollisionCallbackInfo collisionInfo(contactManifoldInfo, shape1->getBody(),
                                                                                shape2->getBody(), shape1, shape2);

@@ -33,6 +33,8 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Constants
+const uint MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
 
 // Class ContactManifoldInfo
 /**
@@ -51,22 +53,18 @@ class ContactManifoldInfo {
         /// Memory allocator used to allocate contact points
         Allocator& mAllocator;
 
-        // -------------------- Methods -------------------- //
-
+        /// Number of contact points in the manifold
+        uint mNbContactPoints;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(Allocator& allocator) : mContactPointsList(nullptr), mAllocator(allocator) {}
+        ContactManifoldInfo(Allocator& allocator);
 
         /// Destructor
-        ~ContactManifoldInfo() {
-
-            // Remove all the contact points
-            reset();
-        }
+        ~ContactManifoldInfo();
 
         /// Deleted copy-constructor
         ContactManifoldInfo(const ContactManifoldInfo& contactManifold) = delete;
@@ -76,63 +74,25 @@ class ContactManifoldInfo {
 
         /// Add a new contact point into the manifold
         void addContactPoint(const Vector3& contactNormal, decimal penDepth,
-                             const Vector3& localPt1, const Vector3& localPt2) {
-
-            assert(penDepth > decimal(0.0));
-
-            // Create the contact point info
-            ContactPointInfo* contactPointInfo = new (mAllocator.allocate(sizeof(ContactPointInfo)))
-                    ContactPointInfo(contactNormal, penDepth, localPt1, localPt2);
-
-            // Add it into the linked list of contact points
-            contactPointInfo->next = mContactPointsList;
-            mContactPointsList = contactPointInfo;
-        }
+                             const Vector3& localPt1, const Vector3& localPt2);
 
         /// Remove all the contact points
-        void reset() {
-
-            // Delete all the contact points in the linked list
-            ContactPointInfo* element = mContactPointsList;
-            while(element != nullptr) {
-                ContactPointInfo* elementToDelete = element;
-                element = element->next;
-
-                // Delete the current element
-                mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
-            }
-
-            mContactPointsList = nullptr;
-        }
+        void reset();
 
         /// Get the first contact point info of the linked list of contact points
-        ContactPointInfo* getFirstContactPointInfo() const {
-            return mContactPointsList;
-        }
+        ContactPointInfo* getFirstContactPointInfo() const;
 
         /// Reduce the number of points in the contact manifold
-        void reduce() {
-
-            // TODO : Implement this (do not forget to deallocate removed points)
-        }
+        void reduce(const Transform& shape1ToWorldTransform);
 
         /// Return the largest penetration depth among the contact points
-        decimal getLargestPenetrationDepth() const {
-
-            decimal maxDepth = decimal(0.0);
-            ContactPointInfo* element = mContactPointsList;
-            while(element != nullptr) {
-
-                if (element->penetrationDepth > maxDepth) {
-                    maxDepth = element->penetrationDepth;
-                }
-
-                element = element->next;
-            }
-
-            return maxDepth;
-        }
+        decimal getLargestPenetrationDepth() const;
 };
+
+// Get the first contact point info of the linked list of contact points
+inline ContactPointInfo* ContactManifoldInfo::getFirstContactPointInfo() const {
+    return mContactPointsList;
+}
 
 }
 #endif

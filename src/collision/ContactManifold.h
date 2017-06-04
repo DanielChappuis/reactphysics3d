@@ -37,9 +37,6 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Constants
-const uint MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
-
 // Class declarations
 class ContactManifold;
 
