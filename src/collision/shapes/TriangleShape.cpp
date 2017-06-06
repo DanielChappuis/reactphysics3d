@@ -40,10 +40,16 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3, decimal margin)
-              : ConvexShape(CollisionShapeType::TRIANGLE, margin) {
+              : ConvexPolyhedronShape(margin) {
+
     mPoints[0] = point1;
     mPoints[1] = point2;
     mPoints[2] = point3;
+
+    // Compute the triangle normal
+    mNormal = (point3 - point1).cross(point2 - point1);
+    mNormal.normalize();
+
     mRaycastTestType = TriangleRaycastSide::FRONT;
 }
 
@@ -120,3 +126,51 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     return true;
 }
 
+// Return a given half-edge of the polyhedron
+HalfEdgeStructure::Edge TriangleShape::getHalfEdge(uint edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+
+    HalfEdgeStructure::Edge edge;
+
+    switch(edgeIndex) {
+        case 0:
+            edge.vertexIndex = 0;
+            edge.twinEdgeIndex = 1;
+            edge.faceIndex = 0;
+            edge.nextEdgeIndex = 2;
+            break;
+        case 1:
+            edge.vertexIndex = 1;
+            edge.twinEdgeIndex = 0;
+            edge.faceIndex = 1;
+            edge.nextEdgeIndex = 5;
+            break;
+        case 2:
+            edge.vertexIndex = 1;
+            edge.twinEdgeIndex = 3;
+            edge.faceIndex = 0;
+            edge.nextEdgeIndex = 4;
+            break;
+        case 3:
+            edge.vertexIndex = 2;
+            edge.twinEdgeIndex = 2;
+            edge.faceIndex = 1;
+            edge.nextEdgeIndex = 1;
+            break;
+        case 4:
+            edge.vertexIndex = 2;
+            edge.twinEdgeIndex = 5;
+            edge.faceIndex = 0;
+            edge.nextEdgeIndex = 0;
+            break;
+        case 5:
+            edge.vertexIndex = 0;
+            edge.twinEdgeIndex = 4;
+            edge.faceIndex = 1;
+            edge.nextEdgeIndex = 3;
+            break;
+    }
+
+    return edge;
+
+}

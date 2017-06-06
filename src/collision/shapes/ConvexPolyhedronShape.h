@@ -42,10 +42,6 @@ class ConvexPolyhedronShape : public ConvexShape {
 
     protected :
 
-        // -------------------- Attributes -------------------- //
-
-        // -------------------- Methods -------------------- //
-
     public :
 
         // -------------------- Methods -------------------- //

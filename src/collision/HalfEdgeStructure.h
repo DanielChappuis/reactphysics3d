@@ -54,6 +54,9 @@ class HalfEdgeStructure {
             std::vector<uint> faceVertices;     // Index of the vertices of the face
 
             /// Constructor
+            Face() {}
+
+            /// Constructor
             Face(std::vector<uint> vertices) : faceVertices(vertices) {}
         };
 
@@ -155,7 +158,7 @@ inline HalfEdgeStructure::Edge HalfEdgeStructure::getHalfEdge(uint index) const 
     return mEdges[index];
 }
 
-// Retunr a given vertex
+// Return a given vertex
 inline HalfEdgeStructure::Vertex HalfEdgeStructure::getVertex(uint index) const {
     assert(index < mVertices.size());
     return mVertices[index];

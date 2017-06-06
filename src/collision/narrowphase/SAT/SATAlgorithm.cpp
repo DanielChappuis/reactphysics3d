@@ -46,6 +46,8 @@ const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
+    PROFILE("SATAlgorithm::testCollisionSphereVsConvexPolyhedron()");
+
     bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
@@ -77,32 +79,37 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
 
     LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
 
-    // If the last frame collision info is valid and was also using SAT algorithm
-    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
+    // If the shapes are not triangles (no temporal coherence for triangle collision because we do not store previous
+    // frame collision data per triangle)
+    if (polyhedron->getType() != CollisionShapeType::TRIANGLE) {
 
-        // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
-        // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
-        // the shapes are still separated along this axis, we directly exit with no collision.
+        // If the last frame collision info is valid and was also using SAT algorithm
+        if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
 
-        // Compute the penetration depth of the shapes along the face normal direction
-        decimal penetrationDepth = computePolyhedronFaceVsSpherePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
-                                                                                 sphere, sphereCenter);
+            // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
+            // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
+            // the shapes are still separated along this axis, we directly exit with no collision.
 
-        // If the previous axis is a separating axis
-        if (penetrationDepth <= decimal(0.0)) {
+            // Compute the penetration depth of the shapes along the face normal direction
+            decimal penetrationDepth = computePolyhedronFaceVsSpherePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
+                                                                                     sphere, sphereCenter);
 
-            // Return no collision
-            return false;
-        }
+            // If the previous axis is a separating axis
+            if (penetrationDepth <= decimal(0.0)) {
 
-        // The two shapes are overlapping as in the previous frame and on the same axis, therefore
-        // we will skip the entire SAT algorithm because the minimum separating axis did not change
-        isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+                // Return no collision
+                return false;
+            }
 
-        if (isTemporalCoherenceValid) {
+            // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+            // we will skip the entire SAT algorithm because the minimum separating axis did not change
+            isTemporalCoherenceValid = lastFrameInfo.wasColliding;
 
-            minPenetrationDepth = penetrationDepth;
-            minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
+            if (isTemporalCoherenceValid) {
+
+                minPenetrationDepth = penetrationDepth;
+                minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
+            }
         }
     }
 
@@ -170,6 +177,8 @@ decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceInd
 // Test collision between a capsule and a convex mesh
 bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
 
+    PROFILE("SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron()");
+
     bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
@@ -206,78 +215,83 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
 
     LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
 
-    // If the last frame collision info is valid and was also using SAT algorithm
-    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
+    // If the shapes are not triangles (no temporal coherence for triangle collision because we do not store previous
+    // frame collision data per triangle)
+    if (polyhedron->getType() != CollisionShapeType::TRIANGLE) {
 
-        // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
-        // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
-        // the shapes are still separated along this axis, we directly exit with no collision.
+        // If the last frame collision info is valid and was also using SAT algorithm
+        if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
 
-        // If the previous minimum separation axis was a face normal of the polyhedron
-        if (lastFrameInfo.satIsAxisFacePolyhedron1) {
+            // We perform temporal coherence, we check if there is still an overlapping along the previous minimum separating
+            // axis. If it is the case, we directly report the collision without executing the whole SAT algorithm again. If
+            // the shapes are still separated along this axis, we directly exit with no collision.
 
-            Vector3 outFaceNormalCapsuleSpace;
+            // If the previous minimum separation axis was a face normal of the polyhedron
+            if (lastFrameInfo.satIsAxisFacePolyhedron1) {
 
-            // Compute the penetration depth along the polyhedron face normal direction
-            const decimal penetrationDepth = computePolyhedronFaceVsCapsulePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
-                                                                                            capsuleShape, polyhedronToCapsuleTransform,
-                                                                                            outFaceNormalCapsuleSpace);
+                Vector3 outFaceNormalCapsuleSpace;
 
-            // If the previous axis is a separating axis
-            if (penetrationDepth <= decimal(0.0)) {
+                // Compute the penetration depth along the polyhedron face normal direction
+                const decimal penetrationDepth = computePolyhedronFaceVsCapsulePenetrationDepth(lastFrameInfo.satMinAxisFaceIndex, polyhedron,
+                                                                                                capsuleShape, polyhedronToCapsuleTransform,
+                                                                                                outFaceNormalCapsuleSpace);
 
-                // Return no collision
-                return false;
+                // If the previous axis is a separating axis
+                if (penetrationDepth <= decimal(0.0)) {
+
+                    // Return no collision
+                    return false;
+                }
+
+                // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+                // we will skip the entire SAT algorithm because the minimum separating axis did not change
+                isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+
+                if (isTemporalCoherenceValid) {
+
+                    minPenetrationDepth = penetrationDepth;
+                    minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
+                    isMinPenetrationFaceNormal = true;
+                    separatingAxisCapsuleSpace = outFaceNormalCapsuleSpace;
+                }
             }
+            else {   // If the previous minimum separation axis the cross product of the capsule inner segment and an edge of the polyhedron
 
-            // The two shapes are overlapping as in the previous frame and on the same axis, therefore
-            // we will skip the entire SAT algorithm because the minimum separating axis did not change
-            isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+                // Get an edge from the polyhedron (convert it into the capsule local-space)
+                HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(lastFrameInfo.satMinEdge1Index);
+                const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
+                const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
+                const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
 
-            if (isTemporalCoherenceValid) {
+                Vector3 outAxis;
 
-                minPenetrationDepth = penetrationDepth;
-                minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
-                isMinPenetrationFaceNormal = true;
-                separatingAxisCapsuleSpace = outFaceNormalCapsuleSpace;
-            }
-        }
-        else {   // If the previous minimum separation axis the cross product of the capsule inner segment and an edge of the polyhedron
+                // Compute the penetration depth along this axis
+                const decimal penetrationDepth = computeEdgeVsCapsuleInnerSegmentPenetrationDepth(polyhedron, capsuleShape,
+                                                                                                  capsuleSegmentAxis, edgeVertex1,
+                                                                                                  edgeDirectionCapsuleSpace,
+                                                                                                  polyhedronToCapsuleTransform,
+                                                                                                  outAxis);
 
-            // Get an edge from the polyhedron (convert it into the capsule local-space)
-            HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(lastFrameInfo.satMinEdge1Index);
-            const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
-            const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
-            const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
+                // If the previous axis is a separating axis
+                if (penetrationDepth <= decimal(0.0)) {
 
-            Vector3 outAxis;
+                    // Return no collision
+                    return false;
+                }
 
-            // Compute the penetration depth along this axis
-            const decimal penetrationDepth = computeEdgeVsCapsuleInnerSegmentPenetrationDepth(polyhedron, capsuleShape,
-                                                                                              capsuleSegmentAxis, edgeVertex1,
-                                                                                              edgeDirectionCapsuleSpace,
-                                                                                              polyhedronToCapsuleTransform,
-                                                                                              outAxis);
+                // The two shapes are overlapping as in the previous frame and on the same axis, therefore
+                // we will skip the entire SAT algorithm because the minimum separating axis did not change
+                isTemporalCoherenceValid = lastFrameInfo.wasColliding;
 
-            // If the previous axis is a separating axis
-            if (penetrationDepth <= decimal(0.0)) {
+                if (isTemporalCoherenceValid) {
 
-                // Return no collision
-                return false;
-            }
-
-            // The two shapes are overlapping as in the previous frame and on the same axis, therefore
-            // we will skip the entire SAT algorithm because the minimum separating axis did not change
-            isTemporalCoherenceValid = lastFrameInfo.wasColliding;
-
-            if (isTemporalCoherenceValid) {
-
-                minPenetrationDepth = penetrationDepth;
-                minEdgeIndex = lastFrameInfo.satMinEdge1Index;
-                isMinPenetrationFaceNormal = false;
-                separatingAxisCapsuleSpace = outAxis;
-                separatingPolyhedronEdgeVertex1 = edgeVertex1;
-                separatingPolyhedronEdgeVertex2 = edgeVertex2;
+                    minPenetrationDepth = penetrationDepth;
+                    minEdgeIndex = lastFrameInfo.satMinEdge1Index;
+                    isMinPenetrationFaceNormal = false;
+                    separatingAxisCapsuleSpace = outAxis;
+                    separatingPolyhedronEdgeVertex1 = edgeVertex1;
+                    separatingPolyhedronEdgeVertex2 = edgeVertex2;
+                }
             }
         }
     }
@@ -526,6 +540,8 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 // Test collision between two convex polyhedrons
 bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo,
                                                                    ContactManifoldInfo& contactManifoldInfo) const {
+
+    PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()");
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
