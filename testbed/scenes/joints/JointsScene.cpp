@@ -416,6 +416,12 @@ void JointsScene::createFixedJoints() {
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
     mFixedJointBox1 = new Box(boxDimension, positionBox1 , BOX_MASS, mDynamicsWorld);
 
+	// NEW CODE!
+	rp3d::Vector3 initPosition(5, 7, 0);
+	rp3d::Quaternion initOrientation = rp3d::Quaternion(0.4f * PI, 0, 0);
+	rp3d::Transform transform(initPosition, initOrientation);
+	mFixedJointBox1->getRigidBody()->setTransform(transform);
+
     // Set the box color
     mFixedJointBox1->setColor(mPinkColorDemo);
     mFixedJointBox1->setSleepingColor(mRedColorDemo);
