@@ -26,6 +26,7 @@
 // Libraries
 #include "JointsScene.h"
 #include <cmath>
+#include <random>
 
 // Namespaces
 using namespace openglframework;
@@ -150,6 +151,8 @@ void JointsScene::update() {
     mPropellerBox->updateTransform(mInterpolationFactor);
     mFixedJointBox1->updateTransform(mInterpolationFactor);
     mFixedJointBox2->updateTransform(mInterpolationFactor);
+	for (int i = 0; i < 5; ++i)
+		mBoxes[i]->updateTransform(mInterpolationFactor);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
         mBallAndSocketJointChainBoxes[i]->updateTransform(mInterpolationFactor);
     }
@@ -171,6 +174,8 @@ void JointsScene::renderSinglePass(openglframework::Shader& shader,
     mPropellerBox->render(shader, worldToCameraMatrix);
     mFixedJointBox1->render(shader, worldToCameraMatrix);
     mFixedJointBox2->render(shader, worldToCameraMatrix);
+	for (int i = 0; i < 5; ++i)
+		mBoxes[i]->render(shader, worldToCameraMatrix);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
         mBallAndSocketJointChainBoxes[i]->render(shader, worldToCameraMatrix);
     }
@@ -468,6 +473,42 @@ void JointsScene::createFixedJoints() {
 
     // Create the joint in the dynamics world
     mFixedJoint2 = dynamic_cast<rp3d::FixedJoint*>(mDynamicsWorld->createJoint(jointInfo2));
+
+	Box *prev = mFixedJointBox2;
+	std::default_random_engine random;
+	std::uniform_real_distribution<rp3d::decimal> rotation(0, 2.0 * PI);
+	for (int i = 0; i < 5; ++i)
+	{
+		// Position of the box
+		openglframework::Vector3 positionBox1(-5 - 1.5 * (i + 1), 7, 0);
+
+		// Create a box and a corresponding rigid in the dynamics world
+		openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
+		Box *b = new Box(boxDimension, positionBox1, BOX_MASS, mDynamicsWorld);
+
+		// Rotate the body
+		rp3d::Vector3 initPosition(positionBox1.x, positionBox1.y, positionBox1.z);
+		rp3d::Quaternion initOrientation = rp3d::Quaternion(rotation(random), rotation(random), rotation(random));
+		rp3d::Transform transform(initPosition, initOrientation);
+		b->getRigidBody()->setTransform(transform);
+
+		// Set the box color
+		b->setColor(mPinkColorDemo);
+		b->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material1 = b->getRigidBody()->getMaterial();
+		material1.setBounciness(rp3d::decimal(0.4));
+
+		rp3d::FixedJointInfo jointInfo1(prev->getRigidBody(), b->getRigidBody(), initPosition);
+		jointInfo1.isCollisionEnabled = false;
+
+		// Create the joint in the dynamics world
+		mDynamicsWorld->createJoint(jointInfo1);
+		
+		mBoxes[i] = b;
+		prev = b;
+	}
 }
 
 // Create the floor
