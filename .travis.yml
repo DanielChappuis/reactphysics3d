@@ -1,20 +1,45 @@
 language: cpp
-os:
-  - linux
-  - osx
-compiler:
-  - gcc
-  - clang
-install:
-- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-    - clang
+matrix:
+
+  # Linux / GCC
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+  
+  # OS X / GCC 
+  include:
+     - os: osx
+       osx_image: xcode8
+       env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+  # Linux / Clang
+  include:
+     - os: linux
+       addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+    
+    # OS X / Clang
+    include:
+      - os: osx
+        osx_image: xcode8
+
+before_install:
+    - eval "${MATRIX_EVAL}"
 branches:
   only:
     - master
