@@ -93,13 +93,13 @@ void TestbedApplication::init() {
 // Create all the scenes
 void TestbedApplication::createScenes() {
 
-    // Cubes scene
-    CubesScene* cubeScene = new CubesScene("Cubes");
-    mScenes.push_back(cubeScene);
-
     // Joints scene
     JointsScene* jointsScene = new JointsScene("Joints");
     mScenes.push_back(jointsScene);
+
+    // Cubes scene
+    CubesScene* cubeScene = new CubesScene("Cubes");
+    mScenes.push_back(cubeScene);
 
     // Collision shapes scene
     CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");

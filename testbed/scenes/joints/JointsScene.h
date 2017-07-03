@@ -89,6 +89,9 @@ class JointsScene : public SceneDemo {
         /// Second Fixed joint
         rp3d::FixedJoint* mFixedJoint2;
 
+		/// A number of attached boxes to fixed box 2
+		Box *mBoxes[5];
+
         /// Box for the floor
         Box* mFloor;
 

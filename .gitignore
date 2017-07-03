@@ -25,3 +25,4 @@ Thumbs.db
 # vim swap files
 #####################
 *.*sw*
+/build
