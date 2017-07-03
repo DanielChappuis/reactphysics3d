@@ -5,11 +5,11 @@ matrix:
   include:
     - os: linux
       addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
