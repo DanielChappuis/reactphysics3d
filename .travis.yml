@@ -13,15 +13,13 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
-  # OS X / GCC
-  include:
+    # OS X / GCC
     - os: osx
       osx_image: xcode8
       env:
        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
-  # Linux / Clang
-  include:
+    # Linux / Clang
     - os: linux
       addons:
         apt:
@@ -33,8 +31,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
-  # OS X / Clang
-  include:
+    # OS X / Clang
     - os: osx
       osx_image: xcode8
 
