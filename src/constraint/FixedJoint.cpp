@@ -42,11 +42,18 @@ FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
     mLocalAnchorPointBody1 = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
     mLocalAnchorPointBody2 = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
 
-    // Compute the inverse of the initial orientation difference between the two bodies
-    mInitOrientationDifferenceInv = transform2.getOrientation() *
-                                    transform1.getOrientation().getInverse();
-    mInitOrientationDifferenceInv.normalize();
-    mInitOrientationDifferenceInv.inverse();
+	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
+	//
+	// q20 = q10 r0 
+	// <=> r0 = q10^-1 q20 
+	// <=> r0^-1 = q20^-1 q10
+	//
+	// where:
+	//
+	// q20 = initial orientation of body 2
+	// q10 = initial orientation of body 1
+	// r0 = initial rotation rotation from body 1 to body 2
+	mInitOrientationDifferenceInv = transform2.getOrientation().getInverse() * transform1.getOrientation();
 }
 
 // Initialize before solving the constraint
@@ -104,10 +111,9 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
     // Compute the bias "b" for the 3 rotation constraints
     mBiasRotation.setToZero();
+
     if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        Quaternion currentOrientationDifference = orientationBody2 * orientationBody1.getInverse();
-        currentOrientationDifference.normalize();
-        const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
+        const Quaternion qError = orientationBody2 * mInitOrientationDifferenceInv * orientationBody1.getInverse();
         mBiasRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
@@ -295,10 +301,32 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
-    // Compute the position error for the 3 rotation constraints
-    Quaternion currentOrientationDifference = q2 * q1.getInverse();
-    currentOrientationDifference.normalize();
-    const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
+	// Calculate difference in rotation
+	//
+	// The rotation should be:
+	//
+	// q2 = q1 r0
+	//
+	// But because of drift the actual rotation is:
+	//
+	// q2 = qError q1 r0
+	// <=> qError = q2 r0^-1 q1^-1
+	//
+	// Where:
+	// q1 = current rotation of body 1
+	// q2 = current rotation of body 2
+	// qError = error that needs to be reduced to zero
+	Quaternion qError = q2 * mInitOrientationDifferenceInv * q1.getInverse();
+
+	// A quaternion can be seen as:
+	//
+	// q = [sin(theta / 2) * v, cos(theta/2)]
+	//
+	// Where:
+	// v = rotation vector
+	// theta = rotation angle
+	// 
+	// If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
     const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
 
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
