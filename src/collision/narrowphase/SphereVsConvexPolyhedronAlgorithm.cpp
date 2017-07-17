@@ -43,8 +43,8 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* nar
 
 	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
 		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE ||
-		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE ||
+		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
