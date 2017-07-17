@@ -41,6 +41,11 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* nar
     GJKAlgorithm gjkAlgorithm;
     GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
 
+	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE ||
+		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
 

@@ -61,7 +61,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere1->setSleepingColor(mRedColorDemo);
 
     // ---------- Sphere 2 ---------- //
-    openglframework::Vector3 position2(0, 0, 0);
+    openglframework::Vector3 position2(12, 8, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
     mSphere2 = new Sphere(2, position2, mCollisionWorld, mMeshFolderPath);
@@ -72,7 +72,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere2->setSleepingColor(mRedColorDemo);
 
 	// ---------- Capsule 1 ---------- //
-	openglframework::Vector3 position3(8, 0, 0);
+	openglframework::Vector3 position3(0, -12, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
 	mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position3, mCollisionWorld, mMeshFolderPath);
@@ -94,7 +94,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mCapsule2->setSleepingColor(mRedColorDemo);
 
 	// ---------- Box 1 ---------- //
-	openglframework::Vector3 position5(0, -12, 0);
+	openglframework::Vector3 position5(0, -0, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
 	mBox1 = new Box(BOX_SIZE, position5, mCollisionWorld, mMeshFolderPath);
@@ -105,7 +105,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mBox1->setSleepingColor(mRedColorDemo);
 
 	// ---------- Box 2 ---------- //
-	openglframework::Vector3 position6(0, 12, 0);
+	openglframework::Vector3 position6(0, 8, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
 	mBox2 = new Box(openglframework::Vector3(3, 2, 5), position6, mCollisionWorld, mMeshFolderPath);

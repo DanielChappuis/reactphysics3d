@@ -29,6 +29,7 @@
 #include "GJK/GJKAlgorithm.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexPolyhedronShape.h"
+#include <cassert>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -47,40 +48,52 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* na
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
 
+	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+		   narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE ||
+		   narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
+
     // If we have found a contact point inside the margins (shallow penetration)
     if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
-        // GJK has found a shallow contact. If the contact normal is parallel to a face of the
-        // polyhedron mesh, we would like to create two contact points instead of a single one
-        // (as in the deep contact case with SAT algorithm)
+        // GJK has found a shallow contact. If the face of the polyhedron mesh is orthogonal to the
+		// capsule inner segment and parallel to the contact point normal, we would like to create
+		// two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
         // Get the contact point created by GJK
         ContactPointInfo* contactPoint = contactManifoldInfo.getFirstContactPointInfo();
+		assert(contactPoint != nullptr);
 
         bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
-        assert(isCapsuleShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-        assert(!isCapsuleShape1 || narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-        assert(!isCapsuleShape1 || narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
 
         // Get the collision shapes
         const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
         const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape2 : narrowPhaseInfo->collisionShape1);
 
         // For each face of the polyhedron
-        // For each face of the convex mesh
         for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
 
             // Get the face
             HalfEdgeStructure::Face face = polyhedron->getFace(f);
 
             const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
+			const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
 
             // Get the face normal
             const Vector3 faceNormal = polyhedron->getFaceNormal(f);
             const Vector3 faceNormalWorld = polyhedronToWorld.getOrientation() * faceNormal;
 
-            // If the polyhedron face normal is parallel to the computed GJK contact normal
-            if (areParallelVectors(faceNormalWorld, contactPoint->normal)) {
+			const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
+			const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+			const Vector3 capsuleInnerSegmentWorld = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
+
+			bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint->normal) > decimal(0.0);
+			bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
+	
+            // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
+			// is in direction of the contact normal (from the polyhedron point of view).
+            if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentWorld)
+				&& areParallelVectors(faceNormalWorld, contactPoint->normal)) {
 
                 // Remove the previous contact point computed by GJK
                 contactManifoldInfo.reset();

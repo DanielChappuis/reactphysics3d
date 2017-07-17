@@ -57,15 +57,15 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     std::vector<uint> face0;
     face0.push_back(0); face0.push_back(1); face0.push_back(2); face0.push_back(3);
     std::vector<uint> face1;
-    face1.push_back(1); face0.push_back(5); face0.push_back(6); face0.push_back(2);
+    face1.push_back(1); face1.push_back(5); face1.push_back(6); face1.push_back(2);
     std::vector<uint> face2;
-    face2.push_back(4); face0.push_back(7); face0.push_back(6); face0.push_back(5);
+    face2.push_back(4); face2.push_back(7); face2.push_back(6); face2.push_back(5);
     std::vector<uint> face3;
-    face3.push_back(4); face0.push_back(0); face0.push_back(3); face0.push_back(7);
+    face3.push_back(4); face3.push_back(0); face3.push_back(3); face3.push_back(7);
     std::vector<uint> face4;
-    face4.push_back(4); face0.push_back(5); face0.push_back(1); face0.push_back(0);
+    face4.push_back(4); face4.push_back(5); face4.push_back(1); face4.push_back(0);
     std::vector<uint> face5;
-    face5.push_back(2); face0.push_back(6); face0.push_back(7); face0.push_back(3);
+    face5.push_back(2); face5.push_back(6); face5.push_back(7); face5.push_back(3);
 
     mHalfEdgeStructure.addFace(face0);
     mHalfEdgeStructure.addFace(face1);
@@ -73,6 +73,8 @@ BoxShape::BoxShape(const Vector3& extent, decimal margin)
     mHalfEdgeStructure.addFace(face3);
     mHalfEdgeStructure.addFace(face4);
     mHalfEdgeStructure.addFace(face5);
+
+	mHalfEdgeStructure.init();
 }
 
 // Return the local inertia tensor of the collision shape

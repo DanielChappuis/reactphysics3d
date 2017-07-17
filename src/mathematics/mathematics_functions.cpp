@@ -65,6 +65,11 @@ bool reactphysics3d::areParallelVectors(const Vector3& vector1, const Vector3& v
     return vector1.cross(vector2).lengthSquare() < decimal(0.00001);
 }
 
+/// Return true if two vectors are orthogonal
+bool reactphysics3d::areOrthogonalVectors(const Vector3& vector1, const Vector3& vector2) {
+	return std::abs(vector1.dot(vector2)) < decimal(0.00001);
+}
+
 /// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
 Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC) {
 

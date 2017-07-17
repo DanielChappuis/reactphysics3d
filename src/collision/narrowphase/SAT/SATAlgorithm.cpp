@@ -296,7 +296,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
         }
     }
 
-    // We the shapes are still overlapping in the same axis as in
+    // If the shapes are still overlapping in the same axis as in the previous frame
     // the previous frame, we skip the whole SAT algorithm
     if (!isTemporalCoherenceValid) {
 
@@ -470,7 +470,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
     const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outFaceNormalCapsuleSpace, nullptr);
     const Vector3 pointOnPolyhedronFace = polyhedronToCapsuleTransform * polyhedron->getVertexPosition(face.faceVertices[0]);
     const Vector3 capsuleSupportPointToFacePoint =  pointOnPolyhedronFace - capsuleSupportPoint;
-    const decimal penetrationDepth = capsuleSupportPointToFacePoint.dot(faceNormal);
+    const decimal penetrationDepth = capsuleSupportPointToFacePoint.dot(outFaceNormalCapsuleSpace);
 
     return penetrationDepth;
 }
