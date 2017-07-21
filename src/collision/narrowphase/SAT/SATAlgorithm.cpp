@@ -854,18 +854,19 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
         assert(clipPolygonVertices.size() > 0);
 
         // We only keep the clipped points that are below the reference face
-        const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(firstEdgeIndex);
+        const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
         std::vector<Vector3>::const_iterator itPoints;
         for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
 
             // If the clip point is bellow the reference face
-            if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
+            if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0))
+			{
 
                 // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
                 const Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
 
                 // Project the contact point onto the reference face
-                Vector3 contactPointReferencePolyhedron = (*itPoints) + axisReferenceSpace * minPenetrationDepth;
+				Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
 
                 // Create a new contact point
                 contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
@@ -1011,8 +1012,8 @@ bool SATAlgorithm::testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* poly
                                                const ConvexPolyhedronShape* polyhedron2, const HalfEdgeStructure::Edge& edge2,
                                                const Transform& polyhedron1ToPolyhedron2) const {
 
-    const Vector3 a = polyhedron1ToPolyhedron2 * polyhedron1->getFaceNormal(edge1.faceIndex);
-    const Vector3 b = polyhedron1ToPolyhedron2 * polyhedron1->getFaceNormal(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).faceIndex);
+    const Vector3 a = polyhedron1ToPolyhedron2.getOrientation() * polyhedron1->getFaceNormal(edge1.faceIndex);
+    const Vector3 b = polyhedron1ToPolyhedron2.getOrientation() * polyhedron1->getFaceNormal(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).faceIndex);
 
     const Vector3 c = polyhedron2->getFaceNormal(edge2.faceIndex);
     const Vector3 d = polyhedron2->getFaceNormal(polyhedron2->getHalfEdge(edge2.twinEdgeIndex).faceIndex);
@@ -1020,12 +1021,12 @@ bool SATAlgorithm::testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* poly
     // Compute b.cross(a) using the edge direction
     const Vector3 edge1Vertex1 = polyhedron1->getVertexPosition(edge1.vertexIndex);
     const Vector3 edge1Vertex2 = polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).vertexIndex);
-    const Vector3 bCrossA = polyhedron1ToPolyhedron2.getOrientation() * (edge1Vertex2 - edge1Vertex1);
+    const Vector3 bCrossA = polyhedron1ToPolyhedron2.getOrientation() * (edge1Vertex1 - edge1Vertex2);
 
     // Compute d.cross(c) using the edge direction
     const Vector3 edge2Vertex1 = polyhedron2->getVertexPosition(edge2.vertexIndex);
     const Vector3 edge2Vertex2 = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.twinEdgeIndex).vertexIndex);
-    const Vector3 dCrossC = edge2Vertex2 - edge2Vertex1;
+    const Vector3 dCrossC = edge2Vertex1 - edge2Vertex2;
 
     // Test if the two arcs of the Gauss Map intersect (therefore forming a minkowski face)
     // Note that we negate the normals of the second polyhedron because we are looking at the

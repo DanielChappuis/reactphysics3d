@@ -354,4 +354,9 @@ std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vec
     return outputVertices;
 }
 
+// Project a point onto a plane that is given by a point and its unit length normal
+Vector3 reactphysics3d::projectPointOntoPlane(const Vector3& point, const Vector3& unitPlaneNormal, const Vector3& planePoint) {
+	return point - unitPlaneNormal.dot(point - planePoint) * unitPlaneNormal;
+}
+
 
