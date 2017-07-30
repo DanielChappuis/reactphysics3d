@@ -30,7 +30,8 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifoldInfo::ContactManifoldInfo(Allocator& allocator)
-     : mContactPointsList(nullptr), mAllocator(allocator), mNbContactPoints(0) {}
+     : mContactPointsList(nullptr), mNbContactPoints(0), mNext(nullptr), mAllocator(allocator),
+       mContactNormalId(-1) {}
 
 // Destructor
 ContactManifoldInfo::~ContactManifoldInfo() {
@@ -40,14 +41,13 @@ ContactManifoldInfo::~ContactManifoldInfo() {
 }
 
 // Add a new contact point into the manifold
-void ContactManifoldInfo::addContactPoint(const Vector3& contactNormal, decimal penDepth,
-                     const Vector3& localPt1, const Vector3& localPt2) {
+void ContactManifoldInfo::addContactPoint(ContactPointInfo* contactPointInfo, short contactNormalId) {
 
-    assert(penDepth > decimal(0.0));
+    assert(contactPointInfo->penetrationDepth > decimal(0.0));
+    assert(contactNormalId >= 0);
+    assert(mContactNormalId == -1 || contactNormalId == mContactNormalId);
 
-    // Create the contact point info
-    ContactPointInfo* contactPointInfo = new (mAllocator.allocate(sizeof(ContactPointInfo)))
-            ContactPointInfo(contactNormal, penDepth, localPt1, localPt2);
+    mContactNormalId = contactNormalId;
 
     // Add it into the linked list of contact points
     contactPointInfo->next = mContactPointsList;
@@ -73,14 +73,30 @@ void ContactManifoldInfo::reset() {
     mNbContactPoints = 0;
 }
 
-// Reduce the number of points in the contact manifold
+// Return the largest penetration depth among its contact points
+decimal ContactManifoldInfo::getLargestPenetrationDepth() const {
+
+    ContactPointInfo* contactPoint = mContactPointsList;
+    assert(contactPoint != nullptr);
+    decimal maxDepth = decimal(0.0);
+    while (contactPoint != nullptr) {
+
+        if (contactPoint->penetrationDepth > maxDepth) {
+            maxDepth = contactPoint->penetrationDepth;
+        }
+
+        contactPoint = contactPoint->next;
+    }
+
+    return maxDepth;
+}
+
+// Reduce the number of contact points of the currently computed manifold
 // This is based on the technique described by Dirk Gregorius in his
 // "Contacts Creation" GDC presentation
 void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
 
     assert(mContactPointsList != nullptr);
-
-    // TODO : Implement this (do not forget to deallocate removed points)
 
     // The following algorithm only works to reduce to 4 contact points
     assert(MAX_CONTACT_POINTS_IN_MANIFOLD == 4);
@@ -221,9 +237,9 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
                     largestArea = area;
                     pointsToKeep[3] = element;
                 }
-
-                element = element->next;
             }
+
+            element = element->next;
         }
         assert(pointsToKeep[3] != nullptr);
 
@@ -250,29 +266,15 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
             }
             element = element->next;
 
+            // Call the destructor
+            elementToDelete->~ContactPointInfo();
+
             // Delete the current element
             mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
         }
 
         mNbContactPoints = 4;
     }
-}
-
-/// Return the largest penetration depth among the contact points
-decimal ContactManifoldInfo::getLargestPenetrationDepth() const {
-
-    decimal maxDepth = decimal(0.0);
-    ContactPointInfo* element = mContactPointsList;
-    while(element != nullptr) {
-
-        if (element->penetrationDepth > maxDepth) {
-            maxDepth = element->penetrationDepth;
-        }
-
-        element = element->next;
-    }
-
-    return maxDepth;
 }
 
 

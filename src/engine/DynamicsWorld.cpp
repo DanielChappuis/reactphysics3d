@@ -683,9 +683,9 @@ void DynamicsWorld::computeIslands() {
             // For each contact manifold in which the current body is involded
             ContactManifoldListElement* contactElement;
             for (contactElement = bodyToVisit->mContactManifoldsList; contactElement != nullptr;
-                 contactElement = contactElement->next) {
+                 contactElement = contactElement->getNext()) {
 
-                ContactManifold* contactManifold = contactElement->contactManifold;
+                ContactManifold* contactManifold = contactElement->getContactManifold();
 
                 assert(contactManifold->getNbContactPoints() > 0);
 
@@ -842,12 +842,13 @@ std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
 
         // For each contact manifold of the pair
         const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-        for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
-
-            ContactManifold* manifold = manifoldSet.getContactManifold(i);
+        ContactManifold* manifold = manifoldSet.getContactManifolds();
+        while (manifold != nullptr) {
 
             // Get the contact manifold
             contactManifolds.push_back(manifold);
+
+            manifold = manifold->getNext();
         }
     }
 

@@ -58,6 +58,8 @@
 #include "collision/PolyhedronMesh.h"
 #include "collision/TriangleVertexArray.h"
 #include "collision/PolygonVertexArray.h"
+#include "collision/CollisionCallback.h"
+#include "collision/OverlapCallback.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"

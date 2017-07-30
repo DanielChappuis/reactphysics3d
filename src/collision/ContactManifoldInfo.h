@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Constants
-const uint MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
+const int8 MAX_CONTACT_POINTS_IN_MANIFOLD = 4;   // Maximum number of contacts in the manifold
 
 // Class ContactManifoldInfo
 /**
@@ -50,11 +50,17 @@ class ContactManifoldInfo {
         /// Linked list with all the contact points
         ContactPointInfo* mContactPointsList;
 
-        /// Memory allocator used to allocate contact points
-        Allocator& mAllocator;
-
         /// Number of contact points in the manifold
         uint mNbContactPoints;
+
+        /// Next element in the linked-list of contact manifold info
+        ContactManifoldInfo* mNext;
+
+        /// Reference the the memory allocator where the contact point infos have been allocated
+        Allocator& mAllocator;
+
+        /// Contact normal direction Id (Identify the contact normal direction of points in manifold)
+        short mContactNormalId;
 
     public:
 
@@ -66,15 +72,14 @@ class ContactManifoldInfo {
         /// Destructor
         ~ContactManifoldInfo();
 
-        /// Deleted copy-constructor
+        /// Deleted Copy-constructor
         ContactManifoldInfo(const ContactManifoldInfo& contactManifold) = delete;
 
         /// Deleted assignment operator
         ContactManifoldInfo& operator=(const ContactManifoldInfo& contactManifold) = delete;
 
         /// Add a new contact point into the manifold
-        void addContactPoint(const Vector3& contactNormal, decimal penDepth,
-                             const Vector3& localPt1, const Vector3& localPt2);
+        void addContactPoint(ContactPointInfo* contactPointInfo, short contactNormalId);
 
         /// Remove all the contact points
         void reset();
@@ -82,16 +87,36 @@ class ContactManifoldInfo {
         /// Get the first contact point info of the linked list of contact points
         ContactPointInfo* getFirstContactPointInfo() const;
 
-        /// Reduce the number of points in the contact manifold
+        /// Return the largest penetration depth among its contact points
+        decimal getLargestPenetrationDepth() const;
+
+        /// Return the pointer to the next manifold info in the linked-list
+        ContactManifoldInfo* getNext();
+
+        /// Return the contact normal Id
+        short getContactNormalId() const;
+
+        /// Reduce the number of contact points of the currently computed manifold
         void reduce(const Transform& shape1ToWorldTransform);
 
-        /// Return the largest penetration depth among the contact points
-        decimal getLargestPenetrationDepth() const;
+        // Friendship
+        friend class OverlappingPair;
+        friend class CollisionDetection;
 };
 
 // Get the first contact point info of the linked list of contact points
 inline ContactPointInfo* ContactManifoldInfo::getFirstContactPointInfo() const {
     return mContactPointsList;
+}
+
+// Return the pointer to the next manifold info in the linked-list
+inline ContactManifoldInfo* ContactManifoldInfo::getNext() {
+    return mNext;
+}
+
+// Return the contact normal Id
+inline short ContactManifoldInfo::getContactNormalId() const {
+    return mContactNormalId;
 }
 
 }

@@ -87,16 +87,13 @@ class GJKAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volumes collide.
-        GJKResult testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                ContactManifoldInfo& contactManifoldInfo);
+        GJKResult testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);
 
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
         bool raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo);
-
-
 };
 
 }

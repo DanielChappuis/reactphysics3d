@@ -46,8 +46,7 @@ using namespace reactphysics3d;
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                    ContactManifoldInfo& contactManifoldInfo) {
+GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
     PROFILE("GJKAlgorithm::testCollision()");
     
@@ -209,7 +208,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(const NarrowPhaseInfo* narro
         }
 
         // Add a new contact point
-        contactManifoldInfo.addContactPoint(normal, penetrationDepth, pA, pB);
+        narrowPhaseInfo->addContactPoint(normal, penetrationDepth, pA, pB);
 
         return GJKResult::COLLIDE_IN_MARGIN;
     }

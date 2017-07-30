@@ -71,6 +71,37 @@ class ContactPoint {
         /// Cached penetration impulse
         decimal mPenetrationImpulse;
 
+        /// True if the contact point is obselete
+        bool mIsObselete;
+
+        /// Pointer to the next contact point in the linked-list
+        ContactPoint* mNext;
+
+        // -------------------- Methods -------------------- //
+
+        /// Update the contact point with a new one that is similar (very close)
+        void update(const ContactPointInfo* contactInfo, const Transform& body1Transform,
+                    const Transform& body2Transform);
+
+        /// Return true if the contact point is similar (close enougth) to another given contact point
+        bool isSimilarWithContactPoint(const ContactPointInfo* contactPoint) const;
+
+        /// Set the cached penetration impulse
+        void setPenetrationImpulse(decimal impulse);
+
+
+        /// Set the mIsRestingContact variable
+        void setIsRestingContact(bool isRestingContact);
+
+        /// Set to true to make the contact point obselete
+        void setIsObselete(bool isObselete);
+
+        /// Set the next contact point in the linked list
+        void setNext(ContactPoint* next);
+
+        /// Return true if the contact point is obselete
+        bool getIsObselete() const;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -87,10 +118,6 @@ class ContactPoint {
 
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
-
-        /// Update the contact point with a new one that is similar (very close)
-        void update(const ContactPointInfo* contactInfo, const Transform& body1Transform,
-                    const Transform& body2Transform);
 
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
@@ -110,23 +137,22 @@ class ContactPoint {
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
 
-        /// Return true if the contact point is similar (close enougth) to another given contact point
-        bool isSimilarWithContactPoint(const ContactPointInfo* contactPoint) const;
-
-        /// Set the cached penetration impulse
-        void setPenetrationImpulse(decimal impulse);
-
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
-        /// Set the mIsRestingContact variable
-        void setIsRestingContact(bool isRestingContact);
+        /// Return the next contact point in the linked list
+        ContactPoint* getNext() const;
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
 
         /// Return the number of bytes used by the contact point
         size_t getSizeInBytes() const;
+
+        // Friendship
+        friend class ContactManifold;
+        friend class ContactManifoldSet;
+        friend class ContactSolver;
 };
 
 // Return the normal vector of the contact
@@ -178,6 +204,26 @@ inline bool ContactPoint::getIsRestingContact() const {
 // Set the mIsRestingContact variable
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
+}
+
+// Return true if the contact point is obselete
+inline bool ContactPoint::getIsObselete() const {
+    return mIsObselete;
+}
+
+// Set to true to make the contact point obselete
+inline void ContactPoint::setIsObselete(bool isObselete) {
+    mIsObselete = isObselete;
+}
+
+// Return the next contact point in the linked list
+inline ContactPoint* ContactPoint::getNext() const {
+   return mNext;
+}
+
+// Set the next contact point in the linked list
+inline void ContactPoint::setNext(ContactPoint* next) {
+    mNext = next;
 }
 
 // Return the penetration depth of the contact

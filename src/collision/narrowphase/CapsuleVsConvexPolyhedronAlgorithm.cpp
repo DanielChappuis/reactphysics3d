@@ -37,13 +37,12 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a capsule and a polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                       ContactManifoldInfo& contactManifoldInfo) {
+bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
     SATAlgorithm satAlgorithm;
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
@@ -61,8 +60,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* na
 		// two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
         // Get the contact point created by GJK
-        ContactPointInfo* contactPoint = contactManifoldInfo.getFirstContactPointInfo();
-		assert(contactPoint != nullptr);
+        ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
+        assert(contactPoint != nullptr);
 
         bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
@@ -96,7 +95,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* na
 				&& areParallelVectors(faceNormalWorld, contactPoint->normal)) {
 
                 // Remove the previous contact point computed by GJK
-                contactManifoldInfo.reset();
+                narrowPhaseInfo->resetContactPoints();
 
                 const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
                 const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
@@ -116,7 +115,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* na
                 satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
                                                           polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
                                                           capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
-                                                          contactManifoldInfo, isCapsuleShape1);
+                                                          narrowPhaseInfo, isCapsuleShape1);
 
                 break;
             }
@@ -133,7 +132,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* na
     if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
         // Run the SAT algorithm to find the separating axis and compute contact point
-        bool isColliding = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
+        bool isColliding = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;

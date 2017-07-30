@@ -23,74 +23,67 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
-#define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_COLLISION_CALLBACK_H
+#define REACTPHYSICS3D_COLLISION_CALLBACK_H
 
 // Libraries
-#include "body/Body.h"
-#include "collision/ContactManifoldInfo.h"
-#include "memory/PoolAllocator.h"
-#include "engine/OverlappingPair.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "collision/ContactManifold.h"
 
-/// Namespace ReactPhysics3D
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-class CollisionDetection;
-
-// Class NarrowPhaseCallback
+// Class CollisionCallback
 /**
- * This abstract class is the base class for a narrow-phase collision
- * callback class.
+ * This class can be used to register a callback for collision test queries.
+ * You should implement your own class inherited from this one and implement
+ * the notifyContact() method. This method will called each time a contact
+ * point is reported.
  */
-class NarrowPhaseCallback {
+class CollisionCallback {
 
     public:
 
-        virtual ~NarrowPhaseCallback() = default;
+        // Structure CollisionCallbackInfo
+        /**
+         * This structure represents the contact information between two collision
+         * shapes of two bodies
+         */
+        struct CollisionCallbackInfo {
 
-        /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo)=0;
+            public:
 
-};
+                /// Pointer to the first element of the linked-list that contains contact manifolds
+                ContactManifoldListElement* contactManifoldElements;
 
-// Class NarrowPhaseAlgorithm
-/**
- * This abstract class is the base class for a  narrow-phase collision
- * detection algorithm. The goal of the narrow phase algorithm is to
- * compute information about the contact between two proxy shapes.
- */
-class NarrowPhaseAlgorithm {
+                /// Pointer to the first body of the contact
+                CollisionBody* body1;
 
-    protected :
+                /// Pointer to the second body of the contact
+                CollisionBody* body2;
 
-        // -------------------- Attributes -------------------- //
+                /// Pointer to the proxy shape of first body
+                const ProxyShape* proxyShape1;
 
-    public :
+                /// Pointer to the proxy shape of second body
+                const ProxyShape* proxyShape2;
 
-        // -------------------- Methods -------------------- //
+                /// Memory allocator
+                Allocator& mMemoryAllocator;
 
-        /// Constructor
-        NarrowPhaseAlgorithm() = default;
+                // Constructor
+                CollisionCallbackInfo(OverlappingPair* pair, Allocator& allocator);
+
+                // Destructor
+                ~CollisionCallbackInfo();
+        };
 
         /// Destructor
-        virtual ~NarrowPhaseAlgorithm() = default;
+        virtual ~CollisionCallback() = default;
 
-        /// Deleted copy-constructor
-        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        /// Deleted assignment operator
-        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        // TODO : Use the following reportContacts variable in all narrow-phase algorithms
-
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts)=0;
+        /// This method will be called for each reported contact point
+        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo)=0;
 };
 
 }
 
 #endif
-
-

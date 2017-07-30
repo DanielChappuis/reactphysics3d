@@ -102,13 +102,19 @@ class OverlappingPair {
         /// Collision information about the last frame (for temporal coherence)
         LastFrameCollisionInfo mLastFrameCollisionInfo;
 
+        /// Linked-list of potential contact manifold
+        ContactManifoldInfo* mPotentialContactManifolds;
+
+        /// Memory allocator used to allocated memory for the ContactManifoldInfo and ContactPointInfo
+        Allocator& mTempMemoryAllocator;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                        int nbMaxContactManifolds, PoolAllocator& memoryAllocator);
+                        Allocator& memoryAllocator, Allocator& temporaryMemoryAllocator);
 
         /// Destructor
         ~OverlappingPair() = default;
@@ -125,9 +131,6 @@ class OverlappingPair {
         /// Return the pointer to second body
         ProxyShape* getShape2() const;
 
-        /// Add a contact manifold
-        void addContactManifold(const ContactManifoldInfo& contactManifoldInfo);
-
         /// Return the last frame collision info
         LastFrameCollisionInfo& getLastFrameCollisionInfo();
 
@@ -137,8 +140,32 @@ class OverlappingPair {
         /// Return the a reference to the contact manifold set
         const ContactManifoldSet& getContactManifoldSet();
 
-        /// Clear the contact points of the contact manifold
-        void clearContactPoints();
+        /// Clear all the potential contact manifolds
+        void clearPotentialContactManifolds();
+
+        /// Add potential contact-points from narrow-phase into potential contact manifolds
+        void addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo);
+
+        /// Add a contact to the contact manifold
+        void addContactManifold(const ContactManifoldInfo* contactManifoldInfo);
+
+        /// Return a reference to the temporary memory allocator
+        Allocator& getTemporaryAllocator();
+
+        /// Return true if one of the shapes of the pair is a concave shape
+        bool hasConcaveShape() const;
+
+        /// Return a pointer to the first potential contact manifold in the linked-list
+        ContactManifoldInfo* getPotentialContactManifolds();
+
+        /// Reduce the number of contact points of all the potential contact manifolds
+        void reducePotentialContactManifolds();
+
+        /// Make the contact manifolds and contact points obselete
+        void makeContactsObselete();
+
+        /// Clear the obselete contact manifold and contact points
+        void clearObseleteManifoldsAndContactPoints();
 
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
@@ -162,7 +189,7 @@ inline ProxyShape* OverlappingPair::getShape2() const {
 }                
 
 // Add a contact to the contact manifold
-inline void OverlappingPair::addContactManifold(const ContactManifoldInfo& contactManifoldInfo) {
+inline void OverlappingPair::addContactManifold(const ContactManifoldInfo* contactManifoldInfo) {
     mContactManifoldSet.addContactManifold(contactManifoldInfo);
 }
 
@@ -179,6 +206,12 @@ inline uint OverlappingPair::getNbContactPoints() const {
 // Return the contact manifold
 inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
     return mContactManifoldSet;
+}
+
+// Make the contact manifolds and contact points obselete
+inline void OverlappingPair::makeContactsObselete() {
+
+    mContactManifoldSet.makeContactsObselete();
 }
 
 // Return the pair of bodies index
@@ -205,9 +238,25 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
     return indexPair;
 }
 
-// Clear the contact points of the contact manifold
-inline void OverlappingPair::clearContactPoints() {
-   mContactManifoldSet.clear();
+// Return a reference to the temporary memory allocator
+inline Allocator& OverlappingPair::getTemporaryAllocator() {
+    return mTempMemoryAllocator;
+}
+
+// Return true if one of the shapes of the pair is a concave shape
+inline bool OverlappingPair::hasConcaveShape() const {
+    return !getShape1()->getCollisionShape()->isConvex() ||
+           !getShape2()->getCollisionShape()->isConvex();
+}
+
+// Return a pointer to the first potential contact manifold in the linked-list
+inline ContactManifoldInfo* OverlappingPair::getPotentialContactManifolds() {
+    return mPotentialContactManifolds;
+}
+
+// Clear the obselete contact manifold and contact points
+inline void OverlappingPair::clearObseleteManifoldsAndContactPoints() {
+    mContactManifoldSet.clearObseleteManifoldsAndContactPoints();
 }
 
 }

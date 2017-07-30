@@ -113,24 +113,24 @@ class SATAlgorithm {
         SATAlgorithm& operator=(const SATAlgorithm& algorithm) = delete;
 
         /// Test collision between a sphere and a convex mesh
-        bool testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+        bool testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const;
 
         /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const;
 
         /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
         void computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                        decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                        const Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                        const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
-                                                       ContactManifoldInfo& contactManifoldInfo, bool isCapsuleShape1) const;
+                                                       NarrowPhaseInfo* narrowPhaseInfo, bool isCapsuleShape1) const;
 
         // This method returns true if an edge of a polyhedron and a capsule forms a face of the Minkowski Difference
         bool isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, const Vector3& edgeAdjacentFace1Normal,
                                           const Vector3& edgeAdjacentFace2Normal) const;
 
         /// Test collision between two convex meshes
-        bool testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const;
+        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const;
 };
 
 }

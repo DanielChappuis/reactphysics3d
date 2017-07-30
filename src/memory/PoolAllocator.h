@@ -138,7 +138,15 @@ class PoolAllocator : public Allocator {
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override;
 
+        /// Return true if memory needs to be release with this allocator
+        virtual bool isReleaseNeeded() const override;
+
 };
+
+// Return true if memory needs to be release with this allocator
+inline bool PoolAllocator::isReleaseNeeded() const {
+    return true;
+}
 
 }
 

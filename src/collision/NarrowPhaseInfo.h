@@ -28,6 +28,7 @@
 
 // Libraries
 #include "shapes/CollisionShape.h"
+#include "collision/ContactManifoldInfo.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -58,6 +59,9 @@ struct NarrowPhaseInfo {
         /// Transform that maps from collision shape 2 local-space to world-space
         Transform shape2ToWorldTransform;
 
+        /// Linked-list of contact points created during the narrow-phase
+        ContactPointInfo* contactPoints;
+
         /// Cached collision data of the proxy shape
         // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
         void** cachedCollisionData1;
@@ -72,12 +76,20 @@ struct NarrowPhaseInfo {
         /// Constructor
         NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* shape1,
                         const CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, void** cachedData1, void** cachedData2)
-              : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
-                shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
-                cachedCollisionData1(cachedData1), cachedCollisionData2(cachedData2), next(nullptr) {
+                        const Transform& shape2Transform, void** cachedData1, void** cachedData2);
 
-        }
+        /// Destructor
+        ~NarrowPhaseInfo();
+
+        /// Add a new contact point
+        void addContactPoint(const Vector3& contactNormal, decimal penDepth,
+                             const Vector3& localPt1, const Vector3& localPt2);
+
+        /// Create a new potential contact manifold into the overlapping pair using current contact points
+        void addContactPointsAsPotentialContactManifold();
+
+        /// Reset the remaining contact points
+        void resetContactPoints();
 };
 
 }

@@ -49,6 +49,9 @@ class Allocator {
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size)=0;
+
+        /// Return true if memory needs to be release with this allocator
+        virtual bool isReleaseNeeded() const=0;
 };
 
 }

@@ -30,15 +30,14 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(const ContactManifoldInfo& manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
-                                 PoolAllocator& memoryAllocator, short normalDirectionId)
-                : mShape1(shape1), mShape2(shape2), mNormalDirectionId(normalDirectionId),
+ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2, Allocator& memoryAllocator)
+                : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr), mContactNormalId(manifoldInfo->getContactNormalId()),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
-                  mMemoryAllocator(memoryAllocator) {
+                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObselete(false) {
     
     // For each contact point info in the manifold
-    const ContactPointInfo* pointInfo = manifoldInfo.getFirstContactPointInfo();
+    const ContactPointInfo* pointInfo = manifoldInfo->getFirstContactPointInfo();
     while(pointInfo != nullptr) {
 
         // Create the new contact point
@@ -46,7 +45,8 @@ ContactManifold::ContactManifold(const ContactManifoldInfo& manifoldInfo, ProxyS
                 ContactPoint(pointInfo, mShape1->getLocalToWorldTransform(), mShape2->getLocalToWorldTransform());
 
         // Add the new contact point into the manifold
-        mContactPoints[mNbContactPoints] = contact;
+        contact->setNext(mContactPoints);
+        mContactPoints = contact;
         mNbContactPoints++;
 
         pointInfo = pointInfo->next;
@@ -58,49 +58,69 @@ ContactManifold::ContactManifold(const ContactManifoldInfo& manifoldInfo, ProxyS
 
 // Destructor
 ContactManifold::~ContactManifold() {
-    clear();
-}
 
-// Clear the contact manifold
-void ContactManifold::clear() {
-    for (uint i=0; i<mNbContactPoints; i++) {
-		
-        // Call the destructor explicitly and tell the memory allocator that
-		// the corresponding memory block is now free
-        mContactPoints[i]->~ContactPoint();
-        mMemoryAllocator.release(mContactPoints[i], sizeof(ContactPoint));
+    // Delete all the contact points
+    ContactPoint* contactPoint = mContactPoints;
+    while(contactPoint != nullptr) {
+
+        ContactPoint* nextContactPoint = contactPoint->getNext();
+
+        // TODO : Delete this
+        bool test = mMemoryAllocator.isReleaseNeeded();
+
+        // Delete the contact point
+        contactPoint->~ContactPoint();
+        mMemoryAllocator.release(contactPoint, sizeof(ContactPoint));
+
+        contactPoint = nextContactPoint;
     }
-    mNbContactPoints = 0;
 }
 
 // Add a contact point
 void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) {
-
-    assert(mNbContactPoints < MAX_CONTACT_POINTS_IN_MANIFOLD);
 
     // Create the new contact point
     ContactPoint* contactPoint = new (mMemoryAllocator.allocate(sizeof(ContactPoint)))
             ContactPoint(contactPointInfo, mShape1->getLocalToWorldTransform(), mShape2->getLocalToWorldTransform());
 
     // Add the new contact point into the manifold
-    mContactPoints[mNbContactPoints] = contactPoint;
-    mNbContactPoints++;
+    contactPoint->setNext(mContactPoints);
+    mContactPoints = contactPoint;
 
+    mNbContactPoints++;
 }
 
-// Remove a contact point
-void ContactManifold::removeContactPoint(int index) {
+// Clear the obselete contact points
+void ContactManifold::clearObseleteContactPoints() {
 
-    assert(mNbContactPoints > 0);
-    assert(index >= 0 && index < mNbContactPoints);
+    ContactPoint* contactPoint = mContactPoints;
+    ContactPoint* previousContactPoint = nullptr;
+    while (contactPoint != nullptr) {
 
-    // Delete the contact
-    mContactPoints[index]->~ContactPoint();
-    mMemoryAllocator.release(mContactPoints[index], sizeof(ContactPoint));
+        ContactPoint* nextContactPoint =  contactPoint->getNext();
 
-    for (int i=index; (i+1) < mNbContactPoints; i++) {
-        mContactPoints[i] = mContactPoints[i+1];
+        if (contactPoint->getIsObselete()) {
+
+            // Delete the contact point
+            contactPoint->~ContactPoint();
+            mMemoryAllocator.release(contactPoint, sizeof(ContactPoint));
+
+            if (previousContactPoint != nullptr) {
+                previousContactPoint->setNext(nextContactPoint);
+            }
+            else {
+                mContactPoints = nextContactPoint;
+            }
+
+            mNbContactPoints--;
+        }
+        else {
+            previousContactPoint = contactPoint;
+        }
+
+        contactPoint = nextContactPoint;
     }
 
-    mNbContactPoints--;
+    assert(mNbContactPoints >= 0);
+    assert(mNbContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD);
 }

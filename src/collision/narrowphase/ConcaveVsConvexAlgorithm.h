@@ -83,25 +83,35 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
 
 // Class SmoothMeshContactInfo
 /**
- * This class is used to store data about a contact with a triangle for the smooth
- * mesh algorithm.
+ * Contains data for of potential smooth contact during the smooth mesh
+ * contacts computation.
  */
-class SmoothMeshContactInfo {
+struct SmoothMeshContactInfo {
 
     public:
 
-        ContactPointInfo contactInfo;
+        ContactManifoldInfo* contactManifoldInfo;
+        ContactPointInfo* contactInfo;
         bool isFirstShapeTriangle;
         Vector3 triangleVertices[3];
+        bool isUVWZero[3];
 
         /// Constructor
-        SmoothMeshContactInfo(const ContactPointInfo& contact, bool firstShapeTriangle, const Vector3& trianglePoint1,
-                              const Vector3& trianglePoint2, const Vector3& trianglePoint3)
-            : contactInfo(contact) {
+        SmoothMeshContactInfo(ContactManifoldInfo* manifoldInfo, ContactPointInfo* contactPointInfo,
+                              bool firstShapeTriangle,
+                              const Vector3& trianglePoint1, const Vector3& trianglePoint2,
+                              const Vector3& trianglePoint3, bool isUZero, bool isVZero, bool isWZero)
+            : contactManifoldInfo(manifoldInfo), contactInfo(contactPointInfo) {
+
             isFirstShapeTriangle = firstShapeTriangle;
+
             triangleVertices[0] = trianglePoint1;
             triangleVertices[1] = trianglePoint2;
             triangleVertices[2] = trianglePoint3;
+
+            isUVWZero[0] = isUZero;
+            isUVWZero[1] = isVZero;
+            isUVWZero[2] = isWZero;
         }
 
 };
@@ -109,7 +119,7 @@ class SmoothMeshContactInfo {
 struct ContactsDepthCompare {
     bool operator()(const SmoothMeshContactInfo& contact1, const SmoothMeshContactInfo& contact2)
     {
-        return contact1.contactInfo.penetrationDepth < contact2.contactInfo.penetrationDepth;
+        return contact1.contactInfo->penetrationDepth < contact2.contactInfo->penetrationDepth;
     }
 };
 

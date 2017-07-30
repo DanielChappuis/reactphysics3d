@@ -34,12 +34,11 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two convex polyhedra
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                                ContactManifoldInfo& contactManifoldInfo) {
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
     SATAlgorithm satAlgorithm;
-    bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
+    bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;

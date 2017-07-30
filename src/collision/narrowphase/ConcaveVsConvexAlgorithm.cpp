@@ -141,114 +141,114 @@ void ConcaveVsConvexAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseI
 // Process the concave triangle mesh collision using the smooth mesh collision algorithm described
 // by Pierre Terdiman (http://www.codercorner.com/MeshContacts.pdf). This is used to avoid the collision
 // issue with some internal edges.
-void ConcaveVsConvexAlgorithm::processSmoothMeshCollision(OverlappingPair* overlappingPair,
-                                                          std::vector<SmoothMeshContactInfo> contactPoints,
-                                                          NarrowPhaseCallback* narrowPhaseCallback) {
+//void ConcaveVsConvexAlgorithm::processSmoothMeshCollision(OverlappingPair* overlappingPair,
+//                                                          std::vector<SmoothMeshContactInfo> contactPoints,
+//                                                          NarrowPhaseCallback* narrowPhaseCallback) {
 
-    // Set with the triangle vertices already processed to void further contacts with same triangle
-    std::unordered_multimap<int, Vector3> processTriangleVertices;
+//    // Set with the triangle vertices already processed to void further contacts with same triangle
+//    std::unordered_multimap<int, Vector3> processTriangleVertices;
 
-    // Sort the list of narrow-phase contacts according to their penetration depth
-    std::sort(contactPoints.begin(), contactPoints.end(), ContactsDepthCompare());
+//    // Sort the list of narrow-phase contacts according to their penetration depth
+//    std::sort(contactPoints.begin(), contactPoints.end(), ContactsDepthCompare());
 
-    // For each contact point (from smaller penetration depth to larger)
-    std::vector<SmoothMeshContactInfo>::const_iterator it;
-    for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
+//    // For each contact point (from smaller penetration depth to larger)
+//    std::vector<SmoothMeshContactInfo>::const_iterator it;
+//    for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
 
-        const SmoothMeshContactInfo info = *it;
-        const Vector3& contactPoint = info.isFirstShapeTriangle ? info.contactInfo.localPoint1 : info.contactInfo.localPoint2;
+//        const SmoothMeshContactInfo info = *it;
+//        const Vector3& contactPoint = info.isFirstShapeTriangle ? info.contactInfo.localPoint1 : info.contactInfo.localPoint2;
 
-        // Compute the barycentric coordinates of the point in the triangle
-        decimal u, v, w;
-        computeBarycentricCoordinatesInTriangle(info.triangleVertices[0],
-                                                info.triangleVertices[1],
-                                                info.triangleVertices[2],
-                                                contactPoint, u, v, w);
-        int nbZeros = 0;
-        bool isUZero = approxEqual(u, 0, 0.0001);
-        bool isVZero = approxEqual(v, 0, 0.0001);
-        bool isWZero = approxEqual(w, 0, 0.0001);
-        if (isUZero) nbZeros++;
-        if (isVZero) nbZeros++;
-        if (isWZero) nbZeros++;
+//        // Compute the barycentric coordinates of the point in the triangle
+//        decimal u, v, w;
+//        computeBarycentricCoordinatesInTriangle(info.triangleVertices[0],
+//                                                info.triangleVertices[1],
+//                                                info.triangleVertices[2],
+//                                                contactPoint, u, v, w);
+//        int nbZeros = 0;
+//        bool isUZero = approxEqual(u, 0, 0.0001);
+//        bool isVZero = approxEqual(v, 0, 0.0001);
+//        bool isWZero = approxEqual(w, 0, 0.0001);
+//        if (isUZero) nbZeros++;
+//        if (isVZero) nbZeros++;
+//        if (isWZero) nbZeros++;
 
-        // If it is a vertex contact
-        if (nbZeros == 2) {
+//        // If it is a vertex contact
+//        if (nbZeros == 2) {
 
-            Vector3 contactVertex = !isUZero ? info.triangleVertices[0] : (!isVZero ? info.triangleVertices[1] : info.triangleVertices[2]);
+//            Vector3 contactVertex = !isUZero ? info.triangleVertices[0] : (!isVZero ? info.triangleVertices[1] : info.triangleVertices[2]);
 
-            // Check that this triangle vertex has not been processed yet
-            if (!hasVertexBeenProcessed(processTriangleVertices, contactVertex)) {
+//            // Check that this triangle vertex has not been processed yet
+//            if (!hasVertexBeenProcessed(processTriangleVertices, contactVertex)) {
 
-                // Keep the contact as it is and report it
-                narrowPhaseCallback->notifyContact(overlappingPair, info.contactInfo);
-            }
-        }
-        else if (nbZeros == 1) {  // If it is an edge contact
+//                // Keep the contact as it is and report it
+//                narrowPhaseCallback->notifyContact(overlappingPair, info.contactInfo);
+//            }
+//        }
+//        else if (nbZeros == 1) {  // If it is an edge contact
 
-            Vector3 contactVertex1 = isUZero ? info.triangleVertices[1] : (isVZero ? info.triangleVertices[0] : info.triangleVertices[0]);
-            Vector3 contactVertex2 = isUZero ? info.triangleVertices[2] : (isVZero ? info.triangleVertices[2] : info.triangleVertices[1]);
+//            Vector3 contactVertex1 = isUZero ? info.triangleVertices[1] : (isVZero ? info.triangleVertices[0] : info.triangleVertices[0]);
+//            Vector3 contactVertex2 = isUZero ? info.triangleVertices[2] : (isVZero ? info.triangleVertices[2] : info.triangleVertices[1]);
 
-            // Check that this triangle edge has not been processed yet
-            if (!hasVertexBeenProcessed(processTriangleVertices, contactVertex1) &&
-                !hasVertexBeenProcessed(processTriangleVertices, contactVertex2)) {
+//            // Check that this triangle edge has not been processed yet
+//            if (!hasVertexBeenProcessed(processTriangleVertices, contactVertex1) &&
+//                !hasVertexBeenProcessed(processTriangleVertices, contactVertex2)) {
 
-                // Keep the contact as it is and report it
-                narrowPhaseCallback->notifyContact(overlappingPair, info.contactInfo);
-            }
+//                // Keep the contact as it is and report it
+//                narrowPhaseCallback->notifyContact(overlappingPair, info.contactInfo);
+//            }
 
-        }
-        else {  // If it is a face contact
+//        }
+//        else {  // If it is a face contact
 
-            ContactPointInfo newContactInfo(info.contactInfo);
+//            ContactPointInfo newContactInfo(info.contactInfo);
 
-            ProxyShape* firstShape;
-            ProxyShape* secondShape;
-            if (info.isFirstShapeTriangle) {
-                firstShape = overlappingPair->getShape1();
-                secondShape = overlappingPair->getShape2();
-            }
-            else {
-                firstShape = overlappingPair->getShape2();
-                secondShape = overlappingPair->getShape1();
-            }
+//            ProxyShape* firstShape;
+//            ProxyShape* secondShape;
+//            if (info.isFirstShapeTriangle) {
+//                firstShape = overlappingPair->getShape1();
+//                secondShape = overlappingPair->getShape2();
+//            }
+//            else {
+//                firstShape = overlappingPair->getShape2();
+//                secondShape = overlappingPair->getShape1();
+//            }
 
-            // We use the triangle normal as the contact normal
-            Vector3 a = info.triangleVertices[1] - info.triangleVertices[0];
-            Vector3 b = info.triangleVertices[2] - info.triangleVertices[0];
-            Vector3 localNormal = a.cross(b);
-            newContactInfo.normal = firstShape->getLocalToWorldTransform().getOrientation() * localNormal;
-            Vector3 firstLocalPoint = info.isFirstShapeTriangle ? info.contactInfo.localPoint1 : info.contactInfo.localPoint2;
-            Vector3 firstWorldPoint = firstShape->getLocalToWorldTransform() * firstLocalPoint;
-            newContactInfo.normal.normalize();
-            if (newContactInfo.normal.dot(info.contactInfo.normal) < 0) {
-                newContactInfo.normal = -newContactInfo.normal;
-            }
+//            // We use the triangle normal as the contact normal
+//            Vector3 a = info.triangleVertices[1] - info.triangleVertices[0];
+//            Vector3 b = info.triangleVertices[2] - info.triangleVertices[0];
+//            Vector3 localNormal = a.cross(b);
+//            newContactInfo.normal = firstShape->getLocalToWorldTransform().getOrientation() * localNormal;
+//            Vector3 firstLocalPoint = info.isFirstShapeTriangle ? info.contactInfo.localPoint1 : info.contactInfo.localPoint2;
+//            Vector3 firstWorldPoint = firstShape->getLocalToWorldTransform() * firstLocalPoint;
+//            newContactInfo.normal.normalize();
+//            if (newContactInfo.normal.dot(info.contactInfo.normal) < 0) {
+//                newContactInfo.normal = -newContactInfo.normal;
+//            }
 
-            // We recompute the contact point on the second body with the new normal as described in
-            // the Smooth Mesh Contacts with GJK of the Game Physics Pearls book (from Gino van Den Bergen and
-            // Dirk Gregorius) to avoid adding torque
-            Transform worldToLocalSecondPoint = secondShape->getLocalToWorldTransform().getInverse();
-            if (info.isFirstShapeTriangle) {
-                Vector3 newSecondWorldPoint = firstWorldPoint + newContactInfo.normal;
-                newContactInfo.localPoint2 = worldToLocalSecondPoint * newSecondWorldPoint;
-            }
-            else {
-                Vector3 newSecondWorldPoint = firstWorldPoint - newContactInfo.normal;
-                newContactInfo.localPoint1 = worldToLocalSecondPoint * newSecondWorldPoint;
-            }
+//            // We recompute the contact point on the second body with the new normal as described in
+//            // the Smooth Mesh Contacts with GJK of the Game Physics Pearls book (from Gino van Den Bergen and
+//            // Dirk Gregorius) to avoid adding torque
+//            Transform worldToLocalSecondPoint = secondShape->getLocalToWorldTransform().getInverse();
+//            if (info.isFirstShapeTriangle) {
+//                Vector3 newSecondWorldPoint = firstWorldPoint + newContactInfo.normal;
+//                newContactInfo.localPoint2 = worldToLocalSecondPoint * newSecondWorldPoint;
+//            }
+//            else {
+//                Vector3 newSecondWorldPoint = firstWorldPoint - newContactInfo.normal;
+//                newContactInfo.localPoint1 = worldToLocalSecondPoint * newSecondWorldPoint;
+//            }
 
-            // Report the contact
-            narrowPhaseCallback->notifyContact(overlappingPair, newContactInfo);
-        }
+//            // Report the contact
+//            narrowPhaseCallback->notifyContact(overlappingPair, newContactInfo);
+//        }
 
-        // Add the three vertices of the triangle to the set of processed
-        // triangle vertices
-        addProcessedVertex(processTriangleVertices, info.triangleVertices[0]);
-        addProcessedVertex(processTriangleVertices, info.triangleVertices[1]);
-        addProcessedVertex(processTriangleVertices, info.triangleVertices[2]);
-    }
-}
+//        // Add the three vertices of the triangle to the set of processed
+//        // triangle vertices
+//        addProcessedVertex(processTriangleVertices, info.triangleVertices[0]);
+//        addProcessedVertex(processTriangleVertices, info.triangleVertices[1]);
+//        addProcessedVertex(processTriangleVertices, info.triangleVertices[2]);
+//    }
+//}
 
 // Return true if the vertex is in the set of already processed vertices
 bool ConcaveVsConvexAlgorithm::hasVertexBeenProcessed(const std::unordered_multimap<int, Vector3>& processTriangleVertices, const Vector3& vertex) const {

@@ -177,7 +177,7 @@ void CollisionBody::resetContactManifoldsList() {
     // Delete the linked list of contact manifolds of that body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
     while (currentElement != nullptr) {
-        ContactManifoldListElement* nextElement = currentElement->next;
+        ContactManifoldListElement* nextElement = currentElement->getNext();
 
         // Delete the current element
         currentElement->~ContactManifoldListElement();
@@ -272,8 +272,8 @@ int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
     // this body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
     while (currentElement != nullptr) {
-        currentElement->contactManifold->mIsAlreadyInIsland = false;
-        currentElement = currentElement->next;
+        currentElement->getContactManifold()->mIsAlreadyInIsland = false;
+        currentElement = currentElement->getNext();
         nbManifolds++;
     }
 

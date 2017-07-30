@@ -30,8 +30,7 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                            ContactManifoldInfo& contactManifoldInfo) {
+bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
     
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
@@ -62,7 +61,7 @@ bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseIn
         decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
         
         // Create the contact info object
-        contactManifoldInfo.addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
+        narrowPhaseInfo->addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
                                             intersectionOnBody1, intersectionOnBody2);
 
         return true;

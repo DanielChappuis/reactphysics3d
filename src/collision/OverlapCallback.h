@@ -23,74 +23,35 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
-#define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
+#ifndef REACTPHYSICS3D_OVERLAP_CALLBACK_H
+#define REACTPHYSICS3D_OVERLAP_CALLBACK_H
 
 // Libraries
-#include "body/Body.h"
-#include "collision/ContactManifoldInfo.h"
-#include "memory/PoolAllocator.h"
-#include "engine/OverlappingPair.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "body/CollisionBody.h"
 
-/// Namespace ReactPhysics3D
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-class CollisionDetection;
-
-// Class NarrowPhaseCallback
+// Class OverlapCallback
 /**
- * This abstract class is the base class for a narrow-phase collision
- * callback class.
+ * This class can be used to register a callback for collision overlap queries.
+ * You should implement your own class inherited from this one and implement
+ * the notifyOverlap() method. This method will called each time a contact
+ * point is reported.
  */
-class NarrowPhaseCallback {
+class OverlapCallback {
 
     public:
 
-        virtual ~NarrowPhaseCallback() = default;
-
-        /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo)=0;
-
-};
-
-// Class NarrowPhaseAlgorithm
-/**
- * This abstract class is the base class for a  narrow-phase collision
- * detection algorithm. The goal of the narrow phase algorithm is to
- * compute information about the contact between two proxy shapes.
- */
-class NarrowPhaseAlgorithm {
-
-    protected :
-
-        // -------------------- Attributes -------------------- //
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        NarrowPhaseAlgorithm() = default;
-
         /// Destructor
-        virtual ~NarrowPhaseAlgorithm() = default;
+        virtual ~OverlapCallback() {
 
-        /// Deleted copy-constructor
-        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm) = delete;
+        }
 
-        /// Deleted assignment operator
-        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        // TODO : Use the following reportContacts variable in all narrow-phase algorithms
-
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts)=0;
+        /// This method will be called for each reported overlapping bodies
+        virtual void notifyOverlap(CollisionBody* collisionBody)=0;
 };
 
 }
 
 #endif
-
-

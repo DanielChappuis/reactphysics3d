@@ -34,12 +34,11 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a convex polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                      ContactManifoldInfo& contactManifoldInfo) {
+bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, contactManifoldInfo);
+    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
 	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
 		narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
@@ -61,7 +60,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(const NarrowPhaseInfo* nar
 
         // Run the SAT algorithm to find the separating axis and compute contact point
         SATAlgorithm satAlgorithm;
-        bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, contactManifoldInfo);
+        bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;

@@ -148,10 +148,8 @@ void ContactSolver::initializeForIsland(Island* island) {
         const Vector3& w2 = mAngularVelocities[mContactConstraints[mNbContactManifolds].indexBody2];
 
         // For each  contact point of the contact manifold
-        for (uint c=0; c<externalManifold->getNbContactPoints(); c++) {
-
-            // Get a contact point
-            ContactPoint* externalContact = externalManifold->getContactPoint(c);
+        ContactPoint* externalContact = externalManifold->getContactPoints();
+        while (externalContact != nullptr) {
 
             // Get the contact point on the two bodies
             Vector3 p1 = externalContact->getWorldPointOnBody1();
@@ -200,6 +198,8 @@ void ContactSolver::initializeForIsland(Island* island) {
             mContactConstraints[mNbContactManifolds].normal += mContactPoints[mNbContactPoints].normal;
 
             mNbContactPoints++;
+
+            externalContact = externalContact->getNext();
         }
 
         mContactConstraints[mNbContactManifolds].frictionPointBody1 /=static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);

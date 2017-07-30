@@ -72,7 +72,7 @@ class CollisionDetection {
         NarrowPhaseAlgorithm* mCollisionMatrix[NB_COLLISION_SHAPE_TYPES][NB_COLLISION_SHAPE_TYPES];
 
         /// Reference to the memory allocator
-        PoolAllocator& mMemoryAllocator;
+        PoolAllocator& mPoolAllocator;
 
         /// Reference to the single frame memory allocator
         SingleFrameAllocator& mSingleFrameAllocator;
@@ -118,9 +118,6 @@ class CollisionDetection {
         /// involed in the corresponding contact.
         void addContactManifoldToBody(OverlappingPair* pair);
 
-        /// Delete all the contact points in the currently overlapping pairs
-        void clearContactPoints();
-
         /// Fill-in the collision detection matrix
         void fillInCollisionMatrix();
 
@@ -137,6 +134,18 @@ class CollisionDetection {
 
         /// Compute the middle-phase collision detection between two proxy shapes
         NarrowPhaseInfo* computeMiddlePhaseForProxyShapes(OverlappingPair* pair);
+
+        /// Convert the potential contact into actual contacts
+        void processAllPotentialContacts();
+
+        /// Process the potential contact manifold of a pair to create actual contact manifold
+        void processPotentialContacts(OverlappingPair* pair);
+
+        /// Report contacts for all the colliding overlapping pairs
+        void reportAllContacts();
+
+        /// Process the potential contacts where one collion is a concave shape
+        void processSmoothMeshContacts(OverlappingPair* pair);
    
     public :
 

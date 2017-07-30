@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) {
+bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
     
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CAPSULE);
@@ -116,8 +116,8 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 				decimal penetrationDepth = sumRadius - segmentsDistance;
 
 				// Create the contact info object
-				contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
-				contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
+                narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
+                narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
 
 				return true;
 			}
@@ -148,7 +148,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhase
 		decimal penetrationDepth = sumRadius - closestPointsDistance;
 
 		// Create the contact info object
-        contactManifoldInfo.addContactPoint(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+        narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
 
 		return true;
 	}

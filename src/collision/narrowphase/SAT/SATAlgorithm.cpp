@@ -44,7 +44,7 @@ using namespace reactphysics3d;
 const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 
 // Test collision between a sphere and a convex mesh
-bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
     PROFILE("SATAlgorithm::testCollisionSphereVsConvexPolyhedron()");
 
@@ -145,7 +145,7 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(const NarrowPhaseInfo* 
     const Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
 
     // Create the contact info object
-    contactManifoldInfo.addContactPoint(isSphereShape1 ? normalWorld : -normalWorld, minPenetrationDepth,
+    narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
                                         isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
                                         isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
 
@@ -171,7 +171,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceInd
 }
 
 // Test collision between a capsule and a convex mesh
-bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo, ContactManifoldInfo& contactManifoldInfo) const {
+bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
     PROFILE("SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron()");
 
@@ -387,7 +387,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
         computeCapsulePolyhedronFaceContactPoints(minFaceIndex, capsuleRadius, polyhedron, minPenetrationDepth,
                                                   polyhedronToCapsuleTransform, normalWorld, separatingAxisCapsuleSpace,
                                                   capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
-                                                  contactManifoldInfo, isCapsuleShape1);
+                                                  narrowPhaseInfo, isCapsuleShape1);
 
          lastFrameInfo.satIsAxisFacePolyhedron1 = true;
          lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
@@ -406,7 +406,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(const NarrowPhaseInfo*
         const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * closestPointCapsuleInnerSegment) - separatingAxisCapsuleSpace * capsuleRadius;
 
         // Create the contact point
-        contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+        narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
                                             isCapsuleShape1 ? contactPointCapsule : closestPointPolyhedronEdge,
                                             isCapsuleShape1 ? closestPointPolyhedronEdge : contactPointCapsule);
 
@@ -477,7 +477,7 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
                                                              decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                              const Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                              const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
-                                                             ContactManifoldInfo& contactManifoldInfo, bool isCapsuleShape1) const {
+                                                             NarrowPhaseInfo* narrowPhaseInfo, bool isCapsuleShape1) const {
 
     HalfEdgeStructure::Face face = polyhedron->getFace(referenceFaceIndex);
     uint firstEdgeIndex = face.edgeIndex;
@@ -523,7 +523,7 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 			const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * clipSegment[i]) - separatingAxisCapsuleSpace * capsuleRadius;
 
 			// Create the contact point
-			contactManifoldInfo.addContactPoint(isCapsuleShape1 ? -normalWorld : normalWorld, penetrationDepth,
+            narrowPhaseInfo->addContactPoint(isCapsuleShape1 ? -normalWorld : normalWorld, penetrationDepth,
 				isCapsuleShape1 ? contactPointCapsule : contactPointPolyhedron,
 				isCapsuleShape1 ? contactPointPolyhedron : contactPointCapsule);
 		}
@@ -543,8 +543,8 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 }
 
 // Test collision between two convex polyhedrons
-bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                                   ContactManifoldInfo& contactManifoldInfo) const {
+bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo,
+                                                                   bool reportContacts) const {
 
     PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()");
 
@@ -869,7 +869,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
 				Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
 
                 // Create a new contact point
-                contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+                narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
             }
@@ -893,7 +893,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(const NarrowP
         const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
 
         // Create the contact point
-        contactManifoldInfo.addContactPoint(normalWorld, minPenetrationDepth,
+        narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
                                             closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
 
         lastFrameInfo.satIsAxisFacePolyhedron1 = false;

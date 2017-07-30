@@ -342,14 +342,16 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(const rp3d::Dyn
         const rp3d::ContactManifold* manifold = *it;
 
         // For each contact point of the manifold
-        for (uint i=0; i<manifold->getNbContactPoints(); i++) {
+        rp3d::ContactPoint* contactPoint = manifold->getContactPoints();
+        while (contactPoint != nullptr) {
 
-            rp3d::ContactPoint* contactPoint = manifold->getContactPoint(i);
             rp3d::Vector3 point = contactPoint->getWorldPointOnBody1();
 			rp3d::Vector3 normalWorld = contactPoint->getNormal();
 			openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
             ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());
             contactPoints.push_back(contact);
+
+            contactPoint = contactPoint->getNext();
         }
 
     }

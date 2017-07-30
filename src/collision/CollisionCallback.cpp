@@ -23,74 +23,57 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
-#define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
-
 // Libraries
-#include "body/Body.h"
-#include "collision/ContactManifoldInfo.h"
-#include "memory/PoolAllocator.h"
+#include "collision/CollisionCallback.h"
 #include "engine/OverlappingPair.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "memory/Allocator.h"
+#include "collision/ContactManifold.h"
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
 
-class CollisionDetection;
+// Constructor
+CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair* pair, Allocator& allocator) :
+    contactManifoldElements(nullptr), body1(pair->getShape1()->getBody()),
+    body2(pair->getShape2()->getBody()),
+    proxyShape1(pair->getShape1()), proxyShape2(pair->getShape2()),
+    mMemoryAllocator(allocator) {
 
-// Class NarrowPhaseCallback
-/**
- * This abstract class is the base class for a narrow-phase collision
- * callback class.
- */
-class NarrowPhaseCallback {
+    assert(pair != nullptr);
 
-    public:
+    const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
 
-        virtual ~NarrowPhaseCallback() = default;
+    // For each contact manifold in the set of manifolds in the pair
+    ContactManifold* contactManifold = manifoldSet.getContactManifolds();
+    while (contactManifold != nullptr) {
 
-        /// Called by a narrow-phase collision algorithm when a new contact has been found
-        virtual void notifyContact(OverlappingPair* overlappingPair,
-                                   const ContactPointInfo& contactInfo)=0;
+        assert(contactManifold->getNbContactPoints() > 0);
 
-};
+        // Add the contact manifold at the beginning of the linked
+        // list of contact manifolds of the first body
+        ContactManifoldListElement* element = new (mMemoryAllocator.allocate(sizeof(ContactManifoldListElement)))
+                                                      ContactManifoldListElement(contactManifold,
+                                                                         contactManifoldElements);
+        contactManifoldElements = element;
 
-// Class NarrowPhaseAlgorithm
-/**
- * This abstract class is the base class for a  narrow-phase collision
- * detection algorithm. The goal of the narrow phase algorithm is to
- * compute information about the contact between two proxy shapes.
- */
-class NarrowPhaseAlgorithm {
-
-    protected :
-
-        // -------------------- Attributes -------------------- //
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        NarrowPhaseAlgorithm() = default;
-
-        /// Destructor
-        virtual ~NarrowPhaseAlgorithm() = default;
-
-        /// Deleted copy-constructor
-        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        /// Deleted assignment operator
-        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        // TODO : Use the following reportContacts variable in all narrow-phase algorithms
-
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts)=0;
-};
-
+        contactManifold = contactManifold->getNext();
+    }
 }
 
-#endif
+// Destructor
+CollisionCallback::CollisionCallbackInfo::~CollisionCallbackInfo() {
 
+    // Release memory allocator for the contact manifold list elements
+    ContactManifoldListElement* element = contactManifoldElements;
+    while (element != nullptr) {
+
+        ContactManifoldListElement* nextElement = element->getNext();
+
+        // Delete and release memory
+        element->~ContactManifoldListElement();
+        mMemoryAllocator.release(element, sizeof(ContactManifoldListElement));
+
+        element = nextElement;
+    }
+}
 
