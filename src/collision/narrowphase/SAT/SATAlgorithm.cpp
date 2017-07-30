@@ -139,15 +139,18 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrow
         }
     }
 
-    const Vector3 minFaceNormal = polyhedron->getFaceNormal(minFaceIndex);
-    Vector3 normalWorld = -(polyhedronToWorldTransform.getOrientation() * minFaceNormal);
-    const Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * normalWorld * sphere->getRadius();
-    const Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
+    if (reportContacts) {
 
-    // Create the contact info object
-    narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                        isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
-                                        isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
+        const Vector3 minFaceNormal = polyhedron->getFaceNormal(minFaceIndex);
+        Vector3 normalWorld = -(polyhedronToWorldTransform.getOrientation() * minFaceNormal);
+        const Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * normalWorld * sphere->getRadius();
+        const Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
+
+        // Create the contact info object
+        narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+                                            isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
+                                            isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
+    }
 
     lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
 
@@ -384,34 +387,39 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
     // We need to clip the inner capsule segment with the adjacent faces of the separating face
     if (isMinPenetrationFaceNormal) {
 
-        computeCapsulePolyhedronFaceContactPoints(minFaceIndex, capsuleRadius, polyhedron, minPenetrationDepth,
-                                                  polyhedronToCapsuleTransform, normalWorld, separatingAxisCapsuleSpace,
-                                                  capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
-                                                  narrowPhaseInfo, isCapsuleShape1);
+        if (reportContacts) {
+
+            computeCapsulePolyhedronFaceContactPoints(minFaceIndex, capsuleRadius, polyhedron, minPenetrationDepth,
+                                                      polyhedronToCapsuleTransform, normalWorld, separatingAxisCapsuleSpace,
+                                                      capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
+                                                      narrowPhaseInfo, isCapsuleShape1);
+        }
 
          lastFrameInfo.satIsAxisFacePolyhedron1 = true;
          lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
     }
     else {   // The separating axis is the cross product of a polyhedron edge and the inner capsule segment
 
-        // Compute the closest points between the inner capsule segment and the
-        // edge of the polyhedron in polyhedron local-space
-        Vector3 closestPointPolyhedronEdge, closestPointCapsuleInnerSegment;
-        computeClosestPointBetweenTwoSegments(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
-                                              separatingPolyhedronEdgeVertex1, separatingPolyhedronEdgeVertex2,
-                                              closestPointCapsuleInnerSegment, closestPointPolyhedronEdge);
+        if (reportContacts) {
 
+            // Compute the closest points between the inner capsule segment and the
+            // edge of the polyhedron in polyhedron local-space
+            Vector3 closestPointPolyhedronEdge, closestPointCapsuleInnerSegment;
+            computeClosestPointBetweenTwoSegments(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
+                                                  separatingPolyhedronEdgeVertex1, separatingPolyhedronEdgeVertex2,
+                                                  closestPointCapsuleInnerSegment, closestPointPolyhedronEdge);
 
-        // Project closest capsule inner segment point into the capsule bounds
-        const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * closestPointCapsuleInnerSegment) - separatingAxisCapsuleSpace * capsuleRadius;
+            // Project closest capsule inner segment point into the capsule bounds
+            const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * closestPointCapsuleInnerSegment) - separatingAxisCapsuleSpace * capsuleRadius;
 
-        // Create the contact point
-        narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                            isCapsuleShape1 ? contactPointCapsule : closestPointPolyhedronEdge,
-                                            isCapsuleShape1 ? closestPointPolyhedronEdge : contactPointCapsule);
+            // Create the contact point
+            narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+                                                isCapsuleShape1 ? contactPointCapsule : closestPointPolyhedronEdge,
+                                                isCapsuleShape1 ? closestPointPolyhedronEdge : contactPointCapsule);
+        }
 
-         lastFrameInfo.satIsAxisFacePolyhedron1 = false;
-         lastFrameInfo.satMinEdge1Index = minEdgeIndex;
+        lastFrameInfo.satIsAxisFacePolyhedron1 = false;
+        lastFrameInfo.satMinEdge1Index = minEdgeIndex;
     }
 
     return true;
@@ -543,8 +551,7 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 }
 
 // Test collision between two convex polyhedrons
-bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo,
-                                                                   bool reportContacts) const {
+bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
     PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()");
 
@@ -787,91 +794,93 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
     // If the minimum separating axis is a face normal
     if (isMinPenetrationFaceNormal) {
 
-        const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
-        const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
-        const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
-        const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
+        if (reportContacts) {
 
-        assert(minPenetrationDepth > decimal(0.0));
+            const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
+            const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
+            const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
+            const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
 
-        const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
-        const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
+            assert(minPenetrationDepth > decimal(0.0));
 
-        // Compute the world normal
-        const Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
-                                                                            -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
+            const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
+            const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
 
-        // Get the reference face
-        HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
+            // Compute the world normal
+            const Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
+                                                                                -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
 
-        // Find the incident face on the other polyhedron (most anti-parallel face)
-        uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
+            // Get the reference face
+            HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
 
-        // Get the incident face
-        HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
+            // Find the incident face on the other polyhedron (most anti-parallel face)
+            uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
 
-        std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
-        std::vector<Vector3> planesNormals;     // Normals of the clipping planes
-        std::vector<Vector3> planesPoints;      // Points on the clipping planes
+            // Get the incident face
+            HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
-        // Get all the vertices of the incident face (in the reference local-space)
-        std::vector<uint>::const_iterator it;
-        for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
-            const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
-            polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
-        }
+            std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
+            std::vector<Vector3> planesNormals;     // Normals of the clipping planes
+            std::vector<Vector3> planesPoints;      // Points on the clipping planes
 
-        // Get the reference face clipping planes
-        uint currentEdgeIndex = referenceFace.edgeIndex;
-        uint firstEdgeIndex = currentEdgeIndex;
-        do {
+            // Get all the vertices of the incident face (in the reference local-space)
+            std::vector<uint>::const_iterator it;
+            for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
+                const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
+                polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
+            }
 
-            // Get the adjacent edge
-            HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
+            // Get the reference face clipping planes
+            uint currentEdgeIndex = referenceFace.edgeIndex;
+            uint firstEdgeIndex = currentEdgeIndex;
+            do {
 
-            // Get the twin edge
-            HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+                // Get the adjacent edge
+                HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
 
-            // Get the adjacent face normal (and negate it to have a clipping plane)
-            Vector3 faceNormal = -referencePolyhedron->getFaceNormal(twinEdge.faceIndex);
+                // Get the twin edge
+                HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
 
-            // Get a vertex of the clipping plane (vertex of the adjacent edge)
-            Vector3 faceVertex = referencePolyhedron->getVertexPosition(edge.vertexIndex);
+                // Get the adjacent face normal (and negate it to have a clipping plane)
+                Vector3 faceNormal = -referencePolyhedron->getFaceNormal(twinEdge.faceIndex);
 
-            planesNormals.push_back(faceNormal);
-            planesPoints.push_back(faceVertex);
+                // Get a vertex of the clipping plane (vertex of the adjacent edge)
+                Vector3 faceVertex = referencePolyhedron->getVertexPosition(edge.vertexIndex);
 
-            // Go to the next adjacent edge of the reference face
-            currentEdgeIndex = edge.nextEdgeIndex;
+                planesNormals.push_back(faceNormal);
+                planesPoints.push_back(faceVertex);
 
-        } while (currentEdgeIndex != firstEdgeIndex);
+                // Go to the next adjacent edge of the reference face
+                currentEdgeIndex = edge.nextEdgeIndex;
 
-        assert(planesNormals.size() > 0);
-        assert(planesNormals.size() == planesPoints.size());
+            } while (currentEdgeIndex != firstEdgeIndex);
 
-        // Clip the reference faces with the adjacent planes of the reference face
-        std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
-        assert(clipPolygonVertices.size() > 0);
+            assert(planesNormals.size() > 0);
+            assert(planesNormals.size() == planesPoints.size());
 
-        // We only keep the clipped points that are below the reference face
-        const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
-        std::vector<Vector3>::const_iterator itPoints;
-        for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
+            // Clip the reference faces with the adjacent planes of the reference face
+            std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
+            assert(clipPolygonVertices.size() > 0);
 
-            // If the clip point is bellow the reference face
-            if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0))
-			{
+            // We only keep the clipped points that are below the reference face
+            const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
+            std::vector<Vector3>::const_iterator itPoints;
+            for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
 
-                // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
-                const Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
+                // If the clip point is bellow the reference face
+                if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
 
-                // Project the contact point onto the reference face
-				Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
+                    // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
+                    const Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
 
-                // Create a new contact point
-                narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
-                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
+                    // Project the contact point onto the reference face
+                    Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
+
+                    // Create a new contact point
+                    narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
+                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
+                }
             }
         }
 
@@ -881,20 +890,23 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
     }
     else {    // If we have an edge vs edge contact
 
-        // Compute the closest points between the two edges (in the local-space of poylhedron 2)
-        Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;
-        computeClosestPointBetweenTwoSegments(separatingEdge1A, separatingEdge1B, separatingEdge2A, separatingEdge2B,
-                                              closestPointPolyhedron1Edge, closestPointPolyhedron2Edge);
+        if (reportContacts) {
 
-        // Compute the contact point on polyhedron 1 edge in the local-space of polyhedron 1
-        const Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
+            // Compute the closest points between the two edges (in the local-space of poylhedron 2)
+            Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;
+            computeClosestPointBetweenTwoSegments(separatingEdge1A, separatingEdge1B, separatingEdge2A, separatingEdge2B,
+                                                  closestPointPolyhedron1Edge, closestPointPolyhedron2Edge);
 
-        // Compute the world normal
-        const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+            // Compute the contact point on polyhedron 1 edge in the local-space of polyhedron 1
+            const Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
 
-        // Create the contact point
-        narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                            closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
+            // Compute the world normal
+            const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+
+            // Create the contact point
+            narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+                                                closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
+        }
 
         lastFrameInfo.satIsAxisFacePolyhedron1 = false;
         lastFrameInfo.satIsAxisFacePolyhedron2 = false;

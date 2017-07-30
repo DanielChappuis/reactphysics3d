@@ -52,17 +52,21 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bo
     
     // If the sphere collision shapes intersect
     if (squaredDistanceBetweenCenters < sumRadius * sumRadius) {
-        Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
-        Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
-        Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
-                                      centerSphere2InBody1LocalSpace.getUnit();
-        Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
-                                      centerSphere1InBody2LocalSpace.getUnit();
-        decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
-        
-        // Create the contact info object
-        narrowPhaseInfo->addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
-                                            intersectionOnBody1, intersectionOnBody2);
+
+        if (reportContacts) {
+
+            Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
+            Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
+            Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
+                                          centerSphere2InBody1LocalSpace.getUnit();
+            Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
+                                          centerSphere1InBody2LocalSpace.getUnit();
+            decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
+
+            // Create the contact info object
+            narrowPhaseInfo->addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
+                                                intersectionOnBody1, intersectionOnBody2);
+        }
 
         return true;
     }

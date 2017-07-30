@@ -55,70 +55,74 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
     // If we have found a contact point inside the margins (shallow penetration)
     if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
-        // GJK has found a shallow contact. If the face of the polyhedron mesh is orthogonal to the
-		// capsule inner segment and parallel to the contact point normal, we would like to create
-		// two contact points instead of a single one (as in the deep contact case with SAT algorithm)
+        if (reportContacts) {
 
-        // Get the contact point created by GJK
-        ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
-        assert(contactPoint != nullptr);
+            // GJK has found a shallow contact. If the face of the polyhedron mesh is orthogonal to the
+            // capsule inner segment and parallel to the contact point normal, we would like to create
+            // two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
-        bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
+            // Get the contact point created by GJK
+            ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
+            assert(contactPoint != nullptr);
 
-        // Get the collision shapes
-        const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
-        const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape2 : narrowPhaseInfo->collisionShape1);
+            bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
-        // For each face of the polyhedron
-        for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
+            // Get the collision shapes
+            const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape1 : narrowPhaseInfo->collisionShape2);
+            const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isCapsuleShape1 ? narrowPhaseInfo->collisionShape2 : narrowPhaseInfo->collisionShape1);
 
-            // Get the face
-            HalfEdgeStructure::Face face = polyhedron->getFace(f);
+            // For each face of the polyhedron
+            for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
 
-            const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
-			const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
+                // Get the face
+                HalfEdgeStructure::Face face = polyhedron->getFace(f);
 
-            // Get the face normal
-            const Vector3 faceNormal = polyhedron->getFaceNormal(f);
-            const Vector3 faceNormalWorld = polyhedronToWorld.getOrientation() * faceNormal;
-
-			const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
-			const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
-			const Vector3 capsuleInnerSegmentWorld = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
-
-			bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint->normal) > decimal(0.0);
-			bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
-	
-            // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
-			// is in direction of the contact normal (from the polyhedron point of view).
-            if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentWorld)
-				&& areParallelVectors(faceNormalWorld, contactPoint->normal)) {
-
-                // Remove the previous contact point computed by GJK
-                narrowPhaseInfo->resetContactPoints();
-
+                const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
                 const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
-                const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
 
-                // Compute the end-points of the inner segment of the capsule
+                // Get the face normal
+                const Vector3 faceNormal = polyhedron->getFaceNormal(f);
+                const Vector3 faceNormalWorld = polyhedronToWorld.getOrientation() * faceNormal;
+
                 const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
                 const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+                const Vector3 capsuleInnerSegmentWorld = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
 
-                // Convert the inner capsule segment points into the polyhedron local-space
-                const Transform capsuleToPolyhedronTransform = polyhedronToCapsuleTransform.getInverse();
-                const Vector3 capsuleSegAPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegA;
-                const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegB;
+                bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint->normal) > decimal(0.0);
+                bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
 
-                const Vector3 separatingAxisCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
+                // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
+                // is in direction of the contact normal (from the polyhedron point of view).
+                if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentWorld)
+                    && areParallelVectors(faceNormalWorld, contactPoint->normal)) {
 
-                // Compute and create two contact points
-                satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
-                                                          polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
-                                                          capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
-                                                          narrowPhaseInfo, isCapsuleShape1);
+                    // Remove the previous contact point computed by GJK
+                    narrowPhaseInfo->resetContactPoints();
 
-                break;
+                    const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;
+                    const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
+
+                    // Compute the end-points of the inner segment of the capsule
+                    const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
+                    const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+
+                    // Convert the inner capsule segment points into the polyhedron local-space
+                    const Transform capsuleToPolyhedronTransform = polyhedronToCapsuleTransform.getInverse();
+                    const Vector3 capsuleSegAPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegA;
+                    const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegB;
+
+                    const Vector3 separatingAxisCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
+
+                    // Compute and create two contact points
+                    satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
+                                                              polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
+                                                              capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
+                                                              narrowPhaseInfo, isCapsuleShape1);
+
+                    break;
+                }
             }
+
         }
 
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;

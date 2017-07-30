@@ -91,33 +91,37 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, 
 			// If the segments were overlapping (the clip segment is valid)
 			if (t1 > decimal(0.0) && t2 > decimal(0.0)) {
 
-				// Clip the inner segment of capsule 2
-				if (t1 > decimal(1.0)) t1 = decimal(1.0);
-				const Vector3 clipPointA = capsule2SegB - t1 * seg2;
-				if (t2 > decimal(1.0)) t2 = decimal(1.0);
-				const Vector3 clipPointB = capsule2SegA + t2 * seg2;
+                if (reportContacts) {
 
-				// Project point capsule2SegA onto line of innner segment of capsule 1
-				const Vector3 seg1Normalized = seg1.getUnit();
-				Vector3 pointOnInnerSegCapsule1 = capsule1SegA + seg1Normalized.dot(capsule2SegA - capsule1SegA) * seg1Normalized;
+                    // Clip the inner segment of capsule 2
+                    if (t1 > decimal(1.0)) t1 = decimal(1.0);
+                    const Vector3 clipPointA = capsule2SegB - t1 * seg2;
+                    if (t2 > decimal(1.0)) t2 = decimal(1.0);
+                    const Vector3 clipPointB = capsule2SegA + t2 * seg2;
 
-				// Compute a perpendicular vector from segment 1 to segment 2
-				Vector3 segment1ToSegment2 = (capsule2SegA - pointOnInnerSegCapsule1);
-				Vector3 segment1ToSegment2Normalized = segment1ToSegment2.getUnit();
+                    // Project point capsule2SegA onto line of innner segment of capsule 1
+                    const Vector3 seg1Normalized = seg1.getUnit();
+                    Vector3 pointOnInnerSegCapsule1 = capsule1SegA + seg1Normalized.dot(capsule2SegA - capsule1SegA) * seg1Normalized;
 
-				Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
-				const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
-				const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
-				const Vector3 contactPointACapsule2Local = clipPointA - segment1ToSegment2Normalized * capsuleShape2->getRadius();
-				const Vector3 contactPointBCapsule2Local = clipPointB - segment1ToSegment2Normalized * capsuleShape2->getRadius();
+                    // Compute a perpendicular vector from segment 1 to segment 2
+                    Vector3 segment1ToSegment2 = (capsule2SegA - pointOnInnerSegCapsule1);
+                    Vector3 segment1ToSegment2Normalized = segment1ToSegment2.getUnit();
 
-				const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * segment1ToSegment2Normalized;
+                    Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
+                    const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+                    const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + segment1ToSegment2Normalized * capsuleShape1->getRadius());
+                    const Vector3 contactPointACapsule2Local = clipPointA - segment1ToSegment2Normalized * capsuleShape2->getRadius();
+                    const Vector3 contactPointBCapsule2Local = clipPointB - segment1ToSegment2Normalized * capsuleShape2->getRadius();
 
-				decimal penetrationDepth = sumRadius - segmentsDistance;
+                    const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * segment1ToSegment2Normalized;
 
-				// Create the contact info object
-                narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
-                narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
+                    decimal penetrationDepth = sumRadius - segmentsDistance;
+
+                    // Create the contact info object
+                    narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
+                    narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
+
+                }
 
 				return true;
 			}
@@ -137,18 +141,22 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, 
 	// If the collision shapes overlap
     if (closestPointsDistanceSquare < sumRadius * sumRadius && closestPointsDistanceSquare > MACHINE_EPSILON) {
 
-		decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
-		closestPointsSeg1ToSeg2 /= closestPointsDistance;
+        if (reportContacts) {
 
-		const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsuleShape1->getRadius());
-		const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsuleShape2->getRadius();
+            decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
+            closestPointsSeg1ToSeg2 /= closestPointsDistance;
 
-		const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
+            const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsuleShape1->getRadius());
+            const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsuleShape2->getRadius();
 
-		decimal penetrationDepth = sumRadius - closestPointsDistance;
+            const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
 
-		// Create the contact info object
-        narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+            decimal penetrationDepth = sumRadius - closestPointsDistance;
+
+            // Create the contact info object
+            narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+
+        }
 
 		return true;
 	}

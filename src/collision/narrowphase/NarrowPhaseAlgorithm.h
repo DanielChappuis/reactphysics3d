@@ -83,8 +83,6 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        // TODO : Use the following reportContacts variable in all narrow-phase algorithms
-
         /// Compute a contact info if the two bounding volume collide
         virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts)=0;
 };

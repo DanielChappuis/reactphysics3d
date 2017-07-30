@@ -71,24 +71,27 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, b
     // If the collision shapes overlap
     if (sphereSegmentDistanceSquare < sumRadius * sumRadius && sphereSegmentDistanceSquare > MACHINE_EPSILON) {
 
-		decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
-		sphereCenterToSegment /= sphereSegmentDistance;
+        if (reportContacts) {
 
-		const Vector3 contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
-		const Vector3 contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
-		
-        Vector3 normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
-       
-        decimal penetrationDepth = sumRadius - sphereSegmentDistance;
+            decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
+            sphereCenterToSegment /= sphereSegmentDistance;
 
-        if (!isSphereShape1) {
-            normalWorld = -normalWorld;
+            const Vector3 contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
+            const Vector3 contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
+
+            Vector3 normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
+
+            decimal penetrationDepth = sumRadius - sphereSegmentDistance;
+
+            if (!isSphereShape1) {
+                normalWorld = -normalWorld;
+            }
+
+            // Create the contact info object
+            narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth,
+                                                isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,
+                                                isSphereShape1 ? contactPointCapsuleLocal : contactPointSphereLocal);
         }
-        
-        // Create the contact info object
-        narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth,
-                                            isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,
-                                            isSphereShape1 ? contactPointCapsuleLocal : contactPointSphereLocal);
 
         return true;
     }
