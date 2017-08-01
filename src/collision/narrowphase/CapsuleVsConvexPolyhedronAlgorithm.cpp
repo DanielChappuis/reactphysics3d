@@ -122,7 +122,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
                     break;
                 }
             }
-
         }
 
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;

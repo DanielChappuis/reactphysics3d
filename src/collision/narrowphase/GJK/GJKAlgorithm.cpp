@@ -207,8 +207,11 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
             return GJKResult::INTERPENETRATE;
         }
 
-        // Add a new contact point
-        narrowPhaseInfo->addContactPoint(normal, penetrationDepth, pA, pB);
+        if (reportContacts) {
+
+            // Add a new contact point
+            narrowPhaseInfo->addContactPoint(normal, penetrationDepth, pA, pB);
+        }
 
         return GJKResult::COLLIDE_IN_MARGIN;
     }
