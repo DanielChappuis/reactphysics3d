@@ -373,6 +373,7 @@ world.enableSleeping(false);
    \end{sloppypar}
 
     \subsection{Updating the Dynamics World}
+    \label{sec:updating_dynamics_world}
 
     The \texttt{DynamicsWorld} is used to simulate physics through time. It has to be updated each time you want to simulate a step forward in time. Most of the time,
     you want to update the world right before rendering a new frame in a real-time application. \\
@@ -611,19 +612,36 @@ rigidBody->applyTorque(torque);
     \subsection{Updating a Rigid Body}
 
     When you call the \texttt{DynamicsWorld::update()} method, the collisions between the bodies are computed and the joints are evaluated. Then, the bodies position
-    and orientation
-    are updated accordingly. After calling this method, you can get the updated position and orientation of each body to render it. To do that, you simply need to use the
-    \texttt{RigidBody::getInterpolatedTransform()} method to get the interpolated transform. This transform represents the current local-to-world-space transformation
-    of the body. \\
+    and orientation are updated accordingly. \\
 
-    Here is how to get the interpolated transform of a rigid body: \\
+    Remember that in section \ref{sec:updating_dynamics_world} we were using a time accumulator in order to always have fixed physics time steps.
+    Now imagine a situation where the rendering frame rate is higher than the the physics frame rate. It means that at the end of most rendering
+    frames there will be some time left in the accumulator for the physics time that has not been simulated yet by the physics engine.
+    It means that we are rendering the state of the physics simulation at a time different from the rendering time which can cause a visual stuttering effect. \\
+
+    To solve this, the idea is to interpolate between the previous and current physics state of the simulation based on how much time is left in the
+    accumulator. First we compute the interpolation factor as follows: \\
 
     \begin{lstlisting}
-// Here, body is a RigidBody* pointer previously created
 
-// Get the interpolated transform of the rigid body
-rp3d::Transform transform = body->getInterpolatedTransform();
-  \end{lstlisting}
+     // Compute the interpolation factor ("accumulator" is the time left in the accumulator and
+     // "dt" is the physics time step)
+     const float interpolationFactor = accumulator / dt;
+   \end{lstlisting}
+
+   \vspace{0.6cm}
+
+   Then we get the current transform of the rigid body and use it with the previous transform (transform at the previous frame) to
+   compute the interpolated transform as in the following code: \\
+
+    \begin{lstlisting}
+
+      // Get the current transform of the rigid body
+      rp3d::Transform currentTransform = body->getTransform();
+
+      // Interpolate the transform between the previous one and the new one
+      rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(previousTransform, currentTransform, interpolationFactor);
+    \end{lstlisting}
 
     \vspace{0.6cm}
 
@@ -631,9 +649,9 @@ rp3d::Transform transform = body->getInterpolatedTransform();
     following code: \\
 
     \begin{lstlisting}
-// Get the OpenGL matrix array of the transform
-float matrix[16];
-transform.getOpenGLMatrix(matrix);
+      // Get the OpenGL matrix array of the transform
+      float matrix[16];
+      transform.getOpenGLMatrix(matrix);
   \end{lstlisting}
 
     \subsection{Destroying a Rigid Body}
