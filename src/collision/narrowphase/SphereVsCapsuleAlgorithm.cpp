@@ -69,28 +69,61 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, b
     decimal sumRadius = sphereShape->getRadius() + capsuleShape->getRadius();
     
     // If the collision shapes overlap
-    if (sphereSegmentDistanceSquare < sumRadius * sumRadius && sphereSegmentDistanceSquare > MACHINE_EPSILON) {
+    if (sphereSegmentDistanceSquare < sumRadius * sumRadius) {
+
+		decimal penetrationDepth;
+		Vector3 normalWorld;
+		Vector3 contactPointSphereLocal;
+		Vector3 contactPointCapsuleLocal;
 
         if (reportContacts) {
 
-            decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
-            sphereCenterToSegment /= sphereSegmentDistance;
+			// If the sphere center is not on the capsule inner segment
+			if (sphereSegmentDistanceSquare > MACHINE_EPSILON) {
 
-            const Vector3 contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
-            const Vector3 contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
+				decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
+				sphereCenterToSegment /= sphereSegmentDistance;
 
-            Vector3 normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
+				contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
+				contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
 
-            decimal penetrationDepth = sumRadius - sphereSegmentDistance;
+				normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
 
-            if (!isSphereShape1) {
-                normalWorld = -normalWorld;
-            }
+				penetrationDepth = sumRadius - sphereSegmentDistance;
+
+				if (!isSphereShape1) {
+					normalWorld = -normalWorld;
+				}
+			}
+			else {  // If the sphere center is on the capsule inner segment (degenerate case)
+
+				// We take any direction that is orthogonal to the inner capsule segment as a contact normal
+
+				// Capsule inner segment
+				Vector3 capsuleSegment = (capsuleSegB - capsuleSegA).getUnit();
+
+				Vector3 vec1(1, 0, 0);
+				Vector3 vec2(0, 1, 0);
+
+				// Get the vectors (among vec1 and vec2) that is the most orthogonal to the capsule inner segment (smallest absolute dot product)
+				decimal cosA1 = std::abs(capsuleSegment.x);		// abs(vec1.dot(seg2))
+				decimal cosA2 = std::abs(capsuleSegment.y);	    // abs(vec2.dot(seg2))
+
+				penetrationDepth = sumRadius;
+
+				// We choose as a contact normal, any direction that is perpendicular to the inner capsule segment
+				Vector3 normalCapsuleSpace = cosA1 < cosA2 ? capsuleSegment.cross(vec1) : capsuleSegment.cross(vec2);
+				normalWorld = capsuleToWorldTransform.getOrientation() * normalCapsuleSpace;
+
+				// Compute the two local contact points
+				contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + normalCapsuleSpace * sphereShape->getRadius());
+				contactPointCapsuleLocal = sphereCenter - normalCapsuleSpace * capsuleShape->getRadius();
+			}
 
             // Create the contact info object
             narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth,
-                                                isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,
-                                                isSphereShape1 ? contactPointCapsuleLocal : contactPointSphereLocal);
+                                             isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,
+                                             isSphereShape1 ? contactPointCapsuleLocal : contactPointSphereLocal);
         }
 
         return true;

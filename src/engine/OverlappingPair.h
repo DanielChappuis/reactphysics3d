@@ -155,6 +155,9 @@ class OverlappingPair {
         /// Return true if one of the shapes of the pair is a concave shape
         bool hasConcaveShape() const;
 
+		/// Return true if the overlapping pair has contact manifolds with contacts
+		bool hasContacts() const;
+
         /// Return a pointer to the first potential contact manifold in the linked-list
         ContactManifoldInfo* getPotentialContactManifolds();
 
@@ -247,6 +250,11 @@ inline Allocator& OverlappingPair::getTemporaryAllocator() {
 inline bool OverlappingPair::hasConcaveShape() const {
     return !getShape1()->getCollisionShape()->isConvex() ||
            !getShape2()->getCollisionShape()->isConvex();
+}
+
+// Return true if the overlapping pair has contact manifolds with contacts
+inline bool OverlappingPair::hasContacts() const {
+	return mContactManifoldSet.getContactManifolds() != nullptr;
 }
 
 // Return a pointer to the first potential contact manifold in the linked-list

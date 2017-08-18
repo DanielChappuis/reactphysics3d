@@ -45,6 +45,7 @@ CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair*
 
     // For each contact manifold in the set of manifolds in the pair
     ContactManifold* contactManifold = manifoldSet.getContactManifolds();
+	assert(contactManifold != nullptr);
     while (contactManifold != nullptr) {
 
         assert(contactManifold->getNbContactPoints() > 0);

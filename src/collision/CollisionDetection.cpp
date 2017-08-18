@@ -440,7 +440,7 @@ void CollisionDetection::reportAllContacts() {
     for (it = mContactOverlappingPairs.begin(); it != mContactOverlappingPairs.end(); ++it) {
 
         // If there is a user callback
-        if (mWorld->mEventListener != nullptr) {
+        if (mWorld->mEventListener != nullptr && it->second->hasContacts()) {
 
             CollisionCallback::CollisionCallbackInfo collisionInfo(it->second, mPoolAllocator);
 
@@ -845,9 +845,12 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                 // Process the potential contacts
                 processPotentialContacts(&pair);
 
-                // Report the contacts to the user
-                CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
-                collisionCallback->notifyContact(collisionInfo);
+				if (pair.hasContacts()) {
+
+					// Report the contacts to the user
+					CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
+					collisionCallback->notifyContact(collisionInfo);
+				}
             }
 
             // Go to the next proxy shape
@@ -916,10 +919,6 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
 
                                 // Add the contact points as a potential contact manifold into the pair
                                 narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
-
-                                // Report the contacts to the user
-                                CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
-                                callback->notifyContact(collisionInfo);
                             }
                         }
 
@@ -935,6 +934,13 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
 
                     // Process the potential contacts
                     processPotentialContacts(&pair);
+
+					if (pair.hasContacts()) {
+
+						// Report the contacts to the user
+						CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
+						callback->notifyContact(collisionInfo);
+					}
                 }
             }
 
@@ -996,10 +1002,6 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
 
                         // Add the contact points as a potential contact manifold into the pair
                         narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
-
-                        // Report the contacts to the user
-                        CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
-                        callback->notifyContact(collisionInfo);
                     }
                 }
 
@@ -1015,6 +1017,13 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
 
             // Process the potential contacts
             processPotentialContacts(&pair);
+
+			if (pair.hasContacts()) {
+
+				// Report the contacts to the user
+				CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mPoolAllocator);
+				callback->notifyContact(collisionInfo);
+			}
         }
     }
 }

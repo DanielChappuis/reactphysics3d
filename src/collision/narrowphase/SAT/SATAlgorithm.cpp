@@ -838,17 +838,20 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 // Get the adjacent edge
                 HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
 
-                // Get the twin edge
-                HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+				// Get the twin edge
+				HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
 
-                // Get the adjacent face normal (and negate it to have a clipping plane)
-                Vector3 faceNormal = -referencePolyhedron->getFaceNormal(twinEdge.faceIndex);
+				// Compute the edge vertices and edge direction
+				Vector3 edgeV1 = referencePolyhedron->getVertexPosition(edge.vertexIndex);
+				Vector3 edgeV2 = referencePolyhedron->getVertexPosition(twinEdge.vertexIndex);
+				Vector3 edgeDirection = edgeV2 - edgeV1;
 
-                // Get a vertex of the clipping plane (vertex of the adjacent edge)
-                Vector3 faceVertex = referencePolyhedron->getVertexPosition(edge.vertexIndex);
+                // Compute the normal of the clipping plane for this edge
+				// The clipping plane is perpendicular to the edge direction and the reference face normal
+				Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
 
-                planesNormals.push_back(faceNormal);
-                planesPoints.push_back(faceVertex);
+                planesNormals.push_back(clipPlaneNormal);
+                planesPoints.push_back(edgeV1);
 
                 // Go to the next adjacent edge of the reference face
                 currentEdgeIndex = edge.nextEdgeIndex;

@@ -233,7 +233,7 @@ inline HalfEdgeStructure::Edge ConvexMeshShape::getHalfEdge(uint edgeIndex) cons
 // Return the position of a given vertex
 inline Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
     assert(vertexIndex < getNbVertices());
-    return mPolyhedronMesh->getVertex(vertexIndex);
+    return mPolyhedronMesh->getVertex(vertexIndex) * mScaling;
 }
 
 // Return the normal vector of a given face of the polyhedron
@@ -244,7 +244,7 @@ inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
 
 // Return the centroid of the polyhedron
 inline Vector3 ConvexMeshShape::getCentroid() const {
-    return mPolyhedronMesh->getCentroid();
+    return mPolyhedronMesh->getCentroid() * mScaling;
 }
 
 }

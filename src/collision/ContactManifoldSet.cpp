@@ -247,6 +247,10 @@ void ContactManifoldSet::removeManifold(ContactManifold* manifold) {
     if (previous != nullptr) {
         previous->setNext(manifold->getNext());
     }
+	else {
+		mManifolds = next;
+	}
+
     if (next != nullptr) {
         next->setPrevious(manifold->getPrevious());
     }

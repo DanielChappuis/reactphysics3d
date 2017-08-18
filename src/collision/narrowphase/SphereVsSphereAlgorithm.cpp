@@ -57,15 +57,29 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bo
 
             Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
             Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
-            Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
-                                          centerSphere2InBody1LocalSpace.getUnit();
-            Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
-                                          centerSphere1InBody2LocalSpace.getUnit();
             decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
+			Vector3 intersectionOnBody1;
+			Vector3 intersectionOnBody2;
+			Vector3 normal;
 
-            // Create the contact info object
-            narrowPhaseInfo->addContactPoint(vectorBetweenCenters.getUnit(), penetrationDepth,
-                                                intersectionOnBody1, intersectionOnBody2);
+			// If the two sphere centers are not at the same position
+			if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
+
+				intersectionOnBody1 = sphereShape1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
+				intersectionOnBody2 = sphereShape2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
+				normal = vectorBetweenCenters.getUnit();
+			}
+			else {    // If the sphere centers are at the same position (degenerate case)
+
+				// Take any contact normal direction
+				normal.setAllValues(0, 1, 0);
+
+				intersectionOnBody1 = sphereShape1->getRadius() * (transform1.getInverse().getOrientation() * normal);
+				intersectionOnBody2 = sphereShape2->getRadius() * (transform2.getInverse().getOrientation() * normal);
+			}			
+            
+			// Create the contact info object
+            narrowPhaseInfo->addContactPoint(normal, penetrationDepth, intersectionOnBody1, intersectionOnBody2);
         }
 
         return true;
