@@ -72,7 +72,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     mSphere2->setSleepingColor(mRedColorDemo);
 
 	// ---------- Capsule 1 ---------- //
-	openglframework::Vector3 position3(0, -12, 0);
+	openglframework::Vector3 position3(-6, 7, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
 	mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position3, mCollisionWorld, mMeshFolderPath);
@@ -83,7 +83,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mCapsule1->setSleepingColor(mRedColorDemo);
 
     // ---------- Capsule 2 ---------- //
-    openglframework::Vector3 position4(-8, 0, 0);
+    openglframework::Vector3 position4(11, -8, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
     mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position4, mCollisionWorld, mMeshFolderPath);
@@ -115,38 +115,16 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mBox2->setColor(mGreyColorDemo);
 	mBox2->setSleepingColor(mRedColorDemo);
 
-    // ---------- Cone ---------- //
-    //openglframework::Vector3 position4(0, 0, 0);
-
-    // Create a cone and a corresponding collision body in the dynamics world
-    //mCone = new Cone(CONE_RADIUS, CONE_HEIGHT, position4, mCollisionWorld,
-    //                 mMeshFolderPath);
-
-    // Set the color
-    //mCone->setColor(mGreyColorDemo);
-    //mCone->setSleepingColor(mRedColorDemo);
-
-    // ---------- Cylinder ---------- //
-    //openglframework::Vector3 position5(0, 0, 0);
-
-    // Create a cylinder and a corresponding collision body in the dynamics world
-    //mCylinder = new Cylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, position5,
-    //                         mCollisionWorld, mMeshFolderPath);
-
-    // Set the color
-    //mCylinder->setColor(mGreyColorDemo);
-    //mCylinder->setSleepingColor(mRedColorDemo);
-
-
     // ---------- Convex Mesh ---------- //
-    //openglframework::Vector3 position7(0, 0, 0);
+    openglframework::Vector3 position7(-5, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    //mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath + "convexmesh.obj");
+	mAllShapes.push_back(mConvexMesh);
 
     // Set the color
-    //mConvexMesh->setColor(mGreyColorDemo);
-    //mConvexMesh->setSleepingColor(mRedColorDemo);
+    mConvexMesh->setColor(mGreyColorDemo);
+    mConvexMesh->setSleepingColor(mRedColorDemo);
 
     // ---------- Concave Mesh ---------- //
     //openglframework::Vector3 position8(0, 0, 0);
@@ -202,6 +180,9 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 	mCollisionWorld->destroyCollisionBody(mBox2->getCollisionBody());
 	delete mBox2;
 
+	mCollisionWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
+	delete mConvexMesh;
+
     /*
     // Destroy the corresponding rigid body from the dynamics world
     mCollisionWorld->destroyCollisionBody(mCone->getCollisionBody());
@@ -217,13 +198,7 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     mCollisionWorld->destroyCollisionBody(mCapsule->getCollisionBody());
 
     // Destroy the sphere
-    delete mCapsule;
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
-
-    // Destroy the convex mesh
-    delete mConvexMesh;
+    delete mCapsule;   
 
     // Destroy the corresponding rigid body from the dynamics world
     mCollisionWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
@@ -280,13 +255,13 @@ void CollisionDetectionScene::renderSinglePass(openglframework::Shader& shader,
     if (mCapsule2->getCollisionBody()->isActive()) mCapsule2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mBox1->getCollisionBody()->isActive()) mBox1->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 	if (mBox2->getCollisionBody()->isActive()) mBox2->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+	if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
 
     /*
     if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix);
     if (mCone->getCollisionBody()->isActive()) mCone->render(shader, worldToCameraMatrix);
     if (mCylinder->getCollisionBody()->isActive()) mCylinder->render(shader, worldToCameraMatrix);
     if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(shader, worldToCameraMatrix);
-    if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix);
     if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix);
     if (mConcaveMesh->getCollisionBody()->isActive()) mConcaveMesh->render(shader, worldToCameraMatrix);
     if (mHeightField->getCollisionBody()->isActive()) mHeightField->render(shader, worldToCameraMatrix);

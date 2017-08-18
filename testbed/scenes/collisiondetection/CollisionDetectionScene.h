@@ -107,6 +107,8 @@ class ContactManager : public rp3d::CollisionCallback {
 
                     contactPoint = contactPoint->getNext();
                 }
+
+				manifoldElement = manifoldElement->getNext();
             }
         }
 
@@ -143,10 +145,7 @@ class CollisionDetectionScene : public SceneDemo {
 		Capsule* mCapsule2;
 		Box* mBox1;
 		Box* mBox2;
-        //Cone* mCone;
-        //Cylinder* mCylinder;
-        //Capsule* mCapsule;
-        //ConvexMesh* mConvexMesh;
+        ConvexMesh* mConvexMesh;
         //Dumbbell* mDumbbell;
         //ConcaveMesh* mConcaveMesh;
         //HeightField* mHeightField;
