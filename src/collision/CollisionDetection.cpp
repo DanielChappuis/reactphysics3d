@@ -29,9 +29,11 @@
 #include "collision/OverlapCallback.h"
 #include "body/Body.h"
 #include "collision/shapes/BoxShape.h"
+#include "collision/shapes/ConcaveShape.h"
 #include "body/RigidBody.h"
 #include "configuration.h"
 #include "collision/CollisionCallback.h"
+#include "collision/MiddlePhaseTriangleCallback.h"
 #include "collision/OverlapCallback.h"
 #include <cassert>
 #include <complex>

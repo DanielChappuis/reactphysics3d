@@ -80,9 +80,14 @@ struct ContactManifoldListElement {
 
 // Class ContactManifold
 /**
- * This class represents the set of contact points between two bodies.
+ * This class represents a set of contact points between two bodies that
+ * all have a similar contact normal direction. Usually, there is a single
+ * contact manifold when two convex shapes are in contact. However, when
+ * a convex shape collides with a concave shape, there can be several
+ * contact manifolds with different normal directions.
  * The contact manifold is implemented in a way to cache the contact
- * points among the frames for better stability.
+ * points among the frames for better stability (warm starting of the
+ * contact solver)
  */
 class ContactManifold {
 

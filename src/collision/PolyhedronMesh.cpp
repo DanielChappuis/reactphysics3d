@@ -30,6 +30,10 @@ using namespace reactphysics3d;
 
 
 // Constructor
+/*
+ * Create a polyhedron mesh given an array of polygons.
+ * @param polygonVertexArray Pointer to the array of polygons and their vertices
+ */
 PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
    mPolygonVertexArray = polygonVertexArray;

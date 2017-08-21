@@ -27,6 +27,7 @@
 #include "GJKAlgorithm.h"
 #include "constraint/ContactPoint.h"
 #include "engine/OverlappingPair.h"
+#include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "engine/Profiler.h"
 #include <algorithm>
@@ -76,7 +77,8 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.getInverse() * transform2;
+    Transform transform1Inverse = transform1.getInverse();
+    Transform body2Tobody1 = transform1Inverse * transform2;
 
     // Matrix that transform a direction from local
     // space of body 1 into local space of body 2
@@ -209,6 +211,10 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
         if (reportContacts) {
 
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(shape1, shape2, pA, pB, transform1, transform2,
+                                                            penetrationDepth, normal);
+
             // Add a new contact point
             narrowPhaseInfo->addContactPoint(normal, penetrationDepth, pA, pB);
         }
@@ -218,6 +224,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
     return GJKResult::SEPARATED;
 }
+
 
 // Use the GJK Algorithm to find if a point is inside a convex collision shape
 bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) {

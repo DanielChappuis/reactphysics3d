@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.    *
 *                                                                               *
 ********************************************************************************/
-
+/*
 // Libraries
 #include "collision/shapes/ConcaveShape.h"
 #include "collision/shapes/TriangleShape.h"
@@ -34,12 +34,14 @@
 using namespace reactphysics3d;
 
 // Report collision between a triangle of a concave shape and the convex mesh shape (for middle-phase)
-void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints) {
+void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
+                                               const Vector3* verticesNormals) {
 
     // Create a triangle collision shape
     decimal margin = mConcaveShape->getTriangleMargin();
     TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
-                                   TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+                                   TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                                                 verticesNormals, meshSubPart, triangleIndex, margin);
 
     // Create a narrow phase info for the narrow-phase collision detection
     NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;
@@ -297,3 +299,4 @@ bool ConcaveVsConvexAlgorithm::hasVertexBeenProcessed(const std::unordered_multi
 //    // smooth mesh collision
 //    mContactPoints.push_back(smoothContactInfo);
 //}
+*/

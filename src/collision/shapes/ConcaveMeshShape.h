@@ -118,6 +118,10 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Dynamic AABB tree to accelerate collision with the triangles
         DynamicAABBTree mDynamicAABBTree;
 
+        /// Array with computed vertices normals for each TriangleVertexArray of the triangle mesh (only
+        /// if the user did not provide its own vertices normals)
+        Vector3** mComputedVerticesNormals;
+
         // -------------------- Methods -------------------- //
 
         /// Raycast method with feedback information
@@ -130,9 +134,13 @@ class ConcaveMeshShape : public ConcaveShape {
         void initBVHTree();
 
         /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-        /// given the start vertex index pointer of the triangle.
-        void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
-                                                 Vector3* outTriangleVertices) const;
+        void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const;
+
+        /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
+        void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
+
+        /// Get a smooth contact normal for collision for a triangle of the mesh
+        Vector3 computeSmoothLocalContactNormalForTriangle(TriangleShape* triangleShape, const Vector3& localContactPoint) const;
 
     public:
 
@@ -224,10 +232,14 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
 
     // Get the triangle vertices for this node from the concave mesh shape
     Vector3 trianglePoints[3];
-    mConcaveMeshShape.getTriangleVerticesWithIndexPointer(data[0], data[1], trianglePoints);
+    mConcaveMeshShape.getTriangleVertices(data[0], data[1], trianglePoints);
+
+    // Get the vertices normals of the triangle
+    Vector3 verticesNormals[3];
+    mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
 
     // Call the callback to test narrow-phase collision with this triangle
-    mTriangleTestCallback.testTriangle(trianglePoints);
+    mTriangleTestCallback.testTriangle(data[0], data[1], trianglePoints, verticesNormals);
 }
 
 }

@@ -49,7 +49,10 @@ enum class TriangleRaycastSide {
 // Class TriangleShape
 /**
  * This class represents a triangle collision shape that is centered
- * at the origin and defined three points.
+ * at the origin and defined three points. A user cannot instanciate
+ * an object of this class. This class is for internal use only. Instances
+ * of this class are created when the user creates an HeightFieldShape and
+ * a ConcaveMeshShape
  */
 class TriangleShape : public ConvexPolyhedronShape {
 
@@ -63,14 +66,26 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Normal of the triangle
         Vector3 mNormal;
 
+        /// Three vertices normals for smooth collision with triangle mesh
+        Vector3 mVerticesNormals[3];
+
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
+
+        /// Index of the mesh sub part in the original mesh
+        uint mMeshSubPart;
+
+        /// Triangle index of the triangle in the sub mesh
+        uint mTriangleIndex;
 
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
                                                           void** cachedCollisionData) const override;
+
+        /// Get a smooth contact normal for collision for a triangle of the mesh
+        Vector3 computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const;
 
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
@@ -81,13 +96,20 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
+        // -------------------- Methods -------------------- //
+
+        /// This method implements the technique described in Game Physics Pearl book
+        void computeSmoothMeshContact(Vector3 localContactPointTriangle, const Transform& triangleShapeToWorldTransform,
+                                      const Transform& worldToOtherShapeTransform, decimal penetrationDepth,
+                                      Vector3& outNewLocalContactPointOtherShape, Vector3& outSmoothWorldContactTriangleNormal) const;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
-                      decimal margin = OBJECT_MARGIN);
+                      const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex, decimal margin = OBJECT_MARGIN);
 
         /// Destructor
         virtual ~TriangleShape() override = default;
@@ -143,10 +165,23 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
 
+        /// Return the index of the sub part mesh of the original mesh
+        uint getMeshSubPart() const;
+
+        /// Return the triangle index in the original mesh
+        uint getTriangleIndex() const;
+
+        /// This method compute the smooth mesh contact with a triangle in case one of the two collision shapes is a triangle. The idea in this case is to use a smooth vertex normal of the triangle mesh
+        static void computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
+                                                     Vector3& localContactPointShape1, Vector3 localContactPointShape2,
+                                                     const Transform& shape1ToWorld, const Transform& shape2ToWorld,
+                                                     decimal penetrationDepth, Vector3& outSmoothVertexNormal);
+
         // ---------- Friendship ---------- //
 
         friend class ConcaveMeshRaycastCallback;
         friend class TriangleOverlapCallback;
+        friend class MiddlePhaseTriangleCallback;
 };
 
 // Return the number of bytes used by the collision shape
@@ -155,8 +190,7 @@ inline size_t TriangleShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                              void** cachedCollisionData) const {
+inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction, void** cachedCollisionData) const {
     Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1]), direction.dot(mPoints[2]));
     return mPoints[dotProducts.getMaxAxis()];
 }
@@ -284,6 +318,16 @@ inline Vector3 TriangleShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the box
 inline Vector3 TriangleShape::getCentroid() const {
     return (mPoints[0] + mPoints[1] + mPoints[2]) / decimal(3.0);
+}
+
+// Return the index of the sub part mesh of the original mesh
+inline uint TriangleShape::getMeshSubPart() const {
+    return mMeshSubPart;
+}
+
+// Return the triangle index in the original mesh
+inline uint TriangleShape::getTriangleIndex() const {
+    return mTriangleIndex;
 }
 
 // Return the number of half-edges of the polyhedron

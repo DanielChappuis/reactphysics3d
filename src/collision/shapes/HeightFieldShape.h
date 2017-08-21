@@ -64,7 +64,8 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool getIsHit() const {return mIsHit;}
 
         /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(const Vector3* trianglePoints) override;
+        virtual void testTriangle(uint meshSubPart, uint triangleIndex,
+                                  const Vector3* trianglePoints, const Vector3* verticesNormals) override;
 };
 
 

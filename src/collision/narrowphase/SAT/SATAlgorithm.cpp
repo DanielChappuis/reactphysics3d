@@ -30,6 +30,7 @@
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/SphereShape.h"
 #include "engine/OverlappingPair.h"
+#include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "engine/Profiler.h"
 #include <algorithm>
@@ -143,13 +144,21 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrow
 
         const Vector3 minFaceNormal = polyhedron->getFaceNormal(minFaceIndex);
         Vector3 normalWorld = -(polyhedronToWorldTransform.getOrientation() * minFaceNormal);
-        const Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * normalWorld * sphere->getRadius();
-        const Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
+        Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * normalWorld * sphere->getRadius();
+        Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
+
+        // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+        TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                                        isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
+                                                        isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal,
+                                                        narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                                        minPenetrationDepth, normalWorld);
+
 
         // Create the contact info object
         narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                            isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
-                                            isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
+                                         isSphereShape1 ? contactPointSphereLocal : contactPointPolyhedronLocal,
+                                         isSphereShape1 ? contactPointPolyhedronLocal : contactPointSphereLocal);
     }
 
     lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
@@ -380,7 +389,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
     const Vector3 capsuleSegAPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegA;
     const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegB;
 
-    const Vector3 normalWorld = capsuleToWorld.getOrientation() * separatingAxisCapsuleSpace;
+    Vector3 normalWorld = capsuleToWorld.getOrientation() * separatingAxisCapsuleSpace;
     const decimal capsuleRadius = capsuleShape->getRadius();
 
     // If the separating axis is a face normal
@@ -410,7 +419,14 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
                                                   closestPointCapsuleInnerSegment, closestPointPolyhedronEdge);
 
             // Project closest capsule inner segment point into the capsule bounds
-            const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * closestPointCapsuleInnerSegment) - separatingAxisCapsuleSpace * capsuleRadius;
+            Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * closestPointCapsuleInnerSegment) - separatingAxisCapsuleSpace * capsuleRadius;
+
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                                        isCapsuleShape1 ? contactPointCapsule : closestPointPolyhedronEdge,
+                                                        isCapsuleShape1 ? closestPointPolyhedronEdge : contactPointCapsule,
+                                                        narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                                        minPenetrationDepth, normalWorld);
 
             // Create the contact point
             narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
@@ -483,7 +499,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
 // axis is a face normal of the polyhedron
 void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                              decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
-                                                             const Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
+                                                             Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                              const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
                                                              NarrowPhaseInfo* narrowPhaseInfo, bool isCapsuleShape1) const {
 
@@ -525,15 +541,27 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 		// If the clipped point is one that produce this penetration depth, we keep it
 		if (clipPointPenDepth > penetrationDepth - capsuleRadius - decimal(0.001)) {
 
-			const Vector3 contactPointPolyhedron = clipSegment[i] + delta;
+            Vector3 contactPointPolyhedron = clipSegment[i] + delta;
 
 			// Project the clipped point into the capsule bounds
-			const Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * clipSegment[i]) - separatingAxisCapsuleSpace * capsuleRadius;
+            Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * clipSegment[i]) - separatingAxisCapsuleSpace * capsuleRadius;
+
+            if (isCapsuleShape1) {
+                normalWorld = -normalWorld;
+            }
+
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                                        isCapsuleShape1 ? contactPointCapsule : contactPointPolyhedron,
+                                                        isCapsuleShape1 ? contactPointPolyhedron : contactPointCapsule,
+                                                        narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                                        penetrationDepth, normalWorld);
+
 
 			// Create the contact point
-            narrowPhaseInfo->addContactPoint(isCapsuleShape1 ? -normalWorld : normalWorld, penetrationDepth,
-				isCapsuleShape1 ? contactPointCapsule : contactPointPolyhedron,
-				isCapsuleShape1 ? contactPointPolyhedron : contactPointCapsule);
+            narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth,
+                                             isCapsuleShape1 ? contactPointCapsule : contactPointPolyhedron,
+                                             isCapsuleShape1 ? contactPointPolyhedron : contactPointCapsule);
 		}
 	}
 }
@@ -807,7 +835,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
             const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
 
             // Compute the world normal
-            const Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
+            Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
                                                                                 -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
 
             // Get the reference face
@@ -874,10 +902,17 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
 
                     // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
-                    const Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
+                    Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
 
                     // Project the contact point onto the reference face
                     Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
+
+                    // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+                    TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
+                                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron,
+                                                                    narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                                                    minPenetrationDepth, normalWorld);
 
                     // Create a new contact point
                     narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
@@ -901,14 +936,20 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                                                   closestPointPolyhedron1Edge, closestPointPolyhedron2Edge);
 
             // Compute the contact point on polyhedron 1 edge in the local-space of polyhedron 1
-            const Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
+            Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
 
             // Compute the world normal
-            const Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+            Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
+
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                                            closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge,
+                                                            narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                                            minPenetrationDepth, normalWorld);
 
             // Create the contact point
             narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                                closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
+                                             closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge);
         }
 
         lastFrameInfo.satIsAxisFacePolyhedron1 = false;

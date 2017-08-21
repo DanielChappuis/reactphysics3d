@@ -82,7 +82,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
                 // Get the face normal
                 const Vector3 faceNormal = polyhedron->getFaceNormal(f);
-                const Vector3 faceNormalWorld = polyhedronToWorld.getOrientation() * faceNormal;
+                Vector3 faceNormalWorld = polyhedronToWorld.getOrientation() * faceNormal;
 
                 const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
                 const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);

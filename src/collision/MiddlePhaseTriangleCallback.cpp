@@ -24,49 +24,26 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
+#include "collision/MiddlePhaseTriangleCallback.h"
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
-// by Dirk Gregorius.
-bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
+// Report collision between a triangle of a concave shape and the convex mesh shape (for middle-phase)
+void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
+                                               const Vector3* verticesNormals) {
 
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
-        narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE ||
-        narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
+    // Create a triangle collision shape
+    decimal margin = mConcaveShape->getTriangleMargin();
+    TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
+                                   TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                                                 verticesNormals, meshSubPart, triangleIndex, margin);
 
-    // First, we run the GJK algorithm
-    GJKAlgorithm gjkAlgorithm;
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
-
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
-
-    // If we have found a contact point inside the margins (shallow penetration)
-    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
-
-        // Return true
-        return true;
-    }
-
-    // If we have overlap even without the margins (deep penetration)
-    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
-
-        // Run the SAT algorithm to find the separating axis and compute contact point
-        SATAlgorithm satAlgorithm;
-        bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
-
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
-
-        return isColliding;
-    }
-
-    return false;
+    // Create a narrow phase info for the narrow-phase collision detection
+    NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;
+    narrowPhaseInfoList = new (mAllocator.allocate(sizeof(NarrowPhaseInfo)))
+                           NarrowPhaseInfo(mOverlappingPair, mConvexProxyShape->getCollisionShape(),
+                           triangleShape, mConvexProxyShape->getLocalToWorldTransform(),
+                           mConcaveProxyShape->getLocalToWorldTransform(), mConvexProxyShape->getCachedCollisionData(),
+                           mConcaveProxyShape->getCachedCollisionData());
+    narrowPhaseInfoList->next = firstNarrowPhaseInfo;
 }

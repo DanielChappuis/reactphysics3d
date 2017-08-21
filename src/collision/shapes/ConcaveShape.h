@@ -46,7 +46,8 @@ class TriangleCallback {
         virtual ~TriangleCallback() = default;
 
         /// Report a triangle
-        virtual void testTriangle(const Vector3* trianglePoints)=0;
+        virtual void testTriangle(uint meshSubPart, uint triangleIndex,
+                                  const Vector3* trianglePoints, const Vector3* verticesNormals)=0;
 
 };
 

@@ -133,24 +133,48 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
        for (int j = jMin; j < jMax; j++) {
 
            // Compute the four point of the current quad
-           Vector3 p1 = getVertexAt(i, j);
-           Vector3 p2 = getVertexAt(i, j + 1);
-           Vector3 p3 = getVertexAt(i + 1, j);
-           Vector3 p4 = getVertexAt(i + 1, j + 1);
+           const Vector3 p1 = getVertexAt(i, j);
+           const Vector3 p2 = getVertexAt(i, j + 1);
+           const Vector3 p3 = getVertexAt(i + 1, j);
+           const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
            // Generate the first triangle for the current grid rectangle
            Vector3 trianglePoints[3] = {p1, p2, p3};
 
+           // Compute the triangle normal
+           Vector3 triangle1Normal = (p2 - p1).cross(p3 - p1).getUnit();
+
+           // Use the triangle face normal as vertices normals (this is an aproximation. The correct
+           // solution would be to compute all the normals of the neighbor triangles and use their
+           // weighted average (with incident angle as weight) at the vertices. However, this solution
+           // seems too expensive (it requires to compute the normal of all neighbor triangles instead
+           // and compute the angle of incident edges with asin(). Maybe we could also precompute the
+           // vertices normal at the HeightFieldShape constructor but it will require extra memory to
+           // store them.
+           Vector3 verticesNormals1[3] = {triangle1Normal, triangle1Normal, triangle1Normal};
+
            // Test collision against the first triangle
-           callback.testTriangle(trianglePoints);
+           callback.testTriangle(0, 0, trianglePoints, verticesNormals1);
 
            // Generate the second triangle for the current grid rectangle
            trianglePoints[0] = p3;
            trianglePoints[1] = p2;
            trianglePoints[2] = p4;
 
+           // Compute the triangle normal
+           Vector3 triangle2Normal = (p2 - p3).cross(p4 - p3).getUnit();
+
+           // Use the triangle face normal as vertices normals (this is an aproximation. The correct
+           // solution would be to compute all the normals of the neighbor triangles and use their
+           // weighted average (with incident angle as weight) at the vertices. However, this solution
+           // seems too expensive (it requires to compute the normal of all neighbor triangles instead
+           // and compute the angle of incident edges with asin(). Maybe we could also precompute the
+           // vertices normal at the HeightFieldShape constructor but it will require extra memory to
+           // store them.
+           Vector3 verticesNormals2[3] = {triangle2Normal, triangle2Normal, triangle2Normal};
+
            // Test collision against the second triangle
-           callback.testTriangle(trianglePoints);
+           callback.testTriangle(0, 0, trianglePoints, verticesNormals2);
        }
    }
 }
@@ -232,11 +256,13 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 }
 
 // Raycast test between a ray and a triangle of the heightfield
-void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints) {
+void TriangleOverlapCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
+                                           const Vector3* verticesNormals) {
 
     // Create a triangle collision shape
     decimal margin = mHeightFieldShape.getTriangleMargin();
-    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                                verticesNormals, meshSubPart, triangleIndex, margin);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
 
     // Ray casting test against the collision shape

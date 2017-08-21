@@ -137,6 +137,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/collision/ContactManifold.cpp"
     "src/collision/ContactManifoldSet.h"
     "src/collision/ContactManifoldSet.cpp"
+    "src/collision/MiddlePhaseTriangleCallback.h"
+    "src/collision/MiddlePhaseTriangleCallback.cpp"
     "src/constraint/BallAndSocketJoint.h"
     "src/constraint/BallAndSocketJoint.cpp"
     "src/constraint/ContactPoint.h"

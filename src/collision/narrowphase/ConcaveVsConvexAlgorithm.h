@@ -22,7 +22,7 @@
 * 3. This notice may not be removed or altered from any source distribution.    *
 *                                                                               *
 ********************************************************************************/
-
+/*
 #ifndef REACTPHYSICS3D_CONCAVE_VS_CONVEX_ALGORITHM_H
 #define	REACTPHYSICS3D_CONCAVE_VS_CONVEX_ALGORITHM_H
 
@@ -37,11 +37,6 @@
 namespace reactphysics3d {
 
 // Class ConvexVsTriangleCallback
-/**
- * This class is used to report a collision between the triangle
- * of a concave mesh shape and a convex shape during the
- * middle-phase algorithm
- */
 class MiddlePhaseTriangleCallback : public TriangleCallback {
 
     protected:
@@ -78,14 +73,11 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         }
 
         /// Test collision between a triangle and the convex mesh shape
-        virtual void testTriangle(const Vector3* trianglePoints) override;
+        virtual void testTriangle(uint meshSubpart, uint triangleIndex, const Vector3* trianglePoints,
+                                  const Vector3* verticesNormals) override;
 };
 
 // Class SmoothMeshContactInfo
-/**
- * Contains data for of potential smooth contact during the smooth mesh
- * contacts computation.
- */
 struct SmoothMeshContactInfo {
 
     public:
@@ -131,11 +123,6 @@ struct ContactsDepthCompare {
 
 // TODO : Delete this
 // Class SmoothCollisionNarrowPhaseCallback
-/**
- * This class is used as a narrow-phase callback to get narrow-phase contacts
- * of the concave triangle mesh to temporary store them in order to be used in
- * the smooth mesh collision algorithm if this one is enabled.
- */
 class SmoothCollisionNarrowPhaseCallback {
 
     private:
@@ -155,12 +142,6 @@ class SmoothCollisionNarrowPhaseCallback {
 
 // TODO : Delete this
 // Class ConcaveVsConvexAlgorithm
-/**
- * This class is used to compute the narrow-phase collision detection
- * between a concave collision shape and a convex collision shape. The idea is
- * to use the GJK collision detection algorithm to compute the collision between
- * the convex shape and each of the triangles in the concave shape.
- */
 class ConcaveVsConvexAlgorithm {
 
     protected :
@@ -212,3 +193,4 @@ inline void ConcaveVsConvexAlgorithm::addProcessedVertex(std::unordered_multimap
 
 #endif
 
+*/
