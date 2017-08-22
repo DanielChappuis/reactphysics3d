@@ -40,13 +40,6 @@ ConvexMesh::ConvexMesh(const openglframework::Vector3 &position,
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
 
-    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-    /*mPolygonVertexArray =
-            new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                          getNbFaces(0), &(mIndices[0][0]), sizeof(int),
-                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);*/
-
     // Polygon faces descriptions for the polyhedron
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
