@@ -60,6 +60,8 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
     }
     else {
 
+        bool addNewManifold = true;
+
         // If there are too much contact manifolds in the set
         if (mNbManifolds >= mNbMaxManifolds) {
 
@@ -72,14 +74,20 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
 
                 // Remove the manifold
                 removeManifold(minDepthManifold);
+            }
+            else {
 
-                // Create a new contact manifold
-                createManifold(contactManifoldInfo);
+                // The manifold we do not want to get is the new one. Therefore, we do not add it to the set
+                addNewManifold = false;
             }
         }
 
-        // Create a new contact manifold
-        createManifold(contactManifoldInfo);
+        // If we need to add the new contact manifold
+        if (addNewManifold) {
+
+            // Create a new contact manifold
+            createManifold(contactManifoldInfo);
+        }
     }
 }
 
