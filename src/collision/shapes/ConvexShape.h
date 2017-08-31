@@ -63,7 +63,7 @@ class ConvexShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexShape(CollisionShapeType type, decimal margin);
+        ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin);
 
         /// Destructor
         virtual ~ConvexShape() override = default;

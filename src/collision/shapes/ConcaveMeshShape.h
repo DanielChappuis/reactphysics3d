@@ -139,9 +139,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
         void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
 
-        /// Get a smooth contact normal for collision for a triangle of the mesh
-        Vector3 computeSmoothLocalContactNormalForTriangle(TriangleShape* triangleShape, const Vector3& localContactPoint) const;
-
     public:
 
         /// Constructor

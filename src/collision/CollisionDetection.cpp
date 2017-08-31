@@ -148,11 +148,11 @@ void CollisionDetection::computeMiddlePhase() {
             bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
             if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
 
-            const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-            const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+			bool isShape1Convex = shape1->getCollisionShape()->isConvex();
+			bool isShape2Convex = shape2->getCollisionShape()->isConvex();
 
             // If both shapes are convex
-            if ((CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type))) {
+            if (isShape1Convex && isShape2Convex) {
 
                 // No middle-phase is necessary, simply create a narrow phase info
                 // for the narrow-phase collision detection
@@ -161,13 +161,12 @@ void CollisionDetection::computeMiddlePhase() {
                                        NarrowPhaseInfo(pair, shape1->getCollisionShape(),
                                        shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
                                        shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                       shape2->getCachedCollisionData());
+                                       shape2->getCachedCollisionData(), mSingleFrameAllocator);
                 mNarrowPhaseInfoList->next = firstNarrowPhaseInfo;
 
             }
             // Concave vs Convex algorithm
-            else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-                     (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
+            else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
 
                 NarrowPhaseInfo* narrowPhaseInfo = nullptr;
                 computeConvexVsConcaveMiddlePhase(pair, mSingleFrameAllocator, &narrowPhaseInfo);
@@ -410,22 +409,14 @@ void CollisionDetection::processPotentialContacts(OverlappingPair* pair) {
     // Reduce the number of contact points of the manifold
     pair->reducePotentialContactManifolds();
 
-    // If there is a concave mesh shape in the pair
-    if (pair->hasConcaveShape()) {
+	// Add all the potential contact manifolds as actual contact manifolds to the pair
+	ContactManifoldInfo* potentialManifold = pair->getPotentialContactManifolds();
+	while (potentialManifold != nullptr) {
 
-        processSmoothMeshContacts(pair);
-    }
-    else {   // If both collision shapes are convex
+		pair->addContactManifold(potentialManifold);
 
-        // Add all the potential contact manifolds as actual contact manifolds to the pair
-        ContactManifoldInfo* potentialManifold = pair->getPotentialContactManifolds();
-        while (potentialManifold != nullptr) {
-
-             pair->addContactManifold(potentialManifold);
-
-             potentialManifold = potentialManifold->mNext;
-        }
-    }
+		potentialManifold = potentialManifold->mNext;
+	}
 
     // Clear the obselete contact manifolds and contact points
     pair->clearObseleteManifoldsAndContactPoints();
@@ -544,25 +535,24 @@ NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(Overlappin
 
     // -------------------------------------------------------
 
-    const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-    const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+    const bool isShape1Convex = shape1->getCollisionShape()->isConvex();
+    const bool isShape2Convex = shape2->getCollisionShape()->isConvex();
 
     NarrowPhaseInfo* narrowPhaseInfo = nullptr;
 
     // If both shapes are convex
-    if ((CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type))) {
+    if ((isShape1Convex && isShape2Convex)) {
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
         narrowPhaseInfo = new (mPoolAllocator.allocate(sizeof(NarrowPhaseInfo))) NarrowPhaseInfo(pair, shape1->getCollisionShape(),
                                        shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
                                        shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                       shape2->getCachedCollisionData());
+                                       shape2->getCachedCollisionData(), mPoolAllocator);
 
     }
     // Concave vs Convex algorithm
-    else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-             (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
+    else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
 
         // Run the middle-phase collision detection algorithm to find the triangles of the concave
         // shape we need to use during the narrow-phase collision detection
@@ -630,9 +620,6 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
             // Test if the AABBs of the two proxy shapes overlap
             if (aabb1.testCollision(aabb2)) {
 
-                const CollisionShapeType shape1Type = body1ProxyShape->getCollisionShape()->getType();
-                const CollisionShapeType shape2Type = body2ProxyShape->getCollisionShape()->getType();
-
                 // Create a temporary overlapping pair
                 OverlappingPair pair(body1ProxyShape, body2ProxyShape, mPoolAllocator, mPoolAllocator);
 
@@ -646,6 +633,9 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
 
                     // If we have not found a collision yet
                     if (!isColliding) {
+
+						const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+						const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
                         // Select the narrow phase algorithm to use according to the two collision shapes
                         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
@@ -723,9 +713,6 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                 // Check if the collision filtering allows collision between the two shapes
                 if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
-                    const CollisionShapeType shape1Type = bodyProxyShape->getCollisionShape()->getType();
-                    const CollisionShapeType shape2Type = proxyShape->getCollisionShape()->getType();
-
                     // Create a temporary overlapping pair
                     OverlappingPair pair(bodyProxyShape, proxyShape, mPoolAllocator, mPoolAllocator);
 
@@ -739,6 +726,9 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
 
                         // If we have not found a collision yet
                         if (!isColliding) {
+
+							const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+							const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
                             // Select the narrow phase algorithm to use according to the two collision shapes
                             NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
@@ -812,11 +802,11 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                 // Compute the middle-phase collision detection between the two shapes
                 NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
-                const CollisionShapeType shape1Type = body1ProxyShape->getCollisionShape()->getType();
-                const CollisionShapeType shape2Type = body2ProxyShape->getCollisionShape()->getType();
-
                 // For each narrow-phase info object
                 while (narrowPhaseInfo != nullptr) {
+
+					const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+					const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
                     // Select the narrow phase algorithm to use according to the two collision shapes
                     NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
@@ -896,9 +886,6 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                 // Check if the collision filtering allows collision between the two shapes
                 if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
-                    const CollisionShapeType shape1Type = bodyProxyShape->getCollisionShape()->getType();
-                    const CollisionShapeType shape2Type = proxyShape->getCollisionShape()->getType();
-
                     // Create a temporary overlapping pair
                     OverlappingPair pair(bodyProxyShape, proxyShape, mPoolAllocator, mPoolAllocator);
 
@@ -907,6 +894,9 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
 
                     // For each narrow-phase info object
                     while (narrowPhaseInfo != nullptr) {
+
+						const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+						const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
                         // Select the narrow phase algorithm to use according to the two collision shapes
                         NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
@@ -988,8 +978,8 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
             // For each narrow-phase info object
             while (narrowPhaseInfo != nullptr) {
 
-                const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-                const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+                const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+                const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
                 // Select the narrow phase algorithm to use according to the two collision shapes
                 NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);

@@ -32,7 +32,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type) : mType(type), mScaling(1.0, 1.0, 1.0) {
+CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type) : mName(name), mType(type), mScaling(1.0, 1.0, 1.0) {
     
 }
 

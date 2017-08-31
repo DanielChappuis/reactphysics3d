@@ -109,8 +109,6 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     // do not forget to delete it at the end
     mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
 
-    mConcaveShape->setIsSmoothMeshCollisionEnabled(false);
-
     // Initial position and orientation of the rigid body
     rp3d::Vector3 initPosition(position.x, position.y, position.z);
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();

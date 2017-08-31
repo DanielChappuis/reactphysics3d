@@ -31,7 +31,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConvexPolyhedronShape::ConvexPolyhedronShape(decimal margin)
-            : ConvexShape(CollisionShapeType::CONVEX_POLYHEDRON, margin) {
+ConvexPolyhedronShape::ConvexPolyhedronShape(CollisionShapeName name, decimal margin)
+            : ConvexShape(name, CollisionShapeType::CONVEX_POLYHEDRON, margin) {
 
 }

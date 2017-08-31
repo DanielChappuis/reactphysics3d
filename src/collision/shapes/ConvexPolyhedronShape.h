@@ -47,7 +47,7 @@ class ConvexPolyhedronShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexPolyhedronShape(decimal margin);
+        ConvexPolyhedronShape(CollisionShapeName name, decimal margin);
 
         /// Destructor
         virtual ~ConvexPolyhedronShape() override = default;

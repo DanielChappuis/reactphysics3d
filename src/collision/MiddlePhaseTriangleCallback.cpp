@@ -32,7 +32,8 @@ using namespace reactphysics3d;
 void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
                                                const Vector3* verticesNormals) {
 
-    // Create a triangle collision shape
+    // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
+	// destructor of the corresponding NarrowPhaseInfo.
     decimal margin = mConcaveShape->getTriangleMargin();
     TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
                                    TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
@@ -44,6 +45,6 @@ void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIn
                            NarrowPhaseInfo(mOverlappingPair, mConvexProxyShape->getCollisionShape(),
                            triangleShape, mConvexProxyShape->getLocalToWorldTransform(),
                            mConcaveProxyShape->getLocalToWorldTransform(), mConvexProxyShape->getCachedCollisionData(),
-                           mConcaveProxyShape->getCachedCollisionData());
+                           mConcaveProxyShape->getCachedCollisionData(), mAllocator);
     narrowPhaseInfoList->next = firstNarrowPhaseInfo;
 }

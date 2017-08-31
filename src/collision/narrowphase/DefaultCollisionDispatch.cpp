@@ -36,7 +36,6 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
     CollisionShapeType shape1Type = static_cast<CollisionShapeType>(type1);
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
-    // Convex vs Convex algorithm (GJK algorithm)
     if (type1 > type2) {
         return nullptr;
     }

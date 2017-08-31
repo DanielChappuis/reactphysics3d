@@ -48,10 +48,10 @@ struct NarrowPhaseInfo {
         OverlappingPair* overlappingPair;
 
         /// Pointer to the first collision shape to test collision with
-        const CollisionShape* collisionShape1;
+        CollisionShape* collisionShape1;
 
         /// Pointer to the second collision shape to test collision with
-        const CollisionShape* collisionShape2;
+        CollisionShape* collisionShape2;
 
         /// Transform that maps from collision shape 1 local-space to world-space
         Transform shape1ToWorldTransform;
@@ -70,13 +70,16 @@ struct NarrowPhaseInfo {
         // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
         void** cachedCollisionData2;
 
+		/// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
+		Allocator& collisionShapeAllocator;
+
         /// Pointer to the next element in the linked list
         NarrowPhaseInfo* next;
 
         /// Constructor
-        NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* shape1,
-                        const CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, void** cachedData1, void** cachedData2);
+        NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
+                        CollisionShape* shape2, const Transform& shape1Transform,
+                        const Transform& shape2Transform, void** cachedData1, void** cachedData2, Allocator& shapeAllocator);
 
         /// Destructor
         ~NarrowPhaseInfo();

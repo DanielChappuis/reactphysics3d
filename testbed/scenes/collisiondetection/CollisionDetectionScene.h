@@ -147,7 +147,7 @@ class CollisionDetectionScene : public SceneDemo {
 		Box* mBox2;
         ConvexMesh* mConvexMesh;
         //Dumbbell* mDumbbell;
-        //ConcaveMesh* mConcaveMesh;
+        ConcaveMesh* mConcaveMesh;
         //HeightField* mHeightField;
 
         std::vector<PhysicsObject*> mAllShapes;

@@ -42,7 +42,7 @@ using namespace reactphysics3d;
  * @param margin Collision margin (in meters) around the collision shape
  */
 ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, decimal margin)
-                : ConvexPolyhedronShape(margin), mPolyhedronMesh(polyhedronMesh), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0) {
+                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, margin), mPolyhedronMesh(polyhedronMesh), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0) {
 
     // Recalculate the bounds of the mesh
     recalculateBounds();

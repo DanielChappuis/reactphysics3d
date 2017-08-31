@@ -173,7 +173,7 @@ class TriangleShape : public ConvexPolyhedronShape {
 
         /// This method compute the smooth mesh contact with a triangle in case one of the two collision shapes is a triangle. The idea in this case is to use a smooth vertex normal of the triangle mesh
         static void computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
-                                                     Vector3& localContactPointShape1, Vector3 localContactPointShape2,
+                                                     Vector3& localContactPointShape1, Vector3& localContactPointShape2,
                                                      const Transform& shape1ToWorld, const Transform& shape2ToWorld,
                                                      decimal penetrationDepth, Vector3& outSmoothVertexNormal);
 

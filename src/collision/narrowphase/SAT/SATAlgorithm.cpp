@@ -82,7 +82,7 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrow
 
     // If the shapes are not triangles (no temporal coherence for triangle collision because we do not store previous
     // frame collision data per triangle)
-    if (polyhedron->getType() != CollisionShapeType::TRIANGLE) {
+    if (polyhedron->getName() != CollisionShapeName::TRIANGLE) {
 
         // If the last frame collision info is valid and was also using SAT algorithm
         if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
@@ -225,7 +225,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
 
     // If the shapes are not triangles (no temporal coherence for triangle collision because we do not store previous
     // frame collision data per triangle)
-    if (polyhedron->getType() != CollisionShapeType::TRIANGLE) {
+    if (polyhedron->getName() != CollisionShapeName::TRIANGLE) {
 
         // If the last frame collision info is valid and was also using SAT algorithm
         if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {
@@ -609,7 +609,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 
     // If the shapes are not triangles (no temporal coherence for triangle collision because we do not store previous
     // frame collision data per triangle)
-    if (polyhedron1->getType() != CollisionShapeType::TRIANGLE && polyhedron2->getType() != CollisionShapeType::TRIANGLE) {
+    if (polyhedron1->getName() != CollisionShapeName::TRIANGLE && polyhedron2->getName() != CollisionShapeName::TRIANGLE) {
 
         // If the last frame collision info is valid and was also using SAT algorithm
         if (lastFrameInfo.isValid && lastFrameInfo.wasUsingSAT) {

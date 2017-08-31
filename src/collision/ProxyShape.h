@@ -85,6 +85,11 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
+		// -------------------- Methods -------------------- //
+
+		/// Return the collision shape
+		CollisionShape* getCollisionShape();
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -177,6 +182,8 @@ class ProxyShape {
         friend class DynamicsWorld;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
+		friend class ContactManifoldSet;
+		friend class MiddlePhaseTriangleCallback;
 
 };
 
@@ -191,6 +198,14 @@ inline void** ProxyShape::getCachedCollisionData() {
  */
 inline const CollisionShape* ProxyShape::getCollisionShape() const {
     return mCollisionShape;
+}
+
+// Return the collision shape
+/**
+* @return Pointer to the internal collision shape
+*/
+inline CollisionShape* ProxyShape::getCollisionShape() {
+	return mCollisionShape;
 }
 
 // Return the parent body

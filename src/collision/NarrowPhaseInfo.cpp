@@ -27,18 +27,19 @@
 #include <iostream>
 #include "NarrowPhaseInfo.h"
 #include "ContactPointInfo.h"
+#include "collision/shapes/TriangleShape.h"
 #include "engine/OverlappingPair.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* shape1,
-                const CollisionShape* shape2, const Transform& shape1Transform,
-                const Transform& shape2Transform, void** cachedData1, void** cachedData2)
+NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
+                CollisionShape* shape2, const Transform& shape1Transform,
+                const Transform& shape2Transform, void** cachedData1, void** cachedData2, Allocator& shapeAllocator)
       : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
         shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
         contactPoints(nullptr), cachedCollisionData1(cachedData1),
-        cachedCollisionData2(cachedData2), next(nullptr) {
+        cachedCollisionData2(cachedData2), collisionShapeAllocator(shapeAllocator), next(nullptr) {
 
 }
 
@@ -46,6 +47,15 @@ NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* sh
 NarrowPhaseInfo::~NarrowPhaseInfo() {
 
     assert(contactPoints == nullptr);
+
+	// Release the memory of the TriangleShape (this memory was allocated in the
+	// MiddlePhaseTriangleCallback::testTriangle() method)
+	if (collisionShape1->getName() == CollisionShapeName::TRIANGLE) {
+		collisionShapeAllocator.release(collisionShape1, sizeof(TriangleShape));
+	}
+	if (collisionShape2->getName() == CollisionShapeName::TRIANGLE) {
+		collisionShapeAllocator.release(collisionShape2, sizeof(TriangleShape));
+	}
 }
 
 // Add a new contact point

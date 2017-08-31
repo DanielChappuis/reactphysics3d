@@ -36,7 +36,12 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                 : mContactManifoldSet(shape1, shape2, manifoldsAllocator), mPotentialContactManifolds(nullptr),
                   mTempMemoryAllocator(temporaryMemoryAllocator) {
     
-}                               
+}         
+
+// Destructor
+OverlappingPair::~OverlappingPair() {
+	assert(mPotentialContactManifolds == nullptr);
+}
 
 // Create a new potential contact manifold using contact-points from narrow-phase
 void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {

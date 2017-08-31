@@ -45,7 +45,7 @@ using namespace reactphysics3d;
  */
 TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
                              const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex, decimal margin)
-              : ConvexPolyhedronShape(margin), mMeshSubPart(meshSubPart), mTriangleIndex(triangleIndex) {
+              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, margin), mMeshSubPart(meshSubPart), mTriangleIndex(triangleIndex) {
 
     mPoints[0] = point1;
     mPoints[1] = point2;
@@ -68,15 +68,15 @@ TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const
 // This method will return the new smooth world contact
 // normal of the triangle and the the local contact point on the other shape.
 void TriangleShape::computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
-                                                     Vector3& localContactPointShape1, Vector3 localContactPointShape2,
+                                                     Vector3& localContactPointShape1, Vector3& localContactPointShape2,
                                                      const Transform& shape1ToWorld, const Transform& shape2ToWorld,
                                                      decimal penetrationDepth, Vector3& outSmoothVertexNormal) {
 
-    assert(shape1->getType() != CollisionShapeType::TRIANGLE || shape2->getType() != CollisionShapeType::TRIANGLE);
+    assert(shape1->getName() != CollisionShapeName::TRIANGLE || shape2->getName() != CollisionShapeName::TRIANGLE);
 
     // If one the shape is a triangle
-    bool isShape1Triangle = shape1->getType() == CollisionShapeType::TRIANGLE;
-    if (isShape1Triangle || shape2->getType() == CollisionShapeType::TRIANGLE) {
+    bool isShape1Triangle = shape1->getName() == CollisionShapeName::TRIANGLE;
+    if (isShape1Triangle || shape2->getName() == CollisionShapeName::TRIANGLE) {
 
         const TriangleShape* triangleShape = isShape1Triangle ? static_cast<const TriangleShape*>(shape1):
                                                                 static_cast<const TriangleShape*>(shape2);
@@ -139,14 +139,6 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
     // Compute the barycentric coordinates of the point in the triangle
     decimal u, v, w;
     computeBarycentricCoordinatesInTriangle(mPoints[0], mPoints[1], mPoints[2], localContactPoint, u, v, w);
-
-    int nbZeros = 0;
-    bool isUZero = approxEqual(u, decimal(0), decimal(0.0001));
-    bool isVZero = approxEqual(v, decimal(0), decimal(0.0001));
-    bool isWZero = approxEqual(w, decimal(0), decimal(0.0001));
-    if (isUZero) nbZeros++;
-    if (isVZero) nbZeros++;
-    if (isWZero) nbZeros++;
 
     // We compute the contact normal as the barycentric interpolation of the three vertices normals
     return (u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2]).getUnit();

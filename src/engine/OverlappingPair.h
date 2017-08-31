@@ -117,7 +117,7 @@ class OverlappingPair {
                         Allocator& memoryAllocator, Allocator& temporaryMemoryAllocator);
 
         /// Destructor
-        ~OverlappingPair() = default;
+        ~OverlappingPair();
 
         /// Deleted copy-constructor
         OverlappingPair(const OverlappingPair& pair) = delete;

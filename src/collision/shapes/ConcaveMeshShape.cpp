@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
-                 : ConcaveShape(CollisionShapeType::CONCAVE_MESH) {
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH) {
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
@@ -79,8 +79,8 @@ void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
 
     // Apply the scaling factor to the vertices
     outTriangleVertices[0] *= mScaling.x;
-    outTriangleVertices[1] *= mScaling.x;
-    outTriangleVertices[2] *= mScaling.x;
+    outTriangleVertices[1] *= mScaling.y;
+    outTriangleVertices[2] *= mScaling.z;
 }
 
 // Return the three vertex normals (in the array outVerticesNormals) of a triangle
