@@ -489,6 +489,24 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
                     isMinPenetrationFaceNormal = true;
                     isMinPenetrationFaceNormalPolyhedron1 = true;
+
+                    // Compute the contact points between two faces of two convex polyhedra.
+                    // If contact points have been found, we report them without running the whole SAT algorithm
+                    if(computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1, polyhedron2,
+                                                                      polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1, minFaceIndex,
+                                                                      narrowPhaseInfo, minPenetrationDepth)) {
+
+                        lastFrameInfo.satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
+                        lastFrameInfo.satIsAxisFacePolyhedron2 = !isMinPenetrationFaceNormalPolyhedron1;
+                        lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
+
+                        return true;
+                    }
+                    else {     // Contact points have not been found (the set of clipped points was empty)
+
+                        // Therefore, we need to run the whole SAT algorithm again
+                        isTemporalCoherenceValid = false;
+                    }
                 }
             }
             else if (lastFrameInfo.satIsAxisFacePolyhedron2) { // If the previous separating axis (or axis with minimum penetration depth)
@@ -513,6 +531,24 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     minFaceIndex = lastFrameInfo.satMinAxisFaceIndex;
                     isMinPenetrationFaceNormal = true;
                     isMinPenetrationFaceNormalPolyhedron1 = false;
+
+                    // Compute the contact points between two faces of two convex polyhedra.
+                    // If contact points have been found, we report them without running the whole SAT algorithm
+                    if(computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1, polyhedron2,
+                                                                      polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1, minFaceIndex,
+                                                                      narrowPhaseInfo, minPenetrationDepth)) {
+
+                        lastFrameInfo.satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
+                        lastFrameInfo.satIsAxisFacePolyhedron2 = !isMinPenetrationFaceNormalPolyhedron1;
+                        lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
+
+                        return true;
+                    }
+                    else {     // Contact points have not been found (the set of clipped points was empty)
+
+                        // Therefore, we need to run the whole SAT algorithm again
+                        isTemporalCoherenceValid = false;
+                    }
                 }
             }
             else {   // If the previous separating axis (or axis with minimum penetration depth) was the cross product of two edges
@@ -543,6 +579,12 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 // The two shapes are overlapping as in the previous frame and on the same axis, therefore
                 // we will skip the entire SAT algorithm because the minimum separating axis did not change
                 isTemporalCoherenceValid = lastFrameInfo.wasColliding;
+
+                // Temporal coherence is valid only if the two edges build a minkowski
+                // face (and the cross product is therefore a candidate for separating axis
+                if (isTemporalCoherenceValid && !testEdgesBuildMinkowskiFace(polyhedron1, edge1, polyhedron2, edge2, polyhedron1ToPolyhedron2)) {
+                    isTemporalCoherenceValid = false;
+                }
 
                 if (isTemporalCoherenceValid) {
 
@@ -672,102 +714,11 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 
         if (reportContacts) {
 
-            const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
-            const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
-            const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
-            const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
-
-            assert(minPenetrationDepth > decimal(0.0));
-
-            const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
-            const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
-
-            // Compute the world normal
-            Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
-                                                                                -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
-
-            // Get the reference face
-            HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
-
-            // Find the incident face on the other polyhedron (most anti-parallel face)
-            uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
-
-            // Get the incident face
-            HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
-
-            std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
-            std::vector<Vector3> planesNormals;     // Normals of the clipping planes
-            std::vector<Vector3> planesPoints;      // Points on the clipping planes
-
-            // Get all the vertices of the incident face (in the reference local-space)
-            std::vector<uint>::const_iterator it;
-            for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
-                const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
-                polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
-            }
-
-            // Get the reference face clipping planes
-            uint currentEdgeIndex = referenceFace.edgeIndex;
-            uint firstEdgeIndex = currentEdgeIndex;
-            do {
-
-                // Get the adjacent edge
-                HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
-
-				// Get the twin edge
-				HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
-
-				// Compute the edge vertices and edge direction
-				Vector3 edgeV1 = referencePolyhedron->getVertexPosition(edge.vertexIndex);
-				Vector3 edgeV2 = referencePolyhedron->getVertexPosition(twinEdge.vertexIndex);
-				Vector3 edgeDirection = edgeV2 - edgeV1;
-
-                // Compute the normal of the clipping plane for this edge
-				// The clipping plane is perpendicular to the edge direction and the reference face normal
-				Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
-
-                planesNormals.push_back(clipPlaneNormal);
-                planesPoints.push_back(edgeV1);
-
-                // Go to the next adjacent edge of the reference face
-                currentEdgeIndex = edge.nextEdgeIndex;
-
-            } while (currentEdgeIndex != firstEdgeIndex);
-
-            assert(planesNormals.size() > 0);
-            assert(planesNormals.size() == planesPoints.size());
-
-            // Clip the reference faces with the adjacent planes of the reference face
-            std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
-            assert(clipPolygonVertices.size() > 0);
-
-            // We only keep the clipped points that are below the reference face
-            const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
-            std::vector<Vector3>::const_iterator itPoints;
-            for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
-
-                // If the clip point is bellow the reference face
-                if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
-
-                    // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
-                    Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
-
-                    // Project the contact point onto the reference face
-                    Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
-
-                    // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
-                    TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
-                                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
-                                                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron,
-                                                                    narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
-                                                                    minPenetrationDepth, normalWorld);
-
-                    // Create a new contact point
-                    narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
-                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
-                                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
-                }
-            }
+            // Compute the contact points between two faces of two convex polyhedra.
+            bool contactsFound = computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1,
+                                                                                polyhedron2, polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1,
+                                                                                minFaceIndex, narrowPhaseInfo, minPenetrationDepth);
+            assert(contactsFound);
         }
 
         lastFrameInfo.satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
@@ -807,6 +758,116 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
     }
 
     return true;
+}
+
+// Compute the contact points between two faces of two convex polyhedra.
+/// The method returns true if contact points have been found
+bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1,
+                                                                  const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
+                                                                  const Transform& polyhedron1ToPolyhedron2, const Transform& polyhedron2ToPolyhedron1,
+                                                                  uint minFaceIndex, NarrowPhaseInfo* narrowPhaseInfo, decimal minPenetrationDepth) const {
+
+    const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
+    const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
+    const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
+    const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
+
+    assert(minPenetrationDepth > decimal(0.0));
+
+    const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
+    const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
+
+    // Compute the world normal
+    Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfo->shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
+                                    -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
+
+    // Get the reference face
+    HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
+
+    // Find the incident face on the other polyhedron (most anti-parallel face)
+    uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
+
+    // Get the incident face
+    HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
+
+    std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
+    std::vector<Vector3> planesNormals;     // Normals of the clipping planes
+    std::vector<Vector3> planesPoints;      // Points on the clipping planes
+
+    // Get all the vertices of the incident face (in the reference local-space)
+    std::vector<uint>::const_iterator it;
+    for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
+        const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
+        polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
+    }
+
+    // Get the reference face clipping planes
+    uint currentEdgeIndex = referenceFace.edgeIndex;
+    uint firstEdgeIndex = currentEdgeIndex;
+    do {
+
+        // Get the adjacent edge
+        HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
+
+        // Get the twin edge
+        HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+
+        // Compute the edge vertices and edge direction
+        Vector3 edgeV1 = referencePolyhedron->getVertexPosition(edge.vertexIndex);
+        Vector3 edgeV2 = referencePolyhedron->getVertexPosition(twinEdge.vertexIndex);
+        Vector3 edgeDirection = edgeV2 - edgeV1;
+
+        // Compute the normal of the clipping plane for this edge
+        // The clipping plane is perpendicular to the edge direction and the reference face normal
+        Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
+
+        planesNormals.push_back(clipPlaneNormal);
+        planesPoints.push_back(edgeV1);
+
+        // Go to the next adjacent edge of the reference face
+        currentEdgeIndex = edge.nextEdgeIndex;
+
+    } while (currentEdgeIndex != firstEdgeIndex);
+
+    assert(planesNormals.size() > 0);
+    assert(planesNormals.size() == planesPoints.size());
+
+    // Clip the reference faces with the adjacent planes of the reference face
+    std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
+    assert(clipPolygonVertices.size() > 0);
+
+    // We only keep the clipped points that are below the reference face
+    const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
+    std::vector<Vector3>::const_iterator itPoints;
+    bool contactPointsFound = false;
+    for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
+
+        // If the clip point is bellow the reference face
+        if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
+
+            contactPointsFound = true;
+
+            // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
+            Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
+
+            // Project the contact point onto the reference face
+            Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
+
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
+                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
+                                    isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron,
+                                    narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
+                                    minPenetrationDepth, normalWorld);
+
+            // Create a new contact point
+            narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+                             isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
+                             isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
+        }
+    }
+
+    return contactPointsFound;
 }
 
 // Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector

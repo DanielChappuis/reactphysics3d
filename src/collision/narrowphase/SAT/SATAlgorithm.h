@@ -96,6 +96,13 @@ class SATAlgorithm {
                                                                  const Vector3& edgeDirectionCapsuleSpace,
                                                                  const Transform& polyhedronToCapsuleTransform, Vector3& outAxis) const;
 
+        /// Compute the contact points between two faces of two convex polyhedra.
+        bool computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1, const ConvexPolyhedronShape* polyhedron1,
+                                                            const ConvexPolyhedronShape* polyhedron2, const Transform& polyhedron1ToPolyhedron2,
+                                                            const Transform& polyhedron2ToPolyhedron1, uint minFaceIndex,
+                                                            NarrowPhaseInfo* narrowPhaseInfo, decimal minPenetrationDepth) const;
+
+
     public :
 
         // -------------------- Methods -------------------- //
