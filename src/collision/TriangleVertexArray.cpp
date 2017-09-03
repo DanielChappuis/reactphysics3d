@@ -163,9 +163,9 @@ void TriangleVertexArray::computeVerticesNormals() {
             Vector3 normalComponent = std::asin(sinA) * crossProduct;
 
             // Add the normal component of this vertex into the normals array
-            verticesNormals[verticesIndices[v]] = normalComponent.x;
-            verticesNormals[verticesIndices[v] + 1] = normalComponent.y;
-            verticesNormals[verticesIndices[v] + 2] = normalComponent.z;
+            verticesNormals[verticesIndices[v] * 3] = normalComponent.x;
+            verticesNormals[verticesIndices[v] * 3 + 1] = normalComponent.y;
+            verticesNormals[verticesIndices[v] * 3 + 2] = normalComponent.z;
         }
     }
 
@@ -173,12 +173,12 @@ void TriangleVertexArray::computeVerticesNormals() {
     for (uint v=0; v<mNbVertices * 3; v += 3) {
 
         // Normalize the normal
-        Vector3 normal(verticesNormals[v], verticesNormals[v + 1], verticesNormals[v + 2]);
+        Vector3 normal(verticesNormals[v * 3], verticesNormals[v * 3 + 1], verticesNormals[v * 3 + 2]);
         normal.normalize();
 
-        verticesNormals[v] = normal.x;
-        verticesNormals[v + 1] = normal.y;
-        verticesNormals[v + 2] = normal.z;
+        verticesNormals[v * 3] = normal.x;
+        verticesNormals[v * 3 + 1] = normal.y;
+        verticesNormals[v * 3 + 2] = normal.z;
     }
 
     mVerticesNormalsStart = reinterpret_cast<unsigned char*>(verticesNormals);
