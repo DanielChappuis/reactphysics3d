@@ -65,8 +65,7 @@ class BoxShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const override;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
@@ -170,8 +169,7 @@ inline size_t BoxShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction without the objec margin
-inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
+inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
                    direction.y < 0.0 ? -mExtent.y : mExtent.y,

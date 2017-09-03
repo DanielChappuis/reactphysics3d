@@ -49,14 +49,10 @@ class ConvexShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         // Return a local support point in a given direction with the object margin
-        // TODO : Try to remove cachedCollisionData parameter
-        Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                               void** cachedCollisionData) const;
+        Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
         /// Return a local support point in a given direction without the object margin
-        // TODO : Try to remove cachedCollisionData parameter
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const=0;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
 
     public :
 

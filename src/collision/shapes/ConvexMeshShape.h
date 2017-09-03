@@ -83,8 +83,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return a local support point in a given direction without the object margin.
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const override;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;

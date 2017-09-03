@@ -81,8 +81,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const override;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Get a smooth contact normal for collision for a triangle of the mesh
         Vector3 computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const;
@@ -190,7 +189,7 @@ inline size_t TriangleShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction, void** cachedCollisionData) const {
+inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
     Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1]), direction.dot(mPoints[2]));
     return mPoints[dotProducts.getMaxAxis()];
 }

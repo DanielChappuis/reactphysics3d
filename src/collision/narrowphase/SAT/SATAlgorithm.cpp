@@ -314,7 +314,7 @@ decimal SATAlgorithm::computeEdgeVsCapsuleInnerSegmentPenetrationDepth(const Con
         outAxis.normalize();
 
         // Compute the penetration depth
-        const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outAxis, nullptr);
+        const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outAxis);
         const Vector3 capsuleSupportPointToEdgePoint = pointOnPolyhedronEdge - capsuleSupportPoint;
         penetrationDepth = capsuleSupportPointToEdgePoint.dot(outAxis);
     }
@@ -335,7 +335,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
 
     // Compute the penetration depth (using the capsule support in the direction opposite to the face normal)
     outFaceNormalCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
-    const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outFaceNormalCapsuleSpace, nullptr);
+    const Vector3 capsuleSupportPoint = capsule->getLocalSupportPointWithMargin(-outFaceNormalCapsuleSpace);
     const Vector3 pointOnPolyhedronFace = polyhedronToCapsuleTransform * polyhedron->getVertexPosition(face.faceVertices[0]);
     const Vector3 capsuleSupportPointToFacePoint =  pointOnPolyhedronFace - capsuleSupportPoint;
     const decimal penetrationDepth = capsuleSupportPointToFacePoint.dot(outFaceNormalCapsuleSpace);
@@ -932,7 +932,7 @@ decimal SATAlgorithm::testSingleFaceDirectionPolyhedronVsPolyhedron(const Convex
     const Vector3 faceNormalPolyhedron2Space = polyhedron1ToPolyhedron2.getOrientation() * faceNormal;
 
     // Get the support point of polyhedron 2 in the inverse direction of face normal
-    const Vector3 supportPoint = polyhedron2->getLocalSupportPointWithoutMargin(-faceNormalPolyhedron2Space, nullptr);
+    const Vector3 supportPoint = polyhedron2->getLocalSupportPointWithoutMargin(-faceNormalPolyhedron2Space);
 
     // Compute the penetration depth
     const Vector3 faceVertex = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(face.faceVertices[0]);

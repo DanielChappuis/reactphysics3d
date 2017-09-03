@@ -56,10 +56,7 @@ ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, decimal margin)
 /// it as a start in a hill-climbing (local search) process to find the new support vertex which
 /// will be in most of the cases very close to the previous one. Using hill-climbing, this method
 /// runs in almost constant time.
-Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
-
-    // TODO : Do we still need to have cachedCollisionData or we can remove it from everywhere ?
+Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     double maxDotProduct = DECIMAL_SMALLEST;
     uint indexMaxDotProduct = 0;

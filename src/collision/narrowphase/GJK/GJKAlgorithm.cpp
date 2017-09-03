@@ -66,9 +66,6 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
     const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
-    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
-    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
-
     bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
 
     // Get the local-space to world-space transforms
@@ -109,8 +106,8 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     do {
               
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape1->getLocalSupportPointWithoutMargin(-v, shape1CachedCollisionData);
-        suppB = body2Tobody1 * shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v, shape2CachedCollisionData);
+        suppA = shape1->getLocalSupportPointWithoutMargin(-v);
+        suppB = body2Tobody1 * shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -237,8 +234,6 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 
     const ConvexShape* shape = static_cast<const ConvexShape*>(proxyShape->getCollisionShape());
 
-    void** shapeCachedCollisionData = proxyShape->getCachedCollisionData();
-
     // Support point of object B (object B is a single point)
     const Vector3 suppB(localPoint);
 
@@ -254,7 +249,7 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
     do {
 
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape->getLocalSupportPointWithoutMargin(-v, shapeCachedCollisionData);
+        suppA = shape->getLocalSupportPointWithoutMargin(-v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -300,8 +295,6 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
 
     const ConvexShape* shape = static_cast<const ConvexShape*>(proxyShape->getCollisionShape());
 
-    void** shapeCachedCollisionData = proxyShape->getCachedCollisionData();
-
     Vector3 suppA;      // Current lower bound point on the ray (starting at ray's origin)
     Vector3 suppB;      // Support point on the collision shape
     const decimal machineEpsilonSquare = MACHINE_EPSILON * MACHINE_EPSILON;
@@ -321,7 +314,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
     Vector3 n(decimal(0.0), decimal(0.0), decimal(0.0));
     decimal lambda = decimal(0.0);
     suppA = ray.point1;    // Current lower bound point on the ray (starting at ray's origin)
-    suppB = shape->getLocalSupportPointWithoutMargin(rayDirection, shapeCachedCollisionData);
+    suppB = shape->getLocalSupportPointWithoutMargin(rayDirection);
     Vector3 v = suppA - suppB;
     decimal vDotW, vDotR;
     decimal distSquare = v.lengthSquare();
@@ -331,7 +324,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
     while (distSquare > epsilon && nbIterations < MAX_ITERATIONS_GJK_RAYCAST) {
 
         // Compute the support points
-        suppB = shape->getLocalSupportPointWithoutMargin(v, shapeCachedCollisionData);
+        suppB = shape->getLocalSupportPointWithoutMargin(v);
         w = suppA - suppB;
 
         vDotW = v.dot(w);
