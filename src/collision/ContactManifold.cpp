@@ -65,9 +65,6 @@ ContactManifold::~ContactManifold() {
 
         ContactPoint* nextContactPoint = contactPoint->getNext();
 
-        // TODO : Delete this
-        bool test = mMemoryAllocator.isReleaseNeeded();
-
         // Delete the contact point
         contactPoint->~ContactPoint();
         mMemoryAllocator.release(contactPoint, sizeof(ContactPoint));

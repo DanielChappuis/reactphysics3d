@@ -81,7 +81,7 @@ class BoxShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BoxShape(const Vector3& extent, decimal margin = OBJECT_MARGIN);
+        BoxShape(const Vector3& extent);
 
         /// Destructor
         virtual ~BoxShape() override = default;

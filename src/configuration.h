@@ -100,9 +100,6 @@ constexpr decimal DEFAULT_ROLLING_RESISTANCE = decimal(0.0);
 /// True if the spleeping technique is enabled
 constexpr bool SPLEEPING_ENABLED = true;
 
-/// Object margin for collision detection in meters (for the GJK-EPA Algorithm)
-constexpr decimal OBJECT_MARGIN = decimal(0.04);
-
 /// Distance threshold for two contact points for a valid persistent contact (in meters)
 constexpr decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
 

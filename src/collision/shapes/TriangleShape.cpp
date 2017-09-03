@@ -44,8 +44,8 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
-                             const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex, decimal margin)
-              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, margin), mMeshSubPart(meshSubPart), mTriangleIndex(triangleIndex) {
+                             const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex)
+              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mMeshSubPart(meshSubPart), mTriangleIndex(triangleIndex) {
 
     mPoints[0] = point1;
     mPoints[1] = point2;

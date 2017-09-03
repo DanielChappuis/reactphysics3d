@@ -99,9 +99,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        // TODO : Do we really need to use the margin anymore ? Maybe for raycasting ? If not, remove all the
-        // comments documentation about margin
-        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, decimal margin = OBJECT_MARGIN);
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh);
 
         /// Destructor
         virtual ~ConvexMeshShape() override = default;

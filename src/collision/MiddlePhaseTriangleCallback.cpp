@@ -34,10 +34,9 @@ void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIn
 
     // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
 	// destructor of the corresponding NarrowPhaseInfo.
-    decimal margin = mConcaveShape->getTriangleMargin();
     TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
                                    TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                                                 verticesNormals, meshSubPart, triangleIndex, margin);
+                                                 verticesNormals, meshSubPart, triangleIndex);
 
     // Create a narrow phase info for the narrow-phase collision detection
     NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;

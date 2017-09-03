@@ -63,9 +63,6 @@ class ConcaveShape : public CollisionShape {
 
         // -------------------- Attributes -------------------- //
 
-        // Margin use for collision detection for each triangle
-        decimal mTriangleMargin;
-
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
 
@@ -90,9 +87,6 @@ class ConcaveShape : public CollisionShape {
         /// Deleted assignment operator
         ConcaveShape& operator=(const ConcaveShape& shape) = delete;
 
-        /// Return the triangle margin
-        decimal getTriangleMargin() const;
-
         /// Return the raycast test type (front, back, front-back)
         TriangleRaycastSide getRaycastTestType() const;
 
@@ -108,11 +102,6 @@ class ConcaveShape : public CollisionShape {
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
 };
-
-// Return the triangle margin
-inline decimal ConcaveShape::getTriangleMargin() const {
-    return mTriangleMargin;
-}
 
 // Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {

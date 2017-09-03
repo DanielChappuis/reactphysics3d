@@ -108,7 +108,7 @@ class TriangleShape : public ConvexPolyhedronShape {
 
         /// Constructor
         TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
-                      const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex, decimal margin = OBJECT_MARGIN);
+                      const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex);
 
         /// Destructor
         virtual ~TriangleShape() override = default;

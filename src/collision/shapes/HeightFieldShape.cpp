@@ -260,9 +260,8 @@ void TriangleOverlapCallback::testTriangle(uint meshSubPart, uint triangleIndex,
                                            const Vector3* verticesNormals) {
 
     // Create a triangle collision shape
-    decimal margin = mHeightFieldShape.getTriangleMargin();
     TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                                verticesNormals, meshSubPart, triangleIndex, margin);
+                                verticesNormals, meshSubPart, triangleIndex);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
 
     // Ray casting test against the collision shape

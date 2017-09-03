@@ -115,7 +115,7 @@ class TestPointInside : public Test {
             mLocalShapeToWorld = mBodyTransform * mShapeTransform;
 
             // Create collision shapes
-            mBoxShape = new BoxShape(Vector3(2, 3, 4), 0);
+            mBoxShape = new BoxShape(Vector3(2, 3, 4));
             mBoxProxyShape = mBoxBody->addCollisionShape(mBoxShape, mShapeTransform);
 
             mSphereShape = new SphereShape(3);
