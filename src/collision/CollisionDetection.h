@@ -86,9 +86,6 @@ class CollisionDetection {
         /// Broad-phase overlapping pairs
         std::map<overlappingpairid, OverlappingPair*> mOverlappingPairs;
 
-        /// Overlapping pairs in contact (during the current Narrow-phase collision detection)
-        std::map<overlappingpairid, OverlappingPair*> mContactOverlappingPairs;
-
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 

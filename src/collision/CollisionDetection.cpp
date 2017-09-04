@@ -97,9 +97,6 @@ void CollisionDetection::computeMiddlePhase() {
 
     PROFILE("CollisionDetection::computeMiddlePhase()");
 
-    // Clear the set of overlapping pairs in narrow-phase contact
-    mContactOverlappingPairs.clear();
-
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
@@ -258,11 +255,6 @@ void CollisionDetection::computeNarrowPhase() {
                 // Add the contact points as a potential contact manifold into the pair                
                 currentNarrowPhaseInfo->addContactPointsAsPotentialContactManifold();
 
-                // Add the overlapping pair into the set of pairs in contact during narrow-phase
-                overlappingpairid pairId = OverlappingPair::computeID(currentNarrowPhaseInfo->overlappingPair->getShape1(),
-                                                                      currentNarrowPhaseInfo->overlappingPair->getShape2());
-                mContactOverlappingPairs[pairId] = currentNarrowPhaseInfo->overlappingPair;
-
                 currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasColliding = true;
             }
             else {
@@ -349,7 +341,7 @@ void CollisionDetection::addAllContactManifoldsToBodies() {
 
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mContactOverlappingPairs.begin(); it != mContactOverlappingPairs.end(); ++it) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // Add all the contact manifolds of the pair into the list of contact manifolds
         // of the two bodies involved in the contact
@@ -396,7 +388,7 @@ void CollisionDetection::processAllPotentialContacts() {
 
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mContactOverlappingPairs.begin(); it != mContactOverlappingPairs.end(); ++it) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // Process the potential contacts of the overlapping pair
         processPotentialContacts(it->second);
@@ -430,7 +422,7 @@ void CollisionDetection::reportAllContacts() {
 
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mContactOverlappingPairs.begin(); it != mContactOverlappingPairs.end(); ++it) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // If there is a user callback
         if (mWorld->mEventListener != nullptr && it->second->hasContacts()) {
