@@ -173,12 +173,12 @@ void TriangleVertexArray::computeVerticesNormals() {
     for (uint v=0; v<mNbVertices * 3; v += 3) {
 
         // Normalize the normal
-        Vector3 normal(verticesNormals[v * 3], verticesNormals[v * 3 + 1], verticesNormals[v * 3 + 2]);
+        Vector3 normal(verticesNormals[v], verticesNormals[v + 1], verticesNormals[v + 2]);
         normal.normalize();
 
-        verticesNormals[v * 3] = normal.x;
-        verticesNormals[v * 3 + 1] = normal.y;
-        verticesNormals[v * 3 + 2] = normal.z;
+        verticesNormals[v] = normal.x;
+        verticesNormals[v + 1] = normal.y;
+        verticesNormals[v + 2] = normal.z;
     }
 
     mVerticesNormalsStart = reinterpret_cast<unsigned char*>(verticesNormals);
