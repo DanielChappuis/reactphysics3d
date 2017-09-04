@@ -140,8 +140,8 @@ class ContactManifold {
         /// Pointer to the previous contact manifold in linked-list
         ContactManifold* mPrevious;
 
-        /// True if the contact manifold is obselete
-        bool mIsObselete;
+        /// True if the contact manifold is obsolete
+        bool mIsObsolete;
 
         // -------------------- Methods -------------------- //
 
@@ -151,13 +151,13 @@ class ContactManifold {
         /// Set the pointer to the next element in the linked-list
         void setNext(ContactManifold* nextManifold);
 
-        /// Return true if the manifold is obselete
-        bool getIsObselete() const;
+        /// Return true if the manifold is obsolete
+        bool getIsObsolete() const;
 
-        /// Set to true to make the manifold obselete
-        void setIsObselete(bool isObselete, bool setContactPoints);
+        /// Set to true to make the manifold obsolete
+        void setIsObsolete(bool isObselete, bool setContactPoints);
 
-        /// Clear the obselete contact points
+        /// Clear the obsolete contact points
         void clearObseleteContactPoints();
 
         /// Return the contact normal direction Id of the manifold
@@ -384,19 +384,19 @@ inline void ContactManifold::setNext(ContactManifold* nextManifold) {
     mNext = nextManifold;
 }
 
-// Return true if the manifold is obselete
-inline bool ContactManifold::getIsObselete() const {
-    return mIsObselete;
+// Return true if the manifold is obsolete
+inline bool ContactManifold::getIsObsolete() const {
+    return mIsObsolete;
 }
 
-// Set to true to make the manifold obselete
-inline void ContactManifold::setIsObselete(bool isObselete, bool setContactPoints) {
-    mIsObselete = isObselete;
+// Set to true to make the manifold obsolete
+inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoints) {
+    mIsObsolete = isObsolete;
 
     if (setContactPoints) {
         ContactPoint* contactPoint = mContactPoints;
         while (contactPoint != nullptr) {
-            contactPoint->setIsObselete(isObselete);
+            contactPoint->setIsObsolete(isObsolete);
 
             contactPoint = contactPoint->getNext();
         }

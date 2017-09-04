@@ -37,7 +37,7 @@ ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const Transform&
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnBody1(contactInfo->localPoint1),
                mLocalPointOnBody2(contactInfo->localPoint2),
-               mIsRestingContact(false), mIsObselete(false), mNext(nullptr) {
+               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr) {
 
     assert(mPenetrationDepth > decimal(0.0));
 
@@ -45,7 +45,7 @@ ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const Transform&
     mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
     mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
 
-    mIsObselete = false;
+    mIsObsolete = false;
 }
 
 // Update the contact point with a new one that is similar (very close)
@@ -64,5 +64,5 @@ void ContactPoint::update(const ContactPointInfo* contactInfo, const Transform& 
     mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
     mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
 
-    mIsObselete = false;
+    mIsObsolete = false;
 }

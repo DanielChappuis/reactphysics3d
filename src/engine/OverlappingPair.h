@@ -164,11 +164,11 @@ class OverlappingPair {
         /// Reduce the number of contact points of all the potential contact manifolds
         void reducePotentialContactManifolds();
 
-        /// Make the contact manifolds and contact points obselete
+        /// Make the contact manifolds and contact points obsolete
         void makeContactsObselete();
 
-        /// Clear the obselete contact manifold and contact points
-        void clearObseleteManifoldsAndContactPoints();
+        /// Clear the obsolete contact manifold and contact points
+        void clearObsoleteManifoldsAndContactPoints();
 
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
@@ -211,10 +211,10 @@ inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
     return mContactManifoldSet;
 }
 
-// Make the contact manifolds and contact points obselete
+// Make the contact manifolds and contact points obsolete
 inline void OverlappingPair::makeContactsObselete() {
 
-    mContactManifoldSet.makeContactsObselete();
+    mContactManifoldSet.makeContactsObsolete();
 }
 
 // Return the pair of bodies index
@@ -262,9 +262,9 @@ inline ContactManifoldInfo* OverlappingPair::getPotentialContactManifolds() {
     return mPotentialContactManifolds;
 }
 
-// Clear the obselete contact manifold and contact points
-inline void OverlappingPair::clearObseleteManifoldsAndContactPoints() {
-    mContactManifoldSet.clearObseleteManifoldsAndContactPoints();
+// Clear the obsolete contact manifold and contact points
+inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
+    mContactManifoldSet.clearObsoleteManifoldsAndContactPoints();
 }
 
 }

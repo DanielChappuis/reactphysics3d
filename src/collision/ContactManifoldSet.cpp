@@ -131,8 +131,8 @@ void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, 
        contactPointInfo = contactPointInfo->next;
    }
 
-   // The old manifold is no longer obselete
-   oldManifold->setIsObselete(false, false);
+   // The old manifold is no longer obsolete
+   oldManifold->setIsObsolete(false, false);
 }
 
 // Return the manifold with the smallest contact penetration depth among its points
@@ -270,27 +270,27 @@ void ContactManifoldSet::removeManifold(ContactManifold* manifold) {
     mNbManifolds--;
 }
 
-// Make all the contact manifolds and contact points obselete
-void ContactManifoldSet::makeContactsObselete() {
+// Make all the contact manifolds and contact points obsolete
+void ContactManifoldSet::makeContactsObsolete() {
 
     ContactManifold* manifold = mManifolds;
     while (manifold != nullptr) {
 
-        manifold->setIsObselete(true, true);
+        manifold->setIsObsolete(true, true);
 
         manifold = manifold->getNext();
     }
 }
 
-// Clear the obselete contact manifolds and contact points
-void ContactManifoldSet::clearObseleteManifoldsAndContactPoints() {
+// Clear the obsolete contact manifolds and contact points
+void ContactManifoldSet::clearObsoleteManifoldsAndContactPoints() {
 
     ContactManifold* manifold = mManifolds;
     ContactManifold* previousManifold = nullptr;
     while (manifold != nullptr) {
         ContactManifold* nextManifold = manifold->getNext();
 
-        if (manifold->getIsObselete()) {
+        if (manifold->getIsObsolete()) {
 
             if (previousManifold != nullptr) {
                 previousManifold->setNext(nextManifold);

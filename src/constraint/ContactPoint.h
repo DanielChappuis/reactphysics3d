@@ -71,8 +71,8 @@ class ContactPoint {
         /// Cached penetration impulse
         decimal mPenetrationImpulse;
 
-        /// True if the contact point is obselete
-        bool mIsObselete;
+        /// True if the contact point is obsolete
+        bool mIsObsolete;
 
         /// Pointer to the next contact point in the linked-list
         ContactPoint* mNext;
@@ -93,14 +93,14 @@ class ContactPoint {
         /// Set the mIsRestingContact variable
         void setIsRestingContact(bool isRestingContact);
 
-        /// Set to true to make the contact point obselete
-        void setIsObselete(bool isObselete);
+        /// Set to true to make the contact point obsolete
+        void setIsObsolete(bool isObselete);
 
         /// Set the next contact point in the linked list
         void setNext(ContactPoint* next);
 
-        /// Return true if the contact point is obselete
-        bool getIsObselete() const;
+        /// Return true if the contact point is obsolete
+        bool getIsObsolete() const;
 
     public :
 
@@ -206,14 +206,14 @@ inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
 }
 
-// Return true if the contact point is obselete
-inline bool ContactPoint::getIsObselete() const {
-    return mIsObselete;
+// Return true if the contact point is obsolete
+inline bool ContactPoint::getIsObsolete() const {
+    return mIsObsolete;
 }
 
-// Set to true to make the contact point obselete
-inline void ContactPoint::setIsObselete(bool isObselete) {
-    mIsObselete = isObselete;
+// Set to true to make the contact point obsolete
+inline void ContactPoint::setIsObsolete(bool isObsolete) {
+    mIsObsolete = isObsolete;
 }
 
 // Return the next contact point in the linked list

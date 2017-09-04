@@ -115,14 +115,14 @@ class ContactManifoldSet {
         /// Return a pointer to the first element of the linked-list of contact manifolds
         ContactManifold* getContactManifolds() const;
 
-        /// Make all the contact manifolds and contact points obselete
-        void makeContactsObselete();
+        /// Make all the contact manifolds and contact points obsolete
+        void makeContactsObsolete();
 
         /// Return the total number of contact points in the set of manifolds
         int getTotalNbContactPoints() const;
 
-        /// Clear the obselete contact manifolds and contact points
-        void clearObseleteManifoldsAndContactPoints();
+        /// Clear the obsolete contact manifolds and contact points
+        void clearObsoleteManifoldsAndContactPoints();
 
         // Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
         // Each face of the cube is divided into 4x4 buckets. This method maps the
