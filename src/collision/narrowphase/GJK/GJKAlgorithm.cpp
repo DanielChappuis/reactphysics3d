@@ -198,7 +198,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
         // If the penetration depth is negative (due too numerical errors), there is no contact
         if (penetrationDepth <= decimal(0.0)) {
-            return GJKResult::INTERPENETRATE;
+            return GJKResult::SEPARATED;
         }
 
         // Do not generate a contact point with zero normal length
