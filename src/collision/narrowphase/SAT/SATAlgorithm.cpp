@@ -256,7 +256,6 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
                                                       capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                       narrowPhaseInfo, isCapsuleShape1);
         }
-
     }
     else {   // The separating axis is the cross product of a polyhedron edge and the inner capsule segment
 
@@ -352,6 +351,10 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
                                                              NarrowPhaseInfo* narrowPhaseInfo, bool isCapsuleShape1) const {
 
     HalfEdgeStructure::Face face = polyhedron->getFace(referenceFaceIndex);
+
+    // Get the face normal
+    Vector3 faceNormal = polyhedron->getFaceNormal(referenceFaceIndex);
+
     uint firstEdgeIndex = face.edgeIndex;
     uint edgeIndex = firstEdgeIndex;
 
@@ -360,12 +363,22 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 
     // For each adjacent edge of the separating face of the polyhedron
     do {
+
         HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(edgeIndex);
         HalfEdgeStructure::Edge twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
 
-        // Construct a clippling plane for each adjacent edge of the separting face of the polyhedron
+        // Compute the edge vertices and edge direction
+        Vector3 edgeV1 = polyhedron->getVertexPosition(edge.vertexIndex);
+        Vector3 edgeV2 = polyhedron->getVertexPosition(twinEdge.vertexIndex);
+        Vector3 edgeDirection = edgeV2 - edgeV1;
+
+        // Compute the normal of the clipping plane for this edge
+        // The clipping plane is perpendicular to the edge direction and the reference face normal
+        Vector3 clipPlaneNormal = faceNormal.cross(edgeDirection);
+
+        // Construct a clipping plane for each adjacent edge of the separating face of the polyhedron
         planesPoints.push_back(polyhedron->getVertexPosition(edge.vertexIndex));
-        planesNormals.push_back(-polyhedron->getFaceNormal(twinEdge.faceIndex));
+        planesNormals.push_back(clipPlaneNormal);
 
         edgeIndex = edge.nextEdgeIndex;
 
@@ -373,9 +386,7 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 
     // First we clip the inner segment of the capsule with the four planes of the adjacent faces
     std::vector<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals);
-	assert(clipSegment.size() == 2);
-
-	const Vector3 faceNormal = polyhedron->getFaceNormal(referenceFaceIndex);
+    assert(clipSegment.size() == 2);
 
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
