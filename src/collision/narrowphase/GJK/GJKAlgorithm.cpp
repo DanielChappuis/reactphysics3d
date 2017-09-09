@@ -66,8 +66,6 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
     const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
-    bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
-
     // Get the local-space to world-space transforms
     const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
     const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
@@ -95,6 +93,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
     if (lastFrameInfo.isValid && lastFrameInfo.wasUsingGJK) {
         v = lastFrameInfo.gjkSeparatingAxis;
+        assert(v.lengthSquare() > decimal(0.000001));
     }
     else {
         v.setAllValues(0, 1, 0);
@@ -140,8 +139,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
             // Contact point has been found
             contactFound = true;
-
-            return GJKResult::INTERPENETRATE;
+            break;
         }
 
         // Compute the point of the simplex closest to the origin
@@ -150,14 +148,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
             // Contact point has been found
             contactFound = true;
-
-            return GJKResult::INTERPENETRATE;
-        }
-
-        // Closest point is almost the origin, go to EPA algorithm
-        // Vector v to small to continue computing support points
-        if (v.lengthSquare() < MACHINE_EPSILON) {
-            return GJKResult::INTERPENETRATE;
+            break;
         }
 
         // Store and update the squared distance of the closest point
@@ -177,8 +168,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
             break;
         }
 
-    } while((isPolytopeShape && !simplex.isFull()) || (!isPolytopeShape && !simplex.isFull() &&
-            distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
 
     if (contactFound && distSquare > MACHINE_EPSILON) {
 
@@ -203,7 +193,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
 
         // Do not generate a contact point with zero normal length
         if (normal.lengthSquare() < MACHINE_EPSILON) {
-            return GJKResult::INTERPENETRATE;
+            return GJKResult::SEPARATED;
         }
 
         if (reportContacts) {
@@ -219,7 +209,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
         return GJKResult::COLLIDE_IN_MARGIN;
     }
 
-    return GJKResult::SEPARATED;
+    return GJKResult::INTERPENETRATE;
 }
 
 

@@ -79,6 +79,8 @@ struct LastFrameCollisionInfo {
         wasColliding = false;
         wasUsingSAT = false;
         wasUsingGJK = false;
+
+        gjkSeparatingAxis = Vector3(0, 1, 0);
     }
 };
 
