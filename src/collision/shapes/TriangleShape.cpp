@@ -52,7 +52,7 @@ TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const
     mPoints[2] = point3;
 
     // Compute the triangle normal
-    mNormal = (point3 - point1).cross(point2 - point1);
+    mNormal = (point2 - point1).cross(point3 - point1);
     mNormal.normalize();
 
     mVerticesNormals[0] = verticesNormals[0];
