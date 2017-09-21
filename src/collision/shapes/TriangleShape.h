@@ -99,7 +99,7 @@ class TriangleShape : public ConvexPolyhedronShape {
 
         /// This method implements the technique described in Game Physics Pearl book
         void computeSmoothMeshContact(Vector3 localContactPointTriangle, const Transform& triangleShapeToWorldTransform,
-                                      const Transform& worldToOtherShapeTransform, decimal penetrationDepth,
+                                      const Transform& worldToOtherShapeTransform, decimal penetrationDepth, bool isTriangleShape1,
                                       Vector3& outNewLocalContactPointOtherShape, Vector3& outSmoothWorldContactTriangleNormal) const;
 
     public:

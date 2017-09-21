@@ -857,6 +857,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
 
             contactPointsFound = true;
 
+            Vector3 outWorldNormal = normalWorld;
+
             // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
             Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
 
@@ -868,10 +870,10 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron,
                                     narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
-                                    minPenetrationDepth, normalWorld);
+                                    minPenetrationDepth, outWorldNormal);
 
             // Create a new contact point
-            narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,
+            narrowPhaseInfo->addContactPoint(outWorldNormal, minPenetrationDepth,
                              isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
                              isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
         }
