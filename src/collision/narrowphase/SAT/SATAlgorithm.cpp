@@ -391,6 +391,10 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
 
+    if (isCapsuleShape1) {
+        normalWorld = -normalWorld;
+    }
+
 	// For each of the two clipped points
 	for (int i = 0; i<2; i++) {
 
@@ -405,9 +409,7 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 			// Project the clipped point into the capsule bounds
             Vector3 contactPointCapsule = (polyhedronToCapsuleTransform * clipSegment[i]) - separatingAxisCapsuleSpace * capsuleRadius;
 
-            if (isCapsuleShape1) {
-                normalWorld = -normalWorld;
-            }
+
 
             // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
             TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
