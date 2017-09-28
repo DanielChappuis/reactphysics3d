@@ -218,10 +218,10 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
                                                     concaveShape, allocator);
 
     // Compute the convex shape AABB in the local-space of the convex shape
+    const Transform convexToConcaveTransform = concaveProxyShape->getLocalToWorldTransform().getInverse() *
+                                               convexProxyShape->getLocalToWorldTransform();
     AABB aabb;
-    convexShape->computeAABB(aabb, convexProxyShape->getLocalToWorldTransform());
-
-    // TODO : Implement smooth concave mesh collision somewhere
+    convexShape->computeAABB(aabb, convexToConcaveTransform);
 
     // Call the convex vs triangle callback for each triangle of the concave shape
     concaveShape->testAllTriangles(middlePhaseCallback, aabb);
