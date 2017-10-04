@@ -48,6 +48,8 @@ namespace reactphysics3d {
 // ------------------- Type definitions ------------------- //
 
 using uint = unsigned int;
+using uchar = unsigned char;
+using ushort = unsigned short;
 using luint = long unsigned int;
 using bodyindex = luint;
 using bodyindexpair = std::pair<bodyindex, bodyindex>;
