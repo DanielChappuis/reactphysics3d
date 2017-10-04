@@ -253,14 +253,14 @@ void ContactManifoldSet::removeManifold(ContactManifold* manifold) {
     ContactManifold* next = manifold->getNext();
 
     if (previous != nullptr) {
-        previous->setNext(manifold->getNext());
+        previous->setNext(next);
     }
 	else {
 		mManifolds = next;
 	}
 
     if (next != nullptr) {
-        next->setPrevious(manifold->getPrevious());
+        next->setPrevious(previous);
     }
 
     // Delete the contact manifold
@@ -286,30 +286,21 @@ void ContactManifoldSet::makeContactsObsolete() {
 void ContactManifoldSet::clearObsoleteManifoldsAndContactPoints() {
 
     ContactManifold* manifold = mManifolds;
-    ContactManifold* previousManifold = nullptr;
     while (manifold != nullptr) {
+
+        // Get the next manifold in the linked-list
         ContactManifold* nextManifold = manifold->getNext();
 
+        // If the manifold is obsolete
         if (manifold->getIsObsolete()) {
-
-            if (previousManifold != nullptr) {
-                previousManifold->setNext(nextManifold);
-
-                if (nextManifold != nullptr) {
-                    nextManifold->setPrevious(previousManifold);
-                }
-            }
-            else {
-                mManifolds = nextManifold;
-            }
 
             // Delete the contact manifold
             removeManifold(manifold);
-
         }
         else {
+
+            // Clear the obsolete contact points of the manifold
             manifold->clearObseleteContactPoints();
-            previousManifold = manifold;
         }
 
         manifold = nextManifold;
