@@ -239,6 +239,9 @@ void ContactManifoldSet::createManifold(const ContactManifoldInfo* manifoldInfo)
                                     ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator);
     manifold->setPrevious(nullptr);
     manifold->setNext(mManifolds);
+	if (mManifolds != nullptr) {
+		mManifolds->setPrevious(manifold);
+	}
     mManifolds = manifold;
 
     mNbManifolds++;
@@ -248,6 +251,7 @@ void ContactManifoldSet::createManifold(const ContactManifoldInfo* manifoldInfo)
 void ContactManifoldSet::removeManifold(ContactManifold* manifold) {
 
     assert(mNbManifolds > 0);
+	assert(manifold != nullptr);
 
     ContactManifold* previous = manifold->getPrevious();
     ContactManifold* next = manifold->getNext();
