@@ -26,14 +26,27 @@
 // Libraries
 #include "mathematics_functions.h"
 #include "Vector3.h"
+#include "Vector2.h"
 #include <cassert>
 #include <vector>
 
 using namespace reactphysics3d;
 
-/// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
-/// This method uses the technique described in the book Real-Time collision detection by
-/// Christer Ericson.
+
+// Function to test if two vectors are (almost) equal
+bool reactphysics3d::approxEqual(const Vector3& vec1, const Vector3& vec2, decimal epsilon) {
+    return approxEqual(vec1.x, vec2.x, epsilon) && approxEqual(vec1.y, vec2.y, epsilon) &&
+           approxEqual(vec1.z, vec2.z, epsilon);
+}
+
+// Function to test if two vectors are (almost) equal
+bool reactphysics3d::approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon) {
+    return approxEqual(vec1.x, vec2.x, epsilon) && approxEqual(vec1.y, vec2.y, epsilon);
+}
+
+// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
+// This method uses the technique described in the book Real-Time collision detection by
+// Christer Ericson.
 void reactphysics3d::computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
                                              const Vector3& p, decimal& u, decimal& v, decimal& w) {
     const Vector3 v0 = b - a;
@@ -52,7 +65,7 @@ void reactphysics3d::computeBarycentricCoordinatesInTriangle(const Vector3& a, c
     u = decimal(1.0) - v - w;
 }
 
-/// Clamp a vector such that it is no longer than a given maximum length
+// Clamp a vector such that it is no longer than a given maximum length
 Vector3 reactphysics3d::clamp(const Vector3& vector, decimal maxLength) {
     if (vector.lengthSquare() > maxLength * maxLength) {
         return vector.getUnit() * maxLength;
@@ -60,17 +73,17 @@ Vector3 reactphysics3d::clamp(const Vector3& vector, decimal maxLength) {
     return vector;
 }
 
-/// Return true if two vectors are parallel
+// Return true if two vectors are parallel
 bool reactphysics3d::areParallelVectors(const Vector3& vector1, const Vector3& vector2) {
     return vector1.cross(vector2).lengthSquare() < decimal(0.00001);
 }
 
-/// Return true if two vectors are orthogonal
+// Return true if two vectors are orthogonal
 bool reactphysics3d::areOrthogonalVectors(const Vector3& vector1, const Vector3& vector2) {
 	return std::abs(vector1.dot(vector2)) < decimal(0.00001);
 }
 
-/// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
+// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
 Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC) {
 
 	const Vector3 ab = segPointB - segPointA;
@@ -95,9 +108,9 @@ Vector3 reactphysics3d::computeClosestPointOnSegment(const Vector3& segPointA, c
 	return segPointA + t * ab;
 }
 
-/// Compute the closest points between two segments
-/// This method uses the technique described in the book Real-Time
-/// collision detection by Christer Ericson.
+// Compute the closest points between two segments
+// This method uses the technique described in the book Real-Time
+// collision detection by Christer Ericson.
 void reactphysics3d::computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
 										   const Vector3& seg2PointA, const Vector3& seg2PointB,
 										   Vector3& closestPointSeg1, Vector3& closestPointSeg2) {
@@ -175,7 +188,7 @@ void reactphysics3d::computeClosestPointBetweenTwoSegments(const Vector3& seg1Po
 	closestPointSeg2 = seg2PointA + d2 * t;
 }
 
-/// Compute the intersection between a plane and a segment
+// Compute the intersection between a plane and a segment
 // Let the plane define by the equation planeNormal.dot(X) = planeD with X a point on the plane and "planeNormal" the plane normal. This method
 // computes the intersection P between the plane and the segment (segA, segB). The method returns the value "t" such
 // that P = segA + t * (segB - segA). Note that it only returns a value in [0, 1] if there is an intersection. Otherwise,
@@ -282,8 +295,8 @@ std::vector<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, 
     return outputVertices;
 }
 
-/// Clip a polygon against multiple planes and return the clipped polygon vertices
-/// This method implements the Sutherland–Hodgman clipping algorithm
+// Clip a polygon against multiple planes and return the clipped polygon vertices
+// This method implements the Sutherland–Hodgman clipping algorithm
 std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vector3>& polygonVertices, const std::vector<Vector3>& planesPoints,
                                                            const std::vector<Vector3>& planesNormals) {
 

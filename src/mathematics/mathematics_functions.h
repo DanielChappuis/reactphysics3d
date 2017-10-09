@@ -38,6 +38,7 @@
 namespace reactphysics3d {
 
 struct Vector3;
+struct Vector2;
 
 // ---------- Mathematics functions ---------- //
 
@@ -46,6 +47,12 @@ struct Vector3;
 inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
     return (std::fabs(a - b) < epsilon);
 }
+
+/// Function to test if two vectors are (almost) equal
+bool approxEqual(const Vector3& vec1, const Vector3& vec2, decimal epsilon = MACHINE_EPSILON);
+
+/// Function to test if two vectors are (almost) equal
+bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON);
 
 /// Function that returns the result of the "value" clamped by
 /// two others values "lowerLimit" and "upperLimit"

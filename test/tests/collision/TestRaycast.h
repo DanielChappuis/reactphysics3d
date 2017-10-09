@@ -277,9 +277,8 @@ class TestRaycast : public Test {
                                                                                     TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
             mConcaveMeshVertexArray =
                     new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
-                                                  12, &(mConcaveMeshIndices[0]), sizeof(uint),
-                                                  vertexType,
-                                                 TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+                                                  12, &(mConcaveMeshIndices[0]), 3 * sizeof(uint),
+                                                  vertexType, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 
             // Add the triangle vertex array of the subpart to the triangle mesh
