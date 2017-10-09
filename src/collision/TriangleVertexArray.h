@@ -122,6 +122,12 @@ class TriangleVertexArray {
         /// Destructor
         ~TriangleVertexArray();
 
+        /// Deleted assignment operator
+        TriangleVertexArray& operator=(const TriangleVertexArray& triangleVertexArray) = delete;
+
+        /// Deleted copy-constructor
+        TriangleVertexArray(const TriangleVertexArray& triangleVertexArray) = delete;
+
         /// Return the vertex data type
         VertexDataType getVertexDataType() const;
 
@@ -141,7 +147,7 @@ class TriangleVertexArray {
         uint getVerticesStride() const;
 
         /// Return the vertex normals stride (number of bytes)
-        uint getVerticesNormlasStride() const;
+        uint getVerticesNormalsStride() const;
 
         /// Return the indices stride (number of bytes)
         uint getIndicesStride() const;
@@ -196,7 +202,7 @@ inline uint TriangleVertexArray::getVerticesStride() const {
 }
 
 // Return the vertex normals stride (number of bytes)
-inline uint TriangleVertexArray::getVerticesNormlasStride() const {
+inline uint TriangleVertexArray::getVerticesNormalsStride() const {
     return mVerticesNormalsStride;
 }
 

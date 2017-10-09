@@ -194,7 +194,7 @@ void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* o
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
 
-    const uchar* triangleIndicesPointer = mIndicesStart + triangleIndex * 3 * mIndicesStride;
+    const uchar* triangleIndicesPointer = mIndicesStart + triangleIndex * mIndicesStride;
     const void* startTriangleIndices = static_cast<const void*>(triangleIndicesPointer);
 
     // For each vertex of the triangle
