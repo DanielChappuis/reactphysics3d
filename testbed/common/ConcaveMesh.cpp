@@ -46,7 +46,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
         // Vertex and Indices array for the triangle mesh (data in shared and not copied)
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), sizeof(int),
+                                              getNbFaces(i), &(mIndices[i][0]), 3 * sizeof(int),
                                               rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                               rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
@@ -97,7 +97,7 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
         // Vertex and Indices array for the triangle mesh (data in shared and not copied)
         rp3d::TriangleVertexArray* vertexArray =
                 new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), sizeof(int),
+                                              getNbFaces(i), &(mIndices[i][0]), 3 * sizeof(int),
                                               rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                               rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
