@@ -71,7 +71,7 @@ void CollisionDetection::computeCollisionDetection() {
     computeMiddlePhase();
     
     // Compute the narrow-phase collision detection
-     computeNarrowPhase();
+    computeNarrowPhase();
 
     // Reset the linked list of narrow-phase info
     mNarrowPhaseInfoList = nullptr;
@@ -409,6 +409,9 @@ void CollisionDetection::processPotentialContacts(OverlappingPair* pair) {
 
 		potentialManifold = potentialManifold->mNext;
 	}
+
+    // Reset the isNew status of the manifolds
+    pair->resetIsNewManifoldStatus();
 
     // Clear the obsolete contact manifolds and contact points
     pair->clearObsoleteManifoldsAndContactPoints();

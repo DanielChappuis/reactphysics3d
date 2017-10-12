@@ -172,6 +172,9 @@ class OverlappingPair {
         /// Clear the obsolete contact manifold and contact points
         void clearObsoleteManifoldsAndContactPoints();
 
+        /// Reset the isNew status of all the manifolds
+        void resetIsNewManifoldStatus();
+
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
 
@@ -267,6 +270,12 @@ inline ContactManifoldInfo* OverlappingPair::getPotentialContactManifolds() {
 // Clear the obsolete contact manifold and contact points
 inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
     mContactManifoldSet.clearObsoleteManifoldsAndContactPoints();
+}
+
+
+// Reset the isNew status of all the manifolds
+inline void OverlappingPair::resetIsNewManifoldStatus() {
+   mContactManifoldSet.resetIsNewManifoldStatus();
 }
 
 }

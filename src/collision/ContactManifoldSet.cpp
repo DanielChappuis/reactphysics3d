@@ -66,8 +66,9 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
         if (mNbManifolds >= mNbMaxManifolds) {
 
             // We need to remove a manifold from the set.
-            // We seach for the one with the smallest maximum penetration depth among its contact points
-            ContactManifold* minDepthManifold = getManifoldWithSmallestContactPenetrationDepth(contactManifoldInfo->getLargestPenetrationDepth());
+            // We search for an old manifold with the smallest maximum penetration depth among its contact points.
+            // If we do not find an old manifold, we select a new one that has the smallest contact penetration depth.
+            ContactManifold* minDepthManifold = selectManifoldToRemove(contactManifoldInfo->getLargestPenetrationDepth());
 
             // If the manifold with the minimum penetration depth is an existing one
             if (minDepthManifold != nullptr) {
@@ -135,25 +136,53 @@ void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, 
    oldManifold->setIsObsolete(false, false);
 }
 
-// Return the manifold with the smallest contact penetration depth among its points
-ContactManifold* ContactManifoldSet::getManifoldWithSmallestContactPenetrationDepth(decimal initDepth) const {
+// Return the manifold to remove (because it is too old or has not the largest penetration depth)
+ContactManifold* ContactManifoldSet::selectManifoldToRemove(decimal penDepthNewManifold) const {
 
     assert(mNbManifolds == mNbMaxManifolds);
+    assert(mManifolds != nullptr);
 
-    ContactManifold* minDepthManifold = nullptr;
-    decimal minDepth = initDepth;
+    // Look for a manifold that is not new and with the smallest contact penetration depth.
+    // At the same time, we also look for a new manifold with the smallest contact penetration depth
+    // in case no old manifold exists.
+    ContactManifold* minDepthOldManifold = nullptr;
+    ContactManifold* minDepthNewManifold = nullptr;
+    decimal minDepthOld = DECIMAL_LARGEST;
+    decimal minDepthNew = penDepthNewManifold;
     ContactManifold* manifold = mManifolds;
     while (manifold != nullptr) {
-        decimal depth = manifold->getLargestContactDepth();
-        if (depth < minDepth) {
-            minDepth = depth;
-            minDepthManifold = manifold;
+
+        // Get the largest contact point penetration depth of the manifold
+        const decimal depth = manifold->getLargestContactDepth();
+
+        // If it is a new manifold
+        if (manifold->getIsNew()) {
+
+            if (depth < minDepthNew) {
+                minDepthNew = depth;
+                minDepthNewManifold = manifold;
+            }
+        }
+        else {
+
+            if (depth < minDepthOld) {
+                minDepthOld = depth;
+                minDepthOldManifold = manifold;
+            }
         }
 
         manifold = manifold->getNext();
     }
 
-    return minDepthManifold;
+    // If there was a contact manifold that was not new
+    if (minDepthOldManifold != nullptr) {
+
+        // Return the old manifold with the smallest penetration depth
+        return minDepthOldManifold;
+    }
+
+    // Otherwise, we return the new manifold with the smallest penetration depth
+    return minDepthNewManifold;
 }
 
 // Return the contact manifold with a similar average normal.

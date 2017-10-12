@@ -143,6 +143,9 @@ class ContactManifold {
         /// True if the contact manifold is obsolete
         bool mIsObsolete;
 
+        /// True if the contact manifold is new (has just been added from potential contacts)
+        bool mIsNew;
+
         // -------------------- Methods -------------------- //
 
         /// Return true if the contact manifold has already been added into an island
@@ -204,6 +207,12 @@ class ContactManifold {
 
         /// Return the friction twist accumulated impulse
         decimal getFrictionTwistImpulse() const;
+
+        /// Return true if the manifold has just been created
+        bool getIsNew() const;
+
+        /// Set the isNew attribute
+        void setIsNew(bool isNew);
         
     public:
 
@@ -407,6 +416,18 @@ inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoint
 inline short ContactManifold::getContactNormalId() const {
     return mContactNormalId;
 }
+
+
+// Return true if the manifold has just been created
+inline bool ContactManifold::getIsNew() const {
+    return mIsNew;
+}
+
+// Set the isNew attribute
+inline void ContactManifold::setIsNew(bool isNew) {
+    mIsNew = isNew;
+}
+
 
 }
 #endif

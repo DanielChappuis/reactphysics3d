@@ -34,7 +34,7 @@ ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyS
                 : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr), mContactNormalId(manifoldInfo->getContactNormalId()),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
-                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false) {
+                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false), mIsNew(true) {
     
     // For each contact point info in the manifold
     const ContactPointInfo* pointInfo = manifoldInfo->getFirstContactPointInfo();
@@ -85,6 +85,7 @@ void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) 
     mContactPoints = contactPoint;
 
     mNbContactPoints++;
+    assert(mNbContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD);
 }
 
 // Clear the obsolete contact points
