@@ -104,7 +104,7 @@ void CollisionDetection::computeMiddlePhase() {
         OverlappingPair* pair = it->second;
 
         // Make all the contact manifolds and contact points of the pair obsolete
-        pair->makeContactsObselete();
+        pair->makeContactsObsolete();
 
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
@@ -410,11 +410,11 @@ void CollisionDetection::processPotentialContacts(OverlappingPair* pair) {
 		potentialManifold = potentialManifold->mNext;
 	}
 
-    // Reset the isNew status of the manifolds
-    pair->resetIsNewManifoldStatus();
-
     // Clear the obsolete contact manifolds and contact points
     pair->clearObsoleteManifoldsAndContactPoints();
+
+    // Reduce the contact manifolds and contact points if there are too many of them
+    pair->reduceContactManifolds();
 
     // Reset the potential contacts of the pair
     pair->clearPotentialContactManifolds();

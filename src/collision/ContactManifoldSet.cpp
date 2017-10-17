@@ -60,43 +60,16 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
     }
     else {
 
-        bool addNewManifold = true;
-
-        // If there are too much contact manifolds in the set
-        if (mNbManifolds >= mNbMaxManifolds) {
-
-            // We need to remove a manifold from the set.
-            // We search for an old manifold with the smallest maximum penetration depth among its contact points.
-            // If we do not find an old manifold, we select a new one that has the smallest contact penetration depth.
-            ContactManifold* minDepthManifold = selectManifoldToRemove(contactManifoldInfo->getLargestPenetrationDepth());
-
-            // If the manifold with the minimum penetration depth is an existing one
-            if (minDepthManifold != nullptr) {
-
-                // Remove the manifold
-                removeManifold(minDepthManifold);
-            }
-            else {
-
-                // The manifold we do not want to get is the new one. Therefore, we do not add it to the set
-                addNewManifold = false;
-            }
-        }
-
-        // If we need to add the new contact manifold
-        if (addNewManifold) {
-
-            // Create a new contact manifold
-            createManifold(contactManifoldInfo);
-        }
+        // Create a new contact manifold
+        createManifold(contactManifoldInfo);
     }
 }
 
 // Update a previous similar manifold with a new one
 void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold) {
 
-    assert(oldManifold != nullptr);
-    assert(newManifold != nullptr);
+   assert(oldManifold != nullptr);
+   assert(newManifold != nullptr);
 
    // For each contact point of the new manifold
    ContactPointInfo* contactPointInfo = newManifold->getFirstContactPointInfo();
@@ -114,7 +87,7 @@ void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, 
             if (oldContactPoint->isSimilarWithContactPoint(contactPointInfo)) {
 
                 // Replace (update) the old contact point with the new one
-                oldContactPoint->update(contactPointInfo, mShape1->getLocalToWorldTransform(),  mShape2->getLocalToWorldTransform());
+                oldContactPoint->update(contactPointInfo);
                 isSimilarPointFound = true;
                 break;
             }
@@ -136,53 +109,34 @@ void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, 
    oldManifold->setIsObsolete(false, false);
 }
 
-// Return the manifold to remove (because it is too old or has not the largest penetration depth)
-ContactManifold* ContactManifoldSet::selectManifoldToRemove(decimal penDepthNewManifold) const {
+// Remove a contact manifold that is the least optimal (smaller penetration depth)
+void ContactManifoldSet::removeNonOptimalManifold() {
 
-    assert(mNbManifolds == mNbMaxManifolds);
+    assert(mNbManifolds > mNbMaxManifolds);
     assert(mManifolds != nullptr);
 
     // Look for a manifold that is not new and with the smallest contact penetration depth.
     // At the same time, we also look for a new manifold with the smallest contact penetration depth
     // in case no old manifold exists.
-    ContactManifold* minDepthOldManifold = nullptr;
-    ContactManifold* minDepthNewManifold = nullptr;
-    decimal minDepthOld = DECIMAL_LARGEST;
-    decimal minDepthNew = penDepthNewManifold;
+    ContactManifold* minDepthManifold = nullptr;
+    decimal minDepth = DECIMAL_LARGEST;
     ContactManifold* manifold = mManifolds;
     while (manifold != nullptr) {
 
         // Get the largest contact point penetration depth of the manifold
         const decimal depth = manifold->getLargestContactDepth();
 
-        // If it is a new manifold
-        if (manifold->getIsNew()) {
-
-            if (depth < minDepthNew) {
-                minDepthNew = depth;
-                minDepthNewManifold = manifold;
-            }
-        }
-        else {
-
-            if (depth < minDepthOld) {
-                minDepthOld = depth;
-                minDepthOldManifold = manifold;
-            }
+        if (depth < minDepth) {
+            minDepth = depth;
+            minDepthManifold = manifold;
         }
 
         manifold = manifold->getNext();
     }
 
-    // If there was a contact manifold that was not new
-    if (minDepthOldManifold != nullptr) {
-
-        // Return the old manifold with the smallest penetration depth
-        return minDepthOldManifold;
-    }
-
-    // Otherwise, we return the new manifold with the smallest penetration depth
-    return minDepthNewManifold;
+    // Remove the non optimal manifold
+    assert(minDepthManifold != nullptr);
+    removeManifold(minDepthManifold);
 }
 
 // Return the contact manifold with a similar average normal.
@@ -262,7 +216,6 @@ void ContactManifoldSet::clear() {
 
 // Create a new contact manifold and add it to the set
 void ContactManifoldSet::createManifold(const ContactManifoldInfo* manifoldInfo) {
-    assert(mNbManifolds < mNbMaxManifolds);
 
     ContactManifold* manifold = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
                                     ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator);
@@ -333,9 +286,26 @@ void ContactManifoldSet::clearObsoleteManifoldsAndContactPoints() {
         else {
 
             // Clear the obsolete contact points of the manifold
-            manifold->clearObseleteContactPoints();
+            manifold->clearObsoleteContactPoints();
         }
 
         manifold = nextManifold;
+    }
+}
+
+
+// Remove some contact manifolds and contact points if there are too many of them
+void ContactManifoldSet::reduce() {
+
+    // Remove non optimal contact manifold while there are too many manifolds in the set
+    while (mNbManifolds > mNbMaxManifolds) {
+        removeNonOptimalManifold();
+    }
+
+    // Reduce all the contact manifolds in case they have too many contact points
+    ContactManifold* manifold = mManifolds;
+    while (manifold != nullptr) {
+        manifold->reduce();
+        manifold = manifold->getNext();
     }
 }

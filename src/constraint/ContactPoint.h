@@ -59,12 +59,6 @@ class ContactPoint {
         /// Contact point on body 2 in local space of body 2
         Vector3 mLocalPointOnBody2;
 
-        /// Contact point on body 1 in world space
-        Vector3 mWorldPointOnBody1;
-
-        /// Contact point on body 2 in world space
-        Vector3 mWorldPointOnBody2;
-
         /// True if the contact is a resting contact (exists for more than one time step)
         bool mIsRestingContact;
 
@@ -74,14 +68,16 @@ class ContactPoint {
         /// True if the contact point is obsolete
         bool mIsObsolete;
 
-        /// Pointer to the next contact point in the linked-list
+        /// Pointer to the next contact point in the double linked-list
         ContactPoint* mNext;
+
+        /// Pointer to the previous contact point in the double linked-list
+        ContactPoint* mPrevious;
 
         // -------------------- Methods -------------------- //
 
         /// Update the contact point with a new one that is similar (very close)
-        void update(const ContactPointInfo* contactInfo, const Transform& body1Transform,
-                    const Transform& body2Transform);
+        void update(const ContactPointInfo* contactInfo);
 
         /// Return true if the contact point is similar (close enougth) to another given contact point
         bool isSimilarWithContactPoint(const ContactPointInfo* contactPoint) const;
@@ -99,6 +95,9 @@ class ContactPoint {
         /// Set the next contact point in the linked list
         void setNext(ContactPoint* next);
 
+        /// Set the previous contact point in the linked list
+        void setPrevious(ContactPoint* previous);
+
         /// Return true if the contact point is obsolete
         bool getIsObsolete() const;
 
@@ -107,8 +106,7 @@ class ContactPoint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(const ContactPointInfo* contactInfo, const Transform& body1Transform,
-                     const Transform& body2Transform);
+        ContactPoint(const ContactPointInfo* contactInfo);
 
         /// Destructor
         ~ContactPoint() = default;
@@ -128,17 +126,14 @@ class ContactPoint {
         /// Return the contact local point on body 2
         Vector3 getLocalPointOnBody2() const;
 
-        /// Return the contact world point on body 1
-        Vector3 getWorldPointOnBody1() const;
-
-        /// Return the contact world point on body 2
-        Vector3 getWorldPointOnBody2() const;
-
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
 
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
+
+        /// Return the previous contact point in the linked list
+        inline ContactPoint* getPrevious() const;
 
         /// Return the next contact point in the linked list
         ContactPoint* getNext() const;
@@ -168,16 +163,6 @@ inline Vector3 ContactPoint::getLocalPointOnBody1() const {
 // Return the contact point on body 2
 inline Vector3 ContactPoint::getLocalPointOnBody2() const {
     return mLocalPointOnBody2;
-}
-
-// Return the contact world point on body 1
-inline Vector3 ContactPoint::getWorldPointOnBody1() const {
-    return mWorldPointOnBody1;
-}
-
-// Return the contact world point on body 2
-inline Vector3 ContactPoint::getWorldPointOnBody2() const {
-    return mWorldPointOnBody2;
 }
 
 // Return the cached penetration impulse
@@ -224,6 +209,16 @@ inline ContactPoint* ContactPoint::getNext() const {
 // Set the next contact point in the linked list
 inline void ContactPoint::setNext(ContactPoint* next) {
     mNext = next;
+}
+
+// Return the previous contact point in the linked list
+inline ContactPoint* ContactPoint::getPrevious() const {
+   return mPrevious;
+}
+
+// Set the previous contact point in the linked list
+inline void ContactPoint::setPrevious(ContactPoint* previous) {
+    mPrevious = previous;
 }
 
 // Return the penetration depth of the contact

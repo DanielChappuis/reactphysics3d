@@ -77,6 +77,8 @@ struct ContactPointInfo {
                          : normal(contactNormal), penetrationDepth(penDepth),
                            localPoint1(localPt1), localPoint2(localPt2), next(nullptr), isUsed(false) {
 
+            assert(contactNormal.lengthSquare() > decimal(0.8));
+            assert(penDepth > decimal(0.0));
         }
 
         /// Destructor

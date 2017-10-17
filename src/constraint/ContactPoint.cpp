@@ -31,26 +31,22 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const Transform& body1Transform,
-                           const Transform& body2Transform)
+ContactPoint::ContactPoint(const ContactPointInfo* contactInfo)
              : mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnBody1(contactInfo->localPoint1),
                mLocalPointOnBody2(contactInfo->localPoint2),
-               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr) {
+               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr) {
 
     assert(mPenetrationDepth > decimal(0.0));
-
-    // Compute the world position of the contact points
-    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
-    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
+    assert(mNormal.lengthSquare() > decimal(0.8));
 
     mIsObsolete = false;
 }
 
 // Update the contact point with a new one that is similar (very close)
 /// The idea is to keep the cache impulse (for warm starting the contact solver)
-void ContactPoint::update(const ContactPointInfo* contactInfo, const Transform& body1Transform, const Transform& body2Transform) {
+void ContactPoint::update(const ContactPointInfo* contactInfo) {
 
     assert(isSimilarWithContactPoint(contactInfo));
     assert(contactInfo->penetrationDepth > decimal(0.0));
@@ -59,10 +55,6 @@ void ContactPoint::update(const ContactPointInfo* contactInfo, const Transform& 
     mPenetrationDepth = contactInfo->penetrationDepth;
     mLocalPointOnBody1 = contactInfo->localPoint1;
     mLocalPointOnBody2 = contactInfo->localPoint2;
-
-    // Compute the world position of the contact points
-    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
-    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
 
     mIsObsolete = false;
 }

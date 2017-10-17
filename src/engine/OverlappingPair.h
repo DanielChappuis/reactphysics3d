@@ -136,9 +136,6 @@ class OverlappingPair {
         /// Return the last frame collision info
         LastFrameCollisionInfo& getLastFrameCollisionInfo();
 
-        /// Return the number of contacts in the cache
-        uint getNbContactPoints() const;
-
         /// Return the a reference to the contact manifold set
         const ContactManifoldSet& getContactManifoldSet();
 
@@ -167,13 +164,13 @@ class OverlappingPair {
         void reducePotentialContactManifolds();
 
         /// Make the contact manifolds and contact points obsolete
-        void makeContactsObselete();
+        void makeContactsObsolete();
 
         /// Clear the obsolete contact manifold and contact points
         void clearObsoleteManifoldsAndContactPoints();
 
-        /// Reset the isNew status of all the manifolds
-        void resetIsNewManifoldStatus();
+        /// Reduce the contact manifolds that have too many contact points
+        void reduceContactManifolds();
 
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
@@ -206,18 +203,13 @@ inline LastFrameCollisionInfo& OverlappingPair::getLastFrameCollisionInfo() {
     return mLastFrameCollisionInfo;
 }
 
-// Return the number of contact points in the contact manifold
-inline uint OverlappingPair::getNbContactPoints() const {
-    return mContactManifoldSet.getTotalNbContactPoints();
-}
-
 // Return the contact manifold
 inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
     return mContactManifoldSet;
 }
 
 // Make the contact manifolds and contact points obsolete
-inline void OverlappingPair::makeContactsObselete() {
+inline void OverlappingPair::makeContactsObsolete() {
 
     mContactManifoldSet.makeContactsObsolete();
 }
@@ -272,10 +264,9 @@ inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
     mContactManifoldSet.clearObsoleteManifoldsAndContactPoints();
 }
 
-
-// Reset the isNew status of all the manifolds
-inline void OverlappingPair::resetIsNewManifoldStatus() {
-   mContactManifoldSet.resetIsNewManifoldStatus();
+// Reduce the contact manifolds that have too many contact points
+inline void OverlappingPair::reduceContactManifolds() {
+   mContactManifoldSet.reduce();
 }
 
 }

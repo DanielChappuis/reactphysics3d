@@ -74,8 +74,8 @@ class ContactManifoldSet {
         // Return the contact manifold with a similar average normal.
         ContactManifold* selectManifoldWithSimilarNormal(short int normalDirectionId) const;
 
-        /// Return the manifold to remove (because it is too old or has not the largest penetration depth)
-        ContactManifold* selectManifoldToRemove(decimal penDepthNewManifold) const;
+        /// Remove a contact manifold that is the least optimal (smaller penetration depth)
+        void removeNonOptimalManifold();
 
         /// Update a previous similar manifold with a new one
         void updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold);
@@ -124,8 +124,8 @@ class ContactManifoldSet {
         /// Clear the obsolete contact manifolds and contact points
         void clearObsoleteManifoldsAndContactPoints();
 
-        /// Reset the isNew status of all the manifolds
-        void resetIsNewManifoldStatus();
+        // Remove some contact manifolds and contact points if there are too many of them
+        void reduce();
 
         // Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
         // Each face of the cube is divided into 4x4 buckets. This method maps the
@@ -177,17 +177,6 @@ inline int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape
     }   // If there is at least one concave shape
     else {
         return NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE;
-    }
-}
-
-
-// Reset the isNew status of all the manifolds
-inline void ContactManifoldSet::resetIsNewManifoldStatus() {
-
-    ContactManifold* manifold = mManifolds;
-    while (manifold != nullptr) {
-        manifold->setIsNew(false);
-        manifold = manifold->getNext();
     }
 }
 

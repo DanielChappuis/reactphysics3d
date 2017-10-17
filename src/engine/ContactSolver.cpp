@@ -120,6 +120,10 @@ void ContactSolver::initializeForIsland(Island* island) {
         assert(body1 != nullptr);
         assert(body2 != nullptr);
 
+        // Get the two contact shapes
+        const ProxyShape* shape1 = externalManifold->getShape1();
+        const ProxyShape* shape2 = externalManifold->getShape2();
+
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
         const Vector3& x2 = body2->mCenterOfMassWorld;
@@ -149,11 +153,12 @@ void ContactSolver::initializeForIsland(Island* island) {
 
         // For each  contact point of the contact manifold
         ContactPoint* externalContact = externalManifold->getContactPoints();
+        assert(externalContact != nullptr);
         while (externalContact != nullptr) {
 
             // Get the contact point on the two bodies
-            Vector3 p1 = externalContact->getWorldPointOnBody1();
-            Vector3 p2 = externalContact->getWorldPointOnBody2();
+            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact->getLocalPointOnBody1();
+            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact->getLocalPointOnBody2();
 
             new (mContactPoints + mNbContactPoints) ContactPointSolver();
             mContactPoints[mNbContactPoints].externalContact = externalContact;

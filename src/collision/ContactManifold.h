@@ -143,9 +143,6 @@ class ContactManifold {
         /// True if the contact manifold is obsolete
         bool mIsObsolete;
 
-        /// True if the contact manifold is new (has just been added from potential contacts)
-        bool mIsNew;
-
         // -------------------- Methods -------------------- //
 
         /// Return true if the contact manifold has already been added into an island
@@ -161,7 +158,7 @@ class ContactManifold {
         void setIsObsolete(bool isObselete, bool setContactPoints);
 
         /// Clear the obsolete contact points
-        void clearObseleteContactPoints();
+        void clearObsoleteContactPoints();
 
         /// Return the contact normal direction Id of the manifold
         short getContactNormalId() const;
@@ -183,6 +180,15 @@ class ContactManifold {
 
         /// Add a contact point
         void addContactPoint(const ContactPointInfo* contactPointInfo);
+
+        /// Make sure we do not have too much contact points by keeping only the best ones
+        void reduce();
+
+        /// Remove a contact point that is not optimal (with a small penetration depth)
+        void removeNonOptimalContactPoint();
+
+        /// Remove a contact point
+        void removeContactPoint(ContactPoint* contactPoint);
 
         /// Set the friction twist accumulated impulse
         void setFrictionTwistImpulse(decimal frictionTwistImpulse);
@@ -208,12 +214,6 @@ class ContactManifold {
         /// Return the friction twist accumulated impulse
         decimal getFrictionTwistImpulse() const;
 
-        /// Return true if the manifold has just been created
-        bool getIsNew() const;
-
-        /// Set the isNew attribute
-        void setIsNew(bool isNew);
-        
     public:
 
         // -------------------- Methods -------------------- //
@@ -416,18 +416,6 @@ inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoint
 inline short ContactManifold::getContactNormalId() const {
     return mContactNormalId;
 }
-
-
-// Return true if the manifold has just been created
-inline bool ContactManifold::getIsNew() const {
-    return mIsNew;
-}
-
-// Set the isNew attribute
-inline void ContactManifold::setIsNew(bool isNew) {
-    mIsNew = isNew;
-}
-
 
 }
 #endif
