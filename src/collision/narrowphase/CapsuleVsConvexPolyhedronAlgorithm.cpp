@@ -86,14 +86,15 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
                 const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
                 const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
-                const Vector3 capsuleInnerSegmentWorld = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
+                Vector3 capsuleInnerSegmentDirection = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
+                capsuleInnerSegmentDirection.normalize();
 
                 bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint->normal) > decimal(0.0);
                 bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
 
                 // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
                 // is in direction of the contact normal (from the polyhedron point of view).
-                if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentWorld)
+                if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentDirection)
                     && areParallelVectors(faceNormalWorld, contactPoint->normal)) {
 
                     // Remove the previous contact point computed by GJK
