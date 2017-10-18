@@ -731,7 +731,18 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
             bool contactsFound = computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1,
                                                                                 polyhedron2, polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1,
                                                                                 minFaceIndex, narrowPhaseInfo, minPenetrationDepth);
-            assert(contactsFound);
+			
+			// There should be clipping points here. If it is not the case, it might be
+			// because of a numerical issue
+			if (!contactsFound) {
+				
+				lastFrameInfo.satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
+				lastFrameInfo.satIsAxisFacePolyhedron2 = !isMinPenetrationFaceNormalPolyhedron1;
+				lastFrameInfo.satMinAxisFaceIndex = minFaceIndex;
+
+				// Return no collision
+				return false;
+			}
         }
 
         lastFrameInfo.satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
