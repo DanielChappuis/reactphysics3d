@@ -56,10 +56,6 @@ struct LastFrameCollisionInfo {
     /// True if we were using SAT algorithm to check for collision in the previous frame
     bool wasUsingSAT;
 
-    /// True if there was a narrow-phase collision
-    /// in the previous frame
-    bool wasCollidingLastFrame;
-
     // ----- GJK Algorithm -----
 
     /// Previous separating axis
