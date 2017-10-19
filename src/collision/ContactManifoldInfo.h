@@ -59,9 +59,6 @@ class ContactManifoldInfo {
         /// Reference the the memory allocator where the contact point infos have been allocated
         Allocator& mAllocator;
 
-        /// Contact normal direction Id (Identify the contact normal direction of points in manifold)
-        short mContactNormalId;
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -79,7 +76,7 @@ class ContactManifoldInfo {
         ContactManifoldInfo& operator=(const ContactManifoldInfo& contactManifold) = delete;
 
         /// Add a new contact point into the manifold
-        void addContactPoint(ContactPointInfo* contactPointInfo, short contactNormalId);
+        void addContactPoint(ContactPointInfo* contactPointInfo);
 
         /// Remove all the contact points
         void reset();
@@ -92,9 +89,6 @@ class ContactManifoldInfo {
 
         /// Return the pointer to the next manifold info in the linked-list
         ContactManifoldInfo* getNext();
-
-        /// Return the contact normal Id
-        short getContactNormalId() const;
 
         /// Reduce the number of contact points of the currently computed manifold
         void reduce(const Transform& shape1ToWorldTransform);
@@ -112,11 +106,6 @@ inline ContactPointInfo* ContactManifoldInfo::getFirstContactPointInfo() const {
 // Return the pointer to the next manifold info in the linked-list
 inline ContactManifoldInfo* ContactManifoldInfo::getNext() {
     return mNext;
-}
-
-// Return the contact normal Id
-inline short ContactManifoldInfo::getContactNormalId() const {
-    return mContactNormalId;
 }
 
 }

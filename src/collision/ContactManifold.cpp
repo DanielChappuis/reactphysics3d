@@ -31,7 +31,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2, Allocator& memoryAllocator)
-                : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr), mContactNormalId(manifoldInfo->getContactNormalId()),
+                : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
                   mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false) {

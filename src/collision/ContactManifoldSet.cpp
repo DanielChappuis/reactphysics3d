@@ -50,7 +50,7 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
     assert(contactManifoldInfo->getFirstContactPointInfo() != nullptr);
 
     // Try to find an existing contact manifold with similar contact normal
-    ContactManifold* similarManifold = selectManifoldWithSimilarNormal(contactManifoldInfo->getContactNormalId());
+    ContactManifold* similarManifold = selectManifoldWithSimilarNormal(contactManifoldInfo);
 
     // If a similar manifold has been found
     if (similarManifold != nullptr) {
@@ -139,15 +139,25 @@ void ContactManifoldSet::removeNonOptimalManifold() {
     removeManifold(minDepthManifold);
 }
 
-// Return the contact manifold with a similar average normal.
-// If no manifold has close enough average normal, it returns nullptr
-ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(short int normalDirectionId) const {
+// Return the contact manifold with a similar contact normal.
+// If no manifold has close enough contact normal, it returns nullptr
+ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(const ContactManifoldInfo* contactManifold) const {
+
+    // Get the contact normal of the first point of the manifold
+    const ContactPointInfo* contactPoint = contactManifold->getFirstContactPointInfo();
+    assert(contactPoint != nullptr);
 
     ContactManifold* manifold = mManifolds;
 
     // Return the Id of the manifold with the same normal direction id (if exists)
     while (manifold != nullptr) {
-        if (normalDirectionId == manifold->getContactNormalId()) {
+
+        // Get the first contact point of the current manifold
+        const ContactPoint* point = manifold->getContactPoints();
+        assert(point != nullptr);
+
+        // If the contact normal of the two manifolds are close enough
+        if (contactPoint->normal.dot(point->getNormal()) >= COS_ANGLE_SIMILAR_CONTACT_MANIFOLD) {
             return manifold;
         }
 
@@ -155,43 +165,6 @@ ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(short int n
     }
 
     return nullptr;
-}
-
-// Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
-// Each face of the cube is divided into 4x4 buckets. This method maps the
-// normal vector into of the of the bucket and returns a unique Id for the bucket
-short int ContactManifoldSet::computeCubemapNormalId(const Vector3& normal) {
-
-    assert(normal.lengthSquare() > MACHINE_EPSILON);
-
-    int faceNo;
-    decimal u, v;
-    decimal max = max3(std::fabs(normal.x), std::fabs(normal.y), std::fabs(normal.z));
-    Vector3 normalScaled = normal / max;
-
-    if (normalScaled.x >= normalScaled.y && normalScaled.x >= normalScaled.z) {
-        faceNo = normalScaled.x > 0 ? 0 : 1;
-        u = normalScaled.y;
-        v = normalScaled.z;
-    }
-    else if (normalScaled.y >= normalScaled.x && normalScaled.y >= normalScaled.z) {
-        faceNo = normalScaled.y > 0 ? 2 : 3;
-        u = normalScaled.x;
-        v = normalScaled.z;
-    }
-    else {
-        faceNo = normalScaled.z > 0 ? 4 : 5;
-        u = normalScaled.x;
-        v = normalScaled.y;
-    }
-
-    int indexU = std::floor(((u + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
-    int indexV = std::floor(((v + 1)/2) * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS);
-    if (indexU == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexU--;
-    if (indexV == CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS) indexV--;
-
-    const int nbSubDivInFace = CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS * CONTACT_CUBEMAP_FACE_NB_SUBDIVISIONS;
-    return faceNo * 200 + indexU * nbSubDivInFace + indexV;
 }
 
 // Clear the contact manifold set

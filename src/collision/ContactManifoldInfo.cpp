@@ -30,8 +30,9 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifoldInfo::ContactManifoldInfo(Allocator& allocator)
-     : mContactPointsList(nullptr), mNbContactPoints(0), mNext(nullptr), mAllocator(allocator),
-       mContactNormalId(-1) {}
+     : mContactPointsList(nullptr), mNbContactPoints(0), mNext(nullptr), mAllocator(allocator) {
+
+}
 
 // Destructor
 ContactManifoldInfo::~ContactManifoldInfo() {
@@ -41,13 +42,9 @@ ContactManifoldInfo::~ContactManifoldInfo() {
 }
 
 // Add a new contact point into the manifold
-void ContactManifoldInfo::addContactPoint(ContactPointInfo* contactPointInfo, short contactNormalId) {
+void ContactManifoldInfo::addContactPoint(ContactPointInfo* contactPointInfo) {
 
     assert(contactPointInfo->penetrationDepth > decimal(0.0));
-    assert(contactNormalId >= 0);
-    assert(mContactNormalId == -1 || contactNormalId == mContactNormalId);
-
-    mContactNormalId = contactNormalId;
 
     // Add it into the linked list of contact points
     contactPointInfo->next = mContactPointsList;

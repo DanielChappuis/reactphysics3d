@@ -71,8 +71,8 @@ class ContactManifoldSet {
         /// Create a new contact manifold and add it to the set
         void createManifold(const ContactManifoldInfo* manifoldInfo);
 
-        // Return the contact manifold with a similar average normal.
-        ContactManifold* selectManifoldWithSimilarNormal(short int normalDirectionId) const;
+        // Return the contact manifold with a similar contact normal.
+        ContactManifold* selectManifoldWithSimilarNormal(const ContactManifoldInfo* contactManifold) const;
 
         /// Remove a contact manifold that is the least optimal (smaller penetration depth)
         void removeNonOptimalManifold();
@@ -126,11 +126,6 @@ class ContactManifoldSet {
 
         // Remove some contact manifolds and contact points if there are too many of them
         void reduce();
-
-        // Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
-        // Each face of the cube is divided into 4x4 buckets. This method maps the
-        // normal vector into of the of the bucket and returns a unique Id for the bucket
-        static short int computeCubemapNormalId(const Vector3& normal);
 };
 
 // Return the first proxy shape

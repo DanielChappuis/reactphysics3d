@@ -104,9 +104,6 @@ class ContactManifold {
         /// Contact points in the manifold
         ContactPoint* mContactPoints;
 
-        /// Normal direction Id (Unique Id representing the normal direction)
-        short int mContactNormalId;
-
         /// Number of contacts in the cache
         int8 mNbContactPoints;
 
@@ -410,11 +407,6 @@ inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoint
             contactPoint = contactPoint->getNext();
         }
     }
-}
-
-// Return the contact normal direction Id of the manifold
-inline short ContactManifold::getContactNormalId() const {
-    return mContactNormalId;
 }
 
 }

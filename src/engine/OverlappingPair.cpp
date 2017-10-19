@@ -54,21 +54,22 @@ void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo
 
         ContactPointInfo* nextContactPoint = contactPoint->next;
 
-        // Compute the contact normal id
-        short contactNormalId = ContactManifoldSet::computeCubemapNormalId(contactPoint->normal);
-
         // Look if the contact point correspond to an existing potential manifold
         // (if the contact point normal is similar to the normal of an existing manifold)
         ContactManifoldInfo* manifold = mPotentialContactManifolds;
         bool similarManifoldFound = false;
         while(manifold != nullptr) {
 
+            // Get the first contact point
+            const ContactPointInfo* point = manifold->getFirstContactPointInfo();
+            assert(point != nullptr);
+
             // If we have found a corresponding manifold for the new contact point
             // (a manifold with a similar contact normal direction)
-            if (manifold->getContactNormalId() == contactNormalId) {
+            if (point->normal.dot(contactPoint->normal) >= COS_ANGLE_SIMILAR_CONTACT_MANIFOLD) {
 
                 // Add the contact point to the manifold
-                manifold->addContactPoint(contactPoint, contactNormalId);
+                manifold->addContactPoint(contactPoint);
 
                similarManifoldFound = true;
 
@@ -90,7 +91,7 @@ void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo
             mPotentialContactManifolds = manifoldInfo;
 
             // Add the contact point to the manifold
-            manifoldInfo->addContactPoint(contactPoint, contactNormalId);
+            manifoldInfo->addContactPoint(contactPoint);
         }
 
         contactPoint = nextContactPoint;
