@@ -90,8 +90,7 @@ class Sphere : public PhysicsObject {
         ~Sphere();
 
         /// Render the sphere at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix, bool wireframe);
+        void virtual render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;

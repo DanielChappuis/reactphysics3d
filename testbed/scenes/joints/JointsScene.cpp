@@ -136,25 +136,6 @@ void JointsScene::updatePhysics() {
     mDynamicsWorld->update(mEngineSettings.timeStep);
 }
 
-// Take a step for the simulation
-void JointsScene::update() {
-
-    SceneDemo::update();
-
-    // Update the position and orientation of the boxes
-    mSliderJointBottomBox->updateTransform(mInterpolationFactor);
-    mSliderJointTopBox->updateTransform(mInterpolationFactor);
-    mPropellerBox->updateTransform(mInterpolationFactor);
-    mFixedJointBox1->updateTransform(mInterpolationFactor);
-    mFixedJointBox2->updateTransform(mInterpolationFactor);
-    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mBallAndSocketJointChainBoxes[i]->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the floor
-    mFloor->updateTransform(mInterpolationFactor);
-}
-
 // Render the scene
 void JointsScene::renderSinglePass(openglframework::Shader& shader,
                                    const openglframework::Matrix4& worldToCameraMatrix) {
@@ -281,6 +262,8 @@ void JointsScene::createBallAndSocketJoints() {
         rp3d::Material& material = mBallAndSocketJointChainBoxes[i]->getRigidBody()->getMaterial();
         material.setBounciness(rp3d::decimal(0.4));
 
+		mPhysicsObjects.push_back(mBallAndSocketJointChainBoxes[i]);
+
         positionBox.y -= boxDimension.y + 0.5f;
     }
 
@@ -324,6 +307,7 @@ void JointsScene::createSliderJoint() {
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
     material1.setBounciness(0.4f);
+	mPhysicsObjects.push_back(mSliderJointBottomBox);
 
     // --------------- Create the second box --------------- //
 
@@ -341,6 +325,7 @@ void JointsScene::createSliderJoint() {
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
     material2.setBounciness(0.4f);
+	mPhysicsObjects.push_back(mSliderJointTopBox);
 
     // --------------- Create the joint --------------- //
 
@@ -381,6 +366,7 @@ void JointsScene::createPropellerHingeJoint() {
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.4));
+	mPhysicsObjects.push_back(mPropellerBox);
 
     // --------------- Create the Hinge joint --------------- //
 
@@ -420,6 +406,7 @@ void JointsScene::createFixedJoints() {
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
     material1.setBounciness(rp3d::decimal(0.4));
+	mPhysicsObjects.push_back(mFixedJointBox1);
 
     // --------------- Create the second box --------------- //
 
@@ -436,6 +423,7 @@ void JointsScene::createFixedJoints() {
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
     material2.setBounciness(rp3d::decimal(0.4));
+	mPhysicsObjects.push_back(mFixedJointBox2);
 
     // --------------- Create the first fixed joint --------------- //
 
@@ -478,4 +466,5 @@ void JointsScene::createFloor() {
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.3));
+	mPhysicsObjects.push_back(mFloor);
 }

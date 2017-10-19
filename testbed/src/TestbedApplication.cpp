@@ -125,7 +125,7 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(concaveMeshScene);
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[0];
+    mCurrentScene = mScenes[5];
 
     // Get the engine settings from the scene
     mEngineSettings = mCurrentScene->getEngineSettings();

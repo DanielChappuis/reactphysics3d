@@ -30,6 +30,10 @@
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
+#include "Sphere.h"
+#include "ConvexMesh.h"
+#include "Capsule.h"
+#include "Dumbbell.h"
 #include "SceneDemo.h"
 #include "HeightField.h"
 
@@ -37,17 +41,47 @@ namespace heightfieldscene {
 
 // Constants
 const float SCENE_RADIUS = 50.0f;
+static const int NB_BOXES = 10;
+static const int NB_SPHERES = 5;
+static const int NB_CAPSULES = 5;
+static const int NB_MESHES = 3;
+static const int NB_COMPOUND_SHAPES = 3;
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);
+const float SPHERE_RADIUS = 1.5f;
+const float CONE_RADIUS = 2.0f;
+const float CONE_HEIGHT = 3.0f;
+const float CYLINDER_RADIUS = 1.0f;
+const float CYLINDER_HEIGHT = 5.0f;
+const float CAPSULE_RADIUS = 1.0f;
+const float CAPSULE_HEIGHT = 1.0f;
+const float DUMBBELL_HEIGHT = 1.0f;
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
+const float BOX_MASS = 1.0f;
+const float CONE_MASS = 1.0f;
+const float CYLINDER_MASS = 1.0f;
+const float CAPSULE_MASS = 1.0f;
+const float MESH_MASS = 1.0f;
+const float FLOOR_MASS = 100.0f;
 
 // Class HeightFieldScene
 class HeightFieldScene : public SceneDemo {
-
-    static const int NB_BOXES = 10;
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        Box* mBoxes[NB_BOXES];
+		/// All the boxes of the scene
+		std::vector<Box*> mBoxes;
+
+		std::vector<Sphere*> mSpheres;
+
+		std::vector<Capsule*> mCapsules;
+
+		/// All the convex meshes of the scene
+		std::vector<ConvexMesh*> mConvexMeshes;
+
+		/// All the dumbbell of the scene
+		std::vector<Dumbbell*> mDumbbells;
 
         /// Height field
         HeightField* mHeightField;
@@ -68,13 +102,6 @@ class HeightFieldScene : public SceneDemo {
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
         virtual void updatePhysics() override;
-
-        /// Update the scene (take a simulation step)
-        virtual void update() override;
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix) override ;
 
         /// Reset the scene
         virtual void reset() override ;

@@ -148,7 +148,7 @@ class CollisionDetectionScene : public SceneDemo {
         ConvexMesh* mConvexMesh;
         //Dumbbell* mDumbbell;
         ConcaveMesh* mConcaveMesh;
-        //HeightField* mHeightField;
+        HeightField* mHeightField;
 
         std::vector<PhysicsObject*> mAllShapes;
 
@@ -170,16 +170,8 @@ class CollisionDetectionScene : public SceneDemo {
         /// Destructor
         virtual ~CollisionDetectionScene() override;
 
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics() override;
-
         /// Take a step for the simulation
         virtual void update() override;
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
         virtual void reset() override;

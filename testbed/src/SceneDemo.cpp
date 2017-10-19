@@ -80,7 +80,7 @@ SceneDemo::SceneDemo(const std::string& name, float sceneRadius, bool isShadowMa
 
 // Destructor
 SceneDemo::~SceneDemo() {
-
+	
     mShadowMapTexture.destroy();
     mFBOShadowMap.destroy();
     mVBOQuad.destroy();
@@ -101,6 +101,19 @@ void SceneDemo::update() {
 
     // Update the contact points
     updateContactPoints();
+
+	// Update the position and orientation of the physics objects
+	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+		// Update the transform used for the rendering
+		(*it)->updateTransform(mInterpolationFactor);
+	}
+}
+
+// Update the physics world (take a simulation step)
+// Can be called several times per frame
+void SceneDemo::updatePhysics() {
+
 }
 
 // Render the scene (in multiple passes for shadow mapping)
@@ -200,6 +213,21 @@ void SceneDemo::render() {
     mPhongShader.unbind();
 
    //drawTextureQuad();
+}
+
+// Render the scene in a single pass
+void SceneDemo::renderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+	
+	// Bind the shader
+	shader.bind();
+
+	// Render all the physics objects of the scene
+	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+		(*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+	}
+
+	// Unbind the shader
+	shader.unbind();
 }
 
 // Create the Shadow map FBO and texture
@@ -345,7 +373,7 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(const rp3d::Dyn
         rp3d::ContactPoint* contactPoint = manifold->getContactPoints();
         while (contactPoint != nullptr) {
 
-            rp3d::Vector3 point = contactPoint->getWorldPointOnBody1();
+            rp3d::Vector3 point = manifold->getShape1()->getLocalToWorldTransform() * contactPoint->getLocalPointOnBody1();
 			rp3d::Vector3 normalWorld = contactPoint->getNormal();
 			openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
             ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());

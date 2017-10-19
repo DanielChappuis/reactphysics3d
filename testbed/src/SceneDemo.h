@@ -30,6 +30,7 @@
 #include "Scene.h"
 #include "VisualContactPoint.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
@@ -95,6 +96,8 @@ class SceneDemo : public Scene {
 
         std::string mMeshFolderPath;
 
+		std::vector<PhysicsObject*> mPhysicsObjects;
+
         // -------------------- Methods -------------------- //
 
         // Create the Shadow map FBO and texture
@@ -128,12 +131,15 @@ class SceneDemo : public Scene {
         /// Update the scene
         virtual void update() override;
 
+		/// Update the physics world (take a simulation step)
+		/// Can be called several times per frame
+		virtual void updatePhysics() override;
+
         /// Render the scene (possibly in multiple passes for shadow mapping)
         virtual void render() override;
 
         /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix)=0 ;
+        virtual void renderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Enabled/Disable the shadow mapping
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;

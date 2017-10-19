@@ -71,7 +71,7 @@ class CollisionShapesScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        /// All the spheres of the scene
+        /// All the boxes of the scene
         std::vector<Box*> mBoxes;
 
         std::vector<Sphere*> mSpheres;
@@ -103,13 +103,6 @@ class CollisionShapesScene : public SceneDemo {
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
         virtual void updatePhysics() override;
-
-        /// Take a step for the simulation
-        virtual void update() override;
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
         virtual void reset() override;

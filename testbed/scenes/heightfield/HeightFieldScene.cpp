@@ -33,6 +33,8 @@ using namespace heightfieldscene;
 // Constructor
 HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SCENE_RADIUS) {
 
+	std::string meshFolderPath("meshes/");
+
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
 
@@ -45,25 +47,138 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     // Create the dynamics world for the physics simulation
     mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // ---------- Create the boxes ----------- //
+	float radius = 3.0f;
 
-    // For each box
-    for (int i=0; i<NB_BOXES; i++) {
+	for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
-        // Position
-        openglframework::Vector3 position(15, 10 + 6 * i, 0);
+		// Position
+		float angle = i * 30.0f;
+		openglframework::Vector3 position(radius * cos(angle),
+			100 + i * (DUMBBELL_HEIGHT + 0.3f),
+			radius * sin(angle));
 
-        // Create a box and a corresponding rigid in the dynamics world
-        mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld, mMeshFolderPath);
+		// Create a convex mesh and a corresponding rigid in the dynamics world
+		Dumbbell* dumbbell = new Dumbbell(position, mDynamicsWorld, meshFolderPath);
 
-        // Set the box color
-        mBoxes[i]->setColor(mDemoColors[2]);
-        mBoxes[i]->setSleepingColor(mRedColorDemo);
+		// Set the box color
+		dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
+		dumbbell->setSleepingColor(mRedColorDemo);
 
-        // Change the material properties of the rigid body
-        rp3d::Material& boxMaterial = mBoxes[i]->getRigidBody()->getMaterial();
-        boxMaterial.setBounciness(rp3d::decimal(0.2));
-    }
+		// Change the material properties of the rigid body
+		rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the mesh the list of dumbbells in the scene
+		mDumbbells.push_back(dumbbell);
+		mPhysicsObjects.push_back(dumbbell);
+	}
+
+	// Create all the boxes of the scene
+	for (int i = 0; i<NB_BOXES; i++) {
+
+		// Position
+		float angle = i * 30.0f;
+		openglframework::Vector3 position(radius * cos(angle),
+			60 + i * (BOX_SIZE.y + 0.8f),
+			radius * sin(angle));
+
+		// Create a sphere and a corresponding rigid in the dynamics world
+		Box* box = new Box(BOX_SIZE, position, BOX_MASS, mDynamicsWorld, mMeshFolderPath);
+
+		// Set the box color
+		box->setColor(mDemoColors[i % mNbDemoColors]);
+		box->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = box->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the sphere the list of sphere in the scene
+		mBoxes.push_back(box);
+		mPhysicsObjects.push_back(box);
+	}
+
+	// Create all the spheres of the scene
+	for (int i = 0; i<NB_SPHERES; i++) {
+
+		// Position
+		float angle = i * 35.0f;
+		openglframework::Vector3 position(radius * cos(angle),
+			50 + i * (SPHERE_RADIUS + 0.8f),
+			radius * sin(angle));
+
+		// Create a sphere and a corresponding rigid in the dynamics world
+		Sphere* sphere = new Sphere(SPHERE_RADIUS, position, BOX_MASS, mDynamicsWorld,
+			meshFolderPath);
+
+		// Add some rolling resistance
+		sphere->getRigidBody()->getMaterial().setRollingResistance(0.08);
+
+		// Set the box color
+		sphere->setColor(mDemoColors[i % mNbDemoColors]);
+		sphere->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = sphere->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the sphere the list of sphere in the scene
+		mSpheres.push_back(sphere);
+		mPhysicsObjects.push_back(sphere);
+	}
+
+	// Create all the capsules of the scene
+	for (int i = 0; i<NB_CAPSULES; i++) {
+
+		// Position
+		float angle = i * 45.0f;
+		openglframework::Vector3 position(radius * cos(angle),
+			15 + i * (CAPSULE_HEIGHT + 0.3f),
+			radius * sin(angle));
+
+		// Create a cylinder and a corresponding rigid in the dynamics world
+		Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position,
+			CAPSULE_MASS, mDynamicsWorld, meshFolderPath);
+
+		capsule->getRigidBody()->getMaterial().setRollingResistance(0.08);
+
+		// Set the box color
+		capsule->setColor(mDemoColors[i % mNbDemoColors]);
+		capsule->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = capsule->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the cylinder the list of sphere in the scene
+		mCapsules.push_back(capsule);
+		mPhysicsObjects.push_back(capsule);
+	}
+
+	// Create all the convex meshes of the scene
+	for (int i = 0; i<NB_MESHES; i++) {
+
+		// Position
+		float angle = i * 30.0f;
+		openglframework::Vector3 position(radius * cos(angle),
+			5 + i * (CAPSULE_HEIGHT + 0.3f),
+			radius * sin(angle));
+
+		// Create a convex mesh and a corresponding rigid in the dynamics world
+		ConvexMesh* mesh = new ConvexMesh(position, MESH_MASS, mDynamicsWorld, meshFolderPath + "convexmesh.obj");
+
+		// Set the box color
+		mesh->setColor(mDemoColors[i % mNbDemoColors]);
+		mesh->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = mesh->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the mesh the list of sphere in the scene
+		mConvexMeshes.push_back(mesh);
+		mPhysicsObjects.push_back(mesh);
+	}
 
     // ---------- Create the height field ---------- //
 
@@ -76,6 +191,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
 
     // Set the mesh as beeing static
     mHeightField->getRigidBody()->setType(rp3d::BodyType::STATIC);
+
+	mPhysicsObjects.push_back(mHeightField);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
@@ -101,18 +218,15 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
 // Destructor
 HeightFieldScene::~HeightFieldScene() {
 
-    // Destroy the corresponding rigid body from the dynamics world
-    for (int i=0; i<NB_BOXES; i++) {
-        mDynamicsWorld->destroyRigidBody(mBoxes[i]->getRigidBody());
-    }
-    mDynamicsWorld->destroyRigidBody(mHeightField->getRigidBody());
+	// Destroy all the physics objects of the scene
+	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 
-    for (int i=0; i<NB_BOXES; i++) {
-       delete mBoxes[i];
-    }
+		// Destroy the corresponding rigid body from the dynamics world
+		mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
 
-    // Destroy the convex mesh
-    delete mHeightField;
+		// Destroy the object
+		delete (*it);
+	}
 
     // Destroy the dynamics world
     delete mDynamicsWorld;
@@ -135,35 +249,6 @@ void HeightFieldScene::updatePhysics() {
 
     // Take a simulation step
     mDynamicsWorld->update(mEngineSettings.timeStep);
-}
-
-// Update the scene
-void HeightFieldScene::update() {
-
-    SceneDemo::update();
-
-    // Update the transform used for the rendering
-    mHeightField->updateTransform(mInterpolationFactor);
-
-    for (int i=0; i<NB_BOXES; i++) {
-       mBoxes[i]->updateTransform(mInterpolationFactor);
-    }
-}
-
-// Render the scene in a single pass
-void HeightFieldScene::renderSinglePass(Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the shader
-    shader.bind();
-
-    mHeightField->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-
-    for (int i=0; i<NB_BOXES; i++) {
-       mBoxes[i]->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Unbind the shader
-    shader.unbind();
 }
 
 // Reset the scene

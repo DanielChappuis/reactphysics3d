@@ -82,6 +82,7 @@ CubesScene::CubesScene(const std::string& name)
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
+	mPhysicsObjects.push_back(mFloor);
 
     // Change the material properties of the floor rigid body
     //rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
@@ -102,6 +103,7 @@ CubesScene::CubesScene(const std::string& name)
 
 	// Add the box the list of box in the scene
 	mBoxes.push_back(cube);
+	mPhysicsObjects.push_back(cube);
 
     // Get the physics engine parameters
     mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
@@ -155,39 +157,6 @@ void CubesScene::updatePhysics() {
 
     // Take a simulation step
     mDynamicsWorld->update(mEngineSettings.timeStep);
-}
-
-// Update the scene
-void CubesScene::update() {
-
-    SceneDemo::update();
-
-    // Update the position and orientation of the boxes
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    mFloor->updateTransform(mInterpolationFactor);
-}
-
-// Render the scene in a single pass
-void CubesScene::renderSinglePass(Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Render all the cubes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render the floor
-    mFloor->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-
-    // Unbind the shader
-    shader.unbind();
 }
 
 // Reset the scene

@@ -71,6 +71,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Add the mesh the list of dumbbells in the scene
         mDumbbells.push_back(dumbbell);
+		mPhysicsObjects.push_back(dumbbell);
     }
 
     // Create all the boxes of the scene
@@ -95,6 +96,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Add the sphere the list of sphere in the scene
         mBoxes.push_back(box);
+		mPhysicsObjects.push_back(box);
     }
 
     // Create all the spheres of the scene
@@ -123,6 +125,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Add the sphere the list of sphere in the scene
         mSpheres.push_back(sphere);
+		mPhysicsObjects.push_back(sphere);
     }
 
     // Create all the capsules of the scene
@@ -150,6 +153,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Add the cylinder the list of sphere in the scene
         mCapsules.push_back(capsule);
+		mPhysicsObjects.push_back(capsule);
     }
 
     // Create all the convex meshes of the scene
@@ -174,12 +178,14 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 
         // Add the mesh the list of sphere in the scene
         mConvexMeshes.push_back(mesh);
+		mPhysicsObjects.push_back(mesh);
     }
 
     // ---------- Create the floor ---------
 
     openglframework::Vector3 floorPosition(0, 0, 0);
     mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld, mMeshFolderPath);
+	mPhysicsObjects.push_back(mFloor);
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);
@@ -230,67 +236,15 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name)
 // Destructor
 CollisionShapesScene::~CollisionShapesScene() {
 
-    // Destroy all the boxes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+    // Destroy all the physics objects of the scene
+    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 
         // Destroy the corresponding rigid body from the dynamics world
         mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
 
-        // Destroy the box
+        // Destroy the object
         delete (*it);
     }
-
-    // Destroy all the sphere of the scene
-    for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the sphere
-        delete (*it);
-    }
-
-    // Destroy all the capsules of the scene
-    for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the sphere
-        delete (*it);
-    }
-
-    // Destroy all the convex meshes of the scene
-    for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
-         it != mConvexMeshes.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the convex mesh
-        delete (*it);
-    }
-
-    // Destroy all the dumbbell of the scene
-    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
-         it != mDumbbells.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the convex mesh
-        delete (*it);
-    }
-
-    // Destroy the rigid body of the floor
-    mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
-    //mDynamicsWorld->destroyRigidBody(mConcaveMesh->getRigidBody());
-
-    // Destroy the floor
-    delete mFloor;
-
-    // Destroy the convex mesh
-    //delete mConcaveMesh;
 
     // Destroy the dynamics world
     delete mDynamicsWorld;
@@ -313,96 +267,6 @@ void CollisionShapesScene::updatePhysics() {
 
     // Take a simulation step
     mDynamicsWorld->update(mEngineSettings.timeStep);
-}
-
-// Take a step for the simulation
-void CollisionShapesScene::update() {
-
-    SceneDemo::update();
-
-    // Update the position and orientation of the boxes
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the sphere
-    for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the capsules
-    for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the convex meshes
-    for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
-         it != mConvexMeshes.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    // Update the position and orientation of the dumbbells
-    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
-         it != mDumbbells.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    //mConcaveMesh->updateTransform(mInterpolationFactor);
-
-    mFloor->updateTransform(mInterpolationFactor);
-}
-
-// Render the scene
-void CollisionShapesScene::renderSinglePass(openglframework::Shader& shader,
-                                            const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Render all the boxes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the sphere of the scene
-    for (std::vector<Sphere*>::iterator it = mSpheres.begin(); it != mSpheres.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the capsules of the scene
-    for (std::vector<Capsule*>::iterator it = mCapsules.begin(); it != mCapsules.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the convex meshes of the scene
-    for (std::vector<ConvexMesh*>::iterator it = mConvexMeshes.begin();
-         it != mConvexMeshes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render all the dumbbells of the scene
-    for (std::vector<Dumbbell*>::iterator it = mDumbbells.begin();
-         it != mDumbbells.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    }
-
-    // Render the floor
-    mFloor->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-
-    //mConcaveMesh->render(shader, worldToCameraMatrix);
-
-    // Unbind the shader
-    shader.unbind();
 }
 
 /// Reset the scene

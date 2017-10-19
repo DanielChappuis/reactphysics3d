@@ -56,6 +56,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the box color
     mDumbbell->setColor(mGreyColorDemo);
     mDumbbell->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mDumbbell);
 
     // ---------- Box ---------- //
     openglframework::Vector3 position2(0, 0, 0);
@@ -67,6 +68,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the box color
     mBox->setColor(mGreyColorDemo);
     mBox->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mBox);
 
     // ---------- Sphere ---------- //
     openglframework::Vector3 position3(0, 0, 0);
@@ -78,6 +80,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the color
     mSphere->setColor(mGreyColorDemo);
     mSphere->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mSphere);
 
     // ---------- Capsule ---------- //
     openglframework::Vector3 position6(0, 0, 0);
@@ -89,6 +92,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the color
     mCapsule->setColor(mGreyColorDemo);
     mCapsule->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mCapsule);
 
     // ---------- Convex Mesh ---------- //
     openglframework::Vector3 position7(0, 0, 0);
@@ -99,6 +103,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the color
     mConvexMesh->setColor(mGreyColorDemo);
     mConvexMesh->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Concave Mesh ---------- //
     openglframework::Vector3 position8(0, 0, 0);
@@ -109,6 +114,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the color
     mConcaveMesh->setColor(mGreyColorDemo);
     mConcaveMesh->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mConcaveMesh);
 
     // ---------- Heightfield ---------- //
     openglframework::Vector3 position9(0, 0, 0);
@@ -119,6 +125,7 @@ RaycastScene::RaycastScene(const std::string& name)
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
     mHeightField->setSleepingColor(mRedColorDemo);
+	mPhysicsObjects.push_back(mHeightField);
 
     // Create the lines that will be used for raycasting
     createLines();
@@ -256,12 +263,6 @@ RaycastScene::~RaycastScene() {
     mVAO.destroy();
 }
 
-// Update the physics world (take a simulation step)
-void RaycastScene::updatePhysics() {
-
-
-}
-
 // Take a step for the simulation
 void RaycastScene::update() {
 
@@ -327,14 +328,18 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 
     mColorShader.unbind();
 
-    // Render the shapes
-    if (mBox->getCollisionBody()->isActive()) mBox->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mSphere->getCollisionBody()->isActive()) mSphere->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mCapsule->getCollisionBody()->isActive()) mCapsule->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mConvexMesh->getCollisionBody()->isActive()) mConvexMesh->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mDumbbell->getCollisionBody()->isActive()) mDumbbell->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mConcaveMesh->getCollisionBody()->isActive()) mConcaveMesh->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
-    if (mHeightField->getCollisionBody()->isActive()) mHeightField->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+	// Bind the shader
+	shader.bind();
+
+	// Render all the physics objects of the scene
+	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+		if ((*it)->getCollisionBody()->isActive()) {
+			(*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+		}
+	}
+
+	// Unbind the shader
+	shader.unbind();
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

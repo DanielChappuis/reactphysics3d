@@ -126,9 +126,6 @@ class JointsScene : public SceneDemo {
         /// Can be called several times per frame
         virtual void updatePhysics() override;
 
-        /// Take a step for the simulation
-        virtual void update() override;
-
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
                                       const openglframework::Matrix4& worldToCameraMatrix) override;

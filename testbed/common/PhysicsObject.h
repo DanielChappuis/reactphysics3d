@@ -62,6 +62,9 @@ class PhysicsObject : public openglframework::Mesh {
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor)=0;
 
+		/// Render the sphere at the correct position and with the correct orientation
+		virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireframe)=0;
+
         /// Set the color of the box
         void setColor(const openglframework::Color& color);
 
