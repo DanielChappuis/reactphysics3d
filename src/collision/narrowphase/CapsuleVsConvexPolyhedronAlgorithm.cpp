@@ -114,6 +114,10 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
                     const Vector3 separatingAxisCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
 
+                    if (isCapsuleShape1) {
+                        faceNormalWorld = -faceNormalWorld;
+                    }
+
                     // Compute and create two contact points
                     satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
                                                               polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,

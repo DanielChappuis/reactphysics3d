@@ -97,9 +97,11 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrow
     if (reportContacts) {
 
         const Vector3 minFaceNormal = polyhedron->getFaceNormal(minFaceIndex);
-        Vector3 normalWorld = -(polyhedronToWorldTransform.getOrientation() * minFaceNormal);
-        Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * normalWorld * sphere->getRadius();
+        Vector3 minFaceNormalWorld = polyhedronToWorldTransform.getOrientation() * minFaceNormal;
+        Vector3 contactPointSphereLocal = sphereToWorldTransform.getInverse().getOrientation() * (-minFaceNormalWorld * sphere->getRadius());
         Vector3 contactPointPolyhedronLocal = sphereCenter + minFaceNormal * (minPenetrationDepth - sphere->getRadius());
+
+        Vector3 normalWorld = isSphereShape1 ? -minFaceNormalWorld : minFaceNormalWorld;
 
         // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
         TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
@@ -243,6 +245,9 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
     const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegB;
 
     Vector3 normalWorld = capsuleToWorld.getOrientation() * separatingAxisCapsuleSpace;
+    if (isCapsuleShape1) {
+        normalWorld = -normalWorld;
+    }
     const decimal capsuleRadius = capsuleShape->getRadius();
 
     // If the separating axis is a face normal
@@ -391,12 +396,8 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
 
-    if (isCapsuleShape1) {
-        normalWorld = -normalWorld;
-    }
-
 	// For each of the two clipped points
-	for (int i = 0; i<2; i++) {
+    for (uint i = 0; i<2; i++) {
 
 		// Compute the penetration depth of the two clipped points (to filter out the points that does not correspond to the penetration depth)
 		const decimal clipPointPenDepth = (planesPoints[0] - clipSegment[i]).dot(faceNormal);
