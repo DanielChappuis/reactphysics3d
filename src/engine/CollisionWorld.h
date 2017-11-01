@@ -147,6 +147,9 @@ class CollisionWorld {
         /// Test and report collisions between all shapes of the world
         void testCollision(CollisionCallback* callback);
 
+        /// Return the current world-space AABB of given proxy shape
+        AABB getWorldAABB(const ProxyShape* proxyShape) const;
+
         // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;

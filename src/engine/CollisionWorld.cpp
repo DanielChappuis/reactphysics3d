@@ -164,3 +164,14 @@ bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
     return mCollisionDetection.testOverlap(body1, body2);
 }
 
+
+// Return the current world-space AABB of given proxy shape
+AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
+
+    if (proxyShape->mBroadPhaseID == -1) {
+        return AABB();
+    }
+
+   return mCollisionDetection.getWorldAABB(proxyShape);
+}
+

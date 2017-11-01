@@ -219,6 +219,9 @@ class CollisionDetection {
         /// Return a reference to the world memory allocator
         PoolAllocator& getWorldMemoryAllocator();
 
+        /// Return the world-space AABB of a given proxy shape
+        const AABB getWorldAABB(const ProxyShape* proxyShape) const;
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
@@ -259,7 +262,10 @@ inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
 /// We simply put the shape in the list of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
 inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
-    mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
+
+    if (shape->mBroadPhaseID != -1) {
+        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
+    }
 }
 
 // Update a proxy collision shape (that has moved for instance)

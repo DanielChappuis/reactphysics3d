@@ -111,7 +111,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && proxyShape->mBroadPhaseID != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
@@ -131,7 +131,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
 
-            if (mIsActive) {
+            if (mIsActive && proxyShape->mBroadPhaseID != -1) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
             }
 
@@ -157,7 +157,7 @@ void CollisionBody::removeAllCollisionShapes() {
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && current->mBroadPhaseID != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
@@ -202,12 +202,15 @@ void CollisionBody::updateBroadPhaseState() const {
 // Update the broad-phase state of a proxy collision shape of the body
 void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
-    // Recompute the world-space AABB of the collision shape
-    AABB aabb;
-    proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+    if (proxyShape->mBroadPhaseID != -1) {
 
-    // Update the broad-phase state for the proxy collision shape
-    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert);
+        // Recompute the world-space AABB of the collision shape
+        AABB aabb;
+        proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+
+        // Update the broad-phase state for the proxy collision shape
+        mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert)	;
+    }
 }
 
 // Set whether or not the body is active
@@ -240,8 +243,11 @@ void CollisionBody::setIsActive(bool isActive) {
         // For each proxy shape of the body
         for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
-            // Remove the proxy shape from the collision detection
-            mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            if (shape->mBroadPhaseID != -1) {
+
+                // Remove the proxy shape from the collision detection
+                mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            }
         }
 
         // Reset the contact manifold list of the body

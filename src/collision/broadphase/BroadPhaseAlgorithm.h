@@ -232,6 +232,9 @@ inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const Broad
 // Return true if the two broad-phase collision shapes are overlapping
 inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
                                                        const ProxyShape* shape2) const {
+
+    if (shape1->mBroadPhaseID == -1 || shape2->mBroadPhaseID == -1) return false;
+
     // Get the two AABBs of the collision shapes
     const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->mBroadPhaseID);
     const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->mBroadPhaseID);
