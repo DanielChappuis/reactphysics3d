@@ -256,7 +256,7 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
 
         if (reportContacts) {
 
-            computeCapsulePolyhedronFaceContactPoints(minFaceIndex, capsuleRadius, polyhedron, minPenetrationDepth,
+            return computeCapsulePolyhedronFaceContactPoints(minFaceIndex, capsuleRadius, polyhedron, minPenetrationDepth,
                                                       polyhedronToCapsuleTransform, normalWorld, separatingAxisCapsuleSpace,
                                                       capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                       narrowPhaseInfo, isCapsuleShape1);
@@ -349,7 +349,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
 
 // Compute the two contact points between a polyhedron and a capsule when the separating
 // axis is a face normal of the polyhedron
-void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
+bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                              decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                              Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                              const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
@@ -391,19 +391,22 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 
     // First we clip the inner segment of the capsule with the four planes of the adjacent faces
     std::vector<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals);
-    assert(clipSegment.size() == 2);
 
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
 
+    bool contactFound = false;
+
 	// For each of the two clipped points
-    for (uint i = 0; i<2; i++) {
+    for (uint i = 0; i<clipSegment.size(); i++) {
 
 		// Compute the penetration depth of the two clipped points (to filter out the points that does not correspond to the penetration depth)
 		const decimal clipPointPenDepth = (planesPoints[0] - clipSegment[i]).dot(faceNormal);
 
 		// If the clipped point is one that produce this penetration depth, we keep it
 		if (clipPointPenDepth > penetrationDepth - capsuleRadius - decimal(0.001)) {
+
+            contactFound = true;
 
             Vector3 contactPointPolyhedron = clipSegment[i] + delta;
 
@@ -426,6 +429,8 @@ void SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
                                              isCapsuleShape1 ? contactPointPolyhedron : contactPointCapsule);
 		}
 	}
+
+    return contactFound;
 }
 
 // This method returns true if an edge of a polyhedron and a capsule forms a

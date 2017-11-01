@@ -126,7 +126,7 @@ class SATAlgorithm {
         bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const;
 
         /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
-        void computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
+        bool computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                        decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                        Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                        const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,

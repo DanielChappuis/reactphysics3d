@@ -119,10 +119,13 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
                     }
 
                     // Compute and create two contact points
-                    satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
+                    bool contactsFound = satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
                                                               polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
                                                               capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                               narrowPhaseInfo, isCapsuleShape1);
+                    if (!contactsFound) {
+                        return false;
+                    }
 
                     break;
                 }
