@@ -45,7 +45,7 @@ const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 5;
 const int NB_SPHERES = 5;
 const int NB_CAPSULES = 5;
-const int NB_MESHES = 3;
+const int NB_MESHES = 4;
 const int NB_COMPOUND_SHAPES = 3;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
@@ -87,22 +87,15 @@ class CollisionShapesScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShapesScene(const std::string& name);
+        CollisionShapesScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~CollisionShapesScene() override;
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics() override;
 
         /// Reset the scene
         virtual void reset() override;
@@ -113,7 +106,7 @@ class CollisionShapesScene : public SceneDemo {
 
 // Return all the contact points of the scene
 inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() const {
-    return computeContactPointsOfWorld(mDynamicsWorld);
+    return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
 }

@@ -38,9 +38,6 @@ using namespace nanogui;
 // Macro for OpenGL errors
 #define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
 
-// Constants
-const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
-
 /// Class TestbedApplication
 class TestbedApplication : public Screen {
 
@@ -108,6 +105,9 @@ class TestbedApplication : public Screen {
 
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
+
+        /// True if the AABBs of physics objects are displayed
+        bool mIsAABBsDisplayed;
 
         /// True if the wireframe rendering is enabled
         bool mIsWireframeEnabled;

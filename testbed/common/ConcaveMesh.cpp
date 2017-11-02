@@ -27,15 +27,10 @@
 #include "ConcaveMesh.h"
 
 // Constructor
-ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
-                       reactphysics3d::CollisionWorld* world,
-                       const std::string& meshPath)
+ConcaveMesh::ConcaveMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
            : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
@@ -58,15 +53,10 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
     // do not forget to delete it at the end
     mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mProxyShape = mBody->addCollisionShape(mConcaveShape, rp3d::Transform::identity());
@@ -78,15 +68,10 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position,
 }
 
 // Constructor
-ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
-                       reactphysics3d::DynamicsWorld* dynamicsWorld,
-                       const std::string& meshPath)
+ConcaveMesh::ConcaveMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath)
            : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
@@ -109,13 +94,10 @@ ConcaveMesh::ConcaveMesh(const openglframework::Vector3 &position, float mass,
     // do not forget to delete it at the end
     mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mProxyShape = body->addCollisionShape(mConcaveShape, rp3d::Transform::identity(), mass);
@@ -151,11 +133,7 @@ ConcaveMesh::~ConcaveMesh() {
 
 // Render the sphere at the correct position and with the correct orientation
 void ConcaveMesh::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) {
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
+                         const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -209,10 +187,6 @@ void ConcaveMesh::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

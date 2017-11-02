@@ -34,9 +34,7 @@ openglframework::VertexArrayObject Capsule::mVAO;
 int Capsule::totalNbCapsules = 0;
 
 // Constructor
-Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
-                 reactphysics3d::CollisionWorld* world,
-                 const std::string& meshFolderPath)
+Capsule::Capsule(float radius, float height, rp3d::CollisionWorld* world, const std::string& meshFolderPath)
         : PhysicsObject(meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
 
     // Compute the scaling matrix
@@ -45,23 +43,16 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1.0f);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCapsuleShape = new rp3d::CapsuleShape(mRadius, mHeight);
+    //mCapsuleShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = mBody->addCollisionShape(mCapsuleShape, rp3d::Transform::identity());
@@ -77,8 +68,7 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
 }
 
 // Constructor
-Capsule::Capsule(float radius, float height, const openglframework::Vector3& position,
-                 float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+Capsule::Capsule(float radius, float height, float mass, rp3d::DynamicsWorld* dynamicsWorld,
                  const std::string& meshFolderPath)
         : PhysicsObject(meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
 
@@ -88,21 +78,15 @@ Capsule::Capsule(float radius, float height, const openglframework::Vector3& pos
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1.0f);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCapsuleShape = new rp3d::CapsuleShape(mRadius, mHeight);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
     // Create a rigid body corresponding in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = body->addCollisionShape(mCapsuleShape, rp3d::Transform::identity(), mass);
@@ -140,11 +124,7 @@ Capsule::~Capsule() {
 
 // Render the sphere at the correct position and with the correct orientation
 void Capsule::render(openglframework::Shader& shader,
-                     const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) {
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
+                     const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -198,10 +178,6 @@ void Capsule::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

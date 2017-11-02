@@ -38,8 +38,8 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
+Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world,
+         const std::string& meshFolderPath)
     : PhysicsObject(meshFolderPath + "cube.obj") {
 
     // Initialize the size of the box
@@ -53,23 +53,16 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
                                               0, 0, mSize[2], 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the cube will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    //mBoxShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the collision shape to the body
     mProxyShape = mBody->addCollisionShape(mBoxShape, rp3d::Transform::identity());
@@ -87,8 +80,8 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 }
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-         float mass, reactphysics3d::DynamicsWorld* world, const std::string& meshFolderPath)
+Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld* world,
+         const std::string& meshFolderPath)
     : PhysicsObject(meshFolderPath + "cube.obj") {
 
     // Load the mesh from a file
@@ -108,23 +101,15 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
                                               0, 0, mSize[2], 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the cube will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(transform);
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add the collision shape to the body
     mProxyShape = body->addCollisionShape(mBoxShape, rp3d::Transform::identity(), mass);
@@ -158,12 +143,7 @@ Box::~Box() {
 }
 
 // Render the cube at the correct position and with the correct orientation
-void Box::render(openglframework::Shader& shader,
-                 const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) {
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
+void Box::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -217,10 +197,6 @@ void Box::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 }
 
 // Create the Vertex Buffer Objects used to render to box with OpenGL.

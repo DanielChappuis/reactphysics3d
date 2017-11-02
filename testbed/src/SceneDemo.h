@@ -98,6 +98,8 @@ class SceneDemo : public Scene {
 
 		std::vector<PhysicsObject*> mPhysicsObjects;
 
+        rp3d::CollisionWorld* mPhysicsWorld;
+
         // -------------------- Methods -------------------- //
 
         // Create the Shadow map FBO and texture
@@ -116,14 +118,25 @@ class SceneDemo : public Scene {
         void renderContactPoints(openglframework::Shader& shader,
                                  const openglframework::Matrix4& worldToCameraMatrix);
 
+
+        /// Render the AABBs
+        void renderAABBs(const openglframework::Matrix4& worldToCameraMatrix);
+
+        /// Remove all contact points
         void removeAllContactPoints();
+
+        /// Return a reference to the dynamics world
+        rp3d::DynamicsWorld* getDynamicsWorld();
+
+        /// Return a reference to the dynamics world
+        const rp3d::DynamicsWorld* getDynamicsWorld() const;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled = true);
+        SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled = true);
 
         /// Destructor
         virtual ~SceneDemo() override;
@@ -156,6 +169,16 @@ inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
     if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
         createShadowMapFBOAndTexture();
     }
+}
+
+// Return a reference to the dynamics world
+inline rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() {
+    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
+}
+
+// Return a reference to the dynamics world
+inline const rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() const {
+    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
 }
 
 #endif

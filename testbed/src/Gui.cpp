@@ -388,6 +388,14 @@ void Gui::createSettingsPanel() {
         mApp->mIsContactPointsDisplayed = value;
     });
 
+
+    // Display/Hide the AABBs
+    CheckBox* checkboxAABBs = new CheckBox(mRenderingPanel, "AABBs");
+    checkboxAABBs->setChecked(mApp->mIsAABBsDisplayed);
+    checkboxAABBs->setCallback([&](bool value) {
+        mApp->mIsAABBsDisplayed = value;
+    });
+
     // Enabled/Disable VSync
     CheckBox* checkboxVSync = new CheckBox(mRenderingPanel, "V-Sync");
     checkboxVSync->setChecked(mApp->mIsVSyncEnabled);

@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace collisiondetectionscene;
 
 // Constructor
-CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
-       : SceneDemo(name, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings)
+       : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mContactManager(mPhongShader, mMeshFolderPath),
          mAreNormalsDisplayed(false) {
 
@@ -47,61 +47,57 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
     setScenePosition(center, SCENE_RADIUS);
 
     // Create the dynamics world for the physics simulation
-    mCollisionWorld = new rp3d::CollisionWorld();
+    mPhysicsWorld = new rp3d::CollisionWorld();
 
     // ---------- Sphere 1 ---------- //
-    openglframework::Vector3 position1(12, 0, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere1 = new Sphere(4, position1, mCollisionWorld, mMeshFolderPath);
+    mSphere1 = new Sphere(4, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere1);
 
     // Set the color
     mSphere1->setColor(mGreyColorDemo);
     mSphere1->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mSphere1);
+    //mSphere1->setScaling(0.5f);
+    mPhysicsObjects.push_back(mSphere1);
 
     // ---------- Sphere 2 ---------- //
-    openglframework::Vector3 position2(12, 8, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere2 = new Sphere(2, position2, mCollisionWorld, mMeshFolderPath);
+    mSphere2 = new Sphere(2, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere2);
 
     // Set the color
     mSphere2->setColor(mGreyColorDemo);
     mSphere2->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mSphere2);
+    mPhysicsObjects.push_back(mSphere2);
 
-	// ---------- Capsule 1 ---------- //
-	openglframework::Vector3 position3(-6, 7, 0);
-
-	// Create a cylinder and a corresponding collision body in the dynamics world
-	mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position3, mCollisionWorld, mMeshFolderPath);
-	mAllShapes.push_back(mCapsule1);
-
-	// Set the color
-	mCapsule1->setColor(mGreyColorDemo);
-	mCapsule1->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mCapsule1);
-
-    // ---------- Capsule 2 ---------- //
-    openglframework::Vector3 position4(11, -8, 0);
+    // ---------- Capsule 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position4, mCollisionWorld, mMeshFolderPath);
+    mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
+    mAllShapes.push_back(mCapsule1);
+
+    // Set the color
+    mCapsule1->setColor(mGreyColorDemo);
+    mCapsule1->setSleepingColor(mRedColorDemo);
+    mPhysicsObjects.push_back(mCapsule1);
+
+    // ---------- Capsule 2 ---------- //
+
+    // Create a cylinder and a corresponding collision body in the dynamics world
+    mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mCapsule2);
 
     // Set the color
     mCapsule2->setColor(mGreyColorDemo);
     mCapsule2->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mCapsule2);
+    mPhysicsObjects.push_back(mCapsule2);
 
-	// ---------- Box 1 ---------- //
-	openglframework::Vector3 position5(-4, -7, 0);
+    // ---------- Box 1 ---------- //
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
-	mBox1 = new Box(BOX_SIZE, position5, mCollisionWorld, mMeshFolderPath);
+    mBox1 = new Box(BOX_SIZE, mPhysicsWorld, mMeshFolderPath);
 	mAllShapes.push_back(mBox1);
 
 	// Set the color
@@ -110,10 +106,9 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mPhysicsObjects.push_back(mBox1);
 
 	// ---------- Box 2 ---------- //
-	openglframework::Vector3 position6(0, 8, 0);
 
 	// Create a cylinder and a corresponding collision body in the dynamics world
-	mBox2 = new Box(openglframework::Vector3(3, 2, 5), position6, mCollisionWorld, mMeshFolderPath);
+    mBox2 = new Box(openglframework::Vector3(3, 2, 5), mPhysicsWorld, mMeshFolderPath);
 	mAllShapes.push_back(mBox2);
 
 	// Set the color
@@ -122,10 +117,9 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mPhysicsObjects.push_back(mBox2);
 
     // ---------- Convex Mesh ---------- //
-    openglframework::Vector3 position7(-5, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 	mAllShapes.push_back(mConvexMesh);
 
     // Set the color
@@ -134,10 +128,9 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Concave Mesh ---------- //
-    openglframework::Vector3 position8(0, 100, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConcaveMesh = new ConcaveMesh(position8, mCollisionWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
 	mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
@@ -146,10 +139,9 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 	mPhysicsObjects.push_back(mConcaveMesh);
 
     // ---------- Heightfield ---------- //
-    openglframework::Vector3 position9(0, -12, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mHeightField = new HeightField(position9, mCollisionWorld);
+    mHeightField = new HeightField(mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
@@ -162,68 +154,51 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name)
 // Reset the scene
 void CollisionDetectionScene::reset() {
 
+    mSphere1->setTransform(rp3d::Transform(rp3d::Vector3(12, 0, 0), rp3d::Quaternion::identity()));
+    mSphere2->setTransform(rp3d::Transform(rp3d::Vector3(12, 8, 0), rp3d::Quaternion::identity()));
+    mCapsule1->setTransform(rp3d::Transform(rp3d::Vector3(-6, 7, 0), rp3d::Quaternion::identity()));
+    mCapsule2->setTransform(rp3d::Transform(rp3d::Vector3(11, -8, 0), rp3d::Quaternion::identity()));
+    mBox1->setTransform(rp3d::Transform(rp3d::Vector3(-4, -7, 0), rp3d::Quaternion::identity()));
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
+    mConvexMesh->setTransform(rp3d::Transform(rp3d::Vector3(-5, 0, 0), rp3d::Quaternion::identity()));
+    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(0, 100, 0), rp3d::Quaternion::identity()));
+    mHeightField->setTransform(rp3d::Transform(rp3d::Vector3(0, -12, 0), rp3d::Quaternion::identity()));
 }
 
 // Destructor
 CollisionDetectionScene::~CollisionDetectionScene() {
 
     // Destroy the box rigid body from the dynamics world
-    //mCollisionWorld->destroyCollisionBody(mBox->getCollisionBody());
+    //mPhysicsWorld->destroyCollisionBody(mBox->getCollisionBody());
     //delete mBox;
 
     // Destroy the spheres
-    mCollisionWorld->destroyCollisionBody(mSphere1->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mSphere1->getCollisionBody());
     delete mSphere1;
 
-    mCollisionWorld->destroyCollisionBody(mSphere2->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
 
-    mCollisionWorld->destroyCollisionBody(mCapsule1->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mCapsule1->getCollisionBody());
     delete mCapsule1;
 
-    mCollisionWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
 
-	mCollisionWorld->destroyCollisionBody(mBox1->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mBox1->getCollisionBody());
 	delete mBox1;
 
-	mCollisionWorld->destroyCollisionBody(mBox2->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mBox2->getCollisionBody());
 	delete mBox2;
 
-	mCollisionWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
 	delete mConvexMesh;
 
-	mCollisionWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
 	delete mConcaveMesh;
 
-	mCollisionWorld->destroyCollisionBody(mHeightField->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
 	delete mHeightField;
-
-    /*
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCone->getCollisionBody());
-    delete mCone;
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCylinder->getCollisionBody());
-
-    // Destroy the sphere
-    delete mCylinder;
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCapsule->getCollisionBody());
-
-    // Destroy the sphere
-    delete mCapsule;   
-
-    // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
-
-    // Destroy the dumbbell
-    delete mDumbbell;
-
-    
-    */
 
     mContactManager.resetPoints();
 
@@ -231,7 +206,7 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     VisualContactPoint::destroyStaticData();
 
     // Destroy the collision world
-    delete mCollisionWorld;
+    delete mPhysicsWorld;
 }
 
 // Take a step for the simulation
@@ -239,14 +214,14 @@ void CollisionDetectionScene::update() {
 
     mContactManager.resetPoints();
 
-    mCollisionWorld->testCollision(&mContactManager);
+    mPhysicsWorld->testCollision(&mContactManager);
 
     SceneDemo::update();
 }
 
 void CollisionDetectionScene::selectNextShape() {
 
-    int previousIndex = mSelectedShapeIndex;
+    uint previousIndex = mSelectedShapeIndex;
     mSelectedShapeIndex++;
     if (mSelectedShapeIndex >= mAllShapes.size()) {
         mSelectedShapeIndex = 0;

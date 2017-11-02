@@ -79,24 +79,22 @@ class ConvexMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world, const std::string& meshPath);
+        ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath);
 
         /// Constructor
-        ConvexMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
 
         /// Destructor
         ~ConvexMesh();
 
         /// Render the mesh at the correct position and with the correct orientation
-        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) override;
+        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
 
         /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        void setScaling(const openglframework::Vector3& scaling) override;
 };
 
 // Update the transform matrix of the object

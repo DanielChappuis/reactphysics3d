@@ -146,9 +146,6 @@ class RaycastScene : public SceneDemo {
         ConcaveMesh* mConcaveMesh;
         HeightField* mHeightField;
 
-        /// Collision world used for the physics simulation
-        rp3d::CollisionWorld* mCollisionWorld;
-
         /// All the points to render the lines
         std::vector<openglframework::Vector3> mLinePoints;
 
@@ -170,7 +167,7 @@ class RaycastScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastScene(const std::string& name);
+        RaycastScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~RaycastScene() override;

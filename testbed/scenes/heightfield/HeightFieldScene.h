@@ -44,7 +44,7 @@ const float SCENE_RADIUS = 50.0f;
 static const int NB_BOXES = 10;
 static const int NB_SPHERES = 5;
 static const int NB_CAPSULES = 5;
-static const int NB_MESHES = 3;
+static const int NB_MESHES = 4;
 static const int NB_COMPOUND_SHAPES = 3;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
@@ -86,22 +86,15 @@ class HeightFieldScene : public SceneDemo {
         /// Height field
         HeightField* mHeightField;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightFieldScene(const std::string& name);
+        HeightFieldScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~HeightFieldScene() override;
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics() override;
 
         /// Reset the scene
         virtual void reset() override ;
@@ -112,7 +105,7 @@ class HeightFieldScene : public SceneDemo {
 
 // Return all the contact points of the scene
 inline std::vector<ContactPoint> HeightFieldScene::getContactPoints() const {
-    return computeContactPointsOfWorld(mDynamicsWorld);
+    return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
 }

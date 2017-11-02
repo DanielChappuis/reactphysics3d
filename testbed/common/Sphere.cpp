@@ -34,8 +34,7 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               reactphysics3d::CollisionWorld* world,
+Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
                const std::string& meshFolderPath)
        : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
 
@@ -45,23 +44,16 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCollisionShape = new rp3d::SphereShape(mRadius);
+    //mCollisionShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
@@ -77,8 +69,7 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
 }
 
 // Constructor
-Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               float mass, reactphysics3d::DynamicsWorld* world,
+Sphere::Sphere(float radius, float mass, reactphysics3d::DynamicsWorld* world,
                const std::string& meshFolderPath)
        : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
 
@@ -88,21 +79,15 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCollisionShape = new rp3d::SphereShape(mRadius);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(transform);
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
@@ -138,11 +123,7 @@ Sphere::~Sphere() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Sphere::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix, bool wireFrame) {
-
-    if (wireFrame) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
+void Sphere::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -196,10 +177,6 @@ void Sphere::render(openglframework::Shader& shader, const openglframework::Matr
 
     // Unbind the shader
     shader.unbind();
-
-    if (wireFrame) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

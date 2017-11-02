@@ -34,17 +34,13 @@ openglframework::VertexArrayObject Dumbbell::mVAO;
 int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
-Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
+Dumbbell::Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
          : PhysicsObject(meshFolderPath + "dumbbell.obj") {
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
     mDistanceBetweenSphere = 8.0f;
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Create a sphere collision shape for the two ends of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
@@ -61,13 +57,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     const rp3d::decimal massCylinder = rp3d::decimal(1.0);
     mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::decimal angleAroundX = 0;//rp3d::PI / 2;
-    rp3d::Quaternion initOrientation(angleAroundX, 0, 0);
-    rp3d::Transform transformBody(initPosition, initOrientation);
-
-    mPreviousTransform = transformBody;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
     rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
@@ -79,7 +69,7 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
 
     // Create a rigid body corresponding to the dumbbell in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transformBody);
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
     mProxyShapeSphere1 = body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
@@ -99,17 +89,13 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
 }
 
 // Constructor
-Dumbbell::Dumbbell(const openglframework::Vector3 &position,
-                   reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath)
+Dumbbell::Dumbbell(rp3d::CollisionWorld* world, const std::string& meshFolderPath)
          : PhysicsObject(meshFolderPath + "dumbbell.obj"){
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
 
     mDistanceBetweenSphere = 8.0f;
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Create a sphere collision shape for the two ends of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
@@ -124,12 +110,6 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
     mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::decimal angleAroundX = 0;//rp3d::PI / 2;
-    rp3d::Quaternion initOrientation(angleAroundX, 0, 0);
-    rp3d::Transform transformBody(initPosition, initOrientation);
-
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
     rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
 
@@ -139,8 +119,10 @@ Dumbbell::Dumbbell(const openglframework::Vector3 &position,
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
 
+    mPreviousTransform = rp3d::Transform::identity();
+
     // Create a rigid body corresponding to the dumbbell in the dynamics world
-    mBody = world->createCollisionBody(transformBody);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
     mProxyShapeSphere1 = mBody->addCollisionShape(mSphereShape, transformSphereShape1);
@@ -179,11 +161,7 @@ Dumbbell::~Dumbbell() {
 
 // Render the sphere at the correct position and with the correct orientation
 void Dumbbell::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix, bool wireframe) {
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
+                    const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -237,10 +215,6 @@ void Dumbbell::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
-
-    if (wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

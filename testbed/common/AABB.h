@@ -23,26 +23,22 @@
  *                                                                               *
  ********************************************************************************/
 
-#ifndef BOX_H
-#define BOX_H
+#ifndef AABB_H
+#define AABB_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "PhysicsObject.h"
 
-// Class Box
-class Box : public PhysicsObject {
+// Class AABB
+class AABB  {
 
-	private :
+    private :
 
-		// -------------------- Attributes -------------------- //
+        // -------------------- Attributes -------------------- //
 
-		/// Size of each side of the box
-		float mSize[3];
-
-        rp3d::BoxShape* mBoxShape;
-        rp3d::ProxyShape* mProxyShape;
+        /// Size of each side of the box
+        float mSize[3];
 
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -53,50 +49,31 @@ class Box : public PhysicsObject {
         /// Vertex Buffer Object for the normals data
         static openglframework::VertexBufferObject mVBONormals;
 
-        /// Vertex Buffer Object for the texture coords
-        static openglframework::VertexBufferObject mVBOTextureCoords;
-
         /// Vertex Buffer Object for the indices
         static openglframework::VertexBufferObject mVBOIndices;
 
         /// Vertex Array Object for the vertex data
         static openglframework::VertexArrayObject mVAO;
 
-		/// Total number of boxes created
-		static int totalNbBoxes;
+        // -------------------- Methods -------------------- //
 
-		// -------------------- Methods -------------------- //
+        /// Create a the VAO and VBOs to render to box with OpenGL
+        static void createVBOAndVAO();
 
-		/// Create a the VAO and VBOs to render to box with OpenGL
-        void createVBOAndVAO();
+    public :
 
-	public :
+        // -------------------- Methods -------------------- //
 
-		// -------------------- Methods -------------------- //
+        /// Initialize the data to render AABBs
+        static void init();
 
-		/// Constructor
-        Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
+        /// Destroy the data used to render AABBs
+        static void destroy();
 
-		/// Constructor
-        Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld *world, const std::string& meshFolderPath);
-
-		/// Destructor
-		~Box();
-
-		/// Render the cube at the correct position and with the correct orientation
-        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
-
-        /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor) override;
-
-        /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling) override;
+        /// Render the cube at the correct position and with the correct orientation
+        static void render(const openglframework::Vector3& position, const openglframework::Vector3& dimension,
+                    openglframework::Color color, openglframework::Shader& shader,
+                    const openglframework::Matrix4& worldToCameraMatrix);
 };
-
-// Update the transform matrix of the object
-inline void Box::updateTransform(float interpolationFactor) {
-	mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
-}
-
 
 #endif

@@ -152,10 +152,7 @@ class CollisionDetectionScene : public SceneDemo {
 
         std::vector<PhysicsObject*> mAllShapes;
 
-        int mSelectedShapeIndex;
-
-        /// Collision world used for the physics simulation
-        rp3d::CollisionWorld* mCollisionWorld;
+        uint mSelectedShapeIndex;
 
         /// Select the next shape
         void selectNextShape();
@@ -165,7 +162,7 @@ class CollisionDetectionScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetectionScene(const std::string& name);
+        CollisionDetectionScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~CollisionDetectionScene() override;

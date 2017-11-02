@@ -33,15 +33,34 @@
 #include "SceneDemo.h"
 #include "ConcaveMesh.h"
 #include "Box.h"
+#include "Capsule.h"
+#include "Dumbbell.h"
+#include "Sphere.h"
+#include "ConvexMesh.h"
 
 namespace trianglemeshscene {
 
 // Constants
 const float SCENE_RADIUS = 70.0f;                           // Radius of the scene in meters
-const int NB_BOXES_X = 8;
-const int NB_BOXES_Z = 8;
-const float BOX_SIZE = 3.0f;
-const float BOXES_SPACE = 2.0f;
+static const int NB_BOXES = 10;
+static const int NB_SPHERES = 5;
+static const int NB_CAPSULES = 5;
+static const int NB_MESHES = 3;
+static const int NB_COMPOUND_SHAPES = 3;
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);
+const float SPHERE_RADIUS = 1.5f;
+const float CONE_RADIUS = 2.0f;
+const float CONE_HEIGHT = 3.0f;
+const float CYLINDER_RADIUS = 1.0f;
+const float CYLINDER_HEIGHT = 5.0f;
+const float CAPSULE_RADIUS = 1.0f;
+const float CAPSULE_HEIGHT = 1.0f;
+const float DUMBBELL_HEIGHT = 1.0f;
+const float BOX_MASS = 1.0f;
+const float CONE_MASS = 1.0f;
+const float CYLINDER_MASS = 1.0f;
+const float CAPSULE_MASS = 1.0f;
+const float MESH_MASS = 1.0f;
 
 // Class TriangleMeshScene
 class ConcaveMeshScene : public SceneDemo {
@@ -50,34 +69,30 @@ class ConcaveMeshScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        Box* mBoxes[NB_BOXES_X * NB_BOXES_Z];
+        std::vector<Box*> mBoxes;
+
+        std::vector<Sphere*> mSpheres;
+
+        std::vector<Capsule*> mCapsules;
+
+        /// All the convex meshes of the scene
+        std::vector<ConvexMesh*> mConvexMeshes;
+
+        /// All the dumbbell of the scene
+        std::vector<Dumbbell*> mDumbbells;
 
         /// Concave triangles mesh
         ConcaveMesh* mConcaveMesh;
-
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMeshScene(const std::string& name);
+        ConcaveMeshScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~ConcaveMeshScene() override;
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics() override;
-
-        /// Update the scene (take a simulation step)
-        virtual void update() override;
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
         virtual void reset() override;
@@ -88,7 +103,7 @@ class ConcaveMeshScene : public SceneDemo {
 
 // Return all the contact points of the scene
 inline std::vector<ContactPoint> ConcaveMeshScene::getContactPoints() const {
-    return computeContactPointsOfWorld(mDynamicsWorld);
+    return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
 }

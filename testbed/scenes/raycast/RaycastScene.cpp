@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace raycastscene;
 
 // Constructor
-RaycastScene::RaycastScene(const std::string& name)
-       : SceneDemo(name, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
+       : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mRaycastManager(mPhongShader, mMeshFolderPath), mCurrentBodyIndex(-1),
          mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
 
@@ -45,13 +45,12 @@ RaycastScene::RaycastScene(const std::string& name)
     setScenePosition(center, SCENE_RADIUS);
 
     // Create the dynamics world for the physics simulation
-    mCollisionWorld = new rp3d::CollisionWorld();
+    mPhysicsWorld = new rp3d::CollisionWorld();
 
     // ---------- Dumbbell ---------- //
-    openglframework::Vector3 position1(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mDumbbell = new Dumbbell(position1, mCollisionWorld, mMeshFolderPath);
+    mDumbbell = new Dumbbell(mPhysicsWorld, mMeshFolderPath);
 
     // Set the box color
     mDumbbell->setColor(mGreyColorDemo);
@@ -59,10 +58,9 @@ RaycastScene::RaycastScene(const std::string& name)
 	mPhysicsObjects.push_back(mDumbbell);
 
     // ---------- Box ---------- //
-    openglframework::Vector3 position2(0, 0, 0);
 
     // Create a box and a corresponding collision body in the dynamics world
-    mBox = new Box(BOX_SIZE, position2, mCollisionWorld, mMeshFolderPath);
+    mBox = new Box(BOX_SIZE, mPhysicsWorld, mMeshFolderPath);
     mBox->getCollisionBody()->setIsActive(false);
 
     // Set the box color
@@ -71,11 +69,9 @@ RaycastScene::RaycastScene(const std::string& name)
 	mPhysicsObjects.push_back(mBox);
 
     // ---------- Sphere ---------- //
-    openglframework::Vector3 position3(0, 0, 0);
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere = new Sphere(SPHERE_RADIUS, position3, mCollisionWorld,
-                         mMeshFolderPath);
+    mSphere = new Sphere(SPHERE_RADIUS, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
     mSphere->setColor(mGreyColorDemo);
@@ -86,8 +82,7 @@ RaycastScene::RaycastScene(const std::string& name)
     openglframework::Vector3 position6(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, position6 ,
-                           mCollisionWorld, mMeshFolderPath);
+    mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
     mCapsule->setColor(mGreyColorDemo);
@@ -95,10 +90,9 @@ RaycastScene::RaycastScene(const std::string& name)
 	mPhysicsObjects.push_back(mCapsule);
 
     // ---------- Convex Mesh ---------- //
-    openglframework::Vector3 position7(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(position7, mCollisionWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
     // Set the color
     mConvexMesh->setColor(mGreyColorDemo);
@@ -106,10 +100,9 @@ RaycastScene::RaycastScene(const std::string& name)
 	mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Concave Mesh ---------- //
-    openglframework::Vector3 position8(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConcaveMesh = new ConcaveMesh(position8, mCollisionWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
 
     // Set the color
     mConcaveMesh->setColor(mGreyColorDemo);
@@ -117,10 +110,9 @@ RaycastScene::RaycastScene(const std::string& name)
 	mPhysicsObjects.push_back(mConcaveMesh);
 
     // ---------- Heightfield ---------- //
-    openglframework::Vector3 position9(0, 0, 0);
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mHeightField = new HeightField(position9, mCollisionWorld);
+    mHeightField = new HeightField(mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
@@ -139,7 +131,7 @@ RaycastScene::RaycastScene(const std::string& name)
 // Create the raycast lines
 void RaycastScene::createLines() {
 
-      int nbRaysOneDimension = std::sqrt(float(NB_RAYS));
+      int nbRaysOneDimension = static_cast<int>(std::sqrt(float(NB_RAYS)));
 
       for (int i=0; i<nbRaysOneDimension; i++) {
           for (int j=0; j<nbRaysOneDimension; j++) {
@@ -201,45 +193,49 @@ void RaycastScene::changeBody() {
 // Reset the scene
 void RaycastScene::reset() {
 
+    std::vector<PhysicsObject*>::iterator it;
+    for (it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+        (*it)->setTransform(rp3d::Transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity()));
+    }
 }
 
 // Destructor
 RaycastScene::~RaycastScene() {
 
     // Destroy the box rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mBox->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mBox->getCollisionBody());
     delete mBox;
 
     // Destroy the sphere
-    mCollisionWorld->destroyCollisionBody(mSphere->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mSphere->getCollisionBody());
     delete mSphere;
 
     // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mCapsule->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mCapsule->getCollisionBody());
 
     // Destroy the sphere
     delete mCapsule;
 
     // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
 
     // Destroy the convex mesh
     delete mConvexMesh;
 
     // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
 
     // Destroy the dumbbell
     delete mDumbbell;
 
     // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
 
     // Destroy the convex mesh
     delete mConcaveMesh;
 
     // Destroy the corresponding rigid body from the dynamics world
-    mCollisionWorld->destroyCollisionBody(mHeightField->getCollisionBody());
+    mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
 
     // Destroy the convex mesh
     delete mHeightField;
@@ -250,7 +246,7 @@ RaycastScene::~RaycastScene() {
     VisualContactPoint::destroyStaticData();
 
     // Destroy the collision world
-    delete mCollisionWorld;
+    delete mPhysicsWorld;
 
     // Destroy the lines
     for (std::vector<Line*>::iterator it = mLines.begin(); it != mLines.end();
@@ -284,7 +280,7 @@ void RaycastScene::update() {
 
         // Perform a raycast query on the physics world by passing a raycast
         // callback class in argument.
-        mCollisionWorld->raycast(ray, &mRaycastManager);
+        mPhysicsWorld->raycast(ray, &mRaycastManager);
     }
 
     SceneDemo::update();
@@ -307,7 +303,7 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 	mColorShader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
     // Set the vertex color
-    openglframework::Vector4 color(1, 0.55, 0, 1);
+    openglframework::Vector4 color(1, 0.55f, 0, 1);
 	mColorShader.setVector4Uniform("vertexColor", color, false);
 
     // Get the location of shader attribute variables
@@ -334,7 +330,7 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 	// Render all the physics objects of the scene
 	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 		if ((*it)->getCollisionBody()->isActive()) {
-			(*it)->render(shader, worldToCameraMatrix, mIsWireframeEnabled);
+            (*it)->render(shader, worldToCameraMatrix);
 		}
 	}
 

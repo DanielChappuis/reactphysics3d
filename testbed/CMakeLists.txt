@@ -94,6 +94,8 @@ SET(COMMON_SOURCES
     common/VisualContactPoint.cpp
     common/PerlinNoise.h
     common/PerlinNoise.cpp
+    common/AABB.h
+    common/AABB.cpp
 )
 
 # Examples scenes source files
