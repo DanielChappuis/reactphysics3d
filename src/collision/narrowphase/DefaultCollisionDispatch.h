@@ -28,7 +28,6 @@
 
 // Libraries
 #include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
 #include "SphereVsSphereAlgorithm.h"
 #include "SphereVsConvexPolyhedronAlgorithm.h"
 #include "SphereVsCapsuleAlgorithm.h"
