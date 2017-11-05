@@ -233,9 +233,9 @@ inline Matrix3x3 Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(const Vect
 
 // Return the matrix with absolute values
 inline Matrix3x3 Matrix3x3::getAbsoluteMatrix() const {
-    return Matrix3x3(fabs(mRows[0][0]), fabs(mRows[0][1]), fabs(mRows[0][2]),
-                     fabs(mRows[1][0]), fabs(mRows[1][1]), fabs(mRows[1][2]),
-                     fabs(mRows[2][0]), fabs(mRows[2][1]), fabs(mRows[2][2]));
+    return Matrix3x3(std::fabs(mRows[0][0]), std::fabs(mRows[0][1]), std::fabs(mRows[0][2]),
+                     std::fabs(mRows[1][0]), std::fabs(mRows[1][1]), std::fabs(mRows[1][2]),
+                     std::fabs(mRows[2][0]), std::fabs(mRows[2][1]), std::fabs(mRows[2][2]));
 }
 
 // Overloaded operator for addition

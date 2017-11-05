@@ -103,7 +103,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 // Class ConcaveMeshShape
 /**
  * This class represents a static concave mesh shape. Note that collision detection
- * with a concave mesh shape can be very expensive. You should use only use
+ * with a concave mesh shape can be very expensive. You should only use
  * this shape for a static mesh.
  */
 class ConcaveMeshShape : public ConcaveShape {

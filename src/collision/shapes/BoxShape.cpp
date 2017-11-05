@@ -35,7 +35,6 @@ using namespace reactphysics3d;
 // Constructor
 /**
  * @param extent The vector with the three extents of the box (in meters)
- * @param margin The collision margin (in meters) around the collision shape
  */
 BoxShape::BoxShape(const Vector3& extent)
          : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent) {

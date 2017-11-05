@@ -41,14 +41,7 @@ namespace reactphysics3d {
  * This class represents a 3D box shape. Those axis are unit length.
  * The three extents are half-widths of the box along the three
  * axis x, y, z local axis. The "transform" of the corresponding
- * rigid body will give an orientation and a position to the box. This
- * collision shape uses an extra margin distance around it for collision
- * detection purpose. The default margin is 4cm (if your units are meters,
- * which is recommended). In case, you want to simulate small objects
- * (smaller than the margin distance), you might want to reduce the margin by
- * specifying your own margin distance using the "margin" parameter in the
- * constructor of the box shape. Otherwise, it is recommended to use the
- * default margin distance by not using the "margin" parameter in the constructor.
+ * body will give an orientation and a position to the box.
  */
 class BoxShape : public ConvexPolyhedronShape {
 
@@ -171,9 +164,9 @@ inline size_t BoxShape::getSizeInBytes() const {
 // Return a local support point in a given direction without the objec margin
 inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
-    return Vector3(direction.x < 0.0 ? -mExtent.x : mExtent.x,
-                   direction.y < 0.0 ? -mExtent.y : mExtent.y,
-                   direction.z < 0.0 ? -mExtent.z : mExtent.z);
+    return Vector3(direction.x < decimal(0.0) ? -mExtent.x : mExtent.x,
+                   direction.y < decimal(0.0) ? -mExtent.y : mExtent.y,
+                   direction.z < decimal(0.0) ? -mExtent.z : mExtent.z);
 }
 
 // Return true if a point is inside the collision shape
