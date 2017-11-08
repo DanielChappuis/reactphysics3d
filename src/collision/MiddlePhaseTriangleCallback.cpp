@@ -38,12 +38,19 @@ void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIn
                                    TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
                                                  verticesNormals, meshSubPart, triangleIndex);
 
+    bool isShape1Convex = mOverlappingPair->getShape1()->getCollisionShape()->isConvex();
+    ProxyShape* shape1 = isShape1Convex ? mConvexProxyShape : mConcaveProxyShape;
+    ProxyShape* shape2 = isShape1Convex ? mConcaveProxyShape : mConvexProxyShape;
+
     // Create a narrow phase info for the narrow-phase collision detection
     NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;
     narrowPhaseInfoList = new (mAllocator.allocate(sizeof(NarrowPhaseInfo)))
-                           NarrowPhaseInfo(mOverlappingPair, mConvexProxyShape->getCollisionShape(),
-                           triangleShape, mConvexProxyShape->getLocalToWorldTransform(),
-                           mConcaveProxyShape->getLocalToWorldTransform(), mConvexProxyShape->getCachedCollisionData(),
-                           mConcaveProxyShape->getCachedCollisionData(), mAllocator);
+                           NarrowPhaseInfo(mOverlappingPair,
+                           isShape1Convex ? mConvexProxyShape->getCollisionShape() : triangleShape,
+                           isShape1Convex ? triangleShape : mConvexProxyShape->getCollisionShape(),
+                           shape1->getLocalToWorldTransform(),
+                           shape2->getLocalToWorldTransform(),
+                           shape1->getCachedCollisionData(),
+                           shape2->getCachedCollisionData(), mAllocator);
     narrowPhaseInfoList->next = firstNarrowPhaseInfo;
 }
