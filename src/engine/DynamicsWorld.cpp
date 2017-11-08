@@ -44,7 +44,7 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
                 mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsSleepingEnabled(SLEEPING_ENABLED), mGravity(gravity),
+                mIsSleepingEnabled(SLEEPING_ENABLED), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
                 mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
                 mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
                 mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
