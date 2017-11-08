@@ -57,6 +57,11 @@ void ConcaveMeshShape::initBVHTree() {
             // Get the triangle vertices
             triangleVertexArray->getTriangleVertices(triangleIndex, trianglePoints);
 
+            // Apply the scaling factor to the vertices
+            trianglePoints[0] *= mScaling.x;
+            trianglePoints[1] *= mScaling.y;
+            trianglePoints[2] *= mScaling.z;
+
             // Create the AABB for the triangle
             AABB aabb = AABB::createAABBForTriangle(trianglePoints);
 
