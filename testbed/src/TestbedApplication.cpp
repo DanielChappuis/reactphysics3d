@@ -64,7 +64,7 @@ TestbedApplication::TestbedApplication(bool isFullscreen)
     mSinglePhysicsStepDone = false;
     mWindowToFramebufferRatio = Vector2(1, 1);
     mIsShadowMappingEnabled = true;
-    mIsVSyncEnabled = false;
+    mIsVSyncEnabled = true;
     mIsContactPointsDisplayed = false;
     mIsAABBsDisplayed = false;
     mIsWireframeEnabled = false;
