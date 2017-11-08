@@ -113,7 +113,7 @@ class CollisionShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
         /// Return the scaling vector of the collision shape
-        Vector3 getScaling() const;
+        Vector3 getLocalScaling() const;
 
         /// Set the local scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
@@ -147,7 +147,7 @@ inline CollisionShapeType CollisionShape::getType() const {
 }
 
 // Return the scaling vector of the collision shape
-inline Vector3 CollisionShape::getScaling() const {
+inline Vector3 CollisionShape::getLocalScaling() const {
     return mScaling;
 }
 

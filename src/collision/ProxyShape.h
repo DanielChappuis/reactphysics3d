@@ -332,7 +332,7 @@ inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBit
  * @return The local scaling vector
  */
 inline Vector3 ProxyShape::getLocalScaling() const {
-    return mCollisionShape->getScaling();
+    return mCollisionShape->getLocalScaling();
 }
 
 // Set the local scaling vector of the collision shape

@@ -46,18 +46,9 @@ class CollisionWorld;
 // Class ConvexMeshShape
 /**
  * This class represents a convex mesh shape. In order to create a convex mesh shape, you
- * need to indicate the local-space position of the mesh vertices. You do it either by
- * passing a vertices array to the constructor or using the addVertex() method. Make sure
- * that the set of vertices that you use to create the shape are indeed part of a convex
- * mesh. The center of mass of the shape will be at the origin of the local-space geometry
- * that you use to create the mesh. The method used for collision detection with a convex
- * mesh shape has an O(n) running time with "n" beeing the number of vertices in the mesh.
- * Therefore, you should try not to use too many vertices. However, it is possible to speed
- * up the collision detection by using the edges information of your mesh. The running time
- * of the collision detection that uses the edges is almost O(1) constant time at the cost
- * of additional memory used to store the vertices. You can indicate edges information
- * with the addEdge() method. Then, you must use the setIsEdgesInformationUsed(true) method
- * in order to use the edges information for collision detection.
+ * need to indicate the local-space position of the mesh vertices. The center of mass
+ * of the shape will be at the origin of the local-space geometry that you use to create
+ * the mesh.
  */
 class ConvexMeshShape : public ConvexPolyhedronShape {
 
@@ -78,9 +69,6 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
-
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return a local support point in a given direction without the object margin.
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -109,6 +97,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Deleted assignment operator
         ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
+
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
