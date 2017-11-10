@@ -217,9 +217,16 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
-    PROFILE("HeightFieldShape::raycast()");
+    PROFILE("HeightFieldShape::raycast()", mProfiler);
 
     TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	triangleCallback.setProfiler(mProfiler);
+
+#endif
 
     // Compute the AABB for the ray
     const Vector3 rayEnd = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
@@ -263,6 +270,13 @@ void TriangleOverlapCallback::testTriangle(uint meshSubPart, uint triangleIndex,
     TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
                                 verticesNormals, meshSubPart, triangleIndex);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler to the triangle shape
+	triangleShape.setProfiler(mProfiler);
+
+#endif
 
     // Ray casting test against the collision shape
     RaycastInfo raycastInfo;

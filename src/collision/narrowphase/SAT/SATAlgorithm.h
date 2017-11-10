@@ -50,6 +50,13 @@ class SATAlgorithm {
         /// make sure the contact manifold does not change too much between frames.
         static const decimal SAME_SEPARATING_AXIS_BIAS;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Return true if two edges of two polyhedrons build a minkowski face (and can therefore be a separating axis)
@@ -138,7 +145,25 @@ class SATAlgorithm {
 
         /// Test collision between two convex meshes
         bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void SATAlgorithm::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

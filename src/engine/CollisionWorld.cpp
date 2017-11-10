@@ -37,6 +37,13 @@ CollisionWorld::CollisionWorld()
                  mCollisionDetection(this, mPoolAllocator, mSingleFrameAllocator), mCurrentBodyID(0),
                  mEventListener(nullptr) {
 
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	mCollisionDetection.setProfiler(&mProfiler);
+
+#endif
+
 }
 
 // Destructor
@@ -74,6 +81,12 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	collisionBody->setProfiler(&mProfiler);
+
+#endif
 
     // Return the pointer to the rigid body
     return collisionBody;

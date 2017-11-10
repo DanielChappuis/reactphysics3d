@@ -153,13 +153,12 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
     return (u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2]).getUnit();
 }
 
-
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
 bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    PROFILE("TriangleShape::raycast()");
+    PROFILE("TriangleShape::raycast()", mProfiler);
 
     const Vector3 pq = ray.point2 - ray.point1;
     const Vector3 pa = mPoints[0] - ray.point1;

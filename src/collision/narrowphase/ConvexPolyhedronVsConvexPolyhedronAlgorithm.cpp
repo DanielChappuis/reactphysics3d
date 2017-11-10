@@ -38,6 +38,13 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo*
 
     // Run the SAT algorithm to find the separating axis and compute contact point
     SATAlgorithm satAlgorithm;
+
+#ifdef IS_PROFILING_ACTIVE
+
+	satAlgorithm.setProfiler(mProfiler);
+
+#endif
+
     bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;

@@ -47,6 +47,12 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     // Create the dynamics world for the physics simulation
     mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
 
+#ifdef IS_PROFILING_ACTIVE
+
+    mPhysicsWorld->setProfilerName(name + "_profiler");
+
+#endif
+
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
 

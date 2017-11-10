@@ -49,7 +49,7 @@ using namespace reactphysics3d;
 /// the correct penetration depth and contact points between the enlarged objects.
 GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
-    PROFILE("GJKAlgorithm::testCollision()");
+    PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B

@@ -48,6 +48,13 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     // Create the dynamics world for the physics simulation
     mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
 
+#ifdef IS_PROFILING_ACTIVE
+
+    mPhysicsWorld->setProfilerName(name + "_profiler");
+
+#endif
+
+    // ---------- Create the boxes ----------- //
     for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the dynamics world

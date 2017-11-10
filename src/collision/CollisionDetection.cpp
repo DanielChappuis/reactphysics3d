@@ -57,12 +57,19 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, PoolAllocator& mem
 
     // Fill-in the collision detection matrix with algorithms
     fillInCollisionMatrix();
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
 }
 
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
 
-    PROFILE("CollisionDetection::computeCollisionDetection()");
+    PROFILE("CollisionDetection::computeCollisionDetection()", mProfiler);
 	    
     // Compute the broad-phase collision detection
     computeBroadPhase();
@@ -80,7 +87,7 @@ void CollisionDetection::computeCollisionDetection() {
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
-    PROFILE("CollisionDetection::computeBroadPhase()");
+    PROFILE("CollisionDetection::computeBroadPhase()", mProfiler);
 
     // If new collision shapes have been added to bodies
     if (mIsCollisionShapesAdded) {
@@ -95,7 +102,7 @@ void CollisionDetection::computeBroadPhase() {
 // Compute the middle-phase collision detection
 void CollisionDetection::computeMiddlePhase() {
 
-    PROFILE("CollisionDetection::computeMiddlePhase()");
+    PROFILE("CollisionDetection::computeMiddlePhase()", mProfiler);
 
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
@@ -219,6 +226,13 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
     MiddlePhaseTriangleCallback middlePhaseCallback(pair, concaveProxyShape, convexProxyShape,
                                                     concaveShape, allocator);
 
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	middlePhaseCallback.setProfiler(mProfiler);
+
+#endif
+
     // Compute the convex shape AABB in the local-space of the convex shape
     const Transform convexToConcaveTransform = concaveProxyShape->getLocalToWorldTransform().getInverse() *
                                                convexProxyShape->getLocalToWorldTransform();
@@ -236,7 +250,7 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
 
-    PROFILE("CollisionDetection::computeNarrowPhase()");
+    PROFILE("CollisionDetection::computeNarrowPhase()", mProfiler);
 
     NarrowPhaseInfo* currentNarrowPhaseInfo = mNarrowPhaseInfoList;
     while (currentNarrowPhaseInfo != nullptr) {
@@ -442,90 +456,6 @@ void CollisionDetection::reportAllContacts() {
              mWorld->mEventListener->newContact(collisionInfo);
         }
     }
-}
-
-// Process the potential contacts where one collion is a concave shape.
-// This method processes the concave triangle mesh collision using the smooth mesh collision algorithm described
-// by Pierre Terdiman (http://www.codercorner.com/MeshContacts.pdf). This is used to avoid the collision
-// issue with some internal edges.
-void CollisionDetection::processSmoothMeshContacts(OverlappingPair* pair) {
-
-//    // Set with the triangle vertices already processed to void further contacts with same triangle
-//    std::unordered_multimap<int, Vector3> processTriangleVertices;
-
-//    std::vector<SmoothMeshContactInfo*> smoothContactPoints;
-
-//    // If the collision shape 1 is the triangle
-//    bool isFirstShapeTriangle = pair->getShape1()->getCollisionShape()->getType() == CollisionShapeType::TRIANGLE;
-//    assert(isFirstShapeTriangle || pair->getShape2()->getCollisionShape()->getType() == CollisionShapeType::TRIANGLE);
-//    assert(!isFirstShapeTriangle || pair->getShape2()->getCollisionShape()->getType() != CollisionShapeType::TRIANGLE);
-
-//    const TriangleShape* triangleShape = nullptr;
-//    if (isFirstShapeTriangle) {
-//        triangleShape = static_cast<const TriangleShape*>(pair->getShape1()->getCollisionShape());
-//    }
-//    else {
-//        triangleShape = static_cast<const TriangleShape*>(pair->getShape2()->getCollisionShape());
-//    }
-//    assert(triangleShape != nullptr);
-
-//    // Get the temporary memory allocator
-//    Allocator& allocator = pair->getTemporaryAllocator();
-
-//    // For each potential contact manifold of the pair
-//    ContactManifoldInfo* potentialManifold = pair->getPotentialContactManifolds();
-//    while (potentialManifold != nullptr) {
-
-//        // For each contact point of the potential manifold
-//        ContactPointInfo* contactPointInfo = potentialManifold->getFirstContactPointInfo();
-//        while (contactPointInfo != nullptr) {
-
-//            // Compute the barycentric coordinates of the point in the triangle
-//            decimal u, v, w;
-//            computeBarycentricCoordinatesInTriangle(triangleShape->getVertexPosition(0),
-//                                                    triangleShape->getVertexPosition(1),
-//                                                    triangleShape->getVertexPosition(2),
-//                                                    isFirstShapeTriangle ? contactPointInfo->localPoint1 : contactPointInfo->localPoint2,
-//                                                    u, v, w);
-//            int nbZeros = 0;
-//            bool isUZero = approxEqual(u, 0, 0.0001);
-//            bool isVZero = approxEqual(v, 0, 0.0001);
-//            bool isWZero = approxEqual(w, 0, 0.0001);
-//            if (isUZero) nbZeros++;
-//            if (isVZero) nbZeros++;
-//            if (isWZero) nbZeros++;
-
-//            // If the triangle contact point is on a triangle vertex of a triangle edge
-//            if (nbZeros == 1 || nbZeros == 2) {
-
-
-//                // Create a smooth mesh contact info
-//                SmoothMeshContactInfo* smoothContactInfo = new (allocator.allocate(sizeof(SmoothMeshContactInfo)))
-//                                                           SmoothMeshContactInfo(potentialManifold, contactInfo, isFirstShapeTriangle,
-//                                                                                 triangleShape->getVertexPosition(0),
-//                                                                                 triangleShape->getVertexPosition(1),
-//                                                                                 triangleShape->getVertexPosition(2));
-
-//                smoothContactPoints.push_back(smoothContactInfo);
-
-//                // Remove the contact point info from the manifold. If the contact point will be kept in the future, we
-//                // will put the contact point back in the manifold.
-//                ...
-//            }
-
-//            // Note that we do not remove the contact points that are not on the vertices or edges of the triangle
-//            // from the contact manifold because we know we will keep to contact points. We only remove the vertices
-//            // and edges contact points for the moment. If those points will be kept in the future, we will have to
-//            // put them back again in the contact manifold
-//        }
-
-//        potentialManifold = potentialManifold->mNext;
-//    }
-
-//    // Sort the list of narrow-phase contacts according to their penetration depth
-//    std::sort(smoothContactPoints.begin(), smoothContactPoints.end(), ContactsDepthCompare());
-
-//    ...
 }
 
 // Compute the middle-phase collision detection between two proxy shapes

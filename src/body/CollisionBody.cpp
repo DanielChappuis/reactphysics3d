@@ -74,6 +74,13 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, decimal(1));
 
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	proxyShape->setProfiler(mProfiler);
+
+#endif
+
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;

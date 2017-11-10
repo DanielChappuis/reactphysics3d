@@ -78,6 +78,13 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         const Ray& mRay;
         bool mIsHit;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public:
 
         // Constructor
@@ -98,6 +105,15 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         bool getIsHit() const {
             return mIsHit;
         }
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) {
+			mProfiler = profiler;
+		}
+
+#endif
 };
 
 // Class ConcaveMeshShape
@@ -164,6 +180,13 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Set the profiler
+        virtual void setProfiler(Profiler* profiler) override;
+
+#endif
 
         // ---------- Friendship ----------- //
 
@@ -238,6 +261,18 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
     // Call the callback to test narrow-phase collision with this triangle
     mTriangleTestCallback.testTriangle(data[0], data[1], trianglePoints, verticesNormals);
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ConcaveMeshShape::setProfiler(Profiler* profiler) {
+
+    CollisionShape::setProfiler(profiler);
+
+    mDynamicAABBTree.setProfiler(profiler);
+}
+
+#endif
 
 }
 #endif

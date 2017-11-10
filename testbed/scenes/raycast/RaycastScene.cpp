@@ -47,6 +47,12 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     // Create the dynamics world for the physics simulation
     mPhysicsWorld = new rp3d::CollisionWorld();
 
+#ifdef IS_PROFILING_ACTIVE
+
+    mPhysicsWorld->setProfilerName(name + "_profiler");
+
+#endif
+
     // ---------- Dumbbell ---------- //
 
     // Create a convex mesh and a corresponding collision body in the dynamics world

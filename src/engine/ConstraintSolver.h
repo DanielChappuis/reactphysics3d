@@ -165,6 +165,12 @@ class ConstraintSolver {
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -197,6 +203,14 @@ class ConstraintSolver {
         /// Set the constrained positions/orientations arrays
         void setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                            Quaternion* constrainedOrientations);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Set the constrained velocities arrays
@@ -220,6 +234,15 @@ inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrained
     mConstraintSolverData.positions = constrainedPositions;
     mConstraintSolverData.orientations = constrainedOrientations;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ConstraintSolver::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

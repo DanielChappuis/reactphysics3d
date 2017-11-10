@@ -29,6 +29,7 @@
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"
 #include "constraint/FixedJoint.h"
+#include <fstream>
 
 // Namespaces
 using namespace reactphysics3d;
@@ -52,6 +53,14 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
                 mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
                 mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
                 mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	mConstraintSolver.setProfiler(&mProfiler);
+	mContactSolver.setProfiler(&mProfiler);
+
+#endif
 
 }
 
@@ -80,10 +89,10 @@ DynamicsWorld::~DynamicsWorld() {
 #ifdef IS_PROFILING_ACTIVE
 
     // Print the profiling report
-    Profiler::printReport(std::cout);
-
-    // Destroy the profiler (release the allocated memory)
-    Profiler::destroy();
+	ofstream myfile;
+	myfile.open(mProfiler.getName() + ".txt");
+    mProfiler.printReport(myfile);
+	myfile.close();
 #endif
 
 }
@@ -96,10 +105,10 @@ void DynamicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
-    Profiler::incrementFrameCounter();
+    mProfiler.incrementFrameCounter();
 #endif
 
-    PROFILE("DynamicsWorld::update()");
+    PROFILE("DynamicsWorld::update()", &mProfiler);
 
     mTimeStep = timeStep;
 
@@ -147,7 +156,7 @@ void DynamicsWorld::update(decimal timeStep) {
 /// the sympletic Euler time stepping scheme.
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
-    PROFILE("DynamicsWorld::integrateRigidBodiesPositions()");
+    PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", &mProfiler);
     
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -186,7 +195,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 // Update the postion/orientation of the bodies
 void DynamicsWorld::updateBodiesState() {
 
-    PROFILE("DynamicsWorld::updateBodiesState()");
+    PROFILE("DynamicsWorld::updateBodiesState()", &mProfiler);
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
@@ -223,7 +232,7 @@ void DynamicsWorld::updateBodiesState() {
 // Initialize the bodies velocities arrays for the next simulation step.
 void DynamicsWorld::initVelocityArrays() {
 
-    PROFILE("DynamicsWorld::initVelocityArrays()");
+    PROFILE("DynamicsWorld::initVelocityArrays()", &mProfiler);
 
     // Allocate memory for the bodies velocity arrays
     uint nbBodies = mRigidBodies.size();
@@ -266,7 +275,7 @@ void DynamicsWorld::initVelocityArrays() {
 /// contact solver.
 void DynamicsWorld::integrateRigidBodiesVelocities() {
 
-    PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()");
+    PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", &mProfiler);
 
     // Initialize the bodies velocity arrays
     initVelocityArrays();
@@ -328,7 +337,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 // Solve the contacts and constraints
 void DynamicsWorld::solveContactsAndConstraints() {
 
-    PROFILE("DynamicsWorld::solveContactsAndConstraints()");
+    PROFILE("DynamicsWorld::solveContactsAndConstraints()", &mProfiler);
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
@@ -401,7 +410,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
 // Solve the position error correction of the constraints
 void DynamicsWorld::solvePositionCorrection() {
 
-    PROFILE("DynamicsWorld::solvePositionCorrection()");
+    PROFILE("DynamicsWorld::solvePositionCorrection()", &mProfiler);
 
     // Do not continue if there is no constraints
     if (mJoints.empty()) return;
@@ -441,6 +450,12 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     // Add the rigid body to the physics world
     mBodies.insert(rigidBody);
     mRigidBodies.insert(rigidBody);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	rigidBody->setProfiler(&mProfiler);
+
+#endif
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -613,7 +628,7 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
 /// it). Then, we create an island with this group of connected bodies.
 void DynamicsWorld::computeIslands() {
 
-    PROFILE("DynamicsWorld::computeIslands()");
+    PROFILE("DynamicsWorld::computeIslands()", &mProfiler);
 
     uint nbBodies = mRigidBodies.size();
 
@@ -757,7 +772,7 @@ void DynamicsWorld::computeIslands() {
 /// time, we put all the bodies of the island to sleep.
 void DynamicsWorld::updateSleepingBodies() {
 
-    PROFILE("DynamicsWorld::updateSleepingBodies()");
+    PROFILE("DynamicsWorld::updateSleepingBodies()", &mProfiler);
 
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;

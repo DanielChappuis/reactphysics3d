@@ -43,6 +43,13 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
+
+#ifdef IS_PROFILING_ACTIVE
+
+	gjkAlgorithm.setProfiler(mProfiler);
+
+#endif
+
     GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
@@ -60,6 +67,13 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
 
         // Run the SAT algorithm to find the separating axis and compute contact point
         SATAlgorithm satAlgorithm;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		satAlgorithm.setProfiler(mProfiler);
+
+#endif
+
         bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
         narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;

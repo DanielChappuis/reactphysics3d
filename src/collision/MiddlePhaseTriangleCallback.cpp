@@ -38,6 +38,13 @@ void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIn
                                    TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
                                                  verticesNormals, meshSubPart, triangleIndex);
 
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler to the triangle shape
+	triangleShape->setProfiler(mProfiler);
+
+#endif
+
     bool isShape1Convex = mOverlappingPair->getShape1()->getCollisionShape()->isConvex();
     ProxyShape* shape1 = isShape1Convex ? mConvexProxyShape : mConcaveProxyShape;
     ProxyShape* shape2 = isShape1Convex ? mConcaveProxyShape : mConvexProxyShape;

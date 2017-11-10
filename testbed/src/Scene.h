@@ -53,8 +53,8 @@ struct EngineSettings {
 
        long double elapsedTime;             // Elapsed time (in seconds)
        float timeStep;                      // Current time step (in seconds)
-       uint nbVelocitySolverIterations;      // Nb of velocity solver iterations
-       uint nbPositionSolverIterations;      // Nb of position solver iterations
+       unsigned int nbVelocitySolverIterations;      // Nb of velocity solver iterations
+       unsigned int nbPositionSolverIterations;      // Nb of position solver iterations
        bool isSleepingEnabled;              // True if sleeping technique is enabled
        float timeBeforeSleep;               // Time of inactivity before a body sleep
        float sleepLinearVelocity;           // Sleep linear velocity

@@ -49,6 +49,12 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // Create the dynamics world for the physics simulation
     mPhysicsWorld = new rp3d::CollisionWorld();
 
+#ifdef IS_PROFILING_ACTIVE
+
+    mPhysicsWorld->setProfilerName(name + "_profiler");
+
+#endif
+
     // ---------- Sphere 1 ---------- //
 
     // Create a sphere and a corresponding collision body in the dynamics world
@@ -72,6 +78,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mSphere2->setSleepingColor(mRedColorDemo);
     mPhysicsObjects.push_back(mSphere2);
 
+
     // ---------- Capsule 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
@@ -94,49 +101,49 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mCapsule2->setSleepingColor(mRedColorDemo);
     mPhysicsObjects.push_back(mCapsule2);
 
+    // ---------- Concave Mesh ---------- //
+
+    // Create a convex mesh and a corresponding collision body in the dynamics world
+    mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mAllShapes.push_back(mConcaveMesh);
+
+    // Set the color
+    mConcaveMesh->setColor(mGreyColorDemo);
+    mConcaveMesh->setSleepingColor(mRedColorDemo);
+    mPhysicsObjects.push_back(mConcaveMesh);
+
     // ---------- Box 1 ---------- //
 
-	// Create a cylinder and a corresponding collision body in the dynamics world
+    // Create a cylinder and a corresponding collision body in the dynamics world
     mBox1 = new Box(BOX_SIZE, mPhysicsWorld, mMeshFolderPath);
-	mAllShapes.push_back(mBox1);
+    mAllShapes.push_back(mBox1);
 
-	// Set the color
-	mBox1->setColor(mGreyColorDemo);
-	mBox1->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mBox1);
+    // Set the color
+    mBox1->setColor(mGreyColorDemo);
+    mBox1->setSleepingColor(mRedColorDemo);
+    mPhysicsObjects.push_back(mBox1);
 
-	// ---------- Box 2 ---------- //
+    // ---------- Box 2 ---------- //
 
-	// Create a cylinder and a corresponding collision body in the dynamics world
+    // Create a cylinder and a corresponding collision body in the dynamics world
     mBox2 = new Box(openglframework::Vector3(3, 2, 5), mPhysicsWorld, mMeshFolderPath);
-	mAllShapes.push_back(mBox2);
+    mAllShapes.push_back(mBox2);
 
-	// Set the color
-	mBox2->setColor(mGreyColorDemo);
-	mBox2->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mBox2);
+    // Set the color
+    mBox2->setColor(mGreyColorDemo);
+    mBox2->setSleepingColor(mRedColorDemo);
+    mPhysicsObjects.push_back(mBox2);
 
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
     mConvexMesh = new ConvexMesh(mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
-	mAllShapes.push_back(mConvexMesh);
+    mAllShapes.push_back(mConvexMesh);
 
     // Set the color
     mConvexMesh->setColor(mGreyColorDemo);
     mConvexMesh->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mConvexMesh);
-
-    // ---------- Concave Mesh ---------- //
-
-    // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
-	mAllShapes.push_back(mConcaveMesh);
-
-    // Set the color
-    mConcaveMesh->setColor(mGreyColorDemo);
-    mConcaveMesh->setSleepingColor(mRedColorDemo);
-	mPhysicsObjects.push_back(mConcaveMesh);
+    mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Heightfield ---------- //
 
@@ -154,14 +161,14 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
 // Reset the scene
 void CollisionDetectionScene::reset() {
 
-    mSphere1->setTransform(rp3d::Transform(rp3d::Vector3(12, 0, 0), rp3d::Quaternion::identity()));
-    mSphere2->setTransform(rp3d::Transform(rp3d::Vector3(12, 8, 0), rp3d::Quaternion::identity()));
-    mCapsule1->setTransform(rp3d::Transform(rp3d::Vector3(-6, 7, 0), rp3d::Quaternion::identity()));
+    mSphere1->setTransform(rp3d::Transform(rp3d::Vector3(15, 5, 0), rp3d::Quaternion::identity()));
+    mSphere2->setTransform(rp3d::Transform(rp3d::Vector3(0, 6, 0), rp3d::Quaternion::identity()));
+    mCapsule1->setTransform(rp3d::Transform(rp3d::Vector3(-8, 7, 0), rp3d::Quaternion::identity()));
     mCapsule2->setTransform(rp3d::Transform(rp3d::Vector3(11, -8, 0), rp3d::Quaternion::identity()));
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(-4, -7, 0), rp3d::Quaternion::identity()));
-    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 9, 0), rp3d::Quaternion::identity()));
     mConvexMesh->setTransform(rp3d::Transform(rp3d::Vector3(-5, 0, 0), rp3d::Quaternion::identity()));
-    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(0, 100, 0), rp3d::Quaternion::identity()));
+    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
     mHeightField->setTransform(rp3d::Transform(rp3d::Vector3(0, -12, 0), rp3d::Quaternion::identity()));
 }
 

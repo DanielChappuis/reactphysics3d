@@ -47,7 +47,7 @@ const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
-    PROFILE("SATAlgorithm::testCollisionSphereVsConvexPolyhedron()");
+    PROFILE("SATAlgorithm::testCollisionSphereVsConvexPolyhedron()", mProfiler);
 
     bool isSphereShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE;
 
@@ -139,7 +139,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceInd
 // Test collision between a capsule and a convex mesh
 bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
-    PROFILE("SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron()");
+    PROFILE("SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron()", mProfiler);
 
     bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
@@ -448,7 +448,7 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 // Test collision between two convex polyhedrons
 bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
-    PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()");
+    PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()", mProfiler);
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);

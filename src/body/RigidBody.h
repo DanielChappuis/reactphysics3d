@@ -227,6 +227,13 @@ class RigidBody : public CollisionBody {
         /// the collision shapes attached to the body.
         void recomputeMassInformation();
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) override;
+
+#endif
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;

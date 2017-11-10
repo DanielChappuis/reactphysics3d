@@ -35,6 +35,7 @@
 #include "AABB.h"
 #include "collision/RaycastInfo.h"
 #include "memory/PoolAllocator.h"
+#include "engine/Profiler.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -69,6 +70,13 @@ class CollisionShape {
 
         /// Scaling vector of the collision shape
         Vector3 mScaling;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
         
         // -------------------- Methods -------------------- //
 
@@ -124,6 +132,13 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+        virtual void setProfiler(Profiler* profiler);
+
+#endif
+
         // -------------------- Friendship -------------------- //
 
         friend class ProxyShape;
@@ -155,6 +170,16 @@ inline Vector3 CollisionShape::getLocalScaling() const {
 inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
     mScaling = scaling;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionShape::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

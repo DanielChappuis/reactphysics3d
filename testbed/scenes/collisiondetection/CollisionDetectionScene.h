@@ -152,7 +152,7 @@ class CollisionDetectionScene : public SceneDemo {
 
         std::vector<PhysicsObject*> mAllShapes;
 
-        uint mSelectedShapeIndex;
+        unsigned int mSelectedShapeIndex;
 
         /// Select the next shape
         void selectNextShape();

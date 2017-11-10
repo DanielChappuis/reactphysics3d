@@ -48,7 +48,7 @@ CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
  */
 void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
-    PROFILE("CollisionShape::computeAABB()");
+    PROFILE("CollisionShape::computeAABB()", mProfiler);
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;

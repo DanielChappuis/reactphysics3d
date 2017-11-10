@@ -52,7 +52,7 @@ ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocity
 // Initialize the contact constraints
 void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
 
-    PROFILE("ContactSolver::init()");
+    PROFILE("ContactSolver::init()", mProfiler);
 
     mTimeStep = timeStep;
 
@@ -98,7 +98,7 @@ void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
 // Initialize the constraint solver for a given island
 void ContactSolver::initializeForIsland(Island* island) {
 
-    PROFILE("ContactSolver::initializeForIsland()");
+    PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
     assert(island != nullptr);
     assert(island->getNbBodies() > 0);
@@ -270,7 +270,7 @@ void ContactSolver::initializeForIsland(Island* island) {
 /// the solution of the linear system
 void ContactSolver::warmStart() {
 
-    PROFILE("ContactSolver::warmStart()");
+    PROFILE("ContactSolver::warmStart()", mProfiler);
 
     uint contactPointIndex = 0;
 
@@ -387,7 +387,7 @@ void ContactSolver::warmStart() {
 // Solve the contacts
 void ContactSolver::solve() {
 
-    PROFILE("ContactSolver::solve()");
+    PROFILE("ContactSolver::solve()", mProfiler);
 
     decimal deltaLambda;
     decimal lambdaTemp;
@@ -586,7 +586,7 @@ void ContactSolver::solve() {
 // warm start the solver at the next iteration
 void ContactSolver::storeImpulses() {
 
-    PROFILE("ContactSolver::storeImpulses()");
+    PROFILE("ContactSolver::storeImpulses()", mProfiler);
 
     uint contactPointIndex = 0;
 
@@ -614,7 +614,7 @@ void ContactSolver::storeImpulses() {
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactManifoldSolver& contact) const {
 
-    PROFILE("ContactSolver::computeFrictionVectors()");
+    PROFILE("ContactSolver::computeFrictionVectors()", mProfiler);
 
     assert(contact.normal.length() > decimal(0.0));
 

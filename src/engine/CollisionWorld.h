@@ -82,6 +82,12 @@ class CollisionWorld {
         /// Pointer to an event listener object
         EventListener* mEventListener;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Real-time hierarchical profiler
+		Profiler mProfiler;
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Return the next available body ID
@@ -146,6 +152,12 @@ class CollisionWorld {
 
         /// Test and report collisions between all shapes of the world
         void testCollision(CollisionCallback* callback);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the name of the profiler
+		void setProfilerName(std::string name);
+#endif
 
         /// Return the current world-space AABB of given proxy shape
         AABB getWorldAABB(const ProxyShape* proxyShape) const;
@@ -235,6 +247,15 @@ inline void CollisionWorld::testCollision(CollisionCallback* callback) {
 inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
     mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the name of the profiler
+inline void CollisionWorld::setProfilerName(std::string name) {
+	mProfiler.setName(name);
+}
+
+#endif
 
 }
 

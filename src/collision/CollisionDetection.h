@@ -100,6 +100,13 @@ class CollisionDetection {
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Compute the broad-phase collision detection
@@ -143,6 +150,7 @@ class CollisionDetection {
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
+
    
     public :
 
@@ -219,6 +227,13 @@ class CollisionDetection {
         /// Return a reference to the world memory allocator
         PoolAllocator& getWorldMemoryAllocator();
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
         /// Return the world-space AABB of a given proxy shape
         const AABB getWorldAABB(const ProxyShape* proxyShape) const;
 
@@ -234,6 +249,14 @@ inline void CollisionDetection::setCollisionDispatch(CollisionDispatch* collisio
 
     // Fill-in the collision matrix with the new algorithms to use
     fillInCollisionMatrix();
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	mCollisionDispatch->setProfiler(mProfiler);
+
+#endif
+
 }
 
 // Add a body to the collision detection
@@ -298,7 +321,7 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
                                         const Ray& ray,
                                         unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("CollisionDetection::raycast()");
+    PROFILE("CollisionDetection::raycast()", mProfiler);
 
     RaycastTest rayCastTest(raycastCallback);
 
@@ -311,6 +334,17 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
 inline CollisionWorld* CollisionDetection::getWorld() {
     return mWorld;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionDetection::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+	mBroadPhaseAlgorithm.setProfiler(profiler);
+	mCollisionDispatch->setProfiler(profiler);
+}
+
+#endif
 
 }
 

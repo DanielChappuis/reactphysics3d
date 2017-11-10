@@ -308,6 +308,13 @@ class ContactSolver {
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Compute the collision restitution factor from the restitution factor of each body
@@ -367,6 +374,13 @@ class ContactSolver {
 
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
 };
 
 // Set the split velocities arrays
@@ -424,6 +438,16 @@ inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
                                                             RigidBody* body2) const {
     return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ContactSolver::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

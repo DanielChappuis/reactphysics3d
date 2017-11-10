@@ -228,6 +228,13 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass);
 
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	proxyShape->setProfiler(mProfiler);
+
+#endif
+
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
@@ -410,7 +417,7 @@ void RigidBody::recomputeMassInformation() {
 // Update the broad-phase state for this body (because it has moved for instance)
 void RigidBody::updateBroadPhaseState() const {
 
-    PROFILE("RigidBody::updateBroadPhaseState()");
+    PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
 
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
@@ -426,4 +433,23 @@ void RigidBody::updateBroadPhaseState() const {
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
     }
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+void RigidBody::setProfiler(Profiler* profiler) {
+
+	CollisionBody::setProfiler(profiler);
+
+	// Set the profiler for each proxy shape
+	ProxyShape* proxyShape = getProxyShapesList();
+	while (proxyShape != nullptr) {
+
+		proxyShape->setProfiler(profiler);
+
+		proxyShape = proxyShape->getNext();
+	}
+}
+
+#endif
 

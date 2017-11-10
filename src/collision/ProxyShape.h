@@ -85,6 +85,13 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
 		// -------------------- Methods -------------------- //
 
 		/// Return the collision shape
@@ -169,6 +176,13 @@ class ProxyShape {
 
         /// Set the local scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -358,6 +372,18 @@ inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
 inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ProxyShape::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+
+	mCollisionShape->setProfiler(profiler);
+}
+
+#endif
 
 }
 

@@ -58,6 +58,13 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         /// Reference to the single-frame memory allocator
         Allocator& mAllocator;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public:
 
         /// Pointer to the first element of the linked-list of narrow-phase info
@@ -77,6 +84,16 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         /// Test collision between a triangle and the convex mesh shape
         virtual void testTriangle(uint meshSubpart, uint triangleIndex, const Vector3* trianglePoints,
                                   const Vector3* verticesNormals) override;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) {
+			mProfiler = profiler;
+		}
+
+#endif
+
 };
 
 }

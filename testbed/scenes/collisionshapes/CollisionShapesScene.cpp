@@ -46,7 +46,14 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     rp3d::Vector3 gravity(0, -9.81f, 0);
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
+	mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
+
+#ifdef IS_PROFILING_ACTIVE
+
+    mPhysicsWorld->setProfilerName(name + "_profiler");
+
+#endif
+
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
 

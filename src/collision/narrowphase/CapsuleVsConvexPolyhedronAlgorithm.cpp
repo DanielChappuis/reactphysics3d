@@ -41,7 +41,15 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
-    SATAlgorithm satAlgorithm;
+	SATAlgorithm satAlgorithm;
+
+#ifdef IS_PROFILING_ACTIVE
+
+	gjkAlgorithm.setProfiler(mProfiler);
+	satAlgorithm.setProfiler(mProfiler);
+
+#endif
+
     GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
     narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;

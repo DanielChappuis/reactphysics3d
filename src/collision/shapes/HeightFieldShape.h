@@ -49,6 +49,13 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool mIsHit;
         decimal mSmallestHitFraction;
         const HeightFieldShape& mHeightFieldShape;
+		
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
     public:
 
@@ -66,6 +73,16 @@ class TriangleOverlapCallback : public TriangleCallback {
         /// Raycast test between a ray and a triangle of the heightfield
         virtual void testTriangle(uint meshSubPart, uint triangleIndex,
                                   const Vector3* trianglePoints, const Vector3* verticesNormals) override;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) {
+			mProfiler = profiler;
+		}
+
+#endif
+
 };
 
 

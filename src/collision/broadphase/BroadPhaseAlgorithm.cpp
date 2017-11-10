@@ -44,6 +44,13 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
     assert(mPotentialPairs != nullptr);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
 }
 
 // Destructor

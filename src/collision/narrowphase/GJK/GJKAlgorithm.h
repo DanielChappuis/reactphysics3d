@@ -62,6 +62,13 @@ class GJKAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
     public :
@@ -94,7 +101,24 @@ class GJKAlgorithm {
 
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
         bool raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void GJKAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

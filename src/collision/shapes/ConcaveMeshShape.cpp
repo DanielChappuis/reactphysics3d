@@ -113,10 +113,17 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 /// the ray hits many triangles.
 bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
 
-    PROFILE("ConcaveMeshShape::raycast()");
+    PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
     // Create the callback object that will compute ray casting against triangles
     ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	raycastCallback.setProfiler(mProfiler);
+
+#endif
 
     // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
     // The raycastCallback object will then compute ray casting against the triangles
@@ -159,6 +166,13 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
                                     verticesNormals, data[0], data[1]);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
+		
+#ifdef IS_PROFILING_ACTIVE
+
+		// Set the profiler to the triangle shape
+		triangleShape.setProfiler(mProfiler);
+
+#endif
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;

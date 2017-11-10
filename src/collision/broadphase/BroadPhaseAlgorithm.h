@@ -162,6 +162,13 @@ class BroadPhaseAlgorithm {
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -215,8 +222,15 @@ class BroadPhaseAlgorithm {
         const AABB& getFatAABB(int broadPhaseId) const;
 
         /// Ray casting method
-        void raycast(const Ray& ray, RaycastTest& raycastTest,
-                     unsigned short raycastWithCategoryMaskBits) const;
+        void raycast(const Ray& ray, RaycastTest& raycastTest, unsigned short raycastWithCategoryMaskBits) const;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -252,7 +266,7 @@ inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("BroadPhaseAlgorithm::raycast()");
+    PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 
@@ -263,6 +277,16 @@ inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTes
 inline ProxyShape* BroadPhaseAlgorithm::getProxyShapeForBroadPhaseId(int broadPhaseId) const {
     return static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void BroadPhaseAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+	mDynamicAABBTree.setProfiler(profiler);
+}
+
+#endif
 
 }
 
