@@ -133,12 +133,21 @@ void TriangleShape::computeSmoothMeshContact(Vector3 localContactPointTriangle, 
 /// normal of the mesh at this point. The idea to solve this problem is to use the real (smooth) surface
 /// normal of the mesh at this point as the contact normal. This technique is described in the chapter 5
 /// of the Game Physics Pearl book by Gino van der Bergen and Dirk Gregorius. The vertices normals of the
-/// mesh are either provided by the user or precomputed if the user did not provide them.
+/// mesh are either provided by the user or precomputed if the user did not provide them. Note that we only
+/// use the interpolated normal if the contact point is on an edge of the triangle. If the contact is in the
+/// middle of the triangle, we return the true triangle normal.
 Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const {
 
     // Compute the barycentric coordinates of the point in the triangle
     decimal u, v, w;
     computeBarycentricCoordinatesInTriangle(mPoints[0], mPoints[1], mPoints[2], localContactPoint, u, v, w);
+
+    // If the contact is in the middle of the triangle face (not on the edges)
+    if (u > MACHINE_EPSILON && v > MACHINE_EPSILON && w > MACHINE_EPSILON) {
+
+        // We return the true triangle face normal (not the interpolated one)
+        return mNormal;
+    }
 
     // We compute the contact normal as the barycentric interpolation of the three vertices normals
     return (u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2]).getUnit();
