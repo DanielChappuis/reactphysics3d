@@ -871,8 +871,12 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     bool contactPointsFound = false;
     for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
 
+        // Compute the penetration depth of this contact point (can be different from the minPenetration depth which is
+        // the maximal penetration depth of any contact point for this separating axis
+        decimal penetrationDepth = (referenceFaceVertex - (*itPoints)).dot(axisReferenceSpace);
+
         // If the clip point is bellow the reference face
-        if (((*itPoints) - referenceFaceVertex).dot(axisReferenceSpace) < decimal(0.0)) {
+        if (penetrationDepth > decimal(0.0)) {
 
             contactPointsFound = true;
 
@@ -889,10 +893,10 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
                                     isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron,
                                     narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
-                                    minPenetrationDepth, outWorldNormal);
+                                    penetrationDepth, outWorldNormal);
 
             // Create a new contact point
-            narrowPhaseInfo->addContactPoint(outWorldNormal, minPenetrationDepth,
+            narrowPhaseInfo->addContactPoint(outWorldNormal, penetrationDepth,
                              isMinPenetrationFaceNormalPolyhedron1 ? contactPointReferencePolyhedron : contactPointIncidentPolyhedron,
                              isMinPenetrationFaceNormalPolyhedron1 ? contactPointIncidentPolyhedron : contactPointReferencePolyhedron);
         }
