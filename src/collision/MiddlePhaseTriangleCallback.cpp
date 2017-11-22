@@ -55,7 +55,6 @@ void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints, co
                            isShape1Convex ? triangleShape : mConvexProxyShape->getCollisionShape(),
                            shape1->getLocalToWorldTransform(),
                            shape2->getLocalToWorldTransform(),
-                           shape1->getCachedCollisionData(),
-                           shape2->getCachedCollisionData(), mAllocator);
+                           mAllocator);
     narrowPhaseInfoList->next = firstNarrowPhaseInfo;
 }

@@ -169,8 +169,7 @@ void CollisionDetection::computeMiddlePhase() {
                 mNarrowPhaseInfoList = new (mSingleFrameAllocator.allocate(sizeof(NarrowPhaseInfo)))
                                        NarrowPhaseInfo(pair, shape1->getCollisionShape(),
                                        shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                       shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                       shape2->getCachedCollisionData(), mSingleFrameAllocator);
+                                       shape2->getLocalToWorldTransform(), mSingleFrameAllocator);
                 mNarrowPhaseInfoList->next = firstNarrowPhaseInfo;
 
             }
@@ -488,8 +487,7 @@ NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(Overlappin
         // for the narrow-phase collision detection
         narrowPhaseInfo = new (mPoolAllocator.allocate(sizeof(NarrowPhaseInfo))) NarrowPhaseInfo(pair, shape1->getCollisionShape(),
                                        shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                       shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                       shape2->getCachedCollisionData(), mPoolAllocator);
+                                       shape2->getLocalToWorldTransform(), mPoolAllocator);
 
     }
     // Concave vs Convex algorithm

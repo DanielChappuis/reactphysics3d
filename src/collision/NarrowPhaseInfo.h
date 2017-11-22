@@ -63,14 +63,6 @@ struct NarrowPhaseInfo {
         /// Linked-list of contact points created during the narrow-phase
         ContactPointInfo* contactPoints;
 
-        /// Cached collision data of the proxy shape
-        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
-        void** cachedCollisionData1;
-
-        /// Cached collision data of the proxy shape
-        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
-        void** cachedCollisionData2;
-
         /// Pointer to the next element in the linked list
         NarrowPhaseInfo* next;
 
@@ -80,7 +72,7 @@ struct NarrowPhaseInfo {
         /// Constructor
         NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, void** cachedData1, void** cachedData2, Allocator& shapeAllocator);
+                        const Transform& shape2Transform, Allocator& shapeAllocator);
 
         /// Destructor
         ~NarrowPhaseInfo();

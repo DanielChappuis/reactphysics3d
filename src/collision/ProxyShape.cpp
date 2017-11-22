@@ -37,18 +37,13 @@ using namespace reactphysics3d;
  */
 ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass)
            :mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
-            mNext(nullptr), mBroadPhaseID(-1), mCachedCollisionData(nullptr), mUserData(nullptr),
-            mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
+            mNext(nullptr), mBroadPhaseID(-1), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
 
 // Destructor
 ProxyShape::~ProxyShape() {
 
-    // Release the cached collision data memory
-    if (mCachedCollisionData != nullptr) {
-        free(mCachedCollisionData);
-    }
 }
 
 // Return true if a point is inside the collision shape

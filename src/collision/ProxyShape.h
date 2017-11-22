@@ -66,9 +66,6 @@ class ProxyShape {
         /// Broad-phase ID (node ID in the dynamic AABB tree)
         int mBroadPhaseID;
 
-        /// Cached collision data
-        void* mCachedCollisionData;
-
         /// Pointer to user data
         void* mUserData;
 
@@ -168,9 +165,6 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
-        /// Return the pointer to the cached collision data
-        void** getCachedCollisionData();
-
         /// Return the local scaling vector of the collision shape
         Vector3 getLocalScaling() const;
 
@@ -200,11 +194,6 @@ class ProxyShape {
 		friend class MiddlePhaseTriangleCallback;
 
 };
-
-// Return the pointer to the cached collision data
-inline void** ProxyShape::getCachedCollisionData() {
-    return &mCachedCollisionData;
-}
 
 // Return the collision shape
 /**
