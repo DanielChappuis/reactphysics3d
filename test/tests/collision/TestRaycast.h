@@ -198,11 +198,12 @@ class TestRaycast : public Test {
             mSphereShape = new SphereShape(3);
             mSphereProxyShape = mSphereBody->addCollisionShape(mSphereShape, mShapeTransform);
 
-            const Vector3 triangleVertex1(100, 100, 0);
-            const Vector3 triangleVertex2(105, 100, 0);
-            const Vector3 triangleVertex3(100, 103, 0);
+            Vector3 triangleVertices[3];
+            triangleVertices[0] = Vector3(100, 100, 0);
+            triangleVertices[1] = Vector3(105, 100, 0);
+            triangleVertices[2] = Vector3(100, 103, 0);
             Vector3 triangleVerticesNormals[3] = {Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1)};
-            mTriangleShape = new TriangleShape(triangleVertex1, triangleVertex2, triangleVertex3, triangleVerticesNormals, 0, 0);
+            mTriangleShape = new TriangleShape(triangleVertices, triangleVerticesNormals, 0);
             mTriangleProxyShape = mTriangleBody->addCollisionShape(mTriangleShape, mShapeTransform);
 
             mCapsuleShape = new CapsuleShape(2, 5);

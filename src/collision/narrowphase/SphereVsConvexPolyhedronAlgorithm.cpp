@@ -41,6 +41,9 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE ||
         narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
 
+    // Get the last frame collision info
+    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
 
@@ -52,8 +55,8 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
 
     GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
+    lastFrameCollisionInfo->wasUsingGJK = true;
+    lastFrameCollisionInfo->wasUsingSAT = false;
 
     // If we have found a contact point inside the margins (shallow penetration)
     if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
@@ -76,8 +79,8 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
 
         bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
+        lastFrameCollisionInfo->wasUsingGJK = false;
+        lastFrameCollisionInfo->wasUsingSAT = true;
 
         return isColliding;
     }

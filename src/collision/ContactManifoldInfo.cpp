@@ -62,6 +62,9 @@ void ContactManifoldInfo::reset() {
         ContactPointInfo* elementToDelete = element;
         element = element->next;
 
+        // Call the constructor
+        elementToDelete->~ContactPointInfo();
+
         // Delete the current element
         mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
     }

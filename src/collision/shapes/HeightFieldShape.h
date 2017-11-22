@@ -71,8 +71,7 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool getIsHit() const {return mIsHit;}
 
         /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(uint meshSubPart, uint triangleIndex,
-                                  const Vector3* trianglePoints, const Vector3* verticesNormals) override;
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) override;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -168,6 +167,9 @@ class HeightFieldShape : public ConcaveShape {
 
         /// Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and the AABB to collide
         void computeMinMaxGridCoordinates(int* minCoords, int* maxCoords, const AABB& aabbToCollide) const;
+
+        /// Compute the shape Id for a given triangle
+        uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
 
     public:
 
@@ -268,6 +270,12 @@ inline void HeightFieldShape::computeLocalInertiaTensor(Matrix3x3& tensor, decim
     tensor.setAllValues(mass, 0, 0,
                         0, mass, 0,
                         0, 0, mass);
+}
+
+// Compute the shape Id for a given triangle
+inline uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
+
+    return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }
 
 }

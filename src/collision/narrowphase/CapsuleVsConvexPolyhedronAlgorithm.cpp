@@ -50,10 +50,13 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
 #endif
 
+    // Get the last frame collision info
+    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+
     GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
 
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = true;
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
+    lastFrameCollisionInfo->wasUsingGJK = true;
+    lastFrameCollisionInfo->wasUsingSAT = false;
 
 	assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
 		   narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
@@ -140,8 +143,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
             }
         }
 
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = false;
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
+        lastFrameCollisionInfo->wasUsingSAT = false;
+        lastFrameCollisionInfo->wasUsingGJK = false;
 
         // Return true
         return true;
@@ -153,8 +156,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
         // Run the SAT algorithm to find the separating axis and compute contact point
         bool isColliding = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
-        narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
+        lastFrameCollisionInfo->wasUsingGJK = false;
+        lastFrameCollisionInfo->wasUsingSAT = true;
 
         return isColliding;
     }

@@ -155,6 +155,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
         void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
 
+        /// Compute the shape Id for a given triangle of the mesh
+        uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
+
     public:
 
         /// Constructor
@@ -259,7 +262,7 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
     mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
 
     // Call the callback to test narrow-phase collision with this triangle
-    mTriangleTestCallback.testTriangle(data[0], data[1], trianglePoints, verticesNormals);
+    mTriangleTestCallback.testTriangle(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]));
 }
 
 #ifdef IS_PROFILING_ACTIVE

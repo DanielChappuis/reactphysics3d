@@ -28,13 +28,14 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "collision/NarrowPhaseInfo.h"
 #include "collision/ContactPointInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+struct NarrowPhaseInfo;
 
 // Class ContactPoint
 /**

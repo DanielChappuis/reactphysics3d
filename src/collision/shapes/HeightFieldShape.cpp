@@ -154,7 +154,7 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
            Vector3 verticesNormals1[3] = {triangle1Normal, triangle1Normal, triangle1Normal};
 
            // Test collision against the first triangle
-           callback.testTriangle(0, 0, trianglePoints, verticesNormals1);
+           callback.testTriangle(trianglePoints, verticesNormals1, computeTriangleShapeId(i, j, 0));
 
            // Generate the second triangle for the current grid rectangle
            trianglePoints[0] = p3;
@@ -174,7 +174,7 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
            Vector3 verticesNormals2[3] = {triangle2Normal, triangle2Normal, triangle2Normal};
 
            // Test collision against the second triangle
-           callback.testTriangle(0, 0, trianglePoints, verticesNormals2);
+           callback.testTriangle(trianglePoints, verticesNormals2, computeTriangleShapeId(i, j, 1));
        }
    }
 }
@@ -263,12 +263,10 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 }
 
 // Raycast test between a ray and a triangle of the heightfield
-void TriangleOverlapCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
-                                           const Vector3* verticesNormals) {
+void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
 
     // Create a triangle collision shape
-    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                                verticesNormals, meshSubPart, triangleIndex);
+    TriangleShape triangleShape(trianglePoints, verticesNormals, shapeId);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
 
 #ifdef IS_PROFILING_ACTIVE

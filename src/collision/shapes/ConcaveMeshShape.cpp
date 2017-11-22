@@ -135,6 +135,22 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     return raycastCallback.getIsHit();
 }
 
+// Compute the shape Id for a given triangle of the mesh
+uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+
+    uint shapeId = 0;
+
+    uint i=0;
+    while (i < subPart) {
+
+        shapeId += mTriangleMesh->getSubpart(i)->getNbTriangles();
+
+        i++;
+    }
+
+    return shapeId + triangleIndex;
+}
+
 // Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
 decimal ConcaveMeshRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
 
@@ -162,9 +178,9 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         // Get the vertices normals of the triangle
         Vector3 verticesNormals[3];
         mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
+
         // Create a triangle collision shape
-        TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                                    verticesNormals, data[0], data[1]);
+        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]));
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
 #ifdef IS_PROFILING_ACTIVE
@@ -194,5 +210,6 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             smallestHitFraction = raycastInfo.hitFraction;
             mIsHit = true;
         }
+
     }
 }

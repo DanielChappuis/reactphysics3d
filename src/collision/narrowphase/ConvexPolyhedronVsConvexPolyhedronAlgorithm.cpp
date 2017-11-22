@@ -45,10 +45,13 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo*
 
 #endif
 
+    // Get the last frame collision info
+    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+
     bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
 
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingSAT = true;
-    narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasUsingGJK = false;
+    lastFrameCollisionInfo->wasUsingSAT = true;
+    lastFrameCollisionInfo->wasUsingGJK = false;
 
     return isColliding;
 }

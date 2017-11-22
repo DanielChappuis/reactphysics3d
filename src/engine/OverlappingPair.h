@@ -30,6 +30,7 @@
 #include "collision/ContactManifoldSet.h"
 #include "collision/ProxyShape.h"
 #include "collision/shapes/CollisionShape.h"
+#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -46,6 +47,9 @@ struct LastFrameCollisionInfo {
 
     /// True if we have information about the previous frame
     bool isValid;
+
+    /// True if the frame info is obsolete (the collision shape are not overlapping in middle phase)
+    bool isObsolete;
 
     /// True if the two shapes were colliding in the previous frame
     bool wasColliding;
@@ -72,6 +76,7 @@ struct LastFrameCollisionInfo {
     LastFrameCollisionInfo() {
 
         isValid = false;
+        isObsolete = false;
         wasColliding = false;
         wasUsingSAT = false;
         wasUsingGJK = false;
@@ -97,11 +102,18 @@ class OverlappingPair {
         /// Set of persistent contact manifolds
         ContactManifoldSet mContactManifoldSet;
 
-        /// Collision information about the last frame (for temporal coherence)
-        LastFrameCollisionInfo mLastFrameCollisionInfo;
+        /// Temporal coherence collision data for each overlapping collision shapes of this pair.
+        /// Temporal coherence data store collision information about the last frame.
+        /// If two convex shapes overlap, we have a single collision data but if one shape is concave,
+        /// we might have collision data for several overlapping triangles. The key in the map is the
+        /// shape Ids of the two collision shapes.
+        std::map<std::pair<uint, uint>, LastFrameCollisionInfo*> mLastFrameCollisionInfos;
 
         /// Linked-list of potential contact manifold
         ContactManifoldInfo* mPotentialContactManifolds;
+
+        /// Persistent memory allocator
+        Allocator& mPersistentAllocator;
 
         /// Memory allocator used to allocated memory for the ContactManifoldInfo and ContactPointInfo
         Allocator& mTempMemoryAllocator;
@@ -111,8 +123,8 @@ class OverlappingPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                        Allocator& memoryAllocator, Allocator& temporaryMemoryAllocator);
+        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,  Allocator& persistentMemoryAllocator,
+                        Allocator& temporaryMemoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
@@ -130,7 +142,7 @@ class OverlappingPair {
         ProxyShape* getShape2() const;
 
         /// Return the last frame collision info
-        LastFrameCollisionInfo& getLastFrameCollisionInfo();
+        LastFrameCollisionInfo* getLastFrameCollisionInfo(std::pair<uint, uint> shapeIds);
 
         /// Return the a reference to the contact manifold set
         const ContactManifoldSet& getContactManifoldSet();
@@ -168,6 +180,18 @@ class OverlappingPair {
         /// Reduce the contact manifolds that have too many contact points
         void reduceContactManifolds();
 
+        /// Add a new last frame collision info if it does not exist for the given shapes already
+        void addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
+
+        /// Return the last frame collision info for a given pair of shape ids
+        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const;
+
+        /// Delete all the obsolete last frame collision info
+        void clearObsoleteLastFrameCollisionInfos();
+
+        /// Make all the last frame collision infos obsolete
+        void makeLastFrameCollisionInfosObsolete();
+
         /// Return the pair of bodies index
         static overlappingpairid computeID(ProxyShape* shape1, ProxyShape* shape2);
 
@@ -194,9 +218,14 @@ inline void OverlappingPair::addContactManifold(const ContactManifoldInfo* conta
     mContactManifoldSet.addContactManifold(contactManifoldInfo);
 }
 
-// Return the last frame collision info
-inline LastFrameCollisionInfo& OverlappingPair::getLastFrameCollisionInfo() {
-    return mLastFrameCollisionInfo;
+// Return the last frame collision info for a given shape id or nullptr if none is found
+inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(std::pair<uint, uint> shapeIds) {
+    std::map<std::pair<uint, uint>, LastFrameCollisionInfo*>::iterator it = mLastFrameCollisionInfos.find(shapeIds);
+    if (it != mLastFrameCollisionInfos.end()) {
+        return it->second;
+    }
+
+    return nullptr;
 }
 
 // Return the contact manifold
@@ -263,6 +292,11 @@ inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
 // Reduce the contact manifolds that have too many contact points
 inline void OverlappingPair::reduceContactManifolds() {
    mContactManifoldSet.reduce();
+}
+
+// Return the last frame collision info for a given pair of shape ids
+inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
+    return mLastFrameCollisionInfos.at(std::make_pair(shapeId1, shapeId2));
 }
 
 }

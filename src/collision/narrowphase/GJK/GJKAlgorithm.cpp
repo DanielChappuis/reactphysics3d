@@ -88,11 +88,13 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     // Create a simplex set
     VoronoiSimplex simplex;
 
+    // Get the last collision frame info
+    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+
     // Get the previous point V (last cached separating axis)
     Vector3 v;
-    LastFrameCollisionInfo& lastFrameInfo = narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo();
-    if (lastFrameInfo.isValid && lastFrameInfo.wasUsingGJK) {
-        v = lastFrameInfo.gjkSeparatingAxis;
+    if (lastFrameCollisionInfo->isValid && lastFrameCollisionInfo->wasUsingGJK) {
+        v = lastFrameCollisionInfo->gjkSeparatingAxis;
         assert(v.lengthSquare() > decimal(0.000001));
     }
     else {
@@ -117,7 +119,7 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
         if (vDotw > decimal(0.0) && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            narrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().gjkSeparatingAxis = v;
+            lastFrameCollisionInfo->gjkSeparatingAxis = v;
             
             // No intersection, we return
             return GJKResult::SEPARATED;

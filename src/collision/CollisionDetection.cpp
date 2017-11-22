@@ -113,6 +113,9 @@ void CollisionDetection::computeMiddlePhase() {
         // Make all the contact manifolds and contact points of the pair obsolete
         pair->makeContactsObsolete();
 
+        // Make all the last frame collision info obsolete
+        pair->makeLastFrameCollisionInfosObsolete();
+
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
 
@@ -192,6 +195,9 @@ void CollisionDetection::computeMiddlePhase() {
                 // Not handled
                 continue;
             }
+
+            // Remove the obsolete last frame collision infos
+            pair->clearObsoleteLastFrameCollisionInfos();
         }
     }
 }
@@ -263,6 +269,8 @@ void CollisionDetection::computeNarrowPhase() {
         // If there is no collision algorithm between those two kinds of shapes, skip it
         if (narrowPhaseAlgorithm != nullptr) {
 
+            LastFrameCollisionInfo* lastCollisionFrameInfo = currentNarrowPhaseInfo->getLastFrameCollisionInfo();
+
             // Use the narrow-phase collision detection algorithm to check
             // if there really is a collision. If a collision occurs, the
             // notifyContact() callback method will be called.
@@ -271,14 +279,14 @@ void CollisionDetection::computeNarrowPhase() {
                 // Add the contact points as a potential contact manifold into the pair                
                 currentNarrowPhaseInfo->addContactPointsAsPotentialContactManifold();
 
-                currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasColliding = true;
+                lastCollisionFrameInfo->wasColliding = true;
             }
             else {
-                currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().wasColliding = false;
+                lastCollisionFrameInfo->wasColliding = false;
             }
 
             // The previous frame collision info is now valid
-            currentNarrowPhaseInfo->overlappingPair->getLastFrameCollisionInfo().isValid = true;
+            lastCollisionFrameInfo->isValid = true;
         }
 
         currentNarrowPhaseInfo = currentNarrowPhaseInfo->next;
@@ -471,6 +479,8 @@ NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(Overlappin
 
     NarrowPhaseInfo* narrowPhaseInfo = nullptr;
 
+    pair->makeLastFrameCollisionInfosObsolete();
+
     // If both shapes are convex
     if ((isShape1Convex && isShape2Convex)) {
 
@@ -489,6 +499,8 @@ NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(Overlappin
         // shape we need to use during the narrow-phase collision detection
         computeConvexVsConcaveMiddlePhase(pair, mPoolAllocator, &narrowPhaseInfo);
     }
+
+    pair->clearObsoleteLastFrameCollisionInfos();
 
     return narrowPhaseInfo;
 }

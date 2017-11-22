@@ -29,14 +29,12 @@
 using namespace reactphysics3d;
 
 // Report collision between a triangle of a concave shape and the convex mesh shape (for middle-phase)
-void MiddlePhaseTriangleCallback::testTriangle(uint meshSubPart, uint triangleIndex, const Vector3* trianglePoints,
-                                               const Vector3* verticesNormals) {
+void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
 
     // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
 	// destructor of the corresponding NarrowPhaseInfo.
     TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
-                                   TriangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                                                 verticesNormals, meshSubPart, triangleIndex);
+                                   TriangleShape(trianglePoints, verticesNormals, shapeId);
 
 #ifdef IS_PROFILING_ACTIVE
 

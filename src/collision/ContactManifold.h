@@ -410,5 +410,6 @@ inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoint
 }
 
 }
+
 #endif
 

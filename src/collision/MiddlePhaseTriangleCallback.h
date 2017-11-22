@@ -82,8 +82,7 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         }
 
         /// Test collision between a triangle and the convex mesh shape
-        virtual void testTriangle(uint meshSubpart, uint triangleIndex, const Vector3* trianglePoints,
-                                  const Vector3* verticesNormals) override;
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) override;
 
 #ifdef IS_PROFILING_ACTIVE
 

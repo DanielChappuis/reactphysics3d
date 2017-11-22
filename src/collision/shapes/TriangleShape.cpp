@@ -43,16 +43,15 @@ using namespace reactphysics3d;
  * @param verticesNormals The three vertices normals for smooth mesh collision
  * @param margin The collision margin (in meters) around the collision shape
  */
-TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
-                             const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex)
-              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mMeshSubPart(meshSubPart), mTriangleIndex(triangleIndex) {
+TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId)
+              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE) {
 
-    mPoints[0] = point1;
-    mPoints[1] = point2;
-    mPoints[2] = point3;
+    mPoints[0] = vertices[0];
+    mPoints[1] = vertices[1];
+    mPoints[2] = vertices[2];
 
     // Compute the triangle normal
-    mNormal = (point2 - point1).cross(point3 - point1);
+    mNormal = (vertices[1] - vertices[0]).cross(vertices[2] - vertices[0]);
     mNormal.normalize();
 
     mVerticesNormals[0] = verticesNormals[0];
@@ -60,6 +59,8 @@ TriangleShape::TriangleShape(const Vector3& point1, const Vector3& point2, const
     mVerticesNormals[2] = verticesNormals[2];
 
     mRaycastTestType = TriangleRaycastSide::FRONT;
+
+    mId = shapeId;
 }
 
 // This method compute the smooth mesh contact with a triangle in case one of the two collision

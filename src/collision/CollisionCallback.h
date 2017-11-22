@@ -32,6 +32,8 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+class OverlappingPair;
+
 // Class CollisionCallback
 /**
  * This class can be used to register a callback for collision test queries.

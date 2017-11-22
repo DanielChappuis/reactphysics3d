@@ -29,11 +29,12 @@
 // Libraries
 #include "shapes/CollisionShape.h"
 #include "collision/ContactManifoldInfo.h"
+#include "engine/OverlappingPair.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-class OverlappingPair;
+struct LastFrameCollisionInfo;
 
 // Class NarrowPhaseInfo
 /**
@@ -70,11 +71,11 @@ struct NarrowPhaseInfo {
         // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
         void** cachedCollisionData2;
 
-		/// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
-		Allocator& collisionShapeAllocator;
-
         /// Pointer to the next element in the linked list
         NarrowPhaseInfo* next;
+
+        /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
+        Allocator& collisionShapeAllocator;
 
         /// Constructor
         NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
@@ -93,7 +94,15 @@ struct NarrowPhaseInfo {
 
         /// Reset the remaining contact points
         void resetContactPoints();
+
+        /// Get the last collision frame info for temporal coherence
+        LastFrameCollisionInfo* getLastFrameCollisionInfo() const;
 };
+
+// Get the last collision frame info for temporal coherence
+inline LastFrameCollisionInfo* NarrowPhaseInfo::getLastFrameCollisionInfo() const {
+    return overlappingPair->getLastFrameCollisionInfo(collisionShape1->getId(), collisionShape2->getId());
+}
 
 }
 

@@ -72,12 +72,6 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
 
-        /// Index of the mesh sub part in the original mesh
-        uint mMeshSubPart;
-
-        /// Triangle index of the triangle in the sub mesh
-        uint mTriangleIndex;
-
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
@@ -95,6 +89,9 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
+        /// Generate the id of the shape (used for temporal coherence)
+        void generateId();
+
         // -------------------- Methods -------------------- //
 
         /// This method implements the technique described in Game Physics Pearl book
@@ -107,8 +104,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TriangleShape(const Vector3& point1, const Vector3& point2, const Vector3& point3,
-                      const Vector3* verticesNormals, uint meshSubPart, uint triangleIndex);
+        TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId);
 
         /// Destructor
         virtual ~TriangleShape() override = default;
@@ -163,12 +159,6 @@ class TriangleShape : public ConvexPolyhedronShape {
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
-
-        /// Return the index of the sub part mesh of the original mesh
-        uint getMeshSubPart() const;
-
-        /// Return the triangle index in the original mesh
-        uint getTriangleIndex() const;
 
         /// This method compute the smooth mesh contact with a triangle in case one of the two collision shapes is a triangle. The idea in this case is to use a smooth vertex normal of the triangle mesh
         static void computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
@@ -317,16 +307,6 @@ inline Vector3 TriangleShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the box
 inline Vector3 TriangleShape::getCentroid() const {
     return (mPoints[0] + mPoints[1] + mPoints[2]) / decimal(3.0);
-}
-
-// Return the index of the sub part mesh of the original mesh
-inline uint TriangleShape::getMeshSubPart() const {
-    return mMeshSubPart;
-}
-
-// Return the triangle index in the original mesh
-inline uint TriangleShape::getTriangleIndex() const {
-    return mTriangleIndex;
 }
 
 // Return the number of half-edges of the polyhedron

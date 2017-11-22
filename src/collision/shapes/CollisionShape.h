@@ -71,6 +71,9 @@ class CollisionShape {
         /// Scaling vector of the collision shape
         Vector3 mScaling;
 
+        /// Unique identifier of the shape inside an overlapping pair
+        uint mId;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -126,6 +129,9 @@ class CollisionShape {
         /// Set the local scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
 
+        /// Return the id of the shape
+        uint getId() const;
+
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
 
@@ -169,6 +175,11 @@ inline Vector3 CollisionShape::getLocalScaling() const {
 // Set the scaling vector of the collision shape
 inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
     mScaling = scaling;
+}
+
+// Return the id of the shape
+inline uint CollisionShape::getId() const {
+   return mId;
 }
 
 #ifdef IS_PROFILING_ACTIVE

@@ -35,12 +35,15 @@ using namespace reactphysics3d;
 // Constructor
 NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                 CollisionShape* shape2, const Transform& shape1Transform,
-                const Transform& shape2Transform, void** cachedData1, void** cachedData2, Allocator& shapeAllocator)
+                const Transform& shape2Transform, void** cachedData1, void** cachedData2,
+                Allocator& shapeAllocator)
       : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
         shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
         contactPoints(nullptr), cachedCollisionData1(cachedData1),
-        cachedCollisionData2(cachedData2), collisionShapeAllocator(shapeAllocator), next(nullptr) {
+        cachedCollisionData2(cachedData2), next(nullptr), collisionShapeAllocator(shapeAllocator) {
 
+    // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
+    overlappingPair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
 }
 
 // Destructor

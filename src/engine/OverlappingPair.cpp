@@ -27,20 +27,31 @@
 #include <cassert>
 #include "OverlappingPair.h"
 #include "collision/ContactManifoldInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 
 using namespace reactphysics3d;
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 Allocator& manifoldsAllocator, Allocator& temporaryMemoryAllocator)
-                : mContactManifoldSet(shape1, shape2, manifoldsAllocator), mPotentialContactManifolds(nullptr),
-                  mTempMemoryAllocator(temporaryMemoryAllocator) {
+                                 Allocator& persistentMemoryAllocator, Allocator& temporaryMemoryAllocator)
+                : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator), mPotentialContactManifolds(nullptr),
+                  mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator) {
     
 }         
 
 // Destructor
 OverlappingPair::~OverlappingPair() {
 	assert(mPotentialContactManifolds == nullptr);
+
+    // Remove all the remaining last frame collision info
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
+
+        // Call the constructor
+        it->second->~LastFrameCollisionInfo();
+
+        // Release memory
+        mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+    }
 }
 
 // Create a new potential contact manifold using contact-points from narrow-phase
@@ -135,5 +146,61 @@ void OverlappingPair::reducePotentialContactManifolds() {
         manifold->reduce(mContactManifoldSet.getShape1()->getLocalToWorldTransform());
 
         manifold = manifold->getNext();
+    }
+}
+
+
+// Add a new last frame collision info if it does not exist for the given shapes already
+void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
+
+    // Try to get the corresponding last frame collision info
+    auto it = mLastFrameCollisionInfos.find(std::make_pair(shapeId1, shapeId2));
+
+    // If there is no collision info for those two shapes already
+    if (it == mLastFrameCollisionInfos.end()) {
+
+        // Create a new collision info
+        LastFrameCollisionInfo* collisionInfo = new (mPersistentAllocator.allocate(sizeof(LastFrameCollisionInfo)))
+                                                LastFrameCollisionInfo();
+
+        // Add it into the map of collision infos
+        std::map<std::pair<uint, uint>, LastFrameCollisionInfo*>::iterator it;
+        auto ret = mLastFrameCollisionInfos.insert(std::make_pair(std::make_pair(shapeId1, shapeId2), collisionInfo));
+        assert(ret.second);
+    }
+    else {
+
+       // The existing collision info is not obsolete
+       it->second->isObsolete = false;
+    }
+}
+
+
+// Delete all the obsolete last frame collision info
+void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
+
+    // For each collision info
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ) {
+
+        // If the collision info is obsolete
+        if (it->second->isObsolete) {
+
+            // Delete it
+            it->second->~LastFrameCollisionInfo();
+            mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+
+            mLastFrameCollisionInfos.erase(it++);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+// Make all the last frame collision infos obsolete
+void OverlappingPair::makeLastFrameCollisionInfosObsolete() {
+
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
+        it->second->isObsolete = true;
     }
 }
