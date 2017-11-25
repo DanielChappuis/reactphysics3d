@@ -122,6 +122,8 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrow
 decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceIndex, const ConvexPolyhedronShape* polyhedron,
                                                                     const SphereShape* sphere, const Vector3& sphereCenter) const {
 
+    PROFILE("SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth)", mProfiler);
+
     // Get the face
     HalfEdgeStructure::Face face = polyhedron->getFace(faceIndex);
 
@@ -297,6 +299,8 @@ decimal SATAlgorithm::computeEdgeVsCapsuleInnerSegmentPenetrationDepth(const Con
                                                                        const Vector3& edgeDirectionCapsuleSpace,
                                                                        const Transform& polyhedronToCapsuleTransform, Vector3& outAxis) const {
 
+    PROFILE("SATAlgorithm::computeEdgeVsCapsuleInnerSegmentPenetrationDepth)", mProfiler);
+
     decimal penetrationDepth = DECIMAL_LARGEST;
 
     // Compute the axis to test (cross product between capsule inner segment and polyhedron edge)
@@ -329,6 +333,8 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
                                                                      const CapsuleShape* capsule, const Transform& polyhedronToCapsuleTransform,
                                                                      Vector3& outFaceNormalCapsuleSpace) const {
 
+    PROFILE("SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth", mProfiler);
+
     // Get the face
     HalfEdgeStructure::Face face = polyhedron->getFace(polyhedronFaceIndex);
 
@@ -352,6 +358,8 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
                                                              Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                              const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
                                                              NarrowPhaseInfo* narrowPhaseInfo, bool isCapsuleShape1) const {
+
+    PROFILE("SATAlgorithm::computeCapsulePolyhedronFaceContactPoints", mProfiler);
 
     HalfEdgeStructure::Face face = polyhedron->getFace(referenceFaceIndex);
 
@@ -791,6 +799,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
                                                                   const Transform& polyhedron1ToPolyhedron2, const Transform& polyhedron2ToPolyhedron1,
                                                                   uint minFaceIndex, NarrowPhaseInfo* narrowPhaseInfo, decimal minPenetrationDepth) const {
 
+    PROFILE("SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints", mProfiler);
+
     const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
     const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
     const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
@@ -903,6 +913,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
 // This is used to find the incident face on a polyhedron of a given reference face of another polyhedron
 uint SATAlgorithm::findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const {
 
+    PROFILE("SATAlgorithm::findMostAntiParallelFaceOnPolyhedron", mProfiler);
+
     decimal minDotProduct = DECIMAL_LARGEST;
     uint mostAntiParallelFace = 0;
 
@@ -924,6 +936,8 @@ uint SATAlgorithm::findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronSh
 decimal SATAlgorithm::computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
                                                   const Vector3& edge1Direction, const Vector3& edge2Direction,
                                                   Vector3& outSeparatingAxisPolyhedron2Space) const {
+
+    PROFILE("SATAlgorithm::computeDistanceBetweenEdges", mProfiler);
 
     // If the two edges are parallel
     if (areParallelVectors(edge1Direction, edge2Direction)) {
@@ -952,6 +966,8 @@ decimal SATAlgorithm::testSingleFaceDirectionPolyhedronVsPolyhedron(const Convex
                                                                     const Transform& polyhedron1ToPolyhedron2,
                                                                     uint faceIndex) const {
 
+    PROFILE("SATAlgorithm::testSingleFaceDirectionPolyhedronVsPolyhedron", mProfiler);
+
     HalfEdgeStructure::Face face = polyhedron1->getFace(faceIndex);
 
     // Get the face normal
@@ -975,6 +991,8 @@ decimal SATAlgorithm::testFacesDirectionPolyhedronVsPolyhedron(const ConvexPolyh
                                                                const ConvexPolyhedronShape* polyhedron2,
                                                                const Transform& polyhedron1ToPolyhedron2,
                                                                uint& minFaceIndex) const {
+
+    PROFILE("SATAlgorithm::testFacesDirectionPolyhedronVsPolyhedron", mProfiler);
 
     decimal minPenetrationDepth = DECIMAL_LARGEST;
 
@@ -1006,6 +1024,8 @@ bool SATAlgorithm::testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* poly
                                                const ConvexPolyhedronShape* polyhedron2, const HalfEdgeStructure::Edge& edge2,
                                                const Transform& polyhedron1ToPolyhedron2) const {
 
+    PROFILE("SATAlgorithm::testEdgesBuildMinkowskiFace", mProfiler);
+
     const Vector3 a = polyhedron1ToPolyhedron2.getOrientation() * polyhedron1->getFaceNormal(edge1.faceIndex);
     const Vector3 b = polyhedron1ToPolyhedron2.getOrientation() * polyhedron1->getFaceNormal(polyhedron1->getHalfEdge(edge1.twinEdgeIndex).faceIndex);
 
@@ -1036,6 +1056,8 @@ bool SATAlgorithm::testEdgesBuildMinkowskiFace(const ConvexPolyhedronShape* poly
 /// might be a separating axis.
 bool SATAlgorithm::testGaussMapArcsIntersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d,
                                              const Vector3& bCrossA, const Vector3& dCrossC) const {
+
+    PROFILE("SATAlgorithm::testGaussMapArcsIntersect", mProfiler);
 
     const decimal cba = c.dot(bCrossA);
     const decimal dba = d.dot(bCrossA);

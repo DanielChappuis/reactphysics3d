@@ -366,6 +366,8 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
 void CollisionDetection::addAllContactManifoldsToBodies() {
 
+    PROFILE("CollisionDetection::addAllContactManifoldsToBodies()", mProfiler);
+
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
@@ -413,6 +415,8 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
 /// Convert the potential contact into actual contacts
 void CollisionDetection::processAllPotentialContacts() {
 
+    PROFILE("CollisionDetection::processAllPotentialContacts()", mProfiler);
+
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
@@ -449,6 +453,8 @@ void CollisionDetection::processPotentialContacts(OverlappingPair* pair) {
 
 // Report contacts for all the colliding overlapping pairs
 void CollisionDetection::reportAllContacts() {
+
+    PROFILE("CollisionDetection::reportAllContacts()", mProfiler);
 
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
