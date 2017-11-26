@@ -224,16 +224,11 @@ inline void Quaternion::normalize() {
 // Inverse the quaternion
 inline void Quaternion::inverse() {
 
-    // Get the square length of the quaternion
-    decimal lengthSquareQuaternion = lengthSquare();
-
-    assert (lengthSquareQuaternion > MACHINE_EPSILON);
-
-    // Compute and return the inverse quaternion
-    x /= -lengthSquareQuaternion;
-    y /= -lengthSquareQuaternion;
-    z /= -lengthSquareQuaternion;
-    w /= lengthSquareQuaternion;
+    // Use the conjugate of the current quaternion
+    x = -x;
+    y = -y;
+    z = -z;
+    w = w;
 }
 
 // Return the unit quaternion
@@ -261,13 +256,8 @@ inline Quaternion Quaternion::getConjugate() const {
 // Return the inverse of the quaternion (inline)
 inline Quaternion Quaternion::getInverse() const {
 
-    decimal lengthSquareQuaternion = lengthSquare();
-
-    assert (lengthSquareQuaternion > MACHINE_EPSILON);
-
-    // Compute and return the inverse quaternion
-    return Quaternion(-x / lengthSquareQuaternion, -y / lengthSquareQuaternion,
-                      -z / lengthSquareQuaternion, w / lengthSquareQuaternion);
+    // Return the conjugate quaternion
+    return Quaternion(-x, -y, -z, w);
 }
 
 // Scalar product between two quaternions
