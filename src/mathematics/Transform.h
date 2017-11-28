@@ -169,8 +169,7 @@ inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
 // Return the inverse of the transform
 inline Transform Transform::getInverse() const {
     const Quaternion& invQuaternion = mOrientation.getInverse();
-    Matrix3x3 invMatrix = invQuaternion.getMatrix();
-    return Transform(invMatrix * (-mPosition), invQuaternion);
+    return Transform(invQuaternion * (-mPosition), invQuaternion);
 }
 
 // Return an interpolated transform
@@ -200,7 +199,7 @@ inline Vector3 Transform::operator*(const Vector3& vector) const {
 
 // Operator of multiplication of a transform with another one
 inline Transform Transform::operator*(const Transform& transform2) const {
-    return Transform(mPosition + mOrientation.getMatrix() * transform2.mPosition,
+    return Transform(mPosition + mOrientation * transform2.mPosition,
                      mOrientation * transform2.mOrientation);
 }
 

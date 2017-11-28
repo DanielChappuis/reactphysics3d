@@ -75,10 +75,9 @@ GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhase
     Transform transform1Inverse = transform1.getInverse();
     Transform body2Tobody1 = transform1Inverse * transform2;
 
-    // Matrix that transform a direction from local
+    // Quaternion that transform a direction from local
     // space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
-                              transform1.getOrientation().getMatrix();
+    Quaternion rotateToBody2 = transform2.getOrientation().getInverse() * transform1.getOrientation();
 
     // Initialize the margin (sum of margins of both objects)
     decimal margin = shape1->getMargin() + shape2->getMargin();
