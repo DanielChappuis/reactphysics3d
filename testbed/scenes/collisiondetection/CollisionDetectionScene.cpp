@@ -282,32 +282,32 @@ bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, i
     }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(0, stepAngle, 0) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(0, stepAngle, 0) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(0, -stepAngle, 0) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(0, -stepAngle, 0) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
     else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(stepAngle, 0, 0) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(stepAngle, 0, 0) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
     else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(-stepAngle, 0, 0) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(-stepAngle, 0, 0) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
     else if (key == GLFW_KEY_F && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(0, 0, stepAngle) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(0, 0, stepAngle) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
     else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
         rp3d::Transform transform = mAllShapes[mSelectedShapeIndex]->getTransform();
-        transform.setOrientation(rp3d::Quaternion(0, 0, -stepAngle) * transform.getOrientation());
+        transform.setOrientation(rp3d::Quaternion::fromEulerAngles(0, 0, -stepAngle) * transform.getOrientation());
         mAllShapes[mSelectedShapeIndex]->setTransform(transform);
     }
 

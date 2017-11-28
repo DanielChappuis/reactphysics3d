@@ -169,7 +169,7 @@ class TestRaycast : public Test {
 
             // Body transform
             Vector3 position(-3, 2, 7);
-            Quaternion orientation(PI / 5, PI / 6, PI / 7);
+            Quaternion orientation = Quaternion::fromEulerAngles(PI / 5, PI / 6, PI / 7);
             mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
@@ -185,7 +185,7 @@ class TestRaycast : public Test {
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
-            Quaternion shapeOrientation(3 * PI / 6 , -PI / 8, PI / 3);
+            Quaternion shapeOrientation = Quaternion::fromEulerAngles(3 * PI / 6 , -PI / 8, PI / 3);
             mShapeTransform = Transform(shapePosition, shapeOrientation);
 
             // Compute the the transform from a local shape point to world-space
@@ -246,7 +246,7 @@ class TestRaycast : public Test {
 
             // Compound shape is a cylinder and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
-            Quaternion orientationShape2(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
+            Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
             mCompoundCapsuleProxyShape = mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);

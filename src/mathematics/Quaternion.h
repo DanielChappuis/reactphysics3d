@@ -69,11 +69,8 @@ struct Quaternion {
         /// Constructor with the component w and the vector v=(x y z)
         Quaternion(decimal newW, const Vector3& v);
 
-        /// Constructor which convert Euler angles (in radians) to a quaternion
-        Quaternion(decimal angleX, decimal angleY, decimal angleZ);
-
-        /// Constructor which convert Euler angles (in radians) to a quaternion
-        Quaternion(const Vector3& eulerAngles);
+        /// Constructor with the component w and the vector v=(x y z)
+        Quaternion(const Vector3& v, decimal newW);
 
         /// Copy-constructor
         Quaternion(const Quaternion& quaternion);
@@ -122,6 +119,12 @@ struct Quaternion {
 
         /// Return the identity quaternion
         static Quaternion identity();
+
+        /// Return a quaternion constructed from Euler angles (in radians)
+        static Quaternion fromEulerAngles(decimal angleX, decimal angleY, decimal angleZ);
+
+        /// Return a quaternion constructed from Euler angles (in radians)
+        static Quaternion fromEulerAngles(const Vector3& eulerAngles);
 
         /// Dot product between two quaternions
         decimal dot(const Quaternion& quaternion) const;
@@ -228,7 +231,6 @@ inline void Quaternion::inverse() {
     x = -x;
     y = -y;
     z = -z;
-    w = w;
 }
 
 // Return the unit quaternion
