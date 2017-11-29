@@ -34,8 +34,8 @@ using namespace std;
 ContactPoint::ContactPoint(const ContactPointInfo* contactInfo)
              : mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
-               mLocalPointOnBody1(contactInfo->localPoint1),
-               mLocalPointOnBody2(contactInfo->localPoint2),
+               mLocalPointOnShape1(contactInfo->localPoint1),
+               mLocalPointOnShape2(contactInfo->localPoint2),
                mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr) {
 
     assert(mPenetrationDepth > decimal(0.0));
@@ -53,8 +53,8 @@ void ContactPoint::update(const ContactPointInfo* contactInfo) {
 
     mNormal = contactInfo->normal;
     mPenetrationDepth = contactInfo->penetrationDepth;
-    mLocalPointOnBody1 = contactInfo->localPoint1;
-    mLocalPointOnBody2 = contactInfo->localPoint2;
+    mLocalPointOnShape1 = contactInfo->localPoint1;
+    mLocalPointOnShape2 = contactInfo->localPoint2;
 
     mIsObsolete = false;
 }

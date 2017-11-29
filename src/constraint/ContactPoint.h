@@ -54,11 +54,11 @@ class ContactPoint {
         /// Penetration depth
         decimal mPenetrationDepth;
 
-        /// Contact point on body 1 in local space of body 1
-        Vector3 mLocalPointOnBody1;
+        /// Contact point on proxy shape 1 in local-space of proxy shape 1
+        Vector3 mLocalPointOnShape1;
 
-        /// Contact point on body 2 in local space of body 2
-        Vector3 mLocalPointOnBody2;
+        /// Contact point on proxy shape 2 in local-space of proxy shape 2
+        Vector3 mLocalPointOnShape2;
 
         /// True if the contact is a resting contact (exists for more than one time step)
         bool mIsRestingContact;
@@ -121,11 +121,11 @@ class ContactPoint {
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
 
-        /// Return the contact local point on body 1
-        Vector3 getLocalPointOnBody1() const;
+        /// Return the contact point on the first proxy shape in the local-space of the proxy shape
+        Vector3 getLocalPointOnShape1() const;
 
-        /// Return the contact local point on body 2
-        Vector3 getLocalPointOnBody2() const;
+        /// Return the contact point on the second proxy shape in the local-space of the proxy shape
+        Vector3 getLocalPointOnShape2() const;
 
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
@@ -156,14 +156,14 @@ inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
 }
 
-// Return the contact point on body 1
-inline Vector3 ContactPoint::getLocalPointOnBody1() const {
-    return mLocalPointOnBody1;
+// Return the contact point on the first proxy shape in the local-space of the proxy shape
+inline Vector3 ContactPoint::getLocalPointOnShape1() const {
+    return mLocalPointOnShape1;
 }
 
-// Return the contact point on body 2
-inline Vector3 ContactPoint::getLocalPointOnBody2() const {
-    return mLocalPointOnBody2;
+// Return the contact point on the second proxy shape in the local-space of the proxy shape
+inline Vector3 ContactPoint::getLocalPointOnShape2() const {
+    return mLocalPointOnShape2;
 }
 
 // Return the cached penetration impulse
@@ -173,7 +173,7 @@ inline decimal ContactPoint::getPenetrationImpulse() const {
 
 // Return true if the contact point is similar (close enougth) to another given contact point
 inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
-    return (localContactPointBody1->localPoint1 - mLocalPointOnBody1).lengthSquare() <= (PERSISTENT_CONTACT_DIST_THRESHOLD *
+    return (localContactPointBody1->localPoint1 - mLocalPointOnShape1).lengthSquare() <= (PERSISTENT_CONTACT_DIST_THRESHOLD *
             PERSISTENT_CONTACT_DIST_THRESHOLD);
 }
 

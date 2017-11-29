@@ -157,8 +157,8 @@ void ContactSolver::initializeForIsland(Island* island) {
         while (externalContact != nullptr) {
 
             // Get the contact point on the two bodies
-            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact->getLocalPointOnBody1();
-            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact->getLocalPointOnBody2();
+            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact->getLocalPointOnShape1();
+            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact->getLocalPointOnShape2();
 
             new (mContactPoints + mNbContactPoints) ContactPointSolver();
             mContactPoints[mNbContactPoints].externalContact = externalContact;
