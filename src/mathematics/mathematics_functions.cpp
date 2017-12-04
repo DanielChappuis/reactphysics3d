@@ -198,10 +198,7 @@ decimal reactphysics3d::computePlaneSegmentIntersection(const Vector3& segA, con
     const decimal parallelEpsilon = decimal(0.0001);
 	decimal t = decimal(-1);
 
-	// Segment AB
-	const Vector3 ab = segB - segA;
-
-    decimal nDotAB = planeNormal.dot(ab);
+    decimal nDotAB = planeNormal.dot(segB - segA);
 
 	// If the segment is not parallel to the plane
     if (std::abs(nDotAB) > parallelEpsilon) {
@@ -297,23 +294,27 @@ std::vector<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, 
 
 // Clip a polygon against multiple planes and return the clipped polygon vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
-std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vector3>& polygonVertices, const std::vector<Vector3>& planesPoints,
-                                                           const std::vector<Vector3>& planesNormals) {
+List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
+                                                    const List<Vector3>& planesNormals, Allocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 
-    std::vector<Vector3> inputVertices(polygonVertices);
-    std::vector<Vector3> outputVertices;
+    uint nbMaxElements = polygonVertices.size() + planesPoints.size();
+    List<Vector3> inputVertices(allocator, nbMaxElements);
+    List<Vector3> outputVertices(allocator, nbMaxElements);
+
+    inputVertices.addRange(polygonVertices);
 
     // For each clipping plane
     for (uint p=0; p<planesPoints.size(); p++) {
 
         outputVertices.clear();
 
-        uint vStart = inputVertices.size() - 1;
+        uint nbInputVertices = inputVertices.size();
+        uint vStart = nbInputVertices - 1;
 
         // For each edge of the polygon
-        for (uint vEnd = 0; vEnd<inputVertices.size(); vEnd++) {
+        for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
 
             Vector3& v1 = inputVertices[vStart];
             Vector3& v2 = inputVertices[vEnd];
@@ -331,15 +332,15 @@ std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vec
                     decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
 
                     if (t >= decimal(0) && t <= decimal(1.0)) {
-                        outputVertices.push_back(v1 + t * (v2 - v1));
+                        outputVertices.add(v1 + t * (v2 - v1));
                     }
                     else {
-                        outputVertices.push_back(v2);
+                        outputVertices.add(v2);
                     } 
                 }
 
                 // Add the second vertex
-                outputVertices.push_back(v2);
+                outputVertices.add(v2);
             }
             else {  // If the second vertex is behind the clipping plane
 
@@ -350,10 +351,10 @@ std::vector<Vector3> reactphysics3d::clipPolygonWithPlanes(const std::vector<Vec
                     decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
 
                     if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                        outputVertices.push_back(v1 + t * (v2 - v1));
+                        outputVertices.add(v1 + t * (v2 - v1));
                     }
                     else {
-                        outputVertices.push_back(v1);
+                        outputVertices.add(v1);
                     }
                 }
             }

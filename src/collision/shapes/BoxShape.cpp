@@ -84,10 +84,9 @@ BoxShape::BoxShape(const Vector3& extent)
  */
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    Vector3 realExtent = mExtent + Vector3(mMargin, mMargin, mMargin);
-    decimal xSquare = realExtent.x * realExtent.x;
-    decimal ySquare = realExtent.y * realExtent.y;
-    decimal zSquare = realExtent.z * realExtent.z;
+    decimal xSquare = mExtent.x * mExtent.x;
+    decimal ySquare = mExtent.y * mExtent.y;
+    decimal zSquare = mExtent.z * mExtent.z;
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));

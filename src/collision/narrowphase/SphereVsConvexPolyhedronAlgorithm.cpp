@@ -34,7 +34,8 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a convex polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
+bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                                      Allocator& memoryAllocator) {
 
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
         narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
@@ -69,7 +70,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPha
     if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
         // Run the SAT algorithm to find the separating axis and compute contact point
-        SATAlgorithm satAlgorithm;
+        SATAlgorithm satAlgorithm(memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

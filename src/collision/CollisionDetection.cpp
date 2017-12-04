@@ -273,7 +273,7 @@ void CollisionDetection::computeNarrowPhase() {
             // Use the narrow-phase collision detection algorithm to check
             // if there really is a collision. If a collision occurs, the
             // notifyContact() callback method will be called.
-            if (narrowPhaseAlgorithm->testCollision(currentNarrowPhaseInfo, true)) {
+            if (narrowPhaseAlgorithm->testCollision(currentNarrowPhaseInfo, true, mSingleFrameAllocator)) {
 
                 // Add the contact points as a potential contact manifold into the pair                
                 currentNarrowPhaseInfo->addContactPointsAsPotentialContactManifold();
@@ -593,7 +593,7 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
                             // Use the narrow-phase collision detection algorithm to check
                             // if there really is a collision. If a collision occurs, the
                             // notifyContact() callback method will be called.
-                            isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false);
+                            isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false, mPoolAllocator);
                         }
                     }
 
@@ -688,7 +688,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                                     // Use the narrow-phase collision detection algorithm to check
                                     // if there really is a collision. If a collision occurs, the
                                     // notifyContact() callback method will be called.
-                                    isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false);
+                                    isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false, mPoolAllocator);
                                 }
                             }
 
@@ -767,7 +767,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                         // Use the narrow-phase collision detection algorithm to check
                         // if there really is a collision. If a collision occurs, the
                         // notifyContact() callback method will be called.
-                        if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true)) {
+                        if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mPoolAllocator)) {
 
                             // Add the contact points as a potential contact manifold into the pair
                             narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
@@ -859,7 +859,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                                 // Use the narrow-phase collision detection algorithm to check
                                 // if there really is a collision. If a collision occurs, the
                                 // notifyContact() callback method will be called.
-                                if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true)) {
+                                if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mPoolAllocator)) {
 
                                     // Add the contact points as a potential contact manifold into the pair
                                     narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
@@ -943,7 +943,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
                     // Use the narrow-phase collision detection algorithm to check
                     // if there really is a collision. If a collision occurs, the
                     // notifyContact() callback method will be called.
-                    if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true)) {
+                    if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mPoolAllocator)) {
 
                         // Add the contact points as a potential contact manifold into the pair
                         narrowPhaseInfo->addContactPointsAsPotentialContactManifold();

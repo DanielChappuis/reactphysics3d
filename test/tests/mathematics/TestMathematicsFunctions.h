@@ -27,6 +27,8 @@
 #define TEST_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
+#include "containers/List.h"
+#include "memory/DefaultAllocator.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -41,7 +43,7 @@ class TestMathematicsFunctions : public Test {
 
         // ---------- Atributes ---------- //
 
-
+        DefaultAllocator mAllocator;
 
     public :
 
@@ -223,37 +225,37 @@ class TestMathematicsFunctions : public Test {
             test(clipSegmentVertices.size() == 0);
 
             // Test clipPolygonWithPlanes()
-            std::vector<Vector3> polygonVertices;
-            polygonVertices.push_back(Vector3(-4, 2, 0));
-            polygonVertices.push_back(Vector3(7, 2, 0));
-            polygonVertices.push_back(Vector3(7, 4, 0));
-            polygonVertices.push_back(Vector3(-4, 4, 0));
+            List<Vector3> polygonVertices(mAllocator);
+            polygonVertices.add(Vector3(-4, 2, 0));
+            polygonVertices.add(Vector3(7, 2, 0));
+            polygonVertices.add(Vector3(7, 4, 0));
+            polygonVertices.add(Vector3(-4, 4, 0));
 
-            planesNormals.clear();
-            planesPoints.clear();
-            planesNormals.push_back(Vector3(1, 0, 0));
-            planesPoints.push_back(Vector3(0, 0, 0));
-            planesNormals.push_back(Vector3(0, 1, 0));
-            planesPoints.push_back(Vector3(0, 0, 0));
-            planesNormals.push_back(Vector3(-1, 0, 0));
-            planesPoints.push_back(Vector3(10, 0, 0));
-            planesNormals.push_back(Vector3(0, -1, 0));
-            planesPoints.push_back(Vector3(10, 5, 0));
+            List<Vector3> polygonPlanesNormals(mAllocator);
+            List<Vector3> polygonPlanesPoints(mAllocator);
+            polygonPlanesNormals.add(Vector3(1, 0, 0));
+            polygonPlanesPoints.add(Vector3(0, 0, 0));
+            polygonPlanesNormals.add(Vector3(0, 1, 0));
+            polygonPlanesPoints.add(Vector3(0, 0, 0));
+            polygonPlanesNormals.add(Vector3(-1, 0, 0));
+            polygonPlanesPoints.add(Vector3(10, 0, 0));
+            polygonPlanesNormals.add(Vector3(0, -1, 0));
+            polygonPlanesPoints.add(Vector3(10, 5, 0));
 
-            clipSegmentVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
-            test(clipSegmentVertices.size() == 4);
-            test(approxEqual(clipSegmentVertices[0].x, 0, 0.000001));
-            test(approxEqual(clipSegmentVertices[0].y, 2, 0.000001));
-            test(approxEqual(clipSegmentVertices[0].z, 0, 0.000001));
-            test(approxEqual(clipSegmentVertices[1].x, 7, 0.000001));
-            test(approxEqual(clipSegmentVertices[1].y, 2, 0.000001));
-            test(approxEqual(clipSegmentVertices[1].z, 0, 0.000001));
-            test(approxEqual(clipSegmentVertices[2].x, 7, 0.000001));
-            test(approxEqual(clipSegmentVertices[2].y, 4, 0.000001));
-            test(approxEqual(clipSegmentVertices[2].z, 0, 0.000001));
-            test(approxEqual(clipSegmentVertices[3].x, 0, 0.000001));
-            test(approxEqual(clipSegmentVertices[3].y, 4, 0.000001));
-            test(approxEqual(clipSegmentVertices[3].z, 0, 0.000001));
+            List<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, mAllocator);
+            test(clipPolygonVertices.size() == 4);
+            test(approxEqual(clipPolygonVertices[0].x, 0, 0.000001));
+            test(approxEqual(clipPolygonVertices[0].y, 2, 0.000001));
+            test(approxEqual(clipPolygonVertices[0].z, 0, 0.000001));
+            test(approxEqual(clipPolygonVertices[1].x, 7, 0.000001));
+            test(approxEqual(clipPolygonVertices[1].y, 2, 0.000001));
+            test(approxEqual(clipPolygonVertices[1].z, 0, 0.000001));
+            test(approxEqual(clipPolygonVertices[2].x, 7, 0.000001));
+            test(approxEqual(clipPolygonVertices[2].y, 4, 0.000001));
+            test(approxEqual(clipPolygonVertices[2].z, 0, 0.000001));
+            test(approxEqual(clipPolygonVertices[3].x, 0, 0.000001));
+            test(approxEqual(clipPolygonVertices[3].y, 4, 0.000001));
+            test(approxEqual(clipPolygonVertices[3].z, 0, 0.000001));
 
         }
 

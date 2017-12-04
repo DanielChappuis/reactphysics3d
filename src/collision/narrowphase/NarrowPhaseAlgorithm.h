@@ -90,8 +90,9 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts)=0;
+        /// Compute a contact info if the two bounding volumes collide
+        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                   Allocator& memoryAllocator)=0;
 
 #ifdef IS_PROFILING_ACTIVE
 

@@ -194,7 +194,7 @@ inline Transform Transform::identity() {
 
 // Return the transformed vector
 inline Vector3 Transform::operator*(const Vector3& vector) const {
-    return (mOrientation.getMatrix() * vector) + mPosition;
+    return (mOrientation * vector) + mPosition;
 }
 
 // Operator of multiplication of a transform with another one

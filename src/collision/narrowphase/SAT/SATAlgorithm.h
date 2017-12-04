@@ -50,6 +50,9 @@ class SATAlgorithm {
         /// make sure the contact manifold does not change too much between frames.
         static const decimal SAME_SEPARATING_AXIS_BIAS;
 
+        /// Memory allocator
+        Allocator& mMemoryAllocator;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -115,7 +118,7 @@ class SATAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SATAlgorithm() = default;
+        SATAlgorithm(Allocator& memoryAllocator);
 
         /// Destructor
         ~SATAlgorithm() = default;

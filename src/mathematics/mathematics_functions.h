@@ -33,6 +33,7 @@
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include "containers/List.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -116,8 +117,8 @@ std::vector<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& s
                                                            const std::vector<Vector3>& planesNormals);
 
 /// Clip a polygon against multiple planes and return the clipped polygon vertices
-std::vector<Vector3> clipPolygonWithPlanes(const std::vector<Vector3>& polygonVertices, const std::vector<Vector3>& planesPoints,
-                                           const std::vector<Vector3>& planesNormals);
+List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
+                                    const List<Vector3>& planesNormals, Allocator& allocator);
 
 /// Project a point onto a plane that is given by a point and its unit length normal
 Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);

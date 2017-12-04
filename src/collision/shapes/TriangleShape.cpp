@@ -58,6 +58,57 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     mVerticesNormals[1] = verticesNormals[1];
     mVerticesNormals[2] = verticesNormals[2];
 
+    // Faces
+    for (uint i=0; i<2; i++) {
+        mFaces[i].faceVertices.push_back(0);
+        mFaces[i].faceVertices.push_back(1);
+        mFaces[i].faceVertices.push_back(2);
+        mFaces[i].edgeIndex = i;
+    }
+
+    // Edges
+    for (uint i=0; i<6; i++) {
+        switch(i) {
+            case 0:
+                mEdges[0].vertexIndex = 0;
+                mEdges[0].twinEdgeIndex = 1;
+                mEdges[0].faceIndex = 0;
+                mEdges[0].nextEdgeIndex = 2;
+                break;
+            case 1:
+                mEdges[1].vertexIndex = 1;
+                mEdges[1].twinEdgeIndex = 0;
+                mEdges[1].faceIndex = 1;
+                mEdges[1].nextEdgeIndex = 5;
+                break;
+            case 2:
+                mEdges[2].vertexIndex = 1;
+                mEdges[2].twinEdgeIndex = 3;
+                mEdges[2].faceIndex = 0;
+                mEdges[2].nextEdgeIndex = 4;
+                break;
+            case 3:
+                mEdges[3].vertexIndex = 2;
+                mEdges[3].twinEdgeIndex = 2;
+                mEdges[3].faceIndex = 1;
+                mEdges[3].nextEdgeIndex = 1;
+                break;
+            case 4:
+                mEdges[4].vertexIndex = 2;
+                mEdges[4].twinEdgeIndex = 5;
+                mEdges[4].faceIndex = 0;
+                mEdges[4].nextEdgeIndex = 0;
+                break;
+            case 5:
+                mEdges[5].vertexIndex = 0;
+                mEdges[5].twinEdgeIndex = 4;
+                mEdges[5].faceIndex = 1;
+                mEdges[5].nextEdgeIndex = 3;
+                break;
+        }
+    }
+
+
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
     mId = shapeId;
@@ -227,51 +278,3 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     return true;
 }
 
-// Return a given half-edge of the polyhedron
-HalfEdgeStructure::Edge TriangleShape::getHalfEdge(uint edgeIndex) const {
-    assert(edgeIndex < getNbHalfEdges());
-
-    HalfEdgeStructure::Edge edge;
-
-    switch(edgeIndex) {
-        case 0:
-            edge.vertexIndex = 0;
-            edge.twinEdgeIndex = 1;
-            edge.faceIndex = 0;
-            edge.nextEdgeIndex = 2;
-            break;
-        case 1:
-            edge.vertexIndex = 1;
-            edge.twinEdgeIndex = 0;
-            edge.faceIndex = 1;
-            edge.nextEdgeIndex = 5;
-            break;
-        case 2:
-            edge.vertexIndex = 1;
-            edge.twinEdgeIndex = 3;
-            edge.faceIndex = 0;
-            edge.nextEdgeIndex = 4;
-            break;
-        case 3:
-            edge.vertexIndex = 2;
-            edge.twinEdgeIndex = 2;
-            edge.faceIndex = 1;
-            edge.nextEdgeIndex = 1;
-            break;
-        case 4:
-            edge.vertexIndex = 2;
-            edge.twinEdgeIndex = 5;
-            edge.faceIndex = 0;
-            edge.nextEdgeIndex = 0;
-            break;
-        case 5:
-            edge.vertexIndex = 0;
-            edge.twinEdgeIndex = 4;
-            edge.faceIndex = 1;
-            edge.nextEdgeIndex = 3;
-            break;
-    }
-
-    return edge;
-
-}

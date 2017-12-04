@@ -30,7 +30,8 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
+bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                            Allocator& memoryAllocator) {
     
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
