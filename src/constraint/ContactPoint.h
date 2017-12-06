@@ -122,10 +122,10 @@ class ContactPoint {
         Vector3 getNormal() const;
 
         /// Return the contact point on the first proxy shape in the local-space of the proxy shape
-        Vector3 getLocalPointOnShape1() const;
+        const Vector3& getLocalPointOnShape1() const;
 
         /// Return the contact point on the second proxy shape in the local-space of the proxy shape
-        Vector3 getLocalPointOnShape2() const;
+        const Vector3& getLocalPointOnShape2() const;
 
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
@@ -157,12 +157,12 @@ inline Vector3 ContactPoint::getNormal() const {
 }
 
 // Return the contact point on the first proxy shape in the local-space of the proxy shape
-inline Vector3 ContactPoint::getLocalPointOnShape1() const {
+inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
     return mLocalPointOnShape1;
 }
 
 // Return the contact point on the second proxy shape in the local-space of the proxy shape
-inline Vector3 ContactPoint::getLocalPointOnShape2() const {
+inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
     return mLocalPointOnShape2;
 }
 

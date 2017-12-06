@@ -300,24 +300,26 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
     assert(planesPoints.size() == planesNormals.size());
 
     uint nbMaxElements = polygonVertices.size() + planesPoints.size();
-    List<Vector3> inputVertices(allocator, nbMaxElements);
-    List<Vector3> outputVertices(allocator, nbMaxElements);
+    List<Vector3> list1(allocator, nbMaxElements);
+    List<Vector3> list2(allocator, nbMaxElements);
+    List<decimal> dotProducts(allocator, nbMaxElements * 2);
 
-    inputVertices.addRange(polygonVertices);
+    const List<Vector3>* inputVertices = &polygonVertices;
+    List<Vector3>* outputVertices = &list2;
 
     // For each clipping plane
     for (uint p=0; p<planesPoints.size(); p++) {
 
-        outputVertices.clear();
+        outputVertices->clear();
 
-        uint nbInputVertices = inputVertices.size();
+        uint nbInputVertices = inputVertices->size();
         uint vStart = nbInputVertices - 1;
 
         // For each edge of the polygon
         for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
 
-            Vector3& v1 = inputVertices[vStart];
-            Vector3& v2 = inputVertices[vEnd];
+            const Vector3& v1 = (*inputVertices)[vStart];
+            const Vector3& v2 = (*inputVertices)[vEnd];
 
             decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
             decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
@@ -332,15 +334,15 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
                     decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
 
                     if (t >= decimal(0) && t <= decimal(1.0)) {
-                        outputVertices.add(v1 + t * (v2 - v1));
+                        outputVertices->add(v1 + t * (v2 - v1));
                     }
                     else {
-                        outputVertices.add(v2);
+                        outputVertices->add(v2);
                     } 
                 }
 
                 // Add the second vertex
-                outputVertices.add(v2);
+                outputVertices->add(v2);
             }
             else {  // If the second vertex is behind the clipping plane
 
@@ -351,10 +353,10 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
                     decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
 
                     if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                        outputVertices.add(v1 + t * (v2 - v1));
+                        outputVertices->add(v1 + t * (v2 - v1));
                     }
                     else {
-                        outputVertices.add(v1);
+                        outputVertices->add(v1);
                     }
                 }
             }
@@ -363,9 +365,10 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
         }
 
         inputVertices = outputVertices;
+        outputVertices = p % 2 == 0 ? &list1 : &list2;
     }
 
-    return outputVertices;
+    return *outputVertices;
 }
 
 // Project a point onto a plane that is given by a point and its unit length normal

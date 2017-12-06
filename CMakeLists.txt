@@ -192,8 +192,10 @@ SET (REACTPHYSICS3D_SOURCES
     "src/memory/PoolAllocator.cpp"
     "src/memory/SingleFrameAllocator.h"
     "src/memory/SingleFrameAllocator.cpp"
+    "src/memory/DefaultAllocator.h"
     "src/containers/Stack.h"
     "src/containers/LinkedList.h"
+    "src/containers/List.h"
 )
 
 # Create the library

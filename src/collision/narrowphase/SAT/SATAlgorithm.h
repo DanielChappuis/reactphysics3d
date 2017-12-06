@@ -72,9 +72,6 @@ class SATAlgorithm {
                                        const Vector3& c, const Vector3& d,
                                        const Vector3& bCrossA, const Vector3& dCrossC) const;
 
-        // Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector
-        uint findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const;
-
         /// Compute and return the distance between the two edges in the direction of the candidate separating axis
         decimal computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
                                             const Vector3& edge1Direction, const Vector3& edge2Direction,

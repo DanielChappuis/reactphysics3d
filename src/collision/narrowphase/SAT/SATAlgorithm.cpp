@@ -824,7 +824,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     const HalfEdgeStructure::Face& referenceFace = referencePolyhedron->getFace(minFaceIndex);
 
     // Find the incident face on the other polyhedron (most anti-parallel face)
-    uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
+    uint incidentFaceIndex = incidentPolyhedron->findMostAntiParallelFace(axisIncidentSpace);
 
     // Get the incident face
     const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
@@ -914,28 +914,6 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     return contactPointsFound;
 }
 
-// Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector
-// This is used to find the incident face on a polyhedron of a given reference face of another polyhedron
-uint SATAlgorithm::findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const {
-
-    PROFILE("SATAlgorithm::findMostAntiParallelFaceOnPolyhedron", mProfiler);
-
-    decimal minDotProduct = DECIMAL_LARGEST;
-    uint mostAntiParallelFace = 0;
-
-    // For each face of the polyhedron
-    for (uint i=0; i < polyhedron->getNbFaces(); i++) {
-
-        // Get the face normal
-        decimal dotProduct = polyhedron->getFaceNormal(i).dot(direction);
-        if (dotProduct < minDotProduct) {
-            minDotProduct = dotProduct;
-            mostAntiParallelFace = i;
-        }
-    }
-
-    return mostAntiParallelFace;
-}
 
 // Compute and return the distance between the two edges in the direction of the candidate separating axis
 decimal SATAlgorithm::computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,

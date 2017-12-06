@@ -87,12 +87,17 @@ class ConvexPolyhedronShape : public ConvexShape {
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const=0;
+
+        /// Find and return the index of the polyhedron face with the most anti-parallel face
+        /// normal given a direction vector
+        uint findMostAntiParallelFace(const Vector3& direction) const;
 };
 
 // Return true if the collision shape is a polyhedron
 inline bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
+
 
 }
 
