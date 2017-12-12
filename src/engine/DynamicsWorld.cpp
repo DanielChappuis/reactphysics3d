@@ -358,20 +358,6 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
         // Check if there are contacts and constraints to solve
         bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
-        //bool isContactsToSolve = mIslands[islandIndex]->getNbContactManifolds() > 0;
-        //if (!isConstraintsToSolve && !isContactsToSolve) continue;
-
-        // If there are contacts in the current island
-//        if (isContactsToSolve) {
-
-//            // Initialize the solver
-//            mContactSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
-
-//            // Warm start the contact solver
-//            if (mContactSolver.IsWarmStartingActive()) {
-//                mContactSolver.warmStart();
-//            }
-//        }
 
         // If there are constraints
         if (isConstraintsToSolve) {
@@ -393,15 +379,6 @@ void DynamicsWorld::solveContactsAndConstraints() {
         }
 
         mContactSolver.solve();
-
-        // Solve the contacts
-//            if (isContactsToSolve) {
-
-//                mContactSolver.resetTotalPenetrationImpulse();
-
-//                mContactSolver.solvePenetrationConstraints();
-//                mContactSolver.solveFrictionConstraints();
-//            }
     }
 
     mContactSolver.storeImpulses();
