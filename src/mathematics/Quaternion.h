@@ -169,7 +169,28 @@ struct Quaternion {
         void initWithEulerAngles(decimal angleX, decimal angleY, decimal angleZ);
 };
 
-/// Set all the values
+// Constructor of the class
+inline Quaternion::Quaternion() : x(0.0), y(0.0), z(0.0), w(0.0) {
+
+}
+
+// Constructor with arguments
+inline Quaternion::Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW)
+           :x(newX), y(newY), z(newZ), w(newW) {
+
+}
+
+// Constructor with the component w and the vector v=(x y z)
+inline Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z), w(newW) {
+
+}
+
+// Constructor with the component w and the vector v=(x y z)
+inline Quaternion::Quaternion(const Vector3& v, decimal newW) : x(v.x), y(v.y), z(v.z), w(newW) {
+
+}
+
+// Set all the values
 inline void Quaternion::setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW) {
     x = newX;
     y = newY;
@@ -177,7 +198,7 @@ inline void Quaternion::setAllValues(decimal newX, decimal newY, decimal newZ, d
     w = newW;
 }
 
-/// Set the quaternion to zero
+// Set the quaternion to zero
 inline void Quaternion::setToZero() {
     x = 0;
     y = 0;

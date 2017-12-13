@@ -155,6 +155,32 @@ class Matrix3x3 {
         Vector3& operator[](int row);
 };
 
+// Constructor of the class Matrix3x3
+inline Matrix3x3::Matrix3x3() {
+    // Initialize all values in the matrix to zero
+    setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+}
+
+// Constructor
+inline Matrix3x3::Matrix3x3(decimal value) {
+    setAllValues(value, value, value, value, value, value, value, value, value);
+}
+
+// Constructor with arguments
+inline Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3,
+                     decimal b1, decimal b2, decimal b3,
+                     decimal c1, decimal c2, decimal c3) {
+    // Initialize the matrix with the values
+    setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
+}
+
+// Copy-constructor
+inline Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
+    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
+                 matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
+                 matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
+}
+
 // Method to set all the values in the matrix
 inline void Matrix3x3::setAllValues(decimal a1, decimal a2, decimal a3,
                                     decimal b1, decimal b2, decimal b3,
