@@ -223,7 +223,11 @@ inline Vector3 Transform::operator*(const Vector3& vector) const {
 // Operator of multiplication of a transform with another one
 inline Transform Transform::operator*(const Transform& transform2) const {
 
-    const decimal prodX = mOrientation.w * transform2.mPosition.x + mOrientation.w * transform2.mPosition.z
+    // The following code is equivalent to this
+    //return Transform(mPosition + mOrientation * transform2.mPosition,
+    //                 mOrientation * transform2.mOrientation);
+
+    const decimal prodX = mOrientation.w * transform2.mPosition.x + mOrientation.y * transform2.mPosition.z
                           - mOrientation.z * transform2.mPosition.y;
     const decimal prodY = mOrientation.w * transform2.mPosition.y + mOrientation.z * transform2.mPosition.x
                           - mOrientation.x * transform2.mPosition.z;
