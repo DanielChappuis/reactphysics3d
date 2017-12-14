@@ -39,12 +39,10 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex,
-                             SingleFrameAllocator& allocator)
+ContactSolver::ContactSolver(SingleFrameAllocator& allocator)
               :mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr),
                mContactConstraints(nullptr), mSingleFrameAllocator(allocator),
                mLinearVelocities(nullptr), mAngularVelocities(nullptr),
-               mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
                mIsSplitImpulseActive(true) {
 
 }
@@ -131,8 +129,8 @@ void ContactSolver::initializeForIsland(Island* island) {
         // Initialize the internal contact manifold structure using the external
         // contact manifold
         new (mContactConstraints + mNbContactManifolds) ContactManifoldSolver();
-        mContactConstraints[mNbContactManifolds].indexBody1 = mMapBodyToConstrainedVelocityIndex.find(body1)->second;
-        mContactConstraints[mNbContactManifolds].indexBody2 = mMapBodyToConstrainedVelocityIndex.find(body2)->second;
+        mContactConstraints[mNbContactManifolds].indexBody1 = body1->mArrayIndex;
+        mContactConstraints[mNbContactManifolds].indexBody2 = body2->mArrayIndex;
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].massInverseBody1 = body1->mMassInverse;

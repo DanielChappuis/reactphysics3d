@@ -41,8 +41,7 @@ using namespace std;
  */
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
               : CollisionWorld(),
-                mContactSolver(mMapBodyToConstrainedVelocityIndex, mSingleFrameAllocator),
-                mConstraintSolver(mMapBodyToConstrainedVelocityIndex),
+                mContactSolver(mSingleFrameAllocator),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
                 mIsSleepingEnabled(SLEEPING_ENABLED), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
@@ -167,7 +166,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Get the constrained velocity
-            uint indexArray = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
+            uint indexArray = bodies[b]->mArrayIndex;
             Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
             Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
 
@@ -205,7 +204,7 @@ void DynamicsWorld::updateBodiesState() {
 
         for (uint b=0; b < mIslands[islandIndex]->getNbBodies(); b++) {
 
-            uint index = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
+            uint index = bodies[b]->mArrayIndex;
 
             // Update the linear and angular velocity of the body
             bodies[b]->mLinearVelocity = mConstrainedLinearVelocities[index];
@@ -250,21 +249,14 @@ void DynamicsWorld::initVelocityArrays() {
     assert(mConstrainedPositions != nullptr);
     assert(mConstrainedOrientations != nullptr);
 
-    // Reset the velocities arrays
-    for (uint i=0; i<nbBodies; i++) {
+    // Initialize the map of body indexes in the velocity arrays
+    uint i = 0;
+    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+
         mSplitLinearVelocities[i].setToZero();
         mSplitAngularVelocities[i].setToZero();
-    }
 
-    // Initialize the map of body indexes in the velocity arrays
-    mMapBodyToConstrainedVelocityIndex.clear();
-    std::set<RigidBody*>::const_iterator it;
-    uint indexBody = 0;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-
-        // Add the body into the map
-        mMapBodyToConstrainedVelocityIndex.insert(std::make_pair(*it, indexBody));
-        indexBody++;
+        (*it)->mArrayIndex = i++;
     }
 }
 
@@ -289,7 +281,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
         for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
 
             // Insert the body into the map of constrained velocities
-            uint indexBody = mMapBodyToConstrainedVelocityIndex.find(bodies[b])->second;
+            uint indexBody = bodies[b]->mArrayIndex;
 
             assert(mSplitLinearVelocities[indexBody] == Vector3(0, 0, 0));
             assert(mSplitAngularVelocities[indexBody] == Vector3(0, 0, 0));

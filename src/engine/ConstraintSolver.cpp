@@ -30,9 +30,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-                 : mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(true), mConstraintSolverData(mapBodyToVelocityIndex) {
+ConstraintSolver::ConstraintSolver() : mIsWarmStartingActive(true) {
 
 #ifdef IS_PROFILING_ACTIVE
 

@@ -42,7 +42,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
           : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(nullptr) {
+            mJointsList(nullptr), mArrayIndex(0) {
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;

@@ -50,6 +50,11 @@ class DynamicsWorld;
   */
 class RigidBody : public CollisionBody {
 
+    private :
+
+        /// Index of the body in arrays for contact/constraint solver
+        uint mArrayIndex;
+
     protected :
 
         // -------------------- Attributes -------------------- //
@@ -102,7 +107,7 @@ class RigidBody : public CollisionBody {
         decimal mAngularDamping;
 
         /// First element of the linked list of joints involving this body
-        JointListElement* mJointsList;        
+        JointListElement* mJointsList;
 
         // -------------------- Methods -------------------- //
 
