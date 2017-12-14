@@ -112,9 +112,10 @@ decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB
 decimal computePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
 
 /// Clip a segment against multiple planes and return the clipped segment vertices
-std::vector<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
-                                                           const std::vector<Vector3>& planesPoints,
-                                                           const std::vector<Vector3>& planesNormals);
+List<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const List<Vector3>& planesPoints,
+                                                           const List<Vector3>& planesNormals,
+                                                           Allocator& allocator);
 
 /// Clip a polygon against multiple planes and return the clipped polygon vertices
 List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,

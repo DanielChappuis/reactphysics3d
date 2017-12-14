@@ -39,10 +39,10 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
+          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(nullptr), mArrayIndex(0) {
+            mJointsList(nullptr) {
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;

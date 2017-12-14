@@ -222,27 +222,34 @@ decimal reactphysics3d::computePointToLineDistance(const Vector3& linePointA, co
 
 // Clip a segment against multiple planes and return the clipped segment vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
-std::vector<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
-                                                           const std::vector<Vector3>& planesPoints,
-                                                           const std::vector<Vector3>& planesNormals) {
+List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const List<Vector3>& planesPoints,
+                                                           const List<Vector3>& planesNormals,
+                                                           Allocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 
-    std::vector<Vector3> inputVertices = {segA, segB};
-    std::vector<Vector3> outputVertices;
+    List<Vector3> list1(allocator, 2);
+    List<Vector3> list2(allocator, 2);
+
+    List<Vector3>* inputVertices = &list1;
+    List<Vector3>* outputVertices = &list2;
+
+    inputVertices->add(segA);
+    inputVertices->add(segB);
 
     // For each clipping plane
     for (uint p=0; p<planesPoints.size(); p++) {
 
         // If there is no more vertices, stop
-        if (inputVertices.empty()) return inputVertices;
+        if (inputVertices->size() == 0) return *inputVertices;
 
-        assert(inputVertices.size() == 2);
+        assert(inputVertices->size() == 2);
 
-        outputVertices.clear();
+        outputVertices->clear();
 
-        Vector3& v1 = inputVertices[0];
-        Vector3& v2 = inputVertices[1];
+        Vector3& v1 = (*inputVertices)[0];
+        Vector3& v2 = (*inputVertices)[1];
 
         decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
         decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
@@ -257,39 +264,40 @@ std::vector<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, 
                 decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
 
                 if (t >= decimal(0) && t <= decimal(1.0)) {
-                    outputVertices.push_back(v1 + t * (v2 - v1));
+                    outputVertices->add(v1 + t * (v2 - v1));
                 }
                 else {
-                    outputVertices.push_back(v2);
+                    outputVertices->add(v2);
                 }
             }
             else {
-                outputVertices.push_back(v1);
+                outputVertices->add(v1);
             }
 
             // Add the second vertex
-            outputVertices.push_back(v2);
+            outputVertices->add(v2);
         }
         else {  // If the second vertex is behind the clipping plane
 
             // If the first vertex is in front of the clippling plane
             if (v1DotN >= decimal(0.0)) {
 
-                outputVertices.push_back(v1);
+                outputVertices->add(v1);
 
                 // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
                 decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
 
                 if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                    outputVertices.push_back(v1 + t * (v2 - v1));
+                    outputVertices->add(v1 + t * (v2 - v1));
                 }
             }
         }
 
         inputVertices = outputVertices;
+        outputVertices = p % 2 == 0 ? &list1 : &list2;
     }
 
-    return outputVertices;
+    return *outputVertices;
 }
 
 // Clip a polygon against multiple planes and return the clipped polygon vertices
@@ -302,7 +310,6 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
     uint nbMaxElements = polygonVertices.size() + planesPoints.size();
     List<Vector3> list1(allocator, nbMaxElements);
     List<Vector3> list2(allocator, nbMaxElements);
-    List<decimal> dotProducts(allocator, nbMaxElements * 2);
 
     const List<Vector3>* inputVertices = &polygonVertices;
     List<Vector3>* outputVertices = &list2;

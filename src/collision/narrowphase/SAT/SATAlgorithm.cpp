@@ -374,8 +374,8 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
     uint firstEdgeIndex = face.edgeIndex;
     uint edgeIndex = firstEdgeIndex;
 
-    std::vector<Vector3> planesPoints;
-    std::vector<Vector3> planesNormals;
+    List<Vector3> planesPoints(mMemoryAllocator, 2);
+    List<Vector3> planesNormals(mMemoryAllocator, 2);
 
     // For each adjacent edge of the separating face of the polyhedron
     do {
@@ -393,15 +393,15 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
         Vector3 clipPlaneNormal = faceNormal.cross(edgeDirection);
 
         // Construct a clipping plane for each adjacent edge of the separating face of the polyhedron
-        planesPoints.push_back(polyhedron->getVertexPosition(edge.vertexIndex));
-        planesNormals.push_back(clipPlaneNormal);
+        planesPoints.add(polyhedron->getVertexPosition(edge.vertexIndex));
+        planesNormals.add(clipPlaneNormal);
 
         edgeIndex = edge.nextEdgeIndex;
 
     } while(edgeIndex != firstEdgeIndex);
 
     // First we clip the inner segment of the capsule with the four planes of the adjacent faces
-    std::vector<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals);
+    List<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals, mMemoryAllocator);
 
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
