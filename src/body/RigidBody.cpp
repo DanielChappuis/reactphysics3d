@@ -226,7 +226,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass);
+                                                                      transform, mass, mWorld.mPoolAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

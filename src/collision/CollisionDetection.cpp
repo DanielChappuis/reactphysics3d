@@ -288,7 +288,14 @@ void CollisionDetection::computeNarrowPhase() {
             lastCollisionFrameInfo->isValid = true;
         }
 
+        NarrowPhaseInfo* narrowPhaseInfoToDelete = currentNarrowPhaseInfo;
         currentNarrowPhaseInfo = currentNarrowPhaseInfo->next;
+
+        // Call the destructor
+        narrowPhaseInfoToDelete->~NarrowPhaseInfo();
+
+        // Release the allocated memory for the narrow phase info
+        mSingleFrameAllocator.release(narrowPhaseInfoToDelete, sizeof(NarrowPhaseInfo));
     }
 
     // Convert the potential contact into actual contacts

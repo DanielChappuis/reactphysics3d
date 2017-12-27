@@ -52,11 +52,13 @@ NarrowPhaseInfo::~NarrowPhaseInfo() {
 	// Release the memory of the TriangleShape (this memory was allocated in the
 	// MiddlePhaseTriangleCallback::testTriangle() method)
 	if (collisionShape1->getName() == CollisionShapeName::TRIANGLE) {
+        collisionShape1->~CollisionShape();
 		collisionShapeAllocator.release(collisionShape1, sizeof(TriangleShape));
 	}
 	if (collisionShape2->getName() == CollisionShapeName::TRIANGLE) {
-		collisionShapeAllocator.release(collisionShape2, sizeof(TriangleShape));
-	}
+        collisionShape2->~CollisionShape();
+        collisionShapeAllocator.release(collisionShape2, sizeof(TriangleShape));
+    }
 }
 
 // Add a new contact point

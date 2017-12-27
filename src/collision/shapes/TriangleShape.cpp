@@ -33,6 +33,7 @@
 
 using namespace reactphysics3d;
 
+
 // Constructor
 /**
  * Do not use this constructor. It is supposed to be used internally only.
@@ -43,8 +44,9 @@ using namespace reactphysics3d;
  * @param verticesNormals The three vertices normals for smooth mesh collision
  * @param margin The collision margin (in meters) around the collision shape
  */
-TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId)
-              : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE) {
+TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId,
+                             Allocator& allocator)
+    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
 
     mPoints[0] = vertices[0];
     mPoints[1] = vertices[1];
@@ -60,9 +62,10 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
 
     // Faces
     for (uint i=0; i<2; i++) {
-        mFaces[i].faceVertices.push_back(0);
-        mFaces[i].faceVertices.push_back(1);
-        mFaces[i].faceVertices.push_back(2);
+        mFaces[i].faceVertices.reserve(3);
+        mFaces[i].faceVertices.add(0);
+        mFaces[i].faceVertices.add(1);
+        mFaces[i].faceVertices.add(2);
         mFaces[i].edgeIndex = i;
     }
 
@@ -208,7 +211,7 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
-bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
 
     PROFILE("TriangleShape::raycast()", mProfiler);
 

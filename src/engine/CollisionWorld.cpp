@@ -187,4 +187,3 @@ AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
 
    return mCollisionDetection.getWorldAABB(proxyShape);
 }
-

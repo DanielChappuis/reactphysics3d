@@ -50,14 +50,14 @@ class HalfEdgeStructure {
         };
 
         struct Face {
-            uint edgeIndex;                     // Index of an half-edge of the face
-            std::vector<uint> faceVertices;     // Index of the vertices of the face
+            uint edgeIndex;             // Index of an half-edge of the face
+            List<uint> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
-            Face() {}
+            Face(Allocator& allocator) : faceVertices(allocator) {}
 
             /// Constructor
-            Face(std::vector<uint> vertices) : faceVertices(vertices) {}
+            Face(List<uint> vertices) : faceVertices(vertices) {}
         };
 
         struct Vertex {
@@ -70,19 +70,24 @@ class HalfEdgeStructure {
 
     private:
 
+        /// Reference to a memory allocator
+        Allocator& mAllocator;
+
         /// All the faces
-        std::vector<Face> mFaces;
+        List<Face> mFaces;
 
         /// All the vertices
-        std::vector<Vertex> mVertices;
+        List<Vertex> mVertices;
 
         /// All the half-edges
-        std::vector<Edge> mEdges;
+        List<Edge> mEdges;
 
     public:
 
         /// Constructor
-        HalfEdgeStructure() = default;
+        HalfEdgeStructure(Allocator& allocator, uint facesCapacity, uint verticesCapacity,
+                          uint edgesCapacity) :mAllocator(allocator), mFaces(allocator, facesCapacity),
+                          mVertices(allocator, verticesCapacity), mEdges(allocator, edgesCapacity) {}
 
         /// Destructor
         ~HalfEdgeStructure() = default;
@@ -94,7 +99,7 @@ class HalfEdgeStructure {
         uint addVertex(uint vertexPointIndex);
 
         /// Add a face
-        void addFace(std::vector<uint> faceVertices);
+        void addFace(List<uint> faceVertices);
 
         /// Return the number of faces
         uint getNbFaces() const;
@@ -119,16 +124,16 @@ class HalfEdgeStructure {
 // Add a vertex
 inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
-    mVertices.push_back(vertex);
+    mVertices.add(vertex);
     return mVertices.size() - 1;
 }
 
 // Add a face
-inline void HalfEdgeStructure::addFace(std::vector<uint> faceVertices) {
+inline void HalfEdgeStructure::addFace(List<uint> faceVertices) {
 
     // Create a new face
     Face face(faceVertices);
-    mFaces.push_back(face);
+    mFaces.add(face);
 }
 
 // Return the number of faces

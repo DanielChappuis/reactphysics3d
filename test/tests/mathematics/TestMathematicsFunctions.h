@@ -176,13 +176,13 @@ class TestMathematicsFunctions : public Test {
             segmentVertices.push_back(Vector3(-6, 3, 0));
             segmentVertices.push_back(Vector3(8, 3, 0));
 
-            std::vector<Vector3> planesNormals;
-            std::vector<Vector3> planesPoints;
-            planesNormals.push_back(Vector3(-1, 0, 0));
-            planesPoints.push_back(Vector3(4, 0, 0));
+            List<Vector3> planesNormals(mAllocator, 2);
+            List<Vector3> planesPoints(mAllocator, 2);
+            planesNormals.add(Vector3(-1, 0, 0));
+            planesPoints.add(Vector3(4, 0, 0));
 
-            std::vector<Vector3> clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1],
-                                                                             planesPoints, planesNormals);
+            List<Vector3> clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1],
+                                                                             planesPoints, planesNormals, mAllocator);
             test(clipSegmentVertices.size() == 2);
             test(approxEqual(clipSegmentVertices[0].x, -6, 0.000001));
             test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
@@ -195,7 +195,7 @@ class TestMathematicsFunctions : public Test {
             segmentVertices.push_back(Vector3(8, 3, 0));
             segmentVertices.push_back(Vector3(-6, 3, 0));
 
-            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals, mAllocator);
             test(clipSegmentVertices.size() == 2);
             test(approxEqual(clipSegmentVertices[0].x, 4, 0.000001));
             test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
@@ -208,7 +208,7 @@ class TestMathematicsFunctions : public Test {
             segmentVertices.push_back(Vector3(-6, 3, 0));
             segmentVertices.push_back(Vector3(3, 3, 0));
 
-            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals, mAllocator);
             test(clipSegmentVertices.size() == 2);
             test(approxEqual(clipSegmentVertices[0].x, -6, 0.000001));
             test(approxEqual(clipSegmentVertices[0].y, 3, 0.000001));
@@ -221,7 +221,7 @@ class TestMathematicsFunctions : public Test {
             segmentVertices.push_back(Vector3(5, 3, 0));
             segmentVertices.push_back(Vector3(8, 3, 0));
 
-            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals);
+            clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals, mAllocator);
             test(clipSegmentVertices.size() == 0);
 
             // Test clipPolygonWithPlanes()

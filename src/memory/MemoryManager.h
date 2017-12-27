@@ -23,65 +23,52 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_MEMORY_MANAGER_H
+#define REACTPHYSICS3D_MEMORY_MANAGER_H
+
 // Libraries
-#include "SphereShape.h"
-#include "collision/ProxyShape.h"
-#include "configuration.h"
-#include <cassert>
+#include "memory/DefaultAllocator.h"
 
-using namespace reactphysics3d;
+/// Namespace ReactPhysics3D
+namespace reactphysics3d {
 
-// Constructor
+// Class MemoryManager
 /**
- * @param radius Radius of the sphere (in meters)
+ * The memory manager is used to store the different memory allocators that are used
+ * by the library.
  */
-SphereShape::SphereShape(decimal radius)
-            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {
-    assert(radius > decimal(0.0));
+class MemoryManager {
+
+    private:
+
+       /// Default memory allocator
+       static DefaultAllocator mDefaultAllocator;
+
+    public:
+
+        /// Memory allocation types
+       enum class AllocationType {
+           Default, // Default memory allocator
+           Pool,	// Memory pool allocator
+           Frame,   // Single frame memory allocator
+       };
+
+        /// Constructor
+        MemoryManager();
+
+        /// Destructor
+        ~MemoryManager();
+
+        /// Return the default memory allocator
+        static DefaultAllocator& getDefaultAllocator();
+};
+
+// Return the default memory allocator
+inline DefaultAllocator& MemoryManager::getDefaultAllocator() {
+    return mDefaultAllocator;
 }
 
-// Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
-
-    const Vector3 m = ray.point1;
-    decimal c = m.dot(m) - mMargin * mMargin;
-
-    // If the origin of the ray is inside the sphere, we return no intersection
-    if (c < decimal(0.0)) return false;
-
-    const Vector3 rayDirection = ray.point2 - ray.point1;
-    decimal b = m.dot(rayDirection);
-
-    // If the origin of the ray is outside the sphere and the ray
-    // is pointing away from the sphere, there is no intersection
-    if (b > decimal(0.0)) return false;
-
-    decimal raySquareLength = rayDirection.lengthSquare();
-
-    // Compute the discriminant of the quadratic equation
-    decimal discriminant = b * b - raySquareLength * c;
-
-    // If the discriminant is negative or the ray length is very small, there is no intersection
-    if (discriminant < decimal(0.0) || raySquareLength < MACHINE_EPSILON) return false;
-
-    // Compute the solution "t" closest to the origin
-    decimal t = -b - std::sqrt(discriminant);
-
-    assert(t >= decimal(0.0));
-
-    // If the hit point is withing the segment ray fraction
-    if (t < ray.maxFraction * raySquareLength) {
-
-        // Compute the intersection information
-        t /= raySquareLength;
-        raycastInfo.body = proxyShape->getBody();
-        raycastInfo.proxyShape = proxyShape;
-        raycastInfo.hitFraction = t;
-        raycastInfo.worldPoint = ray.point1 + t * rayDirection;
-        raycastInfo.worldNormal = raycastInfo.worldPoint;
-
-        return true;
-    }
-
-    return false;
 }
+
+#endif
+

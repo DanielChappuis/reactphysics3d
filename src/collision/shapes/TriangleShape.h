@@ -60,6 +60,7 @@ class TriangleShape : public ConvexPolyhedronShape {
 
         // -------------------- Attribute -------------------- //
 
+
         /// Three points of the triangle
         Vector3 mPoints[3];
 
@@ -90,7 +91,8 @@ class TriangleShape : public ConvexPolyhedronShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape,
+                             Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
@@ -110,7 +112,8 @@ class TriangleShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId);
+        TriangleShape(const Vector3* vertices, const Vector3* verticesNormals,
+                      uint shapeId, Allocator& allocator);
 
         /// Destructor
         virtual ~TriangleShape() override = default;

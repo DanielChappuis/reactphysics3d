@@ -40,20 +40,107 @@ enum CollisionCategory {
     CATEGORY_3 = 0x0004
 };
 
-// TODO : Add test for concave shape collision here
+// Contact point collision data
+struct CollisionPointData {
+
+	Vector3 localPointBody1;
+	Vector3 localPointBody2;
+	decimal penetrationDepth;
+
+	CollisionPointData(const Vector3& point1, const Vector3& point2, decimal penDepth) {
+		localPointBody1 = point1;
+		localPointBody2 = point2;
+		penetrationDepth = penDepth;
+	}
+
+	bool isContactPointSimilarTo(const Vector3& pointBody1, const Vector3& pointBody2, decimal penDepth, decimal epsilon = 0.001) {
+
+		return approxEqual(pointBody1, localPointBody1, epsilon) &&
+			   approxEqual(pointBody2, localPointBody2, epsilon) &&
+			   approxEqual(penetrationDepth, penDepth, epsilon);
+	}
+};
+
+// Contact manifold collision data
+struct CollisionManifoldData {
+
+	std::vector<CollisionPointData> contactPoints;
+
+	int getNbContactPoints() const {
+		return contactPoints.size();
+	}
+
+	bool hasContactPointSimilarTo(const Vector3& localPointBody1, const Vector3& localPointBody2, decimal penetrationDepth, decimal epsilon = 0.001) {
+
+		std::vector<CollisionPointData>::iterator it;
+		for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
+
+			if (it->isContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+};
+
+// Collision data between two proxy shapes
+struct CollisionData {
+
+	std::pair<const ProxyShape*, const ProxyShape*> proxyShapes;
+	std::pair<CollisionBody*, CollisionBody*> bodies;
+	std::vector<CollisionManifoldData> contactManifolds;
+
+	int getNbContactManifolds() const {
+		return contactManifolds.size();
+	}
+
+	int getTotalNbContactPoints() const {
+		
+		int nbPoints = 0;
+
+		std::vector<CollisionManifoldData>::const_iterator it;
+		for (it = contactManifolds.begin(); it != contactManifolds.end(); ++it) {
+
+			nbPoints += it->getNbContactPoints();
+		}
+
+		return nbPoints;
+	}
+
+	bool hasContactPointSimilarTo(const Vector3& localPointBody1, const Vector3& localPointBody2, decimal penetrationDepth, decimal epsilon = 0.001) {
+
+		std::vector<CollisionManifoldData>::iterator it;
+		for (it = contactManifolds.begin(); it != contactManifolds.end(); ++it) {
+
+			if (it->hasContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+};
 
 // Class
 class WorldCollisionCallback : public CollisionCallback
 {
+	private:
+
+		std::vector<std::pair<const ProxyShape*, const ProxyShape*>> mCollisionData;
+
+		std::pair<const ProxyShape*, const ProxyShape*> getCollisionKeyPair(std::pair<const ProxyShape*, const ProxyShape*> pair) const {
+			
+			if (pair.first > pair.second) {
+				return std::make_pair(pair.second, pair.first);
+			}
+
+			return pair;
+		}
+
     public:
-
-        bool boxCollideWithSphere1;
-        bool sphere1CollideWithSphere2;
-
-        CollisionBody* boxBody;
-        CollisionBody* sphere1Body;
-        CollisionBody* sphere2Body;
-        CollisionBody* cylinderBody;
 
         WorldCollisionCallback()
         {
@@ -62,28 +149,77 @@ class WorldCollisionCallback : public CollisionCallback
 
         void reset()
         {
-            boxCollideWithSphere1 = false;
-            sphere1CollideWithSphere2 = false;
+			mCollisionData.clear();
         }
 
-        // This method will be called for contact
+		bool hasContacts() const {
+			return mCollisionData.size() > 0;
+		}
+
+		bool areProxyShapesColliding(const ProxyShape* proxyShape1, const ProxyShape* proxyShape2) {
+			return std::find(mCollisionData.begin(), mCollisionData.end(), getCollisionKeyPair(std::make_pair(proxyShape1, proxyShape2))) != mCollisionData.end();
+		}
+
+        // This method will be called for each contact
         virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override {
 
-            if (isContactBetweenBodies(boxBody, sphere1Body, collisionCallbackInfo)) {
-                boxCollideWithSphere1 = true;
-            }
-            else if (isContactBetweenBodies(sphere1Body, sphere2Body, collisionCallbackInfo)) {
-                sphere1CollideWithSphere2 = true;
-            }
-        }
+			CollisionData collisionData;
+			collisionData.bodies = std::make_pair(collisionCallbackInfo.body1, collisionCallbackInfo.body2);
+			collisionData.proxyShapes = std::make_pair(collisionCallbackInfo.proxyShape1, collisionCallbackInfo.proxyShape2);
 
-        bool isContactBetweenBodies(const CollisionBody* body1, const CollisionBody* body2,
-                                    const CollisionCallbackInfo& collisionCallbackInfo) {
-            return (collisionCallbackInfo.body1->getID() == body1->getID() &&
-                    collisionCallbackInfo.body2->getID() == body2->getID()) ||
-                   (collisionCallbackInfo.body2->getID() == body1->getID() &&
-                    collisionCallbackInfo.body1->getID() == body2->getID());
+			ContactManifoldListElement* element = collisionCallbackInfo.contactManifoldElements;
+			while (element != nullptr) {
+
+				ContactManifold* contactManifold = element->getContactManifold();
+
+				CollisionManifoldData collisionManifold;
+
+				ContactPoint* contactPoint = contactManifold->getContactPoints();
+				while (contactPoint != nullptr) {
+
+                    CollisionPointData collisionPoint(contactPoint->getLocalPointOnShape1(), contactPoint->getLocalPointOnShape2(), contactPoint->getPenetrationDepth());
+					collisionManifold.contactPoints.push_back(collisionPoint);
+
+					contactPoint = contactPoint->getNext();
+				}
+
+				collisionData.contactManifolds.push_back(collisionManifold);
+
+				element = element->getNext();
+			}
         }
+};
+
+/// Overlap callback
+class WorldOverlapCallback : public OverlapCallback {
+
+	private:
+
+		CollisionBody* mOverlapBody;
+
+	public:
+
+		/// Destructor
+		virtual ~WorldOverlapCallback() {
+			reset();
+		}
+
+		/// This method will be called for each reported overlapping bodies
+		virtual void notifyOverlap(CollisionBody* collisionBody) override {
+
+		}
+
+		void reset() {
+			mOverlapBody = nullptr;
+		}
+
+		bool hasOverlap() const {
+			return mOverlapBody != nullptr;
+		}
+
+		CollisionBody* getOverlapBody() {
+			return mOverlapBody;
+		}
 };
 
 // Class TestCollisionWorld
@@ -100,21 +236,28 @@ class TestCollisionWorld : public Test {
         CollisionWorld* mWorld;
 
         // Bodies
-        CollisionBody* mBoxBody;
-        CollisionBody* mSphere1Body;
-        CollisionBody* mSphere2Body;
+        CollisionBody* mBoxBody1;
+		CollisionBody* mBoxBody2;
+        CollisionBody* mSphereBody1;
+        CollisionBody* mSphereBody2;
 
         // Collision shapes
-        BoxShape* mBoxShape;
-        SphereShape* mSphereShape;
+        BoxShape* mBoxShape1;
+		BoxShape* mBoxShape2;
+        SphereShape* mSphereShape1;
+		SphereShape* mSphereShape2;
 
         // Proxy shapes
-        ProxyShape* mBoxProxyShape;
-        ProxyShape* mSphere1ProxyShape;
-        ProxyShape* mSphere2ProxyShape;
+        ProxyShape* mBoxProxyShape1;
+		ProxyShape* mBoxProxyShape2;
+        ProxyShape* mSphereProxyShape1;
+        ProxyShape* mSphereProxyShape2;
 
-        // Collision callback class
+        // Collision callback
         WorldCollisionCallback mCollisionCallback;
+
+		// Overlap callback
+		WorldOverlapCallback mOverlapCallback;
 
     public :
 
@@ -123,147 +266,243 @@ class TestCollisionWorld : public Test {
         /// Constructor
         TestCollisionWorld(const std::string& name) : Test(name) {
 
-            // Create the world
+            // Create the collision world
             mWorld = new CollisionWorld();
 
-            // Create the bodies
-            Transform boxTransform(Vector3(10, 0, 0), Quaternion::identity());
-            mBoxBody = mWorld->createCollisionBody(boxTransform);
-            mBoxShape = new BoxShape(Vector3(3, 3, 3));
-            mBoxProxyShape = mBoxBody->addCollisionShape(mBoxShape, Transform::identity());
+            // ---------- Boxes ---------- //
+            Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
+            mBoxBody1 = mWorld->createCollisionBody(boxTransform1);
+            mBoxShape1 = new BoxShape(Vector3(3, 3, 3));
+            mBoxProxyShape1 = mBoxBody1->addCollisionShape(mBoxShape1, Transform::identity());
 
-            mSphereShape = new SphereShape(3.0);
-            Transform sphere1Transform(Vector3(10,5, 0), Quaternion::identity());
-            mSphere1Body = mWorld->createCollisionBody(sphere1Transform);
-            mSphere1ProxyShape = mSphere1Body->addCollisionShape(mSphereShape, Transform::identity());
+			Transform boxTransform2(Vector3(-10, 20, 0), Quaternion::identity());
+			mBoxBody2 = mWorld->createCollisionBody(boxTransform2);
+			mBoxShape2 = new BoxShape(Vector3(2, 2, 2));
+			mBoxProxyShape2 = mBoxBody2->addCollisionShape(mBoxShape1, Transform::identity());
 
-            Transform sphere2Transform(Vector3(30, 10, 10), Quaternion::identity());
-            mSphere2Body = mWorld->createCollisionBody(sphere2Transform);
-            mSphere2ProxyShape = mSphere2Body->addCollisionShape(mSphereShape, Transform::identity());
+			// ---------- Spheres ---------- //
+            mSphereShape1 = new SphereShape(3.0);
+            Transform sphereTransform1(Vector3(10, 20, 0), Quaternion::identity());
+            mSphereBody1 = mWorld->createCollisionBody(sphereTransform1);
+            mSphereProxyShape1 = mSphereBody1->addCollisionShape(mSphereShape1, Transform::identity());
 
-            // Assign collision categories to proxy shapes
-            mBoxProxyShape->setCollisionCategoryBits(CATEGORY_1);
-            mSphere1ProxyShape->setCollisionCategoryBits(CATEGORY_1);
-            mSphere2ProxyShape->setCollisionCategoryBits(CATEGORY_2);
-
-            mCollisionCallback.boxBody = mBoxBody;
-            mCollisionCallback.sphere1Body = mSphere1Body;
-            mCollisionCallback.sphere2Body = mSphere2Body;
+			mSphereShape2 = new SphereShape(5.0);
+			Transform sphereTransform2(Vector3(20, 20, 0), Quaternion::identity());
+			mSphereBody2 = mWorld->createCollisionBody(sphereTransform2);
+			mSphereProxyShape2 = mSphereBody2->addCollisionShape(mSphereShape2, Transform::identity());
         }
 
         /// Destructor
         virtual ~TestCollisionWorld() {
-            delete mBoxShape;
-            delete mSphereShape;
+
+            delete mBoxShape1;
+            delete mBoxShape2;
+
+			delete mSphereShape1;
+			delete mSphereShape2;
+
+			delete mWorld;
         }
 
         /// Run the tests
         void run() {
 
-            testCollisions();
+			testNoCollisions();
+			testNoOverlap();
+			testNoAABBOverlap();
+
+			testAABBOverlap();
+
+			testSphereVsSphereCollision();
+			testSphereVsBoxCollision();
+
+			testMultipleCollisions();
         }
 
-        void testCollisions() {
+		void testNoCollisions() {
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
-            test(mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			// All the shapes of the world are not touching when they are created.
+			// Here we test that at the beginning, there is no collision at all.
 
-            test(mWorld->testAABBOverlap(mBoxBody, mSphere1Body));
-            test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
+			// ---------- Global test ---------- //
 
-            test(mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
-            test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
+			mCollisionCallback.reset();
+			mWorld->testCollision(&mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
 
-            mCollisionCallback.reset();
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			// ---------- Single body test ---------- //
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody, mSphere1Body, &mCollisionCallback);
-            test(mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
 
-            mCollisionCallback.reset();
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
 
-            // Move sphere 1 to collide with sphere 2
-            mSphere1Body->setTransform(Transform(Vector3(30, 15, 10), Quaternion::identity()));
+			mCollisionCallback.reset();
+			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(mCollisionCallback.sphere1CollideWithSphere2);
+			mCollisionCallback.reset();
+			mWorld->testCollision(mSphereBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody, mSphere1Body, &mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			// Two bodies test
 
-            mCollisionCallback.reset();
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody1, mBoxBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+			mCollisionCallback.reset();
+			mWorld->testCollision(mSphereBody1, mSphereBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody1, mSphereBody1, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody1, mSphereBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody2, mSphereBody1, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+			mCollisionCallback.reset();
+			mWorld->testCollision(mBoxBody2, mSphereBody2, &mCollisionCallback);
+			test(!mCollisionCallback.hasContacts());
+
+		}
+
+		void testNoOverlap() {
+
+			// All the shapes of the world are not touching when they are created.
+			// Here we test that at the beginning, there is no overlap at all.
+
+			// ---------- Single body test ---------- //
+
+			mOverlapCallback.reset();
+			mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
+			test(!mOverlapCallback.hasOverlap());
+
+			mOverlapCallback.reset();
+			mWorld->testOverlap(mBoxBody2, &mOverlapCallback);
+			test(!mOverlapCallback.hasOverlap());
+
+			mOverlapCallback.reset();
+			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
+			test(!mOverlapCallback.hasOverlap());
+
+			mOverlapCallback.reset();
+			mWorld->testOverlap(mSphereBody2, &mOverlapCallback);
+			test(!mOverlapCallback.hasOverlap());
+
+			// Two bodies test
+
+			test(!mWorld->testOverlap(mBoxBody1, mBoxBody2));
+			test(!mWorld->testOverlap(mSphereBody1, mSphereBody2));
+			test(!mWorld->testOverlap(mBoxBody1, mSphereBody1));
+			test(!mWorld->testOverlap(mBoxBody1, mSphereBody2));
+			test(!mWorld->testOverlap(mBoxBody2, mSphereBody1));
+			test(!mWorld->testOverlap(mBoxBody2, mSphereBody2));
+		}
+
+		void testNoAABBOverlap() {
+
+			// All the shapes of the world are not touching when they are created.
+			// Here we test that at the beginning, there is no AABB overlap at all.
+
+			// Two bodies test
+
+			test(!mWorld->testAABBOverlap(mBoxBody1, mBoxBody2));
+			test(!mWorld->testAABBOverlap(mSphereBody1, mSphereBody2));
+			test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody1));
+			test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody2));
+			test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody1));
+			test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody2));
+		}
+
+		void testAABBOverlap() {
+
+			// TODO : Test the CollisionWorld::testAABBOverlap() method here
+		}
+
+		void testSphereVsSphereCollision() {
+
+
+
+			// Move sphere 1 to collide with sphere 2
+			mSphereBody1->setTransform(Transform(Vector3(30, 15, 10), Quaternion::identity()));
+
+		}
+
+        void testSphereVsBoxCollision() {
 
             // Move sphere 1 to collide with box
-            mSphere1Body->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
+            mSphereBody1->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
 
             // --------- Test collision with inactive bodies --------- //
 
             mCollisionCallback.reset();
-            mBoxBody->setIsActive(false);
-            mSphere1Body->setIsActive(false);
-            mSphere2Body->setIsActive(false);
+            mBoxBody1->setIsActive(false);
+            mSphereBody1->setIsActive(false);
+            mSphereBody2->setIsActive(false);
             mWorld->testCollision(&mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+          
 
-            test(!mWorld->testAABBOverlap(mBoxBody, mSphere1Body));
-            test(!mWorld->testAABBOverlap(mSphere1Body, mSphere2Body));
-
-            test(!mBoxProxyShape->testAABBOverlap(mSphere1ProxyShape->getWorldAABB()));
-            test(!mSphere1ProxyShape->testAABBOverlap(mSphere2ProxyShape->getWorldAABB()));
-
-            mBoxBody->setIsActive(true);
-            mSphere1Body->setIsActive(true);
-            mSphere2Body->setIsActive(true);
+            mBoxBody1->setIsActive(true);
+            mSphereBody1->setIsActive(true);
+            mSphereBody2->setIsActive(true);
 
             // --------- Test collision with collision filtering -------- //
 
-            mBoxProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_3);
-            mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_2);
-            mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_1);
+            //mBoxProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_3);
+            //mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_1 | CATEGORY_2);
+            //mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_1);
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
-            test(mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+            //mCollisionCallback.reset();
+            //mWorld->testCollision(&mCollisionCallback);
+            //test(mCollisionCallback.boxCollideWithSphere1);
+            //test(!mCollisionCallback.sphere1CollideWithSphere2);
 
-            // Move sphere 1 to collide with sphere 2
-            mSphere1Body->setTransform(Transform(Vector3(30, 15, 10), Quaternion::identity()));
+            //// Move sphere 1 to collide with sphere 2
+            //mSphere1Body->setTransform(Transform(Vector3(30, 15, 10), Quaternion::identity()));
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(mCollisionCallback.sphere1CollideWithSphere2);
+            //mCollisionCallback.reset();
+            //mWorld->testCollision(&mCollisionCallback);
+            //test(!mCollisionCallback.boxCollideWithSphere1);
+            //test(mCollisionCallback.sphere1CollideWithSphere2);
 
-            mBoxProxyShape->setCollideWithMaskBits(CATEGORY_2);
-            mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_2);
-            mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_3);
+            //mBoxProxyShape->setCollideWithMaskBits(CATEGORY_2);
+            //mSphere1ProxyShape->setCollideWithMaskBits(CATEGORY_2);
+            //mSphere2ProxyShape->setCollideWithMaskBits(CATEGORY_3);
 
-            mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
-            test(!mCollisionCallback.boxCollideWithSphere1);
-            test(!mCollisionCallback.sphere1CollideWithSphere2);
+            //mCollisionCallback.reset();
+            //mWorld->testCollision(&mCollisionCallback);
+            //test(!mCollisionCallback.boxCollideWithSphere1);
+            //test(!mCollisionCallback.sphere1CollideWithSphere2);
 
-            // Move sphere 1 to collide with box
-            mSphere1Body->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
+            //// Move sphere 1 to collide with box
+            //mSphere1Body->setTransform(Transform(Vector3(10, 5, 0), Quaternion::identity()));
 
-            mBoxProxyShape->setCollideWithMaskBits(0xFFFF);
-            mSphere1ProxyShape->setCollideWithMaskBits(0xFFFF);
-            mSphere2ProxyShape->setCollideWithMaskBits(0xFFFF);
+            //mBoxProxyShape->setCollideWithMaskBits(0xFFFF);
+            //mSphere1ProxyShape->setCollideWithMaskBits(0xFFFF);
+            //mSphere2ProxyShape->setCollideWithMaskBits(0xFFFF);
         }
+
+		void testMultipleCollisions() {
+
+			// TODO : Test collisions without categories set
+
+			// TODO : Test colliisons with categories set
+
+			// Assign collision categories to proxy shapes
+			//mBoxProxyShape->setCollisionCategoryBits(CATEGORY_1);
+			//mSphere1ProxyShape->setCollisionCategoryBits(CATEGORY_1);
+			//mSphere2ProxyShape->setCollisionCategoryBits(CATEGORY_2);
+		}
  };
 
 }

@@ -19,6 +19,9 @@ class TestHalfEdgeStructure : public Test {
 
         // ---------- Atributes ---------- //
 
+        /// Memory allocator
+        DefaultAllocator mAllocator;
+
 
     public :
 
@@ -43,7 +46,7 @@ class TestHalfEdgeStructure : public Test {
         void testCube() {
 
             // Create the half-edge structure for a cube
-            rp3d::HalfEdgeStructure cubeStructure;
+            rp3d::HalfEdgeStructure cubeStructure(mAllocator, 6, 8, 24);
 
             rp3d::Vector3 vertices[8] = {
                 rp3d::Vector3(-0.5, -0.5, 0.5),
@@ -67,18 +70,18 @@ class TestHalfEdgeStructure : public Test {
             cubeStructure.addVertex(7);
 
             // Faces
-            std::vector<uint> face0;
-            face0.push_back(0); face0.push_back(1); face0.push_back(2); face0.push_back(3);
-            std::vector<uint> face1;
-            face1.push_back(1); face1.push_back(5); face1.push_back(6); face1.push_back(2);
-            std::vector<uint> face2;
-            face2.push_back(5); face2.push_back(4); face2.push_back(7); face2.push_back(6);
-            std::vector<uint> face3;
-            face3.push_back(4); face3.push_back(0); face3.push_back(3); face3.push_back(7);
-            std::vector<uint> face4;
-            face4.push_back(0); face4.push_back(4); face4.push_back(5); face4.push_back(1);
-            std::vector<uint> face5;
-            face5.push_back(2); face5.push_back(6); face5.push_back(7); face5.push_back(3);
+            List<uint> face0(mAllocator, 4);
+            face0.add(0); face0.add(1); face0.add(2); face0.add(3);
+            List<uint> face1(mAllocator, 4);
+            face1.add(1); face1.add(5); face1.add(6); face1.add(2);
+            List<uint> face2(mAllocator, 4);
+            face2.add(5); face2.add(4); face2.add(7); face2.add(6);
+            List<uint> face3(mAllocator, 4);
+            face3.add(4); face3.add(0); face3.add(3); face3.add(7);
+            List<uint> face4(mAllocator, 4);
+            face4.add(0); face4.add(4); face4.add(5); face4.add(1);
+            List<uint> face5(mAllocator, 4);
+            face5.add(2); face5.add(6); face5.add(7); face5.add(3);
 
             cubeStructure.addFace(face0);
             cubeStructure.addFace(face1);
@@ -168,7 +171,7 @@ class TestHalfEdgeStructure : public Test {
 
             // Create the half-edge structure for a tetrahedron
             std::vector<std::vector<uint>> faces;
-            rp3d::HalfEdgeStructure tetrahedron;
+            rp3d::HalfEdgeStructure tetrahedron(mAllocator, 4, 4, 12);
 
             // Vertices
             rp3d::Vector3 vertices[4] = {
@@ -184,14 +187,14 @@ class TestHalfEdgeStructure : public Test {
             tetrahedron.addVertex(3);
 
             // Faces
-            std::vector<uint> face0;
-            face0.push_back(0); face0.push_back(1); face0.push_back(2);
-            std::vector<uint> face1;
-            face1.push_back(0); face1.push_back(3); face1.push_back(1);
-            std::vector<uint> face2;
-            face2.push_back(1); face2.push_back(3); face2.push_back(2);
-            std::vector<uint> face3;
-            face3.push_back(0); face3.push_back(2); face3.push_back(3);
+            List<uint> face0(mAllocator, 3);
+            face0.add(0); face0.add(1); face0.add(2);
+            List<uint> face1(mAllocator, 3);
+            face1.add(0); face1.add(3); face1.add(1);
+            List<uint> face2(mAllocator, 3);
+            face2.add(1); face2.add(3); face2.add(2);
+            List<uint> face3(mAllocator, 3);
+            face3.add(0); face3.add(2); face3.add(3);
 
             tetrahedron.addFace(face0);
             tetrahedron.addFace(face1);

@@ -31,7 +31,7 @@
 #include "ConvexPolyhedronShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
-
+#include "memory/DefaultAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -64,7 +64,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;

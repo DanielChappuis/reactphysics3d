@@ -77,6 +77,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         RaycastInfo& mRaycastInfo;
         const Ray& mRay;
         bool mIsHit;
+        Allocator& mAllocator;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -89,9 +90,9 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
         // Constructor
         ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
-                                   ProxyShape* proxyShape, RaycastInfo& raycastInfo, const Ray& ray)
+                                   ProxyShape* proxyShape, RaycastInfo& raycastInfo, const Ray& ray, Allocator& allocator)
             : mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mProxyShape(proxyShape),
-              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false) {
+              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator) {
 
         }
 
@@ -141,7 +142,7 @@ class ConcaveMeshShape : public ConcaveShape {
         // -------------------- Methods -------------------- //
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;

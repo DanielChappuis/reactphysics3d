@@ -27,6 +27,7 @@
 #include "BoxShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
+#include "memory/MemoryManager.h"
 #include <vector>
 #include <cassert>
 
@@ -37,7 +38,9 @@ using namespace reactphysics3d;
  * @param extent The vector with the three extents of the box (in meters)
  */
 BoxShape::BoxShape(const Vector3& extent)
-         : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent) {
+         : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent),
+           mHalfEdgeStructure(MemoryManager::getDefaultAllocator(), 6, 8, 24) {
+
     assert(extent.x > decimal(0.0));
     assert(extent.y > decimal(0.0));
     assert(extent.z > decimal(0.0));
@@ -52,19 +55,21 @@ BoxShape::BoxShape(const Vector3& extent)
     mHalfEdgeStructure.addVertex(6);
     mHalfEdgeStructure.addVertex(7);
 
+    DefaultAllocator& allocator = MemoryManager::getDefaultAllocator();
+
     // Faces
-    std::vector<uint> face0;
-    face0.push_back(0); face0.push_back(1); face0.push_back(2); face0.push_back(3);
-    std::vector<uint> face1;
-    face1.push_back(1); face1.push_back(5); face1.push_back(6); face1.push_back(2);
-    std::vector<uint> face2;
-    face2.push_back(4); face2.push_back(7); face2.push_back(6); face2.push_back(5);
-    std::vector<uint> face3;
-    face3.push_back(4); face3.push_back(0); face3.push_back(3); face3.push_back(7);
-    std::vector<uint> face4;
-    face4.push_back(4); face4.push_back(5); face4.push_back(1); face4.push_back(0);
-    std::vector<uint> face5;
-    face5.push_back(2); face5.push_back(6); face5.push_back(7); face5.push_back(3);
+    List<uint> face0(allocator, 4);
+    face0.add(0); face0.add(1); face0.add(2); face0.add(3);
+    List<uint> face1(allocator, 4);
+    face1.add(1); face1.add(5); face1.add(6); face1.add(2);
+    List<uint> face2(allocator, 4);
+    face2.add(4); face2.add(7); face2.add(6); face2.add(5);
+    List<uint> face3(allocator, 4);
+    face3.add(4); face3.add(0); face3.add(3); face3.add(7);
+    List<uint> face4(allocator, 4);
+    face4.add(4); face4.add(5); face4.add(1); face4.add(0);
+    List<uint> face5(allocator, 4);
+    face5.add(2); face5.add(6); face5.add(7); face5.add(3);
 
     mHalfEdgeStructure.addFace(face0);
     mHalfEdgeStructure.addFace(face1);
@@ -93,7 +98,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;

@@ -193,6 +193,8 @@ SET (REACTPHYSICS3D_SOURCES
     "src/memory/SingleFrameAllocator.h"
     "src/memory/SingleFrameAllocator.cpp"
     "src/memory/DefaultAllocator.h"
+    "src/memory/MemoryManager.h"
+    "src/memory/MemoryManager.cpp"
     "src/containers/Stack.h"
     "src/containers/LinkedList.h"
     "src/containers/List.h"

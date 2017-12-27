@@ -126,7 +126,7 @@ void* PoolAllocator::allocate(size_t size) {
     }
     else {  // If there is no more free memory units in the corresponding heap
 
-        // If we need to allocate more memory to containsthe blocks
+        // If we need to allocate more memory to contains the blocks
         if (mNbCurrentMemoryBlocks == mNbAllocatedMemoryBlocks) {
 
             // Allocate more memory to contain the blocks

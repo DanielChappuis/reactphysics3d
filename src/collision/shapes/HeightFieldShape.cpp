@@ -212,14 +212,14 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
 
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
     PROFILE("HeightFieldShape::raycast()", mProfiler);
 
-    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this);
+    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this, allocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -266,7 +266,7 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
 
     // Create a triangle collision shape
-    TriangleShape triangleShape(trianglePoints, verticesNormals, shapeId);
+    TriangleShape triangleShape(trianglePoints, verticesNormals, shapeId, mAllocator);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
 
 #ifdef IS_PROFILING_ACTIVE
@@ -278,7 +278,7 @@ void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const 
 
     // Ray casting test against the collision shape
     RaycastInfo raycastInfo;
-    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
 
     // If the ray hit the collision shape
     if (isTriangleHit && raycastInfo.hitFraction <= mSmallestHitFraction) {

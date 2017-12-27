@@ -82,6 +82,9 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
+        /// Memory allocator
+        Allocator& mAllocator;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -100,7 +103,7 @@ class ProxyShape {
 
         /// Constructor
         ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass);
+                   const Transform& transform, decimal mass, Allocator& allocator);
 
         /// Destructor
         virtual ~ProxyShape();

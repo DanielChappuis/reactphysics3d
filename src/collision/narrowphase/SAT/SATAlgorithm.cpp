@@ -835,9 +835,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     List<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
 
     // Get all the vertices of the incident face (in the reference local-space)
-    std::vector<uint>::const_iterator it;
-    for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
-        const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
+    for (uint i=0; i < incidentFace.faceVertices.size(); i++) {
+        const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(incidentFace.faceVertices[i]);
         polygonVertices.add(incidentToReferenceTransform * faceVertexIncidentSpace);
     }
 

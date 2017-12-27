@@ -44,59 +44,38 @@ class List {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the first element of the list
-        T* mElements;
+        /// Buffer for the list elements
+        void* mBuffer;
 
         /// Number of elements in the list
-        uint mSize;
+        size_t mSize;
 
         /// Number of allocated elements in the list
-        uint mCapacity;
+        size_t mCapacity;
 
         /// Memory allocator
         Allocator& mAllocator;
 
         // -------------------- Methods -------------------- //
 
-        /// Allocate more memory for the elements of the list
-        void allocateMemory(uint nbElementsToAllocate) {
-
-            assert(nbElementsToAllocate > mCapacity);
-
-            // Allocate memory for the new array
-            void* newMemory = mAllocator.allocate(nbElementsToAllocate * sizeof(T));
-
-            if (mElements != nullptr) {
-
-                // Copy the elements to the new allocated memory location
-                std::memcpy(newMemory, static_cast<void*>(mElements), mSize * sizeof(T));
-
-                // Release the previously allocated memory
-                mAllocator.release(mElements, mCapacity * sizeof(T));
-            }
-
-            mElements = static_cast<T*>(newMemory);
-
-            mCapacity = nbElementsToAllocate;
-        }
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        List(Allocator& allocator, uint capacity = 0)
-            : mElements(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
+        List(Allocator& allocator, size_t capacity = 0)
+            : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
 
             if (capacity > 0) {
 
                 // Allocate memory
-                allocateMemory(capacity);
+                reserve(capacity);
             }
         }
 
         /// Copy constructor
-        List(const List<T>& list) : mElements(nullptr), mSize(0), mCapacity(0), mAllocator(list.mAllocator) {
+        List(const List<T>& list) : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(list.mAllocator) {
 
             // All all the elements of the list to the current one
             addRange(list);
@@ -112,8 +91,31 @@ class List {
                 clear();
 
                 // Release the memory allocated on the heap
-                mAllocator.release(static_cast<void*>(mElements), mCapacity * sizeof(T));
+                mAllocator.release(mBuffer, mCapacity * sizeof(T));
             }
+        }
+
+        /// Allocate memory for a given number of elements
+        void reserve(size_t capacity) {
+
+            if (capacity <= mCapacity) return;
+
+            // Allocate memory for the new array
+            void* newMemory = mAllocator.allocate(capacity * sizeof(T));
+
+            if (mBuffer != nullptr) {
+
+                // Copy the elements to the new allocated memory location
+                std::memcpy(newMemory, mBuffer, mSize * sizeof(T));
+
+                // Release the previously allocated memory
+                mAllocator.release(mBuffer, mCapacity * sizeof(T));
+            }
+
+            mBuffer = newMemory;
+            assert(mBuffer != nullptr);
+
+            mCapacity = capacity;
         }
 
         /// Add an element into the list
@@ -121,11 +123,32 @@ class List {
 
             // If we need to allocate more memory
             if (mSize == mCapacity) {
-                allocateMemory(mCapacity == 0 ? 1 : mCapacity * 2);
+                reserve(mCapacity == 0 ? 1 : mCapacity * 2);
             }
 
-            mElements[mSize] = element;
+            // Use the copy-constructor to construct the element
+            new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(element);
+
             mSize++;
+        }
+
+        /// Remove an element from the list at a given index
+        void remove(uint index) {
+
+          assert(index >= 0 && index < mSize);
+
+          // Call the destructor
+          (static_cast<T*>(mBuffer)[index]).~T();
+
+          mSize--;
+
+          if (index != mSize) {
+
+              // Move the elements to fill in the empty slot
+              char* dest = static_cast<char*>(mBuffer) + index * sizeof(T);
+              char* src = dest + sizeof(T);
+              std::memcpy(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
+          }
         }
 
         /// Append another list to the current one
@@ -135,12 +158,13 @@ class List {
             if (mSize + list.size() > mCapacity) {
 
                 // Allocate memory
-                allocateMemory(mSize + list.size());
+                reserve(mSize + list.size());
             }
 
             // Add the elements of the list to the current one
             for(uint i=0; i<list.size(); i++) {
-                mElements[mSize] = list[i];
+
+                new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(list[i]);
                 mSize++;
             }
         }
@@ -150,27 +174,32 @@ class List {
 
             // Call the destructor of each element
             for (uint i=0; i < mSize; i++) {
-                mElements[i].~T();
+                (static_cast<T*>(mBuffer)[i]).~T();
             }
 
             mSize = 0;
         }
 
         /// Return the number of elments in the list
-        uint size() const {
+        size_t size() const {
             return mSize;
+        }
+
+        /// Return the capacity of the list
+        size_t capacity() const {
+            return mCapacity;
         }
 
         /// Overloaded index operator
         T& operator[](const uint index) {
            assert(index >= 0 && index < mSize);
-           return mElements[index];
+           return (static_cast<T*>(mBuffer)[index]);
         }
 
         /// Overloaded const index operator
         const T& operator[](const uint index) const {
            assert(index >= 0 && index < mSize);
-           return mElements[index];
+           return (static_cast<T*>(mBuffer)[index]);
         }
 
         /// Overloaded assignment operator

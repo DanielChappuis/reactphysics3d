@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,37 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "collision/MiddlePhaseTriangleCallback.h"
+#include "MemoryManager.h"
 
 using namespace reactphysics3d;
 
-// Report collision between a triangle of a concave shape and the convex mesh shape (for middle-phase)
-void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
-
-    // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
-	// destructor of the corresponding NarrowPhaseInfo.
-    TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
-                                   TriangleShape(trianglePoints, verticesNormals, shapeId, mAllocator);
-
-#ifdef IS_PROFILING_ACTIVE
-
-	// Set the profiler to the triangle shape
-	triangleShape->setProfiler(mProfiler);
-
-#endif
-
-    bool isShape1Convex = mOverlappingPair->getShape1()->getCollisionShape()->isConvex();
-    ProxyShape* shape1 = isShape1Convex ? mConvexProxyShape : mConcaveProxyShape;
-    ProxyShape* shape2 = isShape1Convex ? mConcaveProxyShape : mConvexProxyShape;
-
-    // Create a narrow phase info for the narrow-phase collision detection
-    NarrowPhaseInfo* firstNarrowPhaseInfo = narrowPhaseInfoList;
-    narrowPhaseInfoList = new (mAllocator.allocate(sizeof(NarrowPhaseInfo)))
-                           NarrowPhaseInfo(mOverlappingPair,
-                           isShape1Convex ? mConvexProxyShape->getCollisionShape() : triangleShape,
-                           isShape1Convex ? triangleShape : mConvexProxyShape->getCollisionShape(),
-                           shape1->getLocalToWorldTransform(),
-                           shape2->getLocalToWorldTransform(),
-                           mAllocator);
-    narrowPhaseInfoList->next = firstNarrowPhaseInfo;
-}
+// Static variables
+DefaultAllocator MemoryManager::mDefaultAllocator;

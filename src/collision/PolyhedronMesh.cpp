@@ -25,6 +25,7 @@
 
 // Libraries
 #include "PolyhedronMesh.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
@@ -34,7 +35,11 @@ using namespace reactphysics3d;
  * Create a polyhedron mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
-PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
+PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray)
+               : mHalfEdgeStructure(MemoryManager::getDefaultAllocator(),
+                                    polygonVertexArray->getNbFaces(),
+                                    polygonVertexArray->getNbVertices(),
+                                    (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2) {
 
    mPolygonVertexArray = polygonVertexArray;
 
@@ -70,11 +75,11 @@ void PolyhedronMesh::createHalfEdgeStructure() {
         // Get the polygon face
         PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
 
-        std::vector<uint> faceVertices;
+        List<uint> faceVertices(MemoryManager::getDefaultAllocator(), face->nbVertices);
 
         // For each vertex of the face
         for (uint v=0; v < face->nbVertices; v++) {
-            faceVertices.push_back(mPolygonVertexArray->getVertexIndexInFace(f, v));
+            faceVertices.add(mPolygonVertexArray->getVertexIndexInFace(f, v));
         }
 
         assert(faceVertices.size() >= 3);
