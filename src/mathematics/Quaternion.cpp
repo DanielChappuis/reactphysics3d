@@ -31,27 +31,6 @@
 // Namespace
 using namespace reactphysics3d;
 
-// Constructor of the class
-Quaternion::Quaternion() : x(0.0), y(0.0), z(0.0), w(0.0) {
-
-}
-
-// Constructor with arguments
-Quaternion::Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW)
-           :x(newX), y(newY), z(newZ), w(newW) {
-
-}
-
-// Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z), w(newW) {
-
-}
-
-// Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(const Vector3& v, decimal newW) : x(v.x), y(v.y), z(v.z), w(newW) {
-
-}
-
 // Return a quaternion constructed from Euler angles (in radians)
 Quaternion Quaternion::fromEulerAngles(decimal angleX, decimal angleY, decimal angleZ) {
 

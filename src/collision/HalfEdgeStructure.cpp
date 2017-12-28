@@ -96,8 +96,8 @@ void HalfEdgeStructure::init() {
                 mapEdgeToIndex.insert(std::make_pair(pairV1V2, edgeIndex + 1));
                 mapEdgeToIndex.insert(std::make_pair(pairV2V1, edgeIndex));
 
-                mEdges.push_back(itEdge->second);
-                mEdges.push_back(edge);
+                mEdges.add(itEdge->second);
+                mEdges.add(edge);
             }
 
             currentFaceEdges.push_back(pairV1V2);

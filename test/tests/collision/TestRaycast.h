@@ -99,6 +99,8 @@ class TestRaycast : public Test {
         // Raycast callback class
         WorldRaycastCallback mCallback;
 
+        DefaultAllocator mAllocator;
+
         // Epsilon
         decimal epsilon;
 
@@ -203,7 +205,7 @@ class TestRaycast : public Test {
             triangleVertices[1] = Vector3(105, 100, 0);
             triangleVertices[2] = Vector3(100, 103, 0);
             Vector3 triangleVerticesNormals[3] = {Vector3(0, 0, 1), Vector3(0, 0, 1), Vector3(0, 0, 1)};
-            mTriangleShape = new TriangleShape(triangleVertices, triangleVerticesNormals, 0);
+            mTriangleShape = new TriangleShape(triangleVertices, triangleVerticesNormals, 0, mAllocator);
             mTriangleProxyShape = mTriangleBody->addCollisionShape(mTriangleShape, mShapeTransform);
 
             mCapsuleShape = new CapsuleShape(2, 5);

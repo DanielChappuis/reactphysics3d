@@ -94,7 +94,7 @@ class PoolAllocator : public Allocator {
         /// Size of the memory units that each heap is responsible to allocate
         static size_t mUnitSizes[NB_HEAPS];
 
-        /// Lookup table that mape size to allocate to the index of the
+        /// Lookup table that map the size to allocate to the index of the
         /// corresponding heap we will use for the allocation.
         static int mMapSizeToHeapIndex[MAX_UNIT_SIZE + 1];
 

@@ -111,12 +111,12 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
 
     PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
     // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray);
+    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray, allocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -180,7 +180,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
 
         // Create a triangle collision shape
-        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]));
+        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
 #ifdef IS_PROFILING_ACTIVE
@@ -192,7 +192,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;
-        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
 
         // If the ray hit the collision shape
         if (isTriangleHit && raycastInfo.hitFraction <= smallestHitFraction) {

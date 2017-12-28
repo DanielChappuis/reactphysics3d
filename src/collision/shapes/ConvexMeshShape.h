@@ -77,7 +77,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
@@ -111,7 +111,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual uint getNbFaces() const override;
 
         /// Return a given face of the polyhedron
-        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const override;
+        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const override;
 
         /// Return the number of vertices of the polyhedron
         virtual uint getNbVertices() const override;
@@ -123,7 +123,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual uint getNbHalfEdges() const override;
 
         /// Return a given half-edge of the polyhedron
-        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const override;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const override;
 
         /// Return the position of a given vertex
         virtual Vector3 getVertexPosition(uint vertexIndex) const override;
@@ -191,7 +191,7 @@ inline uint ConvexMeshShape::getNbFaces() const {
 }
 
 // Return a given face of the polyhedron
-inline HalfEdgeStructure::Face ConvexMeshShape::getFace(uint faceIndex) const {
+inline const HalfEdgeStructure::Face& ConvexMeshShape::getFace(uint faceIndex) const {
     assert(faceIndex < getNbFaces());
     return mPolyhedronMesh->getHalfEdgeStructure().getFace(faceIndex);
 }
@@ -213,7 +213,7 @@ inline uint ConvexMeshShape::getNbHalfEdges() const {
 }
 
 // Return a given half-edge of the polyhedron
-inline HalfEdgeStructure::Edge ConvexMeshShape::getHalfEdge(uint edgeIndex) const {
+inline const HalfEdgeStructure::Edge& ConvexMeshShape::getHalfEdge(uint edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mPolyhedronMesh->getHalfEdgeStructure().getHalfEdge(edgeIndex);
 }

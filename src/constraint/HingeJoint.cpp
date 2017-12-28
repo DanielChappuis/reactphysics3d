@@ -68,8 +68,8 @@ HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)
 void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
     // Initialize the bodies index in the velocity array
-    mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
-    mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
+    mIndexBody1 = mBody1->mArrayIndex;
+    mIndexBody2 = mBody2->mArrayIndex;
 
     // Get the bodies positions and orientations
     const Vector3& x1 = mBody1->mCenterOfMassWorld;

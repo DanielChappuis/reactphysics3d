@@ -302,9 +302,6 @@ class ContactSolver {
         /// Array of angular velocities
         Vector3* mAngularVelocities;
 
-        /// Reference to the map of rigid body to their index in the constrained velocities array
-        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
@@ -342,8 +339,7 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex,
-                      SingleFrameAllocator& allocator);
+        ContactSolver(SingleFrameAllocator& allocator);
 
         /// Destructor
         ~ContactSolver() = default;

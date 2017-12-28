@@ -23,46 +23,50 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+#ifndef REACTPHYSICS3D_MEMORY_MANAGER_H
+#define REACTPHYSICS3D_MEMORY_MANAGER_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
-
+#include "memory/DefaultAllocator.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-// Class SphereVsConvexPolyhedronAlgorithm
+// Class MemoryManager
 /**
- * This class is used to compute the narrow-phase collision detection
- * between a sphere and a convex polyhedron.
+ * The memory manager is used to store the different memory allocators that are used
+ * by the library.
  */
-class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
+class MemoryManager {
 
-    protected :
+    private:
 
-    public :
+       /// Default memory allocator
+       static DefaultAllocator mDefaultAllocator;
 
-        // -------------------- Methods -------------------- //
+    public:
+
+        /// Memory allocation types
+       enum class AllocationType {
+           Default, // Default memory allocator
+           Pool,	// Memory pool allocator
+           Frame,   // Single frame memory allocator
+       };
 
         /// Constructor
-        SphereVsConvexPolyhedronAlgorithm() = default;
+        MemoryManager();
 
         /// Destructor
-        virtual ~SphereVsConvexPolyhedronAlgorithm() override = default;
+        ~MemoryManager();
 
-        /// Deleted copy-constructor
-        SphereVsConvexPolyhedronAlgorithm(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
-
-        /// Deleted assignment operator
-        SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
-
-        /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts, Allocator& memoryAllocator) override;
+        /// Return the default memory allocator
+        static DefaultAllocator& getDefaultAllocator();
 };
+
+// Return the default memory allocator
+inline DefaultAllocator& MemoryManager::getDefaultAllocator() {
+    return mDefaultAllocator;
+}
 
 }
 

@@ -50,14 +50,14 @@ class HalfEdgeStructure {
         };
 
         struct Face {
-            uint edgeIndex;                     // Index of an half-edge of the face
-            std::vector<uint> faceVertices;     // Index of the vertices of the face
+            uint edgeIndex;             // Index of an half-edge of the face
+            List<uint> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
-            Face() {}
+            Face(Allocator& allocator) : faceVertices(allocator) {}
 
             /// Constructor
-            Face(std::vector<uint> vertices) : faceVertices(vertices) {}
+            Face(List<uint> vertices) : faceVertices(vertices) {}
         };
 
         struct Vertex {
@@ -70,19 +70,24 @@ class HalfEdgeStructure {
 
     private:
 
+        /// Reference to a memory allocator
+        Allocator& mAllocator;
+
         /// All the faces
-        std::vector<Face> mFaces;
+        List<Face> mFaces;
 
         /// All the vertices
-        std::vector<Vertex> mVertices;
+        List<Vertex> mVertices;
 
         /// All the half-edges
-        std::vector<Edge> mEdges;
+        List<Edge> mEdges;
 
     public:
 
         /// Constructor
-        HalfEdgeStructure() = default;
+        HalfEdgeStructure(Allocator& allocator, uint facesCapacity, uint verticesCapacity,
+                          uint edgesCapacity) :mAllocator(allocator), mFaces(allocator, facesCapacity),
+                          mVertices(allocator, verticesCapacity), mEdges(allocator, edgesCapacity) {}
 
         /// Destructor
         ~HalfEdgeStructure() = default;
@@ -94,7 +99,7 @@ class HalfEdgeStructure {
         uint addVertex(uint vertexPointIndex);
 
         /// Add a face
-        void addFace(std::vector<uint> faceVertices);
+        void addFace(List<uint> faceVertices);
 
         /// Return the number of faces
         uint getNbFaces() const;
@@ -106,60 +111,60 @@ class HalfEdgeStructure {
         uint getNbVertices() const;
 
         /// Return a given face
-        Face getFace(uint index) const;
+        const Face& getFace(uint index) const;
 
         /// Return a given edge
-        Edge getHalfEdge(uint index) const;
+        const Edge& getHalfEdge(uint index) const;
 
         /// Return a given vertex
-        Vertex getVertex(uint index) const;
+        const Vertex& getVertex(uint index) const;
 
 };
 
 // Add a vertex
 inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
-    mVertices.push_back(vertex);
+    mVertices.add(vertex);
     return mVertices.size() - 1;
 }
 
 // Add a face
-inline void HalfEdgeStructure::addFace(std::vector<uint> faceVertices) {
+inline void HalfEdgeStructure::addFace(List<uint> faceVertices) {
 
     // Create a new face
     Face face(faceVertices);
-    mFaces.push_back(face);
+    mFaces.add(face);
 }
 
 // Return the number of faces
 inline uint HalfEdgeStructure::getNbFaces() const {
-    return mFaces.size();
+    return static_cast<uint>(mFaces.size());
 }
 
 // Return the number of edges
 inline uint HalfEdgeStructure::getNbHalfEdges() const {
-    return mEdges.size();
+    return static_cast<uint>(mEdges.size());
 }
 
 // Return the number of vertices
 inline uint HalfEdgeStructure::getNbVertices() const {
-    return mVertices.size();
+    return static_cast<uint>(mVertices.size());
 }
 
 // Return a given face
-inline HalfEdgeStructure::Face HalfEdgeStructure::getFace(uint index) const {
+inline const HalfEdgeStructure::Face& HalfEdgeStructure::getFace(uint index) const {
     assert(index < mFaces.size());
     return mFaces[index];
 }
 
 // Return a given edge
-inline HalfEdgeStructure::Edge HalfEdgeStructure::getHalfEdge(uint index) const {
+inline const HalfEdgeStructure::Edge& HalfEdgeStructure::getHalfEdge(uint index) const {
     assert(index < mEdges.size());
     return mEdges[index];
 }
 
 // Return a given vertex
-inline HalfEdgeStructure::Vertex HalfEdgeStructure::getVertex(uint index) const {
+inline const HalfEdgeStructure::Vertex& HalfEdgeStructure::getVertex(uint index) const {
     assert(index < mVertices.size());
     return mVertices[index];
 }

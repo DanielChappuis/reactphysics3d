@@ -150,7 +150,6 @@ class CollisionDetection {
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
-
    
     public :
 

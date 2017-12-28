@@ -39,7 +39,7 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
+          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
             mJointsList(nullptr) {
@@ -226,7 +226,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass);
+                                                                      transform, mass, mWorld.mPoolAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

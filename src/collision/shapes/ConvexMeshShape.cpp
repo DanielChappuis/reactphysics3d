@@ -112,7 +112,7 @@ void ConvexMeshShape::recalculateBounds() {
 }
 
 // Raycast method with feedback information
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
     return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
                                      ray, proxyShape, raycastInfo);
 }

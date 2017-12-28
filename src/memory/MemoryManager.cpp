@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2015 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,48 +23,10 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
-
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
+#include "MemoryManager.h"
 
+using namespace reactphysics3d;
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
-
-// Class SphereVsConvexPolyhedronAlgorithm
-/**
- * This class is used to compute the narrow-phase collision detection
- * between a sphere and a convex polyhedron.
- */
-class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
-
-    protected :
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        SphereVsConvexPolyhedronAlgorithm() = default;
-
-        /// Destructor
-        virtual ~SphereVsConvexPolyhedronAlgorithm() override = default;
-
-        /// Deleted copy-constructor
-        SphereVsConvexPolyhedronAlgorithm(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
-
-        /// Deleted assignment operator
-        SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
-
-        /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts, Allocator& memoryAllocator) override;
-};
-
-}
-
-#endif
-
+// Static variables
+DefaultAllocator MemoryManager::mDefaultAllocator;

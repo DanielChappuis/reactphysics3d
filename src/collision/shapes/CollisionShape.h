@@ -87,7 +87,7 @@ class CollisionShape {
         virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const=0;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;

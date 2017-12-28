@@ -60,18 +60,12 @@ struct ConstraintSolverData {
         /// Reference to the bodies orientations
         Quaternion* orientations;
 
-        /// Reference to the map that associates rigid body to their index
-        /// in the constrained velocities array
-        const std::map<RigidBody*, uint>& mapBodyToConstrainedVelocityIndex;
-
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(nullptr), angularVelocities(nullptr),
-                            positions(nullptr), orientations(nullptr),
-                            mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
+        ConstraintSolverData() :linearVelocities(nullptr), angularVelocities(nullptr),
+                                positions(nullptr), orientations(nullptr) {
 
         }
 
@@ -152,10 +146,6 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the map that associates rigid body to their index in
-        /// the constrained velocities array
-        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
         /// Current time step
         decimal mTimeStep;
 
@@ -176,7 +166,7 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ConstraintSolver();
 
         /// Destructor
         ~ConstraintSolver() = default;

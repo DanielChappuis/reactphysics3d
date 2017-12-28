@@ -30,6 +30,7 @@
 #include "mathematics/mathematics.h"
 #include "HalfEdgeStructure.h"
 #include "collision/PolygonVertexArray.h"
+#include "memory/DefaultAllocator.h"
 #include <vector>
 
 namespace reactphysics3d {

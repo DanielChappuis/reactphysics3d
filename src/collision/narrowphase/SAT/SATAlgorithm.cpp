@@ -44,6 +44,11 @@ using namespace reactphysics3d;
 // Static variables initialization
 const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 
+// Constructor
+SATAlgorithm::SATAlgorithm(Allocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
+
+}
+
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) const {
 
@@ -125,7 +130,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth(uint faceInd
     PROFILE("SATAlgorithm::computePolyhedronFaceVsSpherePenetrationDepth)", mProfiler);
 
     // Get the face
-    HalfEdgeStructure::Face face = polyhedron->getFace(faceIndex);
+    const HalfEdgeStructure::Face& face = polyhedron->getFace(faceIndex);
 
     // Get the face normal
     const Vector3 faceNormal = polyhedron->getFaceNormal(faceIndex);
@@ -200,12 +205,12 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
     for (uint e = 0; e < polyhedron->getNbHalfEdges(); e += 2) {
 
         // Get an edge from the polyhedron (convert it into the capsule local-space)
-        HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(e);
+        const HalfEdgeStructure::Edge& edge = polyhedron->getHalfEdge(e);
         const Vector3 edgeVertex1 = polyhedron->getVertexPosition(edge.vertexIndex);
         const Vector3 edgeVertex2 = polyhedron->getVertexPosition(polyhedron->getHalfEdge(edge.nextEdgeIndex).vertexIndex);
         const Vector3 edgeDirectionCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * (edgeVertex2 - edgeVertex1);
 
-        HalfEdgeStructure::Edge twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
+        const HalfEdgeStructure::Edge& twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
         const Vector3 adjacentFace1Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(edge.faceIndex);
         const Vector3 adjacentFace2Normal = polyhedronToCapsuleTransform.getOrientation() * polyhedron->getFaceNormal(twinEdge.faceIndex);
 
@@ -336,7 +341,7 @@ decimal SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhe
     PROFILE("SATAlgorithm::computePolyhedronFaceVsCapsulePenetrationDepth", mProfiler);
 
     // Get the face
-    HalfEdgeStructure::Face face = polyhedron->getFace(polyhedronFaceIndex);
+    const HalfEdgeStructure::Face& face = polyhedron->getFace(polyhedronFaceIndex);
 
     // Get the face normal
     const Vector3 faceNormal = polyhedron->getFaceNormal(polyhedronFaceIndex);
@@ -361,7 +366,7 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
 
     PROFILE("SATAlgorithm::computeCapsulePolyhedronFaceContactPoints", mProfiler);
 
-    HalfEdgeStructure::Face face = polyhedron->getFace(referenceFaceIndex);
+    const HalfEdgeStructure::Face& face = polyhedron->getFace(referenceFaceIndex);
 
     // Get the face normal
     Vector3 faceNormal = polyhedron->getFaceNormal(referenceFaceIndex);
@@ -369,14 +374,14 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
     uint firstEdgeIndex = face.edgeIndex;
     uint edgeIndex = firstEdgeIndex;
 
-    std::vector<Vector3> planesPoints;
-    std::vector<Vector3> planesNormals;
+    List<Vector3> planesPoints(mMemoryAllocator, 2);
+    List<Vector3> planesNormals(mMemoryAllocator, 2);
 
     // For each adjacent edge of the separating face of the polyhedron
     do {
 
-        HalfEdgeStructure::Edge edge = polyhedron->getHalfEdge(edgeIndex);
-        HalfEdgeStructure::Edge twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
+        const HalfEdgeStructure::Edge& edge = polyhedron->getHalfEdge(edgeIndex);
+        const HalfEdgeStructure::Edge& twinEdge = polyhedron->getHalfEdge(edge.twinEdgeIndex);
 
         // Compute the edge vertices and edge direction
         Vector3 edgeV1 = polyhedron->getVertexPosition(edge.vertexIndex);
@@ -388,15 +393,15 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
         Vector3 clipPlaneNormal = faceNormal.cross(edgeDirection);
 
         // Construct a clipping plane for each adjacent edge of the separating face of the polyhedron
-        planesPoints.push_back(polyhedron->getVertexPosition(edge.vertexIndex));
-        planesNormals.push_back(clipPlaneNormal);
+        planesPoints.add(polyhedron->getVertexPosition(edge.vertexIndex));
+        planesNormals.add(clipPlaneNormal);
 
         edgeIndex = edge.nextEdgeIndex;
 
     } while(edgeIndex != firstEdgeIndex);
 
     // First we clip the inner segment of the capsule with the four planes of the adjacent faces
-    std::vector<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals);
+    List<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals, mMemoryAllocator);
 
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
@@ -575,8 +580,8 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         }
         else {   // If the previous separating axis (or axis with minimum penetration depth) was the cross product of two edges
 
-            HalfEdgeStructure::Edge edge1 = polyhedron1->getHalfEdge(lastFrameCollisionInfo->satMinEdge1Index);
-            HalfEdgeStructure::Edge edge2 = polyhedron2->getHalfEdge(lastFrameCollisionInfo->satMinEdge2Index);
+            const HalfEdgeStructure::Edge& edge1 = polyhedron1->getHalfEdge(lastFrameCollisionInfo->satMinEdge1Index);
+            const HalfEdgeStructure::Edge& edge2 = polyhedron2->getHalfEdge(lastFrameCollisionInfo->satMinEdge2Index);
 
             Vector3 separatingAxisPolyhedron2Space;
 
@@ -669,7 +674,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         for (uint i=0; i < polyhedron1->getNbHalfEdges(); i += 2) {
 
             // Get an edge of polyhedron 1
-            HalfEdgeStructure::Edge edge1 = polyhedron1->getHalfEdge(i);
+            const HalfEdgeStructure::Edge& edge1 = polyhedron1->getHalfEdge(i);
 
             const Vector3 edge1A = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(edge1.vertexIndex);
             const Vector3 edge1B = polyhedron1ToPolyhedron2 * polyhedron1->getVertexPosition(polyhedron1->getHalfEdge(edge1.nextEdgeIndex).vertexIndex);
@@ -678,7 +683,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
             for (uint j=0; j < polyhedron2->getNbHalfEdges(); j += 2) {
 
                 // Get an edge of polyhedron 2
-                HalfEdgeStructure::Edge edge2 = polyhedron2->getHalfEdge(j);
+                const HalfEdgeStructure::Edge& edge2 = polyhedron2->getHalfEdge(j);
 
                 const Vector3 edge2A = polyhedron2->getVertexPosition(edge2.vertexIndex);
                 const Vector3 edge2B = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.nextEdgeIndex).vertexIndex);
@@ -816,23 +821,23 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
                                     -(narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
 
     // Get the reference face
-    HalfEdgeStructure::Face referenceFace = referencePolyhedron->getFace(minFaceIndex);
+    const HalfEdgeStructure::Face& referenceFace = referencePolyhedron->getFace(minFaceIndex);
 
     // Find the incident face on the other polyhedron (most anti-parallel face)
-    uint incidentFaceIndex = findMostAntiParallelFaceOnPolyhedron(incidentPolyhedron, axisIncidentSpace);
+    uint incidentFaceIndex = incidentPolyhedron->findMostAntiParallelFace(axisIncidentSpace);
 
     // Get the incident face
-    HalfEdgeStructure::Face incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
+    const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
-    std::vector<Vector3> polygonVertices;   // Vertices to clip of the incident face
-    std::vector<Vector3> planesNormals;     // Normals of the clipping planes
-    std::vector<Vector3> planesPoints;      // Points on the clipping planes
+    uint nbIncidentFaceVertices = static_cast<uint>(incidentFace.faceVertices.size());
+    List<Vector3> polygonVertices(mMemoryAllocator, nbIncidentFaceVertices);   // Vertices to clip of the incident face
+    List<Vector3> planesNormals(mMemoryAllocator, nbIncidentFaceVertices);     // Normals of the clipping planes
+    List<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
 
     // Get all the vertices of the incident face (in the reference local-space)
-    std::vector<uint>::const_iterator it;
-    for (it = incidentFace.faceVertices.begin(); it != incidentFace.faceVertices.end(); ++it) {
-        const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(*it);
-        polygonVertices.push_back(incidentToReferenceTransform * faceVertexIncidentSpace);
+    for (uint i=0; i < incidentFace.faceVertices.size(); i++) {
+        const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(incidentFace.faceVertices[i]);
+        polygonVertices.add(incidentToReferenceTransform * faceVertexIncidentSpace);
     }
 
     // Get the reference face clipping planes
@@ -841,10 +846,10 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     do {
 
         // Get the adjacent edge
-        HalfEdgeStructure::Edge edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
+        const HalfEdgeStructure::Edge& edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
 
         // Get the twin edge
-        HalfEdgeStructure::Edge twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+        const HalfEdgeStructure::Edge& twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
 
         // Compute the edge vertices and edge direction
         Vector3 edgeV1 = referencePolyhedron->getVertexPosition(edge.vertexIndex);
@@ -855,8 +860,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
         // The clipping plane is perpendicular to the edge direction and the reference face normal
         Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
 
-        planesNormals.push_back(clipPlaneNormal);
-        planesPoints.push_back(edgeV1);
+        planesNormals.add(clipPlaneNormal);
+        planesPoints.add(edgeV1);
 
         // Go to the next adjacent edge of the reference face
         currentEdgeIndex = edge.nextEdgeIndex;
@@ -867,17 +872,16 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     assert(planesNormals.size() == planesPoints.size());
 
     // Clip the reference faces with the adjacent planes of the reference face
-    std::vector<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals);
+    List<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, mMemoryAllocator);
 
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
-    std::vector<Vector3>::const_iterator itPoints;
     bool contactPointsFound = false;
-    for (itPoints = clipPolygonVertices.begin(); itPoints != clipPolygonVertices.end(); ++itPoints) {
+    for (uint i=0; i<clipPolygonVertices.size(); i++) {
 
         // Compute the penetration depth of this contact point (can be different from the minPenetration depth which is
         // the maximal penetration depth of any contact point for this separating axis
-        decimal penetrationDepth = (referenceFaceVertex - (*itPoints)).dot(axisReferenceSpace);
+        decimal penetrationDepth = (referenceFaceVertex - clipPolygonVertices[i]).dot(axisReferenceSpace);
 
         // If the clip point is bellow the reference face
         if (penetrationDepth > decimal(0.0)) {
@@ -887,10 +891,10 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
             Vector3 outWorldNormal = normalWorld;
 
             // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
-            Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * (*itPoints);
+            Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * clipPolygonVertices[i];
 
             // Project the contact point onto the reference face
-            Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(*itPoints, axisReferenceSpace, referenceFaceVertex);
+            Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(clipPolygonVertices[i], axisReferenceSpace, referenceFaceVertex);
 
             // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
             TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
@@ -909,28 +913,6 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     return contactPointsFound;
 }
 
-// Find and return the index of the polyhedron face with the most anti-parallel face normal given a direction vector
-// This is used to find the incident face on a polyhedron of a given reference face of another polyhedron
-uint SATAlgorithm::findMostAntiParallelFaceOnPolyhedron(const ConvexPolyhedronShape* polyhedron, const Vector3& direction) const {
-
-    PROFILE("SATAlgorithm::findMostAntiParallelFaceOnPolyhedron", mProfiler);
-
-    decimal minDotProduct = DECIMAL_LARGEST;
-    uint mostAntiParallelFace = 0;
-
-    // For each face of the polyhedron
-    for (uint i=0; i < polyhedron->getNbFaces(); i++) {
-
-        // Get the face normal
-        decimal dotProduct = polyhedron->getFaceNormal(i).dot(direction);
-        if (dotProduct < minDotProduct) {
-            minDotProduct = dotProduct;
-            mostAntiParallelFace = i;
-        }
-    }
-
-    return mostAntiParallelFace;
-}
 
 // Compute and return the distance between the two edges in the direction of the candidate separating axis
 decimal SATAlgorithm::computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
@@ -968,7 +950,7 @@ decimal SATAlgorithm::testSingleFaceDirectionPolyhedronVsPolyhedron(const Convex
 
     PROFILE("SATAlgorithm::testSingleFaceDirectionPolyhedronVsPolyhedron", mProfiler);
 
-    HalfEdgeStructure::Face face = polyhedron1->getFace(faceIndex);
+    const HalfEdgeStructure::Face& face = polyhedron1->getFace(faceIndex);
 
     // Get the face normal
     const Vector3 faceNormal = polyhedron1->getFaceNormal(faceIndex);

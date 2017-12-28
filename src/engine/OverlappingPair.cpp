@@ -116,20 +116,16 @@ void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo
 // Clear all the potential contact manifolds
 void OverlappingPair::clearPotentialContactManifolds() {
 
-    // Do we need to release memory
-    if (mTempMemoryAllocator.isReleaseNeeded()) {
+    ContactManifoldInfo* element = mPotentialContactManifolds;
+    while(element != nullptr) {
 
-        ContactManifoldInfo* element = mPotentialContactManifolds;
-        while(element != nullptr) {
+        // Remove the proxy collision shape
+        ContactManifoldInfo* elementToRemove = element;
+        element = element->getNext();
 
-            // Remove the proxy collision shape
-            ContactManifoldInfo* elementToRemove = element;
-            element = element->getNext();
-
-            // Delete the element
-            elementToRemove->~ContactManifoldInfo();
-            mTempMemoryAllocator.release(elementToRemove, sizeof(ContactManifoldInfo));
-        }
+        // Delete the element
+        elementToRemove->~ContactManifoldInfo();
+        mTempMemoryAllocator.release(elementToRemove, sizeof(ContactManifoldInfo));
     }
 
     mPotentialContactManifolds = nullptr;

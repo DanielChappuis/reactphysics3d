@@ -62,7 +62,7 @@ class ConvexPolyhedronShape : public ConvexShape {
         virtual uint getNbFaces() const=0;
 
         /// Return a given face of the polyhedron
-        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const=0;
+        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const=0;
 
         /// Return the number of vertices of the polyhedron
         virtual uint getNbVertices() const=0;
@@ -80,19 +80,24 @@ class ConvexPolyhedronShape : public ConvexShape {
         virtual uint getNbHalfEdges() const=0;
 
         /// Return a given half-edge of the polyhedron
-        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const=0;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const=0;
 
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const=0;
+
+        /// Find and return the index of the polyhedron face with the most anti-parallel face
+        /// normal given a direction vector
+        uint findMostAntiParallelFace(const Vector3& direction) const;
 };
 
 // Return true if the collision shape is a polyhedron
 inline bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
+
 
 }
 

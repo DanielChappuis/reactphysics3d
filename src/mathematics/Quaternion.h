@@ -169,7 +169,28 @@ struct Quaternion {
         void initWithEulerAngles(decimal angleX, decimal angleY, decimal angleZ);
 };
 
-/// Set all the values
+// Constructor of the class
+inline Quaternion::Quaternion() : x(0.0), y(0.0), z(0.0), w(0.0) {
+
+}
+
+// Constructor with arguments
+inline Quaternion::Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW)
+           :x(newX), y(newY), z(newZ), w(newW) {
+
+}
+
+// Constructor with the component w and the vector v=(x y z)
+inline Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z), w(newW) {
+
+}
+
+// Constructor with the component w and the vector v=(x y z)
+inline Quaternion::Quaternion(const Vector3& v, decimal newW) : x(v.x), y(v.y), z(v.z), w(newW) {
+
+}
+
+// Set all the values
 inline void Quaternion::setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW) {
     x = newX;
     y = newY;
@@ -177,7 +198,7 @@ inline void Quaternion::setAllValues(decimal newX, decimal newY, decimal newZ, d
     w = newW;
 }
 
-/// Set the quaternion to zero
+// Set the quaternion to zero
 inline void Quaternion::setToZero() {
     x = 0;
     y = 0;
@@ -306,16 +327,35 @@ inline Quaternion Quaternion::operator*(decimal nb) const {
 
 // Overloaded operator for the multiplication of two quaternions
 inline Quaternion Quaternion::operator*(const Quaternion& quaternion) const {
+
+    /* The followin code is equivalent to this
     return Quaternion(w * quaternion.w - getVectorV().dot(quaternion.getVectorV()),
-                      w * quaternion.getVectorV() + quaternion.w * getVectorV() +
-                      getVectorV().cross(quaternion.getVectorV()));
+                          w * quaternion.getVectorV() + quaternion.w * getVectorV() +
+                          getVectorV().cross(quaternion.getVectorV()));
+    */
+
+    return Quaternion(w * quaternion.x + quaternion.w * x + y * quaternion.z - z * quaternion.y,
+                      w * quaternion.y + quaternion.w * y + z * quaternion.x - x * quaternion.z,
+                      w * quaternion.z + quaternion.w * z + x * quaternion.y - y * quaternion.x,
+                      w * quaternion.w - x * quaternion.x - y * quaternion.y - z * quaternion.z);
 }
 
 // Overloaded operator for the multiplication with a vector.
 /// This methods rotates a point given the rotation of a quaternion.
 inline Vector3 Quaternion::operator*(const Vector3& point) const {
-    Quaternion p(point.x, point.y, point.z, 0.0);
-    return (((*this) * p) * getConjugate()).getVectorV();
+
+    /* The following code is equivalent to this
+     * Quaternion p(point.x, point.y, point.z, 0.0);
+     * return (((*this) * p) * getConjugate()).getVectorV();
+    */
+
+    const decimal prodX = w * point.x + y * point.z - z * point.y;
+    const decimal prodY = w * point.y + z * point.x - x * point.z;
+    const decimal prodZ = w * point.z + x * point.y - y * point.x;
+    const decimal prodW = -x * point.x - y * point.y - z * point.z;
+    return Vector3(w * prodX - prodY * z + prodZ * y - prodW * x,
+                   w * prodY - prodZ * x + prodX * z - prodW * y,
+                   w * prodZ - prodX * y + prodY * x - prodW * z);
 }
 
 // Overloaded operator for the assignment

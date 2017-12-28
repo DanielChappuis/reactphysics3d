@@ -100,9 +100,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Array of constrained rigid bodies orientation (for position error correction)
         Quaternion* mConstrainedOrientations;
 
-        /// Map body to their index in the constrained velocities array
-        std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
-
         /// Number of islands in the world
         uint mNbIslands;
 

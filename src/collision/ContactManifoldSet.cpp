@@ -225,7 +225,6 @@ void ContactManifoldSet::removeManifold(ContactManifold* manifold) {
     // Delete the contact manifold
     manifold->~ContactManifold();
     mMemoryAllocator.release(manifold, sizeof(ContactManifold));
-
     mNbManifolds--;
 }
 

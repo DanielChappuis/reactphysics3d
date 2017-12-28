@@ -49,6 +49,7 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool mIsHit;
         decimal mSmallestHitFraction;
         const HeightFieldShape& mHeightFieldShape;
+        Allocator& mAllocator;
 		
 #ifdef IS_PROFILING_ACTIVE
 
@@ -61,9 +62,9 @@ class TriangleOverlapCallback : public TriangleCallback {
 
         // Constructor
         TriangleOverlapCallback(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo,
-                                const HeightFieldShape& heightFieldShape)
+                                const HeightFieldShape& heightFieldShape, Allocator& allocator)
                                : mRay(ray), mProxyShape(proxyShape), mRaycastInfo(raycastInfo),
-                                 mHeightFieldShape (heightFieldShape) {
+                                 mHeightFieldShape (heightFieldShape), mAllocator(allocator) {
             mIsHit = false;
             mSmallestHitFraction = mRay.maxFraction;
         }
@@ -143,7 +144,7 @@ class HeightFieldShape : public ConcaveShape {
         // -------------------- Methods -------------------- //
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;

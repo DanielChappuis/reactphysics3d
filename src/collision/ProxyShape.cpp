@@ -35,9 +35,9 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass)
+ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass, Allocator& allocator)
            :mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
-            mNext(nullptr), mBroadPhaseID(-1), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
+            mNext(nullptr), mBroadPhaseID(-1), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF), mAllocator(allocator) {
 
 }
 
@@ -76,7 +76,7 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
                  worldToLocalTransform * ray.point2,
                  ray.maxFraction);
 
-    bool isHit = mCollisionShape->raycast(rayLocal, raycastInfo, this);
+    bool isHit = mCollisionShape->raycast(rayLocal, raycastInfo, this, mAllocator);
 
     // Convert the raycast info into world-space
     raycastInfo.worldPoint = localToWorldTransform * raycastInfo.worldPoint;

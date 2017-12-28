@@ -114,6 +114,12 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree;
+			
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -152,6 +158,10 @@ class TestDynamicAABBTree : public Test {
             test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
             test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
             test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
+
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
 
         void testOverlapping() {
@@ -160,6 +170,12 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree;
+
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -342,6 +358,9 @@ class TestDynamicAABBTree : public Test {
             test(!mOverlapCallback.isOverlapping(object3Id));
             test(!mOverlapCallback.isOverlapping(object4Id));
 
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
 
         void testRaycast() {
@@ -350,6 +369,12 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree;
+
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -513,6 +538,10 @@ class TestDynamicAABBTree : public Test {
             test(!mRaycastCallback.isHit(object2Id));
             test(mRaycastCallback.isHit(object3Id));
             test(mRaycastCallback.isHit(object4Id));
+
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
  };
 

@@ -34,7 +34,7 @@ void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints, co
     // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
 	// destructor of the corresponding NarrowPhaseInfo.
     TriangleShape* triangleShape = new (mAllocator.allocate(sizeof(TriangleShape)))
-                                   TriangleShape(trianglePoints, verticesNormals, shapeId);
+                                   TriangleShape(trianglePoints, verticesNormals, shapeId, mAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

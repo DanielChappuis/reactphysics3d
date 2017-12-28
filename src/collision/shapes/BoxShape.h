@@ -31,7 +31,7 @@
 #include "ConvexPolyhedronShape.h"
 #include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
-
+#include "memory/DefaultAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -64,7 +64,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
@@ -101,7 +101,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual uint getNbFaces() const override;
 
         /// Return a given face of the polyhedron
-        virtual HalfEdgeStructure::Face getFace(uint faceIndex) const override;
+        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const override;
 
         /// Return the number of vertices of the polyhedron
         virtual uint getNbVertices() const override;
@@ -113,7 +113,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual uint getNbHalfEdges() const override;
 
         /// Return a given half-edge of the polyhedron
-        virtual HalfEdgeStructure::Edge getHalfEdge(uint edgeIndex) const override;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const override;
 
         /// Return the position of a given vertex
         virtual Vector3 getVertexPosition(uint vertexIndex) const override;
@@ -130,7 +130,7 @@ class BoxShape : public ConvexPolyhedronShape {
  * @return The vector with the three extents of the box shape (in meters)
  */
 inline Vector3 BoxShape::getExtent() const {
-    return mExtent + Vector3(mMargin, mMargin, mMargin);
+    return mExtent;
 }
 
 // Set the scaling vector of the collision shape
@@ -150,7 +150,7 @@ inline void BoxShape::setLocalScaling(const Vector3& scaling) {
 inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max = mExtent + Vector3(mMargin, mMargin, mMargin);
+    max = mExtent;
 
     // Minimum bounds
     min = -max;
@@ -161,7 +161,7 @@ inline size_t BoxShape::getSizeInBytes() const {
     return sizeof(BoxShape);
 }
 
-// Return a local support point in a given direction without the objec margin
+// Return a local support point in a given direction without the object margin
 inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     return Vector3(direction.x < decimal(0.0) ? -mExtent.x : mExtent.x,
@@ -182,7 +182,7 @@ inline uint BoxShape::getNbFaces() const {
 }
 
 // Return a given face of the polyhedron
-inline HalfEdgeStructure::Face BoxShape::getFace(uint faceIndex) const {
+inline const HalfEdgeStructure::Face& BoxShape::getFace(uint faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mHalfEdgeStructure.getFace(faceIndex);
 }
@@ -243,7 +243,7 @@ inline uint BoxShape::getNbHalfEdges() const {
 }
 
 // Return a given half-edge of the polyhedron
-inline HalfEdgeStructure::Edge BoxShape::getHalfEdge(uint edgeIndex) const {
+inline const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mHalfEdgeStructure.getHalfEdge(edgeIndex);
 }

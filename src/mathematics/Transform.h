@@ -118,6 +118,29 @@ class Transform {
         Transform& operator=(const Transform& transform);
 };
 
+// Constructor
+inline Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
+
+}
+
+// Constructor
+inline Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
+          : mPosition(position), mOrientation(Quaternion(orientation)) {
+
+}
+
+// Constructor
+inline Transform::Transform(const Vector3& position, const Quaternion& orientation)
+          : mPosition(position), mOrientation(orientation) {
+
+}
+
+// Copy-constructor
+inline Transform::Transform(const Transform& transform)
+          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
+
+}
+
 // Return the position of the transform
 inline const Vector3& Transform::getPosition() const {
     return mPosition;
@@ -194,13 +217,36 @@ inline Transform Transform::identity() {
 
 // Return the transformed vector
 inline Vector3 Transform::operator*(const Vector3& vector) const {
-    return (mOrientation.getMatrix() * vector) + mPosition;
+    return (mOrientation * vector) + mPosition;
 }
 
 // Operator of multiplication of a transform with another one
 inline Transform Transform::operator*(const Transform& transform2) const {
-    return Transform(mPosition + mOrientation * transform2.mPosition,
-                     mOrientation * transform2.mOrientation);
+
+    // The following code is equivalent to this
+    //return Transform(mPosition + mOrientation * transform2.mPosition,
+    //                 mOrientation * transform2.mOrientation);
+
+    const decimal prodX = mOrientation.w * transform2.mPosition.x + mOrientation.y * transform2.mPosition.z
+                          - mOrientation.z * transform2.mPosition.y;
+    const decimal prodY = mOrientation.w * transform2.mPosition.y + mOrientation.z * transform2.mPosition.x
+                          - mOrientation.x * transform2.mPosition.z;
+    const decimal prodZ = mOrientation.w * transform2.mPosition.z + mOrientation.x * transform2.mPosition.y
+                          - mOrientation.y * transform2.mPosition.x;
+    const decimal prodW = -mOrientation.x * transform2.mPosition.x - mOrientation.y * transform2.mPosition.y
+                          - mOrientation.z * transform2.mPosition.z;
+
+    return Transform(Vector3(mPosition.x + mOrientation.w * prodX - prodY * mOrientation.z + prodZ * mOrientation.y - prodW * mOrientation.x,
+                             mPosition.y + mOrientation.w * prodY - prodZ * mOrientation.x + prodX * mOrientation.z - prodW * mOrientation.y,
+                             mPosition.z + mOrientation.w * prodZ - prodX * mOrientation.y + prodY * mOrientation.x - prodW * mOrientation.z),
+                     Quaternion(mOrientation.w * transform2.mOrientation.x + transform2.mOrientation.w * mOrientation.x
+                       + mOrientation.y * transform2.mOrientation.z - mOrientation.z * transform2.mOrientation.y,
+                      mOrientation.w * transform2.mOrientation.y + transform2.mOrientation.w * mOrientation.y
+                       + mOrientation.z * transform2.mOrientation.x - mOrientation.x * transform2.mOrientation.z,
+                      mOrientation.w * transform2.mOrientation.z + transform2.mOrientation.w * mOrientation.z
+                       + mOrientation.x * transform2.mOrientation.y - mOrientation.y * transform2.mOrientation.x,
+                      mOrientation.w * transform2.mOrientation.w - mOrientation.x * transform2.mOrientation.x
+                       - mOrientation.y * transform2.mOrientation.y - mOrientation.z * transform2.mOrientation.z));
 }
 
 // Return true if the two transforms are equal

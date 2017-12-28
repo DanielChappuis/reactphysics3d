@@ -37,11 +37,12 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a capsule and a polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
+bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                                       Allocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
-	SATAlgorithm satAlgorithm;
+    SATAlgorithm satAlgorithm(memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -84,9 +85,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
 
             // For each face of the polyhedron
             for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
-
-                // Get the face
-                HalfEdgeStructure::Face face = polyhedron->getFace(f);
 
                 const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape2ToWorldTransform : narrowPhaseInfo->shape1ToWorldTransform;
                 const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfo->shape1ToWorldTransform : narrowPhaseInfo->shape2ToWorldTransform;

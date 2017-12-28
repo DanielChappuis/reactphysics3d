@@ -23,48 +23,44 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
-#define	REACTPHYSICS3D_SPHERE_VS_CONVEX_POLYHEDRON_ALGORITHM_H
+#ifndef REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
+#define REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "NarrowPhaseAlgorithm.h"
+#include "memory/Allocator.h"
+#include <cstdlib>
 
-
-/// Namespace ReactPhysics3D
+/// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class SphereVsConvexPolyhedronAlgorithm
+// Class DefaultAllocator
 /**
- * This class is used to compute the narrow-phase collision detection
- * between a sphere and a convex polyhedron.
+ * This class represents a default memory allocator that uses default malloc/free methods
  */
-class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
+class DefaultAllocator : public Allocator {
 
-    protected :
-
-    public :
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        SphereVsConvexPolyhedronAlgorithm() = default;
+    public:
 
         /// Destructor
-        virtual ~SphereVsConvexPolyhedronAlgorithm() override = default;
+        virtual ~DefaultAllocator() = default;
 
-        /// Deleted copy-constructor
-        SphereVsConvexPolyhedronAlgorithm(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
+        /// Allocate memory of a given size (in bytes) and return a pointer to the
+        /// allocated memory.
+        virtual void* allocate(size_t size) override {
+            return malloc(size);
+        }
 
-        /// Deleted assignment operator
-        SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size) override {
+            free(pointer);
+        }
 
-        /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts, Allocator& memoryAllocator) override;
+        /// Return true if memory needs to be release with this allocator
+        virtual bool isReleaseNeeded() const override {
+            return true;
+        }
 };
 
 }
 
 #endif
-
