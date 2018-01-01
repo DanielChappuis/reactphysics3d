@@ -67,12 +67,12 @@ struct NarrowPhaseInfo {
         NarrowPhaseInfo* next;
 
         /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
-        Allocator& collisionShapeAllocator;
+        MemoryAllocator& collisionShapeAllocator;
 
         /// Constructor
         NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, Allocator& shapeAllocator);
+                        const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
 
         /// Destructor
         ~NarrowPhaseInfo();

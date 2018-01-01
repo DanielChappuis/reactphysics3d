@@ -113,18 +113,18 @@ class OverlappingPair {
         ContactManifoldInfo* mPotentialContactManifolds;
 
         /// Persistent memory allocator
-        Allocator& mPersistentAllocator;
+        MemoryAllocator& mPersistentAllocator;
 
         /// Memory allocator used to allocated memory for the ContactManifoldInfo and ContactPointInfo
-        Allocator& mTempMemoryAllocator;
+        MemoryAllocator& mTempMemoryAllocator;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,  Allocator& persistentMemoryAllocator,
-                        Allocator& temporaryMemoryAllocator);
+        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,  MemoryAllocator& persistentMemoryAllocator,
+                        MemoryAllocator& temporaryMemoryAllocator);
 
         /// Destructor
         ~OverlappingPair();
@@ -157,7 +157,7 @@ class OverlappingPair {
         void addContactManifold(const ContactManifoldInfo* contactManifoldInfo);
 
         /// Return a reference to the temporary memory allocator
-        Allocator& getTemporaryAllocator();
+        MemoryAllocator& getTemporaryAllocator();
 
         /// Return true if one of the shapes of the pair is a concave shape
         bool hasConcaveShape() const;
@@ -264,7 +264,7 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
 }
 
 // Return a reference to the temporary memory allocator
-inline Allocator& OverlappingPair::getTemporaryAllocator() {
+inline MemoryAllocator& OverlappingPair::getTemporaryAllocator() {
     return mTempMemoryAllocator;
 }
 

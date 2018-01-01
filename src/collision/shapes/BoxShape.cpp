@@ -39,7 +39,7 @@ using namespace reactphysics3d;
  */
 BoxShape::BoxShape(const Vector3& extent)
          : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent),
-           mHalfEdgeStructure(MemoryManager::getDefaultAllocator(), 6, 8, 24) {
+           mHalfEdgeStructure(MemoryManager::getBaseAllocator(), 6, 8, 24) {
 
     assert(extent.x > decimal(0.0));
     assert(extent.y > decimal(0.0));
@@ -55,7 +55,7 @@ BoxShape::BoxShape(const Vector3& extent)
     mHalfEdgeStructure.addVertex(6);
     mHalfEdgeStructure.addVertex(7);
 
-    DefaultAllocator& allocator = MemoryManager::getDefaultAllocator();
+    MemoryAllocator& allocator = MemoryManager::getBaseAllocator();
 
     // Faces
     List<uint> face0(allocator, 4);
@@ -98,7 +98,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;

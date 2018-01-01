@@ -92,7 +92,7 @@ class NarrowPhaseAlgorithm {
 
         /// Compute a contact info if the two bounding volumes collide
         virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
-                                   Allocator& memoryAllocator)=0;
+                                   MemoryAllocator& memoryAllocator)=0;
 
 #ifdef IS_PROFILING_ACTIVE
 

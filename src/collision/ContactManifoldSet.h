@@ -61,7 +61,7 @@ class ContactManifoldSet {
         ProxyShape* mShape2;
 
         /// Reference to the memory allocator for the contact manifolds
-        Allocator& mMemoryAllocator;
+        MemoryAllocator& mMemoryAllocator;
 
         /// Contact manifolds of the set
         ContactManifold* mManifolds;
@@ -95,7 +95,7 @@ class ContactManifoldSet {
 
         /// Constructor
         ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
-                           Allocator& memoryAllocator);
+                           MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~ContactManifoldSet();

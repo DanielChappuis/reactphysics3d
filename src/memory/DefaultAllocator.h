@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
 
 // Libraries
-#include "memory/Allocator.h"
+#include "memory/MemoryAllocator.h"
 #include <cstdlib>
 
 /// ReactPhysics3D namespace
@@ -37,12 +37,15 @@ namespace reactphysics3d {
 /**
  * This class represents a default memory allocator that uses default malloc/free methods
  */
-class DefaultAllocator : public Allocator {
+class DefaultAllocator : public MemoryAllocator {
 
     public:
 
         /// Destructor
         virtual ~DefaultAllocator() = default;
+
+        /// Assignment operator
+        DefaultAllocator& operator=(DefaultAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
@@ -53,11 +56,6 @@ class DefaultAllocator : public Allocator {
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override {
             free(pointer);
-        }
-
-        /// Return true if memory needs to be release with this allocator
-        virtual bool isReleaseNeeded() const override {
-            return true;
         }
 };
 

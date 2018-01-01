@@ -225,7 +225,7 @@ decimal reactphysics3d::computePointToLineDistance(const Vector3& linePointA, co
 List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
                                                            const List<Vector3>& planesPoints,
                                                            const List<Vector3>& planesNormals,
-                                                           Allocator& allocator) {
+                                                           MemoryAllocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 
@@ -303,7 +303,7 @@ List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const V
 // Clip a polygon against multiple planes and return the clipped polygon vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
 List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
-                                                    const List<Vector3>& planesNormals, Allocator& allocator) {
+                                                    const List<Vector3>& planesNormals, MemoryAllocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 

@@ -45,7 +45,7 @@ using namespace reactphysics3d;
 const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 
 // Constructor
-SATAlgorithm::SATAlgorithm(Allocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
+SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
 
 }
 

@@ -28,7 +28,7 @@
 
 // Libraries
 #include "collision/ContactPointInfo.h"
-#include "memory/Allocator.h"
+#include "memory/MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -57,14 +57,14 @@ class ContactManifoldInfo {
         ContactManifoldInfo* mNext;
 
         /// Reference the the memory allocator where the contact point infos have been allocated
-        Allocator& mAllocator;
+        MemoryAllocator& mAllocator;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(Allocator& allocator);
+        ContactManifoldInfo(MemoryAllocator& allocator);
 
         /// Destructor
         ~ContactManifoldInfo();

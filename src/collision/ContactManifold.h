@@ -129,7 +129,7 @@ class ContactManifold {
         bool mIsAlreadyInIsland;
 
         /// Reference to the memory allocator
-        Allocator& mMemoryAllocator;
+        MemoryAllocator& mMemoryAllocator;
 
         /// Pointer to the next contact manifold in the linked-list
         ContactManifold* mNext;
@@ -217,7 +217,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
-                        Allocator& memoryAllocator);
+                        MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~ContactManifold();

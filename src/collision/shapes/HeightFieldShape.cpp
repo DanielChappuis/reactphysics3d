@@ -212,7 +212,7 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
+bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead

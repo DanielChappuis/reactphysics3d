@@ -26,18 +26,18 @@
 // Libraries
 #include "collision/CollisionCallback.h"
 #include "engine/OverlappingPair.h"
-#include "memory/Allocator.h"
+#include "memory/MemoryAllocator.h"
 #include "collision/ContactManifold.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair* pair, Allocator& allocator) :
+CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair* pair, MemoryManager& memoryManager) :
     contactManifoldElements(nullptr), body1(pair->getShape1()->getBody()),
     body2(pair->getShape2()->getBody()),
     proxyShape1(pair->getShape1()), proxyShape2(pair->getShape2()),
-    mMemoryAllocator(allocator) {
+    mMemoryManager(memoryManager) {
 
     assert(pair != nullptr);
 
@@ -52,7 +52,8 @@ CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair*
 
         // Add the contact manifold at the beginning of the linked
         // list of contact manifolds of the first body
-        ContactManifoldListElement* element = new (mMemoryAllocator.allocate(sizeof(ContactManifoldListElement)))
+        ContactManifoldListElement* element = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                                           sizeof(ContactManifoldListElement)))
                                                       ContactManifoldListElement(contactManifold,
                                                                          contactManifoldElements);
         contactManifoldElements = element;
@@ -72,7 +73,8 @@ CollisionCallback::CollisionCallbackInfo::~CollisionCallbackInfo() {
 
         // Delete and release memory
         element->~ContactManifoldListElement();
-        mMemoryAllocator.release(element, sizeof(ContactManifoldListElement));
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, element,
+                               sizeof(ContactManifoldListElement));
 
         element = nextElement;
     }

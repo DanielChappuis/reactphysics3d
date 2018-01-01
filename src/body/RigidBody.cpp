@@ -176,7 +176,7 @@ void RigidBody::setMass(decimal mass) {
 }
 
 // Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint) {
+void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Joint* joint) {
 
     assert(joint != nullptr);
     assert(mJointsList != nullptr);
@@ -186,7 +186,8 @@ void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const 
         JointListElement* elementToRemove = mJointsList;
         mJointsList = elementToRemove->next;
         elementToRemove->~JointListElement();
-        memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+        memoryManager.release(MemoryManager::AllocationType::Pool,
+                              elementToRemove, sizeof(JointListElement));
     }
     else {  // If the element to remove is not the first one in the list
         JointListElement* currentElement = mJointsList;
@@ -195,7 +196,8 @@ void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const 
                 JointListElement* elementToRemove = currentElement->next;
                 currentElement->next = elementToRemove->next;
                 elementToRemove->~JointListElement();
-                memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+                memoryManager.release(MemoryManager::AllocationType::Pool,
+                                      elementToRemove, sizeof(JointListElement));
                 break;
             }
             currentElement = currentElement->next;
@@ -224,9 +226,9 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          decimal mass) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass, mWorld.mPoolAllocator);
+                                                                      transform, mass, mWorld.mMemoryManager);
 
 #ifdef IS_PROFILING_ACTIVE
 

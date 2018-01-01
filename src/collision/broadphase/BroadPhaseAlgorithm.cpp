@@ -185,14 +185,14 @@ void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseAlgorithm::computeOverlappingPairs(Allocator& allocator) {
+void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) {
 
     // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
     // Reset the potential overlapping pairs
     mNbPotentialPairs = 0;
 
-    LinkedList<int> overlappingNodes(allocator);
+    LinkedList<int> overlappingNodes(memoryManager.getPoolAllocator());
 
     // For all collision shapes that have moved (or have been created) during the
     // last simulation step

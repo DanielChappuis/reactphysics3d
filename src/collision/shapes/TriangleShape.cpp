@@ -45,7 +45,7 @@ using namespace reactphysics3d;
  * @param margin The collision margin (in meters) around the collision shape
  */
 TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId,
-                             Allocator& allocator)
+                             MemoryAllocator& allocator)
     : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
 
     mPoints[0] = vertices[0];
@@ -211,7 +211,7 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
-bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
+bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     PROFILE("TriangleShape::raycast()", mProfiler);
 

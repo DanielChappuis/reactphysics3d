@@ -29,6 +29,7 @@
 // Libraries
 #include "body/CollisionBody.h"
 #include "shapes/CollisionShape.h"
+#include "memory/MemoryManager.h"
 
 namespace  reactphysics3d {
 
@@ -47,6 +48,9 @@ class ProxyShape {
     protected:
 
         // -------------------- Attributes -------------------- //
+
+        /// Reference to the memory manager
+        MemoryManager& mMemoryManager;
 
         /// Pointer to the parent body
         CollisionBody* mBody;
@@ -82,9 +86,6 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
-        /// Memory allocator
-        Allocator& mAllocator;
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -103,7 +104,7 @@ class ProxyShape {
 
         /// Constructor
         ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass, Allocator& allocator);
+                   const Transform& transform, decimal mass, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();

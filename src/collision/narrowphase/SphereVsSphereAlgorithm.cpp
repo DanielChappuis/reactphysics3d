@@ -31,7 +31,7 @@
 using namespace reactphysics3d;  
 
 bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
-                                            Allocator& memoryAllocator) {
+                                            MemoryAllocator& memoryAllocator) {
     
     assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
     assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);

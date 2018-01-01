@@ -39,8 +39,7 @@
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
 #include "constraint/ContactPoint.h"
-#include "memory/DefaultAllocator.h"
-#include "memory/PoolAllocator.h"
+#include "memory/MemoryManager.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
@@ -62,11 +61,8 @@ class CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pool Memory allocator
-        PoolAllocator mPoolAllocator;
-
-        /// Single frame Memory allocator
-        SingleFrameAllocator mSingleFrameAllocator;
+        /// Memory manager
+        MemoryManager mMemoryManager;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;

@@ -115,11 +115,11 @@ decimal computePointToLineDistance(const Vector3& linePointA, const Vector3& lin
 List<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
                                                            const List<Vector3>& planesPoints,
                                                            const List<Vector3>& planesNormals,
-                                                           Allocator& allocator);
+                                                           MemoryAllocator& allocator);
 
 /// Clip a polygon against multiple planes and return the clipped polygon vertices
 List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
-                                    const List<Vector3>& planesNormals, Allocator& allocator);
+                                    const List<Vector3>& planesNormals, MemoryAllocator& allocator);
 
 /// Project a point onto a plane that is given by a point and its unit length normal
 Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);

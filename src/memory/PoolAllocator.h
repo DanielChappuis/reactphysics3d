@@ -28,7 +28,7 @@
 
 // Libraries
 #include "configuration.h"
-#include "Allocator.h"
+#include "MemoryAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -40,7 +40,7 @@ namespace reactphysics3d {
  * efficiently. This implementation is inspired by the small block allocator
  * described here : http://www.codeproject.com/useritems/Small_Block_Allocator.asp
  */
-class PoolAllocator : public Allocator {
+class PoolAllocator : public MemoryAllocator {
 
     private :
 
@@ -131,22 +131,16 @@ class PoolAllocator : public Allocator {
         /// Destructor
         virtual ~PoolAllocator() override;
 
+        /// Assignment operator
+        PoolAllocator& operator=(PoolAllocator& allocator) = default;
+
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
         virtual void* allocate(size_t size) override;
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override;
-
-        /// Return true if memory needs to be release with this allocator
-        virtual bool isReleaseNeeded() const override;
-
 };
-
-// Return true if memory needs to be release with this allocator
-inline bool PoolAllocator::isReleaseNeeded() const {
-    return true;
-}
 
 }
 

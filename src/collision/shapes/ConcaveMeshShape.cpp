@@ -111,7 +111,7 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const {
+bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 

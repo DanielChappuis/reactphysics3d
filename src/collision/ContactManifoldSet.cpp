@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifoldSet::ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
-                                       Allocator& memoryAllocator)
+                                       MemoryAllocator& memoryAllocator)
                    : mNbManifolds(0), mShape1(shape1),
                      mShape2(shape2), mMemoryAllocator(memoryAllocator), mManifolds(nullptr) {
 

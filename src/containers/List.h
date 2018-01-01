@@ -28,7 +28,7 @@
 
 // Libraries
 #include "configuration.h"
-#include "memory/Allocator.h"
+#include "memory/MemoryAllocator.h"
 #include <cstring>
 
 namespace reactphysics3d {
@@ -54,7 +54,7 @@ class List {
         size_t mCapacity;
 
         /// Memory allocator
-        Allocator& mAllocator;
+        MemoryAllocator& mAllocator;
 
         // -------------------- Methods -------------------- //
 
@@ -64,7 +64,7 @@ class List {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        List(Allocator& allocator, size_t capacity = 0)
+        List(MemoryAllocator& allocator, size_t capacity = 0)
             : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
 
             if (capacity > 0) {

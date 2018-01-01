@@ -54,7 +54,7 @@ class HalfEdgeStructure {
             List<uint> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
-            Face(Allocator& allocator) : faceVertices(allocator) {}
+            Face(MemoryAllocator& allocator) : faceVertices(allocator) {}
 
             /// Constructor
             Face(List<uint> vertices) : faceVertices(vertices) {}
@@ -71,7 +71,7 @@ class HalfEdgeStructure {
     private:
 
         /// Reference to a memory allocator
-        Allocator& mAllocator;
+        MemoryAllocator& mAllocator;
 
         /// All the faces
         List<Face> mFaces;
@@ -85,7 +85,7 @@ class HalfEdgeStructure {
     public:
 
         /// Constructor
-        HalfEdgeStructure(Allocator& allocator, uint facesCapacity, uint verticesCapacity,
+        HalfEdgeStructure(MemoryAllocator& allocator, uint facesCapacity, uint verticesCapacity,
                           uint edgesCapacity) :mAllocator(allocator), mFaces(allocator, facesCapacity),
                           mVertices(allocator, verticesCapacity), mEdges(allocator, edgesCapacity) {}
 

@@ -62,7 +62,7 @@ class CapsuleShape : public ConvexShape {
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, Allocator& allocator) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
         /// Raycasting method between a ray one of the two spheres end cap of the capsule
         bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,

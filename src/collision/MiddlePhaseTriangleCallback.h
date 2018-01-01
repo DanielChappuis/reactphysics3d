@@ -56,7 +56,7 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         const ConcaveShape* mConcaveShape;
 
         /// Reference to the single-frame memory allocator
-        Allocator& mAllocator;
+        MemoryAllocator& mAllocator;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -74,7 +74,7 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         MiddlePhaseTriangleCallback(OverlappingPair* overlappingPair,
                                     ProxyShape* concaveProxyShape,
                                     ProxyShape* convexProxyShape, const ConcaveShape* concaveShape,
-                                    Allocator& allocator)
+                                    MemoryAllocator& allocator)
             :mOverlappingPair(overlappingPair), mConcaveProxyShape(concaveProxyShape),
              mConvexProxyShape(convexProxyShape), mConcaveShape(concaveShape),
              mAllocator(allocator), narrowPhaseInfoList(nullptr) {

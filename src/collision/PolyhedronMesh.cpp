@@ -36,7 +36,7 @@ using namespace reactphysics3d;
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
 PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray)
-               : mHalfEdgeStructure(MemoryManager::getDefaultAllocator(),
+               : mHalfEdgeStructure(MemoryManager::getBaseAllocator(),
                                     polygonVertexArray->getNbFaces(),
                                     polygonVertexArray->getNbVertices(),
                                     (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2) {
@@ -75,7 +75,7 @@ void PolyhedronMesh::createHalfEdgeStructure() {
         // Get the polygon face
         PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
 
-        List<uint> faceVertices(MemoryManager::getDefaultAllocator(), face->nbVertices);
+        List<uint> faceVertices(MemoryManager::getBaseAllocator(), face->nbVertices);
 
         // For each vertex of the face
         for (uint v=0; v < face->nbVertices; v++) {

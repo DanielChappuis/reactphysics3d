@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_ALLOCATOR_H
-#define REACTPHYSICS3D_ALLOCATOR_H
+#ifndef REACTPHYSICS3D_MEMORY_ALLOCATOR_H
+#define REACTPHYSICS3D_MEMORY_ALLOCATOR_H
 
 // Libraries
 #include <cstring>
@@ -32,16 +32,22 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class Allocator
+// Class MemoryAllocator
 /**
  * Abstract class with the basic interface of all the derived memory allocators
  */
-class Allocator {
+class MemoryAllocator {
 
     public:
 
+        /// Constructor
+        MemoryAllocator() = default;
+
         /// Destructor
-        virtual ~Allocator() = default;
+        virtual ~MemoryAllocator() = default;
+
+        /// Assignment operator
+        MemoryAllocator& operator=(MemoryAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
@@ -49,9 +55,6 @@ class Allocator {
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size)=0;
-
-        /// Return true if memory needs to be release with this allocator
-        virtual bool isReleaseNeeded() const=0;
 };
 
 }

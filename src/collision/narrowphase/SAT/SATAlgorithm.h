@@ -51,7 +51,7 @@ class SATAlgorithm {
         static const decimal SAME_SEPARATING_AXIS_BIAS;
 
         /// Memory allocator
-        Allocator& mMemoryAllocator;
+        MemoryAllocator& mMemoryAllocator;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -115,7 +115,7 @@ class SATAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SATAlgorithm(Allocator& memoryAllocator);
+        SATAlgorithm(MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~SATAlgorithm() = default;

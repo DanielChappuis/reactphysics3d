@@ -70,9 +70,9 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
                                              const Transform& transform) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, decimal(1), mWorld.mPoolAllocator);
+                                                                      transform, decimal(1), mWorld.mMemoryManager);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -123,7 +123,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
         }
 
         current->~ProxyShape();
-        mWorld.mPoolAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
         mNbCollisionShapes--;
         return;
     }
@@ -143,7 +143,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             }
 
             elementToRemove->~ProxyShape();
-            mWorld.mPoolAllocator.release(elementToRemove, sizeof(ProxyShape));
+            mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
             return;
         }
@@ -169,7 +169,7 @@ void CollisionBody::removeAllCollisionShapes() {
         }
 
         current->~ProxyShape();
-        mWorld.mPoolAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
 
         // Get the next element in the list
         current = nextElement;
@@ -188,7 +188,7 @@ void CollisionBody::resetContactManifoldsList() {
 
         // Delete the current element
         currentElement->~ContactManifoldListElement();
-        mWorld.mPoolAllocator.release(currentElement, sizeof(ContactManifoldListElement));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, currentElement, sizeof(ContactManifoldListElement));
 
         currentElement = nextElement;
     }

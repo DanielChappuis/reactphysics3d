@@ -32,8 +32,7 @@
 #include "engine/OverlappingPair.h"
 #include "engine/EventListener.h"
 #include "narrowphase/DefaultCollisionDispatch.h"
-#include "memory/PoolAllocator.h"
-#include "memory/SingleFrameAllocator.h"
+#include "memory/MemoryManager.h"
 #include "constraint/ContactPoint.h"
 #include <vector>
 #include <set>
@@ -62,6 +61,9 @@ class CollisionDetection {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory manager
+        MemoryManager& mMemoryManager;
+
         /// Collision Detection Dispatch configuration
         CollisionDispatch* mCollisionDispatch;
 
@@ -70,12 +72,6 @@ class CollisionDetection {
 
         /// Collision detection matrix (algorithms to use)
         NarrowPhaseAlgorithm* mCollisionMatrix[NB_COLLISION_SHAPE_TYPES][NB_COLLISION_SHAPE_TYPES];
-
-        /// Reference to the memory allocator
-        PoolAllocator& mPoolAllocator;
-
-        /// Reference to the single frame memory allocator
-        SingleFrameAllocator& mSingleFrameAllocator;
 
         /// Pointer to the physics world
         CollisionWorld* mWorld;
@@ -133,7 +129,7 @@ class CollisionDetection {
         void addAllContactManifoldsToBodies();
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-        void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, Allocator& allocator,
+        void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                NarrowPhaseInfo** firstNarrowPhaseInfo);
 
         /// Compute the middle-phase collision detection between two proxy shapes
@@ -156,7 +152,7 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world, PoolAllocator& memoryAllocator, SingleFrameAllocator& singleFrameAllocator);
+        CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager);
 
         /// Destructor
         ~CollisionDetection() = default;
@@ -222,9 +218,6 @@ class CollisionDetection {
 
         /// Return the world event listener
         EventListener* getWorldEventListener();
-
-        /// Return a reference to the world memory allocator
-        PoolAllocator& getWorldMemoryAllocator();
 
 #ifdef IS_PROFILING_ACTIVE
 

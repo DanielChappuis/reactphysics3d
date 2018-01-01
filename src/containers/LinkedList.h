@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_LINKED_LIST_H
 
 // Libraries
-#include "memory/Allocator.h"
+#include "memory/MemoryAllocator.h"
 
 namespace reactphysics3d {
 
@@ -64,14 +64,14 @@ class LinkedList {
         ListElement* mListHead;
 
         /// Memory allocator used to allocate the list elements
-        Allocator& mAllocator;
+        MemoryAllocator& mAllocator;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        LinkedList(Allocator& allocator) : mListHead(nullptr), mAllocator(allocator) {
+        LinkedList(MemoryAllocator& allocator) : mListHead(nullptr), mAllocator(allocator) {
 
         }
 

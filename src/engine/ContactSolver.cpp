@@ -39,9 +39,9 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(SingleFrameAllocator& allocator)
-              :mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr),
-               mContactConstraints(nullptr), mSingleFrameAllocator(allocator),
+ContactSolver::ContactSolver(MemoryManager& memoryManager)
+              :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
+               mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
                mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mIsSplitImpulseActive(true) {
 
@@ -75,10 +75,12 @@ void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
     if (nbContactManifolds == 0 || nbContactPoints == 0) return;
 
     // TODO : Count exactly the number of constraints to allocate here
-    mContactPoints = static_cast<ContactPointSolver*>(mSingleFrameAllocator.allocate(sizeof(ContactPointSolver) * nbContactPoints));
+    mContactPoints = static_cast<ContactPointSolver*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                              sizeof(ContactPointSolver) * nbContactPoints));
     assert(mContactPoints != nullptr);
 
-    mContactConstraints = static_cast<ContactManifoldSolver*>(mSingleFrameAllocator.allocate(sizeof(ContactManifoldSolver) * nbContactManifolds));
+    mContactConstraints = static_cast<ContactManifoldSolver*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                                      sizeof(ContactManifoldSolver) * nbContactManifolds));
     assert(mContactConstraints != nullptr);
 
     // For each island of the world

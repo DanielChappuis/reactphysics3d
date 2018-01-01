@@ -33,8 +33,7 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mSingleFrameAllocator(SIZE_SINGLE_FRAME_ALLOCATOR_BYTES),
-                 mCollisionDetection(this, mPoolAllocator, mSingleFrameAllocator), mCurrentBodyID(0),
+               : mCollisionDetection(this, mMemoryManager), mCurrentBodyID(0),
                  mEventListener(nullptr) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -74,7 +73,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the collision body
-    CollisionBody* collisionBody = new (mPoolAllocator.allocate(sizeof(CollisionBody)))
+    CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                        sizeof(CollisionBody)))
                                         CollisionBody(transform, *this, bodyID);
 
     assert(collisionBody != nullptr);
@@ -111,7 +111,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     mBodies.erase(collisionBody);
 
     // Free the object from the memory allocator
-    mPoolAllocator.release(collisionBody, sizeof(CollisionBody));
+    mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
 }
 
 // Return the next available body ID

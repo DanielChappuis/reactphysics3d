@@ -30,3 +30,5 @@ using namespace reactphysics3d;
 
 // Static variables
 DefaultAllocator MemoryManager::mDefaultAllocator;
+MemoryAllocator* MemoryManager::mBaseAllocator = &mDefaultAllocator;
+

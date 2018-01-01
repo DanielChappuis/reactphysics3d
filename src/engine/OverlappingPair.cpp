@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 Allocator& persistentMemoryAllocator, Allocator& temporaryMemoryAllocator)
+                                 MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator)
                 : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator), mPotentialContactManifolds(nullptr),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator) {
     

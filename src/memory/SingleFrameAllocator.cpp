@@ -25,17 +25,19 @@
 
 // Libraries
 #include "SingleFrameAllocator.h"
+#include "MemoryManager.h"
 #include <cstdlib>
 #include <cassert>
 
 using namespace reactphysics3d;
 
 // Constructor
-SingleFrameAllocator::SingleFrameAllocator(size_t totalSizeBytes)
-    : mTotalSizeBytes(totalSizeBytes), mCurrentOffset(0) {
+SingleFrameAllocator::SingleFrameAllocator()
+    : mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_BYTES),
+      mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
 
     // Allocate a whole block of memory at the beginning
-    mMemoryBufferStart = static_cast<char*>(malloc(mTotalSizeBytes));
+    mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
     assert(mMemoryBufferStart != nullptr);
 }
 
@@ -43,7 +45,7 @@ SingleFrameAllocator::SingleFrameAllocator(size_t totalSizeBytes)
 SingleFrameAllocator::~SingleFrameAllocator() {
 
     // Release the memory allocated at the beginning
-    free(mMemoryBufferStart);
+    MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
 }
 
 
@@ -52,14 +54,13 @@ SingleFrameAllocator::~SingleFrameAllocator() {
 void* SingleFrameAllocator::allocate(size_t size) {
 
     // Check that there is enough remaining memory in the buffer
-    if (static_cast<size_t>(mCurrentOffset) + size > mTotalSizeBytes) {
+    if (mCurrentOffset + size > mTotalSizeBytes) {
 
-        // This should never occur. If it does, you must increase the initial
-        // size of memory of this allocator
-        assert(false);
+        // We need to allocate more memory next time reset() is called
+        mNeedToAllocatedMore = true;
 
-        // Return null
-        return nullptr;
+        // Return default memory allocation
+        return MemoryManager::getBaseAllocator().allocate(size);
     }
 
     // Next available memory location
@@ -72,8 +73,62 @@ void* SingleFrameAllocator::allocate(size_t size) {
     return nextAvailableMemory;
 }
 
+// Release previously allocated memory.
+void SingleFrameAllocator::release(void* pointer, size_t size) {
+
+    // If allocated memory is not within the single frame allocation range
+    char* p = static_cast<char*>(pointer);
+    if (p < mMemoryBufferStart || p > mMemoryBufferStart + mTotalSizeBytes) {
+
+        // Use default deallocation
+        MemoryManager::getBaseAllocator().release(pointer, size);
+    }
+}
+
 // Reset the marker of the current allocated memory
 void SingleFrameAllocator::reset() {
+
+    // If too much memory is allocated
+    if (mCurrentOffset < mTotalSizeBytes / 2) {
+
+        mNbFramesTooMuchAllocated++;
+
+        if (mNbFramesTooMuchAllocated > NB_FRAMES_UNTIL_SHRINK) {
+
+            // Release the memory allocated at the beginning
+            MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+
+            // Divide the total memory to allocate by two
+            mTotalSizeBytes /= 2;
+            if (mTotalSizeBytes <= 0) mTotalSizeBytes = 1;
+
+            // Allocate a whole block of memory at the beginning
+            mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+            assert(mMemoryBufferStart != nullptr);
+
+            mNbFramesTooMuchAllocated = 0;
+        }
+    }
+    else {
+        mNbFramesTooMuchAllocated = 0;
+    }
+
+    // If we need to allocate more memory
+    if (mNeedToAllocatedMore) {
+
+        // Release the memory allocated at the beginning
+        MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+
+        // Multiply the total memory to allocate by two
+        mTotalSizeBytes *= 2;
+
+        // Allocate a whole block of memory at the beginning
+        mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+        assert(mMemoryBufferStart != nullptr);
+
+        mNeedToAllocatedMore = false;
+        mNbFramesTooMuchAllocated = 0;
+    }
 
     // Reset the current offset at the beginning of the block
     mCurrentOffset = 0;

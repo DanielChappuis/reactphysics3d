@@ -31,7 +31,7 @@
 #include "CollisionBody.h"
 #include "engine/Material.h"
 #include "mathematics/mathematics.h"
-#include "memory/PoolAllocator.h"
+#include "memory/MemoryManager.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -112,7 +112,7 @@ class RigidBody : public CollisionBody {
         // -------------------- Methods -------------------- //
 
         /// Remove a joint from the joints list
-        void removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint);
+        void removeJointFromJointsList(reactphysics3d::MemoryManager& memoryManager, const Joint* joint);
 
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();

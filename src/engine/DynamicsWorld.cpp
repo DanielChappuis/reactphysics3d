@@ -41,7 +41,7 @@ using namespace std;
  */
 DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
               : CollisionWorld(),
-                mContactSolver(mSingleFrameAllocator),
+                mContactSolver(mMemoryManager),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
                 mIsSleepingEnabled(SLEEPING_ENABLED), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
@@ -147,7 +147,7 @@ void DynamicsWorld::update(decimal timeStep) {
     resetBodiesForceAndTorque();
 
     // Reset the single frame memory allocator
-    mSingleFrameAllocator.reset();
+    mMemoryManager.resetFrameAllocator();
 }
 
 // Integrate position and orientation of the rigid bodies.
@@ -236,12 +236,18 @@ void DynamicsWorld::initVelocityArrays() {
     // Allocate memory for the bodies velocity arrays
     uint nbBodies = mRigidBodies.size();
 
-    mSplitLinearVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
-    mSplitAngularVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
-    mConstrainedLinearVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
-    mConstrainedAngularVelocities = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
-    mConstrainedPositions = static_cast<Vector3*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Vector3)));
-    mConstrainedOrientations = static_cast<Quaternion*>(mSingleFrameAllocator.allocate(nbBodies * sizeof(Quaternion)));
+    mSplitLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                           nbBodies * sizeof(Vector3)));
+    mSplitAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                            nbBodies * sizeof(Vector3)));
+    mConstrainedLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                                 nbBodies * sizeof(Vector3)));
+    mConstrainedAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                                  nbBodies * sizeof(Vector3)));
+    mConstrainedPositions = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                          nbBodies * sizeof(Vector3)));
+    mConstrainedOrientations = static_cast<Quaternion*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                                nbBodies * sizeof(Quaternion)));
     assert(mSplitLinearVelocities != nullptr);
     assert(mSplitAngularVelocities != nullptr);
     assert(mConstrainedLinearVelocities != nullptr);
@@ -412,8 +418,8 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the rigid body
-    RigidBody* rigidBody = new (mPoolAllocator.allocate(sizeof(RigidBody))) RigidBody(transform,
-                                                                                *this, bodyID);
+    RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                        sizeof(RigidBody))) RigidBody(transform, *this, bodyID);
     assert(rigidBody != nullptr);
 
     // Add the rigid body to the physics world
@@ -459,7 +465,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     mRigidBodies.erase(rigidBody);
 
     // Free the object from the memory allocator
-    mPoolAllocator.release(rigidBody, sizeof(RigidBody));
+    mMemoryManager.release(MemoryManager::AllocationType::Pool, rigidBody, sizeof(RigidBody));
 }
 
 // Create a joint between two bodies in the world and return a pointer to the new joint
@@ -477,7 +483,8 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Ball-and-Socket joint
         case JointType::BALLSOCKETJOINT:
         {
-            void* allocatedMemory = mPoolAllocator.allocate(sizeof(BallAndSocketJoint));
+            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                            sizeof(BallAndSocketJoint));
             const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
             newJoint = new (allocatedMemory) BallAndSocketJoint(info);
@@ -487,7 +494,8 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Slider joint
         case JointType::SLIDERJOINT:
         {
-            void* allocatedMemory = mPoolAllocator.allocate(sizeof(SliderJoint));
+            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                            sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) SliderJoint(info);
             break;
@@ -496,7 +504,8 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Hinge joint
         case JointType::HINGEJOINT:
         {
-            void* allocatedMemory = mPoolAllocator.allocate(sizeof(HingeJoint));
+            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                            sizeof(HingeJoint));
             const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) HingeJoint(info);
             break;
@@ -505,7 +514,8 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Fixed joint
         case JointType::FIXEDJOINT:
         {
-            void* allocatedMemory = mPoolAllocator.allocate(sizeof(FixedJoint));
+            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                            sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
             newJoint = new (allocatedMemory) FixedJoint(info);
             break;
@@ -558,8 +568,8 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     mJoints.erase(joint);
 
     // Remove the joint from the joint list of the bodies involved in the joint
-    joint->mBody1->removeJointFromJointsList(mPoolAllocator, joint);
-    joint->mBody2->removeJointFromJointsList(mPoolAllocator, joint);
+    joint->mBody1->removeJointFromJointsList(mMemoryManager, joint);
+    joint->mBody2->removeJointFromJointsList(mMemoryManager, joint);
 
     size_t nbBytes = joint->getSizeInBytes();
 
@@ -567,7 +577,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     joint->~Joint();
 
     // Release the allocated memory
-    mPoolAllocator.release(joint, nbBytes);
+    mMemoryManager.release(MemoryManager::AllocationType::Pool, joint, nbBytes);
 }
 
 // Add the joint to the list of joints of the two bodies involved in the joint
@@ -576,13 +586,15 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
     assert(joint != nullptr);
 
     // Add the joint at the beginning of the linked list of joints of the first body
-    void* allocatedMemory1 = mPoolAllocator.allocate(sizeof(JointListElement));
+    void* allocatedMemory1 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                     sizeof(JointListElement));
     JointListElement* jointListElement1 = new (allocatedMemory1) JointListElement(joint,
                                                                      joint->mBody1->mJointsList);
     joint->mBody1->mJointsList = jointListElement1;
 
     // Add the joint at the beginning of the linked list of joints of the second body
-    void* allocatedMemory2 = mPoolAllocator.allocate(sizeof(JointListElement));
+    void* allocatedMemory2 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                     sizeof(JointListElement));
     JointListElement* jointListElement2 = new (allocatedMemory2) JointListElement(joint,
                                                                      joint->mBody2->mJointsList);
     joint->mBody2->mJointsList = jointListElement2;
@@ -603,7 +615,8 @@ void DynamicsWorld::computeIslands() {
 
     // Allocate and create the array of islands pointer. This memory is allocated
     // in the single frame allocator
-    mIslands = static_cast<Island**>(mSingleFrameAllocator.allocate(sizeof(Island*) * nbBodies));
+    mIslands = static_cast<Island**>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                             sizeof(Island*) * nbBodies));
     mNbIslands = 0;
 
     int nbContactManifolds = 0;
@@ -619,7 +632,8 @@ void DynamicsWorld::computeIslands() {
 
     // Create a stack (using an array) for the rigid bodies to visit during the Depth First Search
     size_t nbBytesStack = sizeof(RigidBody*) * nbBodies;
-    RigidBody** stackBodiesToVisit = static_cast<RigidBody**>(mSingleFrameAllocator.allocate(nbBytesStack));
+    RigidBody** stackBodiesToVisit = static_cast<RigidBody**>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                                      nbBytesStack));
 
     // For each rigid body of the world
     for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
@@ -642,9 +656,10 @@ void DynamicsWorld::computeIslands() {
         body->mIsAlreadyInIsland = true;
 
         // Create the new island
-        void* allocatedMemoryIsland = mSingleFrameAllocator.allocate(sizeof(Island));
+        void* allocatedMemoryIsland = mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                              sizeof(Island));
         mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies, nbContactManifolds, mJoints.size(),
-                                                                  mSingleFrameAllocator);
+                                                                  mMemoryManager);
 
         // While there are still some bodies to visit in the stack
         while (stackIndex > 0) {

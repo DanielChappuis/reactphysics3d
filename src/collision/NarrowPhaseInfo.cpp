@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 // Constructor
 NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                 CollisionShape* shape2, const Transform& shape1Transform,
-                const Transform& shape2Transform, Allocator& shapeAllocator)
+                const Transform& shape2Transform, MemoryAllocator& shapeAllocator)
       : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
         shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
         contactPoints(nullptr), next(nullptr), collisionShapeAllocator(shapeAllocator) {
@@ -68,7 +68,7 @@ void NarrowPhaseInfo::addContactPoint(const Vector3& contactNormal, decimal penD
     assert(penDepth > decimal(0.0));
 
     // Get the memory allocator
-    Allocator& allocator = overlappingPair->getTemporaryAllocator();
+    MemoryAllocator& allocator = overlappingPair->getTemporaryAllocator();
 
     // Create the contact point info
     ContactPointInfo* contactPointInfo = new (allocator.allocate(sizeof(ContactPointInfo)))
@@ -89,7 +89,7 @@ void NarrowPhaseInfo::addContactPointsAsPotentialContactManifold() {
 void NarrowPhaseInfo::resetContactPoints() {
 
     // Get the memory allocator
-    Allocator& allocator = overlappingPair->getTemporaryAllocator();
+    MemoryAllocator& allocator = overlappingPair->getTemporaryAllocator();
 
     // For each remaining contact point info
     ContactPointInfo* element = contactPoints;

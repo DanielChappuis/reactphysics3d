@@ -29,7 +29,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifoldInfo::ContactManifoldInfo(Allocator& allocator)
+ContactManifoldInfo::ContactManifoldInfo(MemoryAllocator& allocator)
      : mContactPointsList(nullptr), mNbContactPoints(0), mNext(nullptr), mAllocator(allocator) {
 
 }

@@ -272,6 +272,10 @@ class ContactSolver {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory manager
+        MemoryManager& mMemoryManager;
+
+
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -292,9 +296,6 @@ class ContactSolver {
 
         /// Number of contact constraints
         uint mNbContactManifolds;
-
-        /// Single frame memory allocator
-        SingleFrameAllocator& mSingleFrameAllocator;
 
         /// Array of linear velocities
         Vector3* mLinearVelocities;
@@ -339,7 +340,7 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(SingleFrameAllocator& allocator);
+        ContactSolver(MemoryManager& memoryManager);
 
         /// Destructor
         ~ContactSolver() = default;

@@ -69,11 +69,11 @@ class CollisionCallback {
                 /// Pointer to the proxy shape of second body
                 const ProxyShape* proxyShape2;
 
-                /// Memory allocator
-                Allocator& mMemoryAllocator;
+                /// Memory manager
+                MemoryManager& mMemoryManager;
 
                 // Constructor
-                CollisionCallbackInfo(OverlappingPair* pair, Allocator& allocator);
+                CollisionCallbackInfo(OverlappingPair* pair, MemoryManager& memoryManager);
 
                 // Destructor
                 ~CollisionCallbackInfo();
