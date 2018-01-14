@@ -36,6 +36,7 @@
 #include "heightfield/HeightFieldScene.h"
 #include "raycast/RaycastScene.h"
 #include "concavemesh/ConcaveMeshScene.h"
+#include "cubestack/CubeStackScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -45,6 +46,7 @@ using namespace collisionshapesscene;
 using namespace trianglemeshscene;
 using namespace heightfieldscene;
 using namespace collisiondetectionscene;
+using namespace cubestackscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -101,6 +103,10 @@ void TestbedApplication::createScenes() {
     // Cubes scene
     CubesScene* cubeScene = new CubesScene("Cubes", mEngineSettings);
     mScenes.push_back(cubeScene);
+
+    // Cube Stack scene
+    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mEngineSettings);
+    mScenes.push_back(cubeStackScene);
 
     // Joints scene
     JointsScene* jointsScene = new JointsScene("Joints", mEngineSettings);

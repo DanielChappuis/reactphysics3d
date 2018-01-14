@@ -168,8 +168,8 @@ void CollisionDetectionScene::reset() {
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(-4, -7, 0), rp3d::Quaternion::identity()));
     mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 9, 0), rp3d::Quaternion::identity()));
     mConvexMesh->setTransform(rp3d::Transform(rp3d::Vector3(-5, 0, 0), rp3d::Quaternion::identity()));
-    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
-    mHeightField->setTransform(rp3d::Transform(rp3d::Vector3(0, -12, 0), rp3d::Quaternion::identity()));
+    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(0, 15, 0), rp3d::Quaternion::identity()));
+    mHeightField->setTransform(rp3d::Transform(rp3d::Vector3(0, -22, 0), rp3d::Quaternion::identity()));
 }
 
 // Destructor

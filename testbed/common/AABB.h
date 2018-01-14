@@ -37,9 +37,6 @@ class AABB  {
 
         // -------------------- Attributes -------------------- //
 
-        /// Size of each side of the box
-        float mSize[3];
-
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

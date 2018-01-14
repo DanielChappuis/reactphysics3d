@@ -23,76 +23,47 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TRIANGLE_MESH_SCENE_H
-#define TRIANGLE_MESH_SCENE_H
+#ifndef CUBESTACK_SCENE_H
+#define CUBESTACK_SCENE_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
 #include "Box.h"
 #include "SceneDemo.h"
-#include "ConcaveMesh.h"
-#include "Box.h"
-#include "Capsule.h"
-#include "Dumbbell.h"
-#include "Sphere.h"
-#include "ConvexMesh.h"
 
-namespace trianglemeshscene {
+namespace cubestackscene {
 
 // Constants
-const float SCENE_RADIUS = 70.0f;                           // Radius of the scene in meters
-static const int NB_BOXES = 50;
-static const int NB_SPHERES = 40;
-static const int NB_CAPSULES = 20;
-static const int NB_MESHES = 15;
-static const int NB_COMPOUND_SHAPES = 3;
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);
-const float SPHERE_RADIUS = 1.5f;
-const float CONE_RADIUS = 2.0f;
-const float CONE_HEIGHT = 3.0f;
-const float CYLINDER_RADIUS = 1.0f;
-const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 1.0f;
-const float CAPSULE_HEIGHT = 1.0f;
-const float DUMBBELL_HEIGHT = 1.0f;
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
+const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
+const int NB_FLOORS = 15;                                    // Number of boxes in the scene
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(50, 1, 50);   // Floor dimensions in meters
+const float BOX_MASS = 1.0f;                               // Box mass in kilograms
+const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
 
-// Class TriangleMeshScene
-class ConcaveMeshScene : public SceneDemo {
+// Class CubeStackScene
+class CubeStackScene : public SceneDemo {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
+        /// All the boxes of the scene
         std::vector<Box*> mBoxes;
 
-        std::vector<Sphere*> mSpheres;
-
-        std::vector<Capsule*> mCapsules;
-
-        /// All the convex meshes of the scene
-        std::vector<ConvexMesh*> mConvexMeshes;
-
-        /// All the dumbbell of the scene
-        std::vector<Dumbbell*> mDumbbells;
-
-        /// Concave triangles mesh
-        ConcaveMesh* mConcaveMesh;
+        /// Box for the floor
+        Box* mFloor;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMeshScene(const std::string& name, EngineSettings& settings);
+        CubeStackScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
-        virtual ~ConcaveMeshScene() override;
+        virtual ~CubeStackScene() override;
 
         /// Reset the scene
         virtual void reset() override;
@@ -102,7 +73,7 @@ class ConcaveMeshScene : public SceneDemo {
 };
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> ConcaveMeshScene::getContactPoints() const {
+inline std::vector<ContactPoint> CubeStackScene::getContactPoints() const {
     return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
