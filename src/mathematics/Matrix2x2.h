@@ -147,6 +147,31 @@ class Matrix2x2 {
         Vector2& operator[](int row);
 };
 
+// Constructor of the class Matrix2x2
+inline Matrix2x2::Matrix2x2() {
+
+    // Initialize all values in the matrix to zero
+    setAllValues(0.0, 0.0, 0.0, 0.0);
+}
+
+// Constructor
+inline Matrix2x2::Matrix2x2(decimal value) {
+    setAllValues(value, value, value, value);
+}
+
+// Constructor with arguments
+inline Matrix2x2::Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2) {
+
+    // Initialize the matrix with the values
+    setAllValues(a1, a2, b1, b2);
+}
+
+// Copy-constructor
+inline Matrix2x2::Matrix2x2(const Matrix2x2& matrix) {
+    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1],
+                 matrix.mRows[1][0], matrix.mRows[1][1]);
+}
+
 // Method to set all the values in the matrix
 inline void Matrix2x2::setAllValues(decimal a1, decimal a2,
                                     decimal b1, decimal b2) {

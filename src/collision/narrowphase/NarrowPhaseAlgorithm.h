@@ -28,10 +28,10 @@
 
 // Libraries
 #include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "collision/ContactManifoldInfo.h"
+#include "memory/PoolAllocator.h"
 #include "engine/OverlappingPair.h"
-#include "collision/CollisionShapeInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -67,21 +67,19 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the collision detection object
-        CollisionDetection* mCollisionDetection;
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Pointer to the memory allocator
-        MemoryAllocator* mMemoryAllocator;
+		/// Pointer to the profiler
+		Profiler* mProfiler;
 
-        /// Overlapping pair of the bodies currently tested for collision
-        OverlappingPair* mCurrentOverlappingPair;
+#endif
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm();
+        NarrowPhaseAlgorithm() = default;
 
         /// Destructor
         virtual ~NarrowPhaseAlgorithm() = default;
@@ -92,22 +90,27 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
-        
-        /// Set the current overlapping pair of bodies
-        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
+        /// Compute a contact info if the two bounding volumes collide
+        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                   MemoryAllocator& memoryAllocator)=0;
 
-        /// Compute a contact info if the two bounding volume collide
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback)=0;
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
-// Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
-    mCurrentOverlappingPair = overlappingPair;
-}      
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

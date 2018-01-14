@@ -42,7 +42,7 @@ using namespace reactphysics3d;
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale)
-                 : ConcaveShape(CollisionShapeType::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
@@ -133,24 +133,48 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
        for (int j = jMin; j < jMax; j++) {
 
            // Compute the four point of the current quad
-           Vector3 p1 = getVertexAt(i, j);
-           Vector3 p2 = getVertexAt(i, j + 1);
-           Vector3 p3 = getVertexAt(i + 1, j);
-           Vector3 p4 = getVertexAt(i + 1, j + 1);
+           const Vector3 p1 = getVertexAt(i, j);
+           const Vector3 p2 = getVertexAt(i, j + 1);
+           const Vector3 p3 = getVertexAt(i + 1, j);
+           const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
            // Generate the first triangle for the current grid rectangle
            Vector3 trianglePoints[3] = {p1, p2, p3};
 
+           // Compute the triangle normal
+           Vector3 triangle1Normal = (p2 - p1).cross(p3 - p1).getUnit();
+
+           // Use the triangle face normal as vertices normals (this is an aproximation. The correct
+           // solution would be to compute all the normals of the neighbor triangles and use their
+           // weighted average (with incident angle as weight) at the vertices. However, this solution
+           // seems too expensive (it requires to compute the normal of all neighbor triangles instead
+           // and compute the angle of incident edges with asin(). Maybe we could also precompute the
+           // vertices normal at the HeightFieldShape constructor but it will require extra memory to
+           // store them.
+           Vector3 verticesNormals1[3] = {triangle1Normal, triangle1Normal, triangle1Normal};
+
            // Test collision against the first triangle
-           callback.testTriangle(trianglePoints);
+           callback.testTriangle(trianglePoints, verticesNormals1, computeTriangleShapeId(i, j, 0));
 
            // Generate the second triangle for the current grid rectangle
            trianglePoints[0] = p3;
            trianglePoints[1] = p2;
            trianglePoints[2] = p4;
 
+           // Compute the triangle normal
+           Vector3 triangle2Normal = (p2 - p3).cross(p4 - p3).getUnit();
+
+           // Use the triangle face normal as vertices normals (this is an aproximation. The correct
+           // solution would be to compute all the normals of the neighbor triangles and use their
+           // weighted average (with incident angle as weight) at the vertices. However, this solution
+           // seems too expensive (it requires to compute the normal of all neighbor triangles instead
+           // and compute the angle of incident edges with asin(). Maybe we could also precompute the
+           // vertices normal at the HeightFieldShape constructor but it will require extra memory to
+           // store them.
+           Vector3 verticesNormals2[3] = {triangle2Normal, triangle2Normal, triangle2Normal};
+
            // Test collision against the second triangle
-           callback.testTriangle(trianglePoints);
+           callback.testTriangle(trianglePoints, verticesNormals2, computeTriangleShapeId(i, j, 1));
        }
    }
 }
@@ -188,14 +212,21 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
-    PROFILE("HeightFieldShape::raycast()");
+    PROFILE("HeightFieldShape::raycast()", mProfiler);
 
-    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this);
+    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this, allocator);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	triangleCallback.setProfiler(mProfiler);
+
+#endif
 
     // Compute the AABB for the ray
     const Vector3 rayEnd = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
@@ -232,16 +263,22 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 }
 
 // Raycast test between a ray and a triangle of the heightfield
-void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints) {
+void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
 
     // Create a triangle collision shape
-    decimal margin = mHeightFieldShape.getTriangleMargin();
-    TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+    TriangleShape triangleShape(trianglePoints, verticesNormals, shapeId, mAllocator);
     triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler to the triangle shape
+	triangleShape.setProfiler(mProfiler);
+
+#endif
 
     // Ray casting test against the collision shape
     RaycastInfo raycastInfo;
-    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
 
     // If the ray hit the collision shape
     if (isTriangleHit && raycastInfo.hitFraction <= mSmallestHitFraction) {

@@ -30,6 +30,7 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
+#include <cstdint>
 #include "decimal.h"
 
 // Windows platform
@@ -47,14 +48,18 @@ namespace reactphysics3d {
 // ------------------- Type definitions ------------------- //
 
 using uint = unsigned int;
+using uchar = unsigned char;
+using ushort = unsigned short;
 using luint = long unsigned int;
 using bodyindex = luint;
 using bodyindexpair = std::pair<bodyindex, bodyindex>;
 
-using int16 = signed short;
-using int32 = signed int;
-using uint16 = unsigned short;
-using uint32 = unsigned int;
+using int8 = std::int8_t;
+using uint8 = std::uint8_t;
+using int16 = std::int16_t;
+using uint16 = std::uint16_t;
+using int32 = std::int32_t;
+using uint32 = std::uint32_t;
 
 // ------------------- Enumerations ------------------- //
 
@@ -97,11 +102,8 @@ constexpr decimal DEFAULT_BOUNCINESS = decimal(0.5);
 /// Default rolling resistance
 constexpr decimal DEFAULT_ROLLING_RESISTANCE = decimal(0.0);
 
-/// True if the spleeping technique is enabled
-constexpr bool SPLEEPING_ENABLED = true;
-
-/// Object margin for collision detection in meters (for the GJK-EPA Algorithm)
-constexpr decimal OBJECT_MARGIN = decimal(0.04);
+/// True if the sleeping technique is enabled
+constexpr bool SLEEPING_ENABLED = true;
 
 /// Distance threshold for two contact points for a valid persistent contact (in meters)
 constexpr decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
@@ -143,6 +145,14 @@ constexpr int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
 /// Maximum number of contact manifolds in an overlapping pair that involves at
 /// least one concave collision shape.
 constexpr int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
+
+/// This is used to test if two contact manifold are similar (same contact normal) in order to
+/// merge them. If the cosine of the angle between the normals of the two manifold are larger
+/// than the value bellow, the manifold are considered to be similar.
+constexpr decimal COS_ANGLE_SIMILAR_CONTACT_MANIFOLD = decimal(0.95);
+
+/// Size (in bytes) of the single frame allocator
+constexpr size_t INIT_SINGLE_FRAME_ALLOCATOR_BYTES = 1048576; // 1Mb
 
 }
 

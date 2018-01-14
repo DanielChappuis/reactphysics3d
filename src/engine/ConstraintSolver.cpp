@@ -30,16 +30,20 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex)
-                 : mMapBodyToConstrainedVelocityIndex(mapBodyToVelocityIndex),
-                   mIsWarmStartingActive(true), mConstraintSolverData(mapBodyToVelocityIndex) {
+ConstraintSolver::ConstraintSolver() : mIsWarmStartingActive(true) {
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
 
 }
 
 // Initialize the constraint solver for a given island
 void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 
-    PROFILE("ConstraintSolver::initializeForIsland()");
+    PROFILE("ConstraintSolver::initializeForIsland()", mProfiler);
 
     assert(island != nullptr);
     assert(island->getNbBodies() > 0);
@@ -69,7 +73,7 @@ void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
 // Solve the velocity constraints
 void ConstraintSolver::solveVelocityConstraints(Island* island) {
 
-    PROFILE("ConstraintSolver::solveVelocityConstraints()");
+    PROFILE("ConstraintSolver::solveVelocityConstraints()", mProfiler);
 
     assert(island != nullptr);
     assert(island->getNbJoints() > 0);
@@ -86,7 +90,7 @@ void ConstraintSolver::solveVelocityConstraints(Island* island) {
 // Solve the position constraints
 void ConstraintSolver::solvePositionConstraints(Island* island) {
 
-    PROFILE("ConstraintSolver::solvePositionConstraints()");
+    PROFILE("ConstraintSolver::solvePositionConstraints()", mProfiler);
 
     assert(island != nullptr);
     assert(island->getNbJoints() > 0);

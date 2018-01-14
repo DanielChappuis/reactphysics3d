@@ -33,7 +33,7 @@
 
 
 // Class HeightField
-class HeightField : public openglframework::Mesh, public PhysicsObject {
+class HeightField : public PhysicsObject {
 
     private :
 
@@ -89,28 +89,23 @@ class HeightField : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightField(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world);
+        HeightField(rp3d::CollisionWorld* world);
 
         /// Constructor
-        HeightField(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld);
+        HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld);
 
         /// Destructor
         ~HeightField();
 
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
+                    const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
 
         /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        void setScaling(const openglframework::Vector3& scaling) override;
 };
 
 // Update the transform matrix of the object

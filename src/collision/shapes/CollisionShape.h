@@ -34,15 +34,18 @@
 #include "mathematics/Ray.h"
 #include "AABB.h"
 #include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
+#include "engine/Profiler.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
     
-/// Type of the collision shape
-enum class CollisionShapeType {TRIANGLE, BOX, SPHERE, CONE, CYLINDER,
-                         CAPSULE, CONVEX_MESH, CONCAVE_MESH, HEIGHTFIELD};
-const int NB_COLLISION_SHAPE_TYPES = 9;
+/// Type of collision shapes
+enum class CollisionShapeType {SPHERE, CAPSULE, CONVEX_POLYHEDRON, CONCAVE_SHAPE};
+const int NB_COLLISION_SHAPE_TYPES = 4;
+
+/// Names of collision shapes
+enum class CollisionShapeName { TRIANGLE, SPHERE, CAPSULE, BOX, CONVEX_MESH, TRIANGLE_MESH, HEIGHTFIELD };
 
 // Declarations
 class ProxyShape;
@@ -62,8 +65,21 @@ class CollisionShape {
         /// Type of the collision shape
         CollisionShapeType mType;
 
+		/// Name of the colision shape
+		CollisionShapeName mName;
+
         /// Scaling vector of the collision shape
         Vector3 mScaling;
+
+        /// Unique identifier of the shape inside an overlapping pair
+        uint mId;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
         
         // -------------------- Methods -------------------- //
 
@@ -71,7 +87,7 @@ class CollisionShape {
         virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const=0;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const=0;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;
@@ -81,7 +97,7 @@ class CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShape(CollisionShapeType type);
+        CollisionShape(CollisionShapeName name, CollisionShapeType type);
 
         /// Destructor
         virtual ~CollisionShape() = default;
@@ -92,7 +108,10 @@ class CollisionShape {
         /// Deleted assignment operator
         CollisionShape& operator=(const CollisionShape& shape) = delete;
 
-        /// Return the type of the collision shapes
+		/// Return the name of the collision shape
+		CollisionShapeName getName() const;
+
+        /// Return the type of the collision shape
         CollisionShapeType getType() const;
 
         /// Return true if the collision shape is convex, false if it is concave
@@ -105,10 +124,13 @@ class CollisionShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
         /// Return the scaling vector of the collision shape
-        Vector3 getScaling() const;
+        Vector3 getLocalScaling() const;
 
         /// Set the local scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
+
+        /// Return the id of the shape
+        uint getId() const;
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
@@ -116,12 +138,12 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
-        /// Return true if the collision shape type is a convex shape
-        static bool isConvex(CollisionShapeType shapeType);
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Return the maximum number of contact manifolds in an overlapping pair given two shape types
-        static int computeNbMaxContactManifolds(CollisionShapeType shapeType1,
-                                                CollisionShapeType shapeType2);
+		/// Set the profiler
+        virtual void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -129,21 +151,24 @@ class CollisionShape {
         friend class CollisionWorld;
 };
 
+// Return the name of the collision shape
+/**
+* @return The name of the collision shape (box, sphere, triangle, ...)
+*/
+inline CollisionShapeName CollisionShape::getName() const {
+	return mName;
+}
+
 // Return the type of the collision shape
 /**
- * @return The type of the collision shape (box, sphere, cylinder, ...)
+ * @return The type of the collision shape (sphere, capsule, convex polyhedron, concave mesh)
  */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
 }
 
-// Return true if the collision shape type is a convex shape
-inline bool CollisionShape::isConvex(CollisionShapeType shapeType) {
-    return shapeType != CollisionShapeType::CONCAVE_MESH && shapeType != CollisionShapeType::HEIGHTFIELD;
-}
-
 // Return the scaling vector of the collision shape
-inline Vector3 CollisionShape::getScaling() const {
+inline Vector3 CollisionShape::getLocalScaling() const {
     return mScaling;
 }
 
@@ -152,18 +177,20 @@ inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
     mScaling = scaling;
 }
 
-// Return the maximum number of contact manifolds allowed in an overlapping
-// pair wit the given two collision shape types
-inline int CollisionShape::computeNbMaxContactManifolds(CollisionShapeType shapeType1,
-                                                        CollisionShapeType shapeType2) {
-    // If both shapes are convex
-    if (isConvex(shapeType1) && isConvex(shapeType2)) {
-        return NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE;
-    }   // If there is at least one concave shape
-    else {
-        return NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE;
-    }
+// Return the id of the shape
+inline uint CollisionShape::getId() const {
+   return mId;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionShape::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

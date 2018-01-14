@@ -155,6 +155,13 @@ class DynamicAABBTree {
         /// without triggering a large modification of the tree which can be costly
         decimal mExtraAABBGap;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Allocate and return a node to use in the tree
@@ -237,6 +244,14 @@ class DynamicAABBTree {
 
         /// Clear all the nodes and reset the tree
         void reset();
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Return true if the node is a leaf of the tree
@@ -291,6 +306,15 @@ inline int DynamicAABBTree::addObject(const AABB& aabb, void* data) {
 
     return nodeId;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void DynamicAABBTree::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

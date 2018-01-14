@@ -28,6 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
+#include "Line.h"
 
 const float VISUAL_CONTACT_POINT_RADIUS = 0.2f;
 
@@ -56,14 +57,29 @@ class VisualContactPoint : public openglframework::Object3D {
         /// Vertex Array Object for the vertex data
         static openglframework::VertexArrayObject mVAO;
 
+		/// Vertex Buffer Object for the vertices data
+		openglframework::VertexBufferObject mVBOVerticesNormalLine;
+
+		/// Vertex Array Object for the vertex data
+		openglframework::VertexArrayObject mVAONormalLine;
+
         /// True if static data (VBO, VAO) has been created already
         static bool mStaticDataCreated;
+
+		// Two end-points of the contact normal line
+		openglframework::Vector3 mContactNormalLinePoints[2];
 
         /// Color
         openglframework::Color mColor;
 
-        // Create the Vertex Buffer Objects used to render with OpenGL.
+        // Create the Vertex Buffer Objects used to render the contact point sphere with OpenGL.
         static void createVBOAndVAO();
+
+		// Create the Vertex Buffer Objects used to render the contact normal line with OpenGL.
+		void createContactNormalLineVBOAndVAO();
+
+		/// Render the contact normal line
+		void renderContactNormalLine(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
         // -------------------- Methods -------------------- //
 
@@ -72,8 +88,8 @@ class VisualContactPoint : public openglframework::Object3D {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        VisualContactPoint(const openglframework::Vector3& position,
-                           const std::string &meshFolderPath);
+        VisualContactPoint(const openglframework::Vector3& position, const std::string &meshFolderPath,
+						   const openglframework::Vector3& normalLineEndPointLocal, const openglframework::Color& color);
 
         /// Destructor
         ~VisualContactPoint();
@@ -84,7 +100,7 @@ class VisualContactPoint : public openglframework::Object3D {
         /// Destroy the mesh for the contact points
         static void destroyStaticData();
 
-        /// Render the sphere at the correct position and with the correct orientation
+        /// Render the sphere contact point at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
                     const openglframework::Matrix4& worldToCameraMatrix);
 };

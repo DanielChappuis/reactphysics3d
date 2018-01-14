@@ -30,7 +30,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
-                 : ConcaveShape(CollisionShapeType::CONCAVE_MESH) {
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH) {
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
@@ -49,55 +49,21 @@ void ConcaveMeshShape::initBVHTree() {
         // Get the triangle vertex array of the current sub-part
         TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
 
-        TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
-        TriangleVertexArray::IndexDataType indexType = triangleVertexArray->getIndexDataType();
-        unsigned char* verticesStart = triangleVertexArray->getVerticesStart();
-        unsigned char* indicesStart = triangleVertexArray->getIndicesStart();
-        int vertexStride = triangleVertexArray->getVerticesStride();
-        int indexStride = triangleVertexArray->getIndicesStride();
-
         // For each triangle of the concave mesh
         for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
 
-            void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
             Vector3 trianglePoints[3];
 
-            // For each vertex of the triangle
-            for (int k=0; k < 3; k++) {
+            // Get the triangle vertices
+            triangleVertexArray->getTriangleVertices(triangleIndex, trianglePoints);
 
-                // Get the index of the current vertex in the triangle
-                int vertexIndex = 0;
-                if (indexType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
-                    vertexIndex = ((uint*)vertexIndexPointer)[k];
-                }
-                else if (indexType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
-                    vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
-                }
-                else {
-                    assert(false);
-                }
-
-                // Get the vertices components of the triangle
-                if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
-                    const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
-                    trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
-                    trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
-                    trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
-                }
-                else if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
-                    const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
-                    trianglePoints[k][0] = decimal(vertices[0]) * mScaling.x;
-                    trianglePoints[k][1] = decimal(vertices[1]) * mScaling.y;
-                    trianglePoints[k][2] = decimal(vertices[2]) * mScaling.z;
-                }
-                else {
-                    assert(false);
-                }
-            }
+            // Apply the scaling factor to the vertices
+            trianglePoints[0] *= mScaling.x;
+            trianglePoints[1] *= mScaling.y;
+            trianglePoints[2] *= mScaling.z;
 
             // Create the AABB for the triangle
             AABB aabb = AABB::createAABBForTriangle(trianglePoints);
-            aabb.inflate(mTriangleMargin, mTriangleMargin, mTriangleMargin);
 
             // Add the AABB with the index of the triangle into the dynamic AABB tree
             mDynamicAABBTree.addObject(aabb, subPart, triangleIndex);
@@ -106,55 +72,31 @@ void ConcaveMeshShape::initBVHTree() {
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-// given the start vertex index pointer of the triangle
-void ConcaveMeshShape::getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
-                                                           Vector3* outTriangleVertices) const {
+void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
+                                           Vector3* outTriangleVertices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
 
-    TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
-    TriangleVertexArray::IndexDataType indexType = triangleVertexArray->getIndexDataType();
-    unsigned char* verticesStart = triangleVertexArray->getVerticesStart();
-    unsigned char* indicesStart = triangleVertexArray->getIndicesStart();
-    int vertexStride = triangleVertexArray->getVerticesStride();
-    int indexStride = triangleVertexArray->getIndicesStride();
+    // Get the vertices coordinates of the triangle
+    triangleVertexArray->getTriangleVertices(triangleIndex, outTriangleVertices);
 
-    void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
-
-    // For each vertex of the triangle
-    for (int k=0; k < 3; k++) {
-
-        // Get the index of the current vertex in the triangle
-        int vertexIndex = 0;
-        if (indexType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
-            vertexIndex = ((uint*)vertexIndexPointer)[k];
-        }
-        else if (indexType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
-            vertexIndex = ((unsigned short*)vertexIndexPointer)[k];
-        }
-        else {
-            assert(false);
-        }
-
-        // Get the vertices components of the triangle
-        if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
-            const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
-            outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
-            outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
-            outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
-        }
-        else if (vertexType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
-            const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
-            outTriangleVertices[k][0] = decimal(vertices[0]) * mScaling.x;
-            outTriangleVertices[k][1] = decimal(vertices[1]) * mScaling.y;
-            outTriangleVertices[k][2] = decimal(vertices[2]) * mScaling.z;
-        }
-        else {
-            assert(false);
-        }
-    }
+    // Apply the scaling factor to the vertices
+    outTriangleVertices[0] *= mScaling.x;
+    outTriangleVertices[1] *= mScaling.y;
+    outTriangleVertices[2] *= mScaling.z;
 }
+
+// Return the three vertex normals (in the array outVerticesNormals) of a triangle
+void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const {
+
+    // Get the triangle vertex array of the current sub-part
+    TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
+
+    // Get the vertices normals of the triangle
+    triangleVertexArray->getTriangleVerticesNormals(triangleIndex, outVerticesNormals);
+}
+
 
 // Use a callback method on all triangles of the concave shape inside a given AABB
 void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
@@ -169,12 +111,19 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
-    PROFILE("ConcaveMeshShape::raycast()");
+    PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
     // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray);
+    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray, allocator);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	raycastCallback.setProfiler(mProfiler);
+
+#endif
 
     // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
     // The raycastCallback object will then compute ray casting against the triangles
@@ -184,6 +133,22 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     raycastCallback.raycastTriangles();
 
     return raycastCallback.getIsHit();
+}
+
+// Compute the shape Id for a given triangle of the mesh
+uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+
+    uint shapeId = 0;
+
+    uint i=0;
+    while (i < subPart) {
+
+        shapeId += mTriangleMesh->getSubpart(i)->getNbTriangles();
+
+        i++;
+    }
+
+    return shapeId + triangleIndex;
 }
 
 // Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
@@ -208,16 +173,26 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
         // Get the triangle vertices for this node from the concave mesh shape
         Vector3 trianglePoints[3];
-        mConcaveMeshShape.getTriangleVerticesWithIndexPointer(data[0], data[1], trianglePoints);
+        mConcaveMeshShape.getTriangleVertices(data[0], data[1], trianglePoints);
+
+        // Get the vertices normals of the triangle
+        Vector3 verticesNormals[3];
+        mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
 
         // Create a triangle collision shape
-        decimal margin = mConcaveMeshShape.getTriangleMargin();
-        TriangleShape triangleShape(trianglePoints[0], trianglePoints[1], trianglePoints[2], margin);
+        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
+		
+#ifdef IS_PROFILING_ACTIVE
+
+		// Set the profiler to the triangle shape
+		triangleShape.setProfiler(mProfiler);
+
+#endif
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;
-        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape);
+        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
 
         // If the ray hit the collision shape
         if (isTriangleHit && raycastInfo.hitFraction <= smallestHitFraction) {
@@ -235,5 +210,6 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             smallestHitFraction = raycastInfo.hitFraction;
             mIsHit = true;
         }
+
     }
 }

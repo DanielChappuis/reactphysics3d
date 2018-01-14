@@ -168,6 +168,21 @@ struct Vector3 {
         friend Vector3 operator/(const Vector3& vector1, const Vector3& vector2);
 };
 
+// Constructor of the class Vector3D
+inline Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+
+}
+
+// Constructor with arguments
+inline Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+
+}
+
+// Copy-constructor
+inline Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+
+}
+
 // Set the vector to zero
 inline void Vector3::setToZero() {
     x = 0;
@@ -184,7 +199,7 @@ inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
 
 // Return the length of the vector
 inline decimal Vector3::length() const {
-    return sqrt(x*x + y*y + z*z);
+    return std::sqrt(x*x + y*y + z*z);
 }
 
 // Return the square of the length of the vector

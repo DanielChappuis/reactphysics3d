@@ -100,20 +100,11 @@ class DynamicsWorld : public CollisionWorld {
         /// Array of constrained rigid bodies orientation (for position error correction)
         Quaternion* mConstrainedOrientations;
 
-        /// Map body to their index in the constrained velocities array
-        std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
-
         /// Number of islands in the world
         uint mNbIslands;
 
-        /// Current allocated capacity for the islands
-        uint mNbIslandsCapacity;
-
         /// Array with all the islands of awaken bodies
         Island** mIslands;
-
-        /// Current allocated capacity for the bodies
-        uint mNbBodiesCapacity;
 
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
@@ -130,18 +121,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
-        /// Update the AABBs of the bodies
-        void updateRigidBodiesAABB();
-
         /// Reset the external force and torque applied to the bodies
         void resetBodiesForceAndTorque();
-
-        /// Update the position and orientation of a body
-        void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
-                                                Vector3 newAngVelocity);
-
-        /// Compute and set the interpolation factor to all bodies
-        void setInterpolationFactorToAllBodies();
 
         /// Initialize the bodies velocities arrays for the next simulation step.
         void initVelocityArrays();
@@ -154,9 +135,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Solve the position error correction of the constraints
         void solvePositionCorrection();
-
-        /// Cleanup the constrained velocities array at each step
-        void cleanupConstrainedVelocitiesArray();
 
         /// Compute the islands of awake bodies.
         void computeIslands();
@@ -206,10 +184,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Set the position correction technique used for joints
         void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
-
-        /// Activate or deactivate the solving of friction constraints at the center of
-        /// the contact manifold instead of solving them at each contact point
-        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
 
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
@@ -273,29 +247,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
-
-        /// Test and report collisions between a given shape and all the others
-        /// shapes of the world
-        virtual void testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback) override;
-
-        /// Test and report collisions between two given shapes
-        virtual void testCollision(const ProxyShape* shape1,
-                                   const ProxyShape* shape2,
-                                   CollisionCallback* callback) override;
-
-        /// Test and report collisions between a body and all
-        /// the others bodies of the world
-        virtual void testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback) override;
-
-        /// Test and report collisions between two bodies
-        virtual void testCollision(const CollisionBody* body1,
-                                   const CollisionBody* body2,
-                                   CollisionCallback* callback) override;
-
-        /// Test and report collisions between all shapes of the world
-        virtual void testCollision(CollisionCallback* callback) override;
 
         /// Return the list of all contacts of the world
         std::vector<const ContactManifold*> getContactsList() const;
@@ -368,16 +319,6 @@ inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
     else {
         mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
-}
-
-// Activate or deactivate the solving of friction constraints at the center of
-// the contact manifold instead of solving them at each contact point
-/**
- * @param isActive True if you want the friction to be solved at the center of
- *                 the contact manifold and false otherwise
- */
-inline void DynamicsWorld::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
 }
 
 // Return the gravity vector of the world
@@ -520,7 +461,6 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
 inline void DynamicsWorld::setEventListener(EventListener* eventListener) {
     mEventListener = eventListener;
 }
-
 
 }
 

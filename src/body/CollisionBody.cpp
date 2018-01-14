@@ -70,9 +70,16 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
                                              const Transform& transform) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, decimal(1));
+                                                                      transform, decimal(1), mWorld.mMemoryManager);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	proxyShape->setProfiler(mProfiler);
+
+#endif
 
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
@@ -111,12 +118,12 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && proxyShape->mBroadPhaseID != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
         current->~ProxyShape();
-        mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
         mNbCollisionShapes--;
         return;
     }
@@ -131,12 +138,12 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
 
-            if (mIsActive) {
+            if (mIsActive && proxyShape->mBroadPhaseID != -1) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
             }
 
             elementToRemove->~ProxyShape();
-            mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
+            mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
             return;
         }
@@ -157,12 +164,12 @@ void CollisionBody::removeAllCollisionShapes() {
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && current->mBroadPhaseID != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
         current->~ProxyShape();
-        mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
 
         // Get the next element in the list
         current = nextElement;
@@ -177,11 +184,11 @@ void CollisionBody::resetContactManifoldsList() {
     // Delete the linked list of contact manifolds of that body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
     while (currentElement != nullptr) {
-        ContactManifoldListElement* nextElement = currentElement->next;
+        ContactManifoldListElement* nextElement = currentElement->getNext();
 
         // Delete the current element
         currentElement->~ContactManifoldListElement();
-        mWorld.mMemoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, currentElement, sizeof(ContactManifoldListElement));
 
         currentElement = nextElement;
     }
@@ -202,12 +209,15 @@ void CollisionBody::updateBroadPhaseState() const {
 // Update the broad-phase state of a proxy collision shape of the body
 void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
-    // Recompute the world-space AABB of the collision shape
-    AABB aabb;
-    proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+    if (proxyShape->mBroadPhaseID != -1) {
 
-    // Update the broad-phase state for the proxy collision shape
-    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert);
+        // Recompute the world-space AABB of the collision shape
+        AABB aabb;
+        proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+
+        // Update the broad-phase state for the proxy collision shape
+        mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert)	;
+    }
 }
 
 // Set whether or not the body is active
@@ -240,8 +250,11 @@ void CollisionBody::setIsActive(bool isActive) {
         // For each proxy shape of the body
         for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
-            // Remove the proxy shape from the collision detection
-            mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            if (shape->mBroadPhaseID != -1) {
+
+                // Remove the proxy shape from the collision detection
+                mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            }
         }
 
         // Reset the contact manifold list of the body
@@ -272,8 +285,8 @@ int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
     // this body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
     while (currentElement != nullptr) {
-        currentElement->contactManifold->mIsAlreadyInIsland = false;
-        currentElement = currentElement->next;
+        currentElement->getContactManifold()->mIsAlreadyInIsland = false;
+        currentElement = currentElement->getNext();
         nbManifolds++;
     }
 

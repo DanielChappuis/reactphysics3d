@@ -34,8 +34,9 @@
 #include "collision/shapes/AABB.h"
 #include "collision/shapes/CollisionShape.h"
 #include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/PoolAllocator.h"
 #include "configuration.h"
+#include "engine/Profiler.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -84,6 +85,13 @@ class CollisionBody : public Body {
 
         /// Reference to the world the body belongs to
         CollisionWorld& mWorld;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
         // -------------------- Methods -------------------- //
 
@@ -153,6 +161,9 @@ class CollisionBody : public Body {
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
+        /// Test if the collision body overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Compute and return the AABB of the body by merging all proxy shapes AABBs
         AABB getAABB() const;
 
@@ -173,6 +184,13 @@ class CollisionBody : public Body {
 
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -300,6 +318,24 @@ inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mTransform.getOrientation().getInverse() * worldVector;
 }
+
+/// Test if the collision body overlaps with a given AABB
+/**
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getAABB());
+}
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionBody::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

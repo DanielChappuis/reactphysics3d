@@ -35,7 +35,7 @@
 namespace reactphysics3d {
 
 // Macros
-#define test(condition) applyTest(condition, #condition, __FILE__, __LINE__)
+#define test(condition) applyTest(condition, #condition, __FILE__, __LINE__);
 #define fail(text) applyFail(text, __FILE__, __LINE__);
 
 // Class Test

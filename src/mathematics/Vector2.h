@@ -156,6 +156,22 @@ struct Vector2 {
         friend Vector2 operator/(const Vector2& vector1, const Vector2& vector2);
 };
 
+// Constructor
+inline Vector2::Vector2() : x(0.0), y(0.0) {
+
+}
+
+// Constructor with arguments
+inline Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
+
+}
+
+// Copy-constructor
+inline Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
+
+}
+
+
 // Set the vector to zero
 inline void Vector2::setToZero() {
     x = 0;

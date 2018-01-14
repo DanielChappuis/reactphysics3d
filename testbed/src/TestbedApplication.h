@@ -38,9 +38,6 @@ using namespace nanogui;
 // Macro for OpenGL errors
 #define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
 
-// Constants
-const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
-
 /// Class TestbedApplication
 class TestbedApplication : public Screen {
 
@@ -109,6 +106,12 @@ class TestbedApplication : public Screen {
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
 
+        /// True if the AABBs of physics objects are displayed
+        bool mIsAABBsDisplayed;
+
+        /// True if the wireframe rendering is enabled
+        bool mIsWireframeEnabled;
+
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
 
@@ -158,12 +161,6 @@ class TestbedApplication : public Screen {
 
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
-
-        /// Enable/Disable shadow mapping
-        void enableShadows(bool enable);
-
-        /// Display/Hide contact points
-        void displayContactPoints(bool display);
 
     public :
 
@@ -247,16 +244,6 @@ inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
     if (mTimer.isRunning()) {
         mSinglePhysicsStepEnabled = false;
     }
-}
-
-// Enable/Disable shadow mapping
-inline void TestbedApplication::enableShadows(bool enable) {
-    mIsShadowMappingEnabled = enable;
-}
-
-/// Display/Hide contact points
-inline void TestbedApplication::displayContactPoints(bool display) {
-    mIsContactPointsDisplayed = display;
 }
 
 // Enable/Disable Vertical synchronization

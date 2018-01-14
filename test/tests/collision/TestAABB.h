@@ -72,7 +72,7 @@ class TestAABB : public Test {
         }
 
         /// Destructor
-        ~TestAABB() {
+        virtual ~TestAABB() {
 
         }
 

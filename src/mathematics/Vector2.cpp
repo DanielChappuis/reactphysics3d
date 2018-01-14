@@ -30,21 +30,6 @@
 // Namespaces
 using namespace reactphysics3d;
 
-// Constructor
-Vector2::Vector2() : x(0.0), y(0.0) {
-
-}
-
-// Constructor with arguments
-Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
-
-}
-
-// Copy-constructor
-Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
-
-}
-
 // Return the corresponding unit vector
 Vector2 Vector2::getUnit() const {
     decimal lengthVector = length();

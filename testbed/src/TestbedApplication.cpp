@@ -30,11 +30,13 @@
 #include <cstdlib>
 #include <sstream>
 #include "cubes/CubesScene.h"
+#include "collisiondetection/CollisionDetectionScene.h"
 #include "joints/JointsScene.h"
 #include "collisionshapes/CollisionShapesScene.h"
 #include "heightfield/HeightFieldScene.h"
 #include "raycast/RaycastScene.h"
 #include "concavemesh/ConcaveMeshScene.h"
+#include "cubestack/CubeStackScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -43,6 +45,8 @@ using namespace raycastscene;
 using namespace collisionshapesscene;
 using namespace trianglemeshscene;
 using namespace heightfieldscene;
+using namespace collisiondetectionscene;
+using namespace cubestackscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -57,12 +61,15 @@ TestbedApplication::TestbedApplication(bool isFullscreen)
     mIsMultisamplingActive = true;
     mWidth = 1280;
     mHeight = 720;
+    mEngineSettings = EngineSettings::defaultSettings();
     mSinglePhysicsStepEnabled = false;
     mSinglePhysicsStepDone = false;
     mWindowToFramebufferRatio = Vector2(1, 1);
     mIsShadowMappingEnabled = true;
-    mIsVSyncEnabled = false;
+    mIsVSyncEnabled = true;
     mIsContactPointsDisplayed = false;
+    mIsAABBsDisplayed = false;
+    mIsWireframeEnabled = false;
 
     init();
 
@@ -94,35 +101,42 @@ void TestbedApplication::init() {
 void TestbedApplication::createScenes() {
 
     // Cubes scene
-    CubesScene* cubeScene = new CubesScene("Cubes");
+    CubesScene* cubeScene = new CubesScene("Cubes", mEngineSettings);
     mScenes.push_back(cubeScene);
 
+    // Cube Stack scene
+    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mEngineSettings);
+    mScenes.push_back(cubeStackScene);
+
     // Joints scene
-    JointsScene* jointsScene = new JointsScene("Joints");
+    JointsScene* jointsScene = new JointsScene("Joints", mEngineSettings);
     mScenes.push_back(jointsScene);
 
     // Collision shapes scene
-    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes");
+    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes", mEngineSettings);
     mScenes.push_back(collisionShapesScene);
 
     // Heightfield shape scene
-    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield");
+    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield", mEngineSettings);
     mScenes.push_back(heightFieldScene);
 
     // Raycast scene
-    RaycastScene* raycastScene = new RaycastScene("Raycast");
+    RaycastScene* raycastScene = new RaycastScene("Raycast", mEngineSettings);
     mScenes.push_back(raycastScene);
 
-    // Raycast scene
-    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh");
+    // Collision Detection scene
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection", mEngineSettings);
+    mScenes.push_back(collisionDetectionScene);
+
+    // Concave Mesh scene
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh", mEngineSettings);
     mScenes.push_back(concaveMeshScene);
 
     assert(mScenes.size() > 0);
-    mCurrentScene = mScenes[0];
 
-    // Get the engine settings from the scene
-    mEngineSettings = mCurrentScene->getEngineSettings();
-    mEngineSettings.timeStep = DEFAULT_TIMESTEP;
+    const int firstSceneIndex = 0;
+
+    switchScene(mScenes[firstSceneIndex]);
 }
 
 // Remove all the scenes
@@ -145,9 +159,8 @@ void TestbedApplication::updateSinglePhysicsStep() {
 // Update the physics of the current scene
 void TestbedApplication::updatePhysics() {
 
-    // Set the engine settings
+    // Update the elapsed time
     mEngineSettings.elapsedTime = mTimer.getPhysicsTime();
-    mCurrentScene->setEngineSettings(mEngineSettings);
 
     if (mTimer.isRunning()) {
 
@@ -194,6 +207,12 @@ void TestbedApplication::update() {
 
     // Display/Hide contact points
     mCurrentScene->setIsContactPointsDisplayed(mIsContactPointsDisplayed);
+
+    // Display/Hide the AABBs
+    mCurrentScene->setIsAABBsDisplayed(mIsAABBsDisplayed);
+
+    // Enable/Disable wireframe mode
+    mCurrentScene->setIsWireframeEnabled(mIsWireframeEnabled);
 
     // Update the scene
     mCurrentScene->update();
@@ -248,11 +267,6 @@ void TestbedApplication::switchScene(Scene* newScene) {
     if (newScene == mCurrentScene) return;
 
     mCurrentScene = newScene;
-
-    // Get the engine settings of the scene
-    float currentTimeStep = mEngineSettings.timeStep;
-    mEngineSettings = mCurrentScene->getEngineSettings();
-    mEngineSettings.timeStep = currentTimeStep;
 
     // Reset the scene
     mCurrentScene->reset();

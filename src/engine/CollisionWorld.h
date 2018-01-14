@@ -39,7 +39,7 @@
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
 #include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
+#include "memory/MemoryManager.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
@@ -47,6 +47,7 @@ namespace reactphysics3d {
 
 // Declarations
 class CollisionCallback;
+class OverlapCallback;
 
 // Class CollisionWorld
 /**
@@ -60,6 +61,9 @@ class CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory manager
+        MemoryManager mMemoryManager;
+
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
 
@@ -72,11 +76,14 @@ class CollisionWorld {
         /// List of free ID for rigid bodies
         std::vector<luint> mFreeBodiesIDs;
 
-        /// Memory allocator
-        MemoryAllocator mMemoryAllocator;
-
         /// Pointer to an event listener object
         EventListener* mEventListener;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Real-time hierarchical profiler
+		Profiler mProfiler;
+#endif
 
         // -------------------- Methods -------------------- //
 
@@ -125,32 +132,32 @@ class CollisionWorld {
         bool testAABBOverlap(const CollisionBody* body1,
                              const CollisionBody* body2) const;
 
-        /// Test if the AABBs of two proxy shapes overlap
-        bool testAABBOverlap(const ProxyShape* shape1,
-                             const ProxyShape* shape2) const;
+        /// Report all the bodies that overlap with the AABB in parameter
+        void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
 
-        /// Test and report collisions between a given shape and all the others
-        /// shapes of the world
-        virtual void testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback);
+        /// Return true if two bodies overlap
+        bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
-        /// Test and report collisions between two given shapes
-        virtual void testCollision(const ProxyShape* shape1,
-                                   const ProxyShape* shape2,
-                                   CollisionCallback* callback);
-
-        /// Test and report collisions between a body and all the others bodies of the
-        /// world
-        virtual void testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback);
+        /// Report all the bodies that overlap with the body in parameter
+        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
 
         /// Test and report collisions between two bodies
-        virtual void testCollision(const CollisionBody* body1,
-                                   const CollisionBody* body2,
-                                   CollisionCallback* callback);
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+
+        /// Test and report collisions between a body and all the others bodies of the world
+        void testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits = 0xFFFF);
 
         /// Test and report collisions between all shapes of the world
-        virtual void testCollision(CollisionCallback* callback);
+        void testCollision(CollisionCallback* callback);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the name of the profiler
+		void setProfilerName(std::string name);
+#endif
+
+        /// Return the current world-space AABB of given proxy shape
+        AABB getWorldAABB(const ProxyShape* proxyShape) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -200,38 +207,53 @@ inline void CollisionWorld::raycast(const Ray& ray,
     mCollisionDetection.raycast(raycastCallback, ray, raycastWithCategoryMaskBits);
 }
 
-// Test if the AABBs of two proxy shapes overlap
+// Test and report collisions between two bodies
 /**
- * @param shape1 Pointer to the first proxy shape to test
- * @param shape2 Pointer to the second proxy shape to test
- * @return
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @param callback Pointer to the object with the callback method
  */
-inline bool CollisionWorld::testAABBOverlap(const ProxyShape* shape1,
-                                            const ProxyShape* shape2) const {
-
-    return mCollisionDetection.testAABBOverlap(shape1, shape2);
+inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback) {
+    mCollisionDetection.testCollision(body1, body2, callback);
 }
 
-// Class CollisionCallback
+// Test and report collisions between a body and all the others bodies of the world
 /**
- * This class can be used to register a callback for collision test queries.
- * You should implement your own class inherited from this one and implement
- * the notifyRaycastHit() method. This method will be called for each ProxyShape
- * that is hit by the ray.
+ * @param body Pointer to the body against which we need to test collision
+ * @param callback Pointer to the object with the callback method to report contacts
+ * @param categoryMaskBits Bits mask corresponding to the category of bodies we need to test collision with
  */
-class CollisionCallback {
+inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits) {
+    mCollisionDetection.testCollision(body, callback, categoryMaskBits);
+}
 
-    public:
+// Test and report collisions between all bodies of the world
+/**
+ * @param callback Pointer to the object with the callback method to report contacts
+ */
+inline void CollisionWorld::testCollision(CollisionCallback* callback) {
+    mCollisionDetection.testCollision(callback);
+}
 
-        /// Destructor
-        virtual ~CollisionCallback() {
+// Report all the bodies that overlap with the body in parameter
+/**
+ * @param body Pointer to the collision body to test overlap with
+ * @param overlapCallback Pointer to the callback class to report overlap
+ * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
+ */
+inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
+    mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
+}
 
-        }
+#ifdef IS_PROFILING_ACTIVE
 
-        /// This method will be called for contact
-        virtual void notifyContact(const ContactPointInfo& contactPointInfo)=0;
-};
+// Set the name of the profiler
+inline void CollisionWorld::setProfilerName(std::string name) {
+	mProfiler.setName(name);
+}
+
+#endif
 
 }
 
- #endif
+#endif

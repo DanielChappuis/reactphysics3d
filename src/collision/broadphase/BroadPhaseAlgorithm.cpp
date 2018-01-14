@@ -44,6 +44,13 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
     assert(mPotentialPairs != nullptr);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
 }
 
 // Destructor
@@ -117,6 +124,8 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 // Add a proxy collision shape into the broad-phase collision detection
 void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
+    assert(proxyShape->mBroadPhaseID == -1);
+
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
 
@@ -131,7 +140,11 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
 // Remove a proxy collision shape from the broad-phase collision detection
 void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
+    assert(proxyShape->mBroadPhaseID != -1);
+
     int broadPhaseID = proxyShape->mBroadPhaseID;
+
+    proxyShape->mBroadPhaseID = -1;
 
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);
@@ -162,11 +175,24 @@ void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, cons
     }
 }
 
+void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
+                                                             LinkedList<int>& overlappingNodes) const {
+
+    AABBOverlapCallback callback(overlappingNodes);
+
+    // Ask the dynamic AABB tree to report all collision shapes that overlap with this AABB
+    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, callback);
+}
+
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseAlgorithm::computeOverlappingPairs() {
+void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) {
+
+    // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
     // Reset the potential overlapping pairs
     mNbPotentialPairs = 0;
+
+    LinkedList<int> overlappingNodes(memoryManager.getPoolAllocator());
 
     // For all collision shapes that have moved (or have been created) during the
     // last simulation step
@@ -175,7 +201,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
 
         if (shapeID == -1) continue;
 
-        AABBOverlapCallback callback(*this, shapeID);
+        AABBOverlapCallback callback(overlappingNodes);
 
         // Get the AABB of the shape
         const AABB& shapeAABB = mDynamicAABBTree.getFatAABB(shapeID);
@@ -184,6 +210,12 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
         // this AABB. The method BroadPhase::notifiyOverlappingPair() will be called
         // by the dynamic AABB tree for each potential overlapping pair.
         mDynamicAABBTree.reportAllShapesOverlappingWithAABB(shapeAABB, callback);
+
+        // Add the potential overlapping pairs
+        addOverlappingNodes(shapeID, overlappingNodes);
+
+        // Remove all the elements of the linked list of overlapping nodes
+        overlappingNodes.reset();
     }
 
     // Reset the array of collision shapes that have move (or have been created) during the
@@ -208,8 +240,12 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
         ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape1ID));
         ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape2ID));
 
-        // Notify the collision detection about the overlapping pair
-        mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
+        // If the two proxy collision shapes are from the same body, skip it
+        if (shape1->getBody()->getID() != shape2->getBody()->getID()) {
+
+            // Notify the collision detection about the overlapping pair
+            mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
+        }
 
         // Skip the duplicate overlapping pairs
         while (i < mNbPotentialPairs) {
@@ -241,34 +277,41 @@ void BroadPhaseAlgorithm::computeOverlappingPairs() {
 }
 
 // Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-void BroadPhaseAlgorithm::notifyOverlappingNodes(int node1ID, int node2ID) {
+void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedList<int>& overlappingNodes) {
 
-    // If both the nodes are the same, we do not create store the overlapping pair
-    if (node1ID == node2ID) return;
+    // For each overlapping node in the linked list
+    LinkedList<int>::ListElement* elem = overlappingNodes.getListHead();
+    while (elem != nullptr) {
 
-    // If we need to allocate more memory for the array of potential overlapping pairs
-    if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
+        // If both the nodes are the same, we do not create store the overlapping pair
+        if (referenceNodeId != elem->data) {
 
-        // Allocate more memory for the array of potential pairs
-        BroadPhasePair* oldPairs = mPotentialPairs;
-        mNbAllocatedPotentialPairs *= 2;
-        mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
-        assert(mPotentialPairs);
-        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
-        free(oldPairs);
+            // If we need to allocate more memory for the array of potential overlapping pairs
+            if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
+
+                // Allocate more memory for the array of potential pairs
+                BroadPhasePair* oldPairs = mPotentialPairs;
+                mNbAllocatedPotentialPairs *= 2;
+                mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
+                assert(mPotentialPairs);
+                memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
+                free(oldPairs);
+            }
+
+            // Add the new potential pair into the array of potential overlapping pairs
+            mPotentialPairs[mNbPotentialPairs].collisionShape1ID = std::min(referenceNodeId, elem->data);
+            mPotentialPairs[mNbPotentialPairs].collisionShape2ID = std::max(referenceNodeId, elem->data);
+            mNbPotentialPairs++;
+        }
+
+        elem = elem->next;
     }
-
-    // Add the new potential pair into the array of potential overlapping pairs
-    mPotentialPairs[mNbPotentialPairs].collisionShape1ID = std::min(node1ID, node2ID);
-    mPotentialPairs[mNbPotentialPairs].collisionShape2ID = std::max(node1ID, node2ID);
-    mNbPotentialPairs++;
 }
 
 // Called when a overlapping node has been found during the call to
 // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
 void AABBOverlapCallback::notifyOverlappingNode(int nodeId) {
-
-    mBroadPhaseAlgorithm.notifyOverlappingNodes(mReferenceNodeId, nodeId);
+    mOverlappingNodes.insert(nodeId);
 }
 
 // Called for a broad-phase shape that has to be tested for raycast

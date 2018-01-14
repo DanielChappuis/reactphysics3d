@@ -29,16 +29,6 @@
 
 using namespace reactphysics3d;
 
-/// Initialize the collision dispatch configuration
-void DefaultCollisionDispatch::init(CollisionDetection* collisionDetection,
-                                    MemoryAllocator* memoryAllocator) {
-
-    // Initialize the collision algorithms
-    mSphereVsSphereAlgorithm.init(collisionDetection, memoryAllocator);
-    mGJKAlgorithm.init(collisionDetection, memoryAllocator);
-    mConcaveVsConvexAlgorithm.init(collisionDetection, memoryAllocator);
-}
-
 // Select and return the narrow-phase collision detection algorithm to
 // use between two types of collision shapes.
 NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int type2) {
@@ -46,20 +36,34 @@ NarrowPhaseAlgorithm* DefaultCollisionDispatch::selectAlgorithm(int type1, int t
     CollisionShapeType shape1Type = static_cast<CollisionShapeType>(type1);
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
+    if (type1 > type2) {
+        return nullptr;
+    }
     // Sphere vs Sphere algorithm
     if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
         return &mSphereVsSphereAlgorithm;
     }
-    // Concave vs Convex algorithm
-    else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-             (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
-        return &mConcaveVsConvexAlgorithm;
+    // Sphere vs Capsule algorithm
+    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::CAPSULE) {
+        return &mSphereVsCapsuleAlgorithm;
     }
-    // Convex vs Convex algorithm (GJK algorithm)
-    else if (CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) {
-        return &mGJKAlgorithm;
+    // Capsule vs Capsule algorithm
+    if (shape1Type == CollisionShapeType::CAPSULE && shape2Type == CollisionShapeType::CAPSULE) {
+        return &mCapsuleVsCapsuleAlgorithm;
     }
-    else {
-        return nullptr;
+    // Sphere vs Convex Polyhedron algorithm
+    if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
+        return &mSphereVsConvexPolyhedronAlgorithm;
     }
+    // Capsule vs Convex Polyhedron algorithm
+    if (shape1Type == CollisionShapeType::CAPSULE && shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
+        return &mCapsuleVsConvexPolyhedronAlgorithm;
+    }
+    // Convex Polyhedron vs Convex Polyhedron algorithm
+    if (shape1Type == CollisionShapeType::CONVEX_POLYHEDRON &&
+        shape2Type == CollisionShapeType::CONVEX_POLYHEDRON) {
+        return &mConvexPolyhedronVsConvexPolyhedronAlgorithm;
+    }
+
+    return nullptr;
 }

@@ -36,17 +36,24 @@ openglframework::Mesh VisualContactPoint::mMesh;
 bool VisualContactPoint::mStaticDataCreated = false;
 
 // Constructor
-VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
-                                       const std::string& meshFolderPath)
-    : mColor(1.0f, 0.0f, 0.0f, 1.0f) {
+VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position, const std::string& meshFolderPath,
+									   const openglframework::Vector3& normalLineEndPointLocal, const openglframework::Color& color)
+				   : mColor(color), mVBOVerticesNormalLine(GL_ARRAY_BUFFER) {
+
+	mContactNormalLinePoints[0] = openglframework::Vector3(0, 0, 0);
+	mContactNormalLinePoints[1] = (normalLineEndPointLocal - position) * 0.5f;
 
     // Initialize the position where the mesh will be rendered
     translateWorld(position);
+
+	// Create the VBO and VAO to render the contact normal line
+	createContactNormalLineVBOAndVAO();
 }
 
 // Destructor
 VisualContactPoint::~VisualContactPoint() {
-
+	mVAONormalLine.destroy();
+	mVBOVerticesNormalLine.destroy();
 }
 
 // Load and initialize the mesh for all the contact points
@@ -84,14 +91,17 @@ void VisualContactPoint::destroyStaticData() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void VisualContactPoint::render(openglframework::Shader& shader,
-                                const openglframework::Matrix4& worldToCameraMatrix) {
+void VisualContactPoint::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the VAO
     mVAO.bind();
 
     // Bind the shader
     shader.bind();
+
+	// Set the vertex color
+	openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
+	shader.setVector4Uniform("vertexColor", color, false);
 
     mVBOVertices.bind();
 
@@ -105,10 +115,6 @@ void VisualContactPoint::render(openglframework::Shader& shader,
     const openglframework::Matrix3 normalMatrix =
                        localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
-
-    // Set the vertex color
-    openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
 
     // Get the location of shader attribute variables
     GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
@@ -138,9 +144,56 @@ void VisualContactPoint::render(openglframework::Shader& shader,
 
     // Unbind the shader
     shader.unbind();
+
+	// Render the contact normal line
+	renderContactNormalLine(shader, worldToCameraMatrix);
 }
 
-// Create the Vertex Buffer Objects used to render with OpenGL.
+void VisualContactPoint::renderContactNormalLine(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+
+	// Bind the VAO
+	mVAONormalLine.bind();
+
+	// Bind the shader
+	shader.bind();
+
+	mVBOVerticesNormalLine.bind();
+
+	// Set the model to camera matrix
+	const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
+	shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
+	shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
+
+	// Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
+	// model-view matrix)
+	const openglframework::Matrix3 normalMatrix =
+		localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
+	shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
+
+	// Set the vertex color
+	openglframework::Vector4 color(0, 1, 0, 1);
+	shader.setVector4Uniform("vertexColor", color, false);
+
+	// Get the location of shader attribute variables
+	GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+
+	glEnableVertexAttribArray(vertexPositionLoc);
+	glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)NULL);
+
+	// Draw the lines
+	glDrawArrays(GL_LINES, 0, 2);
+
+	glDisableVertexAttribArray(vertexPositionLoc);
+
+	mVBOVerticesNormalLine.unbind();
+
+	// Unbind the VAO
+	mVAONormalLine.unbind();
+
+	shader.unbind();
+}
+
+// Create the Vertex Buffer Objects used to render the contact point sphere with OpenGL.
 /// We create two VBOs (one for vertices and one for indices)
 void VisualContactPoint::createVBOAndVAO() {
 
@@ -180,4 +233,25 @@ void VisualContactPoint::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
+}
+
+// Create the Vertex Buffer Objects used to render the contact normal line
+void VisualContactPoint::createContactNormalLineVBOAndVAO() {
+
+	// Create the VBO for the vertices data
+	mVBOVerticesNormalLine.create();
+	mVBOVerticesNormalLine.bind();
+	size_t sizeNormalLineVertices = 2 * sizeof(openglframework::Vector3);
+	mVBOVerticesNormalLine.copyDataIntoVBO(sizeNormalLineVertices, &mContactNormalLinePoints[0], GL_STATIC_DRAW);
+	mVBOVerticesNormalLine.unbind();
+
+	// Create the VAO for both VBOs
+	mVAONormalLine.create();
+	mVAONormalLine.bind();
+
+	// Bind the VBO of vertices
+	mVBOVerticesNormalLine.bind();
+
+	// Unbind the VAO
+	mVAONormalLine.unbind();
 }

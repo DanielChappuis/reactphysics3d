@@ -32,88 +32,15 @@
 // Initialize static variables
 openglframework::VertexBufferObject Box::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Box::mVBONormals(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Box::mVBOTextureCoords(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject Box::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
 openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
-GLfloat Box::mCubeVertices[108] = {
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
-    1.0f, 1.0f,-1.0f, // triangle 2 : begin
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
-};
-GLfloat Box::mCubeNormals[108] = {
-    -1.0f, 0.0f, 0.0f, // triangle 1 : begin
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f, // triangle 1 : end
-    0.0f, 0.0f,-1.0f, // triangle 2 : begin
-    0.0f, 0.0f,-1.0f,
-    0.0f, 0.0f,-1.0f, // triangle 2 : end
-    0.0f,-1.0f, 0.0f,
-    0.0f,-1.0f, 0.0f,
-    0.0f,-1.0f, 0.0f,//
-    0.0f, 0.0f,-1.0f,
-    0.0f, 0.0f,-1.0f,
-    0.0f, 0.0f,-1.0f,//
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-    -1.0f, 0.0f,0.0f,//
-    0.0f,-1.0f, 0.0f,
-    0.0f,-1.0f, 0.0f,
-    0.0f,-1.0f, 0.0f,//
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,//
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,//
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,//
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,//
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,//
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f//
-};
+
 // Constructor
-Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &position,
-         reactphysics3d::CollisionWorld* world)
-    : openglframework::Object3D() {
+Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world,
+         const std::string& meshFolderPath)
+    : PhysicsObject(meshFolderPath + "cube.obj") {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -126,23 +53,16 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
                                               0, 0, mSize[2], 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the cube will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    //mBoxShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the collision shape to the body
     mProxyShape = mBody->addCollisionShape(mBoxShape, rp3d::Transform::identity());
@@ -160,9 +80,15 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3 &p
 }
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& position,
-         float mass, reactphysics3d::DynamicsWorld* world)
-    : openglframework::Object3D() {
+Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld* world,
+         const std::string& meshFolderPath)
+    : PhysicsObject(meshFolderPath + "cube.obj") {
+
+    // Load the mesh from a file
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
+
+    // Calculate the normals of the mesh
+    calculateNormals();
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -175,23 +101,15 @@ Box::Box(const openglframework::Vector3& size, const openglframework::Vector3& p
                                               0, 0, mSize[2], 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the cube will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(transform);
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add the collision shape to the body
     mProxyShape = body->addCollisionShape(mBoxShape, rp3d::Transform::identity(), mass);
@@ -225,16 +143,10 @@ Box::~Box() {
 }
 
 // Render the cube at the correct position and with the correct orientation
-void Box::render(openglframework::Shader& shader,
-                 const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the VAO
-    mVAO.bind();
+void Box::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
-
-    mVBOVertices.bind();
 
     // Set the model to camera matrix
     shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
@@ -252,20 +164,27 @@ void Box::render(openglframework::Shader& shader,
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
     shader.setVector4Uniform("vertexColor", color, false);
 
+    // Bind the VAO
+    mVAO.bind();
+
+    mVBOVertices.bind();
+
     // Get the location of shader attribute variables
     GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
     GLint vertexNormalLoc = shader.getAttribLocation("vertexNormal", false);
 
     glEnableVertexAttribArray(vertexPositionLoc);
-    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
     mVBONormals.bind();
 
+    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
     if (vertexNormalLoc != -1) glEnableVertexAttribArray(vertexNormalLoc);
-    if (vertexNormalLoc != -1) glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    // Draw the geometry of the box
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // For each part of the mesh
+    for (unsigned int i=0; i<getNbParts(); i++) {
+        glDrawElements(GL_TRIANGLES, getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)nullptr);
+    }
 
     glDisableVertexAttribArray(vertexPositionLoc);
     if (vertexNormalLoc != -1) glDisableVertexAttribArray(vertexNormalLoc);
@@ -288,14 +207,32 @@ void Box::createVBOAndVAO() {
     // Create the VBO for the vertices data
     mVBOVertices.create();
     mVBOVertices.bind();
-    mVBOVertices.copyDataIntoVBO(sizeof(mCubeVertices), mCubeVertices, GL_STATIC_DRAW);
+    size_t sizeVertices = mVertices.size() * sizeof(openglframework::Vector3);
+    mVBOVertices.copyDataIntoVBO(sizeVertices, getVerticesPointer(), GL_STATIC_DRAW);
     mVBOVertices.unbind();
 
-    // Create th VBO for the normals data
+    // Create the VBO for the normals data
     mVBONormals.create();
     mVBONormals.bind();
-    mVBONormals.copyDataIntoVBO(sizeof(mCubeNormals), mCubeNormals, GL_STATIC_DRAW);
+    size_t sizeNormals = mNormals.size() * sizeof(openglframework::Vector3);
+    mVBONormals.copyDataIntoVBO(sizeNormals, getNormalsPointer(), GL_STATIC_DRAW);
     mVBONormals.unbind();
+
+    if (hasTexture()) {
+        // Create the VBO for the texture co data
+        mVBOTextureCoords.create();
+        mVBOTextureCoords.bind();
+        size_t sizeTextureCoords = mUVs.size() * sizeof(openglframework::Vector2);
+        mVBOTextureCoords.copyDataIntoVBO(sizeTextureCoords, getUVTextureCoordinatesPointer(), GL_STATIC_DRAW);
+        mVBOTextureCoords.unbind();
+    }
+
+    // Create th VBO for the indices data
+    mVBOIndices.create();
+    mVBOIndices.bind();
+    size_t sizeIndices = mIndices[0].size() * sizeof(unsigned int);
+    mVBOIndices.copyDataIntoVBO(sizeIndices, getIndicesPointer(), GL_STATIC_DRAW);
+    mVBOIndices.unbind();
 
     // Create the VAO for both VBOs
     mVAO.create();
@@ -304,29 +241,19 @@ void Box::createVBOAndVAO() {
     // Bind the VBO of vertices
     mVBOVertices.bind();
 
-    // Bind the VBO of indices
+    // Bind the VBO of normals
     mVBONormals.bind();
+
+    if (hasTexture()) {
+        // Bind the VBO of texture coords
+        mVBOTextureCoords.bind();
+    }
+
+    // Bind the VBO of indices
+    mVBOIndices.bind();
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void Box::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != nullptr) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
 }
 
 // Set the scaling of the object

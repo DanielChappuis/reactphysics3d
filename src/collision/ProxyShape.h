@@ -29,6 +29,7 @@
 // Libraries
 #include "body/CollisionBody.h"
 #include "shapes/CollisionShape.h"
+#include "memory/MemoryManager.h"
 
 namespace  reactphysics3d {
 
@@ -48,6 +49,9 @@ class ProxyShape {
 
         // -------------------- Attributes -------------------- //
 
+        /// Reference to the memory manager
+        MemoryManager& mMemoryManager;
+
         /// Pointer to the parent body
         CollisionBody* mBody;
 
@@ -66,9 +70,6 @@ class ProxyShape {
         /// Broad-phase ID (node ID in the dynamic AABB tree)
         int mBroadPhaseID;
 
-        /// Cached collision data
-        void* mCachedCollisionData;
-
         /// Pointer to user data
         void* mUserData;
 
@@ -85,13 +86,25 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
+		// -------------------- Methods -------------------- //
+
+		/// Return the collision shape
+		CollisionShape* getCollisionShape();
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass);
+                   const Transform& transform, decimal mass, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();
@@ -126,6 +139,12 @@ class ProxyShape {
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
 
+        /// Return the AABB of the proxy shape in world-space
+        const AABB getWorldAABB() const;
+
+        /// Test if the proxy shape overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Return true if a point is inside the collision shape
         bool testPointInside(const Vector3& worldPoint);
 
@@ -150,14 +169,18 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
-        /// Return the pointer to the cached collision data
-        void** getCachedCollisionData();
-
         /// Return the local scaling vector of the collision shape
         Vector3 getLocalScaling() const;
 
         /// Set the local scaling vector of the collision shape
         virtual void setLocalScaling(const Vector3& scaling);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -169,16 +192,12 @@ class ProxyShape {
         friend class CollisionDetection;
         friend class CollisionWorld;
         friend class DynamicsWorld;
-        friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
+		friend class ContactManifoldSet;
+		friend class MiddlePhaseTriangleCallback;
 
 };
-
-// Return the pointer to the cached collision data
-inline void** ProxyShape::getCachedCollisionData()  {
-    return &mCachedCollisionData;
-}
 
 // Return the collision shape
 /**
@@ -186,6 +205,14 @@ inline void** ProxyShape::getCachedCollisionData()  {
  */
 inline const CollisionShape* ProxyShape::getCollisionShape() const {
     return mCollisionShape;
+}
+
+// Return the collision shape
+/**
+* @return Pointer to the internal collision shape
+*/
+inline CollisionShape* ProxyShape::getCollisionShape() {
+	return mCollisionShape;
 }
 
 // Return the parent body
@@ -249,6 +276,16 @@ inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
 }
 
+// Return the AABB of the proxy shape in world-space
+/**
+ * @return The AABB of the proxy shape in world-space
+ */
+inline const AABB ProxyShape::getWorldAABB() const {
+    AABB aabb;
+    mCollisionShape->computeAABB(aabb, getLocalToWorldTransform());
+    return aabb;
+}
+
 // Return the next proxy shape in the linked list of proxy shapes
 /**
  * @return Pointer to the next proxy shape in the linked list of proxy shapes
@@ -302,7 +339,7 @@ inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBit
  * @return The local scaling vector
  */
 inline Vector3 ProxyShape::getLocalScaling() const {
-    return mCollisionShape->getScaling();
+    return mCollisionShape->getLocalScaling();
 }
 
 // Set the local scaling vector of the collision shape
@@ -319,6 +356,27 @@ inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);
 }
+
+/// Test if the proxy shape overlaps with a given AABB
+/**
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getWorldAABB());
+}
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ProxyShape::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+
+	mCollisionShape->setProfiler(profiler);
+}
+
+#endif
 
 }
 

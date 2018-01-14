@@ -27,11 +27,10 @@
 #define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
-#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "collision/shapes/ConvexShape.h"
-#include "collision/narrowphase/EPA/EPAAlgorithm.h"
-
+#include "VoronoiSimplex.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -57,31 +56,33 @@ constexpr int MAX_ITERATIONS_GJK_RAYCAST = 32;
  * Polytope Algorithm) to compute the correct penetration depth between the
  * enlarged objects.
  */
-class GJKAlgorithm : public NarrowPhaseAlgorithm {
+class GJKAlgorithm {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// EPA Algorithm
-        EPAAlgorithm mAlgoEPA;
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
         // -------------------- Methods -------------------- //
 
-        /// Compute the penetration depth for enlarged objects.
-        bool computePenetrationDepthForEnlargedObjects(const CollisionShapeInfo& shape1Info,
-                                                       const Transform& transform1,
-                                                       const CollisionShapeInfo& shape2Info,
-                                                       const Transform& transform2,
-                                                       NarrowPhaseCallback* narrowPhaseCallback,
-                                                       Vector3& v);
-
     public :
+
+        enum class GJKResult {
+            SEPARATED,              // The two shapes are separated outside the margin
+            COLLIDE_IN_MARGIN,      // The two shapes overlap only in the margin (shallow penetration)
+            INTERPENETRATE          // The two shapes overlap event without the margin (deep penetration)
+        };
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        GJKAlgorithm();
+        GJKAlgorithm() = default;
 
         /// Destructor
         ~GJKAlgorithm() = default;
@@ -92,28 +93,32 @@ class GJKAlgorithm : public NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
-        /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator) override;
-
         /// Compute a contact info if the two bounding volumes collide.
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback) override;
+        GJKResult testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts);
 
         /// Use the GJK Algorithm to find if a point is inside a convex collision shape
         bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape);
 
         /// Ray casting algorithm agains a convex collision shape using the GJK Algorithm
         bool raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
-// Initalize the algorithm
-inline void GJKAlgorithm::init(CollisionDetection* collisionDetection,
-                               MemoryAllocator* memoryAllocator) {
-    NarrowPhaseAlgorithm::init(collisionDetection, memoryAllocator);
-    mAlgoEPA.init(memoryAllocator);
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void GJKAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
 }
+
+#endif
 
 }
 

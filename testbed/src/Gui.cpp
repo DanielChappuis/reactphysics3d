@@ -388,6 +388,14 @@ void Gui::createSettingsPanel() {
         mApp->mIsContactPointsDisplayed = value;
     });
 
+
+    // Display/Hide the AABBs
+    CheckBox* checkboxAABBs = new CheckBox(mRenderingPanel, "AABBs");
+    checkboxAABBs->setChecked(mApp->mIsAABBsDisplayed);
+    checkboxAABBs->setCallback([&](bool value) {
+        mApp->mIsAABBsDisplayed = value;
+    });
+
     // Enabled/Disable VSync
     CheckBox* checkboxVSync = new CheckBox(mRenderingPanel, "V-Sync");
     checkboxVSync->setChecked(mApp->mIsVSyncEnabled);
@@ -400,6 +408,13 @@ void Gui::createSettingsPanel() {
     checkboxShadows->setChecked(mApp->mIsShadowMappingEnabled);
     checkboxShadows->setCallback([&](bool value) {
         mApp->mIsShadowMappingEnabled = value;
+    });
+
+    // Enable/Disable wireframe mode
+    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Wireframe");
+    checkboxWireframe->setChecked(mApp->mIsWireframeEnabled);
+    checkboxWireframe->setCallback([&](bool value) {
+        mApp->mIsWireframeEnabled = value;
     });
 
     mPhysicsPanel->setVisible(true);
