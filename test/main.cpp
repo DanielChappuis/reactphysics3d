@@ -39,12 +39,19 @@
 #include "tests/collision/TestDynamicAABBTree.h"
 #include "tests/collision/TestHalfEdgeStructure.h"
 #include "tests/collision/TestTriangleVertexArray.h"
+#include "tests/containers/TestList.h"
+#include "tests/containers/TestMap.h"
 
 using namespace reactphysics3d;
 
 int main() {
 
     TestSuite testSuite("ReactPhysics3D Tests");
+
+    // ---------- Containers tests ---------- //
+
+    testSuite.addTest(new TestList("List"));
+    testSuite.addTest(new TestMap("Map"));
 
     // ---------- Mathematics tests ---------- //
 

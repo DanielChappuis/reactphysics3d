@@ -198,6 +198,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/containers/Stack.h"
     "src/containers/LinkedList.h"
     "src/containers/List.h"
+    "src/containers/Map.h"
 )
 
 # Create the library

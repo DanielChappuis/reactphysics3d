@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "memory/MemoryAllocator.h"
 #include <cstring>
+#include <iterator>
 
 namespace reactphysics3d {
 
@@ -60,6 +61,102 @@ class List {
 
 
     public:
+
+        /// Class Iterator
+        /**
+         * This class represents an iterator for the List
+         */
+        class Iterator {
+
+            private:
+
+                size_t mCurrentIndex;
+                T* mBuffer;
+                size_t mSize;
+
+            public:
+
+                // Iterator traits
+                using value_type = T;
+                using difference_type = std::ptrdiff_t;
+                using pointer = T*;
+                using reference = T&;
+                using iterator_category = std::bidirectional_iterator_tag;
+
+                /// Constructor
+                Iterator() = default;
+
+                /// Constructor
+                Iterator(T* buffer, size_t index, size_t size)
+                     :mCurrentIndex(index), mBuffer(buffer), mSize(size) {
+
+                }
+
+                /// Copy constructor
+                Iterator(const Iterator& it)
+                     :mCurrentIndex(it.mCurrentIndex), mBuffer(it.mBuffer), mSize(it.size) {
+
+                }
+
+                /// Deferencable
+                reference operator*() const {
+                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    return mBuffer[mCurrentIndex];
+                }
+
+                /// Deferencable
+                pointer operator->() const {
+                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    return &(mBuffer[mCurrentIndex]);
+                }
+
+                /// Post increment (it++)
+                Iterator& operator++() {
+                    assert(mCurrentIndex < mSize - 1);
+                    mCurrentIndex++;
+                    return *this;
+                }
+
+                /// Pre increment (++it)
+                Iterator operator++(int number) {
+                    assert(mCurrentIndex < mSize - 1);
+                    Iterator tmp = *this;
+                    mCurrentIndex++;
+                    return tmp;
+                }
+
+                /// Post decrement (it--)
+                Iterator& operator--() {
+                    assert(mCurrentIndex > 0);
+                    mCurrentIndex--;
+                    return *this;
+                }
+
+                /// Pre decrement (--it)
+                Iterator operator--(int number) {
+                    assert(mCurrentIndex > 0);
+                    Iterator tmp = *this;
+                    mCurrentIndex--;
+                    return tmp;
+                }
+
+                /// Equality operator (it == end())
+                bool operator==(const Iterator& iterator) const {
+                    assert(mCurrentIndex >= 0 && mCurrentIndex <= mSize);
+
+                    // If both iterators points to the end of the list
+                    if (mCurrentIndex == mSize && iterator.mCurrentIndex == iterator.mSize) {
+                        return true;
+                    }
+
+                    return &(mBuffer[mCurrentIndex]) == &(iterator.mBuffer[mCurrentIndex]);
+                }
+
+                /// Inequality operator (it != end())
+                bool operator!=(const Iterator& iterator) const {
+                    return !(*this == iterator);
+                }
+        };
 
         // -------------------- Methods -------------------- //
 
@@ -151,7 +248,7 @@ class List {
           }
         }
 
-        /// Append another list to the current one
+        /// Append another list at the end of the current one
         void addRange(const List<T>& list) {
 
             // If we need to allocate more memory
@@ -180,7 +277,7 @@ class List {
             mSize = 0;
         }
 
-        /// Return the number of elments in the list
+        /// Return the number of elements in the list
         size_t size() const {
             return mSize;
         }
@@ -202,14 +299,38 @@ class List {
            return (static_cast<T*>(mBuffer)[index]);
         }
 
+        /// Overloaded equality operator
+        bool operator==(const List<T>& list) const {
+
+           if (mSize != list.mSize) return false;
+
+           T* items = static_cast<T*>(mBuffer);
+            for (int i=0; i < mSize; i++) {
+                if (items[i] != list[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// Overloaded not equal operator
+        bool operator!=(const List<T>& list) const {
+
+            return !((*this) == list);
+        }
+
         /// Overloaded assignment operator
         List<T>& operator=(const List<T>& list) {
 
-            // Clear all the elements
-            clear();
+            if (this != &list) {
 
-            // Add all the elements of the list to the current one
-            addRange(list);
+                // Clear all the elements
+                clear();
+
+                // Add all the elements of the list to the current one
+                addRange(list);
+            }
 
             return *this;
         }
