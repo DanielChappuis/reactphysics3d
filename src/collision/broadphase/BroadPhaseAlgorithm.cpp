@@ -44,6 +44,13 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = (BroadPhasePair*) malloc(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
     assert(mPotentialPairs != nullptr);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
 }
 
 // Destructor
@@ -117,6 +124,8 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 // Add a proxy collision shape into the broad-phase collision detection
 void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
+    assert(proxyShape->mBroadPhaseID == -1);
+
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
 
@@ -131,7 +140,11 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
 // Remove a proxy collision shape from the broad-phase collision detection
 void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
+    assert(proxyShape->mBroadPhaseID != -1);
+
     int broadPhaseID = proxyShape->mBroadPhaseID;
+
+    proxyShape->mBroadPhaseID = -1;
 
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);
@@ -172,14 +185,14 @@ void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseAlgorithm::computeOverlappingPairs(Allocator& allocator) {
+void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) {
 
     // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
     // Reset the potential overlapping pairs
     mNbPotentialPairs = 0;
 
-    LinkedList<int> overlappingNodes(allocator);
+    LinkedList<int> overlappingNodes(memoryManager.getPoolAllocator());
 
     // For all collision shapes that have moved (or have been created) during the
     // last simulation step

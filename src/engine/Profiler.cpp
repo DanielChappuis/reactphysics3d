@@ -27,14 +27,12 @@
 
 // Libraries
 #include "Profiler.h"
+#include <string>
 
 using namespace reactphysics3d;
 
 // Initialization of static variables
-ProfileNode Profiler::mRootNode("Root", nullptr);
-ProfileNode* Profiler::mCurrentNode = &Profiler::mRootNode;
-long double Profiler::mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0;
-uint Profiler::mFrameCounter = 0;
+int Profiler::mNbProfilers = 0;
 
 // Constructor
 ProfileNode::ProfileNode(const char* name, ProfileNode* parentNode)
@@ -155,6 +153,35 @@ void ProfileNodeIterator::enterParent() {
         mCurrentParentNode = mCurrentParentNode->getParentNode();
     }
     mCurrentChildNode = mCurrentParentNode->getChildNode();
+}
+
+// Constructor
+Profiler::Profiler(std::string name) :mRootNode("Root", nullptr) {
+
+	// Set the name of the profiler
+	if (name == "") {
+		
+		if (mNbProfilers == 0) {
+			mName = "profiler";
+		}
+		else {
+			mName = std::string("profiler") + std::to_string(mNbProfilers);
+		}
+	}
+	else {
+		mName = name;
+	}
+
+	mCurrentNode = &mRootNode;
+	mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0;
+	mFrameCounter = 0;
+
+	mNbProfilers++;
+}
+
+// Destructor
+Profiler::~Profiler() {
+	destroy();
 }
 
 // Method called when we want to start profiling a block of code.

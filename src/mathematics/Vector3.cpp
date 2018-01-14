@@ -31,21 +31,6 @@
 // Namespaces
 using namespace reactphysics3d;
 
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
-
-}
-
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
-
-}
-
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
-
-}
-
 // Return the corresponding unit vector
 Vector3 Vector3::getUnit() const {
     decimal lengthVector = length();

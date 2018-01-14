@@ -162,6 +162,13 @@ class BroadPhaseAlgorithm {
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -203,7 +210,7 @@ class BroadPhaseAlgorithm {
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, LinkedList<int>& overlappingNodes) const;
 
         /// Compute all the overlapping pairs of collision shapes
-        void computeOverlappingPairs(Allocator& allocator);
+        void computeOverlappingPairs(MemoryManager& memoryManager);
 
         /// Return the proxy shape corresponding to the broad-phase node id in parameter
         ProxyShape* getProxyShapeForBroadPhaseId(int broadPhaseId) const;
@@ -215,8 +222,15 @@ class BroadPhaseAlgorithm {
         const AABB& getFatAABB(int broadPhaseId) const;
 
         /// Ray casting method
-        void raycast(const Ray& ray, RaycastTest& raycastTest,
-                     unsigned short raycastWithCategoryMaskBits) const;
+        void raycast(const Ray& ray, RaycastTest& raycastTest, unsigned short raycastWithCategoryMaskBits) const;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Method used to compare two pairs for sorting algorithm
@@ -232,6 +246,9 @@ inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const Broad
 // Return true if the two broad-phase collision shapes are overlapping
 inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
                                                        const ProxyShape* shape2) const {
+
+    if (shape1->mBroadPhaseID == -1 || shape2->mBroadPhaseID == -1) return false;
+
     // Get the two AABBs of the collision shapes
     const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->mBroadPhaseID);
     const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->mBroadPhaseID);
@@ -249,7 +266,7 @@ inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("BroadPhaseAlgorithm::raycast()");
+    PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 
@@ -260,6 +277,16 @@ inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTes
 inline ProxyShape* BroadPhaseAlgorithm::getProxyShapeForBroadPhaseId(int broadPhaseId) const {
     return static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void BroadPhaseAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+	mDynamicAABBTree.setProfiler(profiler);
+}
+
+#endif
 
 }
 

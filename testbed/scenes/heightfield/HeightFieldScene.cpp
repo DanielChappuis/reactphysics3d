@@ -31,7 +31,10 @@ using namespace openglframework;
 using namespace heightfieldscene;
 
 // Constructor
-HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SCENE_RADIUS) {
+HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& settings)
+                 : SceneDemo(name, settings, SCENE_RADIUS) {
+
+	std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
@@ -43,39 +46,127 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Create the dynamics world for the physics simulation
-    mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
+	mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
 
-    // ---------- Create the boxes ----------- //
+#ifdef IS_PROFILING_ACTIVE
 
-    // For each box
-    for (int i=0; i<NB_BOXES; i++) {
+    mPhysicsWorld->setProfilerName(name + "_profiler");
 
-        // Position
-        openglframework::Vector3 position(15, 10 + 6 * i, 0);
+#endif
 
-        // Create a box and a corresponding rigid in the dynamics world
-        mBoxes[i] = new Box(Vector3(3, 3, 3), position, 80.1, mDynamicsWorld);
 
-        // Set the box color
-        mBoxes[i]->setColor(mDemoColors[2]);
-        mBoxes[i]->setSleepingColor(mRedColorDemo);
+	for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
-        // Change the material properties of the rigid body
-        rp3d::Material& boxMaterial = mBoxes[i]->getRigidBody()->getMaterial();
-        boxMaterial.setBounciness(rp3d::decimal(0.2));
-    }
+		// Create a convex mesh and a corresponding rigid in the dynamics world
+        Dumbbell* dumbbell = new Dumbbell(getDynamicsWorld(), meshFolderPath);
+
+		// Set the box color
+		dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
+		dumbbell->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the mesh the list of dumbbells in the scene
+		mDumbbells.push_back(dumbbell);
+		mPhysicsObjects.push_back(dumbbell);
+	}
+
+	// Create all the boxes of the scene
+	for (int i = 0; i<NB_BOXES; i++) {
+
+		// Create a sphere and a corresponding rigid in the dynamics world
+        Box* box = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+
+		// Set the box color
+		box->setColor(mDemoColors[i % mNbDemoColors]);
+		box->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = box->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the sphere the list of sphere in the scene
+		mBoxes.push_back(box);
+		mPhysicsObjects.push_back(box);
+	}
+
+	// Create all the spheres of the scene
+	for (int i = 0; i<NB_SPHERES; i++) {
+
+		// Create a sphere and a corresponding rigid in the dynamics world
+        Sphere* sphere = new Sphere(SPHERE_RADIUS, BOX_MASS, getDynamicsWorld(), meshFolderPath);
+
+		// Add some rolling resistance
+        sphere->getRigidBody()->getMaterial().setRollingResistance(0.08f);
+
+		// Set the box color
+		sphere->setColor(mDemoColors[i % mNbDemoColors]);
+		sphere->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = sphere->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the sphere the list of sphere in the scene
+		mSpheres.push_back(sphere);
+		mPhysicsObjects.push_back(sphere);
+	}
+
+	// Create all the capsules of the scene
+	for (int i = 0; i<NB_CAPSULES; i++) {
+
+		// Create a cylinder and a corresponding rigid in the dynamics world
+        Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, CAPSULE_MASS,
+                                       getDynamicsWorld(), meshFolderPath);
+
+        capsule->getRigidBody()->getMaterial().setRollingResistance(0.08f);
+
+		// Set the box color
+		capsule->setColor(mDemoColors[i % mNbDemoColors]);
+		capsule->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = capsule->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the cylinder the list of sphere in the scene
+		mCapsules.push_back(capsule);
+		mPhysicsObjects.push_back(capsule);
+	}
+
+	// Create all the convex meshes of the scene
+	for (int i = 0; i<NB_MESHES; i++) {
+
+		// Create a convex mesh and a corresponding rigid in the dynamics world
+        ConvexMesh* mesh = new ConvexMesh(MESH_MASS, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
+
+		// Set the box color
+		mesh->setColor(mDemoColors[i % mNbDemoColors]);
+		mesh->setSleepingColor(mRedColorDemo);
+
+		// Change the material properties of the rigid body
+		rp3d::Material& material = mesh->getRigidBody()->getMaterial();
+		material.setBounciness(rp3d::decimal(0.2));
+
+		// Add the mesh the list of sphere in the scene
+		mConvexMeshes.push_back(mesh);
+		mPhysicsObjects.push_back(mesh);
+	}
 
     // ---------- Create the height field ---------- //
 
     // Position
-    openglframework::Vector3 position(0, 0, 0);
     rp3d::decimal mass = 1.0;
 
     // Create a convex mesh and a corresponding rigid in the dynamics world
-    mHeightField = new HeightField(position, mass, mDynamicsWorld);
+    mHeightField = new HeightField(mass, getDynamicsWorld());
 
     // Set the mesh as beeing static
     mHeightField->getRigidBody()->setType(rp3d::BodyType::STATIC);
+
+	mPhysicsObjects.push_back(mHeightField);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
@@ -84,100 +175,102 @@ HeightFieldScene::HeightFieldScene(const std::string& name) : SceneDemo(name, SC
     // Change the material properties of the rigid body
     rp3d::Material& material = mHeightField->getRigidBody()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
-    material.setFrictionCoefficient(0.1);
+    material.setFrictionCoefficient(0.1f);
 
     // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mDynamicsWorld->getGravity();
+    mEngineSettings.isGravityEnabled = getDynamicsWorld()->isGravityEnabled();
+    rp3d::Vector3 gravityVector = getDynamicsWorld()->getGravity();
     mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mDynamicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mDynamicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mDynamicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mDynamicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mDynamicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mDynamicsWorld->getTimeBeforeSleep();
+    mEngineSettings.isSleepingEnabled = getDynamicsWorld()->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = getDynamicsWorld()->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = getDynamicsWorld()->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = getDynamicsWorld()->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = getDynamicsWorld()->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = getDynamicsWorld()->getTimeBeforeSleep();
 }
 
 // Destructor
 HeightFieldScene::~HeightFieldScene() {
 
-    // Destroy the corresponding rigid body from the dynamics world
-    for (int i=0; i<NB_BOXES; i++) {
-        mDynamicsWorld->destroyRigidBody(mBoxes[i]->getRigidBody());
-    }
-    mDynamicsWorld->destroyRigidBody(mHeightField->getRigidBody());
+	// Destroy all the physics objects of the scene
+	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 
-    for (int i=0; i<NB_BOXES; i++) {
-       delete mBoxes[i];
-    }
+		// Destroy the corresponding rigid body from the dynamics world
+        getDynamicsWorld()->destroyRigidBody((*it)->getRigidBody());
 
-    // Destroy the convex mesh
-    delete mHeightField;
+		// Destroy the object
+		delete (*it);
+	}
 
     // Destroy the dynamics world
-    delete mDynamicsWorld;
-}
-
-// Update the physics world (take a simulation step)
-void HeightFieldScene::updatePhysics() {
-
-    // Update the physics engine parameters
-    mDynamicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
-    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
-                                     mEngineSettings.gravity.z);
-    mDynamicsWorld->setGravity(gravity);
-    mDynamicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
-    mDynamicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-    mDynamicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-    mDynamicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-    mDynamicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-    mDynamicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
-
-    // Take a simulation step
-    mDynamicsWorld->update(mEngineSettings.timeStep);
-}
-
-// Update the scene
-void HeightFieldScene::update() {
-
-    SceneDemo::update();
-
-    // Update the transform used for the rendering
-    mHeightField->updateTransform(mInterpolationFactor);
-
-    for (int i=0; i<NB_BOXES; i++) {
-       mBoxes[i]->updateTransform(mInterpolationFactor);
-    }
-}
-
-// Render the scene in a single pass
-void HeightFieldScene::renderSinglePass(Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the shader
-    shader.bind();
-
-    mHeightField->render(shader, worldToCameraMatrix);
-
-    for (int i=0; i<NB_BOXES; i++) {
-       mBoxes[i]->render(shader, worldToCameraMatrix);
-    }
-
-    // Unbind the shader
-    shader.unbind();
+    delete getDynamicsWorld();
 }
 
 // Reset the scene
 void HeightFieldScene::reset() {
 
-    // Reset the transform
-    rp3d::Transform transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
-    mHeightField->resetTransform(transform);
+    const float radius = 3.0f;
 
-    float heightFieldWidth = 10.0f;
-    float stepDist = heightFieldWidth / (NB_BOXES + 1);
-    for (int i=0; i<NB_BOXES; i++) {
-        rp3d::Vector3 boxPosition(-heightFieldWidth * 0.5f + i * stepDist , 14 + 6.0f * i, -heightFieldWidth * 0.5f + i * stepDist);
-        rp3d::Transform boxTransform(boxPosition, rp3d::Quaternion::identity());
-        mBoxes[i]->resetTransform(boxTransform);
+    for (uint i = 0; i<NB_COMPOUND_SHAPES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            125 + i * (DUMBBELL_HEIGHT + 0.3f),
+            radius * std::sin(angle));
+
+        mDumbbells[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
+
+    // Create all the boxes of the scene
+    for (uint i = 0; i<NB_BOXES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            85 + i * (BOX_SIZE.y + 0.8f),
+            radius * std::sin(angle));
+
+        mBoxes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
+
+    // Create all the spheres of the scene
+    for (uint i = 0; i<NB_SPHERES; i++) {
+
+        // Position
+        float angle = i * 35.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            75 + i * (SPHERE_RADIUS + 0.8f),
+            radius * std::sin(angle));
+
+        mSpheres[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
+
+    // Create all the capsules of the scene
+    for (uint i = 0; i<NB_CAPSULES; i++) {
+
+        // Position
+        float angle = i * 45.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            40 + i * (CAPSULE_HEIGHT + 0.3f),
+            radius * std::sin(angle));
+
+        mCapsules[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
+
+    // Create all the convex meshes of the scene
+    for (uint i = 0; i<NB_MESHES; i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            radius * std::sin(angle));
+
+        mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
+
+    // ---------- Create the triangular mesh ---------- //
+
+    mHeightField->setTransform(rp3d::Transform::identity());
 }

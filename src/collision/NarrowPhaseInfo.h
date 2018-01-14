@@ -28,11 +28,13 @@
 
 // Libraries
 #include "shapes/CollisionShape.h"
+#include "collision/ContactManifoldInfo.h"
+#include "engine/OverlappingPair.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-class OverlappingPair;
+struct LastFrameCollisionInfo;
 
 // Class NarrowPhaseInfo
 /**
@@ -47,10 +49,10 @@ struct NarrowPhaseInfo {
         OverlappingPair* overlappingPair;
 
         /// Pointer to the first collision shape to test collision with
-        const CollisionShape* collisionShape1;
+        CollisionShape* collisionShape1;
 
         /// Pointer to the second collision shape to test collision with
-        const CollisionShape* collisionShape2;
+        CollisionShape* collisionShape2;
 
         /// Transform that maps from collision shape 1 local-space to world-space
         Transform shape1ToWorldTransform;
@@ -58,27 +60,41 @@ struct NarrowPhaseInfo {
         /// Transform that maps from collision shape 2 local-space to world-space
         Transform shape2ToWorldTransform;
 
-        /// Cached collision data of the proxy shape
-        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
-        void** cachedCollisionData1;
-
-        /// Cached collision data of the proxy shape
-        // TODO : Check if we can use separating axis in OverlappingPair instead of cachedCollisionData1 and cachedCollisionData2
-        void** cachedCollisionData2;
+        /// Linked-list of contact points created during the narrow-phase
+        ContactPointInfo* contactPoints;
 
         /// Pointer to the next element in the linked list
         NarrowPhaseInfo* next;
 
-        /// Constructor
-        NarrowPhaseInfo(OverlappingPair* pair, const CollisionShape* shape1,
-                        const CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, void** cachedData1, void** cachedData2)
-              : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
-                shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
-                cachedCollisionData1(cachedData1), cachedCollisionData2(cachedData2), next(nullptr) {
+        /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
+        MemoryAllocator& collisionShapeAllocator;
 
-        }
+        /// Constructor
+        NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
+                        CollisionShape* shape2, const Transform& shape1Transform,
+                        const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
+
+        /// Destructor
+        ~NarrowPhaseInfo();
+
+        /// Add a new contact point
+        void addContactPoint(const Vector3& contactNormal, decimal penDepth,
+                             const Vector3& localPt1, const Vector3& localPt2);
+
+        /// Create a new potential contact manifold into the overlapping pair using current contact points
+        void addContactPointsAsPotentialContactManifold();
+
+        /// Reset the remaining contact points
+        void resetContactPoints();
+
+        /// Get the last collision frame info for temporal coherence
+        LastFrameCollisionInfo* getLastFrameCollisionInfo() const;
 };
+
+// Get the last collision frame info for temporal coherence
+inline LastFrameCollisionInfo* NarrowPhaseInfo::getLastFrameCollisionInfo() const {
+    return overlappingPair->getLastFrameCollisionInfo(collisionShape1->getId(), collisionShape2->getId());
+}
 
 }
 

@@ -31,8 +31,8 @@
 #include "reactphysics3d.h"
 #include "PhysicsObject.h"
 
-// Class Sphere
-class Dumbbell : public openglframework::Mesh, public PhysicsObject {
+// Class Dumbbell
+class Dumbbell : public PhysicsObject {
 
     private :
 
@@ -42,9 +42,9 @@ class Dumbbell : public openglframework::Mesh, public PhysicsObject {
         float mDistanceBetweenSphere;
 
         /// Collision shapes
-        rp3d::CylinderShape* mCylinderShape;
+        rp3d::CapsuleShape* mCapsuleShape;
         rp3d::SphereShape* mSphereShape;
-        rp3d::ProxyShape* mProxyShapeCylinder;
+        rp3d::ProxyShape* mProxyShapeCapsule;
         rp3d::ProxyShape* mProxyShapeSphere1;
         rp3d::ProxyShape* mProxyShapeSphere2;
 
@@ -82,29 +82,22 @@ class Dumbbell : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Dumbbell(const openglframework::Vector3& position, rp3d::DynamicsWorld* dynamicsWorld,
-                 const std::string& meshFolderPath);
+        Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Constructor
-        Dumbbell(const openglframework::Vector3& position, rp3d::CollisionWorld* world,
-                 const std::string& meshFolderPath);
-
+        Dumbbell(rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Destructor
         ~Dumbbell();
 
         /// Render the sphere at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
+        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
 
         /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        void setScaling(const openglframework::Vector3& scaling) override;
 };
 
 // Update the transform matrix of the object

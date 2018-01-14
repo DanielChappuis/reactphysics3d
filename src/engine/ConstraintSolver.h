@@ -60,18 +60,12 @@ struct ConstraintSolverData {
         /// Reference to the bodies orientations
         Quaternion* orientations;
 
-        /// Reference to the map that associates rigid body to their index
-        /// in the constrained velocities array
-        const std::map<RigidBody*, uint>& mapBodyToConstrainedVelocityIndex;
-
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(nullptr), angularVelocities(nullptr),
-                            positions(nullptr), orientations(nullptr),
-                            mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
+        ConstraintSolverData() :linearVelocities(nullptr), angularVelocities(nullptr),
+                                positions(nullptr), orientations(nullptr) {
 
         }
 
@@ -152,10 +146,6 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the map that associates rigid body to their index in
-        /// the constrained velocities array
-        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
         /// Current time step
         decimal mTimeStep;
 
@@ -165,12 +155,18 @@ class ConstraintSolver {
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ConstraintSolver();
 
         /// Destructor
         ~ConstraintSolver() = default;
@@ -197,6 +193,14 @@ class ConstraintSolver {
         /// Set the constrained positions/orientations arrays
         void setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                            Quaternion* constrainedOrientations);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Set the constrained velocities arrays
@@ -220,6 +224,15 @@ inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrained
     mConstraintSolverData.positions = constrainedPositions;
     mConstraintSolverData.orientations = constrainedOrientations;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ConstraintSolver::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

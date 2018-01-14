@@ -49,19 +49,17 @@ class ConvexShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         // Return a local support point in a given direction with the object margin
-        Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                               void** cachedCollisionData) const;
+        Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const=0;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexShape(CollisionShapeType type, decimal margin);
+        ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin = decimal(0.0));
 
         /// Destructor
         virtual ~ConvexShape() override = default;
@@ -81,10 +79,10 @@ class ConvexShape : public CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class GJKAlgorithm;
-        friend class EPAAlgorithm;
+        friend class SATAlgorithm;
 };
 
-/// Return true if the collision shape is convex, false if it is concave
+// Return true if the collision shape is convex, false if it is concave
 inline bool ConvexShape::isConvex() const {
     return true;
 }

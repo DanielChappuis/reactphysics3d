@@ -34,8 +34,6 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
 #include "Capsule.h"
 #include "Line.h"
 #include "ConvexMesh.h"
@@ -59,7 +57,7 @@ const float CAPSULE_HEIGHT = 5.0f;
 const float DUMBBELL_HEIGHT = 5.0f;
 const int NB_RAYS = 100;
 const float RAY_LENGTH = 30.0f;
-const int NB_BODIES = 9;
+const int NB_BODIES = 7;
 
 // Raycast manager
 class RaycastManager : public rp3d::RaycastCallback {
@@ -84,13 +82,16 @@ class RaycastManager : public rp3d::RaycastCallback {
         }
 
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override {
+
+			rp3d::Vector3 n = raycastInfo.worldNormal;
+			openglframework::Vector3 normal(n.x, n.y, n.z);
+
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            mHitPoints.push_back(ContactPoint(position));
+            mHitPoints.push_back(ContactPoint(position, normal, openglframework::Color::red()));
 
             // Create a line to display the normal at hit point
-            rp3d::Vector3 n = raycastInfo.worldNormal;
-            openglframework::Vector3 normal(n.x, n.y, n.z);
+			// TODO : Remove the mNormals because the VisualContactPoint is now able to display the contact normal on its own
             Line* normalLine = new Line(position, position + normal);
             mNormals.push_back(normalLine);
 
@@ -136,21 +137,14 @@ class RaycastScene : public SceneDemo {
         /// True if the hit points normals are displayed
         bool mAreNormalsDisplayed;
 
-        /// Raycast manager
-
         /// All objects on the scene
         Box* mBox;
         Sphere* mSphere;
-        Cone* mCone;
-        Cylinder* mCylinder;
         Capsule* mCapsule;
         ConvexMesh* mConvexMesh;
         Dumbbell* mDumbbell;
         ConcaveMesh* mConcaveMesh;
         HeightField* mHeightField;
-
-        /// Collision world used for the physics simulation
-        rp3d::CollisionWorld* mCollisionWorld;
 
         /// All the points to render the lines
         std::vector<openglframework::Vector3> mLinePoints;
@@ -165,7 +159,7 @@ class RaycastScene : public SceneDemo {
         void createLines();
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
 
     public:
@@ -173,14 +167,10 @@ class RaycastScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastScene(const std::string& name);
+        RaycastScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
         virtual ~RaycastScene() override;
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics() override;
 
         /// Take a step for the simulation
         virtual void update() override;

@@ -56,14 +56,13 @@ class CapsuleShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const override;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
         /// Raycasting method between a ray one of the two spheres end cap of the capsule
         bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
@@ -169,8 +168,7 @@ inline bool CapsuleShape::isPolyhedron() const {
 /// Therefore, in this method, we compute the support points of both top and bottom spheres of
 /// the capsule and return the point with the maximum dot product with the direction vector. Note
 /// that the object margin is implicitly the radius and height of the capsule.
-inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                        void** cachedCollisionData) const {
+inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     // Support point top sphere
     decimal dotProductTop = mHalfHeight * direction.y;

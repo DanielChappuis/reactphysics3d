@@ -25,6 +25,7 @@
 
 // Libraries
 #include "PoolAllocator.h"
+#include "MemoryManager.h"
 #include <cstdlib>
 #include <cassert>
 
@@ -42,7 +43,7 @@ PoolAllocator::PoolAllocator() {
     mNbAllocatedMemoryBlocks = 64;
     mNbCurrentMemoryBlocks = 0;
     const size_t sizeToAllocate = mNbAllocatedMemoryBlocks * sizeof(MemoryBlock);
-    mMemoryBlocks = (MemoryBlock*) malloc(sizeToAllocate);
+    mMemoryBlocks = static_cast<MemoryBlock*>(MemoryManager::getBaseAllocator().allocate(sizeToAllocate));
     memset(mMemoryBlocks, 0, sizeToAllocate);
     memset(mFreeMemoryUnits, 0, sizeof(mFreeMemoryUnits));
 
@@ -55,7 +56,7 @@ PoolAllocator::PoolAllocator() {
 
         // Initialize the array that contains the sizes the memory units that will
         // be allocated in each different heap
-        for (int i=0; i < NB_HEAPS; i++) {
+        for (uint i=0; i < NB_HEAPS; i++) {
             mUnitSizes[i] = (i+1) * 8;
         }
 
@@ -82,16 +83,17 @@ PoolAllocator::~PoolAllocator() {
 
     // Release the memory allocated for each block
     for (uint i=0; i<mNbCurrentMemoryBlocks; i++) {
-        free(mMemoryBlocks[i].memoryUnits);
+        MemoryManager::getBaseAllocator().release(mMemoryBlocks[i].memoryUnits, BLOCK_SIZE);
     }
 
-    free(mMemoryBlocks);
+    MemoryManager::getBaseAllocator().release(mMemoryBlocks, mNbAllocatedMemoryBlocks * sizeof(MemoryBlock));
 
 #ifndef NDEBUG
         // Check that the allocate() and release() methods have been called the same
         // number of times to avoid memory leaks.
         assert(mNbTimesAllocateMethodCalled == 0);
 #endif
+
 }
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
@@ -108,8 +110,8 @@ void* PoolAllocator::allocate(size_t size) {
     // If we need to allocate more than the maximum memory unit size
     if (size > MAX_UNIT_SIZE) {
 
-        // Allocate memory using standard malloc() function
-        return malloc(size);
+        // Allocate memory using default allocation
+        return MemoryManager::getBaseAllocator().allocate(size);
     }
 
     // Get the index of the heap that will take care of the allocation request
@@ -126,13 +128,13 @@ void* PoolAllocator::allocate(size_t size) {
     }
     else {  // If there is no more free memory units in the corresponding heap
 
-        // If we need to allocate more memory to containsthe blocks
+        // If we need to allocate more memory to contains the blocks
         if (mNbCurrentMemoryBlocks == mNbAllocatedMemoryBlocks) {
 
             // Allocate more memory to contain the blocks
             MemoryBlock* currentMemoryBlocks = mMemoryBlocks;
             mNbAllocatedMemoryBlocks += 64;
-            mMemoryBlocks = (MemoryBlock*) malloc(mNbAllocatedMemoryBlocks * sizeof(MemoryBlock));
+            mMemoryBlocks = static_cast<MemoryBlock*>(MemoryManager::getBaseAllocator().allocate(mNbAllocatedMemoryBlocks * sizeof(MemoryBlock)));
             memcpy(mMemoryBlocks, currentMemoryBlocks,mNbCurrentMemoryBlocks * sizeof(MemoryBlock));
             memset(mMemoryBlocks + mNbCurrentMemoryBlocks, 0, 64 * sizeof(MemoryBlock));
             free(currentMemoryBlocks);
@@ -141,17 +143,22 @@ void* PoolAllocator::allocate(size_t size) {
         // Allocate a new memory blocks for the corresponding heap and divide it in many
         // memory units
         MemoryBlock* newBlock = mMemoryBlocks + mNbCurrentMemoryBlocks;
-        newBlock->memoryUnits = (MemoryUnit*) malloc(BLOCK_SIZE);
+        newBlock->memoryUnits = static_cast<MemoryUnit*>(MemoryManager::getBaseAllocator().allocate(BLOCK_SIZE));
         assert(newBlock->memoryUnits != nullptr);
         size_t unitSize = mUnitSizes[indexHeap];
         uint nbUnits = BLOCK_SIZE / unitSize;
         assert(nbUnits * unitSize <= BLOCK_SIZE);
+        void* memoryUnitsStart = static_cast<void*>(newBlock->memoryUnits);
+        char* memoryUnitsStartChar = static_cast<char*>(memoryUnitsStart);
         for (size_t i=0; i < nbUnits - 1; i++) {
-            MemoryUnit* unit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * i);
-            MemoryUnit* nextUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize * (i+1));
+            void* unitPointer = static_cast<void*>(memoryUnitsStartChar + unitSize * i);
+            void* nextUnitPointer = static_cast<void*>(memoryUnitsStartChar + unitSize * (i+1));
+            MemoryUnit* unit = static_cast<MemoryUnit*>(unitPointer);
+            MemoryUnit* nextUnit = static_cast<MemoryUnit*>(nextUnitPointer);
             unit->nextUnit = nextUnit;
         }
-        MemoryUnit* lastUnit = (MemoryUnit*) ((size_t)newBlock->memoryUnits + unitSize*(nbUnits-1));
+        void* lastUnitPointer = static_cast<void*>(memoryUnitsStartChar + unitSize*(nbUnits-1));
+        MemoryUnit* lastUnit = static_cast<MemoryUnit*>(lastUnitPointer);
         lastUnit->nextUnit = nullptr;
 
         // Add the new allocated block into the list of free memory units in the heap
@@ -176,8 +183,8 @@ void PoolAllocator::release(void* pointer, size_t size) {
     // If the size is larger than the maximum memory unit size
     if (size > MAX_UNIT_SIZE) {
 
-        // Release the memory using the standard free() function
-        free(pointer);
+        // Release the memory using the default deallocation
+        MemoryManager::getBaseAllocator().release(pointer, size);
         return;
     }
 
@@ -187,7 +194,7 @@ void PoolAllocator::release(void* pointer, size_t size) {
 
     // Insert the released memory unit into the list of free memory units of the
     // corresponding heap
-    MemoryUnit* releasedUnit = (MemoryUnit*) pointer;
+    MemoryUnit* releasedUnit = static_cast<MemoryUnit*>(pointer);
     releasedUnit->nextUnit = mFreeMemoryUnits[indexHeap];
     mFreeMemoryUnits[indexHeap] = releasedUnit;
 }

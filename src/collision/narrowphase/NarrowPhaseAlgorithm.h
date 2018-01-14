@@ -28,7 +28,7 @@
 
 // Libraries
 #include "body/Body.h"
-#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 #include "memory/PoolAllocator.h"
 #include "engine/OverlappingPair.h"
 #include "collision/NarrowPhaseInfo.h"
@@ -67,6 +67,13 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -83,9 +90,27 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        /// Compute a contact info if the two bounding volume collide
-        virtual bool testCollision(const NarrowPhaseInfo* narrowPhaseInfo, ContactPointInfo& contactPointInfo)=0;
+        /// Compute a contact info if the two bounding volumes collide
+        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                   MemoryAllocator& memoryAllocator)=0;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

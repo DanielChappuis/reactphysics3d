@@ -38,7 +38,7 @@ namespace reactphysics3d {
  * This class represents a mesh made of triangles. A TriangleMesh contains
  * one or several parts. Each part is a set of triangles represented in a
  * TriangleVertexArray object describing all the triangles vertices of the part.
- * A TriangleMesh object is used to create a ConcaveMeshShape from a triangle
+ * A TriangleMesh object can be used to create a ConcaveMeshShape from a triangle
  * mesh for instance.
  */
 class TriangleMesh {

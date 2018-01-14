@@ -24,15 +24,179 @@
 ********************************************************************************/
 
 // Libraries
+#include <cassert>
 #include "OverlappingPair.h"
+#include "collision/ContactManifoldInfo.h"
+#include "collision/NarrowPhaseInfo.h"
 
 using namespace reactphysics3d;
 
-
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 int nbMaxContactManifolds, PoolAllocator& memoryAllocator)
-                : mContactManifoldSet(shape1, shape2, memoryAllocator, nbMaxContactManifolds),
-                  mCachedSeparatingAxis(0.0, 1.0, 0.0) {
+                                 MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator)
+                : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator), mPotentialContactManifolds(nullptr),
+                  mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator) {
     
-}                               
+}         
+
+// Destructor
+OverlappingPair::~OverlappingPair() {
+	assert(mPotentialContactManifolds == nullptr);
+
+    // Remove all the remaining last frame collision info
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
+
+        // Call the constructor
+        it->second->~LastFrameCollisionInfo();
+
+        // Release memory
+        mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+    }
+}
+
+// Create a new potential contact manifold using contact-points from narrow-phase
+void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
+
+    assert(narrowPhaseInfo->contactPoints != nullptr);
+
+    // For each potential contact point to add
+    ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
+    while (contactPoint != nullptr) {
+
+        ContactPointInfo* nextContactPoint = contactPoint->next;
+
+        // Look if the contact point correspond to an existing potential manifold
+        // (if the contact point normal is similar to the normal of an existing manifold)
+        ContactManifoldInfo* manifold = mPotentialContactManifolds;
+        bool similarManifoldFound = false;
+        while(manifold != nullptr) {
+
+            // Get the first contact point
+            const ContactPointInfo* point = manifold->getFirstContactPointInfo();
+            assert(point != nullptr);
+
+            // If we have found a corresponding manifold for the new contact point
+            // (a manifold with a similar contact normal direction)
+            if (point->normal.dot(contactPoint->normal) >= COS_ANGLE_SIMILAR_CONTACT_MANIFOLD) {
+
+                // Add the contact point to the manifold
+                manifold->addContactPoint(contactPoint);
+
+               similarManifoldFound = true;
+
+               break;
+            }
+
+            manifold = manifold->getNext();
+        }
+
+        // If we have not found an existing manifold with a similar contact normal
+        if (!similarManifoldFound) {
+
+            // Create a new potential contact manifold
+            ContactManifoldInfo* manifoldInfo = new (mTempMemoryAllocator.allocate(sizeof(ContactManifoldInfo)))
+                                            ContactManifoldInfo(mTempMemoryAllocator);
+
+            // Add the manifold into the linked-list of potential contact manifolds
+            manifoldInfo->mNext = mPotentialContactManifolds;
+            mPotentialContactManifolds = manifoldInfo;
+
+            // Add the contact point to the manifold
+            manifoldInfo->addContactPoint(contactPoint);
+        }
+
+        contactPoint = nextContactPoint;
+    }
+
+    // All the contact point info of the narrow-phase info have been moved
+    // into the potential contacts of the overlapping pair
+    narrowPhaseInfo->contactPoints = nullptr;
+}
+
+// Clear all the potential contact manifolds
+void OverlappingPair::clearPotentialContactManifolds() {
+
+    ContactManifoldInfo* element = mPotentialContactManifolds;
+    while(element != nullptr) {
+
+        // Remove the proxy collision shape
+        ContactManifoldInfo* elementToRemove = element;
+        element = element->getNext();
+
+        // Delete the element
+        elementToRemove->~ContactManifoldInfo();
+        mTempMemoryAllocator.release(elementToRemove, sizeof(ContactManifoldInfo));
+    }
+
+    mPotentialContactManifolds = nullptr;
+}
+
+// Reduce the number of contact points of all the potential contact manifolds
+void OverlappingPair::reducePotentialContactManifolds() {
+
+    // For each potential contact manifold
+    ContactManifoldInfo* manifold = mPotentialContactManifolds;
+    while (manifold != nullptr) {
+
+        // Reduce the number of contact points of the manifold
+        manifold->reduce(mContactManifoldSet.getShape1()->getLocalToWorldTransform());
+
+        manifold = manifold->getNext();
+    }
+}
+
+
+// Add a new last frame collision info if it does not exist for the given shapes already
+void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
+
+    // Try to get the corresponding last frame collision info
+    auto it = mLastFrameCollisionInfos.find(std::make_pair(shapeId1, shapeId2));
+
+    // If there is no collision info for those two shapes already
+    if (it == mLastFrameCollisionInfos.end()) {
+
+        // Create a new collision info
+        LastFrameCollisionInfo* collisionInfo = new (mPersistentAllocator.allocate(sizeof(LastFrameCollisionInfo)))
+                                                LastFrameCollisionInfo();
+
+        // Add it into the map of collision infos
+        std::map<std::pair<uint, uint>, LastFrameCollisionInfo*>::iterator it;
+        auto ret = mLastFrameCollisionInfos.insert(std::make_pair(std::make_pair(shapeId1, shapeId2), collisionInfo));
+        assert(ret.second);
+    }
+    else {
+
+       // The existing collision info is not obsolete
+       it->second->isObsolete = false;
+    }
+}
+
+
+// Delete all the obsolete last frame collision info
+void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
+
+    // For each collision info
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ) {
+
+        // If the collision info is obsolete
+        if (it->second->isObsolete) {
+
+            // Delete it
+            it->second->~LastFrameCollisionInfo();
+            mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+
+            mLastFrameCollisionInfos.erase(it++);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+// Make all the last frame collision infos obsolete
+void OverlappingPair::makeLastFrameCollisionInfosObsolete() {
+
+    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
+        it->second->isObsolete = true;
+    }
+}

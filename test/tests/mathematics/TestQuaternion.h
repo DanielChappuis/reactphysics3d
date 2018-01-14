@@ -94,7 +94,7 @@ class TestQuaternion : public Test {
 
             const decimal PI_OVER_2 = PI * decimal(0.5);
             const decimal PI_OVER_4 = PI_OVER_2 * decimal(0.5);
-            Quaternion quaternion5(PI_OVER_2, 0, 0);
+            Quaternion quaternion5 = Quaternion::fromEulerAngles(PI_OVER_2, 0, 0);
             Quaternion quaternionTest5(std::sin(PI_OVER_4), 0, 0, std::cos(PI_OVER_4));
             quaternionTest5.normalize();
             test(approxEqual(quaternion5.x, quaternionTest5.x));
@@ -102,7 +102,7 @@ class TestQuaternion : public Test {
             test(approxEqual(quaternion5.z, quaternionTest5.z));
             test(approxEqual(quaternion5.w, quaternionTest5.w));
 
-            Quaternion quaternion6(0, PI_OVER_2, 0);
+            Quaternion quaternion6 = Quaternion::fromEulerAngles(0, PI_OVER_2, 0);
             Quaternion quaternionTest6(0, std::sin(PI_OVER_4), 0, std::cos(PI_OVER_4));
             quaternionTest6.normalize();
             test(approxEqual(quaternion6.x, quaternionTest6.x));
@@ -110,7 +110,7 @@ class TestQuaternion : public Test {
             test(approxEqual(quaternion6.z, quaternionTest6.z));
             test(approxEqual(quaternion6.w, quaternionTest6.w));
 
-            Quaternion quaternion7(Vector3(0, 0, PI_OVER_2));
+            Quaternion quaternion7 = Quaternion::fromEulerAngles(Vector3(0, 0, PI_OVER_2));
             Quaternion quaternionTest7(0, 0, std::sin(PI_OVER_4), std::cos(PI_OVER_4));
             quaternionTest7.normalize();
             test(approxEqual(quaternion7.x, quaternionTest7.x));
@@ -124,7 +124,7 @@ class TestQuaternion : public Test {
 
             // Test method that returns the length
             Quaternion quaternion(2, 3, -4, 5);
-            test(approxEqual(quaternion.length(), sqrt(decimal(54.0))));
+            test(approxEqual(quaternion.length(), std::sqrt(decimal(54.0))));
 
             // Test method that returns a unit quaternion
             test(approxEqual(quaternion.getUnit().length(), 1.0));

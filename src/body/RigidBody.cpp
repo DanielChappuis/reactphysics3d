@@ -39,7 +39,7 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mInitMass(decimal(1.0)),
+          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
             mJointsList(nullptr) {
@@ -176,7 +176,7 @@ void RigidBody::setMass(decimal mass) {
 }
 
 // Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint) {
+void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Joint* joint) {
 
     assert(joint != nullptr);
     assert(mJointsList != nullptr);
@@ -186,7 +186,8 @@ void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const 
         JointListElement* elementToRemove = mJointsList;
         mJointsList = elementToRemove->next;
         elementToRemove->~JointListElement();
-        memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+        memoryManager.release(MemoryManager::AllocationType::Pool,
+                              elementToRemove, sizeof(JointListElement));
     }
     else {  // If the element to remove is not the first one in the list
         JointListElement* currentElement = mJointsList;
@@ -195,7 +196,8 @@ void RigidBody::removeJointFromJointsList(PoolAllocator& memoryAllocator, const 
                 JointListElement* elementToRemove = currentElement->next;
                 currentElement->next = elementToRemove->next;
                 elementToRemove->~JointListElement();
-                memoryAllocator.release(elementToRemove, sizeof(JointListElement));
+                memoryManager.release(MemoryManager::AllocationType::Pool,
+                                      elementToRemove, sizeof(JointListElement));
                 break;
             }
             currentElement = currentElement->next;
@@ -224,9 +226,16 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          decimal mass) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mPoolAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass);
+                                                                      transform, mass, mWorld.mMemoryManager);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	proxyShape->setProfiler(mProfiler);
+
+#endif
 
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
@@ -410,7 +419,7 @@ void RigidBody::recomputeMassInformation() {
 // Update the broad-phase state for this body (because it has moved for instance)
 void RigidBody::updateBroadPhaseState() const {
 
-    PROFILE("RigidBody::updateBroadPhaseState()");
+    PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
 
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
@@ -426,4 +435,23 @@ void RigidBody::updateBroadPhaseState() const {
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
     }
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+void RigidBody::setProfiler(Profiler* profiler) {
+
+	CollisionBody::setProfiler(profiler);
+
+	// Set the profiler for each proxy shape
+	ProxyShape* proxyShape = getProxyShapesList();
+	while (proxyShape != nullptr) {
+
+		proxyShape->setProfiler(profiler);
+
+		proxyShape = proxyShape->getNext();
+	}
+}
+
+#endif
 

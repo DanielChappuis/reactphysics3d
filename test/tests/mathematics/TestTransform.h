@@ -61,13 +61,16 @@ class TestTransform : public Test {
 
             mIdentityTransform.setToIdentity();
 
-            decimal sinA = sin(PI/8.0f);
-            decimal cosA = cos(PI/8.0f);
-            mTransform1 = Transform(Vector3(4, 5, 6), Quaternion(sinA, sinA, sinA, cosA));
+            Vector3 unitVec(1, 1, 1);
+            unitVec.normalize();
 
-            decimal sinB = sin(PI/3.0f);
-            decimal cosB = cos(PI/3.0f);
-            mTransform2 = Transform(Vector3(8, 45, -6), Quaternion(sinB, sinB, sinB, cosB));
+            decimal sinA = std::sin(PI/8.0f);
+            decimal cosA = std::cos(PI/8.0f);
+            mTransform1 = Transform(Vector3(4, 5, 6), Quaternion(sinA * unitVec, cosA));
+
+            decimal sinB = std::sin(PI/3.0f);
+            decimal cosB = std::cos(PI/3.0f);
+            mTransform2 = Transform(Vector3(8, 45, -6), Quaternion(sinB * unitVec, cosB));
         }
 
         /// Run the tests

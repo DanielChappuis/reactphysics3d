@@ -171,7 +171,7 @@ void DynamicAABBTree::removeObject(int nodeID) {
 /// (this can be useful if the shape AABB has become much smaller than the previous one for instance).
 bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
 
-    PROFILE("DynamicAABBTree::updateObject()");
+    PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -633,7 +633,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 // Ray casting method
 void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
 
-    PROFILE("DynamicAABBTree::raycast()");
+    PROFILE("DynamicAABBTree::raycast()", mProfiler);
 
     decimal maxFraction = ray.maxFraction;
 

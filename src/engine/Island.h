@@ -69,7 +69,7 @@ class Island {
 
         /// Constructor
         Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               SingleFrameAllocator& allocator);
+               MemoryManager& memoryManager);
 
         /// Destructor
         ~Island();

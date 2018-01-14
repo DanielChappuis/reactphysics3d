@@ -26,6 +26,8 @@
 // Libraries
 #include "GJKAlgorithm.h"
 #include "constraint/ContactPoint.h"
+#include "engine/OverlappingPair.h"
+#include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "engine/Profiler.h"
 #include <algorithm>
@@ -45,10 +47,9 @@ using namespace reactphysics3d;
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                 ContactPointInfo& contactPointInfo) {
+GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
-    PROFILE("GJKAlgorithm::testCollision()");
+    PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B
@@ -65,23 +66,18 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
     const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
     const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
 
-    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
-    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
-
-    bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
-
     // Get the local-space to world-space transforms
     const Transform& transform1 = narrowPhaseInfo->shape1ToWorldTransform;
     const Transform& transform2 = narrowPhaseInfo->shape2ToWorldTransform;
 
     // Transform a point from local space of body 2 to local
     // space of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2Tobody1 = transform1.getInverse() * transform2;
+    Transform transform1Inverse = transform1.getInverse();
+    Transform body2Tobody1 = transform1Inverse * transform2;
 
-    // Matrix that transform a direction from local
+    // Quaternion that transform a direction from local
     // space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = transform2.getOrientation().getMatrix().getTranspose() *
-                              transform1.getOrientation().getMatrix();
+    Quaternion rotateToBody2 = transform2.getOrientation().getInverse() * transform1.getOrientation();
 
     // Initialize the margin (sum of margins of both objects)
     decimal margin = shape1->getMargin() + shape2->getMargin();
@@ -91,8 +87,18 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
     // Create a simplex set
     VoronoiSimplex simplex;
 
+    // Get the last collision frame info
+    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+
     // Get the previous point V (last cached separating axis)
-    Vector3 v = narrowPhaseInfo->overlappingPair->getCachedSeparatingAxis();
+    Vector3 v;
+    if (lastFrameCollisionInfo->isValid && lastFrameCollisionInfo->wasUsingGJK) {
+        v = lastFrameCollisionInfo->gjkSeparatingAxis;
+        assert(v.lengthSquare() > decimal(0.000001));
+    }
+    else {
+        v.setAllValues(0, 1, 0);
+    }
 
     // Initialize the upper bound for the square distance
     decimal distSquare = DECIMAL_LARGEST;
@@ -100,9 +106,8 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
     do {
               
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape1->getLocalSupportPointWithoutMargin(-v, shape1CachedCollisionData);
-        suppB = body2Tobody1 *
-                     shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v, shape2CachedCollisionData);
+        suppA = shape1->getLocalSupportPointWithoutMargin(-v);
+        suppB = body2Tobody1 * shape2->getLocalSupportPointWithoutMargin(rotateToBody2 * v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -113,10 +118,10 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
         if (vDotw > decimal(0.0) && vDotw * vDotw > distSquare * marginSquare) {
                         
             // Cache the current separating axis for frame coherence
-            narrowPhaseInfo->overlappingPair->setCachedSeparatingAxis(v);
+            lastFrameCollisionInfo->gjkSeparatingAxis = v;
             
             // No intersection, we return
-            return false;
+            return GJKResult::SEPARATED;
         }
 
         // If the objects intersect only in the margins
@@ -147,12 +152,6 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
             break;
         }
 
-        // Closest point is almost the origin, go to EPA algorithm
-        // Vector v to small to continue computing support points
-        if (v.lengthSquare() < MACHINE_EPSILON) {
-            break;
-        }
-
         // Store and update the squared distance of the closest point
         prevDistSquare = distSquare;
         distSquare = v.lengthSquare();
@@ -170,22 +169,7 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
             break;
         }
 
-    } while((isPolytopeShape && !simplex.isFull()) || (!isPolytopeShape && !simplex.isFull() &&
-            distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
-
-    // If no contact has been found (penetration case)
-    if (!contactFound) {
-
-        // The objects (without margins) intersect. Therefore, we run the GJK algorithm
-        // again but on the enlarged objects to compute a simplex polytope that contains
-        // the origin. Then, we give that simplex polytope to the EPA algorithm to compute
-        // the correct penetration depth and contact points between the enlarged objects.
-        if(computePenetrationDepthForEnlargedObjects(narrowPhaseInfo, contactPointInfo, v)) {
-
-            // A contact has been found with EPA algorithm, we return true
-            return true;
-        }
-    }
+    } while(!simplex.isFull() && distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint());
 
     if (contactFound && distSquare > MACHINE_EPSILON) {
 
@@ -205,104 +189,30 @@ bool GJKAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
 
         // If the penetration depth is negative (due too numerical errors), there is no contact
         if (penetrationDepth <= decimal(0.0)) {
-            return false;
+            return GJKResult::SEPARATED;
         }
 
         // Do not generate a contact point with zero normal length
         if (normal.lengthSquare() < MACHINE_EPSILON) {
-            return false;
+            return GJKResult::SEPARATED;
         }
 
-        // Create the contact info object
-        contactPointInfo.init(normal, penetrationDepth, pA, pB);
+        if (reportContacts) {
 
-        return true;
+            // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
+            TriangleShape::computeSmoothTriangleMeshContact(shape1, shape2, pA, pB, transform1, transform2,
+                                                            penetrationDepth, normal);
+
+            // Add a new contact point
+            narrowPhaseInfo->addContactPoint(normal, penetrationDepth, pA, pB);
+        }
+
+        return GJKResult::COLLIDE_IN_MARGIN;
     }
 
-    return false;
+    return GJKResult::INTERPENETRATE;
 }
 
-/// This method runs the GJK algorithm on the two enlarged objects (with margin)
-/// to compute a simplex polytope that contains the origin. The two objects are
-/// assumed to intersect in the original objects (without margin). Therefore such
-/// a polytope must exist. Then, we give that polytope to the EPA algorithm to
-/// compute the correct penetration depth and contact points of the enlarged objects.
-bool GJKAlgorithm::computePenetrationDepthForEnlargedObjects(const NarrowPhaseInfo* narrowPhaseInfo,
-                                                             ContactPointInfo& contactPointInfo,
-                                                             Vector3& v) {
-    PROFILE("GJKAlgorithm::computePenetrationDepthForEnlargedObjects()");
-
-    VoronoiSimplex simplex;
-    Vector3 suppA;
-    Vector3 suppB;
-    Vector3 w;
-    decimal vDotw;
-    decimal distSquare = DECIMAL_LARGEST;
-    decimal prevDistSquare;
-
-    assert(narrowPhaseInfo->collisionShape1->isConvex());
-    assert(narrowPhaseInfo->collisionShape2->isConvex());
-
-    const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape1);
-    const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfo->collisionShape2);
-
-    bool isPolytopeShape = shape1->isPolyhedron() && shape2->isPolyhedron();
-
-    void** shape1CachedCollisionData = narrowPhaseInfo->cachedCollisionData1;
-    void** shape2CachedCollisionData = narrowPhaseInfo->cachedCollisionData2;
-
-    // Transform a point from local space of body 2 to local space
-    // of body 1 (the GJK algorithm is done in local space of body 1)
-    Transform body2ToBody1 = narrowPhaseInfo->shape1ToWorldTransform.getInverse() * narrowPhaseInfo->shape2ToWorldTransform;
-
-    // Matrix that transform a direction from local space of body 1 into local space of body 2
-    Matrix3x3 rotateToBody2 = narrowPhaseInfo->shape2ToWorldTransform.getOrientation().getMatrix().getTranspose() *
-                              narrowPhaseInfo->shape1ToWorldTransform.getOrientation().getMatrix();
-    
-    do {
-        // Compute the support points for the enlarged object A and B
-        suppA = shape1->getLocalSupportPointWithMargin(-v, shape1CachedCollisionData);
-        suppB = body2ToBody1 * shape2->getLocalSupportPointWithMargin(rotateToBody2 * v, shape2CachedCollisionData);
-
-        // Compute the support point for the Minkowski difference A-B
-        w = suppA - suppB;
-
-        vDotw = v.dot(w);
-
-        // If the enlarge objects do not intersect
-        if (vDotw > decimal(0.0)) {
-
-            // No intersection, we return
-            return false;
-        }
-
-        // Add the new support point to the simplex
-        simplex.addPoint(w, suppA, suppB);
-
-        if (simplex.isAffinelyDependent()) {
-            return false;
-        }
-
-        if (!simplex.computeClosestPoint(v)) {
-            return false;
-        }
-
-        // Store and update the square distance
-        prevDistSquare = distSquare;
-        distSquare = v.lengthSquare();
-
-        if (prevDistSquare - distSquare <= MACHINE_EPSILON * prevDistSquare) {
-            return false;
-        }
-
-    } while((!simplex.isFull() && isPolytopeShape) || (!isPolytopeShape && !simplex.isFull() &&
-            distSquare > MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint()));
-
-    // Give the simplex computed with GJK algorithm to the EPA algorithm
-    // which will compute the correct penetration depth and contact points
-    // between the two enlarged objects
-    return mAlgoEPA.computePenetrationDepthAndContactPoints(simplex, narrowPhaseInfo, v, contactPointInfo);
-}
 
 // Use the GJK Algorithm to find if a point is inside a convex collision shape
 bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) {
@@ -314,8 +224,6 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
     assert(proxyShape->getCollisionShape()->isConvex());
 
     const ConvexShape* shape = static_cast<const ConvexShape*>(proxyShape->getCollisionShape());
-
-    void** shapeCachedCollisionData = proxyShape->getCachedCollisionData();
 
     // Support point of object B (object B is a single point)
     const Vector3 suppB(localPoint);
@@ -332,7 +240,7 @@ bool GJKAlgorithm::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
     do {
 
         // Compute the support points for original objects (without margins) A and B
-        suppA = shape->getLocalSupportPointWithoutMargin(-v, shapeCachedCollisionData);
+        suppA = shape->getLocalSupportPointWithoutMargin(-v);
 
         // Compute the support point for the Minkowski difference A-B
         w = suppA - suppB;
@@ -378,8 +286,6 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
 
     const ConvexShape* shape = static_cast<const ConvexShape*>(proxyShape->getCollisionShape());
 
-    void** shapeCachedCollisionData = proxyShape->getCachedCollisionData();
-
     Vector3 suppA;      // Current lower bound point on the ray (starting at ray's origin)
     Vector3 suppB;      // Support point on the collision shape
     const decimal machineEpsilonSquare = MACHINE_EPSILON * MACHINE_EPSILON;
@@ -399,7 +305,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
     Vector3 n(decimal(0.0), decimal(0.0), decimal(0.0));
     decimal lambda = decimal(0.0);
     suppA = ray.point1;    // Current lower bound point on the ray (starting at ray's origin)
-    suppB = shape->getLocalSupportPointWithoutMargin(rayDirection, shapeCachedCollisionData);
+    suppB = shape->getLocalSupportPointWithoutMargin(rayDirection);
     Vector3 v = suppA - suppB;
     decimal vDotW, vDotR;
     decimal distSquare = v.lengthSquare();
@@ -409,7 +315,7 @@ bool GJKAlgorithm::raycast(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& 
     while (distSquare > epsilon && nbIterations < MAX_ITERATIONS_GJK_RAYCAST) {
 
         // Compute the support points
-        suppB = shape->getLocalSupportPointWithoutMargin(v, shapeCachedCollisionData);
+        suppB = shape->getLocalSupportPointWithoutMargin(v);
         w = suppA - suppB;
 
         vDotW = v.dot(w);

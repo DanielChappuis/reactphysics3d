@@ -31,7 +31,7 @@
 #include "CollisionBody.h"
 #include "engine/Material.h"
 #include "mathematics/mathematics.h"
-#include "memory/PoolAllocator.h"
+#include "memory/MemoryManager.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -49,6 +49,11 @@ class DynamicsWorld;
  * CollisionBody class.
   */
 class RigidBody : public CollisionBody {
+
+    private :
+
+        /// Index of the body in arrays for contact/constraint solver
+        uint mArrayIndex;
 
     protected :
 
@@ -102,12 +107,12 @@ class RigidBody : public CollisionBody {
         decimal mAngularDamping;
 
         /// First element of the linked list of joints involving this body
-        JointListElement* mJointsList;        
+        JointListElement* mJointsList;
 
         // -------------------- Methods -------------------- //
 
         /// Remove a joint from the joints list
-        void removeJointFromJointsList(PoolAllocator& memoryAllocator, const Joint* joint);
+        void removeJointFromJointsList(reactphysics3d::MemoryManager& memoryManager, const Joint* joint);
 
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
@@ -226,6 +231,13 @@ class RigidBody : public CollisionBody {
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.
         void recomputeMassInformation();
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) override;
+
+#endif
 
         // -------------------- Friendship -------------------- //
 

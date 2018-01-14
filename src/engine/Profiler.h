@@ -184,57 +184,73 @@ class Profiler {
 
         // -------------------- Attributes -------------------- //
 
+		/// Profiler name
+		std::string mName;
+
+		/// Total number of profilers
+		static int mNbProfilers;
+
         /// Root node of the profiler tree
-        static ProfileNode mRootNode;
+        ProfileNode mRootNode;
 
         /// Current node in the current execution
-        static ProfileNode* mCurrentNode;
+        ProfileNode* mCurrentNode;
 
         /// Frame counter
-        static uint mFrameCounter;
+        uint mFrameCounter;
 
         /// Starting profiling time
-        static long double mProfilingStartTime;
+        long double mProfilingStartTime;
 
         /// Recursively print the report of a given node of the profiler tree
-        static void printRecursiveNodeReport(ProfileNodeIterator* iterator,
-                                             int spacing,
-                                             std::ostream& outputStream);
+        void printRecursiveNodeReport(ProfileNodeIterator* iterator,  int spacing, std::ostream& outputStream);
+
+		/// Destroy a previously allocated iterator
+		void destroyIterator(ProfileNodeIterator* iterator);
+
+		/// Destroy the profiler (release the memory)
+		void destroy();
 
     public :
 
         // -------------------- Methods -------------------- //
 
+		/// Constructor
+		Profiler(std::string name = "");
+
+		/// Destructor
+		~Profiler();
+
         /// Method called when we want to start profiling a block of code.
-        static void startProfilingBlock(const char *name);
+        void startProfilingBlock(const char *name);
 
         /// Method called at the end of the scope where the
         /// startProfilingBlock() method has been called.
-        static void stopProfilingBlock();
+        void stopProfilingBlock();
 
         /// Reset the timing data of the profiler (but not the profiler tree structure)
-        static void reset();
+        void reset();
 
         /// Return the number of frames
-        static uint getNbFrames();
+        uint getNbFrames();
+
+		/// Get the name of the profiler
+		std::string getName() const;
+
+		/// Set the name of the profiler
+		void setName(std::string name);
 
         /// Return the elasped time since the start/reset of the profiling
-        static long double getElapsedTimeSinceStart();
+        long double getElapsedTimeSinceStart();
 
         /// Increment the frame counter
-        static void incrementFrameCounter();
+        void incrementFrameCounter();
 
         /// Return an iterator over the profiler tree starting at the root
-        static ProfileNodeIterator* getIterator();
+        ProfileNodeIterator* getIterator();
 
         /// Print the report of the profiler in a given output stream
-        static void printReport(std::ostream& outputStream);
-
-        /// Destroy a previously allocated iterator
-        static void destroyIterator(ProfileNodeIterator* iterator);
-
-        /// Destroy the profiler (release the memory)
-        static void destroy();
+        void printReport(std::ostream& outputStream);
 };
 
 // Class ProfileSample
@@ -245,27 +261,33 @@ class Profiler {
  */
 class ProfileSample {
 
+	private:
+
+		Profiler* mProfiler;
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProfileSample(const char* name) {
+        ProfileSample(const char* name, Profiler* profiler) :mProfiler(profiler) {
+
+			assert(profiler != nullptr);
 
             // Ask the profiler to start profiling a block of code
-            Profiler::startProfilingBlock(name);
+			mProfiler->startProfilingBlock(name);
         }
 
         /// Destructor
         ~ProfileSample() {
 
             // Tell the profiler to stop profiling a block of code
-            Profiler::stopProfilingBlock();
+			mProfiler->stopProfilingBlock();
         }
 };
 
 // Use this macro to start profile a block of code
-#define PROFILE(name) ProfileSample profileSample(name)
+#define PROFILE(name, profiler) ProfileSample profileSample(name, profiler)
 
 // Return true if we are at the root of the profiler tree
 inline bool ProfileNodeIterator::isRoot() {
@@ -350,6 +372,16 @@ inline long double ProfileNode::getTotalTime() const {
 // Return the number of frames
 inline uint Profiler::getNbFrames() {
     return mFrameCounter;
+}
+
+// Get the name of the profiler
+inline std::string Profiler::getName() const {
+	return mName;
+}
+
+// Set the name of the profiler
+inline void Profiler::setName(std::string name) {
+	mName = name;
 }
 
 // Return the elasped time since the start/reset of the profiling

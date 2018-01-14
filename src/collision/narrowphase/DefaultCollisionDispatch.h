@@ -28,8 +28,12 @@
 
 // Libraries
 #include "CollisionDispatch.h"
-#include "ConcaveVsConvexAlgorithm.h"
 #include "SphereVsSphereAlgorithm.h"
+#include "SphereVsConvexPolyhedronAlgorithm.h"
+#include "SphereVsCapsuleAlgorithm.h"
+#include "CapsuleVsCapsuleAlgorithm.h"
+#include "CapsuleVsConvexPolyhedronAlgorithm.h"
+#include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
 
 namespace reactphysics3d {
@@ -47,8 +51,20 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         /// Sphere vs Sphere collision algorithm
         SphereVsSphereAlgorithm mSphereVsSphereAlgorithm;
 
-        /// GJK Algorithm
-        GJKAlgorithm mGJKAlgorithm;
+        /// Capsule vs Capsule collision algorithm
+        CapsuleVsCapsuleAlgorithm mCapsuleVsCapsuleAlgorithm;
+
+        /// Sphere vs Capsule collision algorithm
+        SphereVsCapsuleAlgorithm mSphereVsCapsuleAlgorithm;
+
+        /// Sphere vs Convex Polyhedron collision algorithm
+        SphereVsConvexPolyhedronAlgorithm mSphereVsConvexPolyhedronAlgorithm;
+
+        /// Capsule vs Convex Polyhedron collision algorithm
+        CapsuleVsConvexPolyhedronAlgorithm mCapsuleVsConvexPolyhedronAlgorithm;
+
+        /// Convex Polyhedron vs Convex Polyhedron collision algorithm
+        ConvexPolyhedronVsConvexPolyhedronAlgorithm mConvexPolyhedronVsConvexPolyhedronAlgorithm;
 
     public:
 
@@ -61,7 +77,32 @@ class DefaultCollisionDispatch : public CollisionDispatch {
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.
         virtual NarrowPhaseAlgorithm* selectAlgorithm(int type1, int type2) override;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler) override;
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void DefaultCollisionDispatch::setProfiler(Profiler* profiler) {
+
+	CollisionDispatch::setProfiler(profiler);
+
+	mSphereVsSphereAlgorithm.setProfiler(profiler);
+	mCapsuleVsCapsuleAlgorithm.setProfiler(profiler);
+	mSphereVsCapsuleAlgorithm.setProfiler(profiler);
+	mSphereVsConvexPolyhedronAlgorithm.setProfiler(profiler);
+	mCapsuleVsConvexPolyhedronAlgorithm.setProfiler(profiler);
+	mConvexPolyhedronVsConvexPolyhedronAlgorithm.setProfiler(profiler);
+}
+
+#endif
 
 }
 

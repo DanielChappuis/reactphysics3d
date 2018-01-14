@@ -26,10 +26,15 @@
 // Libraries
 #include "CollisionDetection.h"
 #include "engine/CollisionWorld.h"
+#include "collision/OverlapCallback.h"
 #include "body/Body.h"
 #include "collision/shapes/BoxShape.h"
+#include "collision/shapes/ConcaveShape.h"
 #include "body/RigidBody.h"
 #include "configuration.h"
+#include "collision/CollisionCallback.h"
+#include "collision/MiddlePhaseTriangleCallback.h"
+#include "collision/OverlapCallback.h"
 #include <cassert>
 #include <complex>
 #include <set>
@@ -42,9 +47,8 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world, PoolAllocator& memoryAllocator, SingleFrameAllocator& singleFrameAllocator)
-                   : mMemoryAllocator(memoryAllocator), mSingleFrameAllocator(singleFrameAllocator),
-                     mWorld(world), mNarrowPhaseInfoList(nullptr), mBroadPhaseAlgorithm(*this),
+CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager)
+                   : mMemoryManager(memoryManager), mWorld(world), mNarrowPhaseInfoList(nullptr), mBroadPhaseAlgorithm(*this),
                      mIsCollisionShapesAdded(false) {
 
     // Set the default collision dispatch configuration
@@ -52,12 +56,19 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, PoolAllocator& mem
 
     // Fill-in the collision detection matrix with algorithms
     fillInCollisionMatrix();
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
 }
 
 // Compute the collision detection
 void CollisionDetection::computeCollisionDetection() {
 
-    PROFILE("CollisionDetection::computeCollisionDetection()");
+    PROFILE("CollisionDetection::computeCollisionDetection()", mProfiler);
 	    
     // Compute the broad-phase collision detection
     computeBroadPhase();
@@ -66,76 +77,16 @@ void CollisionDetection::computeCollisionDetection() {
     computeMiddlePhase();
     
     // Compute the narrow-phase collision detection
-     computeNarrowPhase();
+    computeNarrowPhase();
 
     // Reset the linked list of narrow-phase info
     mNarrowPhaseInfoList = nullptr;
 }
 
-// TODO : Remove this method
-// Report collision between two sets of shapes
-/*
-void CollisionDetection::reportCollisionBetweenShapes(CollisionCallback* callback,
-                                                      const std::set<uint>& shapes1,
-                                                      const std::set<uint>& shapes2) {
-
-    // For each possible collision pair of bodies
-    map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
-
-        OverlappingPair* pair = it->second;
-
-        const ProxyShape* shape1 = pair->getShape1();
-        const ProxyShape* shape2 = pair->getShape2();
-
-        assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
-
-        // If both shapes1 and shapes2 sets are non-empty, we check that
-        // shape1 is among on set and shape2 is among the other one
-        if (!shapes1.empty() && !shapes2.empty() &&
-            (shapes1.count(shape1->mBroadPhaseID) == 0 || shapes2.count(shape2->mBroadPhaseID) == 0) &&
-            (shapes1.count(shape2->mBroadPhaseID) == 0 || shapes2.count(shape1->mBroadPhaseID) == 0)) {
-            continue;
-        }
-        if (!shapes1.empty() && shapes2.empty() &&
-            shapes1.count(shape1->mBroadPhaseID) == 0 && shapes1.count(shape2->mBroadPhaseID) == 0)
-        {
-            continue;
-        }
-        if (!shapes2.empty() && shapes1.empty() &&
-            shapes2.count(shape1->mBroadPhaseID) == 0 && shapes2.count(shape2->mBroadPhaseID) == 0)
-        {
-            continue;
-        }
-
-        // For each contact manifold set of the overlapping pair
-        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-        for (int j=0; j<manifoldSet.getNbContactManifolds(); j++) {
-
-            const ContactManifold* manifold = manifoldSet.getContactManifold(j);
-
-            // For each contact manifold of the manifold set
-            for (uint i=0; i<manifold->getNbContactPoints(); i++) {
-
-                ContactPoint* contactPoint = manifold->getContactPoint(i);
-
-                // Create the contact info object for the contact
-                ContactPointInfo contactInfo;
-                contactInfo.init(contactPoint->getNormal(), contactPoint->getPenetrationDepth(),
-                                 contactPoint->getLocalPointOnBody1(), contactPoint->getLocalPointOnBody2());
-
-                // Notify the collision callback about this new contact
-                if (callback != nullptr) callback->notifyContact(contactInfo);
-            }
-        }
-    }
-}
-*/
-
 // Compute the broad-phase collision detection
 void CollisionDetection::computeBroadPhase() {
 
-    PROFILE("CollisionDetection::computeBroadPhase()");
+    PROFILE("CollisionDetection::computeBroadPhase()", mProfiler);
 
     // If new collision shapes have been added to bodies
     if (mIsCollisionShapesAdded) {
@@ -143,17 +94,14 @@ void CollisionDetection::computeBroadPhase() {
         // Ask the broad-phase to recompute the overlapping pairs of collision
         // shapes. This call can only add new overlapping pairs in the collision
         // detection.
-        mBroadPhaseAlgorithm.computeOverlappingPairs(mMemoryAllocator);
+        mBroadPhaseAlgorithm.computeOverlappingPairs(mMemoryManager);
     }
 }
 
 // Compute the middle-phase collision detection
 void CollisionDetection::computeMiddlePhase() {
 
-    PROFILE("CollisionDetection::computeMiddlePhase()");
-
-    // Clear the set of overlapping pairs in narrow-phase contact
-    mContactOverlappingPairs.clear();
+    PROFILE("CollisionDetection::computeMiddlePhase()", mProfiler);
 
     // For each possible collision pair of bodies
     map<overlappingpairid, OverlappingPair*>::iterator it;
@@ -161,26 +109,30 @@ void CollisionDetection::computeMiddlePhase() {
 
         OverlappingPair* pair = it->second;
 
+        // Make all the contact manifolds and contact points of the pair obsolete
+        pair->makeContactsObsolete();
+
+        // Make all the last frame collision info obsolete
+        pair->makeLastFrameCollisionInfosObsolete();
+
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
 
+        assert(shape1->mBroadPhaseID != -1);
+        assert(shape2->mBroadPhaseID != -1);
         assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
 
-        // Check if the collision filtering allows collision between the two shapes and
-        // that the two shapes are still overlapping. Otherwise, we destroy the
+        // Check if the two shapes are still overlapping. Otherwise, we destroy the
         // overlapping pair
-        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
-             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) ||
-             !mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+        if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
             std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
             ++it;
 
-            // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
-
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
-            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+
+            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
             continue;
         }
@@ -188,65 +140,68 @@ void CollisionDetection::computeMiddlePhase() {
             ++it;
         }
 
-        CollisionBody* const body1 = shape1->getBody();
-        CollisionBody* const body2 = shape2->getBody();
+        // Check if the collision filtering allows collision between the two shapes
+        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) != 0 &&
+             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) != 0)) {
 
-        // Update the contact cache of the overlapping pair
-        pair->update();
+            CollisionBody* const body1 = shape1->getBody();
+            CollisionBody* const body2 = shape2->getBody();
 
-        // Check that at least one body is awake and not static
-        bool isBody1Active = !body1->isSleeping() && body1->getType() != BodyType::STATIC;
-        bool isBody2Active = !body2->isSleeping() && body2->getType() != BodyType::STATIC;
-        if (!isBody1Active && !isBody2Active) continue;
+            // Check that at least one body is awake and not static
+            bool isBody1Active = !body1->isSleeping() && body1->getType() != BodyType::STATIC;
+            bool isBody2Active = !body2->isSleeping() && body2->getType() != BodyType::STATIC;
+            if (!isBody1Active && !isBody2Active) continue;
 
-        // Check if the bodies are in the set of bodies that cannot collide between each other
-        bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
-        if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
+            // Check if the bodies are in the set of bodies that cannot collide between each other
+            bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
+            if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
 
-        const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-        const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+			bool isShape1Convex = shape1->getCollisionShape()->isConvex();
+			bool isShape2Convex = shape2->getCollisionShape()->isConvex();
 
-        // If both shapes are convex
-        if ((CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type))) {
+            // If both shapes are convex
+            if (isShape1Convex && isShape2Convex) {
 
-            // No middle-phase is necessary, simply create a narrow phase info
-            // for the narrow-phase collision detection
-            NarrowPhaseInfo* firstNarrowPhaseInfo = mNarrowPhaseInfoList;
-            mNarrowPhaseInfoList = new (mSingleFrameAllocator.allocate(sizeof(NarrowPhaseInfo)))
-                                   NarrowPhaseInfo(pair, shape1->getCollisionShape(),
-                                   shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                   shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                   shape2->getCachedCollisionData());
-            mNarrowPhaseInfoList->next = firstNarrowPhaseInfo;
+                // No middle-phase is necessary, simply create a narrow phase info
+                // for the narrow-phase collision detection
+                NarrowPhaseInfo* firstNarrowPhaseInfo = mNarrowPhaseInfoList;
+                mNarrowPhaseInfoList = new (mMemoryManager.allocate(MemoryManager::AllocationType::Frame, sizeof(NarrowPhaseInfo)))
+                                       NarrowPhaseInfo(pair, shape1->getCollisionShape(),
+                                       shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
+                                       shape2->getLocalToWorldTransform(), mMemoryManager.getSingleFrameAllocator());
+                mNarrowPhaseInfoList->next = firstNarrowPhaseInfo;
 
-        }
-        // Concave vs Convex algorithm
-        else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-                 (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
-
-            NarrowPhaseInfo* narrowPhaseInfo = nullptr;
-            computeConvexVsConcaveMiddlePhase(pair, mSingleFrameAllocator, &narrowPhaseInfo);
-
-            // Add all the narrow-phase info object reported by the callback into the
-            // list of all the narrow-phase info object
-            while (narrowPhaseInfo != nullptr) {
-                NarrowPhaseInfo* next = narrowPhaseInfo->next;
-                narrowPhaseInfo->next = mNarrowPhaseInfoList;
-                mNarrowPhaseInfoList = narrowPhaseInfo;
-
-                narrowPhaseInfo = next;
             }
-        }
-        // Concave vs Concave shape
-        else {
-            // Not handled
-            continue;
+            // Concave vs Convex algorithm
+            else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
+
+                NarrowPhaseInfo* narrowPhaseInfo = nullptr;
+                computeConvexVsConcaveMiddlePhase(pair, mMemoryManager.getSingleFrameAllocator(), &narrowPhaseInfo);
+
+                // Add all the narrow-phase info object reported by the callback into the
+                // list of all the narrow-phase info object
+                while (narrowPhaseInfo != nullptr) {
+                    NarrowPhaseInfo* next = narrowPhaseInfo->next;
+                    narrowPhaseInfo->next = mNarrowPhaseInfoList;
+                    mNarrowPhaseInfoList = narrowPhaseInfo;
+
+                    narrowPhaseInfo = next;
+                }
+            }
+            // Concave vs Concave shape
+            else {
+                // Not handled
+                continue;
+            }
+
+            // Remove the obsolete last frame collision infos
+            pair->clearObsoleteLastFrameCollisionInfos();
         }
     }
 }
 
 // Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, Allocator& allocator,
+void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                            NarrowPhaseInfo** firstNarrowPhaseInfo) {
 
     ProxyShape* shape1 = pair->getShape1();
@@ -275,11 +230,18 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
     MiddlePhaseTriangleCallback middlePhaseCallback(pair, concaveProxyShape, convexProxyShape,
                                                     concaveShape, allocator);
 
-    // Compute the convex shape AABB in the local-space of the convex shape
-    AABB aabb;
-    convexShape->computeAABB(aabb, convexProxyShape->getLocalToWorldTransform());
+#ifdef IS_PROFILING_ACTIVE
 
-    // TODO : Implement smooth concave mesh collision somewhere
+	// Set the profiler
+	middlePhaseCallback.setProfiler(mProfiler);
+
+#endif
+
+    // Compute the convex shape AABB in the local-space of the convex shape
+    const Transform convexToConcaveTransform = concaveProxyShape->getLocalToWorldTransform().getInverse() *
+                                               convexProxyShape->getLocalToWorldTransform();
+    AABB aabb;
+    convexShape->computeAABB(aabb, convexToConcaveTransform);
 
     // Call the convex vs triangle callback for each triangle of the concave shape
     concaveShape->testAllTriangles(middlePhaseCallback, aabb);
@@ -292,170 +254,65 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
 
-    PROFILE("CollisionDetection::computeNarrowPhase()");
+    PROFILE("CollisionDetection::computeNarrowPhase()", mProfiler);
 
-    const NarrowPhaseInfo* currentNarrowPhaseInfo = mNarrowPhaseInfoList;
+    NarrowPhaseInfo* currentNarrowPhaseInfo = mNarrowPhaseInfoList;
     while (currentNarrowPhaseInfo != nullptr) {
 
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = currentNarrowPhaseInfo->collisionShape1->getType();
         const CollisionShapeType shape2Type = currentNarrowPhaseInfo->collisionShape2->getType();
-        const int shape1Index = static_cast<int>(shape1Type);
-        const int shape2Index = static_cast<int>(shape2Type);
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
         // If there is no collision algorithm between those two kinds of shapes, skip it
         if (narrowPhaseAlgorithm != nullptr) {
-        
+
+            LastFrameCollisionInfo* lastCollisionFrameInfo = currentNarrowPhaseInfo->getLastFrameCollisionInfo();
+
             // Use the narrow-phase collision detection algorithm to check
             // if there really is a collision. If a collision occurs, the
             // notifyContact() callback method will be called.
-            ContactPointInfo contactPointInfo;
-            if (narrowPhaseAlgorithm->testCollision(currentNarrowPhaseInfo, contactPointInfo)) {
+            if (narrowPhaseAlgorithm->testCollision(currentNarrowPhaseInfo, true, mMemoryManager.getSingleFrameAllocator())) {
 
-                // If it is the first contact since the pairs are overlapping
-                if (currentNarrowPhaseInfo->overlappingPair->getNbContactPoints() == 0) {
+                // Add the contact points as a potential contact manifold into the pair                
+                currentNarrowPhaseInfo->addContactPointsAsPotentialContactManifold();
 
-                    // Trigger a callback event
-                    if (mWorld->mEventListener != nullptr) mWorld->mEventListener->beginContact(contactPointInfo);
-                }
-
-                // Create a new contact
-                ContactPoint* contact = new (mWorld->mPoolAllocator.allocate(sizeof(ContactPoint)))
-                                             ContactPoint(contactPointInfo);
-
-                contact->updateWorldContactPoints(currentNarrowPhaseInfo->shape1ToWorldTransform,
-                                                  currentNarrowPhaseInfo->shape2ToWorldTransform);
-
-                // Add the contact to the contact manifold set of the corresponding overlapping pair
-                currentNarrowPhaseInfo->overlappingPair->addContact(contact);
-
-                // Add the overlapping pair into the set of pairs in contact during narrow-phase
-                overlappingpairid pairId = OverlappingPair::computeID(currentNarrowPhaseInfo->overlappingPair->getShape1(),
-                                                                      currentNarrowPhaseInfo->overlappingPair->getShape2());
-                mContactOverlappingPairs[pairId] = currentNarrowPhaseInfo->overlappingPair;
-
-                // Trigger a callback event for the new contact
-                if (mWorld->mEventListener != nullptr) mWorld->mEventListener->newContact(contactPointInfo);
+                lastCollisionFrameInfo->wasColliding = true;
             }
+            else {
+                lastCollisionFrameInfo->wasColliding = false;
+            }
+
+            // The previous frame collision info is now valid
+            lastCollisionFrameInfo->isValid = true;
         }
 
+        NarrowPhaseInfo* narrowPhaseInfoToDelete = currentNarrowPhaseInfo;
         currentNarrowPhaseInfo = currentNarrowPhaseInfo->next;
+
+        // Call the destructor
+        narrowPhaseInfoToDelete->~NarrowPhaseInfo();
+
+        // Release the allocated memory for the narrow phase info
+        mMemoryManager.release(MemoryManager::AllocationType::Frame, narrowPhaseInfoToDelete, sizeof(NarrowPhaseInfo));
     }
+
+    // Convert the potential contact into actual contacts
+    processAllPotentialContacts();
 
     // Add all the contact manifolds (between colliding bodies) to the bodies
     addAllContactManifoldsToBodies();
+
+    // Report contacts to the user
+    reportAllContacts();
 }
-
-// TODO : Remove this method
-// Compute the narrow-phase collision detection
-/*
-void CollisionDetection::computeNarrowPhaseBetweenShapes(CollisionCallback* callback,
-                                                         const std::set<uint>& shapes1,
-                                                         const std::set<uint>& shapes2) {
-
-    mContactOverlappingPairs.clear();
-
-    // For each possible collision pair of bodies
-    map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
-
-        OverlappingPair* pair = it->second;
-
-        ProxyShape* shape1 = pair->getShape1();
-        ProxyShape* shape2 = pair->getShape2();
-
-        assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
-
-        // If both shapes1 and shapes2 sets are non-empty, we check that
-        // shape1 is among on set and shape2 is among the other one
-        if (!shapes1.empty() && !shapes2.empty() &&
-            (shapes1.count(shape1->mBroadPhaseID) == 0 || shapes2.count(shape2->mBroadPhaseID) == 0) &&
-            (shapes1.count(shape2->mBroadPhaseID) == 0 || shapes2.count(shape1->mBroadPhaseID) == 0)) {
-            ++it;
-            continue;
-        }
-        if (!shapes1.empty() && shapes2.empty() &&
-            shapes1.count(shape1->mBroadPhaseID) == 0 && shapes1.count(shape2->mBroadPhaseID) == 0)
-        {
-            ++it;
-            continue;
-        }
-        if (!shapes2.empty() && shapes1.empty() &&
-            shapes2.count(shape1->mBroadPhaseID) == 0 && shapes2.count(shape2->mBroadPhaseID) == 0)
-        {
-            ++it;
-            continue;
-        }
-
-        // Check if the collision filtering allows collision between the two shapes and
-        // that the two shapes are still overlapping. Otherwise, we destroy the
-        // overlapping pair
-        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
-             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) ||
-             !mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
-
-            std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
-            ++it;
-
-            // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
-
-            // Destroy the overlapping pair
-            itToRemove->second->~OverlappingPair();
-            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
-            mOverlappingPairs.erase(itToRemove);
-            continue;
-        }
-        else {
-            ++it;
-        }
-
-        CollisionBody* const body1 = shape1->getBody();
-        CollisionBody* const body2 = shape2->getBody();
-
-        // Update the contact cache of the overlapping pair
-        pair->update();
-
-        // Check if the two bodies are allowed to collide, otherwise, we do not test for collision
-        if (body1->getType() != BodyType::DYNAMIC && body2->getType() != BodyType::DYNAMIC) continue;
-        bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
-        if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
-
-        // Check if the two bodies are sleeping, if so, we do no test collision between them
-        if (body1->isSleeping() && body2->isSleeping()) continue;
-
-        // Select the narrow phase algorithm to use according to the two collision shapes
-        const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-        const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
-        const int shape1Index = static_cast<int>(shape1Type);
-        const int shape2Index = static_cast<int>(shape2Type);
-        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
-
-        // If there is no collision algorithm between those two kinds of shapes
-        if (narrowPhaseAlgorithm == nullptr) continue;
-
-        // Create the CollisionShapeInfo objects
-        CollisionShapeInfo shape1Info(shape1, shape1->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                      pair, shape1->getCachedCollisionData());
-        CollisionShapeInfo shape2Info(shape2, shape2->getCollisionShape(), shape2->getLocalToWorldTransform(),
-                                      pair, shape2->getCachedCollisionData());
-
-        TestCollisionBetweenShapesCallback narrowPhaseCallback(callback);
-
-        // Use the narrow-phase collision detection algorithm to check
-        // if there really is a collision
-        narrowPhaseAlgorithm->testCollision(shape1Info, shape2Info, &narrowPhaseCallback);
-    }
-
-    // Add all the contact manifolds (between colliding bodies) to the bodies
-    addAllContactManifoldsToBodies();
-}
-*/
 
 // Allow the broadphase to notify the collision detection about an overlapping pair.
 /// This method is called by the broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
 
+    assert(shape1->mBroadPhaseID != -1);
+    assert(shape2->mBroadPhaseID != -1);
     assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
 
     // Check if the collision filtering allows collision between the two shapes
@@ -468,13 +325,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Check if the overlapping pair already exists
     if (mOverlappingPairs.find(pairID) != mOverlappingPairs.end()) return;
 
-    // Compute the maximum number of contact manifolds for this pair
-    int nbMaxManifolds = CollisionShape::computeNbMaxContactManifolds(shape1->getCollisionShape()->getType(),
-                                                                      shape2->getCollisionShape()->getType());
-
     // Create the overlapping pair and add it into the set of overlapping pairs
-    OverlappingPair* newPair = new (mWorld->mPoolAllocator.allocate(sizeof(OverlappingPair)))
-                              OverlappingPair(shape1, shape2, nbMaxManifolds, mWorld->mPoolAllocator);
+    OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))
+                              OverlappingPair(shape1, shape2, mMemoryManager.getPoolAllocator(),
+                                              mMemoryManager.getSingleFrameAllocator());
     assert(newPair != nullptr);
 
 #ifndef NDEBUG
@@ -491,6 +345,8 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
 // Remove a body from the collision detection
 void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
+    assert(proxyShape->mBroadPhaseID != -1);
+
     // Remove all the overlapping pairs involving this proxy shape
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
@@ -503,7 +359,7 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
-            mWorld->mPoolAllocator.release(itToRemove->second, sizeof(OverlappingPair));
+            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
             mOverlappingPairs.erase(itToRemove);
         }
         else {
@@ -517,9 +373,11 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
 void CollisionDetection::addAllContactManifoldsToBodies() {
 
+    PROFILE("CollisionDetection::addAllContactManifoldsToBodies()", mProfiler);
+
     // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
-    for (it = mContactOverlappingPairs.begin(); it != mContactOverlappingPairs.end(); ++it) {
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // Add all the contact manifolds of the pair into the list of contact manifolds
         // of the two bodies involved in the contact
@@ -538,72 +396,125 @@ void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
     const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
 
     // For each contact manifold in the set of manifolds in the pair
-    for (int i=0; i<manifoldSet.getNbContactManifolds(); i++) {
-
-        ContactManifold* contactManifold = manifoldSet.getContactManifold(i);
+    ContactManifold* contactManifold = manifoldSet.getContactManifolds();
+    while (contactManifold != nullptr) {
 
         assert(contactManifold->getNbContactPoints() > 0);
 
         // Add the contact manifold at the beginning of the linked
         // list of contact manifolds of the first body
-        void* allocatedMemory1 = mWorld->mPoolAllocator.allocate(sizeof(ContactManifoldListElement));
-        ContactManifoldListElement* listElement1 = new (allocatedMemory1)
+        ContactManifoldListElement* listElement1 = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                                                sizeof(ContactManifoldListElement)))
                                                       ContactManifoldListElement(contactManifold,
                                                                          body1->mContactManifoldsList);
         body1->mContactManifoldsList = listElement1;
 
         // Add the contact manifold at the beginning of the linked
         // list of the contact manifolds of the second body
-        void* allocatedMemory2 = mWorld->mPoolAllocator.allocate(sizeof(ContactManifoldListElement));
-        ContactManifoldListElement* listElement2 = new (allocatedMemory2)
+        ContactManifoldListElement* listElement2 = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                                                sizeof(ContactManifoldListElement)))
                                                       ContactManifoldListElement(contactManifold,
                                                                          body2->mContactManifoldsList);
         body2->mContactManifoldsList = listElement2;
+
+        contactManifold = contactManifold->getNext();
     }
 }
 
-// Delete all the contact points in the currently overlapping pairs
-void CollisionDetection::clearContactPoints() {
+/// Convert the potential contact into actual contacts
+void CollisionDetection::processAllPotentialContacts() {
 
-    // For each overlapping pair
+    PROFILE("CollisionDetection::processAllPotentialContacts()", mProfiler);
+
+    // For each overlapping pairs in contact during the narrow-phase
     std::map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
-        it->second->clearContactPoints();
+
+        // Process the potential contacts of the overlapping pair
+        processPotentialContacts(it->second);
+    }
+}
+
+// Process the potential contact manifold of a pair to create actual contact manifold
+void CollisionDetection::processPotentialContacts(OverlappingPair* pair) {
+
+    // Reduce the number of contact points of the manifold
+    pair->reducePotentialContactManifolds();
+
+	// Add all the potential contact manifolds as actual contact manifolds to the pair
+	ContactManifoldInfo* potentialManifold = pair->getPotentialContactManifolds();
+	while (potentialManifold != nullptr) {
+
+		pair->addContactManifold(potentialManifold);
+
+		potentialManifold = potentialManifold->mNext;
+	}
+
+    // Clear the obsolete contact manifolds and contact points
+    pair->clearObsoleteManifoldsAndContactPoints();
+
+    // Reduce the contact manifolds and contact points if there are too many of them
+    pair->reduceContactManifolds();
+
+    // Reset the potential contacts of the pair
+    pair->clearPotentialContactManifolds();
+}
+
+// Report contacts for all the colliding overlapping pairs
+void CollisionDetection::reportAllContacts() {
+
+    PROFILE("CollisionDetection::reportAllContacts()", mProfiler);
+
+    // For each overlapping pairs in contact during the narrow-phase
+    std::map<overlappingpairid, OverlappingPair*>::iterator it;
+    for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
+
+        // If there is a user callback
+        if (mWorld->mEventListener != nullptr && it->second->hasContacts()) {
+
+            CollisionCallback::CollisionCallbackInfo collisionInfo(it->second, mMemoryManager);
+
+            // Trigger a callback event to report the new contact to the user
+             mWorld->mEventListener->newContact(collisionInfo);
+        }
     }
 }
 
 // Compute the middle-phase collision detection between two proxy shapes
-NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(ProxyShape* shape1, ProxyShape* shape2) {
+NarrowPhaseInfo* CollisionDetection::computeMiddlePhaseForProxyShapes(OverlappingPair* pair) {
 
-    // Create a temporary overlapping pair
-    OverlappingPair pair(shape1, shape2, 0, mMemoryAllocator);
+    ProxyShape* shape1 = pair->getShape1();
+    ProxyShape* shape2 = pair->getShape2();
 
     // -------------------------------------------------------
 
-    const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-    const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+    const bool isShape1Convex = shape1->getCollisionShape()->isConvex();
+    const bool isShape2Convex = shape2->getCollisionShape()->isConvex();
 
     NarrowPhaseInfo* narrowPhaseInfo = nullptr;
 
+    pair->makeLastFrameCollisionInfosObsolete();
+
     // If both shapes are convex
-    if ((CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type))) {
+    if ((isShape1Convex && isShape2Convex)) {
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
-        narrowPhaseInfo = new (mMemoryAllocator.allocate(sizeof(NarrowPhaseInfo))) NarrowPhaseInfo(&pair, shape1->getCollisionShape(),
+        narrowPhaseInfo = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                                       sizeof(NarrowPhaseInfo))) NarrowPhaseInfo(pair, shape1->getCollisionShape(),
                                        shape2->getCollisionShape(), shape1->getLocalToWorldTransform(),
-                                       shape2->getLocalToWorldTransform(), shape1->getCachedCollisionData(),
-                                       shape2->getCachedCollisionData());
+                                       shape2->getLocalToWorldTransform(), mMemoryManager.getPoolAllocator());
 
     }
     // Concave vs Convex algorithm
-    else if ((!CollisionShape::isConvex(shape1Type) && CollisionShape::isConvex(shape2Type)) ||
-             (!CollisionShape::isConvex(shape2Type) && CollisionShape::isConvex(shape1Type))) {
+    else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
 
         // Run the middle-phase collision detection algorithm to find the triangles of the concave
         // shape we need to use during the narrow-phase collision detection
-        computeConvexVsConcaveMiddlePhase(&pair, mMemoryAllocator, &narrowPhaseInfo);
+        computeConvexVsConcaveMiddlePhase(pair, mMemoryManager.getPoolAllocator(), &narrowPhaseInfo);
     }
+
+    pair->clearObsoleteLastFrameCollisionInfos();
 
     return narrowPhaseInfo;
 }
@@ -616,7 +527,7 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
     std::unordered_set<bodyindex> reportedBodies;
 
     // Ask the broad-phase to get all the overlapping shapes
-    LinkedList<int> overlappingNodes(mMemoryAllocator);
+    LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
     mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     // For each overlaping proxy shape
@@ -666,11 +577,12 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
             // Test if the AABBs of the two proxy shapes overlap
             if (aabb1.testCollision(aabb2)) {
 
-                const CollisionShapeType shape1Type = body1ProxyShape->getCollisionShape()->getType();
-                const CollisionShapeType shape2Type = body2ProxyShape->getCollisionShape()->getType();
+                // Create a temporary overlapping pair
+                OverlappingPair pair(body1ProxyShape, body2ProxyShape, mMemoryManager.getPoolAllocator(),
+                                     mMemoryManager.getPoolAllocator());
 
                 // Compute the middle-phase collision detection between the two shapes
-                NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(body1ProxyShape, body2ProxyShape);
+                NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
                 bool isColliding = false;
 
@@ -680,10 +592,11 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
                     // If we have not found a collision yet
                     if (!isColliding) {
 
+						const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+						const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
+
                         // Select the narrow phase algorithm to use according to the two collision shapes
-                        const int shape1Index = static_cast<int>(shape1Type);
-                        const int shape2Index = static_cast<int>(shape2Type);
-                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                         // If there is a collision algorithm for those two kinds of shapes
                         if (narrowPhaseAlgorithm != nullptr) {
@@ -691,16 +604,18 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
                             // Use the narrow-phase collision detection algorithm to check
                             // if there really is a collision. If a collision occurs, the
                             // notifyContact() callback method will be called.
-                            ContactPointInfo contactPointInfo;
-                            isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactPointInfo);
+                            isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false, mMemoryManager.getPoolAllocator());
                         }
                     }
 
                     NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
                     narrowPhaseInfo = narrowPhaseInfo->next;
 
+                    // Call the destructor
+                    currentNarrowPhaseInfo->~NarrowPhaseInfo();
+
                     // Release the allocated memory
-                    mMemoryAllocator.release(currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
+                    mMemoryManager.release(MemoryManager::AllocationType::Pool, currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
                 }
 
                 // Return if we have found a narrow-phase collision
@@ -731,84 +646,91 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
     ProxyShape* bodyProxyShape = body->getProxyShapesList();
     while (bodyProxyShape != nullptr) {
 
-        // Get the AABB of the shape
-        const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
+        if (bodyProxyShape->mBroadPhaseID != -1) {
 
-        // Ask the broad-phase to get all the overlapping shapes
-        LinkedList<int> overlappingNodes(mMemoryAllocator);
-        mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
+            // Get the AABB of the shape
+            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
 
-        const bodyindex bodyId = body->getID();
+            // Ask the broad-phase to get all the overlapping shapes
+            LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
+            mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
-        // For each overlaping proxy shape
-        LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
-        while (element != nullptr) {
+            const bodyindex bodyId = body->getID();
 
-            // Get the overlapping proxy shape
-            int broadPhaseId = element->data;
-            ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
+            // For each overlaping proxy shape
+            LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
+            while (element != nullptr) {
 
-            // If the proxy shape is from a body that we have not already reported collision and the
-            // two proxy collision shapes are not from the same body
-            if (reportedBodies.find(proxyShape->getBody()->getID()) == reportedBodies.end() &&
-                proxyShape->getBody()->getID() != bodyId) {
+                // Get the overlapping proxy shape
+                int broadPhaseId = element->data;
+                ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
 
-                // Check if the collision filtering allows collision between the two shapes
-                if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
+                // If the proxy shape is from a body that we have not already reported collision and the
+                // two proxy collision shapes are not from the same body
+                if (reportedBodies.find(proxyShape->getBody()->getID()) == reportedBodies.end() &&
+                    proxyShape->getBody()->getID() != bodyId) {
 
-                    const CollisionShapeType shape1Type = bodyProxyShape->getCollisionShape()->getType();
-                    const CollisionShapeType shape2Type = proxyShape->getCollisionShape()->getType();
+                    // Check if the collision filtering allows collision between the two shapes
+                    if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
-                    // Compute the middle-phase collision detection between the two shapes
-                    NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(bodyProxyShape, proxyShape);
+                        // Create a temporary overlapping pair
+                        OverlappingPair pair(bodyProxyShape, proxyShape, mMemoryManager.getPoolAllocator(),
+                                             mMemoryManager.getPoolAllocator());
 
-                    bool isColliding = false;
+                        // Compute the middle-phase collision detection between the two shapes
+                        NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
-                    // For each narrow-phase info object
-                    while (narrowPhaseInfo != nullptr) {
+                        bool isColliding = false;
 
-                        // If we have not found a collision yet
-                        if (!isColliding) {
+                        // For each narrow-phase info object
+                        while (narrowPhaseInfo != nullptr) {
 
-                            // Select the narrow phase algorithm to use according to the two collision shapes
-                            const int shape1Index = static_cast<int>(shape1Type);
-                            const int shape2Index = static_cast<int>(shape2Type);
-                            NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                            // If we have not found a collision yet
+                            if (!isColliding) {
 
-                            // If there is a collision algorithm for those two kinds of shapes
-                            if (narrowPhaseAlgorithm != nullptr) {
+                                const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+                                const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
-                                // Use the narrow-phase collision detection algorithm to check
-                                // if there really is a collision. If a collision occurs, the
-                                // notifyContact() callback method will be called.
-                                ContactPointInfo contactPointInfo;
-                                isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactPointInfo);
+                                // Select the narrow phase algorithm to use according to the two collision shapes
+                                NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
+
+                                // If there is a collision algorithm for those two kinds of shapes
+                                if (narrowPhaseAlgorithm != nullptr) {
+
+                                    // Use the narrow-phase collision detection algorithm to check
+                                    // if there really is a collision. If a collision occurs, the
+                                    // notifyContact() callback method will be called.
+                                    isColliding |= narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, false, mMemoryManager.getPoolAllocator());
+                                }
                             }
+
+                            NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
+                            narrowPhaseInfo = narrowPhaseInfo->next;
+
+                            // Call the destructor
+                            currentNarrowPhaseInfo->~NarrowPhaseInfo();
+
+                            // Release the allocated memory
+                            mMemoryManager.release(MemoryManager::AllocationType::Pool, currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
                         }
 
-                        NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
-                        narrowPhaseInfo = narrowPhaseInfo->next;
+                        // Return if we have found a narrow-phase collision
+                        if (isColliding) {
 
-                        // Release the allocated memory
-                        mMemoryAllocator.release(currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
-                    }
+                            CollisionBody* overlapBody = proxyShape->getBody();
 
-                    // Return if we have found a narrow-phase collision
-                    if (isColliding) {
+                            // Add the body into the set of reported bodies
+                            reportedBodies.insert(overlapBody->getID());
 
-                        CollisionBody* overlapBody = proxyShape->getBody();
-
-                        // Add the body into the set of reported bodies
-                        reportedBodies.insert(overlapBody->getID());
-
-                        // Notify the overlap to the user
-                        overlapCallback->notifyOverlap(overlapBody);
+                            // Notify the overlap to the user
+                            overlapCallback->notifyOverlap(overlapBody);
+                        }
                     }
                 }
-            }
 
-            // Go to the next overlapping proxy shape
-            element = element->next;
+                // Go to the next overlapping proxy shape
+                element = element->next;
+            }
         }
 
         // Go to the next proxy shape
@@ -836,19 +758,21 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
             // Test if the AABBs of the two proxy shapes overlap
             if (aabb1.testCollision(aabb2)) {
 
-                // Compute the middle-phase collision detection between the two shapes
-                NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(body1ProxyShape, body2ProxyShape);
+                // Create a temporary overlapping pair
+                OverlappingPair pair(body1ProxyShape, body2ProxyShape, mMemoryManager.getPoolAllocator(),
+                                     mMemoryManager.getPoolAllocator());
 
-                const CollisionShapeType shape1Type = body1ProxyShape->getCollisionShape()->getType();
-                const CollisionShapeType shape2Type = body2ProxyShape->getCollisionShape()->getType();
+                // Compute the middle-phase collision detection between the two shapes
+                NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
                 // For each narrow-phase info object
                 while (narrowPhaseInfo != nullptr) {
 
+					const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+					const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
+
                     // Select the narrow phase algorithm to use according to the two collision shapes
-                    const int shape1Index = static_cast<int>(shape1Type);
-                    const int shape2Index = static_cast<int>(shape2Type);
-                    NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                    NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                     // If there is a collision algorithm for those two kinds of shapes
                     if (narrowPhaseAlgorithm != nullptr) {
@@ -856,23 +780,32 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                         // Use the narrow-phase collision detection algorithm to check
                         // if there really is a collision. If a collision occurs, the
                         // notifyContact() callback method will be called.
-                        ContactPointInfo contactPointInfo;
-                        if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactPointInfo)) {
+                        if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mMemoryManager.getPoolAllocator())) {
 
-                            CollisionCallback::CollisionCallbackInfo collisionInfo(contactPointInfo, body1, body2,
-                                                                                   body1ProxyShape, body2ProxyShape);
-
-                            // Report the contact to the user
-                            collisionCallback->notifyContact(collisionInfo);
+                            // Add the contact points as a potential contact manifold into the pair
+                            narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
                         }
                     }
 
                     NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
                     narrowPhaseInfo = narrowPhaseInfo->next;
 
+                    // Call the destructor
+                    currentNarrowPhaseInfo->~NarrowPhaseInfo();
+
                     // Release the allocated memory
-                    mMemoryAllocator.release(currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
+                    mMemoryManager.release(MemoryManager::AllocationType::Pool, currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
                 }
+
+                // Process the potential contacts
+                processPotentialContacts(&pair);
+
+				if (pair.hasContacts()) {
+
+					// Report the contacts to the user
+                    CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mMemoryManager);
+					collisionCallback->notifyContact(collisionInfo);
+				}
             }
 
             // Go to the next proxy shape
@@ -893,76 +826,89 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
     ProxyShape* bodyProxyShape = body->getProxyShapesList();
     while (bodyProxyShape != nullptr) {
 
-        // Get the AABB of the shape
-        const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
+        if (bodyProxyShape->mBroadPhaseID != -1) {
 
-        // Ask the broad-phase to get all the overlapping shapes
-        LinkedList<int> overlappingNodes(mMemoryAllocator);
-        mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
+            // Get the AABB of the shape
+            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
 
-        const bodyindex bodyId = body->getID();
+            // Ask the broad-phase to get all the overlapping shapes
+            LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
+            mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
-        // For each overlaping proxy shape
-        LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
-        while (element != nullptr) {
+            const bodyindex bodyId = body->getID();
 
-            // Get the overlapping proxy shape
-            int broadPhaseId = element->data;
-            ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
+            // For each overlaping proxy shape
+            LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
+            while (element != nullptr) {
 
-            // If the two proxy collision shapes are not from the same body
-            if (proxyShape->getBody()->getID() != bodyId) {
+                // Get the overlapping proxy shape
+                int broadPhaseId = element->data;
+                ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
 
-                // Check if the collision filtering allows collision between the two shapes
-                if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
+                // If the two proxy collision shapes are not from the same body
+                if (proxyShape->getBody()->getID() != bodyId) {
 
-                    const CollisionShapeType shape1Type = bodyProxyShape->getCollisionShape()->getType();
-                    const CollisionShapeType shape2Type = proxyShape->getCollisionShape()->getType();
+                    // Check if the collision filtering allows collision between the two shapes
+                    if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
-                    // Compute the middle-phase collision detection between the two shapes
-                    NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(bodyProxyShape, proxyShape);
+                        // Create a temporary overlapping pair
+                        OverlappingPair pair(bodyProxyShape, proxyShape, mMemoryManager.getPoolAllocator(),
+                                             mMemoryManager.getPoolAllocator());
 
-                    // For each narrow-phase info object
-                    while (narrowPhaseInfo != nullptr) {
+                        // Compute the middle-phase collision detection between the two shapes
+                        NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
-                        // Select the narrow phase algorithm to use according to the two collision shapes
-                        const int shape1Index = static_cast<int>(shape1Type);
-                        const int shape2Index = static_cast<int>(shape2Type);
-                        NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                        // For each narrow-phase info object
+                        while (narrowPhaseInfo != nullptr) {
 
-                        // If there is a collision algorithm for those two kinds of shapes
-                        if (narrowPhaseAlgorithm != nullptr) {
+                            const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+                            const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
 
-                            // Use the narrow-phase collision detection algorithm to check
-                            // if there really is a collision. If a collision occurs, the
-                            // notifyContact() callback method will be called.
-                            ContactPointInfo contactPointInfo;
-                            if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactPointInfo)) {
+                            // Select the narrow phase algorithm to use according to the two collision shapes
+                            NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
-                                CollisionCallback::CollisionCallbackInfo collisionInfo(contactPointInfo, body,
-                                                                                       proxyShape->getBody(), bodyProxyShape,
-                                                                                       proxyShape);
+                            // If there is a collision algorithm for those two kinds of shapes
+                            if (narrowPhaseAlgorithm != nullptr) {
 
-                                // Report the contact to the user
-                                callback->notifyContact(collisionInfo);
+                                // Use the narrow-phase collision detection algorithm to check
+                                // if there really is a collision. If a collision occurs, the
+                                // notifyContact() callback method will be called.
+                                if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mMemoryManager.getPoolAllocator())) {
+
+                                    // Add the contact points as a potential contact manifold into the pair
+                                    narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
+                                }
                             }
+
+                            NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
+                            narrowPhaseInfo = narrowPhaseInfo->next;
+
+                            // Call the destructor
+                            currentNarrowPhaseInfo->~NarrowPhaseInfo();
+
+                            // Release the allocated memory
+                            mMemoryManager.release(MemoryManager::AllocationType::Pool, currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
                         }
 
-                        NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
-                        narrowPhaseInfo = narrowPhaseInfo->next;
+                        // Process the potential contacts
+                        processPotentialContacts(&pair);
 
-                        // Release the allocated memory
-                        mMemoryAllocator.release(currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
+                        if (pair.hasContacts()) {
+
+                            // Report the contacts to the user
+                            CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mMemoryManager);
+                            callback->notifyContact(collisionInfo);
+                        }
                     }
                 }
+
+                // Go to the next overlapping proxy shape
+                element = element->next;
             }
 
-            // Go to the next overlapping proxy shape
-            element = element->next;
+            // Go to the next proxy shape
+            bodyProxyShape = bodyProxyShape->getNext();
         }
-
-        // Go to the next proxy shape
-        bodyProxyShape = bodyProxyShape->getNext();
     }
 }
 
@@ -978,10 +924,14 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
     map<overlappingpairid, OverlappingPair*>::iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
-        OverlappingPair* pair = it->second;
+        OverlappingPair* originalPair = it->second;
 
-        ProxyShape* shape1 = pair->getShape1();
-        ProxyShape* shape2 = pair->getShape2();
+        // Create a new overlapping pair so that we do not work on the original one
+        OverlappingPair pair(originalPair->getShape1(), originalPair->getShape2(), mMemoryManager.getPoolAllocator(),
+                             mMemoryManager.getPoolAllocator());
+
+        ProxyShape* shape1 = pair.getShape1();
+        ProxyShape* shape2 = pair.getShape2();
 
         // Check if the collision filtering allows collision between the two shapes and
         // that the two shapes are still overlapping.
@@ -990,18 +940,16 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
              mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
             // Compute the middle-phase collision detection between the two shapes
-            NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(shape1, shape2);
-
-            const CollisionShapeType shape1Type = shape1->getCollisionShape()->getType();
-            const CollisionShapeType shape2Type = shape2->getCollisionShape()->getType();
+            NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
 
             // For each narrow-phase info object
             while (narrowPhaseInfo != nullptr) {
 
+                const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
+                const CollisionShapeType shape2Type = narrowPhaseInfo->collisionShape2->getType();
+
                 // Select the narrow phase algorithm to use according to the two collision shapes
-                const int shape1Index = static_cast<int>(shape1Type);
-                const int shape2Index = static_cast<int>(shape2Type);
-                NarrowPhaseAlgorithm* narrowPhaseAlgorithm = mCollisionMatrix[shape1Index][shape2Index];
+                NarrowPhaseAlgorithm* narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(shape1Type, shape2Type);
 
                 // If there is a collision algorithm for those two kinds of shapes
                 if (narrowPhaseAlgorithm != nullptr) {
@@ -1009,23 +957,32 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
                     // Use the narrow-phase collision detection algorithm to check
                     // if there really is a collision. If a collision occurs, the
                     // notifyContact() callback method will be called.
-                    ContactPointInfo contactPointInfo;
-                    if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, contactPointInfo)) {
+                    if (narrowPhaseAlgorithm->testCollision(narrowPhaseInfo, true, mMemoryManager.getPoolAllocator())) {
 
-                        CollisionCallback::CollisionCallbackInfo collisionInfo(contactPointInfo, shape1->getBody(),
-                                                                               shape2->getBody(), shape1, shape2);
-
-                        // Report the contact to the user
-                        callback->notifyContact(collisionInfo);
+                        // Add the contact points as a potential contact manifold into the pair
+                        narrowPhaseInfo->addContactPointsAsPotentialContactManifold();
                     }
                 }
 
                 NarrowPhaseInfo* currentNarrowPhaseInfo = narrowPhaseInfo;
                 narrowPhaseInfo = narrowPhaseInfo->next;
 
+                // Call the destructor
+                currentNarrowPhaseInfo->~NarrowPhaseInfo();
+
                 // Release the allocated memory
-                mMemoryAllocator.release(currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
+                mMemoryManager.release(MemoryManager::AllocationType::Pool, currentNarrowPhaseInfo, sizeof(NarrowPhaseInfo));
             }
+
+            // Process the potential contacts
+            processPotentialContacts(&pair);
+
+			if (pair.hasContacts()) {
+
+				// Report the contacts to the user
+                CollisionCallback::CollisionCallbackInfo collisionInfo(&pair, mMemoryManager);
+				callback->notifyContact(collisionInfo);
+			}
         }
     }
 }
@@ -1046,7 +1003,8 @@ EventListener* CollisionDetection::getWorldEventListener() {
    return mWorld->mEventListener;
 }
 
-/// Return a reference to the world memory allocator
-PoolAllocator& CollisionDetection::getWorldMemoryAllocator() {
-  return mWorld->mPoolAllocator;
+// Return the world-space AABB of a given proxy shape
+const AABB CollisionDetection::getWorldAABB(const ProxyShape* proxyShape) const {
+    assert(proxyShape->mBroadPhaseID > -1);
+    return mBroadPhaseAlgorithm.getFatAABB(proxyShape->mBroadPhaseID);
 }

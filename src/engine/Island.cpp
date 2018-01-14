@@ -29,14 +29,17 @@
 using namespace reactphysics3d;
 
 // Constructor
-Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints, SingleFrameAllocator& allocator)
+Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints, MemoryManager& memoryManager)
        : mBodies(nullptr), mContactManifolds(nullptr), mJoints(nullptr), mNbBodies(0),
          mNbContactManifolds(0), mNbJoints(0) {
 
     // Allocate memory for the arrays on the single frame allocator
-    mBodies = static_cast<RigidBody**>(allocator.allocate(sizeof(RigidBody*) * nbMaxBodies));
-    mContactManifolds = static_cast<ContactManifold**>(allocator.allocate(sizeof(ContactManifold*) * nbMaxContactManifolds));
-    mJoints = static_cast<Joint**>(allocator.allocate(sizeof(Joint*) * nbMaxJoints));
+    mBodies = static_cast<RigidBody**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                              sizeof(RigidBody*) * nbMaxBodies));
+    mContactManifolds = static_cast<ContactManifold**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                              sizeof(ContactManifold*) * nbMaxContactManifolds));
+    mJoints = static_cast<Joint**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                          sizeof(Joint*) * nbMaxJoints));
 }
 
 // Destructor

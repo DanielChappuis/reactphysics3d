@@ -33,9 +33,15 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mSingleFrameAllocator(SIZE_SINGLE_FRAME_ALLOCATOR_BYTES),
-                 mCollisionDetection(this, mPoolAllocator, mSingleFrameAllocator), mCurrentBodyID(0),
+               : mCollisionDetection(this, mMemoryManager), mCurrentBodyID(0),
                  mEventListener(nullptr) {
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	mCollisionDetection.setProfiler(&mProfiler);
+
+#endif
 
 }
 
@@ -67,13 +73,20 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Create the collision body
-    CollisionBody* collisionBody = new (mPoolAllocator.allocate(sizeof(CollisionBody)))
+    CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                        sizeof(CollisionBody)))
                                         CollisionBody(transform, *this, bodyID);
 
     assert(collisionBody != nullptr);
 
     // Add the collision body to the world
     mBodies.insert(collisionBody);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	collisionBody->setProfiler(&mProfiler);
+
+#endif
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -98,7 +111,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     mBodies.erase(collisionBody);
 
     // Free the object from the memory allocator
-    mPoolAllocator.release(collisionBody, sizeof(CollisionBody));
+    mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
 }
 
 // Return the next available body ID
@@ -164,3 +177,13 @@ bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
     return mCollisionDetection.testOverlap(body1, body2);
 }
 
+
+// Return the current world-space AABB of given proxy shape
+AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
+
+    if (proxyShape->mBroadPhaseID == -1) {
+        return AABB();
+    }
+
+   return mCollisionDetection.getWorldAABB(proxyShape);
+}

@@ -39,7 +39,7 @@
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
 #include "constraint/ContactPoint.h"
-#include "memory/PoolAllocator.h"
+#include "memory/MemoryManager.h"
 #include "EventListener.h"
 
 /// Namespace reactphysics3d
@@ -61,11 +61,8 @@ class CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pool Memory allocator
-        PoolAllocator mPoolAllocator;
-
-        /// Single frame Memory allocator
-        SingleFrameAllocator mSingleFrameAllocator;
+        /// Memory manager
+        MemoryManager mMemoryManager;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
@@ -81,6 +78,12 @@ class CollisionWorld {
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Real-time hierarchical profiler
+		Profiler mProfiler;
+#endif
 
         // -------------------- Methods -------------------- //
 
@@ -146,6 +149,15 @@ class CollisionWorld {
 
         /// Test and report collisions between all shapes of the world
         void testCollision(CollisionCallback* callback);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the name of the profiler
+		void setProfilerName(std::string name);
+#endif
+
+        /// Return the current world-space AABB of given proxy shape
+        AABB getWorldAABB(const ProxyShape* proxyShape) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -233,64 +245,15 @@ inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* ov
     mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
 }
 
-// Class CollisionCallback
-/**
- * This class can be used to register a callback for collision test queries.
- * You should implement your own class inherited from this one and implement
- * the notifyContact() method. This method will called each time a contact
- * point is reported.
- */
-class CollisionCallback {
+#ifdef IS_PROFILING_ACTIVE
 
-    public:
+// Set the name of the profiler
+inline void CollisionWorld::setProfilerName(std::string name) {
+	mProfiler.setName(name);
+}
 
-        struct CollisionCallbackInfo {
-
-            public:
-                const ContactPointInfo& contactPoint;
-                CollisionBody* body1;
-                CollisionBody* body2;
-                const ProxyShape* proxyShape1;
-                const ProxyShape* proxyShape2;
-
-                // Constructor
-                CollisionCallbackInfo(const ContactPointInfo& point, CollisionBody* b1, CollisionBody* b2,
-                                      const ProxyShape* proxShape1, const ProxyShape* proxShape2) :
-                    contactPoint(point), body1(b1), body2(b2),
-                    proxyShape1(proxShape1), proxyShape2(proxShape2) {
-
-                }
-        };
-
-        /// Destructor
-        virtual ~CollisionCallback() {
-
-        }
-
-        /// This method will be called for each reported contact point
-        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo)=0;
-};
-
-// Class OverlapCallback
-/**
- * This class can be used to register a callback for collision overlap queries.
- * You should implement your own class inherited from this one and implement
- * the notifyOverlap() method. This method will called each time a contact
- * point is reported.
- */
-class OverlapCallback {
-
-    public:
-
-        /// Destructor
-        virtual ~OverlapCallback() {
-
-        }
-
-        /// This method will be called for each reported overlapping bodies
-        virtual void notifyOverlap(CollisionBody* collisionBody)=0;
-};
+#endif
 
 }
 
- #endif
+#endif

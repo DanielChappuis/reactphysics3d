@@ -30,9 +30,12 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseInfo,
-                                            ContactPointInfo& contactPointInfo) {
+bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                            MemoryAllocator& memoryAllocator) {
     
+    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE);
+    assert(narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
+
     // Get the sphere collision shapes
     const SphereShape* sphereShape1 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape1);
     const SphereShape* sphereShape2 = static_cast<const SphereShape*>(narrowPhaseInfo->collisionShape2);
@@ -49,18 +52,36 @@ bool SphereVsSphereAlgorithm::testCollision(const NarrowPhaseInfo* narrowPhaseIn
     decimal sumRadius = sphereShape1->getRadius() + sphereShape2->getRadius();
     
     // If the sphere collision shapes intersect
-    if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
-        Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
-        Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
-        Vector3 intersectionOnBody1 = sphereShape1->getRadius() *
-                                      centerSphere2InBody1LocalSpace.getUnit();
-        Vector3 intersectionOnBody2 = sphereShape2->getRadius() *
-                                      centerSphere1InBody2LocalSpace.getUnit();
-        decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
-        
-        // Create the contact info object
-        contactPointInfo.init(vectorBetweenCenters.getUnit(), penetrationDepth,
-                              intersectionOnBody1, intersectionOnBody2);
+    if (squaredDistanceBetweenCenters < sumRadius * sumRadius) {
+
+        if (reportContacts) {
+
+            Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
+            Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
+            decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
+			Vector3 intersectionOnBody1;
+			Vector3 intersectionOnBody2;
+			Vector3 normal;
+
+			// If the two sphere centers are not at the same position
+			if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
+
+				intersectionOnBody1 = sphereShape1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
+				intersectionOnBody2 = sphereShape2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
+				normal = vectorBetweenCenters.getUnit();
+			}
+			else {    // If the sphere centers are at the same position (degenerate case)
+
+				// Take any contact normal direction
+				normal.setAllValues(0, 1, 0);
+
+				intersectionOnBody1 = sphereShape1->getRadius() * (transform1.getInverse().getOrientation() * normal);
+				intersectionOnBody2 = sphereShape2->getRadius() * (transform2.getInverse().getOrientation() * normal);
+			}			
+            
+			// Create the contact info object
+            narrowPhaseInfo->addContactPoint(normal, penetrationDepth, intersectionOnBody1, intersectionOnBody2);
+        }
 
         return true;
     }

@@ -36,6 +36,7 @@
 #include "collision/RaycastInfo.h"
 #include "memory/PoolAllocator.h"
 #include "configuration.h"
+#include "engine/Profiler.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -84,6 +85,13 @@ class CollisionBody : public Body {
 
         /// Reference to the world the body belongs to
         CollisionWorld& mWorld;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
         // -------------------- Methods -------------------- //
 
@@ -176,6 +184,13 @@ class CollisionBody : public Body {
 
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -312,6 +327,15 @@ inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
 inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionBody::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

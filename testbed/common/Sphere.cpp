@@ -34,16 +34,9 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               reactphysics3d::CollisionWorld* world,
+Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
                const std::string& meshFolderPath)
-       : openglframework::Mesh(), mRadius(radius) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -51,23 +44,16 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCollisionShape = new rp3d::SphereShape(mRadius);
+    //mCollisionShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
@@ -83,16 +69,9 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
 }
 
 // Constructor
-Sphere::Sphere(float radius, const openglframework::Vector3 &position,
-               float mass, reactphysics3d::DynamicsWorld* world,
+Sphere::Sphere(float radius, float mass, reactphysics3d::DynamicsWorld* world,
                const std::string& meshFolderPath)
-       : openglframework::Mesh(), mRadius(radius) {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
+       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -100,21 +79,15 @@ Sphere::Sphere(float radius, const openglframework::Vector3 &position,
                                               0, 0, mRadius, 0,
                                               0, 0, 0, 1);
 
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
-
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCollisionShape = new rp3d::SphereShape(mRadius);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(transform);
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
     mProxyShape = body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
@@ -150,8 +123,7 @@ Sphere::~Sphere() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Sphere::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix) {
+void Sphere::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -261,24 +233,6 @@ void Sphere::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void Sphere::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
 }
 
 // Set the scaling of the object

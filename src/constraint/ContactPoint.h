@@ -28,60 +28,14 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "collision/ContactPointInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Structure ContactPointInfo
-/**
- * This structure contains informations about a collision contact
- * computed during the narrow-phase collision detection. Those
- * informations are used to compute the contact set for a contact
- * between two bodies.
- */
-struct ContactPointInfo {
-
-    private:
-
-        // -------------------- Methods -------------------- //
-
-    public:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Normalized normal vector of the collision contact in world space
-        Vector3 normal;
-
-        /// Penetration depth of the contact
-        decimal penetrationDepth;
-
-        /// Contact point of body 1 in local space of body 1
-        Vector3 localPoint1;
-
-        /// Contact point of body 2 in local space of body 2
-        Vector3 localPoint2;
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ContactPointInfo() = default;
-
-        /// Destructor
-        ~ContactPointInfo() = default;
-
-        /// Initialize the contact point info
-        void init(const Vector3& contactNormal, decimal penDepth,
-                  const Vector3& localPt1, const Vector3& localPt2) {
-            normal = contactNormal;
-            penetrationDepth = penDepth;
-            localPoint1 = localPt1;
-            localPoint2 = localPt2;
-        }
-};
+struct NarrowPhaseInfo;
 
 // Class ContactPoint
 /**
@@ -95,22 +49,16 @@ class ContactPoint {
         // -------------------- Attributes -------------------- //
 
         /// Normalized normal vector of the contact (from body1 toward body2) in world space
-        const Vector3 mNormal;
+        Vector3 mNormal;
 
         /// Penetration depth
         decimal mPenetrationDepth;
 
-        /// Contact point on body 1 in local space of body 1
-        const Vector3 mLocalPointOnBody1;
+        /// Contact point on proxy shape 1 in local-space of proxy shape 1
+        Vector3 mLocalPointOnShape1;
 
-        /// Contact point on body 2 in local space of body 2
-        const Vector3 mLocalPointOnBody2;
-
-        /// Contact point on body 1 in world space
-        Vector3 mWorldPointOnBody1;
-
-        /// Contact point on body 2 in world space
-        Vector3 mWorldPointOnBody2;
+        /// Contact point on proxy shape 2 in local-space of proxy shape 2
+        Vector3 mLocalPointOnShape2;
 
         /// True if the contact is a resting contact (exists for more than one time step)
         bool mIsRestingContact;
@@ -118,12 +66,48 @@ class ContactPoint {
         /// Cached penetration impulse
         decimal mPenetrationImpulse;
 
+        /// True if the contact point is obsolete
+        bool mIsObsolete;
+
+        /// Pointer to the next contact point in the double linked-list
+        ContactPoint* mNext;
+
+        /// Pointer to the previous contact point in the double linked-list
+        ContactPoint* mPrevious;
+
+        // -------------------- Methods -------------------- //
+
+        /// Update the contact point with a new one that is similar (very close)
+        void update(const ContactPointInfo* contactInfo);
+
+        /// Return true if the contact point is similar (close enougth) to another given contact point
+        bool isSimilarWithContactPoint(const ContactPointInfo* contactPoint) const;
+
+        /// Set the cached penetration impulse
+        void setPenetrationImpulse(decimal impulse);
+
+
+        /// Set the mIsRestingContact variable
+        void setIsRestingContact(bool isRestingContact);
+
+        /// Set to true to make the contact point obsolete
+        void setIsObsolete(bool isObselete);
+
+        /// Set the next contact point in the linked list
+        void setNext(ContactPoint* next);
+
+        /// Set the previous contact point in the linked list
+        void setPrevious(ContactPoint* previous);
+
+        /// Return true if the contact point is obsolete
+        bool getIsObsolete() const;
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(const ContactPointInfo& contactInfo);
+        ContactPoint(const ContactPointInfo* contactInfo);
 
         /// Destructor
         ~ContactPoint() = default;
@@ -134,85 +118,63 @@ class ContactPoint {
         /// Deleted assignment operator
         ContactPoint& operator=(const ContactPoint& contact) = delete;
 
-        /// Update the world contact points
-        void updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform);
-
-        /// Update the penetration depth
-        void updatePenetrationDepth();
-
         /// Return the normal vector of the contact
         Vector3 getNormal() const;
 
-        /// Return the contact local point on body 1
-        Vector3 getLocalPointOnBody1() const;
+        /// Return the contact point on the first proxy shape in the local-space of the proxy shape
+        const Vector3& getLocalPointOnShape1() const;
 
-        /// Return the contact local point on body 2
-        Vector3 getLocalPointOnBody2() const;
-
-        /// Return the contact world point on body 1
-        Vector3 getWorldPointOnBody1() const;
-
-        /// Return the contact world point on body 2
-        Vector3 getWorldPointOnBody2() const;
+        /// Return the contact point on the second proxy shape in the local-space of the proxy shape
+        const Vector3& getLocalPointOnShape2() const;
 
         /// Return the cached penetration impulse
         decimal getPenetrationImpulse() const;
 
-        /// Set the cached penetration impulse
-        void setPenetrationImpulse(decimal impulse);
-
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
-        /// Set the mIsRestingContact variable
-        void setIsRestingContact(bool isRestingContact);
+        /// Return the previous contact point in the linked list
+        inline ContactPoint* getPrevious() const;
+
+        /// Return the next contact point in the linked list
+        ContactPoint* getNext() const;
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
 
         /// Return the number of bytes used by the contact point
         size_t getSizeInBytes() const;
+
+        // Friendship
+        friend class ContactManifold;
+        friend class ContactManifoldSet;
+        friend class ContactSolver;
 };
-
-// Update the world contact points
-inline void ContactPoint::updateWorldContactPoints(const Transform& body1Transform, const Transform& body2Transform) {
-    mWorldPointOnBody1 = body1Transform * mLocalPointOnBody1;
-    mWorldPointOnBody2 = body2Transform * mLocalPointOnBody2;
-}
-
-// Update the penetration depth
-inline void ContactPoint::updatePenetrationDepth() {
-    mPenetrationDepth = (mWorldPointOnBody1 - mWorldPointOnBody2).dot(mNormal);
-}
 
 // Return the normal vector of the contact
 inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
 }
 
-// Return the contact point on body 1
-inline Vector3 ContactPoint::getLocalPointOnBody1() const {
-    return mLocalPointOnBody1;
+// Return the contact point on the first proxy shape in the local-space of the proxy shape
+inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
+    return mLocalPointOnShape1;
 }
 
-// Return the contact point on body 2
-inline Vector3 ContactPoint::getLocalPointOnBody2() const {
-    return mLocalPointOnBody2;
-}
-
-// Return the contact world point on body 1
-inline Vector3 ContactPoint::getWorldPointOnBody1() const {
-    return mWorldPointOnBody1;
-}
-
-// Return the contact world point on body 2
-inline Vector3 ContactPoint::getWorldPointOnBody2() const {
-    return mWorldPointOnBody2;
+// Return the contact point on the second proxy shape in the local-space of the proxy shape
+inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
+    return mLocalPointOnShape2;
 }
 
 // Return the cached penetration impulse
 inline decimal ContactPoint::getPenetrationImpulse() const {
     return mPenetrationImpulse;
+}
+
+// Return true if the contact point is similar (close enougth) to another given contact point
+inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
+    return (localContactPointBody1->localPoint1 - mLocalPointOnShape1).lengthSquare() <= (PERSISTENT_CONTACT_DIST_THRESHOLD *
+            PERSISTENT_CONTACT_DIST_THRESHOLD);
 }
 
 // Set the cached penetration impulse
@@ -228,6 +190,36 @@ inline bool ContactPoint::getIsRestingContact() const {
 // Set the mIsRestingContact variable
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
+}
+
+// Return true if the contact point is obsolete
+inline bool ContactPoint::getIsObsolete() const {
+    return mIsObsolete;
+}
+
+// Set to true to make the contact point obsolete
+inline void ContactPoint::setIsObsolete(bool isObsolete) {
+    mIsObsolete = isObsolete;
+}
+
+// Return the next contact point in the linked list
+inline ContactPoint* ContactPoint::getNext() const {
+   return mNext;
+}
+
+// Set the next contact point in the linked list
+inline void ContactPoint::setNext(ContactPoint* next) {
+    mNext = next;
+}
+
+// Return the previous contact point in the linked list
+inline ContactPoint* ContactPoint::getPrevious() const {
+   return mPrevious;
+}
+
+// Set the previous contact point in the linked list
+inline void ContactPoint::setPrevious(ContactPoint* previous) {
+    mPrevious = previous;
 }
 
 // Return the penetration depth of the contact

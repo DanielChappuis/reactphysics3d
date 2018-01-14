@@ -1,4 +1,4 @@
-/********************************************************************************
+ /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
 * Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
@@ -27,10 +27,11 @@
 #define REACTPHYSICS3D_CONVEX_MESH_SHAPE_H
 
 // Libraries
-#include "ConvexShape.h"
+#include "ConvexPolyhedronShape.h"
 #include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
 #include "collision/TriangleMesh.h"
+#include "collision/PolyhedronMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <vector>
 #include <set>
@@ -45,30 +46,18 @@ class CollisionWorld;
 // Class ConvexMeshShape
 /**
  * This class represents a convex mesh shape. In order to create a convex mesh shape, you
- * need to indicate the local-space position of the mesh vertices. You do it either by
- * passing a vertices array to the constructor or using the addVertex() method. Make sure
- * that the set of vertices that you use to create the shape are indeed part of a convex
- * mesh. The center of mass of the shape will be at the origin of the local-space geometry
- * that you use to create the mesh. The method used for collision detection with a convex
- * mesh shape has an O(n) running time with "n" beeing the number of vertices in the mesh.
- * Therefore, you should try not to use too many vertices. However, it is possible to speed
- * up the collision detection by using the edges information of your mesh. The running time
- * of the collision detection that uses the edges is almost O(1) constant time at the cost
- * of additional memory used to store the vertices. You can indicate edges information
- * with the addEdge() method. Then, you must use the setIsEdgesInformationUsed(true) method
- * in order to use the edges information for collision detection.
+ * need to indicate the local-space position of the mesh vertices. The center of mass
+ * of the shape will be at the origin of the local-space geometry that you use to create
+ * the mesh.
  */
-class ConvexMeshShape : public ConvexShape {
+class ConvexMeshShape : public ConvexPolyhedronShape {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Array with the vertices of the mesh
-        std::vector<Vector3> mVertices;
-
-        /// Number of vertices in the mesh
-        uint mNbVertices;
+        /// Polyhedron structure of the mesh
+        PolyhedronMesh* mPolyhedronMesh;
 
         /// Mesh minimum bounds in the three local x, y and z directions
         Vector3 mMinBounds;
@@ -76,30 +65,19 @@ class ConvexMeshShape : public ConvexShape {
         /// Mesh maximum bounds in the three local x, y and z directions
         Vector3 mMaxBounds;
 
-        /// True if the shape contains the edges of the convex mesh in order to
-        /// make the collision detection faster
-        bool mIsEdgesInformationUsed;
-
-        /// Adjacency list representing the edges of the mesh
-        std::map<uint, std::set<uint> > mEdgesAdjacencyList;
-
         // -------------------- Methods -------------------- //
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
-
         /// Return a local support point in a given direction without the object margin.
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const override;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
         virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
@@ -108,16 +86,8 @@ class ConvexMeshShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor to initialize with an array of 3D vertices.
-        ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride,
-                        decimal margin = OBJECT_MARGIN);
-
-        /// Constructor to initialize with a triangle vertex array
-        ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed = true,
-                        decimal margin = OBJECT_MARGIN);
-
-        /// Constructor.
-        ConvexMeshShape(decimal margin = OBJECT_MARGIN);
+        /// Constructor
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh);
 
         /// Destructor
         virtual ~ConvexMeshShape() override = default;
@@ -128,27 +98,41 @@ class ConvexMeshShape : public ConvexShape {
         /// Deleted assignment operator
         ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
 
+        /// Set the scaling vector of the collision shape
+        virtual void setLocalScaling(const Vector3& scaling) override;
+
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape.
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
-        /// Add a vertex into the convex mesh
-        void addVertex(const Vector3& vertex);
+        /// Return the number of faces of the polyhedron
+        virtual uint getNbFaces() const override;
 
-        /// Add an edge into the convex mesh by specifying the two vertex indices of the edge.
-        void addEdge(uint v1, uint v2);
+        /// Return a given face of the polyhedron
+        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const override;
 
-        /// Return true if the collision shape is a polyhedron
-        virtual bool isPolyhedron() const override;
+        /// Return the number of vertices of the polyhedron
+        virtual uint getNbVertices() const override;
 
-        /// Return true if the edges information is used to speed up the collision detection
-        bool isEdgesInformationUsed() const;
+        /// Return a given vertex of the polyhedron
+        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const override;
 
-        /// Set the variable to know if the edges information is used to speed up the
-        /// collision detection
-        void setIsEdgesInformationUsed(bool isEdgesUsed);
+        /// Return the number of half-edges of the polyhedron
+        virtual uint getNbHalfEdges() const override;
+
+        /// Return a given half-edge of the polyhedron
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const override;
+
+        /// Return the position of a given vertex
+        virtual Vector3 getVertexPosition(uint vertexIndex) const override;
+
+        /// Return the normal vector of a given face of the polyhedron
+        virtual Vector3 getFaceNormal(uint faceIndex) const override;
+
+        /// Return the centroid of the polyhedron
+        virtual Vector3 getCentroid() const override;
 };
 
 /// Set the scaling vector of the collision shape
@@ -160,11 +144,6 @@ inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {
     return sizeof(ConvexMeshShape);
-}
-
-// Return true if the collision shape is a polyhedron
-inline bool ConvexMeshShape::isPolyhedron() const {
-    return true;
 }
 
 // Return the local bounds of the shape in x, y and z directions
@@ -197,68 +176,6 @@ inline void ConvexMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decima
                         0.0, 0.0, factor * (xSquare + ySquare));
 }
 
-// Add a vertex into the convex mesh
-/**
- * @param vertex Vertex to be added
- */
-inline void ConvexMeshShape::addVertex(const Vector3& vertex) {
-
-    // Add the vertex in to vertices array
-    mVertices.push_back(vertex);
-    mNbVertices++;
-
-    // Update the bounds of the mesh
-    if (vertex.x * mScaling.x > mMaxBounds.x) mMaxBounds.x = vertex.x * mScaling.x;
-    if (vertex.x * mScaling.x < mMinBounds.x) mMinBounds.x = vertex.x * mScaling.x;
-    if (vertex.y * mScaling.y > mMaxBounds.y) mMaxBounds.y = vertex.y * mScaling.y;
-    if (vertex.y * mScaling.y < mMinBounds.y) mMinBounds.y = vertex.y * mScaling.y;
-    if (vertex.z * mScaling.z > mMaxBounds.z) mMaxBounds.z = vertex.z * mScaling.z;
-    if (vertex.z * mScaling.z < mMinBounds.z) mMinBounds.z = vertex.z * mScaling.z;
-}
-
-// Add an edge into the convex mesh by specifying the two vertex indices of the edge.
-/// Note that the vertex indices start at zero and need to correspond to the order of
-/// the vertices in the vertices array in the constructor or the order of the calls
-/// of the addVertex() methods that you use to add vertices into the convex mesh.
-/**
-* @param v1 Index of the first vertex of the edge to add
-* @param v2 Index of the second vertex of the edge to add
-*/
-inline void ConvexMeshShape::addEdge(uint v1, uint v2) {
-
-    // If the entry for vertex v1 does not exist in the adjacency list
-    if (mEdgesAdjacencyList.count(v1) == 0) {
-        mEdgesAdjacencyList.insert(std::make_pair(v1, std::set<uint>()));
-    }
-
-    // If the entry for vertex v2 does not exist in the adjacency list
-    if (mEdgesAdjacencyList.count(v2) == 0) {
-        mEdgesAdjacencyList.insert(std::make_pair(v2, std::set<uint>()));
-    }
-
-    // Add the edge in the adjacency list
-    mEdgesAdjacencyList[v1].insert(v2);
-    mEdgesAdjacencyList[v2].insert(v1);
-}
-
-// Return true if the edges information is used to speed up the collision detection
-/**
- * @return True if the edges information is used and false otherwise
- */
-inline bool ConvexMeshShape::isEdgesInformationUsed() const {
-    return mIsEdgesInformationUsed;
-}
-
-// Set the variable to know if the edges information is used to speed up the
-// collision detection
-/**
- * @param isEdgesUsed True if you want to use the edges information to speed up
- *                    the collision detection with the convex mesh shape
- */
-inline void ConvexMeshShape::setIsEdgesInformationUsed(bool isEdgesUsed) {
-    mIsEdgesInformationUsed = isEdgesUsed;
-}
-
 // Return true if a point is inside the collision shape
 inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
                                              ProxyShape* proxyShape) const {
@@ -266,6 +183,56 @@ inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
     // Use the GJK algorithm to test if the point is inside the convex mesh
     return proxyShape->mBody->mWorld.mCollisionDetection.
            mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
+}
+
+// Return the number of faces of the polyhedron
+inline uint ConvexMeshShape::getNbFaces() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbFaces();
+}
+
+// Return a given face of the polyhedron
+inline const HalfEdgeStructure::Face& ConvexMeshShape::getFace(uint faceIndex) const {
+    assert(faceIndex < getNbFaces());
+    return mPolyhedronMesh->getHalfEdgeStructure().getFace(faceIndex);
+}
+
+// Return the number of vertices of the polyhedron
+inline uint ConvexMeshShape::getNbVertices() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbVertices();
+}
+
+// Return a given vertex of the polyhedron
+inline HalfEdgeStructure::Vertex ConvexMeshShape::getVertex(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mPolyhedronMesh->getHalfEdgeStructure().getVertex(vertexIndex);
+}
+
+// Return the number of half-edges of the polyhedron
+inline uint ConvexMeshShape::getNbHalfEdges() const {
+    return mPolyhedronMesh->getHalfEdgeStructure().getNbHalfEdges();
+}
+
+// Return a given half-edge of the polyhedron
+inline const HalfEdgeStructure::Edge& ConvexMeshShape::getHalfEdge(uint edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+    return mPolyhedronMesh->getHalfEdgeStructure().getHalfEdge(edgeIndex);
+}
+
+// Return the position of a given vertex
+inline Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mPolyhedronMesh->getVertex(vertexIndex) * mScaling;
+}
+
+// Return the normal vector of a given face of the polyhedron
+inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
+    assert(faceIndex < getNbFaces());
+    return mPolyhedronMesh->getFaceNormal(faceIndex);
+}
+
+// Return the centroid of the polyhedron
+inline Vector3 ConvexMeshShape::getCentroid() const {
+    return mPolyhedronMesh->getCentroid() * mScaling;
 }
 
 }

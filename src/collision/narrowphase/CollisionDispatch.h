@@ -41,6 +41,13 @@ class CollisionDispatch {
 
     protected:
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public:
 
         /// Constructor
@@ -49,12 +56,28 @@ class CollisionDispatch {
         /// Destructor
         virtual ~CollisionDispatch() = default;
 
-
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type,
-                                                      int shape2Type)=0;
+        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type, int shape2Type)=0;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler);
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionDispatch::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

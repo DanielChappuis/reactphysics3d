@@ -100,9 +100,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Array of constrained rigid bodies orientation (for position error correction)
         Quaternion* mConstrainedOrientations;
 
-        /// Map body to their index in the constrained velocities array
-        std::map<RigidBody*, uint> mMapBodyToConstrainedVelocityIndex;
-
         /// Number of islands in the world
         uint mNbIslands;
 
@@ -124,18 +121,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Integrate the positions and orientations of rigid bodies.
         void integrateRigidBodiesPositions();
 
-        /// Update the AABBs of the bodies
-        void updateRigidBodiesAABB();
-
         /// Reset the external force and torque applied to the bodies
         void resetBodiesForceAndTorque();
-
-        /// Update the position and orientation of a body
-        void updatePositionAndOrientationOfBody(RigidBody* body, Vector3 newLinVelocity,
-                                                Vector3 newAngVelocity);
-
-        /// Compute and set the interpolation factor to all bodies
-        void setInterpolationFactorToAllBodies();
 
         /// Initialize the bodies velocities arrays for the next simulation step.
         void initVelocityArrays();
@@ -148,9 +135,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Solve the position error correction of the constraints
         void solvePositionCorrection();
-
-        /// Cleanup the constrained velocities array at each step
-        void cleanupConstrainedVelocitiesArray();
 
         /// Compute the islands of awake bodies.
         void computeIslands();
@@ -477,7 +461,6 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
 inline void DynamicsWorld::setEventListener(EventListener* eventListener) {
     mEventListener = eventListener;
 }
-
 
 }
 
