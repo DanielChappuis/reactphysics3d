@@ -91,14 +91,13 @@ void RigidBody::setType(BodyType type) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mMassInverse = decimal(0.0);
-        mInertiaTensorLocal.setToZero();
         mInertiaTensorLocalInverse.setToZero();
         mInertiaTensorInverseWorld.setToZero();
 
     }
     else {  // If it is a dynamic body
         mMassInverse = decimal(1.0) / mInitMass;
-        mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+        mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
 
         // Update the world inverse inertia tensor
         updateInertiaTensorInverseWorld();
@@ -126,12 +125,26 @@ void RigidBody::setType(BodyType type) {
  */
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
+    mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+
     if (mType != BodyType::DYNAMIC) return;
 
-    mInertiaTensorLocal = inertiaTensorLocal;
+    // Compute the inverse local inertia tensor
+    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
+}
+
+// Set the inverse local inertia tensor of the body (in body coordinates)
+void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal) {
+
+    mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
+
+    if (mType != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -346,12 +359,13 @@ void RigidBody::recomputeMassInformation() {
 
     mInitMass = decimal(0.0);
     mMassInverse = decimal(0.0);
-    mInertiaTensorLocal.setToZero();
     mInertiaTensorLocalInverse.setToZero();
     mInertiaTensorInverseWorld.setToZero();
     mCenterOfMassLocal.setToZero();
+    Matrix3x3 inertiaTensorLocal;
+    inertiaTensorLocal.setToZero();
 
-    // If it is STATIC or KINEMATIC body
+    // If it is a STATIC or a KINEMATIC body
     if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
         mCenterOfMassWorld = mTransform.getPosition();
         return;
@@ -403,11 +417,11 @@ void RigidBody::recomputeMassInformation() {
         offsetMatrix[2] += offset * (-offset.z);
         offsetMatrix *= shape->getMass();
 
-        mInertiaTensorLocal += inertiaTensor + offsetMatrix;
+        inertiaTensorLocal += inertiaTensor + offsetMatrix;
     }
 
     // Compute the local inverse inertia tensor
-    mInertiaTensorLocalInverse = mInertiaTensorLocal.getInverse();
+    mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
