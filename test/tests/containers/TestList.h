@@ -64,7 +64,7 @@ class TestList : public Test {
             testIndexing();
             testEquality();
             testReserve();
-            testIteration();
+            testIterators();
         }
 
         void testConstructors() {
@@ -320,8 +320,45 @@ class TestList : public Test {
             test(list1[1] == 2);
         }
 
-        void testIteration() {
-            // TODO : Implement this
+        void testIterators() {
+
+            List<int> list1(mAllocator);
+
+            test(list1.begin() == list1.end());
+
+            list1.add(5);
+            list1.add(6);
+            list1.add(8);
+            list1.add(-1);
+
+            List<int>::Iterator itBegin = list1.begin();
+            List<int>::Iterator itEnd = list1.end();
+            List<int>::Iterator it = list1.begin();
+
+            test(itBegin == it);
+            test(*it == 5);
+            test(*(it++) == 5);
+            test(*it == 6);
+            test(*(it--) == 6);
+            test(*it == 5);
+            test(*(++it) == 6);
+            test(*it == 6);
+            test(*(--it) == 5);
+            test(*it == 5);
+            test(it == itBegin);
+
+            it = list1.end();
+            test(it == itEnd);
+            it--;
+            test(*it == -1);
+            it++;
+            test(it == itEnd);
+
+            List<int> list2(mAllocator);
+            for (auto it = list1.begin(); it != list1.end(); ++it) {
+                list2.add(*it);
+            }
+            test(list1 == list2);
         }
 
  };

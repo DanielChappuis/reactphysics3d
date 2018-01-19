@@ -56,6 +56,13 @@ class Map {
                 keyValue = nullptr;
             }
 
+            /// Constructor
+            Entry(size_t hashcode, int nextValue) {
+                hashCode = hashcode;
+                next = nextValue;
+                keyValue = nullptr;
+            }
+
             /// Destructor
             ~Entry() {
 
@@ -241,6 +248,129 @@ class Map {
         }
 
     public:
+
+        /// Class Iterator
+        /**
+         * This class represents an iterator for the Map
+         */
+        class Iterator {
+
+            private:
+
+                /// Array of buckets
+                const int* mBuckets;
+
+                /// Array of entries
+                const Entry* mEntries;
+
+                /// Capacity of the map
+                int mCapacity;
+
+                /// Index of the current bucket
+                int mCurrentBucket;
+
+                /// Index of the current entry
+                int mCurrentEntry;
+
+                /// Advance the iterator
+                void advance() {
+
+                    // If we are trying to move past the end
+                    assert(mCurrentBucket < mCapacity);
+
+                    // If we are at the last entry for the current bucket
+                    if (mEntries[mCurrentEntry].next == -1) {
+
+                        // Find the next occupied bucket
+                        for (int b = mCurrentBucket + 1; mBuckets[b] > 0 || b == mCapacity; b++) {
+
+                            mCurrentBucket = b;
+
+                            // If we have reached the end of the map
+                            if (mCurrentBucket == mCapacity) {
+                               mCurrentEntry = mCapacity;
+                               return;
+                            }
+
+                            mCurrentEntry = mBuckets[mCurrentBucket];
+                            assert(mCurrentEntry != -1);
+                        }
+                    }
+                    else {
+
+                        // Move to the next entry in the current bucket
+                        mCurrentEntry = mEntries[mCurrentEntry].next;
+                        assert(mEntries[mCurrentEntry].keyValue != nullptr);
+                    }
+                }
+
+            public:
+
+                // Iterator traits
+                using value_type = std::pair<K,V>;
+                using difference_type = std::ptrdiff_t;
+                using pointer = std::pair<K, V>*;
+                using reference = std::pair<K,V>&;
+                using iterator_category = std::forward_iterator_tag;
+
+                /// Constructor
+                Iterator() = default;
+
+                /// Constructor
+                Iterator(const int* buckets, const Entry* entries, int capacity, int currentBucket, int currentEntry)
+                     :mBuckets(buckets), mEntries(entries), mCapacity(capacity), mCurrentBucket(currentBucket), mCurrentEntry(currentEntry) {
+
+                }
+
+                /// Copy constructor
+                Iterator(const Iterator& it)
+                     :mBuckets(it.mBuckets), mEntries(it.mEntries), mCapacity(it.mCapacity), mCurrentBucket(it.mCurrentBucket), mCurrentEntry(it.mCurrentEntry) {
+
+                }
+
+                /// Deferencable
+                reference operator*() const {
+                    assert(mCurrentBucket >= 0 && mCurrentBucket < mCapacity);
+                    assert (mCurrentEntry != -1);
+                    assert(mEntries[mCurrentEntry].keyValue != nullptr);
+                    return mEntries[mCurrentEntry].keyValue;
+                }
+
+                /// Deferencable
+                pointer operator->() const {
+                    assert(mCurrentBucket >= 0 && mCurrentBucket < mCapacity);
+                    assert (mCurrentEntry != -1);
+                    assert(mEntries[mCurrentEntry].keyValue != nullptr);
+                    return mEntries[mCurrentEntry].keyValue;
+                }
+
+                /// Post increment (it++)
+                Iterator& operator++() {
+                    advance();
+                    return *this;
+                }
+
+                /// Pre increment (++it)
+                Iterator operator++(int number) {
+                    Iterator tmp = *this;
+                    advance();
+                    return tmp;
+                }
+
+                /// Equality operator (it == end())
+                bool operator==(const Iterator& iterator) const {
+                    return mBuckets == iterator.mBuckets &&
+                           mEntries == iterator.mEntries &&
+                           mCurrentBucket == iterator.mCurrentBucket &&
+                           mCurrentEntry == iterator.mCurrentEntry;
+                }
+
+                /// Inequality operator (it != end())
+                bool operator!=(const Iterator& iterator) const {
+                    return !(*this == iterator);
+                }
+        };
+
 
         // -------------------- Methods -------------------- //
 
@@ -434,6 +564,36 @@ class Map {
             return mCapacity;
         }
 
+        /// Try to find an item of the map given a key.
+        /// The method returns an iterator to the found item or
+        /// an iterator pointing to the end if not found
+        Iterator find(const K& key) const {
+
+            int bucket;
+            int entry = -1;
+
+            if (mCapacity > 0) {
+
+               size_t hashCode = std::hash<K>()(key);
+               bucket = hashCode % mCapacity;
+
+               for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
+                   if (mEntries[i].hashCode == hashCode && mEntries[i].keyValue->first == key) {
+                       entry = i;
+                       break;
+                   }
+               }
+            }
+
+            if (entry == -1) {
+                return end();
+            }
+
+            assert(mEntries[entry].keyValue != nullptr);
+
+            return Iterator(mBuckets, mEntries, mCapacity, bucket, entry);
+        }
+
         /// Overloaded index operator
         V& operator[](const K& key) {
 
@@ -471,8 +631,23 @@ class Map {
         /// Overloaded equality operator
         bool operator==(const Map<K,V>& map) const {
 
-            // TODO : Implement this
-            return false;
+            if (size() != map.size()) return false;
+
+            for (auto it = begin(); it != end(); ++it) {
+                auto it2 = map.find(it->first);
+                if (it2 == map.end() || it2->second != it->second) {
+                    return false;
+                }
+            }
+
+            for (auto it = map.begin(); it != map.end(); ++it) {
+                auto it2 = find(it->first);
+                if (it2 == end() || it2->second != it->second) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// Overloaded not equal operator
@@ -505,7 +680,15 @@ class Map {
                     std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
 
                     // Copy the entries
-                    std::memcpy(mEntries, map.mEntries, mCapacity * sizeof(Entry));
+                    for (int i=0; i < mCapacity; i++) {
+
+                        new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+
+                        if (map.mEntries[i].keyValue != nullptr) {
+                           mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
+                           new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                        }
+                    }
 
                     mNbUsedEntries = map.mNbUsedEntries;
                     mNbFreeEntries = map.mNbFreeEntries;
@@ -514,6 +697,36 @@ class Map {
             }
 
             return *this;
+        }
+
+        /// Return a begin iterator
+        Iterator begin() const {
+
+            // If the map is empty
+            if (size() == 0) {
+
+                // Return an iterator to the end
+                return end();
+            }
+
+            int bucket = -1;
+
+            // Find the first used bucket
+            for (int i=0; i<mCapacity; i++) {
+                if (mBuckets[i] >= 0) {
+                    bucket = i;
+                    break;
+                }
+            }
+
+            assert(bucket >= 0);
+
+            return Iterator(mBuckets, mEntries, mCapacity, bucket, mBuckets[bucket]);
+        }
+
+        /// Return a end iterator
+        Iterator end() const {
+            return Iterator(mBuckets, mEntries, mCapacity, mCapacity, mCapacity);
         }
 };
 

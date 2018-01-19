@@ -62,10 +62,11 @@ class TestMap : public Test {
             testReserve();
             testAddRemoveClear();
             testContainsKey();
+            testFind();
             testIndexing();
             testEquality();
             testAssignment();
-            testIteration();
+            testIterators();
         }
 
         void testConstructors() {
@@ -122,6 +123,8 @@ class TestMap : public Test {
 
         void testAddRemoveClear() {
 
+            // TODO : ADD test with values with same hash for keys but different keys
+
             // ----- Test add() ----- //
 
             Map<int, int> map1(mAllocator);
@@ -157,8 +160,8 @@ class TestMap : public Test {
             test(map1.size() == 2);
 
             map1.remove(13);
-            test(!map1.containsKey(8));
-            test(map1.containsKey(13));
+            test(map1.containsKey(8));
+            test(!map1.containsKey(13));
             test(map1.size() == 1);
 
             map1.remove(8);
@@ -245,6 +248,26 @@ class TestMap : public Test {
             test(map1[6] == 30);
         }
 
+        void testFind() {
+
+            Map<int, int> map1(mAllocator);
+            map1.add(std::make_pair(2, 20));
+            map1.add(std::make_pair(4, 40));
+            map1.add(std::make_pair(6, 60));
+            test(map1.find(2)->second == 20);
+            test(map1.find(4)->second == 40);
+            test(map1.find(6)->second == 60);
+            test(map1.find(45) == map1.end());
+
+            map1[2] = 10;
+            map1[4] = 20;
+            map1[6] = 30;
+
+            test(map1.find(2)->second == 10);
+            test(map1.find(4)->second == 20);
+            test(map1.find(6)->second == 30);
+        }
+
         void testEquality() {
 
             Map<std::string, int> map1(mAllocator, 10);
@@ -281,7 +304,7 @@ class TestMap : public Test {
            map1.add(std::make_pair(1, 3));
            map1.add(std::make_pair(2, 6));
            map1.add(std::make_pair(10, 30));
-/*
+
            Map<int, int> map2(mAllocator);
            map2 = map1;
            test(map2.size() == map1.size());
@@ -299,7 +322,7 @@ class TestMap : public Test {
            Map<int, int> map4(mAllocator);
            map3 = map4;
            test(map3.size() == 0);
-*/
+
            Map<int, int> map5(mAllocator);
            map5.add(std::make_pair(7, 8));
            map5.add(std::make_pair(19, 70));
@@ -309,8 +332,28 @@ class TestMap : public Test {
            test(map1[19] == 70);
         }
 
-        void testIteration() {
+        void testIterators() {
 
+            Map<int, int> map1(mAllocator);
+
+            test(map1.begin() == map1.end());
+
+            map1.add(std::make_pair(1, 5));
+            map1.add(std::make_pair(2, 6));
+            map1.add(std::make_pair(3, 8));
+            map1.add(std::make_pair(4, -1));
+
+            Map<int, int>::Iterator itBegin = map1.begin();
+            Map<int, int>::Iterator it = map1.begin();
+
+            test(itBegin == it);
+
+            int size = 0;
+            for (auto it = map1.begin(); it != map1.end(); ++it) {
+                test(map1.containsKey(it->first));
+                size++;
+            }
+            test(map1.size() == size);
         }
  };
 

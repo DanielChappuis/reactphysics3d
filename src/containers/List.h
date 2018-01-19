@@ -57,9 +57,6 @@ class List {
         /// Memory allocator
         MemoryAllocator& mAllocator;
 
-        // -------------------- Methods -------------------- //
-
-
     public:
 
         /// Class Iterator
@@ -87,14 +84,14 @@ class List {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(T* buffer, size_t index, size_t size)
-                     :mCurrentIndex(index), mBuffer(buffer), mSize(size) {
+                Iterator(void* buffer, size_t index, size_t size)
+                     :mCurrentIndex(index), mBuffer(static_cast<T*>(buffer)), mSize(size) {
 
                 }
 
                 /// Copy constructor
                 Iterator(const Iterator& it)
-                     :mCurrentIndex(it.mCurrentIndex), mBuffer(it.mBuffer), mSize(it.size) {
+                     :mCurrentIndex(it.mCurrentIndex), mBuffer(it.mBuffer), mSize(it.mSize) {
 
                 }
 
@@ -112,14 +109,14 @@ class List {
 
                 /// Post increment (it++)
                 Iterator& operator++() {
-                    assert(mCurrentIndex < mSize - 1);
+                    assert(mCurrentIndex < mSize);
                     mCurrentIndex++;
                     return *this;
                 }
 
                 /// Pre increment (++it)
                 Iterator operator++(int number) {
-                    assert(mCurrentIndex < mSize - 1);
+                    assert(mCurrentIndex < mSize);
                     Iterator tmp = *this;
                     mCurrentIndex++;
                     return tmp;
@@ -149,13 +146,14 @@ class List {
                         return true;
                     }
 
-                    return &(mBuffer[mCurrentIndex]) == &(iterator.mBuffer[mCurrentIndex]);
+                    return &(mBuffer[mCurrentIndex]) == &(iterator.mBuffer[iterator.mCurrentIndex]);
                 }
 
                 /// Inequality operator (it != end())
                 bool operator!=(const Iterator& iterator) const {
                     return !(*this == iterator);
                 }
+
         };
 
         // -------------------- Methods -------------------- //
@@ -333,6 +331,16 @@ class List {
             }
 
             return *this;
+        }
+
+        /// Return a begin iterator
+        Iterator begin() const {
+            return Iterator(mBuffer, 0, mSize);
+        }
+
+        /// Return a end iterator
+        Iterator end() const {
+            return Iterator(mBuffer, mSize, mSize);
         }
 };
 
