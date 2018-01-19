@@ -257,17 +257,14 @@ class Map {
 
             private:
 
-                /// Array of buckets
-                const int* mBuckets;
-
                 /// Array of entries
                 const Entry* mEntries;
 
                 /// Capacity of the map
                 int mCapacity;
 
-                /// Index of the current bucket
-                int mCurrentBucket;
+                /// Number of used entries in the map
+                int mNbUsedEntries;
 
                 /// Index of the current entry
                 int mCurrentEntry;
@@ -276,32 +273,20 @@ class Map {
                 void advance() {
 
                     // If we are trying to move past the end
-                    assert(mCurrentBucket < mCapacity);
+                    assert(mCurrentEntry < mNbUsedEntries);
 
-                    // If we are at the last entry for the current bucket
-                    if (mEntries[mCurrentEntry].next == -1) {
+                    for (mCurrentEntry += 1; mCurrentEntry < mNbUsedEntries; mCurrentEntry++) {
 
-                        // Find the next occupied bucket
-                        for (int b = mCurrentBucket + 1; mBuckets[b] > 0 || b == mCapacity; b++) {
+                        // If the entry is not empty
+                        if (mEntries[mCurrentEntry].keyValue != nullptr) {
 
-                            mCurrentBucket = b;
-
-                            // If we have reached the end of the map
-                            if (mCurrentBucket == mCapacity) {
-                               mCurrentEntry = mCapacity;
-                               return;
-                            }
-
-                            mCurrentEntry = mBuckets[mCurrentBucket];
-                            assert(mCurrentEntry != -1);
+                           // We have found the next non empty entry
+                           return;
                         }
                     }
-                    else {
 
-                        // Move to the next entry in the current bucket
-                        mCurrentEntry = mEntries[mCurrentEntry].next;
-                        assert(mEntries[mCurrentEntry].keyValue != nullptr);
-                    }
+                    // We have not find a non empty entry, we return an iterator to the end
+                    mCurrentEntry = mCapacity;
                 }
 
             public:
@@ -317,29 +302,27 @@ class Map {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(const int* buckets, const Entry* entries, int capacity, int currentBucket, int currentEntry)
-                     :mBuckets(buckets), mEntries(entries), mCapacity(capacity), mCurrentBucket(currentBucket), mCurrentEntry(currentEntry) {
+                Iterator(const Entry* entries, int capacity, int nbUsedEntries, int currentEntry)
+                     :mEntries(entries), mCapacity(capacity), mNbUsedEntries(nbUsedEntries), mCurrentEntry(currentEntry) {
 
                 }
 
                 /// Copy constructor
                 Iterator(const Iterator& it)
-                     :mBuckets(it.mBuckets), mEntries(it.mEntries), mCapacity(it.mCapacity), mCurrentBucket(it.mCurrentBucket), mCurrentEntry(it.mCurrentEntry) {
+                     :mEntries(it.mEntries), mCapacity(it.mCapacity), mNbUsedEntries(it.mNbUsedEntries), mCurrentEntry(it.mCurrentEntry) {
 
                 }
 
                 /// Deferencable
                 reference operator*() const {
-                    assert(mCurrentBucket >= 0 && mCurrentBucket < mCapacity);
-                    assert (mCurrentEntry != -1);
+                    assert(mCurrentEntry >= 0 && mCurrentEntry < mNbUsedEntries);
                     assert(mEntries[mCurrentEntry].keyValue != nullptr);
                     return mEntries[mCurrentEntry].keyValue;
                 }
 
                 /// Deferencable
                 pointer operator->() const {
-                    assert(mCurrentBucket >= 0 && mCurrentBucket < mCapacity);
-                    assert (mCurrentEntry != -1);
+                    assert(mCurrentEntry >= 0 && mCurrentEntry < mNbUsedEntries);
                     assert(mEntries[mCurrentEntry].keyValue != nullptr);
                     return mEntries[mCurrentEntry].keyValue;
                 }
@@ -359,10 +342,7 @@ class Map {
 
                 /// Equality operator (it == end())
                 bool operator==(const Iterator& iterator) const {
-                    return mBuckets == iterator.mBuckets &&
-                           mEntries == iterator.mEntries &&
-                           mCurrentBucket == iterator.mCurrentBucket &&
-                           mCurrentEntry == iterator.mCurrentEntry;
+                    return mCurrentEntry == iterator.mCurrentEntry && mEntries == iterator.mEntries;
                 }
 
                 /// Inequality operator (it != end())
@@ -591,7 +571,7 @@ class Map {
 
             assert(mEntries[entry].keyValue != nullptr);
 
-            return Iterator(mBuckets, mEntries, mCapacity, bucket, entry);
+            return Iterator(mEntries, mCapacity, mNbUsedEntries, entry);
         }
 
         /// Overloaded index operator
@@ -709,24 +689,20 @@ class Map {
                 return end();
             }
 
-            int bucket = -1;
-
-            // Find the first used bucket
-            for (int i=0; i<mCapacity; i++) {
-                if (mBuckets[i] >= 0) {
-                    bucket = i;
-                    break;
+            // Find the first used entry
+            int entry;
+            for (entry=0; entry < mNbUsedEntries; entry++) {
+                if (mEntries[entry].keyValue != nullptr) {
+                    return Iterator(mEntries, mCapacity, mNbUsedEntries, entry);
                 }
             }
 
-            assert(bucket >= 0);
-
-            return Iterator(mBuckets, mEntries, mCapacity, bucket, mBuckets[bucket]);
+            assert(false);
         }
 
         /// Return a end iterator
         Iterator end() const {
-            return Iterator(mBuckets, mEntries, mCapacity, mCapacity, mCapacity);
+            return Iterator(mEntries, mCapacity, mNbUsedEntries, mCapacity);
         }
 };
 
