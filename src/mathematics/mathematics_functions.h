@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <vector>
 #include "containers/List.h"
 
 /// ReactPhysics3D namespace

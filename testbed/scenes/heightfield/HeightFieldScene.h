@@ -100,11 +100,11 @@ class HeightFieldScene : public SceneDemo {
         virtual void reset() override ;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const override ;
+        virtual std::vector<ContactPoint> getContactPoints() override ;
 };
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> HeightFieldScene::getContactPoints() const {
+inline std::vector<ContactPoint> HeightFieldScene::getContactPoints() {
     return computeContactPointsOfWorld(getDynamicsWorld());
 }
 

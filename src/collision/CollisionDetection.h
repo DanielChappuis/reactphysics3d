@@ -34,7 +34,6 @@
 #include "narrowphase/DefaultCollisionDispatch.h"
 #include "memory/MemoryManager.h"
 #include "constraint/ContactPoint.h"
-#include <vector>
 #include <set>
 #include <utility>
 #include <map>

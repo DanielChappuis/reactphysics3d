@@ -27,11 +27,11 @@
 #define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
-#include <vector>
 #include <set>
 #include <list>
 #include <algorithm>
 #include "mathematics/mathematics.h"
+#include "containers/List.h"
 #include "Profiler.h"
 #include "body/CollisionBody.h"
 #include "collision/RaycastInfo.h"
@@ -74,7 +74,7 @@ class CollisionWorld {
         bodyindex mCurrentBodyID;
 
         /// List of free ID for rigid bodies
-        std::vector<luint> mFreeBodiesIDs;
+        List<luint> mFreeBodiesIDs;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;

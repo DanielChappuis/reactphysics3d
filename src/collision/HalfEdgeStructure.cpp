@@ -41,12 +41,12 @@ void HalfEdgeStructure::init() {
     std::map<uint, edgeKey> mapEdgeIndexToKey;
     std::map<uint, edgeKey> mapFaceIndexToEdgeKey;
 
+    List<edgeKey> currentFaceEdges(mAllocator, mFaces[0].faceVertices.size());
+
     // For each face
     for (uint f=0; f<mFaces.size(); f++) {
 
         Face face = mFaces[f];
-
-        std::vector<edgeKey> currentFaceEdges;
 
         edgeKey firstEdgeKey;
 
@@ -100,8 +100,10 @@ void HalfEdgeStructure::init() {
                 mEdges.add(edge);
             }
 
-            currentFaceEdges.push_back(pairV1V2);
+            currentFaceEdges.add(pairV1V2);
         }
+
+        currentFaceEdges.clear();
     }
 
     // Set next edges

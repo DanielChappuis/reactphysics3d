@@ -28,7 +28,6 @@
 #include "collision/ProxyShape.h"
 #include "configuration.h"
 #include "memory/MemoryManager.h"
-#include <vector>
 #include <cassert>
 
 using namespace reactphysics3d;

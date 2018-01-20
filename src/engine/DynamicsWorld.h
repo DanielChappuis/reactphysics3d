@@ -249,7 +249,7 @@ class DynamicsWorld : public CollisionWorld {
         void setEventListener(EventListener* eventListener);
 
         /// Return the list of all contacts of the world
-        std::vector<const ContactManifold*> getContactsList() const;
+        List<const ContactManifold*> getContactsList();
 
         // -------------------- Friendship -------------------- //
 

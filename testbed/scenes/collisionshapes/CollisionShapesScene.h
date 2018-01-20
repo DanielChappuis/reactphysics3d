@@ -101,11 +101,11 @@ class CollisionShapesScene : public SceneDemo {
         virtual void reset() override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const override;
+        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() const {
+inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() {
     return computeContactPointsOfWorld(getDynamicsWorld());
 }
 

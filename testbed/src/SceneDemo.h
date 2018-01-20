@@ -158,7 +158,7 @@ class SceneDemo : public Scene {
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Return all the contact points of the scene
-        std::vector<ContactPoint> computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const;
+        std::vector<ContactPoint> computeContactPointsOfWorld(reactphysics3d::DynamicsWorld *world);
 };
 
 // Enabled/Disable the shadow mapping

@@ -34,7 +34,7 @@ using namespace std;
 // Constructor
 CollisionWorld::CollisionWorld()
                : mCollisionDetection(this, mMemoryManager), mCurrentBodyID(0),
-                 mEventListener(nullptr) {
+                 mFreeBodiesIDs(mMemoryManager.getPoolAllocator()), mEventListener(nullptr) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -102,7 +102,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     collisionBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
-    mFreeBodiesIDs.push_back(collisionBody->getID());
+    mFreeBodiesIDs.add(collisionBody->getID());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
@@ -119,9 +119,9 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
 
     // Compute the body ID
     bodyindex bodyID;
-    if (!mFreeBodiesIDs.empty()) {
-        bodyID = mFreeBodiesIDs.back();
-        mFreeBodiesIDs.pop_back();
+    if (mFreeBodiesIDs.size() != 0) {
+        bodyID = mFreeBodiesIDs[mFreeBodiesIDs.size() - 1];
+        mFreeBodiesIDs.remove(mFreeBodiesIDs.size() - 1);
     }
     else {
         bodyID = mCurrentBodyID;

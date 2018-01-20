@@ -28,7 +28,6 @@
 #include "Vector3.h"
 #include "Vector2.h"
 #include <cassert>
-#include <vector>
 
 using namespace reactphysics3d;
 

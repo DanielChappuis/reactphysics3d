@@ -28,7 +28,6 @@
 
 // Libraries
 #include "mathematics/mathematics.h"
-#include <vector>
 
 namespace reactphysics3d {
 

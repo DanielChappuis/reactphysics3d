@@ -198,7 +198,7 @@ class RaycastScene : public SceneDemo {
         virtual void setIsContactPointsDisplayed(bool display) override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const override;
+        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Display or not the surface normals at hit points
@@ -217,7 +217,7 @@ inline void RaycastScene::setIsContactPointsDisplayed(bool display) {
 }
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> RaycastScene::getContactPoints() const {
+inline std::vector<ContactPoint> RaycastScene::getContactPoints() {
     return mRaycastManager.getHitPoints();
 }
 

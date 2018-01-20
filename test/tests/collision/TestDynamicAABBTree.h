@@ -29,7 +29,6 @@
 // Libraries
 #include "Test.h"
 #include "collision/broadphase/DynamicAABBTree.h"
-#include <vector>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

@@ -27,7 +27,6 @@
 #define	REACTPHYSICS3D_CONTACT_MANIFOLD_H
 
 // Libraries
-#include <vector>
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "constraint/ContactPoint.h"

@@ -155,7 +155,7 @@ uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) 
 decimal ConcaveMeshRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
 
     // Add the id of the hit AABB node into
-    mHitAABBNodes.push_back(nodeId);
+    mHitAABBNodes.add(nodeId);
 
     return ray.maxFraction;
 }
@@ -163,7 +163,7 @@ decimal ConcaveMeshRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const R
 // Raycast all collision shapes that have been collected
 void ConcaveMeshRaycastCallback::raycastTriangles() {
 
-    std::vector<int>::const_iterator it;
+    List<int>::Iterator it;
     decimal smallestHitFraction = mRay.maxFraction;
 
     for (it = mHitAABBNodes.begin(); it != mHitAABBNodes.end(); ++it) {

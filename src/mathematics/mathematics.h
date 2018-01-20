@@ -36,7 +36,6 @@
 #include "Ray.h"
 #include "configuration.h"
 #include "mathematics_functions.h"
-#include <vector>
 #include <cstdio>
 #include <cassert>
 #include <cmath>

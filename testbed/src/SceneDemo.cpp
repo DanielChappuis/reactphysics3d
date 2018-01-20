@@ -418,15 +418,15 @@ void SceneDemo::removeAllContactPoints() {
 }
 
 // Return all the contact points of the scene
-std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const {
+std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsWorld* world) {
 
     std::vector<ContactPoint> contactPoints;
 
     // Get the list of contact manifolds from the world
-    std::vector<const rp3d::ContactManifold*> manifolds = world->getContactsList();
+    rp3d::List<const rp3d::ContactManifold*> manifolds = world->getContactsList();
 
     // For each contact manifold
-    std::vector<const rp3d::ContactManifold*>::const_iterator it;
+    rp3d::List<const rp3d::ContactManifold*>::Iterator it;
     for (it = manifolds.begin(); it != manifolds.end(); ++it) {
 
         const rp3d::ContactManifold* manifold = *it;

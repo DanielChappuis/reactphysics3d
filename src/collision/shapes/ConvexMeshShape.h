@@ -33,7 +33,6 @@
 #include "collision/TriangleMesh.h"
 #include "collision/PolyhedronMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
-#include <vector>
 #include <set>
 #include <map>
 

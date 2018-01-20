@@ -27,9 +27,10 @@
 #define REACTPHYSICS3D_TRIANGLE_MESH_H
 
 // Libraries
-#include <vector>
 #include <cassert>
 #include "TriangleVertexArray.h"
+#include "memory/MemoryManager.h"
+#include "containers/List.h"
 
 namespace reactphysics3d {
 
@@ -46,12 +47,14 @@ class TriangleMesh {
     protected:
 
         /// All the triangle arrays of the mesh (one triangle array per part)
-        std::vector<TriangleVertexArray*> mTriangleArrays;
+        List<TriangleVertexArray*> mTriangleArrays;
 
     public:
 
         /// Constructor
-        TriangleMesh() = default;
+        TriangleMesh() : mTriangleArrays(MemoryManager::getBaseAllocator()) {
+
+        }
 
         /// Destructor
         ~TriangleMesh() = default;
@@ -68,7 +71,7 @@ class TriangleMesh {
 
 // Add a subpart of the mesh
 inline void TriangleMesh::addSubpart(TriangleVertexArray* triangleVertexArray) {
-    mTriangleArrays.push_back(triangleVertexArray );
+    mTriangleArrays.add(triangleVertexArray );
 }
 
 // Return a pointer to a given subpart (triangle vertex array) of the mesh

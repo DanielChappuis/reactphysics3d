@@ -446,7 +446,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
-    mFreeBodiesIDs.push_back(rigidBody->getID());
+    mFreeBodiesIDs.add(rigidBody->getID());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
@@ -828,9 +828,9 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
 }
 
 /// Return the list of all contacts of the world
-std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
+List<const ContactManifold*> DynamicsWorld::getContactsList() {
 
-    std::vector<const ContactManifold*> contactManifolds;
+    List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
 
     // For each currently overlapping pair of bodies
     std::map<overlappingpairid, OverlappingPair*>::const_iterator it;
@@ -845,7 +845,7 @@ std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
         while (manifold != nullptr) {
 
             // Get the contact manifold
-            contactManifolds.push_back(manifold);
+            contactManifolds.add(manifold);
 
             manifold = manifold->getNext();
         }
