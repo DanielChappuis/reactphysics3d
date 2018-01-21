@@ -81,9 +81,9 @@ class RigidBody : public CollisionBody {
         /// Current external torque on the body
         Vector3 mExternalTorque;
 
-        /// Local inertia tensor of the body (in local-space) with respect to the
-        /// center of mass of the body
-        Matrix3x3 mInertiaTensorLocal;
+        /// Inverse Local inertia tensor of the body (in local-space) set
+        /// by the user with respect to the center of mass of the body
+        Matrix3x3 mUserInertiaTensorLocalInverse;
 
         /// Inverse of the inertia tensor of the body
         Matrix3x3 mInertiaTensorLocalInverse;
@@ -108,6 +108,12 @@ class RigidBody : public CollisionBody {
 
         /// First element of the linked list of joints involving this body
         JointListElement* mJointsList;
+
+        /// True if the center of mass is set by the user
+        bool mIsCenterOfMassSetByUser;
+
+        /// True if the inertia tensor is set by the user
+        bool mIsInertiaTensorSetByUser;
 
         // -------------------- Methods -------------------- //
 
@@ -163,23 +169,23 @@ class RigidBody : public CollisionBody {
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping) override;
 
-        /// Return the local inertia tensor of the body (in body coordinates)
-        const Matrix3x3& getInertiaTensorLocal() const;
-
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
+
+        /// Set the inverse local inertia tensor of the body (in body coordinates)
+        void setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal);
+
+        /// Get the inverse local inertia tensor of the body (in body coordinates)
+        const Matrix3x3& getInverseInertiaTensorLocal() const;
+
+        /// Return the inverse of the inertia tensor in world coordinates.
+        Matrix3x3 getInertiaTensorInverseWorld() const;
 
         /// Set the local center of mass of the body (in local-space coordinates)
         void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
 
         /// Set the mass of the rigid body
         void setMass(decimal mass);
-
-        /// Return the inertia tensor in world coordinates.
-        Matrix3x3 getInertiaTensorWorld() const;
-
-        /// Return the inverse of the inertia tensor in world coordinates.
-        Matrix3x3 getInertiaTensorInverseWorld() const;
 
         /// Return true if the gravity needs to be applied to this rigid body
         bool isGravityEnabled() const;
@@ -273,28 +279,9 @@ inline Vector3 RigidBody::getAngularVelocity() const {
     return mAngularVelocity;
 }
 
-// Return the local inertia tensor of the body (in local-space coordinates)
-/**
- * @return The 3x3 inertia tensor matrix of the body (in local-space coordinates)
- */
-inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
-    return mInertiaTensorLocal;
-}
-
-// Return the inertia tensor in world coordinates.
-/// The inertia tensor I_w in world coordinates is computed
-/// with the local inertia tensor I_b in body coordinates
-/// by I_w = R * I_b * R^T
-/// where R is the rotation matrix (and R^T its transpose) of
-/// the current orientation quaternion of the body
-/**
- * @return The 3x3 inertia tensor matrix of the body in world-space coordinates
- */
-inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
-
-    // Compute and return the inertia tensor in world coordinates
-    return mTransform.getOrientation().getMatrix() * mInertiaTensorLocal *
-           mTransform.getOrientation().getMatrix().getTranspose();
+// Get the inverse local inertia tensor of the body (in body coordinates)
+inline const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
+    return mInertiaTensorLocalInverse;
 }
 
 // Return the inverse of the inertia tensor in world coordinates.

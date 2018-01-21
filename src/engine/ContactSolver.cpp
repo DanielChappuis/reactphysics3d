@@ -259,8 +259,17 @@ void ContactSolver::initializeForIsland(Island* island) {
         bool isBody2DynamicType = body2->getType() == BodyType::DYNAMIC;
         mContactConstraints[mNbContactManifolds].inverseRollingResistance.setToZero();
         if (mContactConstraints[mNbContactManifolds].rollingResistanceFactor > 0 && (isBody1DynamicType || isBody2DynamicType)) {
+
             mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 + mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2;
-            mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getInverse();
+            decimal det = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getDeterminant();
+
+            // If the matrix is not inversible
+            if (approxEqual(det, decimal(0.0))) {
+               mContactConstraints[mNbContactManifolds].inverseRollingResistance.setToZero();
+            }
+            else {
+               mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getInverse();
+            }
         }
 
         mContactConstraints[mNbContactManifolds].normal.normalize();
