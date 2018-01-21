@@ -109,6 +109,12 @@ class RigidBody : public CollisionBody {
         /// First element of the linked list of joints involving this body
         JointListElement* mJointsList;
 
+        /// True if the center of mass is set by the user
+        bool mIsCenterOfMassSetByUser;
+
+        /// True if the inertia tensor is set by the user
+        bool mIsInertiaTensorSetByUser;
+
         // -------------------- Methods -------------------- //
 
         /// Remove a joint from the joints list

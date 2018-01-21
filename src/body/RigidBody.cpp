@@ -42,7 +42,7 @@ RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyinde
           : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(nullptr) {
+            mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
     mMassInverse = decimal(1.0) / mInitMass;
@@ -93,15 +93,17 @@ void RigidBody::setType(BodyType type) {
         mMassInverse = decimal(0.0);
         mInertiaTensorLocalInverse.setToZero();
         mInertiaTensorInverseWorld.setToZero();
-
     }
     else {  // If it is a dynamic body
         mMassInverse = decimal(1.0) / mInitMass;
-        mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
 
-        // Update the world inverse inertia tensor
-        updateInertiaTensorInverseWorld();
+        if (mIsInertiaTensorSetByUser) {
+            mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+        }
     }
+
+    // Update the world inverse inertia tensor
+    updateInertiaTensorInverseWorld();
 
     // Awake the body
     setIsSleeping(false);
@@ -119,6 +121,8 @@ void RigidBody::setType(BodyType type) {
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
+/// If the inertia tensor is set with this method, it will not be computed
+/// using the collision shapes of the body.
 /**
  * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
  *                           coordinates
@@ -126,6 +130,7 @@ void RigidBody::setType(BodyType type) {
 void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
     mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+    mIsInertiaTensorSetByUser = true;
 
     if (mType != BodyType::DYNAMIC) return;
 
@@ -136,10 +141,17 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     updateInertiaTensorInverseWorld();
 }
 
-// Set the inverse local inertia tensor of the body (in body coordinates)
+// Set the inverse local inertia tensor of the body (in local-space coordinates)
+/// If the inverse inertia tensor is set with this method, it will not be computed
+/// using the collision shapes of the body.
+/**
+ * @param inverseInertiaTensorLocal The 3x3 inverse inertia tensor matrix of the body in local-space
+ *                           		coordinates
+ */
 void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal) {
 
     mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
+    mIsInertiaTensorSetByUser = true;
 
     if (mType != BodyType::DYNAMIC) return;
 
@@ -151,6 +163,8 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
+/// If you set the center of mass with the method, it will not be computed
+/// automatically using collision shapes.
 /**
  * @param centerOfMassLocal The center of mass of the body in local-space
  *                          coordinates
@@ -158,6 +172,8 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     if (mType != BodyType::DYNAMIC) return;
+
+    mIsCenterOfMassSetByUser = true;
 
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
     mCenterOfMassLocal = centerOfMassLocal;
@@ -359,9 +375,9 @@ void RigidBody::recomputeMassInformation() {
 
     mInitMass = decimal(0.0);
     mMassInverse = decimal(0.0);
-    mInertiaTensorLocalInverse.setToZero();
-    mInertiaTensorInverseWorld.setToZero();
-    mCenterOfMassLocal.setToZero();
+    if (!mIsInertiaTensorSetByUser) mInertiaTensorLocalInverse.setToZero();
+    if (!mIsInertiaTensorSetByUser) mInertiaTensorInverseWorld.setToZero();
+    if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
 
@@ -376,7 +392,10 @@ void RigidBody::recomputeMassInformation() {
     // Compute the total mass of the body
     for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
         mInitMass += shape->getMass();
-        mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
+
+        if (!mIsCenterOfMassSetByUser) {
+            mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
+        }
     }
 
     if (mInitMass > decimal(0.0)) {
@@ -389,39 +408,46 @@ void RigidBody::recomputeMassInformation() {
 
     // Compute the center of mass
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
-    mCenterOfMassLocal *= mMassInverse;
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
 
-    // Compute the total mass and inertia tensor using all the collision shapes
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
-
-        // Get the inertia tensor of the collision shape in its local-space
-        Matrix3x3 inertiaTensor;
-        shape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, shape->getMass());
-
-        // Convert the collision shape inertia tensor into the local-space of the body
-        const Transform& shapeTransform = shape->getLocalToBodyTransform();
-        Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
-        inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
-
-        // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
-        // center into a inertia tensor w.r.t to the body origin.
-        Vector3 offset = shapeTransform.getPosition() - mCenterOfMassLocal;
-        decimal offsetSquare = offset.lengthSquare();
-        Matrix3x3 offsetMatrix;
-        offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
-        offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
-        offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
-        offsetMatrix[0] += offset * (-offset.x);
-        offsetMatrix[1] += offset * (-offset.y);
-        offsetMatrix[2] += offset * (-offset.z);
-        offsetMatrix *= shape->getMass();
-
-        inertiaTensorLocal += inertiaTensor + offsetMatrix;
+    if (!mIsCenterOfMassSetByUser) {
+        mCenterOfMassLocal *= mMassInverse;
     }
 
-    // Compute the local inverse inertia tensor
-    mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+
+    if (!mIsInertiaTensorSetByUser) {
+
+        // Compute the inertia tensor using all the collision shapes
+        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+
+            // Get the inertia tensor of the collision shape in its local-space
+            Matrix3x3 inertiaTensor;
+            shape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, shape->getMass());
+
+            // Convert the collision shape inertia tensor into the local-space of the body
+            const Transform& shapeTransform = shape->getLocalToBodyTransform();
+            Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
+            inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
+
+            // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
+            // center into a inertia tensor w.r.t to the body origin.
+            Vector3 offset = shapeTransform.getPosition() - mCenterOfMassLocal;
+            decimal offsetSquare = offset.lengthSquare();
+            Matrix3x3 offsetMatrix;
+            offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
+            offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
+            offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
+            offsetMatrix[0] += offset * (-offset.x);
+            offsetMatrix[1] += offset * (-offset.y);
+            offsetMatrix[2] += offset * (-offset.z);
+            offsetMatrix *= shape->getMass();
+
+            inertiaTensorLocal += inertiaTensor + offsetMatrix;
+        }
+
+        // Compute the local inverse inertia tensor
+        mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+    }
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
