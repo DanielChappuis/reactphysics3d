@@ -28,14 +28,17 @@
 #include "OverlappingPair.h"
 #include "collision/ContactManifoldInfo.h"
 #include "collision/NarrowPhaseInfo.h"
+#include "containers/containers_common.h"
 
 using namespace reactphysics3d;
+
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator)
                 : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator), mPotentialContactManifolds(nullptr),
-                  mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator) {
+                  mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
+                  mLastFrameCollisionInfos(mPersistentAllocator) {
     
 }         
 
@@ -150,7 +153,8 @@ void OverlappingPair::reducePotentialContactManifolds() {
 void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
 
     // Try to get the corresponding last frame collision info
-    auto it = mLastFrameCollisionInfos.find(std::make_pair(shapeId1, shapeId2));
+    const ShapeIdPair shapeIdPair(shapeId1, shapeId2);
+    auto it = mLastFrameCollisionInfos.find(shapeIdPair);
 
     // If there is no collision info for those two shapes already
     if (it == mLastFrameCollisionInfos.end()) {
@@ -160,9 +164,7 @@ void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) 
                                                 LastFrameCollisionInfo();
 
         // Add it into the map of collision infos
-        std::map<std::pair<uint, uint>, LastFrameCollisionInfo*>::iterator it;
-        auto ret = mLastFrameCollisionInfos.insert(std::make_pair(std::make_pair(shapeId1, shapeId2), collisionInfo));
-        assert(ret.second);
+        mLastFrameCollisionInfos.add(std::make_pair(shapeIdPair, collisionInfo));
     }
     else {
 
@@ -185,7 +187,7 @@ void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
             it->second->~LastFrameCollisionInfo();
             mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
 
-            mLastFrameCollisionInfos.erase(it++);
+            mLastFrameCollisionInfos.remove(it++);
         }
         else {
             ++it;

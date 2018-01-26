@@ -833,7 +833,7 @@ List<const ContactManifold*> DynamicsWorld::getContactsList() {
     List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
 
     // For each currently overlapping pair of bodies
-    std::map<overlappingpairid, OverlappingPair*>::const_iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mCollisionDetection.mOverlappingPairs.begin();
          it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
 

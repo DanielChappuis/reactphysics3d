@@ -32,8 +32,6 @@
 #include "constraint/Joint.h"
 #include "collision/ContactManifold.h"
 #include "Island.h"
-#include <map>
-#include <set>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

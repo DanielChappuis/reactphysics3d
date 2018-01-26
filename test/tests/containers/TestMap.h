@@ -31,6 +31,30 @@
 #include "containers/Map.h"
 #include "memory/DefaultAllocator.h"
 
+// Key to test map with always same hash values
+namespace reactphysics3d {
+    struct TestKey {
+        int key;
+
+        TestKey(int k) :key(k) {}
+
+        bool operator==(const TestKey& testKey) const {
+            return key == testKey.key;
+        }
+    };
+}
+
+// Hash function for struct VerticesPair
+namespace std {
+
+  template <> struct hash<reactphysics3d::TestKey> {
+
+    size_t operator()(const reactphysics3d::TestKey& key) const {
+        return 1;
+    }
+  };
+}
+
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
@@ -82,7 +106,6 @@ class TestMap : public Test {
             test(map2.size() == 0);
 
             // ----- Copy Constructors ----- //
-/*
             Map<int, std::string> map3(map1);
             test(map3.capacity() == map1.capacity());
             test(map3.size() == map1.size());
@@ -100,7 +123,6 @@ class TestMap : public Test {
             test(map5[1] == 10);
             test(map5[2] == 20);
             test(map5[3] == 30);
-            */
         }
 
         void testReserve() {
@@ -122,8 +144,6 @@ class TestMap : public Test {
         }
 
         void testAddRemoveClear() {
-
-            // TODO : ADD test with values with same hash for keys but different keys
 
             // ----- Test add() ----- //
 
@@ -151,21 +171,32 @@ class TestMap : public Test {
             test(map1.size() == 3);
             test(map1[1] == 10);
 
+            map1.add(std::make_pair(56, 34));
+            test(map1[56] == 34);
+            test(map1.size() == 4);
+            map1.add(std::make_pair(56, 13), true);
+            test(map1[56] == 13);
+            test(map1.size() == 4);
+
             // ----- Test remove() ----- //
 
             map1.remove(1);
             test(!map1.containsKey(1));
             test(map1.containsKey(8));
             test(map1.containsKey(13));
-            test(map1.size() == 2);
+            test(map1.size() == 3);
 
             map1.remove(13);
             test(map1.containsKey(8));
             test(!map1.containsKey(13));
-            test(map1.size() == 1);
+            test(map1.size() == 2);
 
             map1.remove(8);
             test(!map1.containsKey(8));
+            test(map1.size() == 1);
+
+            map1.remove(56);
+            test(!map1.containsKey(56));
             test(map1.size() == 0);
 
             isValid = true;
@@ -184,6 +215,16 @@ class TestMap : public Test {
                 map3.remove(i);
             }
 
+            map3.add(std::make_pair(1, 10));
+            map3.add(std::make_pair(2, 20));
+            map3.add(std::make_pair(3, 30));
+            test(map3.size() == 3);
+            auto it = map3.begin();
+            map3.remove(it++);
+            test(!map3.containsKey(1));
+            test(map3.size() == 2);
+            test(it->second == 20);
+
             // ----- Test clear() ----- //
 
             Map<int, int> map4(mAllocator);
@@ -201,6 +242,24 @@ class TestMap : public Test {
             Map<int, int> map5(mAllocator);
             map5.clear();
             test(map5.size() == 0);
+
+            // ----- Test map with always same hash value for keys ----- //
+
+            Map<TestKey, int> map6(mAllocator);
+            for (int i=0; i < 1000; i++) {
+                map6.add(std::make_pair(TestKey(i), i));
+            }
+            bool isTestValid = true;
+            for (int i=0; i < 1000; i++) {
+                if (map6[TestKey(i)] != i) {
+                    isTestValid = false;
+                }
+            }
+            test(isTestValid);
+            for (int i=0; i < 1000; i++) {
+                map6.remove(TestKey(i));
+            }
+            test(map6.size() == 0);
         }
 
         void testContainsKey() {

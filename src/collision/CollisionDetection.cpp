@@ -48,7 +48,8 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager)
-                   : mMemoryManager(memoryManager), mWorld(world), mNarrowPhaseInfoList(nullptr), mBroadPhaseAlgorithm(*this),
+                   : mMemoryManager(memoryManager), mWorld(world), mNarrowPhaseInfoList(nullptr),
+                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this),
                      mIsCollisionShapesAdded(false) {
 
     // Set the default collision dispatch configuration
@@ -104,7 +105,7 @@ void CollisionDetection::computeMiddlePhase() {
     PROFILE("CollisionDetection::computeMiddlePhase()", mProfiler);
 
     // For each possible collision pair of bodies
-    map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
 
         OverlappingPair* pair = it->second;
@@ -126,14 +127,14 @@ void CollisionDetection::computeMiddlePhase() {
         // overlapping pair
         if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
-            std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
+            Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator itToRemove = it;
             ++it;
 
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
 
             mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
-            mOverlappingPairs.erase(itToRemove);
+            mOverlappingPairs.remove(itToRemove);
             continue;
         }
         else {
@@ -320,10 +321,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
         (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
 
     // Compute the overlapping pair ID
-    overlappingpairid pairID = OverlappingPair::computeID(shape1, shape2);
+    OverlappingPair::OverlappingPairId pairID = OverlappingPair::computeID(shape1, shape2);
 
     // Check if the overlapping pair already exists
-    if (mOverlappingPairs.find(pairID) != mOverlappingPairs.end()) return;
+    if (mOverlappingPairs.containsKey(pairID)) return;
 
     // Create the overlapping pair and add it into the set of overlapping pairs
     OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))
@@ -331,11 +332,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
                                               mMemoryManager.getSingleFrameAllocator());
     assert(newPair != nullptr);
 
-#ifndef NDEBUG
-    std::pair<map<overlappingpairid, OverlappingPair*>::iterator, bool> check =
-#endif
-    mOverlappingPairs.insert(make_pair(pairID, newPair));
-    assert(check.second);
+    mOverlappingPairs.add(make_pair(pairID, newPair));
 
     // Wake up the two bodies
     shape1->getBody()->setIsSleeping(false);
@@ -348,11 +345,11 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
     assert(proxyShape->mBroadPhaseID != -1);
 
     // Remove all the overlapping pairs involving this proxy shape
-    std::map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
         if (it->second->getShape1()->mBroadPhaseID == proxyShape->mBroadPhaseID||
             it->second->getShape2()->mBroadPhaseID == proxyShape->mBroadPhaseID) {
-            std::map<overlappingpairid, OverlappingPair*>::iterator itToRemove = it;
+            Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator itToRemove = it;
             ++it;
 
             // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
@@ -360,7 +357,7 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
             // Destroy the overlapping pair
             itToRemove->second->~OverlappingPair();
             mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
-            mOverlappingPairs.erase(itToRemove);
+            mOverlappingPairs.remove(itToRemove);
         }
         else {
             ++it;
@@ -376,7 +373,7 @@ void CollisionDetection::addAllContactManifoldsToBodies() {
     PROFILE("CollisionDetection::addAllContactManifoldsToBodies()", mProfiler);
 
     // For each overlapping pairs in contact during the narrow-phase
-    std::map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // Add all the contact manifolds of the pair into the list of contact manifolds
@@ -427,7 +424,7 @@ void CollisionDetection::processAllPotentialContacts() {
     PROFILE("CollisionDetection::processAllPotentialContacts()", mProfiler);
 
     // For each overlapping pairs in contact during the narrow-phase
-    std::map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // Process the potential contacts of the overlapping pair
@@ -466,7 +463,7 @@ void CollisionDetection::reportAllContacts() {
     PROFILE("CollisionDetection::reportAllContacts()", mProfiler);
 
     // For each overlapping pairs in contact during the narrow-phase
-    std::map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         // If there is a user callback
@@ -921,7 +918,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
     computeBroadPhase();
 
     // For each possible collision pair of bodies
-    map<overlappingpairid, OverlappingPair*>::iterator it;
+    Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         OverlappingPair* originalPair = it->second;

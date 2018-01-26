@@ -211,23 +211,21 @@ class TestRaycast : public Test {
             mCapsuleShape = new CapsuleShape(2, 5);
             mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
 
-            // TODO : Create convex mesh shape with new way (polyhedron mesh) to add test again
-            // Box of extents (2, 3, 4)
-            mPolyhedronVertices[0] = Vector3(-2, -3, -4);
-            mPolyhedronVertices[1] = Vector3(2, -3, -4);
-            mPolyhedronVertices[2] = Vector3(2, -3, 4);
-            mPolyhedronVertices[3] = Vector3(-2, -3, 4);
-            mPolyhedronVertices[4] = Vector3(-2, 3, -4);
+            mPolyhedronVertices[0] = Vector3(-2, -3, 4);
+            mPolyhedronVertices[1] = Vector3(2, -3, 4);
+            mPolyhedronVertices[2] = Vector3(2, 3, 4);
+            mPolyhedronVertices[3] = Vector3(-2, 3, 4);
+            mPolyhedronVertices[4] = Vector3(2, -3, -4);
             mPolyhedronVertices[5] = Vector3(2, 3, -4);
-            mPolyhedronVertices[6] = Vector3(2, 3, 4);
-            mPolyhedronVertices[7] = Vector3(-2, 3, 4);
+            mPolyhedronVertices[6] = Vector3(-2, 3, -4);
+            mPolyhedronVertices[7] = Vector3(-2, -3, -4);
 
             mPolyhedronIndices[0] = 0; mPolyhedronIndices[1] = 1; mPolyhedronIndices[2] = 2; mPolyhedronIndices[3] = 3;
-            mPolyhedronIndices[4] = 1; mPolyhedronIndices[5] = 5; mPolyhedronIndices[6] = 6; mPolyhedronIndices[7] = 2;
-            mPolyhedronIndices[8] = 0; mPolyhedronIndices[9] = 4; mPolyhedronIndices[10] = 5; mPolyhedronIndices[11] = 1;
-            mPolyhedronIndices[12] = 0; mPolyhedronIndices[13] = 3; mPolyhedronIndices[14] = 7; mPolyhedronIndices[15] = 4;
-            mPolyhedronIndices[16] = 3; mPolyhedronIndices[17] = 2; mPolyhedronIndices[18] = 6; mPolyhedronIndices[19] = 7;
-            mPolyhedronIndices[20] = 2; mPolyhedronIndices[21] = 5; mPolyhedronIndices[22] = 4; mPolyhedronIndices[23] = 7;
+            mPolyhedronIndices[4] = 1; mPolyhedronIndices[5] = 4; mPolyhedronIndices[6] = 5; mPolyhedronIndices[7] = 2;
+            mPolyhedronIndices[8] = 4; mPolyhedronIndices[9] = 7; mPolyhedronIndices[10] = 6; mPolyhedronIndices[11] = 5;
+            mPolyhedronIndices[12] = 0; mPolyhedronIndices[13] = 3; mPolyhedronIndices[14] = 6; mPolyhedronIndices[15] = 7;
+            mPolyhedronIndices[16] = 2; mPolyhedronIndices[17] = 5; mPolyhedronIndices[18] = 6; mPolyhedronIndices[19] = 3;
+            mPolyhedronIndices[20] = 1; mPolyhedronIndices[21] = 0; mPolyhedronIndices[22] = 7; mPolyhedronIndices[23] = 4;
 
             // Polygon faces descriptions for the polyhedron
             for (int f=0; f < 8; f++) {

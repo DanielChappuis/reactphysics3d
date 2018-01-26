@@ -34,9 +34,9 @@
 #include "narrowphase/DefaultCollisionDispatch.h"
 #include "memory/MemoryManager.h"
 #include "constraint/ContactPoint.h"
+#include "containers/Map.h"
 #include <set>
 #include <utility>
-#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -79,7 +79,7 @@ class CollisionDetection {
         NarrowPhaseInfo* mNarrowPhaseInfoList;
 
         /// Broad-phase overlapping pairs
-        std::map<overlappingpairid, OverlappingPair*> mOverlappingPairs;
+        Map<OverlappingPair::OverlappingPairId, OverlappingPair*> mOverlappingPairs;
 
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;

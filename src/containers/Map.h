@@ -30,7 +30,10 @@
 #include "memory/MemoryAllocator.h"
 #include "mathematics/mathematics_functions.h"
 #include <cstring>
+#include <stdexcept>
+#include <functional>
 #include <limits>
+
 
 namespace reactphysics3d {
 
@@ -387,7 +390,15 @@ class Map {
             std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
 
             // Copy the entries
-            std::memcpy(mEntries, map.mEntries, mCapacity * sizeof(Entry));
+            for (int i=0; i < mCapacity; i++) {
+
+                new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+
+                if (map.mEntries[i].keyValue != nullptr) {
+                   mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
+                   new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                }
+            }
         }
 
         /// Destructor
@@ -417,7 +428,7 @@ class Map {
         }
 
         /// Add an element into the map
-        void add(const std::pair<K,V>& keyValue) {
+        void add(const std::pair<K,V>& keyValue, bool insertIfAlreadyPresent = false) {
 
             if (mCapacity == 0) {
                 initialize(0);
@@ -435,7 +446,19 @@ class Map {
                 // If there is already an item with the same key in the map
                 if (mEntries[i].hashCode == hashCode && mEntries[i].keyValue->first == keyValue.first) {
 
-                    throw std::runtime_error("The key and value pair already exists in the map");
+                    if (insertIfAlreadyPresent) {
+
+                        // Destruct the previous key/value
+                        mEntries[i].keyValue->~pair<K, V>();
+
+                        // Copy construct the new key/value
+                        new (mEntries[i].keyValue) std::pair<K,V>(keyValue);
+
+                        return;
+                    }
+                    else {
+                        throw std::runtime_error("The key and value pair already exists in the map");
+                    }
                 }
             }
 
@@ -471,6 +494,13 @@ class Map {
             assert(mEntries[entryIndex].keyValue != nullptr);
             new (mEntries[entryIndex].keyValue) std::pair<K,V>(keyValue);
             mBuckets[bucket] = entryIndex;
+        }
+
+        /// Remove the element pointed by some iterator
+        bool remove(const Iterator& it) {
+
+            const K& key = it->first;
+            return remove(key);
         }
 
         /// Remove the element from the map with a given key
@@ -605,7 +635,9 @@ class Map {
                 throw std::runtime_error("No item with given key has been found in the map");
             }
 
-            return mEntries[entry];
+            assert(mEntries[entry].keyValue != nullptr);
+
+            return mEntries[entry].keyValue->second;
         }
 
         /// Overloaded equality operator

@@ -34,7 +34,6 @@
 #include "collision/PolyhedronMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
 #include <set>
-#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
