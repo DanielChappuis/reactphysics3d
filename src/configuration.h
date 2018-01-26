@@ -152,7 +152,7 @@ constexpr int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
 constexpr decimal COS_ANGLE_SIMILAR_CONTACT_MANIFOLD = decimal(0.95);
 
 /// Size (in bytes) of the single frame allocator
-constexpr size_t INIT_SINGLE_FRAME_ALLOCATOR_BYTES = 1048576; // 1Mb
+constexpr std::size_t INIT_SINGLE_FRAME_ALLOCATOR_BYTES = 1048576; // 1Mb
 
 }
 

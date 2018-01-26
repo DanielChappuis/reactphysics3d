@@ -415,7 +415,7 @@ inline void Profiler::destroy() {
 #else   // In profile is not active
 
 // Empty macro in case profiling is not active
-#define PROFILE(name)
+#define PROFILE(name, profiler)
 
 #endif
 
