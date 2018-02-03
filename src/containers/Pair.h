@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_LIST_H
-#define REACTPHYSICS3D_LIST_H
+#ifndef REACTPHYSICS3D_PAIR_H
+#define REACTPHYSICS3D_PAIR_H
 
 // Libraries
 #include "configuration.h"
@@ -34,130 +34,22 @@
 
 namespace reactphysics3d {
 
-// Class List
+// Class Pair
 /**
- * This class represents a simple generic list with custom memory allocator.
+ * This class represents a simple generic pair
   */
-template<typename T>
-class List {
-
-    private:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Buffer for the list elements
-        void* mBuffer;
-
-        /// Number of elements in the list
-        size_t mSize;
-
-        /// Number of allocated elements in the list
-        size_t mCapacity;
-
-        /// Memory allocator
-        MemoryAllocator& mAllocator;
+template<typename T1, typename T2>
+class Pair {
 
     public:
 
-        /// Class Iterator
-        /**
-         * This class represents an iterator for the List
-         */
-        class Iterator {
+        // -------------------- Attributes -------------------- //
 
-            private:
+        /// First element of the pair
+        T1 first;
 
-                size_t mCurrentIndex;
-                T* mBuffer;
-                size_t mSize;
-
-            public:
-
-                // Iterator traits
-                using value_type = T;
-                using difference_type = std::ptrdiff_t;
-                using pointer = T*;
-                using reference = T&;
-                using iterator_category = std::bidirectional_iterator_tag;
-
-                /// Constructor
-                Iterator() = default;
-
-                /// Constructor
-                Iterator(void* buffer, size_t index, size_t size)
-                     :mCurrentIndex(index), mBuffer(static_cast<T*>(buffer)), mSize(size) {
-
-                }
-
-                /// Copy constructor
-                Iterator(const Iterator& it)
-                     :mCurrentIndex(it.mCurrentIndex), mBuffer(it.mBuffer), mSize(it.mSize) {
-
-                }
-
-                /// Deferencable
-                reference operator*() const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
-                    return mBuffer[mCurrentIndex];
-                }
-
-                /// Deferencable
-                pointer operator->() const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
-                    return &(mBuffer[mCurrentIndex]);
-                }
-
-                /// Post increment (it++)
-                Iterator& operator++() {
-                    assert(mCurrentIndex < mSize);
-                    mCurrentIndex++;
-                    return *this;
-                }
-
-                /// Pre increment (++it)
-                Iterator operator++(int number) {
-                    assert(mCurrentIndex < mSize);
-                    Iterator tmp = *this;
-                    mCurrentIndex++;
-                    return tmp;
-                }
-
-                /// Post decrement (it--)
-                Iterator& operator--() {
-                    assert(mCurrentIndex > 0);
-                    mCurrentIndex--;
-                    return *this;
-                }
-
-                /// Pre decrement (--it)
-                Iterator operator--(int number) {
-                    assert(mCurrentIndex > 0);
-                    Iterator tmp = *this;
-                    mCurrentIndex--;
-                    return tmp;
-                }
-
-                /// Equality operator (it == end())
-                bool operator==(const Iterator& iterator) const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex <= mSize);
-
-                    // If both iterators points to the end of the list
-                    if (mCurrentIndex == mSize && iterator.mCurrentIndex == iterator.mSize) {
-                        return true;
-                    }
-
-                    return &(mBuffer[mCurrentIndex]) == &(iterator.mBuffer[iterator.mCurrentIndex]);
-                }
-
-                /// Inequality operator (it != end())
-                bool operator!=(const Iterator& iterator) const {
-                    return !(*this == iterator);
-                }
-
-                /// Frienship
-                friend class List;
-
-        };
+        /// Second element of the pair
+        T2 second;
 
         // -------------------- Methods -------------------- //
 
@@ -236,7 +128,7 @@ class List {
         Iterator find(const T& element) {
 
             for (uint i=0; i<mSize; i++) {
-                if (element == static_cast<T*>(mBuffer)[i]) {
+                if (element == *(static_cast<T*>(mBuffer)[i])) {
                     return Iterator(mBuffer, i, mSize);
                 }
             }
@@ -244,21 +136,14 @@ class List {
             return end();
         }
 
-        /// Look for an element in the list and remove it
-        Iterator remove(const T& element) {
-           return remove(find(element));
-        }
-
-        /// Remove an element from the list and return a iterator
-        /// pointing to the element after the removed one (or end() if none)
-        Iterator remove(const Iterator& it) {
+        /// Remove an element from the list
+        void remove(const Iterator& it) {
            assert(it.mBuffer == mBuffer);
-           return removeAt(it.mCurrentIndex);
+           remove(it.mCurrentIndex);
         }
 
-        /// Remove an element from the list at a given index and return an
-        /// iterator pointing to the element after the removed one (or end() if none)
-        Iterator removeAt(uint index) {
+        /// Remove an element from the list at a given index
+        void remove(uint index) {
 
           assert(index >= 0 && index < mSize);
 
@@ -274,9 +159,6 @@ class List {
               char* src = dest + sizeof(T);
               std::memcpy(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
           }
-
-          // Return an iterator pointing to the element after the removed one
-          return Iterator(mBuffer, index, mSize);
         }
 
         /// Append another list at the end of the current one

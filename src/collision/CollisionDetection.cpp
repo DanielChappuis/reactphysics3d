@@ -37,20 +37,19 @@
 #include "collision/OverlapCallback.h"
 #include <cassert>
 #include <complex>
-#include <set>
 #include <utility>
 #include <utility>
-#include <unordered_set>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 using namespace std;
 
+
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager)
                    : mMemoryManager(memoryManager), mWorld(world), mNarrowPhaseInfoList(nullptr),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this),
-                     mIsCollisionShapesAdded(false) {
+                     mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false) {
 
     // Set the default collision dispatch configuration
     setCollisionDispatch(&mDefaultCollisionDispatch);
@@ -127,14 +126,11 @@ void CollisionDetection::computeMiddlePhase() {
         // overlapping pair
         if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
 
-            Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator itToRemove = it;
-            ++it;
-
             // Destroy the overlapping pair
-            itToRemove->second->~OverlappingPair();
+            it->second->~OverlappingPair();
 
-            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
-            mOverlappingPairs.remove(itToRemove);
+            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, it->second, sizeof(OverlappingPair));
+            it = mOverlappingPairs.remove(it);
             continue;
         }
         else {
@@ -155,7 +151,7 @@ void CollisionDetection::computeMiddlePhase() {
 
             // Check if the bodies are in the set of bodies that cannot collide between each other
             bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
-            if (mNoCollisionPairs.count(bodiesIndex) > 0) continue;
+            if (mNoCollisionPairs.contains(bodiesIndex) > 0) continue;
 
 			bool isShape1Convex = shape1->getCollisionShape()->isConvex();
 			bool isShape2Convex = shape2->getCollisionShape()->isConvex();
@@ -349,15 +345,13 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
         if (it->second->getShape1()->mBroadPhaseID == proxyShape->mBroadPhaseID||
             it->second->getShape2()->mBroadPhaseID == proxyShape->mBroadPhaseID) {
-            Map<OverlappingPair::OverlappingPairId, OverlappingPair*>::Iterator itToRemove = it;
-            ++it;
 
             // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
 
             // Destroy the overlapping pair
-            itToRemove->second->~OverlappingPair();
-            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, itToRemove->second, sizeof(OverlappingPair));
-            mOverlappingPairs.remove(itToRemove);
+            it->second->~OverlappingPair();
+            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, it->second, sizeof(OverlappingPair));
+            it = mOverlappingPairs.remove(it);
         }
         else {
             ++it;
@@ -521,7 +515,7 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
                                          unsigned short categoryMaskBits) {
     assert(overlapCallback != nullptr);
 
-    std::unordered_set<bodyindex> reportedBodies;
+    Set<bodyindex> reportedBodies(mMemoryManager.getPoolAllocator());
 
     // Ask the broad-phase to get all the overlapping shapes
     LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
@@ -544,7 +538,7 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
             if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
                 // Add the body into the set of reported bodies
-                reportedBodies.insert(overlapBody->getID());
+                reportedBodies.add(overlapBody->getID());
 
                 // Notify the overlap to the user
                 overlapCallback->notifyOverlap(overlapBody);
@@ -637,7 +631,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
 
     assert(overlapCallback != nullptr);
 
-    std::unordered_set<bodyindex> reportedBodies;
+    Set<bodyindex> reportedBodies(mMemoryManager.getPoolAllocator());
 
     // For each proxy shape proxy shape of the body
     ProxyShape* bodyProxyShape = body->getProxyShapesList();
@@ -717,7 +711,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                             CollisionBody* overlapBody = proxyShape->getBody();
 
                             // Add the body into the set of reported bodies
-                            reportedBodies.insert(overlapBody->getID());
+                            reportedBodies.add(overlapBody->getID());
 
                             // Notify the overlap to the user
                             overlapCallback->notifyOverlap(overlapBody);

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_MAP_H
-#define REACTPHYSICS3D_MAP_H
+#ifndef REACTPHYSICS3D_SET_H
+#define REACTPHYSICS3D_SET_H
 
 // Libraries
 #include "memory/MemoryAllocator.h"
@@ -37,40 +37,40 @@
 
 namespace reactphysics3d {
 
-// Class Map
+// Class Set
 /**
- * This class represents a simple generic associative map. This map is
- * implemented with a hash table.
+ * This class represents a simple generic set. This set is implemented
+ * with a hash table.
   */
-template<typename K, typename V>
-class Map {
+template<typename V>
+class Set {
 
     private:
 
-        /// An entry of the map
+        /// An entry of the set
         struct Entry {
 
             size_t hashCode;			// Hash code of the entry
             int next;					// Index of the next entry
-            std::pair<K, V>* keyValue;	// Pointer to the pair with key and value
+            V* value;					// Pointer to the value stored in the entry
 
             /// Constructor
             Entry() {
                 next = -1;
-                keyValue = nullptr;
+                value = nullptr;
             }
 
             /// Constructor
             Entry(size_t hashcode, int nextEntry) {
                 hashCode = hashcode;
                 next = nextEntry;
-                keyValue = nullptr;
+                value = nullptr;
             }
 
             /// Destructor
             ~Entry() {
 
-                assert(keyValue == nullptr);
+                assert(value == nullptr);
             }
 
         };
@@ -80,7 +80,7 @@ class Map {
         /// Number of prime numbers in array
         static constexpr int NB_PRIMES = 70;
 
-        /// Array of prime numbers for the size of the map
+        /// Array of prime numbers for the size of the set
         static const int PRIMES[NB_PRIMES];
 
         /// Largest prime number
@@ -88,13 +88,13 @@ class Map {
 
         // -------------------- Attributes -------------------- //
 
-        /// Current number of used entries in the map
+        /// Current number of used entries in the set
         int mNbUsedEntries;
 
         /// Number of free entries among the used ones
         int mNbFreeEntries;
 
-        /// Current capacity of the map
+        /// Current capacity of the set
         int mCapacity;
 
         /// Array with all the buckets
@@ -111,7 +111,7 @@ class Map {
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the map
+        /// Initialize the set
         void initialize(int capacity) {
 
             // Compute the next larger prime size
@@ -137,7 +137,7 @@ class Map {
             mFreeIndex = -1;
         }
 
-        /// Expand the capacity of the map
+        /// Expand the capacity of the set
         void expand(int newCapacity) {
 
             assert(newCapacity > mCapacity);
@@ -187,16 +187,16 @@ class Map {
             mEntries = newEntries;
         }
 
-        /// Return the index of the entry with a given key or -1 if there is no entry with this key
-        int findEntry(const K& key) const {
+        /// Return the index of the entry with a given value or -1 if there is no entry with this value
+        int findEntry(const V& value) const {
 
             if (mCapacity > 0) {
 
-               size_t hashCode = std::hash<K>()(key);
+               size_t hashCode = std::hash<V>()(value);
                int bucket = hashCode % mCapacity;
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && mEntries[i].keyValue->first == key) {
+                   if (mEntries[i].hashCode == hashCode && (*mEntries[i].value) == value) {
                        return i;
                    }
                }
@@ -206,7 +206,7 @@ class Map {
         }
 
         /// Return the prime number that is larger or equal to the number in parameter
-        /// for the size of the map
+        /// for the size of the set
         static int getPrimeSize(int number) {
 
             // Check if the next larger prime number is in the precomputed array of primes
@@ -225,13 +225,13 @@ class Map {
             return number;
         }
 
-        /// Clear and reset the map
+        /// Clear and reset the set
         void reset() {
 
             // If elements have been allocated
             if (mCapacity > 0) {
 
-                // Clear the map
+                // Clear the list
                 clear();
 
                 // Destroy the entries
@@ -255,7 +255,7 @@ class Map {
 
         /// Class Iterator
         /**
-         * This class represents an iterator for the Map
+         * This class represents an iterator for the Set
          */
         class Iterator {
 
@@ -282,7 +282,7 @@ class Map {
                     for (mCurrentEntry += 1; mCurrentEntry < mNbUsedEntries; mCurrentEntry++) {
 
                         // If the entry is not empty
-                        if (mEntries[mCurrentEntry].keyValue != nullptr) {
+                        if (mEntries[mCurrentEntry].value != nullptr) {
 
                            // We have found the next non empty entry
                            return;
@@ -296,10 +296,10 @@ class Map {
             public:
 
                 // Iterator traits
-                using value_type = std::pair<K,V>;
+                using value_type = V;
                 using difference_type = std::ptrdiff_t;
-                using pointer = std::pair<K, V>*;
-                using reference = std::pair<K,V>&;
+                using pointer = V*;
+                using reference = V&;
                 using iterator_category = std::forward_iterator_tag;
 
                 /// Constructor
@@ -320,15 +320,15 @@ class Map {
                 /// Deferencable
                 reference operator*() const {
                     assert(mCurrentEntry >= 0 && mCurrentEntry < mNbUsedEntries);
-                    assert(mEntries[mCurrentEntry].keyValue != nullptr);
-                    return *(mEntries[mCurrentEntry].keyValue);
+                    assert(mEntries[mCurrentEntry].value != nullptr);
+                    return *(mEntries[mCurrentEntry].value);
                 }
 
                 /// Deferencable
                 pointer operator->() const {
                     assert(mCurrentEntry >= 0 && mCurrentEntry < mNbUsedEntries);
-                    assert(mEntries[mCurrentEntry].keyValue != nullptr);
-                    return mEntries[mCurrentEntry].keyValue;
+                    assert(mEntries[mCurrentEntry].value != nullptr);
+                    return mEntries[mCurrentEntry].value;
                 }
 
                 /// Post increment (it++)
@@ -359,7 +359,7 @@ class Map {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Map(MemoryAllocator& allocator, size_t capacity = 0)
+        Set(MemoryAllocator& allocator, size_t capacity = 0)
             : mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
               mEntries(nullptr), mAllocator(allocator), mFreeIndex(-1) {
 
@@ -377,9 +377,9 @@ class Map {
         }
 
         /// Copy constructor
-        Map(const Map<K, V>& map)
-          :mNbUsedEntries(map.mNbUsedEntries), mNbFreeEntries(map.mNbFreeEntries), mCapacity(map.mCapacity),
-           mAllocator(map.mAllocator), mFreeIndex(map.mFreeIndex) {
+        Set(const Set<V>& set)
+          :mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
+           mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
 
             // Allocate memory for the buckets
             mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
@@ -388,22 +388,22 @@ class Map {
             mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
             // Copy the buckets
-            std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
+            std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
 
             // Copy the entries
             for (int i=0; i < mCapacity; i++) {
 
-                new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+                new (&mEntries[i]) Entry(set.mEntries[i].hashCode, set.mEntries[i].next);
 
-                if (map.mEntries[i].keyValue != nullptr) {
-                   mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
-                   new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                if (set.mEntries[i].value != nullptr) {
+                   mEntries[i].value = static_cast<V*>(mAllocator.allocate(sizeof(V)));
+                   new (mEntries[i].value) V(*(set.mEntries[i].value));
                 }
             }
         }
 
         /// Destructor
-        ~Map() {
+        ~Set() {
 
             reset();
         }
@@ -423,43 +423,31 @@ class Map {
            expand(capacity);
         }
 
-        /// Return true if the map contains an item with the given key
-        bool containsKey(const K& key) const {
-            return findEntry(key) != -1;
+        /// Return true if the set contains a given value
+        bool contains(const V& value) const {
+            return findEntry(value) != -1;
         }
 
-        /// Add an element into the map
-        void add(const std::pair<K,V>& keyValue, bool insertIfAlreadyPresent = false) {
+        /// Add a value into the set
+        void add(const V& value) {
 
             if (mCapacity == 0) {
                 initialize(0);
             }
 
-            // Compute the hash code of the key
-            size_t hashCode = std::hash<K>()(keyValue.first);
+            // Compute the hash code of the value
+            size_t hashCode = std::hash<V>()(value);
 
             // Compute the corresponding bucket index
             int bucket = hashCode % mCapacity;
 
-            // Check if the item is already in the map
+            // Check if the item is already in the set
             for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
 
-                // If there is already an item with the same key in the map
-                if (mEntries[i].hashCode == hashCode && mEntries[i].keyValue->first == keyValue.first) {
+                // If there is already an item with the same value in the set
+                if (mEntries[i].hashCode == hashCode && (*mEntries[i].value) == value) {
 
-                    if (insertIfAlreadyPresent) {
-
-                        // Destruct the previous key/value
-                        mEntries[i].keyValue->~pair<K, V>();
-
-                        // Copy construct the new key/value
-                        new (mEntries[i].keyValue) std::pair<K,V>(keyValue);
-
-                        return;
-                    }
-                    else {
-                        throw std::runtime_error("The key and value pair already exists in the map");
-                    }
+                    return;
                 }
             }
 
@@ -488,37 +476,36 @@ class Map {
                 mNbUsedEntries++;
             }
 
-            assert(mEntries[entryIndex].keyValue == nullptr);
+            assert(mEntries[entryIndex].value == nullptr);
             mEntries[entryIndex].hashCode = hashCode;
             mEntries[entryIndex].next = mBuckets[bucket];
-            mEntries[entryIndex].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K,V>)));
-            assert(mEntries[entryIndex].keyValue != nullptr);
-            new (mEntries[entryIndex].keyValue) std::pair<K,V>(keyValue);
+            mEntries[entryIndex].value = static_cast<V*>(mAllocator.allocate(sizeof(V)));
+            assert(mEntries[entryIndex].value != nullptr);
+            new (mEntries[entryIndex].value) V(value);
             mBuckets[bucket] = entryIndex;
         }
 
         /// Remove the element pointed by some iterator
-        /// This method returns an iterator pointing to the element after
-        /// the one that has been removed
+        /// This method returns an iterator pointing to the
+        /// element after the one that has been removed
         Iterator remove(const Iterator& it) {
 
-            const K& key = it->first;
-            return remove(key);
+            return remove(*it);
         }
 
-        /// Remove the element from the map with a given key
-        /// This method returns an iterator pointing to the element after
-        /// the one that has been removed
-        Iterator remove(const K& key) {
+        /// Remove the element from the set with a given value
+        /// This method returns an iterator pointing to the
+        /// element after the one that has been removed
+        Iterator remove(const V& value) {
 
             if (mCapacity > 0) {
 
-                size_t hashcode = std::hash<K>()(key);
+                size_t hashcode = std::hash<V>()(value);
                 int bucket = hashcode % mCapacity;
                 int last = -1;
                 for (int i = mBuckets[bucket]; i >= 0; last = i, i = mEntries[i].next) {
 
-                    if (mEntries[i].hashCode == hashcode && mEntries[i].keyValue->first == key) {
+                    if (mEntries[i].hashCode == hashcode && (*mEntries[i].value) == value) {
 
                         if (last < 0 ) {
                            mBuckets[bucket] = mEntries[i].next;
@@ -527,22 +514,22 @@ class Map {
                            mEntries[last].next = mEntries[i].next;
                         }
 
-                        // Release memory for the key/value pair if any
-                        if (mEntries[i].keyValue != nullptr) {
-                            mEntries[i].keyValue->~pair<K,V>();
-                            mAllocator.release(mEntries[i].keyValue, sizeof(std::pair<K,V>));
-                            mEntries[i].keyValue = nullptr;
+                        // Release memory for the value if any
+                        if (mEntries[i].value != nullptr) {
+                            mEntries[i].value->~V();
+                            mAllocator.release(mEntries[i].value, sizeof(V));
+                            mEntries[i].value = nullptr;
                         }
                         mEntries[i].hashCode = -1;
                         mEntries[i].next = mFreeIndex;
                         mFreeIndex = i;
                         mNbFreeEntries++;
 
-                        // Find the next entry to return the iterator
+                        // Find the next valid entry to return an iterator
                         for (i += 1; i < mNbUsedEntries; i++) {
 
                             // If the entry is not empty
-                            if (mEntries[i].keyValue != nullptr) {
+                            if (mEntries[i].value != nullptr) {
 
                                // We have found the next non empty entry
                                return Iterator(mEntries, mCapacity, mNbUsedEntries, i);
@@ -554,11 +541,10 @@ class Map {
                 }
             }
 
-            // Return the end iterator
             return end();
         }
 
-        /// Clear the map
+        /// Clear the set
         void clear() {
 
             if (mNbUsedEntries > 0) {
@@ -566,10 +552,10 @@ class Map {
                 for (int i=0; i < mCapacity; i++) {
                     mBuckets[i] = -1;
                     mEntries[i].next = -1;
-                    if (mEntries[i].keyValue != nullptr) {
-                        mEntries[i].keyValue->~pair<K,V>();
-                        mAllocator.release(mEntries[i].keyValue, sizeof(std::pair<K,V>));
-                        mEntries[i].keyValue = nullptr;
+                    if (mEntries[i].value != nullptr) {
+                        mEntries[i].value->~V();
+                        mAllocator.release(mEntries[i].value, sizeof(V));
+                        mEntries[i].value = nullptr;
                     }
                 }
 
@@ -581,31 +567,31 @@ class Map {
             assert(size() == 0);
         }
 
-        /// Return the number of elements in the map
+        /// Return the number of elements in the set
         int size() const {
             return mNbUsedEntries - mNbFreeEntries;
         }
 
-        /// Return the capacity of the map
+        /// Return the capacity of the set
         int capacity() const {
             return mCapacity;
         }
 
-        /// Try to find an item of the map given a key.
+        /// Try to find an item of the set given a key.
         /// The method returns an iterator to the found item or
         /// an iterator pointing to the end if not found
-        Iterator find(const K& key) const {
+        Iterator find(const V& value) const {
 
             int bucket;
             int entry = -1;
 
             if (mCapacity > 0) {
 
-               size_t hashCode = std::hash<K>()(key);
+               size_t hashCode = std::hash<V>()(value);
                bucket = hashCode % mCapacity;
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && mEntries[i].keyValue->first == key) {
+                   if (mEntries[i].hashCode == hashCode && *(mEntries[i].value) == value) {
                        entry = i;
                        break;
                    }
@@ -616,62 +602,18 @@ class Map {
                 return end();
             }
 
-            assert(mEntries[entry].keyValue != nullptr);
+            assert(mEntries[entry].value != nullptr);
 
             return Iterator(mEntries, mCapacity, mNbUsedEntries, entry);
         }
 
-        /// Overloaded index operator
-        V& operator[](const K& key) {
-
-            int entry = -1;
-
-            if (mCapacity > 0) {
-                entry = findEntry(key);
-            }
-
-            if (entry == -1) {
-                throw std::runtime_error("No item with given key has been found in the map");
-            }
-
-            assert(mEntries[entry].keyValue != nullptr);
-
-            return mEntries[entry].keyValue->second;
-        }
-
-        /// Overloaded index operator
-        const V& operator[](const K& key) const {
-
-            int entry = -1;
-
-            if (mCapacity > 0) {
-                entry = findEntry(key);
-            }
-
-            if (entry == -1) {
-                throw std::runtime_error("No item with given key has been found in the map");
-            }
-
-            assert(mEntries[entry].keyValue != nullptr);
-
-            return mEntries[entry].keyValue->second;
-        }
-
         /// Overloaded equality operator
-        bool operator==(const Map<K,V>& map) const {
+        bool operator==(const Set<V>& set) const {
 
-            if (size() != map.size()) return false;
+            if (size() != set.size()) return false;
 
             for (auto it = begin(); it != end(); ++it) {
-                auto it2 = map.find(it->first);
-                if (it2 == map.end() || it2->second != it->second) {
-                    return false;
-                }
-            }
-
-            for (auto it = map.begin(); it != map.end(); ++it) {
-                auto it2 = find(it->first);
-                if (it2 == end() || it2->second != it->second) {
+                if(!set.contains(*it)) {
                     return false;
                 }
             }
@@ -680,24 +622,24 @@ class Map {
         }
 
         /// Overloaded not equal operator
-        bool operator!=(const Map<K,V>& map) const {
+        bool operator!=(const Set<V>& set) const {
 
-            return !((*this) == map);
+            return !((*this) == set);
         }
 
         /// Overloaded assignment operator
-        Map<K,V>& operator=(const Map<K, V>& map) {
+        Set<V>& operator=(const Set<V>& set) {
 
             // Check for self assignment
-            if (this != &map) {
+            if (this != &set) {
 
-                // Reset the map
+                // Reset the set
                 reset();
 
-                if (map.mCapacity > 0) {
+                if (set.mCapacity > 0) {
 
                     // Compute the next larger prime size
-                    mCapacity = getPrimeSize(map.mCapacity);
+                    mCapacity = getPrimeSize(set.mCapacity);
 
                     // Allocate memory for the buckets
                     mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
@@ -706,22 +648,22 @@ class Map {
                     mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                     // Copy the buckets
-                    std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
+                    std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
 
                     // Copy the entries
                     for (int i=0; i < mCapacity; i++) {
 
-                        new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+                        new (&mEntries[i]) Entry(set.mEntries[i].hashCode, set.mEntries[i].next);
 
-                        if (map.mEntries[i].keyValue != nullptr) {
-                           mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
-                           new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                        if (set.mEntries[i].value != nullptr) {
+                           mEntries[i].value = static_cast<V*>(mAllocator.allocate(sizeof(V)));
+                           new (mEntries[i].value) V(*(set.mEntries[i].value));
                         }
                     }
 
-                    mNbUsedEntries = map.mNbUsedEntries;
-                    mNbFreeEntries = map.mNbFreeEntries;
-                    mFreeIndex = map.mFreeIndex;
+                    mNbUsedEntries = set.mNbUsedEntries;
+                    mNbFreeEntries = set.mNbFreeEntries;
+                    mFreeIndex = set.mFreeIndex;
                 }
             }
 
@@ -741,7 +683,7 @@ class Map {
             // Find the first used entry
             int entry;
             for (entry=0; entry < mNbUsedEntries; entry++) {
-                if (mEntries[entry].keyValue != nullptr) {
+                if (mEntries[entry].value != nullptr) {
                     return Iterator(mEntries, mCapacity, mNbUsedEntries, entry);
                 }
             }
@@ -755,15 +697,15 @@ class Map {
         }
 };
 
-template<typename K, typename V>
-const int Map<K,V>::PRIMES[NB_PRIMES] = {3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
+template<typename V>
+const int Set<V>::PRIMES[NB_PRIMES] = {3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
                              1103, 1327, 1597, 1931, 2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143, 14591,
                              17519, 21023, 25229, 30293, 36353, 43627, 52361, 62851, 75431, 90523, 108631, 130363, 156437,
                              187751, 225307, 270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263,
                              1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559};
 
-template<typename K, typename V>
-int Map<K,V>::LARGEST_PRIME = -1;
+template<typename V>
+int Set<V>::LARGEST_PRIME = -1;
 
 }
 

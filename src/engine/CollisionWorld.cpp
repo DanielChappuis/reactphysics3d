@@ -33,7 +33,7 @@ using namespace std;
 
 // Constructor
 CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mMemoryManager), mCurrentBodyID(0),
+               : mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyID(0),
                  mFreeBodiesIDs(mMemoryManager.getPoolAllocator()), mEventListener(nullptr) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -49,14 +49,11 @@ CollisionWorld::CollisionWorld()
 CollisionWorld::~CollisionWorld() {
 
     // Destroy all the collision bodies that have not been removed
-    std::set<CollisionBody*>::iterator itBodies;
-    for (itBodies = mBodies.begin(); itBodies != mBodies.end(); ) {
-         std::set<CollisionBody*>::iterator itToRemove = itBodies;
-         ++itBodies;
-        destroyCollisionBody(*itToRemove);
+    for (int i=mBodies.size() - 1 ; i >= 0; i--) {
+        destroyCollisionBody(mBodies[i]);
     }
 
-    assert(mBodies.empty());
+    assert(mBodies.size() == 0);
 }
 
 // Create a collision body and add it to the world
@@ -80,7 +77,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(collisionBody != nullptr);
 
     // Add the collision body to the world
-    mBodies.insert(collisionBody);
+    mBodies.add(collisionBody);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -108,7 +105,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     collisionBody->~CollisionBody();
 
     // Remove the collision body from the list of bodies
-    mBodies.erase(collisionBody);
+    mBodies.remove(collisionBody);
 
     // Free the object from the memory allocator
     mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
@@ -121,7 +118,7 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
     bodyindex bodyID;
     if (mFreeBodiesIDs.size() != 0) {
         bodyID = mFreeBodiesIDs[mFreeBodiesIDs.size() - 1];
-        mFreeBodiesIDs.remove(mFreeBodiesIDs.size() - 1);
+        mFreeBodiesIDs.removeAt(mFreeBodiesIDs.size() - 1);
     }
     else {
         bodyID = mCurrentBodyID;
@@ -135,7 +132,7 @@ bodyindex CollisionWorld::computeNextAvailableBodyID() {
 void CollisionWorld::resetContactManifoldListsOfBodies() {
 
     // For each rigid body of the world
-    for (std::set<CollisionBody*>::iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
+    for (List<CollisionBody*>::Iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
 
         // Reset the contact manifold list of the body
         (*it)->resetContactManifoldsList();

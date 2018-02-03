@@ -195,9 +195,10 @@ class TestMap : public Test {
             test(!map1.containsKey(8));
             test(map1.size() == 1);
 
-            map1.remove(56);
+            auto it = map1.remove(56);
             test(!map1.containsKey(56));
             test(map1.size() == 0);
+            test(it == map1.end());
 
             isValid = true;
             for (int i = 0; i < 1000000; i++) {
@@ -219,11 +220,18 @@ class TestMap : public Test {
             map3.add(std::make_pair(2, 20));
             map3.add(std::make_pair(3, 30));
             test(map3.size() == 3);
-            auto it = map3.begin();
+            it = map3.begin();
             map3.remove(it++);
             test(!map3.containsKey(1));
             test(map3.size() == 2);
             test(it->second == 20);
+
+            map3.add(std::make_pair(56, 32));
+            map3.add(std::make_pair(23, 89));
+            for (it = map3.begin(); it != map3.end();) {
+                it = map3.remove(it);
+            }
+            test(map3.size() == 0);
 
             // ----- Test clear() ----- //
 
@@ -367,6 +375,7 @@ class TestMap : public Test {
            Map<int, int> map2(mAllocator);
            map2 = map1;
            test(map2.size() == map1.size());
+           test(map1 == map2);
            test(map2[1] == 3);
            test(map2[2] == 6);
            test(map2[10] == 30);
@@ -374,6 +383,7 @@ class TestMap : public Test {
            Map<int, int> map3(mAllocator, 100);
            map3 = map1;
            test(map3.size() == map1.size());
+           test(map3 == map1);
            test(map3[1] == 3);
            test(map3[2] == 6);
            test(map3[10] == 30);
@@ -381,12 +391,14 @@ class TestMap : public Test {
            Map<int, int> map4(mAllocator);
            map3 = map4;
            test(map3.size() == 0);
+           test(map3 == map4);
 
            Map<int, int> map5(mAllocator);
            map5.add(std::make_pair(7, 8));
            map5.add(std::make_pair(19, 70));
            map1 = map5;
            test(map5.size() == map1.size());
+           test(map5 == map1);
            test(map1[7] == 8);
            test(map1[19] == 70);
         }

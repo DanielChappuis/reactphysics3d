@@ -62,6 +62,7 @@ class TestList : public Test {
             testAddRemoveClear();
             testAssignment();
             testIndexing();
+            testFind();
             testEquality();
             testReserve();
             testIterators();
@@ -142,27 +143,52 @@ class TestList : public Test {
             list3.add(3);
             list3.add(4);
 
-            list3.remove(3);
+            auto it = list3.removeAt(3);
             test(list3.size() == 3);
             test(list3.capacity() == 4);
+            test(it == list3.end());
             test(list3[0] = 1);
             test(list3[1] = 2);
             test(list3[2] = 3);
 
-            list3.remove(1);
+            it = list3.removeAt(1);
             test(list3.size() == 2);
             test(list3.capacity() == 4);
             test(list3[0] = 1);
             test(list3[1] = 3);
+            test(*it = 3);
 
-            list3.remove(0);
+            list3.removeAt(0);
             test(list3.size() == 1);
             test(list3.capacity() == 4);
             test(list3[0] = 3);
 
-            list3.remove(0);
+            it = list3.removeAt(0);
             test(list3.size() == 0);
             test(list3.capacity() == 4);
+            test(it == list3.end());
+
+            list3.add(1);
+            list3.add(2);
+            list3.add(3);
+            it = list3.begin();
+            list3.remove(it);
+            test(list3.size() == 2);
+            test(list3[0] == 2);
+            test(list3[1] == 3);
+            it = list3.find(3);
+            list3.remove(it);
+            test(list3.size() == 1);
+            test(list3[0] == 2);
+
+            list3.add(5);
+            list3.add(6);
+            list3.add(7);
+            it = list3.remove(7);
+            test(it == list3.end());
+            test(list3.size() == 3);
+            it = list3.remove(5);
+            test((*it) == 6);
 
             // ----- Test addRange() ----- //
 
@@ -268,6 +294,20 @@ class TestList : public Test {
             list1[1]++;
             test(list1[0] == 7);
             test(list1[1] == 8);
+        }
+
+        void testFind() {
+
+            List<int> list1(mAllocator);
+            list1.add(1);
+            list1.add(2);
+            list1.add(3);
+            list1.add(4);
+            list1.add(5);
+
+            test(list1.find(1) == list1.begin());
+            test(*(list1.find(2)) == 2);
+            test(*(list1.find(5)) == 5);
         }
 
         void testEquality() {

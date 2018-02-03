@@ -35,8 +35,25 @@
 #include "memory/MemoryManager.h"
 #include "constraint/ContactPoint.h"
 #include "containers/Map.h"
-#include <set>
+#include "containers/Set.h"
 #include <utility>
+
+// Hash function for struct VerticesPair
+// TOOD : REMOVE THIS
+namespace std {
+
+  template <> struct hash<reactphysics3d::bodyindexpair> {
+
+    size_t operator()(const reactphysics3d::bodyindexpair& pair) const {
+
+        std::size_t seed = 0;
+        reactphysics3d::hash_combine<reactphysics3d::bodyindex>(seed, pair.first);
+        reactphysics3d::hash_combine<reactphysics3d::bodyindex>(seed, pair.second);
+
+        return seed;
+    }
+  };
+}
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -88,9 +105,8 @@ class CollisionDetection {
         // TODO : Delete this
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
-        // TODO : Maybe delete this set (what is the purpose ?)
         /// Set of pair of bodies that cannot collide between each other
-        std::set<bodyindexpair> mNoCollisionPairs;
+        Set<bodyindexpair> mNoCollisionPairs;
 
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
@@ -263,13 +279,13 @@ inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
 // Add a pair of bodies that cannot collide with each other
 inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
                                                    CollisionBody* body2) {
-    mNoCollisionPairs.insert(OverlappingPair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Remove a pair of bodies that cannot collide with each other
 inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
                                                       CollisionBody* body2) {
-    mNoCollisionPairs.erase(OverlappingPair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Ask for a collision shape to be tested again during broad-phase.

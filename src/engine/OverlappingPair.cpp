@@ -187,7 +187,7 @@ void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
             it->second->~LastFrameCollisionInfo();
             mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
 
-            mLastFrameCollisionInfos.remove(it++);
+            it = mLastFrameCollisionInfos.remove(it);
         }
         else {
             ++it;
