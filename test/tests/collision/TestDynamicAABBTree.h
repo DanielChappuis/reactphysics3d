@@ -29,6 +29,7 @@
 // Libraries
 #include "Test.h"
 #include "collision/broadphase/DynamicAABBTree.h"
+#include "memory/MemoryManager.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -112,7 +113,7 @@ class TestDynamicAABBTree : public Test {
             // ------------ Create tree ---------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
 			
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler
@@ -168,7 +169,7 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
 
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler
@@ -367,7 +368,7 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
 
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler

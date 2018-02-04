@@ -228,6 +228,9 @@ class CollisionDetection {
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
 
+        /// Return a reference to the memory manager
+        MemoryManager& getMemoryManager() const;
+
         /// Return a pointer to the world
         CollisionWorld* getWorld();
 
@@ -340,6 +343,11 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
 // Return a pointer to the world
 inline CollisionWorld* CollisionDetection::getWorld() {
     return mWorld;
+}
+
+// Return a reference to the memory manager
+inline MemoryManager& CollisionDetection::getMemoryManager() const {
+    return mMemoryManager;
 }
 
 #ifdef IS_PROFILING_ACTIVE

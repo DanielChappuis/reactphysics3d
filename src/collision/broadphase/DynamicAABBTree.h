@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "collision/shapes/AABB.h"
 #include "body/CollisionBody.h"
+#include "memory/MemoryAllocator.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -136,6 +137,9 @@ class DynamicAABBTree {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory allocator
+        MemoryAllocator& mAllocator;
+
         /// Pointer to the memory location of the nodes of the tree
         TreeNode* mNodes;
 
@@ -203,7 +207,7 @@ class DynamicAABBTree {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicAABBTree(decimal extraAABBGap = decimal(0.0));
+        DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap = decimal(0.0));
 
         /// Destructor
         ~DynamicAABBTree();

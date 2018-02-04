@@ -25,12 +25,13 @@
 
 // Libraries
 #include "ConcaveMeshShape.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh)
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH) {
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(MemoryManager::getBaseAllocator()) {
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
