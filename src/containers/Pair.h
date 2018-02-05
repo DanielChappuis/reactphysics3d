@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "memory/MemoryAllocator.h"
+#include "containers/containers_common.h"
 #include <cstring>
 #include <iterator>
 
@@ -54,211 +55,52 @@ class Pair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        List(MemoryAllocator& allocator, size_t capacity = 0)
-            : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
+        Pair(const T1& item1, const T2& item2) : first(item1), second(item2) {
 
-            if (capacity > 0) {
-
-                // Allocate memory
-                reserve(capacity);
-            }
         }
 
         /// Copy constructor
-        List(const List<T>& list) : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(list.mAllocator) {
+        Pair(const Pair<T1, T2>& pair) : first(pair.first), second(pair.second) {
 
-            // All all the elements of the list to the current one
-            addRange(list);
         }
 
         /// Destructor
-        ~List() {
-
-            // If elements have been allocated
-            if (mCapacity > 0) {
-
-                // Clear the list
-                clear();
-
-                // Release the memory allocated on the heap
-                mAllocator.release(mBuffer, mCapacity * sizeof(T));
-            }
-        }
-
-        /// Allocate memory for a given number of elements
-        void reserve(size_t capacity) {
-
-            if (capacity <= mCapacity) return;
-
-            // Allocate memory for the new array
-            void* newMemory = mAllocator.allocate(capacity * sizeof(T));
-
-            if (mBuffer != nullptr) {
-
-                // Copy the elements to the new allocated memory location
-                std::memcpy(newMemory, mBuffer, mSize * sizeof(T));
-
-                // Release the previously allocated memory
-                mAllocator.release(mBuffer, mCapacity * sizeof(T));
-            }
-
-            mBuffer = newMemory;
-            assert(mBuffer != nullptr);
-
-            mCapacity = capacity;
-        }
-
-        /// Add an element into the list
-        void add(const T& element) {
-
-            // If we need to allocate more memory
-            if (mSize == mCapacity) {
-                reserve(mCapacity == 0 ? 1 : mCapacity * 2);
-            }
-
-            // Use the copy-constructor to construct the element
-            new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(element);
-
-            mSize++;
-        }
-
-        /// Try to find a given item of the list and return an iterator
-        /// pointing to that element if it exists in the list. Otherwise,
-        /// this method returns the end() iterator
-        Iterator find(const T& element) {
-
-            for (uint i=0; i<mSize; i++) {
-                if (element == *(static_cast<T*>(mBuffer)[i])) {
-                    return Iterator(mBuffer, i, mSize);
-                }
-            }
-
-            return end();
-        }
-
-        /// Remove an element from the list
-        void remove(const Iterator& it) {
-           assert(it.mBuffer == mBuffer);
-           remove(it.mCurrentIndex);
-        }
-
-        /// Remove an element from the list at a given index
-        void remove(uint index) {
-
-          assert(index >= 0 && index < mSize);
-
-          // Call the destructor
-          (static_cast<T*>(mBuffer)[index]).~T();
-
-          mSize--;
-
-          if (index != mSize) {
-
-              // Move the elements to fill in the empty slot
-              char* dest = static_cast<char*>(mBuffer) + index * sizeof(T);
-              char* src = dest + sizeof(T);
-              std::memcpy(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
-          }
-        }
-
-        /// Append another list at the end of the current one
-        void addRange(const List<T>& list) {
-
-            // If we need to allocate more memory
-            if (mSize + list.size() > mCapacity) {
-
-                // Allocate memory
-                reserve(mSize + list.size());
-            }
-
-            // Add the elements of the list to the current one
-            for(uint i=0; i<list.size(); i++) {
-
-                new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(list[i]);
-                mSize++;
-            }
-        }
-
-        /// Clear the list
-        void clear() {
-
-            // Call the destructor of each element
-            for (uint i=0; i < mSize; i++) {
-                (static_cast<T*>(mBuffer)[i]).~T();
-            }
-
-            mSize = 0;
-        }
-
-        /// Return the number of elements in the list
-        size_t size() const {
-            return mSize;
-        }
-
-        /// Return the capacity of the list
-        size_t capacity() const {
-            return mCapacity;
-        }
-
-        /// Overloaded index operator
-        T& operator[](const uint index) {
-           assert(index >= 0 && index < mSize);
-           return (static_cast<T*>(mBuffer)[index]);
-        }
-
-        /// Overloaded const index operator
-        const T& operator[](const uint index) const {
-           assert(index >= 0 && index < mSize);
-           return (static_cast<T*>(mBuffer)[index]);
-        }
+        ~Pair() = default;
 
         /// Overloaded equality operator
-        bool operator==(const List<T>& list) const {
-
-           if (mSize != list.mSize) return false;
-
-           T* items = static_cast<T*>(mBuffer);
-            for (int i=0; i < mSize; i++) {
-                if (items[i] != list[i]) {
-                    return false;
-                }
-            }
-
-            return true;
+        bool operator==(const Pair<T1, T2>& pair) const {
+            return first == pair.first && second == pair.second;
         }
 
         /// Overloaded not equal operator
-        bool operator!=(const List<T>& list) const {
-
-            return !((*this) == list);
+        bool operator!=(const Pair<T1, T2>& pair) const {
+            return !((*this) == pair);
         }
 
         /// Overloaded assignment operator
-        List<T>& operator=(const List<T>& list) {
-
-            if (this != &list) {
-
-                // Clear all the elements
-                clear();
-
-                // Add all the elements of the list to the current one
-                addRange(list);
-            }
-
-            return *this;
-        }
-
-        /// Return a begin iterator
-        Iterator begin() const {
-            return Iterator(mBuffer, 0, mSize);
-        }
-
-        /// Return a end iterator
-        Iterator end() const {
-            return Iterator(mBuffer, mSize, mSize);
+        Pair<T1, T2>& operator=(const Pair<T1, T2>& pair) {
+            first = pair.first;
+            second = pair.second;
         }
 };
 
 }
+
+// Hash function for struct VerticesPair
+namespace std {
+
+  template <typename T1, typename T2> struct hash<reactphysics3d::Pair<T1, T2>> {
+
+    size_t operator()(const reactphysics3d::Pair<T1, T2>& pair) const {
+
+        std::size_t seed = 0;
+        reactphysics3d::hash_combine<T1>(seed, pair.first);
+        reactphysics3d::hash_combine<T2>(seed, pair.second);
+
+        return seed;
+    }
+  };
+}
+
 
 #endif

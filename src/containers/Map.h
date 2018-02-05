@@ -29,6 +29,7 @@
 // Libraries
 #include "memory/MemoryAllocator.h"
 #include "mathematics/mathematics_functions.h"
+#include "containers/Pair.h"
 #include <cstring>
 #include <stdexcept>
 #include <functional>
@@ -52,7 +53,7 @@ class Map {
 
             size_t hashCode;			// Hash code of the entry
             int next;					// Index of the next entry
-            std::pair<K, V>* keyValue;	// Pointer to the pair with key and value
+            Pair<K, V>* keyValue;	    // Pointer to the pair with key and value
 
             /// Constructor
             Entry() {
@@ -296,10 +297,10 @@ class Map {
             public:
 
                 // Iterator traits
-                using value_type = std::pair<K,V>;
+                using value_type = Pair<K,V>;
                 using difference_type = std::ptrdiff_t;
-                using pointer = std::pair<K, V>*;
-                using reference = std::pair<K,V>&;
+                using pointer = Pair<K, V>*;
+                using reference = Pair<K,V>&;
                 using iterator_category = std::forward_iterator_tag;
 
                 /// Constructor
@@ -396,8 +397,8 @@ class Map {
                 new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
 
                 if (map.mEntries[i].keyValue != nullptr) {
-                   mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
-                   new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                   mEntries[i].keyValue = static_cast<Pair<K,V>*>(mAllocator.allocate(sizeof(Pair<K, V>)));
+                   new (mEntries[i].keyValue) Pair<K,V>(*(map.mEntries[i].keyValue));
                 }
             }
         }
@@ -429,7 +430,7 @@ class Map {
         }
 
         /// Add an element into the map
-        void add(const std::pair<K,V>& keyValue, bool insertIfAlreadyPresent = false) {
+        void add(const Pair<K,V>& keyValue, bool insertIfAlreadyPresent = false) {
 
             if (mCapacity == 0) {
                 initialize(0);
@@ -450,10 +451,10 @@ class Map {
                     if (insertIfAlreadyPresent) {
 
                         // Destruct the previous key/value
-                        mEntries[i].keyValue->~pair<K, V>();
+                        mEntries[i].keyValue->~Pair<K, V>();
 
                         // Copy construct the new key/value
-                        new (mEntries[i].keyValue) std::pair<K,V>(keyValue);
+                        new (mEntries[i].keyValue) Pair<K,V>(keyValue);
 
                         return;
                     }
@@ -491,9 +492,9 @@ class Map {
             assert(mEntries[entryIndex].keyValue == nullptr);
             mEntries[entryIndex].hashCode = hashCode;
             mEntries[entryIndex].next = mBuckets[bucket];
-            mEntries[entryIndex].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K,V>)));
+            mEntries[entryIndex].keyValue = static_cast<Pair<K,V>*>(mAllocator.allocate(sizeof(Pair<K,V>)));
             assert(mEntries[entryIndex].keyValue != nullptr);
-            new (mEntries[entryIndex].keyValue) std::pair<K,V>(keyValue);
+            new (mEntries[entryIndex].keyValue) Pair<K,V>(keyValue);
             mBuckets[bucket] = entryIndex;
         }
 
@@ -529,8 +530,8 @@ class Map {
 
                         // Release memory for the key/value pair if any
                         if (mEntries[i].keyValue != nullptr) {
-                            mEntries[i].keyValue->~pair<K,V>();
-                            mAllocator.release(mEntries[i].keyValue, sizeof(std::pair<K,V>));
+                            mEntries[i].keyValue->~Pair<K,V>();
+                            mAllocator.release(mEntries[i].keyValue, sizeof(Pair<K,V>));
                             mEntries[i].keyValue = nullptr;
                         }
                         mEntries[i].hashCode = -1;
@@ -567,8 +568,8 @@ class Map {
                     mBuckets[i] = -1;
                     mEntries[i].next = -1;
                     if (mEntries[i].keyValue != nullptr) {
-                        mEntries[i].keyValue->~pair<K,V>();
-                        mAllocator.release(mEntries[i].keyValue, sizeof(std::pair<K,V>));
+                        mEntries[i].keyValue->~Pair<K,V>();
+                        mAllocator.release(mEntries[i].keyValue, sizeof(Pair<K,V>));
                         mEntries[i].keyValue = nullptr;
                     }
                 }
@@ -714,8 +715,8 @@ class Map {
                         new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
 
                         if (map.mEntries[i].keyValue != nullptr) {
-                           mEntries[i].keyValue = static_cast<std::pair<K,V>*>(mAllocator.allocate(sizeof(std::pair<K, V>)));
-                           new (mEntries[i].keyValue) std::pair<K,V>(*(map.mEntries[i].keyValue));
+                           mEntries[i].keyValue = static_cast<Pair<K,V>*>(mAllocator.allocate(sizeof(Pair<K, V>)));
+                           new (mEntries[i].keyValue) Pair<K,V>(*(map.mEntries[i].keyValue));
                         }
                     }
 

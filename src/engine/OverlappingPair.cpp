@@ -164,7 +164,7 @@ void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) 
                                                 LastFrameCollisionInfo();
 
         // Add it into the map of collision infos
-        mLastFrameCollisionInfos.add(std::make_pair(shapeIdPair, collisionInfo));
+        mLastFrameCollisionInfos.add(Pair<ShapeIdPair, LastFrameCollisionInfo*>(shapeIdPair, collisionInfo));
     }
     else {
 

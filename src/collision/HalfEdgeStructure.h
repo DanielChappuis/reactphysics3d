@@ -41,23 +41,7 @@ class HalfEdgeStructure {
 
     public:
 
-        /// Pair of vertices
-        struct VerticesPair {
-
-            uint vertex1;
-            uint vertex2;
-
-            /// Constructor
-            VerticesPair() = default;
-
-            /// Constructor
-            VerticesPair(uint v1, uint v2) : vertex1(v1), vertex2(v2) {}
-
-            /// Equality operator
-            bool operator==(const VerticesPair& pair) const {
-                return vertex1 == pair.vertex1 && vertex2 == pair.vertex2;
-            }
-        };
+        using VerticesPair = Pair<uint, uint>;
 
         /// Edge
         struct Edge {

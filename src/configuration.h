@@ -32,6 +32,7 @@
 #include <utility>
 #include <cstdint>
 #include "decimal.h"
+#include "containers/Pair.h"
 
 // Windows platform
 #if defined(WIN32) ||defined(_WIN32) || defined(_WIN64) ||defined(__WIN32__) || defined(__WINDOWS__)
@@ -52,7 +53,7 @@ using uchar = unsigned char;
 using ushort = unsigned short;
 using luint = long unsigned int;
 using bodyindex = luint;
-using bodyindexpair = std::pair<bodyindex, bodyindex>;
+using bodyindexpair = Pair<bodyindex, bodyindex>;
 
 using int8 = std::int8_t;
 using uint8 = std::uint8_t;

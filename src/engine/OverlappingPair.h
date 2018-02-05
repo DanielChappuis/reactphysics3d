@@ -31,6 +31,7 @@
 #include "collision/ProxyShape.h"
 #include "collision/shapes/CollisionShape.h"
 #include "containers/Map.h"
+#include "containers/Pair.h"
 #include "containers/containers_common.h"
 
 /// ReactPhysics3D namespace
@@ -95,35 +96,8 @@ class OverlappingPair {
 
     public:
 
-        /// Pair of shape ids
-        struct ShapeIdPair {
-
-            uint shapeIdBody1;
-            uint shapeIdBody2;
-
-            /// Constructor
-            ShapeIdPair(uint id1, uint id2) : shapeIdBody1(id1), shapeIdBody2(id2) {}
-
-            /// Equality operator
-            bool operator==(const ShapeIdPair& pair) const {
-                return shapeIdBody1 == pair.shapeIdBody1 && shapeIdBody2 == pair.shapeIdBody2;
-            }
-        };
-
-        /// Pair of broad-phase ids
-        struct OverlappingPairId {
-
-            uint body1Id;
-            uint body2Id;
-
-            /// Constructor
-            OverlappingPairId(uint id1, uint id2) : body1Id(id1), body2Id(id2) {}
-
-            /// Equality operator
-            bool operator==(const OverlappingPairId& pair) const {
-                return body1Id == pair.body1Id && body2Id == pair.body2Id;
-            }
-        };
+        using OverlappingPairId = Pair<uint, uint>;
+        using ShapeIdPair = Pair<uint, uint>;
 
     private:
 
@@ -277,7 +251,7 @@ inline OverlappingPair::OverlappingPairId OverlappingPair::computeID(ProxyShape*
     OverlappingPairId pairID = shape1->mBroadPhaseID < shape2->mBroadPhaseID ?
                              OverlappingPairId(shape1->mBroadPhaseID, shape2->mBroadPhaseID) :
                              OverlappingPairId(shape2->mBroadPhaseID, shape1->mBroadPhaseID);
-    assert(pairID.body1Id != pairID.body2Id);
+    assert(pairID.first != pairID.second);
     return pairID;
 }
 
@@ -287,8 +261,8 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
 
     // Construct the pair of body index
     bodyindexpair indexPair = body1->getID() < body2->getID() ?
-                                 std::make_pair(body1->getID(), body2->getID()) :
-                                 std::make_pair(body2->getID(), body1->getID());
+                                 bodyindexpair(body1->getID(), body2->getID()) :
+                                 bodyindexpair(body2->getID(), body1->getID());
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }
@@ -329,34 +303,6 @@ inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint s
     return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
 }
 
-}
-
-// Hash function for struct ShapeIdPair
-namespace std {
-
-  template <> struct hash<reactphysics3d::OverlappingPair::ShapeIdPair> {
-
-    size_t operator()(const reactphysics3d::OverlappingPair::ShapeIdPair& pair) const {
-
-        std::size_t seed = 0;
-        reactphysics3d::hash_combine<uint>(seed, pair.shapeIdBody1);
-        reactphysics3d::hash_combine<uint>(seed, pair.shapeIdBody2);
-
-        return seed;
-    }
-  };
-
-  template <> struct hash<reactphysics3d::OverlappingPair::OverlappingPairId> {
-
-    size_t operator()(const reactphysics3d::OverlappingPair::OverlappingPairId& pair) const {
-
-        std::size_t seed = 0;
-        reactphysics3d::hash_combine<uint>(seed, pair.body1Id);
-        reactphysics3d::hash_combine<uint>(seed, pair.body2Id);
-
-        return seed;
-    }
-  };
 }
 
 #endif

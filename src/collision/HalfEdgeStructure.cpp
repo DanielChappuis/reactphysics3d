@@ -26,25 +26,10 @@
 // Libraries
 #include "HalfEdgeStructure.h"
 #include "containers/Map.h"
+#include "containers/Pair.h"
 #include "containers/containers_common.h"
 
 using namespace reactphysics3d;
-
-// Hash function for struct VerticesPair
-namespace std {
-
-  template <> struct hash<HalfEdgeStructure::VerticesPair> {
-
-    size_t operator()(const HalfEdgeStructure::VerticesPair& pair) const {
-
-        std::size_t seed = 0;
-        hash_combine<uint>(seed, pair.vertex1);
-        hash_combine<uint>(seed, pair.vertex2);
-
-        return seed;
-    }
-  };
-}
 
 // Initialize the structure (when all vertices and faces have been added)
 void HalfEdgeStructure::init() {
@@ -63,7 +48,7 @@ void HalfEdgeStructure::init() {
 
         Face face = mFaces[f];
 
-        VerticesPair firstEdgeKey;
+        VerticesPair firstEdgeKey(0, 0);
 
         // For each vertex of the face
         for (uint v=0; v < face.faceVertices.size(); v++) {
@@ -80,19 +65,19 @@ void HalfEdgeStructure::init() {
                 firstEdgeKey = pairV1V2;
             }
             else if (v >= 1) {
-                nextEdges.add(std::make_pair(currentFaceEdges[currentFaceEdges.size() - 1], pairV1V2));
+                nextEdges.add(Pair<VerticesPair, VerticesPair>(currentFaceEdges[currentFaceEdges.size() - 1], pairV1V2));
             }
             if (v == (face.faceVertices.size() - 1)) {
-                nextEdges.add(std::make_pair(pairV1V2, firstEdgeKey));
+                nextEdges.add(Pair<VerticesPair, VerticesPair>(pairV1V2, firstEdgeKey));
             }
-            edges.add(std::make_pair(pairV1V2, edge));
+            edges.add(Pair<VerticesPair, Edge>(pairV1V2, edge));
 
             const VerticesPair pairV2V1(v2Index, v1Index);
 
-            mapEdgeToStartVertex.add(std::make_pair(pairV1V2, v1Index), true);
-            mapEdgeToStartVertex.add(std::make_pair(pairV2V1, v2Index), true);
+            mapEdgeToStartVertex.add(Pair<VerticesPair, uint>(pairV1V2, v1Index), true);
+            mapEdgeToStartVertex.add(Pair<VerticesPair, uint>(pairV2V1, v2Index), true);
 
-            mapFaceIndexToEdgeKey.add(std::make_pair(f, pairV1V2), true);
+            mapFaceIndexToEdgeKey.add(Pair<uint, VerticesPair>(f, pairV1V2), true);
 
             auto itEdge = edges.find(pairV2V1);
             if (itEdge != edges.end()) {
@@ -102,14 +87,14 @@ void HalfEdgeStructure::init() {
                 itEdge->second.twinEdgeIndex = edgeIndex + 1;
                 edge.twinEdgeIndex = edgeIndex;
 
-                mapEdgeIndexToKey.add(std::make_pair(edgeIndex, pairV2V1));
-                mapEdgeIndexToKey.add(std::make_pair(edgeIndex + 1, pairV1V2));
+                mapEdgeIndexToKey.add(Pair<uint, VerticesPair>(edgeIndex, pairV2V1));
+                mapEdgeIndexToKey.add(Pair<uint, VerticesPair>(edgeIndex + 1, pairV1V2));
 
                 mVertices[v1Index].edgeIndex = edgeIndex + 1;
                 mVertices[v2Index].edgeIndex = edgeIndex;
 
-                mapEdgeToIndex.add(std::make_pair(pairV1V2, edgeIndex + 1));
-                mapEdgeToIndex.add(std::make_pair(pairV2V1, edgeIndex));
+                mapEdgeToIndex.add(Pair<VerticesPair, uint>(pairV1V2, edgeIndex + 1));
+                mapEdgeToIndex.add(Pair<VerticesPair, uint>(pairV2V1, edgeIndex));
 
                 mEdges.add(itEdge->second);
                 mEdges.add(edge);

@@ -38,23 +38,6 @@
 #include "containers/Set.h"
 #include <utility>
 
-// Hash function for struct VerticesPair
-// TOOD : REMOVE THIS
-namespace std {
-
-  template <> struct hash<reactphysics3d::bodyindexpair> {
-
-    size_t operator()(const reactphysics3d::bodyindexpair& pair) const {
-
-        std::size_t seed = 0;
-        reactphysics3d::hash_combine<reactphysics3d::bodyindex>(seed, pair.first);
-        reactphysics3d::hash_combine<reactphysics3d::bodyindex>(seed, pair.second);
-
-        return seed;
-    }
-  };
-}
-
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -96,7 +79,7 @@ class CollisionDetection {
         NarrowPhaseInfo* mNarrowPhaseInfoList;
 
         /// Broad-phase overlapping pairs
-        Map<OverlappingPair::OverlappingPairId, OverlappingPair*> mOverlappingPairs;
+        Map<Pair<uint, uint>, OverlappingPair*> mOverlappingPairs;
 
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
