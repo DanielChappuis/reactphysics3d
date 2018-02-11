@@ -225,30 +225,26 @@ List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const V
                                                            const List<Vector3>& planesPoints,
                                                            const List<Vector3>& planesNormals,
                                                            MemoryAllocator& allocator) {
-
     assert(planesPoints.size() == planesNormals.size());
 
-    List<Vector3> list1(allocator, 2);
-    List<Vector3> list2(allocator, 2);
+    List<Vector3> inputVertices(allocator, 2);
+    List<Vector3> outputVertices(allocator, 2);
 
-    List<Vector3>* inputVertices = &list1;
-    List<Vector3>* outputVertices = &list2;
-
-    inputVertices->add(segA);
-    inputVertices->add(segB);
+    inputVertices.add(segA);
+    inputVertices.add(segB);
 
     // For each clipping plane
     for (uint p=0; p<planesPoints.size(); p++) {
 
         // If there is no more vertices, stop
-        if (inputVertices->size() == 0) return *inputVertices;
+        if (inputVertices.size() == 0) return inputVertices;
 
-        assert(inputVertices->size() == 2);
+        assert(inputVertices.size() == 2);
 
-        outputVertices->clear();
+        outputVertices.clear();
 
-        Vector3& v1 = (*inputVertices)[0];
-        Vector3& v2 = (*inputVertices)[1];
+        Vector3& v1 = inputVertices[0];
+        Vector3& v2 = inputVertices[1];
 
         decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
         decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
@@ -263,40 +259,39 @@ List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const V
                 decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
 
                 if (t >= decimal(0) && t <= decimal(1.0)) {
-                    outputVertices->add(v1 + t * (v2 - v1));
+                    outputVertices.add(v1 + t * (v2 - v1));
                 }
                 else {
-                    outputVertices->add(v2);
+                    outputVertices.add(v2);
                 }
             }
             else {
-                outputVertices->add(v1);
+                outputVertices.add(v1);
             }
 
             // Add the second vertex
-            outputVertices->add(v2);
+            outputVertices.add(v2);
         }
         else {  // If the second vertex is behind the clipping plane
 
             // If the first vertex is in front of the clippling plane
             if (v1DotN >= decimal(0.0)) {
 
-                outputVertices->add(v1);
+                outputVertices.add(v1);
 
                 // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
                 decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
 
                 if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                    outputVertices->add(v1 + t * (v2 - v1));
+                    outputVertices.add(v1 + t * (v2 - v1));
                 }
             }
         }
 
         inputVertices = outputVertices;
-        outputVertices = p % 2 == 0 ? &list1 : &list2;
     }
 
-    return *outputVertices;
+    return outputVertices;
 }
 
 // Clip a polygon against multiple planes and return the clipped polygon vertices
@@ -306,75 +301,73 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
 
     assert(planesPoints.size() == planesNormals.size());
 
-    uint nbMaxElements = polygonVertices.size() + planesPoints.size();
-    List<Vector3> list1(allocator, nbMaxElements);
-    List<Vector3> list2(allocator, nbMaxElements);
+        uint nbMaxElements = polygonVertices.size() + planesPoints.size();
+        List<Vector3> inputVertices(allocator, nbMaxElements);
+        List<Vector3> outputVertices(allocator, nbMaxElements);
 
-    const List<Vector3>* inputVertices = &polygonVertices;
-    List<Vector3>* outputVertices = &list2;
+        inputVertices.addRange(polygonVertices);
 
-    // For each clipping plane
-    for (uint p=0; p<planesPoints.size(); p++) {
+        // For each clipping plane
+        for (uint p=0; p<planesPoints.size(); p++) {
 
-        outputVertices->clear();
+            outputVertices.clear();
 
-        uint nbInputVertices = inputVertices->size();
-        uint vStart = nbInputVertices - 1;
+            uint nbInputVertices = inputVertices.size();
+            uint vStart = nbInputVertices - 1;
 
-        // For each edge of the polygon
-        for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
+            // For each edge of the polygon
+            for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
 
-            const Vector3& v1 = (*inputVertices)[vStart];
-            const Vector3& v2 = (*inputVertices)[vEnd];
+                Vector3& v1 = inputVertices[vStart];
+                Vector3& v2 = inputVertices[vEnd];
 
-            decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
-            decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
+                decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
+                decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
 
-            // If the second vertex is in front of the clippling plane
-            if (v2DotN >= decimal(0.0)) {
+                // If the second vertex is in front of the clippling plane
+                if (v2DotN >= decimal(0.0)) {
 
-                // If the first vertex is not in front of the clippling plane
-                if (v1DotN < decimal(0.0)) {
+                    // If the first vertex is not in front of the clippling plane
+                    if (v1DotN < decimal(0.0)) {
 
-                    // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
+                        // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
+                        decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
 
-                    if (t >= decimal(0) && t <= decimal(1.0)) {
-                        outputVertices->add(v1 + t * (v2 - v1));
+                        if (t >= decimal(0) && t <= decimal(1.0)) {
+                            outputVertices.add(v1 + t * (v2 - v1));
+                        }
+                        else {
+                            outputVertices.add(v2);
+                        }
                     }
-                    else {
-                        outputVertices->add(v2);
-                    } 
+
+                    // Add the second vertex
+                    outputVertices.add(v2);
+                }
+                else {  // If the second vertex is behind the clipping plane
+
+                    // If the first vertex is in front of the clippling plane
+                    if (v1DotN >= decimal(0.0)) {
+
+                        // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
+                        decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
+
+                        if (t >= decimal(0.0) && t <= decimal(1.0)) {
+                            outputVertices.add(v1 + t * (v2 - v1));
+                        }
+                        else {
+                            outputVertices.add(v1);
+                        }
+                    }
                 }
 
-                // Add the second vertex
-                outputVertices->add(v2);
-            }
-            else {  // If the second vertex is behind the clipping plane
-
-                // If the first vertex is in front of the clippling plane
-                if (v1DotN >= decimal(0.0)) {
-
-                    // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
-
-                    if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                        outputVertices->add(v1 + t * (v2 - v1));
-                    }
-                    else {
-                        outputVertices->add(v1);
-                    }
-                }
+                vStart = vEnd;
             }
 
-            vStart = vEnd;
+            inputVertices = outputVertices;
         }
 
-        inputVertices = outputVertices;
-        outputVertices = p % 2 == 0 ? &list1 : &list2;
-    }
-
-    return *outputVertices;
+        return outputVertices;
 }
 
 // Project a point onto a plane that is given by a point and its unit length normal
