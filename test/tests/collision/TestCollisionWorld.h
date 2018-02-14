@@ -487,11 +487,14 @@ class TestCollisionWorld : public Test {
             testBoxVsBoxCollision();
             testBoxVsConvexMeshCollision();
             testBoxVsCapsuleCollision();
+            testBoxVsConcaveMeshCollision();
+
+            testCapsuleVsCapsuleCollision();
+            testCapsuleVsConcaveMeshCollision();
 
             testConvexMeshVsConvexMeshCollision();
             testConvexMeshVsCapsuleCollision();
-
-			testMultipleCollisions();
+            testConvexMeshVsConcaveMeshCollision();
         }
 
 		void testNoCollisions() {
@@ -2361,7 +2364,7 @@ class TestCollisionWorld : public Test {
             Transform initTransform2 = mCapsuleBody1->getTransform();
 
             /********************************************************************************
-            * Test Box vs Capsule collision                                             *
+            * Test Convex Mesh vs Capsule collision                                             *
             *********************************************************************************/
 
             Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
@@ -2474,17 +2477,583 @@ class TestCollisionWorld : public Test {
             mCapsuleBody1->setTransform(initTransform2);
         }
 
-        void testMultipleCollisions() {
+        void testBoxVsConcaveMeshCollision() {
 
-			// TODO : Test collisions without categories set
+            Transform initTransform1 = mBoxBody1->getTransform();
+            Transform initTransform2 = mConcaveMeshBody->getTransform();
 
-			// TODO : Test colliisons with categories set
+            /********************************************************************************
+            * Test Box vs Concave Mesh
+            *********************************************************************************/
 
-			// Assign collision categories to proxy shapes
-			//mBoxProxyShape->setCollisionCategoryBits(CATEGORY_1);
-			//mSphere1ProxyShape->setCollisionCategoryBits(CATEGORY_1);
-			//mSphere2ProxyShape->setCollisionCategoryBits(CATEGORY_2);
-		}
+            Transform transform1(Vector3(10, 22, 50), Quaternion::identity());
+            Transform transform2(Vector3(10, 20, 50), Quaternion::identity());
+
+            // Move spheres to collide with each other
+            mBoxBody1->setTransform(transform1);
+            mConcaveMeshBody->setTransform(transform2);
+
+            // ----- Test AABB overlap ----- //
+
+            test(mWorld->testAABBOverlap(mBoxBody1, mConcaveMeshBody));
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            // ----- Test global collision test ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against body 1 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against body 2 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against selected body 1 and 2 ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mBoxBody1, mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+
+            // Test contact points
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // Reset the init transforms
+            mBoxBody1->setTransform(initTransform1);
+            mConcaveMeshBody->setTransform(initTransform2);
+        }
+
+        void testConvexMeshVsConcaveMeshCollision() {
+
+            Transform initTransform1 = mConvexMeshBody1->getTransform();
+            Transform initTransform2 = mConcaveMeshBody->getTransform();
+
+            /********************************************************************************
+            * Test Box vs Concave Mesh
+            *********************************************************************************/
+
+            Transform transform1(Vector3(10, 22, 50), Quaternion::identity());
+            Transform transform2(Vector3(10, 20, 50), Quaternion::identity());
+
+            // Move spheres to collide with each other
+            mConvexMeshBody1->setTransform(transform1);
+            mConcaveMeshBody->setTransform(transform2);
+
+            // ----- Test AABB overlap ----- //
+
+            test(mWorld->testAABBOverlap(mConvexMeshBody1, mConcaveMeshBody));
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            // ----- Test global collision test ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against body 1 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against body 2 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // ----- Test collision against selected body 1 and 2 ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mConvexMeshBody1, mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 4);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+
+            // Test contact points
+            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+                test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            }
+
+            // Reset the init transforms
+            mConvexMeshBody1->setTransform(initTransform1);
+            mConcaveMeshBody->setTransform(initTransform2);
+        }
+
+        void testCapsuleVsCapsuleCollision() {
+
+            Transform initTransform1 = mCapsuleBody1->getTransform();
+            Transform initTransform2 = mCapsuleBody2->getTransform();
+
+            /********************************************************************************
+            * Test Capsule (sphere cap) vs Capsule (sphere cap) collision                                             *
+            *********************************************************************************/
+
+            Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
+            Transform transform2(Vector3(16, 23, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+
+            // Move spheres to collide with each other
+            mCapsuleBody1->setTransform(transform1);
+            mCapsuleBody2->setTransform(transform2);
+
+            // ----- Test AABB overlap ----- //
+
+            test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody2, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            // ----- Test global collision test ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            Vector3 localBody1Point(2, 3, 0);
+            Vector3 localBody2Point(0, 5, 0);
+            decimal penetrationDepth = 1.0f;
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against body 1 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against body 2 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody2, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against selected body 1 and 2 ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            /********************************************************************************
+            * Test Capsule (sphere cap) vs Capsule (cylinder side) collision                          *
+            *********************************************************************************/
+
+            transform1 = Transform(Vector3(10, 20, 50), Quaternion::identity());
+            transform2 = Transform(Vector3(10, 27, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+
+            // Move spheres to collide with each other
+            mCapsuleBody1->setTransform(transform1);
+            mCapsuleBody2->setTransform(transform2);
+
+            // ----- Test AABB overlap ----- //
+
+            test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody2, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            // ----- Test global collision test ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            localBody1Point = Vector3(0, 5, 0);
+            localBody2Point = Vector3(-3, 0, 0);
+            penetrationDepth = decimal(1.0);
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against body 1 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against body 2 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody2, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // ----- Test collision against selected body 1 and 2 ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                penetrationDepth));
+
+            // Reset the init transforms
+            mCapsuleBody1->setTransform(initTransform1);
+            mCapsuleBody2->setTransform(initTransform2);
+        }
+
+        void testCapsuleVsConcaveMeshCollision() {
+
+            Transform initTransform1 = mCapsuleBody1->getTransform();
+            Transform initTransform2 = mConcaveMeshBody->getTransform();
+
+            /********************************************************************************
+            * Test Capsule vs Concave Mesh
+            *********************************************************************************/
+
+            Transform transform1(Vector3(10, 24.98f, 50), Quaternion::identity());
+            Transform transform2(Vector3(10, 20, 50), Quaternion::identity());
+
+            // Move spheres to collide with each other
+            mCapsuleBody1->setTransform(transform1);
+            mConcaveMeshBody->setTransform(transform2);
+
+            // ----- Test AABB overlap ----- //
+
+            test(mWorld->testAABBOverlap(mCapsuleBody1, mConcaveMeshBody));
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
+            test(mOverlapCallback.hasOverlap());
+
+            // ----- Test global collision test ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(&mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            Vector3 localBody1Point(0, -5, 0);
+            Vector3 localBody2Point(0, 0, 0);
+            decimal penetrationDepth = 0.02f;
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                                                         swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                                                         penetrationDepth));
+
+            // ----- Test collision against body 1 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                                                         swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                                                         penetrationDepth));
+
+            // ----- Test collision against body 2 only ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                                                         swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                                                         penetrationDepth));
+
+            // ----- Test collision against selected body 1 and 2 ----- //
+
+            mCollisionCallback.reset();
+            mWorld->testCollision(mCapsuleBody1, mConcaveMeshBody, &mCollisionCallback);
+
+            test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+
+            // Get collision data
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            test(collisionData != nullptr);
+            test(collisionData->getNbContactManifolds() == 1);
+            test(collisionData->getTotalNbContactPoints() == 1);
+
+            // True if the bodies are swapped in the collision callback response
+            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+
+            // Test contact points
+            test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
+                                                         swappedBodiesCollisionData ? localBody1Point : localBody2Point,
+                                                         penetrationDepth));
+
+            // Reset the init transforms
+            mCapsuleBody1->setTransform(initTransform1);
+            mConcaveMeshBody->setTransform(initTransform2);
+        }
  };
 
 }
