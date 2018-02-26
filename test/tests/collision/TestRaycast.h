@@ -211,29 +211,28 @@ class TestRaycast : public Test {
             mCapsuleShape = new CapsuleShape(2, 5);
             mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
 
-            // TODO : Create convex mesh shape with new way (polyhedron mesh) to add test again
-            // Box of extents (2, 3, 4)
-            mPolyhedronVertices[0] = Vector3(-2, -3, -4);
-            mPolyhedronVertices[1] = Vector3(2, -3, -4);
-            mPolyhedronVertices[2] = Vector3(2, -3, 4);
-            mPolyhedronVertices[3] = Vector3(-2, -3, 4);
-            mPolyhedronVertices[4] = Vector3(-2, 3, -4);
-            mPolyhedronVertices[5] = Vector3(2, 3, -4);
-            mPolyhedronVertices[6] = Vector3(2, 3, 4);
-            mPolyhedronVertices[7] = Vector3(-2, 3, 4);
+            mPolyhedronVertices[0] = Vector3(-2, -3, 4);
+            mPolyhedronVertices[1] = Vector3(2, -3, 4);
+            mPolyhedronVertices[2] = Vector3(2, -3, -4);
+            mPolyhedronVertices[3] = Vector3(-2, -3, -4);
+            mPolyhedronVertices[4] = Vector3(-2, 3, 4);
+            mPolyhedronVertices[5] = Vector3(2, 3, 4);
+            mPolyhedronVertices[6] = Vector3(2, 3, -4);
+            mPolyhedronVertices[7] = Vector3(-2, 3, -4);
 
-            mPolyhedronIndices[0] = 0; mPolyhedronIndices[1] = 1; mPolyhedronIndices[2] = 2; mPolyhedronIndices[3] = 3;
-            mPolyhedronIndices[4] = 1; mPolyhedronIndices[5] = 5; mPolyhedronIndices[6] = 6; mPolyhedronIndices[7] = 2;
-            mPolyhedronIndices[8] = 0; mPolyhedronIndices[9] = 4; mPolyhedronIndices[10] = 5; mPolyhedronIndices[11] = 1;
-            mPolyhedronIndices[12] = 0; mPolyhedronIndices[13] = 3; mPolyhedronIndices[14] = 7; mPolyhedronIndices[15] = 4;
-            mPolyhedronIndices[16] = 3; mPolyhedronIndices[17] = 2; mPolyhedronIndices[18] = 6; mPolyhedronIndices[19] = 7;
-            mPolyhedronIndices[20] = 2; mPolyhedronIndices[21] = 5; mPolyhedronIndices[22] = 4; mPolyhedronIndices[23] = 7;
+            mPolyhedronIndices[0] = 0; mPolyhedronIndices[1] = 3; mPolyhedronIndices[2] = 2; mPolyhedronIndices[3] = 1;
+            mPolyhedronIndices[4] = 4; mPolyhedronIndices[5] = 5; mPolyhedronIndices[6] = 6; mPolyhedronIndices[7] = 7;
+            mPolyhedronIndices[8] = 0; mPolyhedronIndices[9] = 1; mPolyhedronIndices[10] = 5; mPolyhedronIndices[11] = 4;
+            mPolyhedronIndices[12] = 1; mPolyhedronIndices[13] = 2; mPolyhedronIndices[14] = 6; mPolyhedronIndices[15] = 5;
+            mPolyhedronIndices[16] = 2; mPolyhedronIndices[17] = 3; mPolyhedronIndices[18] = 7; mPolyhedronIndices[19] = 6;
+            mPolyhedronIndices[20] = 0; mPolyhedronIndices[21] = 4; mPolyhedronIndices[22] = 7; mPolyhedronIndices[23] = 3;
 
             // Polygon faces descriptions for the polyhedron
-            for (int f=0; f < 8; f++) {
-                PolygonVertexArray::PolygonFace& face = mPolygonFaces[f];
-                face.indexBase = f * 4;
-                face.nbVertices = 4;
+            PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+            for (int f = 0; f < 6; f++) {
+                face->indexBase = f * 4;
+                face->nbVertices = 4;
+                face++;
             }
 
             // Create the polygon vertex array
@@ -1304,12 +1303,14 @@ class TestRaycast : public Test {
             Vector3 point2 = mLocalShapeToWorld * Vector3(1, 2, -4);
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
+            Transform inverse = mLocalShapeToWorld.getInverse();
 
             mCallback.shapeToTest = mConvexMeshProxyShape;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
+            Vector3 localTest = inverse * mCallback.raycastInfo.worldPoint;
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mConvexMeshBody);
             test(mCallback.raycastInfo.proxyShape == mConvexMeshProxyShape);

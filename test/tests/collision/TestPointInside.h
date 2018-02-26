@@ -59,12 +59,17 @@ class TestPointInside : public Test {
         CollisionBody* mCylinderBody;
         CollisionBody* mCompoundBody;
 
+        Vector3 mConvexMeshCubeVertices[8];
+        int mConvexMeshCubeIndices[24];
+        PolygonVertexArray* mConvexMeshPolygonVertexArray;
+        PolyhedronMesh* mConvexMeshPolyhedronMesh;
+        PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
+
         // Collision shapes
         BoxShape* mBoxShape;
         SphereShape* mSphereShape;
         CapsuleShape* mCapsuleShape;
         ConvexMeshShape* mConvexMeshShape;
-        ConvexMeshShape* mConvexMeshShapeBodyEdgesInfo;
 
         // Transform
         Transform mBodyTransform;
@@ -76,10 +81,7 @@ class TestPointInside : public Test {
         ProxyShape* mBoxProxyShape;
         ProxyShape* mSphereProxyShape;
         ProxyShape* mCapsuleProxyShape;
-        ProxyShape* mConeProxyShape;
         ProxyShape* mConvexMeshProxyShape;
-        ProxyShape* mConvexMeshProxyShapeEdgesInfo;
-        ProxyShape* mCylinderProxyShape;
 
     public :
 
@@ -104,6 +106,7 @@ class TestPointInside : public Test {
             mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
             mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
             mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
             mCompoundBody = mWorld->createCollisionBody(mBodyTransform);
 
             // Collision shape transform
@@ -121,51 +124,44 @@ class TestPointInside : public Test {
             mSphereShape = new SphereShape(3);
             mSphereProxyShape = mSphereBody->addCollisionShape(mSphereShape, mShapeTransform);
 
-            mCapsuleShape = new CapsuleShape(2, 10);
+            mCapsuleShape = new CapsuleShape(3, 10);
             mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
 
-            // TODO : Create convex mesh shape with new way (polyhedron mesh) to add test again
-            /*mConvexMeshShape = new ConvexMeshShape(0.0);             // Box of dimension (2, 3, 4)
-            mConvexMeshShape->addVertex(Vector3(-2, -3, -4));
-            mConvexMeshShape->addVertex(Vector3(2, -3, -4));
-            mConvexMeshShape->addVertex(Vector3(2, -3, 4));
-            mConvexMeshShape->addVertex(Vector3(-2, -3, 4));
-            mConvexMeshShape->addVertex(Vector3(-2, 3, -4));
-            mConvexMeshShape->addVertex(Vector3(2, 3, -4));
-            mConvexMeshShape->addVertex(Vector3(2, 3, 4));
-            mConvexMeshShape->addVertex(Vector3(-2, 3, 4));
-            mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
+            mConvexMeshCubeVertices[0] = Vector3(-2, -3, 4);
+            mConvexMeshCubeVertices[1] = Vector3(2, -3, 4);
+            mConvexMeshCubeVertices[2] = Vector3(2, -3, -4);
+            mConvexMeshCubeVertices[3] = Vector3(-2, -3, -4);
+            mConvexMeshCubeVertices[4] = Vector3(-2, 3, 4);
+            mConvexMeshCubeVertices[5] = Vector3(2, 3, 4);
+            mConvexMeshCubeVertices[6] = Vector3(2, 3, -4);
+            mConvexMeshCubeVertices[7] = Vector3(-2, 3, -4);
 
-            mConvexMeshShapeBodyEdgesInfo = new ConvexMeshShape(0.0);
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(-2, -3, -4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, -3, -4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, -3, 4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(-2, -3, 4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(-2, 3, -4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, 3, -4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(2, 3, 4));
-            mConvexMeshShapeBodyEdgesInfo->addVertex(Vector3(-2, 3, 4));
-            mConvexMeshShapeBodyEdgesInfo->addEdge(0, 1);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(1, 2);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(2, 3);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(0, 3);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(4, 5);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(5, 6);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(6, 7);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(4, 7);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(0, 4);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(1, 5);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(2, 6);
-            mConvexMeshShapeBodyEdgesInfo->addEdge(3, 7);
-            mConvexMeshShapeBodyEdgesInfo->setIsEdgesInformationUsed(true);
-            mConvexMeshProxyShapeEdgesInfo = mConvexMeshBodyEdgesInfo->addCollisionShape(
-                                                                     mConvexMeshShapeBodyEdgesInfo,
-                                                                     mShapeTransform);
-            */
+            mConvexMeshCubeIndices[0] = 0; mConvexMeshCubeIndices[1] = 3; mConvexMeshCubeIndices[2] = 2; mConvexMeshCubeIndices[3] = 1;
+            mConvexMeshCubeIndices[4] = 4; mConvexMeshCubeIndices[5] = 5; mConvexMeshCubeIndices[6] = 6; mConvexMeshCubeIndices[7] = 7;
+            mConvexMeshCubeIndices[8] = 0; mConvexMeshCubeIndices[9] = 1; mConvexMeshCubeIndices[10] = 5; mConvexMeshCubeIndices[11] = 4;
+            mConvexMeshCubeIndices[12] = 1; mConvexMeshCubeIndices[13] = 2; mConvexMeshCubeIndices[14] = 6; mConvexMeshCubeIndices[15] = 5;
+            mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
+            mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
+
+            mConvexMeshPolygonFaces = new PolygonVertexArray::PolygonFace[6];
+            PolygonVertexArray::PolygonFace* face = mConvexMeshPolygonFaces;
+            for (int f = 0; f < 6; f++) {
+                face->indexBase = f * 4;
+                face->nbVertices = 4;
+                face++;
+            }
+            mConvexMeshPolygonVertexArray = new PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), sizeof(Vector3),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+                    PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                    PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+            mConvexMeshPolyhedronMesh = new PolyhedronMesh(mConvexMeshPolygonVertexArray);
+            mConvexMeshShape = new ConvexMeshShape(mConvexMeshPolyhedronMesh);
+            Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
+            mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
 
             // Compound shape is a capsule and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
-            Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
+            Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 * PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
             mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
@@ -177,8 +173,10 @@ class TestPointInside : public Test {
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;
-            //delete mConvexMeshShape;
-            //delete mConvexMeshShapeBodyEdgesInfo;
+            delete mConvexMeshShape;
+            delete mConvexMeshPolygonFaces;
+            delete mConvexMeshPolygonVertexArray;
+            delete mConvexMeshPolyhedronMesh;
         }
 
         /// Run the tests
@@ -328,24 +326,24 @@ class TestPointInside : public Test {
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
             test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
 
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -7.1, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 7.1, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.1, 5, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 5, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, 5, 1.6)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, 5, -1.7)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -2.1)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.1, -5, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -5, 0)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, -5, 1.6)));
-            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, -5, -1.7)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -13.1, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 13.1, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, 5, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 5, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, 2.6)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, -2.7)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -3.1)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(3.1, -5, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -5, 0)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, 2.6)));
+            test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, -2.7)));
 
             // Tests with ProxyCapsuleShape
             test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
@@ -375,33 +373,30 @@ class TestPointInside : public Test {
             test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
             test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
 
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -7.1, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 7.1, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 5, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 5, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, 5, 1.6)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, 5, -1.7)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -2.1)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, -5, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -5, 0)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, -5, 1.6)));
-            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, -5, -1.7)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -13.1, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 13.1, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 5, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 5, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, 2.6)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, -2.7)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -3.1)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, -5, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -5, 0)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, 2.6)));
+            test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, -2.7)));
         }
 
         /// Test the ProxyConvexMeshShape::testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testConvexMesh() {
 
-            // ----- Tests without using edges information ----- //
-
-            /*
             // Tests with CollisionBody
             test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
@@ -453,68 +448,12 @@ class TestPointInside : public Test {
             test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
             test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
             test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
-
-            // ----- Tests using edges information ----- //
-
-            // Tests with CollisionBody
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
-            test(mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
-
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
-            test(!mConvexMeshBodyEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
-
-            // Tests with ProxyConvexMeshShape
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
-            test(mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
-
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
-            test(!mConvexMeshProxyShapeEdgesInfo->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
-            */
         }
 
         /// Test the CollisionBody::testPointInside() method
         void testCompound() {
 
             // Points on the capsule
-            // TODO : Previous it was a cylinder (not a capsule). Maybe those tests are wrong now
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, 3.9, 0)));
             test(mCompoundBody->testPointInside(mLocalShapeToWorld * Vector3(0, -3.9, 0)));

@@ -62,7 +62,7 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
  * @param ray Ray to use for the raycasting
  * @param[out] raycastInfo Result of the raycasting that is valid only if the
  *             methods returned true
- * @return True if the ray hit the collision shape
+ * @return True if the ray hits the collision shape
  */
 bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 

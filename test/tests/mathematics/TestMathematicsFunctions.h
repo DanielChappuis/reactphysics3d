@@ -103,6 +103,16 @@ class TestMathematicsFunctions : public Test {
             test(!sameSign(4, -7));
             test(!sameSign(-4, 53));
 
+            // Test computePointToPlaneDistance()
+            Vector3 p(8, 4, 0);
+            Vector3 n1(1, 0, 0);
+            Vector3 n2(-1, 0, 0);
+            Vector3 q1(1, 54, 0);
+            Vector3 q2(8, 17, 0);
+            test(approxEqual(computePointToPlaneDistance(q1, n1, p), decimal(-7)));
+            test(approxEqual(computePointToPlaneDistance(q1, n2, p), decimal(7)));
+            test(approxEqual(computePointToPlaneDistance(q2, n2, p), decimal(0.0)));
+
             // Test computeBarycentricCoordinatesInTriangle()
             Vector3 a(0, 0, 0);
             Vector3 b(5, 0, 0);

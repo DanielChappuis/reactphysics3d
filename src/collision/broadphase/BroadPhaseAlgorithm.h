@@ -27,7 +27,6 @@
 #define REACTPHYSICS3D_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
-#include <vector>
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"

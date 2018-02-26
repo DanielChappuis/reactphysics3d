@@ -28,7 +28,6 @@
 
 // Libraries
 #include "mathematics/mathematics.h"
-#include <vector>
 
 namespace reactphysics3d {
 
@@ -42,6 +41,9 @@ class HalfEdgeStructure {
 
     public:
 
+        using VerticesPair = Pair<uint, uint>;
+
+        /// Edge
         struct Edge {
             uint vertexIndex;       // Index of the vertex at the beginning of the edge
             uint twinEdgeIndex;     // Index of the twin edge
@@ -49,6 +51,7 @@ class HalfEdgeStructure {
             uint nextEdgeIndex;     // Index of the next edge
         };
 
+        /// Face
         struct Face {
             uint edgeIndex;             // Index of an half-edge of the face
             List<uint> faceVertices;	// Index of the vertices of the face
@@ -60,6 +63,7 @@ class HalfEdgeStructure {
             Face(List<uint> vertices) : faceVertices(vertices) {}
         };
 
+        /// Vertex
         struct Vertex {
             uint vertexPointIndex;  // Index of the vertex point in the origin vertex array
             uint edgeIndex;         // Index of one edge emanting from this vertex

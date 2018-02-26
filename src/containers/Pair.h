@@ -23,69 +23,84 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_TRIANGLE_MESH_H
-#define REACTPHYSICS3D_TRIANGLE_MESH_H
+#ifndef REACTPHYSICS3D_PAIR_H
+#define REACTPHYSICS3D_PAIR_H
 
 // Libraries
-#include <cassert>
-#include "TriangleVertexArray.h"
-#include "memory/MemoryManager.h"
-#include "containers/List.h"
+#include "configuration.h"
+#include "memory/MemoryAllocator.h"
+#include "containers/containers_common.h"
+#include <cstring>
+#include <iterator>
 
 namespace reactphysics3d {
 
-// Class TriangleMesh
+// Class Pair
 /**
- * This class represents a mesh made of triangles. A TriangleMesh contains
- * one or several parts. Each part is a set of triangles represented in a
- * TriangleVertexArray object describing all the triangles vertices of the part.
- * A TriangleMesh object can be used to create a ConcaveMeshShape from a triangle
- * mesh for instance.
- */
-class TriangleMesh {
-
-    protected:
-
-        /// All the triangle arrays of the mesh (one triangle array per part)
-        List<TriangleVertexArray*> mTriangleArrays;
+ * This class represents a simple generic pair
+  */
+template<typename T1, typename T2>
+class Pair {
 
     public:
 
+        // -------------------- Attributes -------------------- //
+
+        /// First element of the pair
+        T1 first;
+
+        /// Second element of the pair
+        T2 second;
+
+        // -------------------- Methods -------------------- //
+
         /// Constructor
-        TriangleMesh() : mTriangleArrays(MemoryManager::getBaseAllocator()) {
+        Pair(const T1& item1, const T2& item2) : first(item1), second(item2) {
+
+        }
+
+        /// Copy constructor
+        Pair(const Pair<T1, T2>& pair) : first(pair.first), second(pair.second) {
 
         }
 
         /// Destructor
-        ~TriangleMesh() = default;
+        ~Pair() = default;
 
-        /// Add a subpart of the mesh
-        void addSubpart(TriangleVertexArray* triangleVertexArray);
+        /// Overloaded equality operator
+        bool operator==(const Pair<T1, T2>& pair) const {
+            return first == pair.first && second == pair.second;
+        }
 
-        /// Return a pointer to a given subpart (triangle vertex array) of the mesh
-        TriangleVertexArray* getSubpart(uint indexSubpart) const;
+        /// Overloaded not equal operator
+        bool operator!=(const Pair<T1, T2>& pair) const {
+            return !((*this) == pair);
+        }
 
-        /// Return the number of subparts of the mesh
-        uint getNbSubparts() const;
+        /// Overloaded assignment operator
+        Pair<T1, T2>& operator=(const Pair<T1, T2>& pair) {
+            first = pair.first;
+            second = pair.second;
+        }
 };
 
-// Add a subpart of the mesh
-inline void TriangleMesh::addSubpart(TriangleVertexArray* triangleVertexArray) {
-    mTriangleArrays.add(triangleVertexArray );
 }
 
-// Return a pointer to a given subpart (triangle vertex array) of the mesh
-inline TriangleVertexArray* TriangleMesh::getSubpart(uint indexSubpart) const {
-   assert(indexSubpart < mTriangleArrays.size());
-   return mTriangleArrays[indexSubpart];
+// Hash function for struct VerticesPair
+namespace std {
+
+  template <typename T1, typename T2> struct hash<reactphysics3d::Pair<T1, T2>> {
+
+    size_t operator()(const reactphysics3d::Pair<T1, T2>& pair) const {
+
+        std::size_t seed = 0;
+        reactphysics3d::hash_combine<T1>(seed, pair.first);
+        reactphysics3d::hash_combine<T2>(seed, pair.second);
+
+        return seed;
+    }
+  };
 }
 
-// Return the number of subparts of the mesh
-inline uint TriangleMesh::getNbSubparts() const {
-    return mTriangleArrays.size();
-}
-
-}
 
 #endif
-
