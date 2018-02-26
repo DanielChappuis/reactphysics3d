@@ -31,8 +31,6 @@
 #include "mathematics/mathematics.h"
 #include "constraint/Joint.h"
 #include "Island.h"
-#include <map>
-#include <set>
 
 namespace reactphysics3d {
 

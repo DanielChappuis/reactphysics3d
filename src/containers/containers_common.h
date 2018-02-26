@@ -23,69 +23,22 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_TRIANGLE_MESH_H
-#define REACTPHYSICS3D_TRIANGLE_MESH_H
+#ifndef REACTPHYSICS3D_CONTAINERS_COMMON_H
+#define REACTPHYSICS3D_CONTAINERS_COMMON_H
 
 // Libraries
-#include <cassert>
-#include "TriangleVertexArray.h"
-#include "memory/MemoryManager.h"
-#include "containers/List.h"
+#include <cstddef>
+#include <functional>
 
 namespace reactphysics3d {
 
-// Class TriangleMesh
-/**
- * This class represents a mesh made of triangles. A TriangleMesh contains
- * one or several parts. Each part is a set of triangles represented in a
- * TriangleVertexArray object describing all the triangles vertices of the part.
- * A TriangleMesh object can be used to create a ConcaveMeshShape from a triangle
- * mesh for instance.
- */
-class TriangleMesh {
-
-    protected:
-
-        /// All the triangle arrays of the mesh (one triangle array per part)
-        List<TriangleVertexArray*> mTriangleArrays;
-
-    public:
-
-        /// Constructor
-        TriangleMesh() : mTriangleArrays(MemoryManager::getBaseAllocator()) {
-
-        }
-
-        /// Destructor
-        ~TriangleMesh() = default;
-
-        /// Add a subpart of the mesh
-        void addSubpart(TriangleVertexArray* triangleVertexArray);
-
-        /// Return a pointer to a given subpart (triangle vertex array) of the mesh
-        TriangleVertexArray* getSubpart(uint indexSubpart) const;
-
-        /// Return the number of subparts of the mesh
-        uint getNbSubparts() const;
-};
-
-// Add a subpart of the mesh
-inline void TriangleMesh::addSubpart(TriangleVertexArray* triangleVertexArray) {
-    mTriangleArrays.add(triangleVertexArray );
-}
-
-// Return a pointer to a given subpart (triangle vertex array) of the mesh
-inline TriangleVertexArray* TriangleMesh::getSubpart(uint indexSubpart) const {
-   assert(indexSubpart < mTriangleArrays.size());
-   return mTriangleArrays[indexSubpart];
-}
-
-// Return the number of subparts of the mesh
-inline uint TriangleMesh::getNbSubparts() const {
-    return mTriangleArrays.size();
+/// This method is used to combine two hash values
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 
 }
 
 #endif
-

@@ -27,11 +27,9 @@
 #define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
-#include <vector>
-#include <set>
-#include <list>
 #include <algorithm>
 #include "mathematics/mathematics.h"
+#include "containers/List.h"
 #include "Profiler.h"
 #include "body/CollisionBody.h"
 #include "collision/RaycastInfo.h"
@@ -68,13 +66,13 @@ class CollisionWorld {
         CollisionDetection mCollisionDetection;
 
         /// All the bodies (rigid and soft) of the world
-        std::set<CollisionBody*> mBodies;
+        List<CollisionBody*> mBodies;
 
         /// Current body ID
         bodyindex mCurrentBodyID;
 
         /// List of free ID for rigid bodies
-        std::vector<luint> mFreeBodiesIDs;
+        List<luint> mFreeBodiesIDs;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
@@ -108,12 +106,6 @@ class CollisionWorld {
 
         /// Deleted assignment operator
         CollisionWorld& operator=(const CollisionWorld& world) = delete;
-
-        /// Return an iterator to the beginning of the bodies of the physics world
-        std::set<CollisionBody*>::iterator getBodiesBeginIterator();
-
-        /// Return an iterator to the end of the bodies of the physics world
-        std::set<CollisionBody*>::iterator getBodiesEndIterator();
 
         /// Create a collision body
         CollisionBody* createCollisionBody(const Transform& transform);
@@ -166,22 +158,6 @@ class CollisionWorld {
         friend class RigidBody;
         friend class ConvexMeshShape;
 };
-
-// Return an iterator to the beginning of the bodies of the physics world
-/**
- * @return An starting iterator to the set of bodies of the world
- */
-inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator() {
-    return mBodies.begin();
-}
-
-// Return an iterator to the end of the bodies of the physics world
-/**
- * @return An ending iterator to the set of bodies of the world
- */
-inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
-    return mBodies.end();
-}
 
 // Set the collision dispatch configuration
 /// This can be used to replace default collision detection algorithms by your

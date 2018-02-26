@@ -121,6 +121,10 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, b
 				contactPointCapsuleLocal = sphereCenter - normalCapsuleSpace * capsuleShape->getRadius();
 			}
 
+            if (penetrationDepth <= decimal(0.0)) {
+                return false;
+            }
+
             // Create the contact info object
             narrowPhaseInfo->addContactPoint(normalWorld, penetrationDepth,
                                              isSphereShape1 ? contactPointSphereLocal : contactPointCapsuleLocal,

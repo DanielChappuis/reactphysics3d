@@ -28,6 +28,7 @@
 
 // Libraries
 #include "configuration.h"
+#include "memory/MemoryAllocator.h"
 
 namespace reactphysics3d {
 
@@ -42,6 +43,9 @@ class Stack {
     private:
 
         // -------------------- Attributes -------------------- //
+
+        /// Reference to the memory allocator
+        MemoryAllocator& mAllocator;
 
         /// Initial array that contains the elements of the stack
         T mInitArray[capacity];
@@ -60,7 +64,8 @@ class Stack {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Stack() : mElements(mInitArray), mNbElements(0), mNbAllocatedElements(capacity) {
+        Stack(MemoryAllocator& allocator)
+              :mAllocator(allocator), mElements(mInitArray), mNbElements(0), mNbAllocatedElements(capacity) {
 
         }
 
@@ -71,7 +76,7 @@ class Stack {
             if (mInitArray != mElements) {
 
                 // Release the memory allocated on the heap
-                free(mElements);
+                mAllocator.release(mElements, mNbAllocatedElements * sizeof(T));
             }
         }
 
@@ -93,12 +98,13 @@ inline void Stack<T, capacity>::push(const T& element) {
     // If we need to allocate more elements
     if (mNbElements == mNbAllocatedElements) {
         T* oldElements = mElements;
+        uint oldNbAllocatedElements = mNbAllocatedElements;
         mNbAllocatedElements *= 2;
-        mElements = (T*) malloc(mNbAllocatedElements * sizeof(T));
+        mElements = static_cast<T*>(mAllocator.allocate(mNbAllocatedElements * sizeof(T)));
         assert(mElements);
         memcpy(mElements, oldElements, mNbElements * sizeof(T));
         if (oldElements != mInitArray) {
-            free(oldElements);
+            mAllocator.release(oldElements, oldNbAllocatedElements * sizeof(T));
         }
     }
 

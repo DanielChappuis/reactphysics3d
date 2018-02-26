@@ -34,10 +34,9 @@
 #include "narrowphase/DefaultCollisionDispatch.h"
 #include "memory/MemoryManager.h"
 #include "constraint/ContactPoint.h"
-#include <vector>
-#include <set>
+#include "containers/Map.h"
+#include "containers/Set.h"
 #include <utility>
-#include <map>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -80,7 +79,7 @@ class CollisionDetection {
         NarrowPhaseInfo* mNarrowPhaseInfoList;
 
         /// Broad-phase overlapping pairs
-        std::map<overlappingpairid, OverlappingPair*> mOverlappingPairs;
+        Map<Pair<uint, uint>, OverlappingPair*> mOverlappingPairs;
 
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
@@ -89,9 +88,8 @@ class CollisionDetection {
         // TODO : Delete this
         GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
-        // TODO : Maybe delete this set (what is the purpose ?)
         /// Set of pair of bodies that cannot collide between each other
-        std::set<bodyindexpair> mNoCollisionPairs;
+        Set<bodyindexpair> mNoCollisionPairs;
 
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
@@ -213,6 +211,9 @@ class CollisionDetection {
         /// Allow the broadphase to notify the collision detection about an overlapping pair.
         void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
 
+        /// Return a reference to the memory manager
+        MemoryManager& getMemoryManager() const;
+
         /// Return a pointer to the world
         CollisionWorld* getWorld();
 
@@ -264,13 +265,13 @@ inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
 // Add a pair of bodies that cannot collide with each other
 inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
                                                    CollisionBody* body2) {
-    mNoCollisionPairs.insert(OverlappingPair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Remove a pair of bodies that cannot collide with each other
 inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
                                                       CollisionBody* body2) {
-    mNoCollisionPairs.erase(OverlappingPair::computeBodiesIndexPair(body1, body2));
+    mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Ask for a collision shape to be tested again during broad-phase.
@@ -325,6 +326,11 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
 // Return a pointer to the world
 inline CollisionWorld* CollisionDetection::getWorld() {
     return mWorld;
+}
+
+// Return a reference to the memory manager
+inline MemoryManager& CollisionDetection::getMemoryManager() const {
+    return mMemoryManager;
 }
 
 #ifdef IS_PROFILING_ACTIVE

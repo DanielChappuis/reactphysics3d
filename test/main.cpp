@@ -41,6 +41,7 @@
 #include "tests/collision/TestTriangleVertexArray.h"
 #include "tests/containers/TestList.h"
 #include "tests/containers/TestMap.h"
+#include "tests/containers/TestSet.h"
 
 using namespace reactphysics3d;
 
@@ -52,6 +53,7 @@ int main() {
 
     testSuite.addTest(new TestList("List"));
     testSuite.addTest(new TestMap("Map"));
+    testSuite.addTest(new TestSet("Set"));
 
     // ---------- Mathematics tests ---------- //
 

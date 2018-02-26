@@ -31,7 +31,6 @@
 #include "HalfEdgeStructure.h"
 #include "collision/PolygonVertexArray.h"
 #include "memory/DefaultAllocator.h"
-#include <vector>
 
 namespace reactphysics3d {
 
@@ -86,6 +85,9 @@ class PolyhedronMesh {
         /// Return a vertex
         Vector3 getVertex(uint index) const;
 
+        /// Return the number of faces
+        uint getNbFaces() const;
+
         /// Return a face normal
         Vector3 getFaceNormal(uint faceIndex) const;
 
@@ -99,6 +101,11 @@ class PolyhedronMesh {
 // Return the number of vertices
 inline uint PolyhedronMesh::getNbVertices() const {
     return mHalfEdgeStructure.getNbVertices();
+}
+
+// Return the number of faces
+inline uint PolyhedronMesh::getNbFaces() const {
+   return mHalfEdgeStructure.getNbFaces();
 }
 
 // Return a face normal

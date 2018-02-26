@@ -66,10 +66,10 @@ class DynamicsWorld : public CollisionWorld {
         bool mIsSleepingEnabled;
 
         /// All the rigid bodies of the physics world
-        std::set<RigidBody*> mRigidBodies;
+        List<RigidBody*> mRigidBodies;
 
         /// All the joints of the world
-        std::set<Joint*> mJoints;
+        List<Joint*> mJoints;
 
         /// Gravity vector of the world
         Vector3 mGravity;
@@ -215,12 +215,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Return the number of joints in the world
         uint getNbJoints() const;
 
-        /// Return an iterator to the beginning of the rigid bodies of the physics world
-        std::set<RigidBody*>::iterator getRigidBodiesBeginIterator();
-
-        /// Return an iterator to the end of the rigid bodies of the physics world
-        std::set<RigidBody*>::iterator getRigidBodiesEndIterator();
-
         /// Return true if the sleeping technique is enabled
         bool isSleepingEnabled() const;
 
@@ -249,7 +243,7 @@ class DynamicsWorld : public CollisionWorld {
         void setEventListener(EventListener* eventListener);
 
         /// Return the list of all contacts of the world
-        std::vector<const ContactManifold*> getContactsList() const;
+        List<const ContactManifold*> getContactsList();
 
         // -------------------- Friendship -------------------- //
 
@@ -260,7 +254,7 @@ class DynamicsWorld : public CollisionWorld {
 inline void DynamicsWorld::resetBodiesForceAndTorque() {
 
     // For each body of the world
-    std::set<RigidBody*>::iterator it;
+    List<RigidBody*>::Iterator it;
     for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
         (*it)->mExternalForce.setToZero();
         (*it)->mExternalTorque.setToZero();
@@ -368,22 +362,6 @@ inline uint DynamicsWorld::getNbRigidBodies() const {
  */
 inline uint DynamicsWorld::getNbJoints() const {
     return mJoints.size();
-}
-
-// Return an iterator to the beginning of the bodies of the physics world
-/**
- * @return Starting iterator of the set of rigid bodies
- */
-inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesBeginIterator() {
-    return mRigidBodies.begin();
-}
-
-// Return an iterator to the end of the bodies of the physics world
-/**
- * @return Ending iterator of the set of rigid bodies
- */
-inline std::set<RigidBody*>::iterator DynamicsWorld::getRigidBodiesEndIterator() {
-    return mRigidBodies.end();
 }
 
 // Return true if the sleeping technique is enabled

@@ -31,6 +31,7 @@
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "collision/TriangleMesh.h"
 #include "collision/shapes/TriangleShape.h"
+#include "containers/List.h"
 #include "engine/Profiler.h"
 
 namespace reactphysics3d {
@@ -70,7 +71,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
     private :
 
-        std::vector<int32> mHitAABBNodes;
+        List<int32> mHitAABBNodes;
         const DynamicAABBTree& mDynamicAABBTree;
         const ConcaveMeshShape& mConcaveMeshShape;
         ProxyShape* mProxyShape;
@@ -91,7 +92,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         // Constructor
         ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
                                    ProxyShape* proxyShape, RaycastInfo& raycastInfo, const Ray& ray, MemoryAllocator& allocator)
-            : mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mProxyShape(proxyShape),
+            : mHitAABBNodes(allocator), mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mProxyShape(proxyShape),
               mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator) {
 
         }

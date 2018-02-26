@@ -230,7 +230,7 @@ class Scene {
         void setIsWireframeEnabled(bool isEnabled);
 
         /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
+        std::vector<ContactPoint> virtual getContactPoints();
 };
 
 // Called when a keyboard event occurs
@@ -303,7 +303,7 @@ inline void Scene::setIsWireframeEnabled(bool isEnabled) {
 }
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> Scene::getContactPoints() const {
+inline std::vector<ContactPoint> Scene::getContactPoints() {
 
     // Return an empty list of contact points
     return std::vector<ContactPoint>();

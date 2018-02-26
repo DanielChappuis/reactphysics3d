@@ -44,7 +44,8 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
                 mContactSolver(mMemoryManager),
                 mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
                 mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsSleepingEnabled(SLEEPING_ENABLED), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
+                mIsSleepingEnabled(SLEEPING_ENABLED), mRigidBodies(mMemoryManager.getPoolAllocator()),
+                mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
                 mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
                 mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
                 mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
@@ -67,19 +68,13 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
 DynamicsWorld::~DynamicsWorld() {
 
     // Destroy all the joints that have not been removed
-    std::set<Joint*>::iterator itJoints;
-    for (itJoints = mJoints.begin(); itJoints != mJoints.end();) {
-        std::set<Joint*>::iterator itToRemove = itJoints;
-        ++itJoints;
-        destroyJoint(*itToRemove);
+    for (int i=mJoints.size() - 1; i >= 0; i--) {
+        destroyJoint(mJoints[i]);
     }
 
     // Destroy all the rigid bodies that have not been removed
-    std::set<RigidBody*>::iterator itRigidBodies;
-    for (itRigidBodies = mRigidBodies.begin(); itRigidBodies != mRigidBodies.end();) {
-        std::set<RigidBody*>::iterator itToRemove = itRigidBodies;
-        ++itRigidBodies;
-        destroyRigidBody(*itToRemove);
+    for (int i=mRigidBodies.size() - 1; i >= 0; i--) {
+        destroyRigidBody(mRigidBodies[i]);
     }
 
     assert(mJoints.size() == 0);
@@ -257,7 +252,7 @@ void DynamicsWorld::initVelocityArrays() {
 
     // Initialize the map of body indexes in the velocity arrays
     uint i = 0;
-    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         mSplitLinearVelocities[i].setToZero();
         mSplitAngularVelocities[i].setToZero();
@@ -388,7 +383,7 @@ void DynamicsWorld::solvePositionCorrection() {
     PROFILE("DynamicsWorld::solvePositionCorrection()", &mProfiler);
 
     // Do not continue if there is no constraints
-    if (mJoints.empty()) return;
+    if (mJoints.size() == 0) return;
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
@@ -423,8 +418,8 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(rigidBody != nullptr);
 
     // Add the rigid body to the physics world
-    mBodies.insert(rigidBody);
-    mRigidBodies.insert(rigidBody);
+    mBodies.add(rigidBody);
+    mRigidBodies.add(rigidBody);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -446,7 +441,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
-    mFreeBodiesIDs.push_back(rigidBody->getID());
+    mFreeBodiesIDs.add(rigidBody->getID());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
@@ -461,8 +456,8 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->~RigidBody();
 
     // Remove the rigid body from the list of rigid bodies
-    mBodies.erase(rigidBody);
-    mRigidBodies.erase(rigidBody);
+    mBodies.remove(rigidBody);
+    mRigidBodies.remove(rigidBody);
 
     // Free the object from the memory allocator
     mMemoryManager.release(MemoryManager::AllocationType::Pool, rigidBody, sizeof(RigidBody));
@@ -536,7 +531,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     }
 
     // Add the joint into the world
-    mJoints.insert(newJoint);
+    mJoints.add(newJoint);
 
     // Add the joint into the joint list of the bodies involved in the joint
     addJointToBody(newJoint);
@@ -565,7 +560,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     joint->getBody2()->setIsSleeping(false);
 
     // Remove the joint from the world
-    mJoints.erase(joint);
+    mJoints.remove(joint);
 
     // Remove the joint from the joint list of the bodies involved in the joint
     joint->mBody1->removeJointFromJointsList(mMemoryManager, joint);
@@ -622,11 +617,11 @@ void DynamicsWorld::computeIslands() {
     int nbContactManifolds = 0;
 
     // Reset all the isAlreadyInIsland variables of bodies, joints and contact manifolds
-    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
         int nbBodyManifolds = (*it)->resetIsAlreadyInIslandAndCountManifolds();
         nbContactManifolds += nbBodyManifolds;
     }
-    for (std::set<Joint*>::iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
+    for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
     }
 
@@ -636,7 +631,7 @@ void DynamicsWorld::computeIslands() {
                                                                                       nbBytesStack));
 
     // For each rigid body of the world
-    for (std::set<RigidBody*>::iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
         RigidBody* body = *it;
 
@@ -818,7 +813,7 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
     if (!mIsSleepingEnabled) {
 
         // For each body of the world
-        std::set<RigidBody*>::iterator it;
+        List<RigidBody*>::Iterator it;
         for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
             // Wake up the rigid body
@@ -828,12 +823,12 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
 }
 
 /// Return the list of all contacts of the world
-std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
+List<const ContactManifold*> DynamicsWorld::getContactsList() {
 
-    std::vector<const ContactManifold*> contactManifolds;
+    List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
 
     // For each currently overlapping pair of bodies
-    std::map<overlappingpairid, OverlappingPair*>::const_iterator it;
+    Map<Pair<uint, uint>, OverlappingPair*>::Iterator it;
     for (it = mCollisionDetection.mOverlappingPairs.begin();
          it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
 
@@ -845,7 +840,7 @@ std::vector<const ContactManifold*> DynamicsWorld::getContactsList() const {
         while (manifold != nullptr) {
 
             // Get the contact manifold
-            contactManifolds.push_back(manifold);
+            contactManifolds.add(manifold);
 
             manifold = manifold->getNext();
         }
