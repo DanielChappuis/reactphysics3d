@@ -173,15 +173,6 @@ inline void ConvexMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decima
                         0.0, 0.0, factor * (xSquare + ySquare));
 }
 
-// Return true if a point is inside the collision shape
-inline bool ConvexMeshShape::testPointInside(const Vector3& localPoint,
-                                             ProxyShape* proxyShape) const {
-
-    // Use the GJK algorithm to test if the point is inside the convex mesh
-    return proxyShape->mBody->mWorld.mCollisionDetection.
-           mNarrowPhaseGJKAlgorithm.testPointInside(localPoint, proxyShape);
-}
-
 // Return the number of faces of the polyhedron
 inline uint ConvexMeshShape::getNbFaces() const {
     return mPolyhedronMesh->getHalfEdgeStructure().getNbFaces();

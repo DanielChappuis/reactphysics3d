@@ -44,10 +44,10 @@ struct Ray {
 
         // -------------------- Attributes -------------------- //
 
-        /// First point of the ray (origin)
+        /// First point of the ray (origin) in world-space
         Vector3 point1;
 
-        /// Second point of the ray
+        /// Second point of the ray in world-space
         Vector3 point2;
 
         /// Maximum fraction value

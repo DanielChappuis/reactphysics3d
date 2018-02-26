@@ -375,6 +375,11 @@ Vector3 reactphysics3d::projectPointOntoPlane(const Vector3& point, const Vector
 	return point - unitPlaneNormal.dot(point - planePoint) * unitPlaneNormal;
 }
 
+// Return the distance between a point and a plane (the plane normal must be normalized)
+decimal reactphysics3d::computePointToPlaneDistance(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint) {
+    return planeNormal.dot(point - planePoint);
+}
+
 // Return true if the given number is prime
 bool reactphysics3d::isPrimeNumber(int number) {
 

@@ -123,6 +123,9 @@ List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const 
 /// Project a point onto a plane that is given by a point and its unit length normal
 Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);
 
+/// Return the distance between a point and a plane (the plane normal must be normalized)
+decimal computePointToPlaneDistance(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);
+
 /// Return true if the given number is prime
 bool isPrimeNumber(int number);
 

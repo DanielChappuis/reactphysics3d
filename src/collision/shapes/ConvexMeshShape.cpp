@@ -30,9 +30,6 @@
 
 using namespace reactphysics3d;
 
-// TODO : Check in every collision shape that localScalling is used correctly and even with SAT
-//        algorithm (not only in getLocalSupportPoint***() methods)
-
 // Constructor to initialize with an array of 3D vertices.
 /// This method creates an internal copy of the input vertices.
 /**
@@ -58,14 +55,14 @@ ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh)
 /// runs in almost constant time.
 Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
-    double maxDotProduct = DECIMAL_SMALLEST;
+    decimal maxDotProduct = DECIMAL_SMALLEST;
     uint indexMaxDotProduct = 0;
 
     // For each vertex of the mesh
     for (uint i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
 
         // Compute the dot product of the current vertex
-        double dotProduct = direction.dot(mPolyhedronMesh->getVertex(i));
+        decimal dotProduct = direction.dot(mPolyhedronMesh->getVertex(i));
 
         // If the current dot product is larger than the maximum one
         if (dotProduct > maxDotProduct) {
@@ -83,14 +80,11 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 // Recompute the bounds of the mesh
 void ConvexMeshShape::recalculateBounds() {
 
-    // TODO : Only works if the local origin is inside the mesh
-    //        => Make it more robust (init with first vertex of mesh instead)
-
-    mMinBounds.setToZero();
-    mMaxBounds.setToZero();
+    mMinBounds = mPolyhedronMesh->getVertex(0);
+    mMaxBounds = mPolyhedronMesh->getVertex(0);
 
     // For each vertex of the mesh
-    for (uint i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
+    for (uint i=1; i<mPolyhedronMesh->getNbVertices(); i++) {
 
         if (mPolyhedronMesh->getVertex(i).x > mMaxBounds.x) mMaxBounds.x = mPolyhedronMesh->getVertex(i).x;
         if (mPolyhedronMesh->getVertex(i).x < mMinBounds.x) mMinBounds.x = mPolyhedronMesh->getVertex(i).x;
@@ -105,14 +99,105 @@ void ConvexMeshShape::recalculateBounds() {
     // Apply the local scaling factor
     mMaxBounds = mMaxBounds * mScaling;
     mMinBounds = mMinBounds * mScaling;
-
-    // Add the object margin to the bounds
-    mMaxBounds += Vector3(mMargin, mMargin, mMargin);
-    mMinBounds -= Vector3(mMargin, mMargin, mMargin);
 }
 
 // Raycast method with feedback information
+/// This method implements the technique in the book "Real-time Collision Detection" by
+/// Christer Ericson.
 bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
-    return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
-                                     ray, proxyShape, raycastInfo);
+
+    // Ray direction
+    Vector3 direction = ray.point2 - ray.point1;
+
+    decimal tMin = decimal(0.0);
+    decimal tMax = ray.maxFraction;
+    Vector3 currentFaceNormal;
+    bool isIntersectionFound = false;
+
+    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+
+    // For each face of the convex mesh
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
+        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
+        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        decimal denom = faceNormal.dot(direction);
+        decimal planeD = faceNormal.dot(facePoint);
+        decimal dist = planeD -  faceNormal.dot(ray.point1);
+
+        // If ray is parallel to the face
+        if (denom == decimal(0.0)) {
+
+            // If ray is outside the clipping face, we return no intersection
+            if (dist < decimal(0.0)) return false;
+        }
+        else {
+
+            // Compute the intersection between the ray and the current face plane
+            decimal t = dist / denom;
+
+            // Update the current ray intersection by clipping it with the current face plane
+            // If the place faces the ray
+            if (denom < decimal(0.0)) {
+                // Clip the current ray intersection as it enters the convex mesh
+                if (t > tMin) {
+                    tMin = t;
+                    currentFaceNormal = faceNormal;
+                    isIntersectionFound = true;
+                }
+            }
+            else {
+                // Clip the current ray intersection as it exits the convex mesh
+                if (t < tMax) tMax = t;
+            }
+
+            // If the ray intersection with the convex mesh becomes empty, report no intersection
+            if (tMin > tMax) return false;
+        }
+    }
+
+    if (isIntersectionFound) {
+
+        // The ray intersects with the convex mesh
+        assert(tMin >= decimal(0.0));
+        assert(tMax <= ray.maxFraction);
+        assert(tMin <= tMax);
+        assert(currentFaceNormal.lengthSquare() > decimal(0.0));
+
+        // The ray intersects the three slabs, we compute the hit point
+        Vector3 localHitPoint = ray.point1 + tMin * direction;
+
+        raycastInfo.hitFraction = tMin;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.worldPoint = localHitPoint;
+        raycastInfo.worldNormal = currentFaceNormal;
+
+        return true;
+    }
+
+    return false;
 }
+
+// Return true if a point is inside the collision shape
+bool ConvexMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+
+    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+
+    // For each face plane of the convex mesh
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
+        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
+        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+
+        // If the point is out of the face plane, it is outside of the convex mesh
+        if (computePointToPlaneDistance(localPoint, faceNormal, facePoint) > decimal(0.0)) return false;
+    }
+
+    return true;
+}
+
