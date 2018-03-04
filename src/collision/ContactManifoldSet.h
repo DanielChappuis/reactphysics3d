@@ -66,6 +66,9 @@ class ContactManifoldSet {
         /// Contact manifolds of the set
         ContactManifold* mManifolds;
 
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create a new contact manifold and add it to the set
@@ -95,7 +98,7 @@ class ContactManifoldSet {
 
         /// Constructor
         ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
-                           MemoryAllocator& memoryAllocator);
+                           MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactManifoldSet();
@@ -167,11 +170,11 @@ inline int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape
 
     // If both shapes are convex
     if (shape1->isConvex() && shape2->isConvex()) {
-        return NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE;
+        return mWorldSettings.nbMaxContactManifoldsConvexShape;
 
     }   // If there is at least one concave shape
     else {
-        return NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE;
+        return mWorldSettings.nbMaxContactManifoldsConcaveShape;
     }
 }
 

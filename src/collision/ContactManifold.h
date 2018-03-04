@@ -139,6 +139,9 @@ class ContactManifold {
         /// True if the contact manifold is obsolete
         bool mIsObsolete;
 
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Return true if the contact manifold has already been added into an island
@@ -216,7 +219,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
-                        MemoryAllocator& memoryAllocator);
+                        MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactManifold();

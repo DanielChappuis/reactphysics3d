@@ -58,7 +58,7 @@ class Material {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Material();
+        Material(const WorldSettings& worldSettings);
 
         /// Copy-constructor
         Material(const Material& material);

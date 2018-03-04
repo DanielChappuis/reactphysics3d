@@ -72,13 +72,14 @@ struct EngineSettings {
 
            EngineSettings defaultSettings;
 
+           rp3d::WorldSettings worldSettings;
            defaultSettings.timeStep = 1.0f / 60.0f;
-           defaultSettings.nbVelocitySolverIterations = rp3d::DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS;
-           defaultSettings.nbPositionSolverIterations = rp3d::DEFAULT_POSITION_SOLVER_NB_ITERATIONS;
-           defaultSettings.isSleepingEnabled = rp3d::SLEEPING_ENABLED;
-           defaultSettings.timeBeforeSleep = rp3d::DEFAULT_TIME_BEFORE_SLEEP;
-           defaultSettings.sleepLinearVelocity = rp3d::DEFAULT_SLEEP_LINEAR_VELOCITY;
-           defaultSettings.sleepAngularVelocity = rp3d::DEFAULT_SLEEP_ANGULAR_VELOCITY;
+           defaultSettings.nbVelocitySolverIterations = worldSettings.defaultVelocitySolverNbIterations;
+           defaultSettings.nbPositionSolverIterations = worldSettings.defaultPositionSolverNbIterations;
+           defaultSettings.isSleepingEnabled = worldSettings.isSleepingEnabled;
+           defaultSettings.timeBeforeSleep = worldSettings.defaultTimeBeforeSleep;
+           defaultSettings.sleepLinearVelocity = worldSettings.defaultSleepLinearVelocity;
+           defaultSettings.sleepAngularVelocity = worldSettings.defaultSleepAngularVelocity;
            defaultSettings.isGravityEnabled = true;
 
            return defaultSettings;

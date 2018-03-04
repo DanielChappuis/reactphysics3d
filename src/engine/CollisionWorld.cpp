@@ -32,8 +32,8 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionWorld::CollisionWorld()
-               : mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyID(0),
+CollisionWorld::CollisionWorld(const WorldSettings& worldSettings)
+               : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyID(0),
                  mFreeBodiesIDs(mMemoryManager.getPoolAllocator()), mEventListener(nullptr) {
 
 #ifdef IS_PROFILING_ACTIVE

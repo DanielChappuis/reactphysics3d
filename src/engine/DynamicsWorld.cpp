@@ -39,20 +39,20 @@ using namespace std;
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
  */
-DynamicsWorld::DynamicsWorld(const Vector3 &gravity)
-              : CollisionWorld(),
-                mContactSolver(mMemoryManager),
-                mNbVelocitySolverIterations(DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS),
-                mNbPositionSolverIterations(DEFAULT_POSITION_SOLVER_NB_ITERATIONS),
-                mIsSleepingEnabled(SLEEPING_ENABLED), mRigidBodies(mMemoryManager.getPoolAllocator()),
+DynamicsWorld::DynamicsWorld(const Vector3 &gravity, const WorldSettings& worldSettings)
+              : CollisionWorld(worldSettings),
+                mContactSolver(mMemoryManager, mConfig),
+                mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
+                mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations),
+                mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
                 mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
                 mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
                 mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
                 mConstrainedOrientations(nullptr), mNbIslands(0), mIslands(nullptr),
-                mSleepLinearVelocity(DEFAULT_SLEEP_LINEAR_VELOCITY),
-                mSleepAngularVelocity(DEFAULT_SLEEP_ANGULAR_VELOCITY),
-                mTimeBeforeSleep(DEFAULT_TIME_BEFORE_SLEEP) {
+                mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity),
+                mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep) {
 
 #ifdef IS_PROFILING_ACTIVE
 

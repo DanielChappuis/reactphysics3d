@@ -62,6 +62,9 @@ class CollisionWorld {
         /// Memory manager
         MemoryManager mMemoryManager;
 
+        /// Configuration of the physics world
+        WorldSettings mConfig;
+
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
 
@@ -96,7 +99,7 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionWorld();
+        CollisionWorld(const WorldSettings& worldSettings = WorldSettings());
 
         /// Destructor
         virtual ~CollisionWorld();

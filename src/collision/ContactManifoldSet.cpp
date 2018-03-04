@@ -30,9 +30,9 @@ using namespace reactphysics3d;
 
 // Constructor
 ContactManifoldSet::ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
-                                       MemoryAllocator& memoryAllocator)
+                                       MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings)
                    : mNbManifolds(0), mShape1(shape1),
-                     mShape2(shape2), mMemoryAllocator(memoryAllocator), mManifolds(nullptr) {
+                     mShape2(shape2), mMemoryAllocator(memoryAllocator), mManifolds(nullptr), mWorldSettings(worldSettings) {
 
     // Compute the maximum number of manifolds allowed between the two shapes
     mNbMaxManifolds = computeNbMaxContactManifolds(shape1->getCollisionShape(), shape2->getCollisionShape());
@@ -157,7 +157,7 @@ ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(const Conta
         assert(point != nullptr);
 
         // If the contact normal of the two manifolds are close enough
-        if (contactPoint->normal.dot(point->getNormal()) >= COS_ANGLE_SIMILAR_CONTACT_MANIFOLD) {
+        if (contactPoint->normal.dot(point->getNormal()) >= mWorldSettings.cosAngleSimilarContactManifold) {
             return manifold;
         }
 
@@ -191,7 +191,7 @@ void ContactManifoldSet::clear() {
 void ContactManifoldSet::createManifold(const ContactManifoldInfo* manifoldInfo) {
 
     ContactManifold* manifold = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
-                                    ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator);
+                                    ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator, mWorldSettings);
     manifold->setPrevious(nullptr);
     manifold->setNext(mManifolds);
 	if (mManifolds != nullptr) {

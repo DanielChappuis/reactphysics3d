@@ -31,12 +31,13 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo* contactInfo)
+ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings)
              : mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnShape1(contactInfo->localPoint1),
                mLocalPointOnShape2(contactInfo->localPoint2),
-               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr) {
+               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr),
+               mWorldSettings(worldSettings) {
 
     assert(mPenetrationDepth > decimal(0.0));
     assert(mNormal.lengthSquare() > decimal(0.8));

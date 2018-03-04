@@ -94,41 +94,6 @@ constexpr decimal PI = decimal(3.14159265);
 /// 2*Pi constant
 constexpr decimal PI_TIMES_2 = decimal(6.28318530);
 
-/// Default friction coefficient for a rigid body
-constexpr decimal DEFAULT_FRICTION_COEFFICIENT = decimal(0.3);
-
-/// Default bounciness factor for a rigid body
-constexpr decimal DEFAULT_BOUNCINESS = decimal(0.5);
-
-/// Default rolling resistance
-constexpr decimal DEFAULT_ROLLING_RESISTANCE = decimal(0.0);
-
-/// True if the sleeping technique is enabled
-constexpr bool SLEEPING_ENABLED = true;
-
-/// Distance threshold for two contact points for a valid persistent contact (in meters)
-constexpr decimal PERSISTENT_CONTACT_DIST_THRESHOLD = decimal(0.03);
-
-/// Velocity threshold for contact velocity restitution
-constexpr decimal RESTITUTION_VELOCITY_THRESHOLD = decimal(1.0);
-
-/// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
-constexpr uint DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 10;
-
-/// Number of iterations when solving the position constraints of the Sequential Impulse technique
-constexpr uint DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
-
-/// Time (in seconds) that a body must stay still to be considered sleeping
-constexpr float DEFAULT_TIME_BEFORE_SLEEP = 1.0f;
-
-/// A body with a linear velocity smaller than the sleep linear velocity (in m/s)
-/// might enter sleeping mode.
-constexpr decimal DEFAULT_SLEEP_LINEAR_VELOCITY = decimal(0.02);
-
-/// A body with angular velocity smaller than the sleep angular velocity (in rad/s)
-/// might enter sleeping mode
-constexpr decimal DEFAULT_SLEEP_ANGULAR_VELOCITY = decimal(3.0 * (PI / 180.0));
-
 /// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
 /// inflated with a constant gap to allow the collision shape to move a little bit
 /// without triggering a large modification of the tree which can be costly
@@ -139,21 +104,60 @@ constexpr decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// followin constant with the linear velocity and the elapsed time between two frames.
 constexpr decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
-/// Maximum number of contact manifolds in an overlapping pair that involves two
-/// convex collision shapes.
-constexpr int NB_MAX_CONTACT_MANIFOLDS_CONVEX_SHAPE = 1;
+/// Structure WorldSettings
+/**
+ * This class is used to describe some settings of a physics world.
+ */
+struct WorldSettings {
 
-/// Maximum number of contact manifolds in an overlapping pair that involves at
-/// least one concave collision shape.
-constexpr int NB_MAX_CONTACT_MANIFOLDS_CONCAVE_SHAPE = 3;
+    /// Distance threshold for two contact points for a valid persistent contact (in meters)
+    decimal persistentContactDistanceThreshold = decimal(0.03);
 
-/// This is used to test if two contact manifold are similar (same contact normal) in order to
-/// merge them. If the cosine of the angle between the normals of the two manifold are larger
-/// than the value bellow, the manifold are considered to be similar.
-constexpr decimal COS_ANGLE_SIMILAR_CONTACT_MANIFOLD = decimal(0.95);
+    /// Default friction coefficient for a rigid body
+    decimal defaultFrictionCoefficient = decimal(0.3);
 
-/// Size (in bytes) of the single frame allocator
-constexpr std::size_t INIT_SINGLE_FRAME_ALLOCATOR_BYTES = 1048576; // 1Mb
+    /// Default bounciness factor for a rigid body
+    decimal defaultBounciness = decimal(0.5);
+
+    /// Velocity threshold for contact velocity restitution
+    decimal restitutionVelocityThreshold = decimal(1.0);
+
+    /// Default rolling resistance
+    decimal defaultRollingRestistance = decimal(0.0);
+
+    /// True if the sleeping technique is enabled
+    bool isSleepingEnabled = true;
+
+    /// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
+    uint defaultVelocitySolverNbIterations = 10;
+
+    /// Number of iterations when solving the position constraints of the Sequential Impulse technique
+    uint defaultPositionSolverNbIterations = 5;
+
+    /// Time (in seconds) that a body must stay still to be considered sleeping
+    float defaultTimeBeforeSleep = 1.0f;
+
+    /// A body with a linear velocity smaller than the sleep linear velocity (in m/s)
+    /// might enter sleeping mode.
+    decimal defaultSleepLinearVelocity = decimal(0.02);
+
+    /// A body with angular velocity smaller than the sleep angular velocity (in rad/s)
+    /// might enter sleeping mode
+    decimal defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
+
+    /// Maximum number of contact manifolds in an overlapping pair that involves two
+    /// convex collision shapes.
+    int nbMaxContactManifoldsConvexShape = 1;
+
+    /// Maximum number of contact manifolds in an overlapping pair that involves at
+    /// least one concave collision shape.
+    int nbMaxContactManifoldsConcaveShape = 3;
+
+    /// This is used to test if two contact manifold are similar (same contact normal) in order to
+    /// merge them. If the cosine of the angle between the normals of the two manifold are larger
+    /// than the value bellow, the manifold are considered to be similar.
+    decimal cosAngleSimilarContactManifold = decimal(0.95);
+};
 
 }
 

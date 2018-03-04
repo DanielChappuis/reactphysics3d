@@ -48,6 +48,9 @@ class SingleFrameAllocator : public MemoryAllocator {
         /// memory if too much is allocated
         static const int NB_FRAMES_UNTIL_SHRINK = 120;
 
+        /// Initial size (in bytes) of the single frame allocator
+        size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
+
         // -------------------- Attributes -------------------- //
 
         /// Total size (in bytes) of memory of the allocator

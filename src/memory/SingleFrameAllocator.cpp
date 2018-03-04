@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 
 // Constructor
 SingleFrameAllocator::SingleFrameAllocator()
-    : mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_BYTES),
+    : mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
       mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
 
     // Allocate a whole block of memory at the beginning

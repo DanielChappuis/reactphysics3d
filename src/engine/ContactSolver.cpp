@@ -39,11 +39,11 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager)
+ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
                mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
                mLinearVelocities(nullptr), mAngularVelocities(nullptr),
-               mIsSplitImpulseActive(true) {
+               mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
 
 }
 
@@ -225,7 +225,7 @@ void ContactSolver::initializeForIsland(Island* island) {
                                  deltaV.y * mContactPoints[mNbContactPoints].normal.y +
                                  deltaV.z * mContactPoints[mNbContactPoints].normal.z;
             const decimal restitutionFactor = computeMixedRestitutionFactor(body1, body2);
-            if (deltaVDotN < -RESTITUTION_VELOCITY_THRESHOLD) {
+            if (deltaVDotN < -mWorldSettings.restitutionVelocityThreshold) {
                 mContactPoints[mNbContactPoints].restitutionBias = restitutionFactor * deltaVDotN;
             }
 

@@ -35,10 +35,11 @@ using namespace reactphysics3d;
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
-                                 MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator)
-                : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator), mPotentialContactManifolds(nullptr),
+                                 MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
+                                 const WorldSettings& worldSettings)
+                : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator, worldSettings), mPotentialContactManifolds(nullptr),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
-                  mLastFrameCollisionInfos(mPersistentAllocator) {
+                  mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
     
 }         
 
@@ -80,7 +81,7 @@ void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo
 
             // If we have found a corresponding manifold for the new contact point
             // (a manifold with a similar contact normal direction)
-            if (point->normal.dot(contactPoint->normal) >= COS_ANGLE_SIMILAR_CONTACT_MANIFOLD) {
+            if (point->normal.dot(contactPoint->normal) >= mWorldSettings.cosAngleSimilarContactManifold) {
 
                 // Add the contact point to the manifold
                 manifold->addContactPoint(contactPoint);

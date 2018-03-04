@@ -153,7 +153,7 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity);
+        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings());
 
         /// Destructor
         virtual ~DynamicsWorld() override;

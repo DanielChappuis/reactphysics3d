@@ -30,11 +30,13 @@
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator)
+ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
+                                 MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings)
                 : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
-                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false) {
+                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false),
+                  mWorldSettings(worldSettings) {
     
     // For each contact point info in the manifold
     const ContactPointInfo* pointInfo = manifoldInfo->getFirstContactPointInfo();
@@ -102,7 +104,7 @@ void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) 
     assert(contactPointInfo != nullptr);
 
     // Create the new contact point
-    ContactPoint* contactPoint = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(contactPointInfo);
+    ContactPoint* contactPoint = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(contactPointInfo, mWorldSettings);
 
     // Add the new contact point into the manifold
     contactPoint->setNext(mContactPoints);

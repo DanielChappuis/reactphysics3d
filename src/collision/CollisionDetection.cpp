@@ -325,7 +325,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     // Create the overlapping pair and add it into the set of overlapping pairs
     OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))
                               OverlappingPair(shape1, shape2, mMemoryManager.getPoolAllocator(),
-                                              mMemoryManager.getSingleFrameAllocator());
+                                              mMemoryManager.getSingleFrameAllocator(), mWorld->mConfig);
     assert(newPair != nullptr);
 
     mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
@@ -570,7 +570,7 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
 
                 // Create a temporary overlapping pair
                 OverlappingPair pair(body1ProxyShape, body2ProxyShape, mMemoryManager.getPoolAllocator(),
-                                     mMemoryManager.getPoolAllocator());
+                                     mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
                 // Compute the middle-phase collision detection between the two shapes
                 NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
@@ -666,7 +666,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
 
                         // Create a temporary overlapping pair
                         OverlappingPair pair(bodyProxyShape, proxyShape, mMemoryManager.getPoolAllocator(),
-                                             mMemoryManager.getPoolAllocator());
+                                             mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
                         // Compute the middle-phase collision detection between the two shapes
                         NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
@@ -751,7 +751,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
 
                 // Create a temporary overlapping pair
                 OverlappingPair pair(body1ProxyShape, body2ProxyShape, mMemoryManager.getPoolAllocator(),
-                                     mMemoryManager.getPoolAllocator());
+                                     mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
                 // Compute the middle-phase collision detection between the two shapes
                 NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
@@ -844,7 +844,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
 
                         // Create a temporary overlapping pair
                         OverlappingPair pair(bodyProxyShape, proxyShape, mMemoryManager.getPoolAllocator(),
-                                             mMemoryManager.getPoolAllocator());
+                                             mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
                         // Compute the middle-phase collision detection between the two shapes
                         NarrowPhaseInfo* narrowPhaseInfo = computeMiddlePhaseForProxyShapes(&pair);
@@ -919,7 +919,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
 
         // Create a new overlapping pair so that we do not work on the original one
         OverlappingPair pair(originalPair->getShape1(), originalPair->getShape2(), mMemoryManager.getPoolAllocator(),
-                             mMemoryManager.getPoolAllocator());
+                             mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
         ProxyShape* shape1 = pair.getShape1();
         ProxyShape* shape2 = pair.getShape2();

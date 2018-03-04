@@ -122,13 +122,16 @@ class OverlappingPair {
         /// shape Ids of the two collision shapes.
         Map<ShapeIdPair, LastFrameCollisionInfo*> mLastFrameCollisionInfos;
 
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,  MemoryAllocator& persistentMemoryAllocator,
-                        MemoryAllocator& temporaryMemoryAllocator);
+                        MemoryAllocator& temporaryMemoryAllocator, const WorldSettings& worldSettings);
 
         /// Destructor
         ~OverlappingPair();

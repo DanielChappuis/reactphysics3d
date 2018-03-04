@@ -304,6 +304,9 @@ class ContactSolver {
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -338,7 +341,7 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(MemoryManager& memoryManager);
+        ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;

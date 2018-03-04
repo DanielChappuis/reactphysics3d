@@ -75,6 +75,9 @@ class ContactPoint {
         /// Pointer to the previous contact point in the double linked-list
         ContactPoint* mPrevious;
 
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Update the contact point with a new one that is similar (very close)
@@ -107,7 +110,7 @@ class ContactPoint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPoint(const ContactPointInfo* contactInfo);
+        ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactPoint() = default;
@@ -173,8 +176,8 @@ inline decimal ContactPoint::getPenetrationImpulse() const {
 
 // Return true if the contact point is similar (close enougth) to another given contact point
 inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
-    return (localContactPointBody1->localPoint1 - mLocalPointOnShape1).lengthSquare() <= (PERSISTENT_CONTACT_DIST_THRESHOLD *
-            PERSISTENT_CONTACT_DIST_THRESHOLD);
+    return (localContactPointBody1->localPoint1 - mLocalPointOnShape1).lengthSquare() <= (mWorldSettings.persistentContactDistanceThreshold *
+            mWorldSettings.persistentContactDistanceThreshold);
 }
 
 // Set the cached penetration impulse
