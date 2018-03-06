@@ -56,19 +56,21 @@
    \begin{itemize}
     \item Rigid body dynamics
     \item Discrete collision detection
-    \item Collision shapes (Sphere, Box, Cone, Cylinder, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
+    \item Collision shapes (Sphere, Box, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
     \item Multiple collision shapes per body
     \item Broadphase collision detection (Dynamic AABB tree)
-    \item Narrowphase collision detection (GJK/EPA)
+    \item Narrowphase collision detection (SAT/GJK)
     \item Collision response and friction (Sequential Impulses Solver)
     \item Joints (Ball and Socket, Hinge, Slider, Fixed)
     \item Collision filtering with categories
     \item Ray casting
     \item Sleeping technique for inactive bodies
-    \item Integrated Profiler
     \item Multi-platform (Windows, Linux, Mac OS X)
+    \item No external libraries (do not use STL containers)
     \item Documentation (User manual and Doxygen API)
     \item Testbed application with demos
+    \item Integrated Profiler
+    \item Logs
     \item Unit tests
    \end{itemize}
 
@@ -100,7 +102,7 @@ xs
 
     \begin{sloppypar}
     where \texttt{\textless path\_to\_library\_source\textgreater} must be replaced
-    by the path to the \texttt{reactphysics3d-0.6.0/} folder. It is the folder that
+    by the path to the \texttt{reactphysics3d-0.7.0/} folder. It is the folder that
     contains the \texttt{CMakeLists.txt} file. Running this command will launch the CMake command line interface.
     Hit the 'c' key to configure the project. There, you can also change some predefined variables (see section \ref{sec:cmakevariables} for more details)
     and then, hit the 'c' key again. Once you have set all the values as you like, you can hit the 'g' key to generate the makefiles in the build directory
@@ -117,7 +119,7 @@ xs
 
      You can also use the graphical user interface of CMake. To do this,
      run the \texttt{cmake-gui} program. The program will ask you for the
-     source folder which is the \texttt{reactphysics3d-0.6.0/} folder of
+     source folder which is the \texttt{reactphysics3d-0.7.0/} folder of
      the library. You will also have to select a folder where you want to
      build the library and the testbed application. Select any empty folder that
      is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to choose an IDE that is on
@@ -197,6 +199,42 @@ using namespace reactphysics3d;
 
     You can also take a look at the examples and the API documentation to get a better idea of how to use the
     ReactPhysics3D library.
+   
+   \subsection{Memory allocation}
+
+   When using the ReactPhysics3D library, you will probably have to allocate new objects but the library will also allocate some objects for you. ReactPhysics3D uses a simple rule:
+   all the memory that is allocated by yourself (using the C++ \emph{new} operator for instance) will have to be destroyed by you (with the corresponding \emph{delete} operator). However, if you
+   receive a pointer to an object from a call to a ReactPhysics3D method, you have not allocated memory for this object by yourself and therefore, you are not responsible to destroy it. ReactPhysics3D
+   will have to destroy it. \\
+
+   For instance, if you create a sphere collision shape with the following code: \\
+
+    \begin{lstlisting}
+// Here memory is allocated by yourself
+rp3d::SphereShape* sphereShape = new SphereShape(radius);
+    \end{lstlisting}
+    
+    \vspace{0.6cm}
+
+    In this example, you have allocated memory for the collision shape and therefore, you have to destroy this object at the end as follows: \\
+
+    \begin{lstlisting}
+delete sphereShape;
+    \end{lstlisting}
+    
+    \vspace{0.6cm}
+
+    However, when you create a RigidBody with the following code: \\
+
+    \begin{lstlisting}
+// Here memory is allocated by the ReactPhysics3D library
+RigidBody* body = dynamicsWorld.createRigidBody(transform);
+    \end{lstlisting}
+    
+    \vspace{0.6cm}
+
+    Here, the ReactPhysics3D library has allocated the memory for the rigid body and has returned a pointer so that you can use it. Because you have not allocated memory by yourself here, you must not
+    destroy the rigid body. The library is responsible to do it. \\
 
    \section{The Collision World}
 
@@ -227,6 +265,20 @@ rp3d::CollisionWorld world;
 
     When the \texttt{CollisionWorld} is destroyed, all the bodies that have been added into it and that have not been destroyed already will be destroyed.
     Therefore, the pointers to the bodies of the world will become invalid after the existence of their \texttt{CollisionWorld}.
+
+    \subsection{Queries on the Collision World}
+
+    Once your collision world has been created, you can add collision bodies and move them around manually. Now there are some queries that you can use on the
+    collision world. Here are the main methods that you can use: \\ 
+
+    TODO : FINISH THIS SECTION 
+
+    \begin{description}
+       \item[testOverlap()] ???
+       \item[testPointInside()] ???
+       \item[testCollision()] ???
+    \item[testAABBOverlap()] Pointer to the Collision Body or Rigid Body that has been hit by the ray
+    \end{description}
 
     \section{Collision Bodies}
 
@@ -373,7 +425,7 @@ world.enableSleeping(false);
    \end{sloppypar}
 
     \subsection{Updating the Dynamics World}
-    \label{sec:updating_dynamics_world}
+    \label{sec:updatingdynamicsworld} 
 
     The \texttt{DynamicsWorld} is used to simulate physics through time. It has to be updated each time you want to simulate a step forward in time. Most of the time,
     you want to update the world right before rendering a new frame in a real-time application. \\
@@ -427,6 +479,9 @@ while (accumulator >= timeStep) {
 
     \end{lstlisting}
 
+    \vspace{0.6cm}
+
+    A nice article to read about this time interpolation is the one from Glenn Fiedler at \url{https://gafferongames.com/post/fix_your_timestep/}.
 
     \subsection{Destroying the Dynamics World}
 
@@ -611,48 +666,91 @@ rigidBody->applyTorque(torque);
 
     \subsection{Updating a Rigid Body}
 
-    When you call the \texttt{DynamicsWorld::update()} method, the collisions between the bodies are computed and the joints are evaluated. Then, the bodies position
-    and orientation are updated accordingly. \\
+    When you call the \texttt{DynamicsWorld::update()} method, the collisions between the bodies are computed and the joints are evaluated. Then, the bodies positions
+    and orientations are updated accordingly. After calling this method, you can retrieve the updated position and orientation of each body to render it. To do that, you simply need to use the
+    \texttt{RigidBody::getTransform()} method to get the updated transform. This transform represents the current local-to-world-space transformation
+    of the body. \\
 
-    Remember that in section \ref{sec:updating_dynamics_world} we were using a time accumulator in order to always have fixed physics time steps.
-    Now imagine a situation where the rendering frame rate is higher than the the physics frame rate. It means that at the end of most rendering
-    frames there will be some time left in the accumulator for the physics time that has not been simulated yet by the physics engine.
-    It means that we are rendering the state of the physics simulation at a time different from the rendering time which can cause a visual stuttering effect. \\
-
-    To solve this, the idea is to interpolate between the previous and current physics state of the simulation based on how much time is left in the
-    accumulator. First we compute the interpolation factor as follows: \\
+    As described in section \ref{sec:updatingdynamicsworld}, at the end of a frame, there might still be some remaining time in the time accumulator. Therefore, you should not use the updated
+    transform directly for rendering but you need to perform some interpolation between the updated transform and the one from the previous frame to get a smooth real-time simulation.
+    First, you need to compute the interpolation factor as folows : \\
 
     \begin{lstlisting}
-
-     // Compute the interpolation factor ("accumulator" is the time left in the accumulator and
-     // "dt" is the physics time step)
-     const float interpolationFactor = accumulator / dt;
-   \end{lstlisting}
-
-   \vspace{0.6cm}
-
-   Then we get the current transform of the rigid body and use it with the previous transform (transform at the previous frame) to
-   compute the interpolated transform as in the following code: \\
-
-    \begin{lstlisting}
-
-      // Get the current transform of the rigid body
-      rp3d::Transform currentTransform = body->getTransform();
-
-      // Interpolate the transform between the previous one and the new one
-      rp3d::Transform interpolatedTransform = rp3d::Transform::interpolateTransforms(previousTransform, currentTransform, interpolationFactor);
+// Compute the time interpolation factor
+decimal factor = accumulator / timeStep;
     \end{lstlisting}
 
     \vspace{0.6cm}
 
-    If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix, you can use the \texttt{Transform::getOpenGLMatrix()} method as in the
+    Then, you can use the \texttt{Transform::interpolateTransforms()} method to compute the linearly interpolated transform:  \\
+
+    \begin{lstlisting}
+// Compute the interpolated transform of the rigid body
+rp3d::Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    The following code is the one from section \ref{sec:updatingdynamicsworld} for the physics simulation loop but with the update of a given rigid body. \\
+    
+    \begin{lstlisting}
+
+// Constant physics time step
+const float timeStep = 1.0 / 60.0;
+
+// Get the current system time
+long double currentFrameTime = getCurrentSystemTime();
+
+// Compute the time difference between the two frames
+long double deltaTime  = currentFrameTime - previousFrameTime;
+
+// Update the previous time
+previousFrameTime = currentFrameTime;
+
+// Add the time difference in the accumulator
+accumulator += mDeltaTime;
+
+// While there is enough accumulated time to take
+// one or several physics steps
+while (accumulator >= timeStep) {
+
+    // Update the Dynamics world with a constant time step
+    dynamicsWorld->update(timeStep);
+
+    // Decrease the accumulated time
+    accumulator -= timeStep;
+}
+
+// Compute the time interpolation factor
+decimal factor = accumulator / timeStep;
+
+// Get the updated transform of the body
+rp3d::Transform currTransform = body->getTransform();
+
+// Compute the interpolated transform of the rigid body
+rp3d::Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+
+// Now you can render your body using the interpolated transform here
+
+// Update the previous transform
+prevTransform = currTranform;
+
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix for rendering, you can use the \texttt{Transform::getOpenGLMatrix()} method as in the
     following code: \\
 
     \begin{lstlisting}
-      // Get the OpenGL matrix array of the transform
-      float matrix[16];
-      transform.getOpenGLMatrix(matrix);
+// Get the OpenGL matrix array of the transform
+float matrix[16];
+transform.getOpenGLMatrix(matrix);
   \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    A nice article to read about this time interpolation is the one from Glenn Fiedler at \url{https://gafferongames.com/post/fix_your_timestep/}.
 
     \subsection{Destroying a Rigid Body}
 
@@ -684,11 +782,6 @@ world.destroyRigidBody(body);
     those things by yourself. However, if needed, you can also specify your own center of mass or inertia tensor. Note that the inertia tensor is a $3 \times 3$ matrix describing
     how the mass is distributed inside the rigid body which will be used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. \\
 
-    Every collision shapes use a \emph{collision margin} which is a small distance around the shape that is used internally in the collision detection.
-    Some collision shapes have their collision margin integrated into the shape that you define and therefore you do not have to worry about it.
-    However, for some collision shapes, the collision margin is added around the shape that you define and therefore, you might have to compensate
-    for this small margin when you render the object. \\
-
     \subsection{Box Shape}
 
     \begin{figure}[h]
@@ -713,17 +806,6 @@ const rp3d::BoxShape boxShape(halfExtents);
 
     \vspace{0.6cm}
 
-    The \texttt{BoxShape} has a collision margin that is added to the box dimension you define. Therefore, the actual box shape will be a little bit larger that the one you define.
-    It is recommended that you use the default margin. In case, you really need to change the collision margin of your box shape (if the dimension of your box is small compared
-    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a second parameter of the \texttt{BoxShape} constructor. \\
-
-    For instance, if you want to use a collision margin of 1 centimeter for your box shape, you can do it like this: \\
-
-   \begin{lstlisting}
-// Create the box shape with a custom collision margin
-const rp3d::BoxShape boxShape(halfExtents, 0.01);
-  \end{lstlisting}
-
     \subsection{Sphere Shape}
 
     \begin{figure}[h]
@@ -742,70 +824,6 @@ const rp3d::SphereShape sphereShape(2.0);
   \end{lstlisting}
 
     \vspace{0.6cm}
-
-    The collision margin of the \texttt{SphereShape} is integrated into the sphere you define. Therefore, you do not need to worry about it and you cannot change it.
-
-    \subsection{Cone Shape}
-
-    \begin{figure}[h]
-        \centering
-        \includegraphics{coneshape.png}
-        \label{fig:coneshape}
-    \end{figure}
-
-    The \texttt{ConeShape} class describes a cone collision shape centered at the origin of the shape local-space. The cone is aligned along the Y axis.
-    In order to create a cone shape, you need to give the radius of its base and its height (along the Y axis). \\
-
-    For instance, if you want to create a cone shape with a radius of 1 meter and the height of 3 meters, you need to use the following code: \\
-
-    \begin{lstlisting}
-// Create the cone shape
-const rp3d::ConeShape coneShape(1.0, 3.0);
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    The \texttt{ConeShape} has a collision margin that is added to the cone dimension that you define. Therefore, the actual cone shape will be a little bit larger that the size you define.
-    It is recommended that you use the default margin. In case you really need to change the collision margin of your cone shape (if the dimension of your cone is small compared
-    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a third parameter of the \texttt{ConeShape} constructor. \\
-
-    For instance, if you want to use a collision margin of 1 centimeter for your cone shape, you can do it like this: \\
-
-   \begin{lstlisting}
-// Create the cone shape with a custom collision margin
-const rp3d::ConeShape coneShape(1.0, 3.0, 0.01);
-  \end{lstlisting}
-
-    \subsection{Cylinder Shape}
-
-    \begin{figure}[h]
-        \centering
-        \includegraphics{cylindershape.png}
-        \label{fig:cylindershape}
-    \end{figure}
-
-    The \texttt{CylinderShape} class describes a cylinder collision shape centered at the origin of the shape local-space. The cylinder is aligned along the Y axis.
-    In order to create a cylinder shape, you need to specify the radius of its base and its height (along the Y axis). \\
-
-    For instance, if you want to create a cylinder shape with a radius of 1 meter and the height of 3 meters, you need to use the following code: \\
-
-    \begin{lstlisting}
-// Create the cylinder shape
-const rp3d::Cylinder cylinderShape(1.0, 3.0);
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    The \texttt{CylinderShape} has a collision margin that is added to the cylinder dimension that you define. Therefore, the actual cylinder shape will be a little bit larger that the one you define.
-    It is recommended that you use the default margin. In case you really need to change the collision margin of your cylinder shape (if the dimension of your cylinder is small compared
-    to the default collision margin for instance), you can pass the length of the new collision margin (in meters) as a third parameter of the \texttt{CylinderShape} constructor. \\
-
-    For instance, if you want to use a collision margin of 1 centimeter for your cylinder shape, you can do it like this: \\
-
-   \begin{lstlisting}
-// Create the cylinder shape with a custom collision margin
-const rp3d::CylinderShape cylinderShape(1.0, 3.0, 0.01);
-  \end{lstlisting}
 
     \subsection{Capsule Shape}
 
@@ -828,9 +846,6 @@ const rp3d::CapsuleShape capsuleShape(1.0, 2.0);
 
     \vspace{0.6cm}
 
-    As for the \texttt{SphereShape}, the collision margin of the \texttt{CapsuleShape} is integrated into the capsule you define.
-    Therefore, you do not need to worry about it and you cannot change it.
-
     \subsection{Convex Mesh Shape}
 
     \begin{figure}[h]
@@ -839,56 +854,75 @@ const rp3d::CapsuleShape capsuleShape(1.0, 2.0);
         \label{fig:convexshape}
     \end{figure}
 
-    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh. In order to create a convex mesh shape, you need to supply the array with the coordinates of
-    the vertices of the mesh. The array is supposed to start with the three X, Y and Z coordinates of the first vertex, then the X, Y and Z coordinates of the second vertex and so on.
-    The first parameter of the \texttt{ConvexMeshShape} constructor is a pointer to the array of the vertices coordinates, the second parameter is the number of vertices in the array and
-    the third parameter is the size (in bytes) of the data needed for a single vertex in the array (data used by all the three coordinates of a single vertex). \\
+    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh. In order to create a convex mesh shape, you first need to create an array of \texttt{PolygonFace} to describe each face
+    of your mesh. You also need to have an array with the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with your
+    vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you have to create a \texttt{PolyhedronMesh} with your \texttt{PolygonVertexArray}.
+    Once this is done, you can create the \texttt{ConvexMeshShape} by passing your \texttt{PolyhedronMesh} in paramater. \\
 
-    The following example shows how to create a convex mesh shape: \\
-
-    \begin{lstlisting}
-// Construct a convex mesh shape
-rp3d::ConvexMeshShape shape(verticesArray, nbVertices, 3 * sizeof(float));
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    You need to make sure that the mesh you provide is indeed convex and also that the origin of its local-space is inside the mesh. \\
-
-    The collision detection test with a convex mesh shape runs in $O(n)$ where $n$ is the number of vertices in the mesh. Collision detection can become expensive if there are
-    too many vertices in the mesh. It is possible to speed up the collision detection by providing information about the edges of the convex mesh. If you provide edges information, the collision detection will run in almost constant time at the cost of a little extra memory to store the edges information. In order to provide the edges
-    information, you need to call the \texttt{ConvexMeshShape::addEdge()} method for each edge of the mesh. The first parameter is the index of the first vertex of the edge and the
-    second parameter is the index of the second vertex. Do not worry about calling this method multiple times for the same edge, the edge information will be added only
-    once. \\
-
-    For instance, the following code adds the edges information into a convex mesh shape: \\
+    The following example shows how to create a convex mesh shape. In this example, we create a cube as a convex mesh shape. Of course, this is only for the example.
+    If you really need a cube collision shape, you should use the \texttt{BoxShape} instead. \\
 
     \begin{lstlisting}
-// Add the edges information of the mesh into the shape
-for (unsigned int i=0; i<mesh.getNbFaces(); i++) {
+// Array with the vertices coordinates of the convex mesh
+float vertices[24];
+vertices[0] = -3; vertices[1] = -3; vertices[2] = 3;
+vertices[3] = 3; vertices[4] = -3; vertices[5] = 3;
+vertices[6] = 3; vertices[7] = -3; vertices[8] = -3;
+vertices[9] = -3; vertices[10] = -3; vertices[11] = -3;
+vertices[12] = -3; vertices[13] = 3; vertices[14] = 3;
+vertices[15] = 3; vertices[16] = 3; vertices[17] = 3;
+vertices[18] = 3; vertices[19] = 3; vertices[20] = -3;
+vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
 
-    // Get the three vertex IDs of the vertices of the face
-    unsigned int v1 = getVertexIndexInFace(i, 0);
-    unsigned int v2 = getVertexIndexInFace(i, 1);
-    unsigned int v3 = getVertexIndexInFace(i, 2);
+// Array with the vertices indices for each face of the mesh
+int indices[24];
+indices[0]=0; indices[1]=3; indices[2]=2; indices[3]=1;
+indices[4]=4; indices[5]=5; indices[6]=6; indices[7]=7;
+indices[8]=0; indices[9]=1; indices[10]=5; indices[11]=4;
+indices[12]=1; indices[13]=2; indices[14]=6; indices[15]=5;
+indices[16]=2; indices[17]=3; indices[18]=7; indices[19]=6;
+indices[20]=0; indices[21]=4; indices[22]=7; indices[23]=3;
 
-    // Add the three edges into the collision shape
-    convexShape.addEdge(v1, v2);
-    convexShape.addEdge(v1, v3);
-    convexShape.addEdge(v2, v3);
+// Description of the six faces of the convex mesh
+polygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
+rp3d::PolygonVertexArray::PolygonFace* face = polygonFaces;
+for (int f = 0; f < 6; f++) {
+
+    // First vertex of the face in the indices array
+    face->indexBase = f * 4;   
+
+    // Number of vertices in the face
+    face->nbVertices = 4;
+
+    face++;
 }
+
+// Create the polygon vertex array
+polygonVertexArray = new rp3d::PolygonVertexArray(8, vertices, 3 x sizeof(float),
+indices, sizeof(int), 6, polygonFaces,
+rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+// Create the polyhedron mesh
+polyhedronMesh = new rp3d::PolyhedronMesh(polygonVertexArray);
+
+// Create the convex mesh collision shape
+convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Do not forget to enable the fast collision detection by asking the collision shape to use the edges information you have just provided. To do this, you need to
-    call the \texttt{ConvexMeshShape::setIsEdgesInformationUsed()} method as in the following example: \\
+    Note that the vertex coordinates and indices array are not copied and therefore, you need to make sure that they exist until the collision shape exists. This is also true for
+    the all the \texttt{PolygonFace}, the \texttt{PolygonVertexArray} and the \texttt{PolyhedronMesh}. \\
 
-     \begin{lstlisting}
-// Enable the fast collision detection
-// using the edges information
-collisionShape.setIsEdgesInformationUsed(true);
-  \end{lstlisting}
+    You need to make sure that the mesh you provide is indeed convex. Secondly, you should provide the simplest possible convex mesh. It means that you need to avoid
+    coplanar faces in your convex mesh shape. Coplanar faces need to merge together. Remember that convex meshes are not limited to triangular faces, you can
+    create faces with more than three vertices. \\
+
+    When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in counter clockwise order
+    as seen from the outside of your convex mesh. \\
+
+    Note that collision detection with a \texttt{ConvexMeshShape} is more expensive than with a \texttt{SphereShape} or a \texttt{CapsuleShape}. \\
 
   \subsection{Concave Mesh Shape}
 
@@ -903,15 +937,15 @@ collisionShape.setIsEdgesInformationUsed(true);
   when you are not able to use a convex shape and also try to limit the number of triangles of that mesh because collision detection
   with \texttt{ConcaveMeshShape} is quite expensive compared to convex shapes. \\
 
-  In order to create a concave mesh shape, you need to supply a pointer to a \texttt{TriangleMesh}. A \texttt{TriangleMesh} is a class
-  that describes a mesh made of triangles. A \texttt{TriangleMesh} can contain several parts (submeshes). Each part is a set of
+  In order to create a concave mesh shape, you need to supply a pointer to a \texttt{TriangleMesh}. A \texttt{TriangleMesh} class
+  describes a mesh made of triangles. It may contain several parts (submeshes). Each part is a set of
   triangles represented by a \texttt{TriangleVertexArray} object. First, you need to create a \texttt{TriangleVertexArray}. A \texttt{TriangleVertexArray} represents
   a continuous array of vertices and indexes for a triangular mesh. When you create a \texttt{TriangleVertexArray}, no data is copied
-  into the array. It only stores a pointer to the data. The goal is to allow the user to share vertices data between the physics engine and the rendering
+  into the array. It only stores a pointer to the data. The idea is to allow the user to share vertices data between the physics engine and the rendering
   part. Therefore, make sure that the data pointed by a \texttt{TriangleVertexArray} remains valid during the whole \texttt{TriangleVertexArray} life.
   \\
 
-  The following example show how to create a \texttt{TriangleVertexArray}: \\
+  The following code shows how to create a \texttt{TriangleVertexArray}: \\
 
   \begin{lstlisting}
 const int nbVertices = 8;
@@ -920,7 +954,7 @@ float vertices[3 * nbVertices] = ...;
 int indices[3 * nbTriangles] = ...;
 rp3d::TriangleVertexArray* triangleArray =
 new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
-indices, sizeof(int),
+indices, 3 * sizeof(int),
 rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
 rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
   \end{lstlisting}
@@ -928,8 +962,7 @@ rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
   \vspace{0.6cm}
 
   Now that we have a \texttt{TriangleVertexArray}, we need to create a \texttt{TriangleMesh} and add the \texttt{TriangleVertexArray}
-  into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape} and add it to the body we want to
-  simulate as in the following example: \\
+  into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape}. \\
 
   \begin{lstlisting}
 rp3d::TriangleMesh triangleMesh;
@@ -938,13 +971,19 @@ rp3d::TriangleMesh triangleMesh;
 triangleMesh.addSubpart(triangleArray);
 
 // Create the concave mesh shape
-ConcaveMesh* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
+ConcaveMeshShape* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
   \end{lstlisting}
 
   \vspace{0.6cm}
 
   Note that the \texttt{TriangleMesh} object also needs to exist during the whole life of the collision shape because its
-  data is not copied into the collision shape.
+  data is not copied into the collision shape. \\
+
+  When you specify the vertices for each triangle face of your mesh, be careful with the order of the vertices. They must be specified in counter clockwise order
+  as seen from the outside of your mesh. \\
+
+  In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
+  vertex normals, you can do it by using another constructor for the \texttt{TriangleVertexArray}. \\
 
   \subsection{Heightfield Shape}
 
@@ -1606,7 +1645,11 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this scene,
     the cubes will become red as they get inactive (sleeping).
 
-    \subsection{Joints}
+   \subsection{Cubes Stack Scene}
+
+    This scene has a dynamics world and a pyramid of cubes.
+
+    \subsection{Joints Scene}
 
     In this scene, you will learn how to create different joints (Ball and Socket, Hinge, Slider, Fixed) into the dynamics world. You can also see how
     to set the motor or limits of the joints.
@@ -1621,10 +1664,15 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     In this scene, you will see how to use the Height field collision shape of the library. Several cubes will fall
     down to the height field.
 
-    \subsection{Raycast Scene}
+   \subsection{Raycast Scene}
 
     In this scene, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
     It is possible to switch from a collision shape to another using the spacebar key.
+
+   \subsection{Collision Detection Scene}
+
+    This scene has a collision world and several collision bodies that can be move around with keyboard keys. This scene shows how to manually compute
+    collision detection in a collision world.
 
     \subsection{Concave Mesh Scene}
 
@@ -1710,10 +1758,12 @@ for (it = manifolds.begin(); it != manifolds.end(); ++it) {
 
     Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
     each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
-    see how to get all the contact occuring in the physis sub-steps of the engine. Also note that a contact manifold contains some persistent contact points that
-    have may have been there for several frames.
+    see how to get all the contact occuring in the physis sub-steps of the engine. 
 
     \section{Receiving Feedback}
+
+    TODO : UPDATE THIS SECTION
+
     \label{sec:receiving_feedback}
     Sometimes, you want to receive notifications from the physics engine when a given event happens. The \texttt{EventListener} class can be used for that purpose. In order to use
     it, you need to create a new class that inherits from the \texttt{EventListener} class and overrides some methods that will be called by the ReactPhysics3D library when some events
