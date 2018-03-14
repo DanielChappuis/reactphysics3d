@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 #include "body/CollisionBody.h"
 
 // We want to use the ReactPhysics3D namespace
@@ -48,7 +48,7 @@ CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
  */
 void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
-    PROFILE("CollisionShape::computeAABB()", mProfiler);
+    RP3D_PROFILE("CollisionShape::computeAABB()", mProfiler);
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;

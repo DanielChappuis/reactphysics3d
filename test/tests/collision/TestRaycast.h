@@ -63,7 +63,7 @@ class WorldRaycastCallback : public RaycastCallback {
 
         virtual decimal notifyRaycastHit(const RaycastInfo& info) override {
 
-            if (shapeToTest->getBody()->getID() == info.body->getID()) {
+            if (shapeToTest->getBody()->getId() == info.body->getId()) {
                 raycastInfo.body = info.body;
                 raycastInfo.hitFraction = info.hitFraction;
                 raycastInfo.proxyShape = info.proxyShape;
@@ -1310,7 +1310,6 @@ class TestRaycast : public Test {
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
-            Vector3 localTest = inverse * mCallback.raycastInfo.worldPoint;
             test(mCallback.isHit);
             test(mCallback.raycastInfo.body == mConvexMeshBody);
             test(mCallback.raycastInfo.proxyShape == mConvexMeshProxyShape);

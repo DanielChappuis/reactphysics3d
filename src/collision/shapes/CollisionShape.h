@@ -35,7 +35,7 @@
 #include "AABB.h"
 #include "collision/RaycastInfo.h"
 #include "memory/PoolAllocator.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

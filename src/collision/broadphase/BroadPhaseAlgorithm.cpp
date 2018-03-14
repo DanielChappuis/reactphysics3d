@@ -26,7 +26,7 @@
 // Libraries
 #include "BroadPhaseAlgorithm.h"
 #include "collision/CollisionDetection.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -257,7 +257,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
         ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape2ID));
 
         // If the two proxy collision shapes are from the same body, skip it
-        if (shape1->getBody()->getID() != shape2->getBody()->getID()) {
+        if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
 
             // Notify the collision detection about the overlapping pair
             mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);

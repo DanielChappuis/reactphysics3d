@@ -114,7 +114,7 @@ void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& 
 /// the ray hits many triangles.
 bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
-    PROFILE("ConcaveMeshShape::raycast()", mProfiler);
+    RP3D_PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
     // Create the callback object that will compute ray casting against triangles
     ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray, allocator);

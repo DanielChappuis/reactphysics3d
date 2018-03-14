@@ -285,7 +285,7 @@ class SliderJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SliderJoint(const SliderJointInfo& jointInfo);
+        SliderJoint(uint id, const SliderJointInfo& jointInfo);
 
         /// Destructor
         virtual ~SliderJoint() override = default;

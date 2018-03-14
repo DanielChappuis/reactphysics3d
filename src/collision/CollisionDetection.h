@@ -314,7 +314,7 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
                                         const Ray& ray,
                                         unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("CollisionDetection::raycast()", mProfiler);
+    RP3D_PROFILE("CollisionDetection::raycast()", mProfiler);
 
     RaycastTest rayCastTest(raycastCallback);
 

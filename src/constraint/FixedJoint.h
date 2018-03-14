@@ -136,7 +136,7 @@ class FixedJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        FixedJoint(const FixedJointInfo& jointInfo);
+        FixedJoint(uint id, const FixedJointInfo& jointInfo);
 
         /// Destructor
         virtual ~FixedJoint() override = default;

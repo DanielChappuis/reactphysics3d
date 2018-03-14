@@ -47,13 +47,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     setScenePosition(center, SCENE_RADIUS);
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::CollisionWorld();
-
-#ifdef IS_PROFILING_ACTIVE
-
-    mPhysicsWorld->setProfilerName(name + "_profiler");
-
-#endif
+    mPhysicsWorld = new rp3d::CollisionWorld(name);
 
     // ---------- Sphere 1 ---------- //
 

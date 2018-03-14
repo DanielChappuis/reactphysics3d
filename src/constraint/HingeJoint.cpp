@@ -34,8 +34,8 @@ using namespace reactphysics3d;
 const decimal HingeJoint::BETA = decimal(0.2);
 
 // Constructor
-HingeJoint::HingeJoint(const HingeJointInfo& jointInfo)
-           : Joint(jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0),
+HingeJoint::HingeJoint(uint id, const HingeJointInfo& jointInfo)
+           : Joint(id, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0),
              mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
              mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
              mLowerLimit(jointInfo.minAngleLimit), mUpperLimit(jointInfo.maxAngleLimit),

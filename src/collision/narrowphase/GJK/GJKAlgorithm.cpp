@@ -29,7 +29,7 @@
 #include "engine/OverlappingPair.h"
 #include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 #include <algorithm>
 #include <cmath>
 #include <cfloat>
@@ -49,7 +49,7 @@ using namespace reactphysics3d;
 /// the correct penetration depth and contact points between the enlarged objects.
 GJKAlgorithm::GJKResult GJKAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts) {
 
-    PROFILE("GJKAlgorithm::testCollision()", mProfiler);
+    RP3D_PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
     Vector3 suppA;             // Support point of object A
     Vector3 suppB;             // Support point of object B

@@ -33,8 +33,8 @@ using namespace reactphysics3d;
 const decimal BallAndSocketJoint::BETA = decimal(0.2);
 
 // Constructor
-BallAndSocketJoint::BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo)
-                   : Joint(jointInfo), mImpulse(Vector3(0, 0, 0)) {
+BallAndSocketJoint::BallAndSocketJoint(uint id, const BallAndSocketJointInfo& jointInfo)
+                   : Joint(id, jointInfo), mImpulse(Vector3(0, 0, 0)) {
 
     // Compute the local-space anchor point for each body
     mLocalAnchorPointBody1 = mBody1->getTransform().getInverse() * jointInfo.anchorPointWorldSpace;

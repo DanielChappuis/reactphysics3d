@@ -21,6 +21,7 @@ ENABLE_TESTING()
 OPTION(COMPILE_TESTBED "Select this if you want to build the testbed application" OFF)
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
 OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
+OPTION(LOGS_ENABLED "Select this if you want to compile with logs enabled during execution" OFF)
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
 
@@ -44,6 +45,10 @@ INCLUDE_DIRECTORIES(src)
 IF(PROFILING_ENABLED)
     ADD_DEFINITIONS(-DIS_PROFILING_ACTIVE)
 ENDIF(PROFILING_ENABLED)
+
+IF(LOGS_ENABLED)
+    ADD_DEFINITIONS(-DIS_LOGGING_ACTIVE)
+ENDIF(LOGS_ENABLED)
 
 IF(DOUBLE_PRECISION_ENABLED)
     ADD_DEFINITIONS(-DIS_DOUBLE_PRECISION_ENABLED)
@@ -164,8 +169,6 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/Material.cpp"
     "src/engine/OverlappingPair.h"
     "src/engine/OverlappingPair.cpp"
-    "src/engine/Profiler.h"
-    "src/engine/Profiler.cpp"
     "src/engine/Timer.h"
     "src/engine/Timer.cpp"
     "src/collision/CollisionCallback.h"
@@ -201,6 +204,10 @@ SET (REACTPHYSICS3D_SOURCES
     "src/containers/Map.h"
     "src/containers/Set.h"
     "src/containers/Pair.h"
+    "src/utils/Profiler.h"
+    "src/utils/Profiler.cpp"
+    "src/utils/Logger.h"
+    "src/utils/Logger.cpp"
 )
 
 # Create the library

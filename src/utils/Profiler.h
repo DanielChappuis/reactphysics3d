@@ -30,7 +30,9 @@
 
 // Libraries
 #include "configuration.h"
-#include "Timer.h"
+#include "engine/Timer.h"
+#include <fstream>
+#include "containers/List.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -180,15 +182,101 @@ class ProfileNodeIterator {
  */
 class Profiler {
 
+    public:
+
+        /// Format of the profiling data (text, ...)
+        enum class Format {Text};
+
+        /// Profile destination
+        class Destination {
+
+            public:
+
+                /// Log format (text, ...)
+                Format format;
+
+                /// Constructor
+                Destination(Format logFormat) : format(logFormat) {
+
+                }
+
+                /// Destructor
+                virtual ~Destination() {
+
+                }
+
+                /// Return the current output stream
+                virtual std::ostream& getOutputStream() = 0;
+        };
+
+        /// File destination to output profiling data into a file
+        class FileDestination : public Destination {
+
+            private:
+
+                std::string mFilePath;
+
+                /// Output file stream
+                std::ofstream mFileStream;
+
+            public:
+
+                /// Constructor
+                FileDestination(const std::string& filePath, Format format)
+                   :Destination(format), mFilePath(filePath),
+                    mFileStream(filePath, std::ios::binary) {
+
+                    if(!mFileStream.is_open()) {
+                        throw(std::runtime_error("ReactPhysics3D Logger: Unable to open an output stream to file " + mFilePath));
+                    }
+                }
+
+                /// Destructor
+                virtual ~FileDestination() override {
+
+                    if (mFileStream.is_open()) {
+
+                        // Close the stream
+                        mFileStream.close();
+                    }
+                }
+
+                /// Return the current output stream
+                virtual std::ostream& getOutputStream() override {
+                    return mFileStream;
+                }
+        };
+
+        /// Stream destination to output profiling data into a stream
+        class StreamDestination : public Destination {
+
+            private:
+
+                /// Output stream
+                std::ostream& mOutputStream;
+
+            public:
+
+                /// Constructor
+                StreamDestination(std::ostream& outputStream, Format format)
+                   :Destination(format), mOutputStream(outputStream) {
+
+                }
+
+                /// Destructor
+                virtual ~StreamDestination() override {
+
+                }
+
+                /// Return the current output stream
+                virtual std::ostream& getOutputStream() override {
+                    return mOutputStream;
+                }
+        };
+
     private :
 
         // -------------------- Attributes -------------------- //
-
-		/// Profiler name
-		std::string mName;
-
-		/// Total number of profilers
-		static int mNbProfilers;
 
         /// Root node of the profiler tree
         ProfileNode mRootNode;
@@ -202,8 +290,12 @@ class Profiler {
         /// Starting profiling time
         long double mProfilingStartTime;
 
+        /// All the output destinations
+        List<Destination*> mDestinations;
+
         /// Recursively print the report of a given node of the profiler tree
-        void printRecursiveNodeReport(ProfileNodeIterator* iterator,  int spacing, std::ostream& outputStream);
+        void printRecursiveNodeReport(ProfileNodeIterator* iterator,  int spacing,
+                                      std::ostream &outputStream);
 
 		/// Destroy a previously allocated iterator
 		void destroyIterator(ProfileNodeIterator* iterator);
@@ -216,7 +308,7 @@ class Profiler {
         // -------------------- Methods -------------------- //
 
 		/// Constructor
-		Profiler(std::string name = "");
+        Profiler();
 
 		/// Destructor
 		~Profiler();
@@ -234,12 +326,6 @@ class Profiler {
         /// Return the number of frames
         uint getNbFrames();
 
-		/// Get the name of the profiler
-		std::string getName() const;
-
-		/// Set the name of the profiler
-		void setName(std::string name);
-
         /// Return the elasped time since the start/reset of the profiling
         long double getElapsedTimeSinceStart();
 
@@ -249,8 +335,17 @@ class Profiler {
         /// Return an iterator over the profiler tree starting at the root
         ProfileNodeIterator* getIterator();
 
-        /// Print the report of the profiler in a given output stream
-        void printReport(std::ostream& outputStream);
+        // Add a file destination to the profiler
+        void addFileDestination(const std::string& filePath, Format format);
+
+        // Add a stream destination to the profiler
+        void addStreamDestination(std::ostream& outputStream, Format format);
+
+        /// Remove all logs destination previously set
+        void removeAllDestinations();
+
+        /// Print the report of the profiler in every output destinations
+        void printReport();
 };
 
 // Class ProfileSample
@@ -287,7 +382,7 @@ class ProfileSample {
 };
 
 // Use this macro to start profile a block of code
-#define PROFILE(name, profiler) ProfileSample profileSample(name, profiler)
+#define RP3D_PROFILE(name, profiler) ProfileSample profileSample(name, profiler)
 
 // Return true if we are at the root of the profiler tree
 inline bool ProfileNodeIterator::isRoot() {
@@ -374,19 +469,9 @@ inline uint Profiler::getNbFrames() {
     return mFrameCounter;
 }
 
-// Get the name of the profiler
-inline std::string Profiler::getName() const {
-	return mName;
-}
-
-// Set the name of the profiler
-inline void Profiler::setName(std::string name) {
-	mName = name;
-}
-
 // Return the elasped time since the start/reset of the profiling
 inline long double Profiler::getElapsedTimeSinceStart() {
-    long double currentTime = Timer::getCurrentSystemTime() * 1000.0;
+    long double currentTime = Timer::getCurrentSystemTime() * 1000.0L;
     return currentTime - mProfilingStartTime;
 }
 
@@ -412,10 +497,10 @@ inline void Profiler::destroy() {
 
 }
 
-#else   // In profile is not active
+#else   // If profile is not active
 
 // Empty macro in case profiling is not active
-#define PROFILE(name, profiler)
+#define RP3D_PROFILE(name, profiler)
 
 #endif
 

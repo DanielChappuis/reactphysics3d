@@ -639,7 +639,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -663,7 +663,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -684,7 +684,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -705,7 +705,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -759,7 +759,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -783,7 +783,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -804,7 +804,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -825,7 +825,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -869,7 +869,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -893,7 +893,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -914,7 +914,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -935,7 +935,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -979,7 +979,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -1003,7 +1003,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1024,7 +1024,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1045,7 +1045,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1099,7 +1099,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			Vector3 localBody1Point(0, -3, 0);
@@ -1123,7 +1123,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1144,7 +1144,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1165,7 +1165,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1209,7 +1209,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			localBody1Point = Vector3(3, 0, 0);
@@ -1233,7 +1233,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1254,7 +1254,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1275,7 +1275,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1329,7 +1329,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -1353,7 +1353,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1374,7 +1374,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1395,7 +1395,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1439,7 +1439,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -1463,7 +1463,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1484,7 +1484,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1505,7 +1505,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1549,7 +1549,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -1573,7 +1573,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1594,7 +1594,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1615,7 +1615,7 @@ class TestCollisionWorld : public Test {
 			test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
 			// Test contact points
 			test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1669,7 +1669,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point(0, -3, 0);
@@ -1693,7 +1693,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1714,7 +1714,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1735,7 +1735,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mSphereBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1789,7 +1789,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1831,7 +1831,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1860,7 +1860,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1890,7 +1890,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1953,7 +1953,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1995,7 +1995,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2024,7 +2024,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2054,7 +2054,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2117,7 +2117,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -2159,7 +2159,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2188,7 +2188,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2218,7 +2218,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2281,7 +2281,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2304,7 +2304,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2325,7 +2325,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2346,7 +2346,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2400,7 +2400,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2423,7 +2423,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2444,7 +2444,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2465,7 +2465,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2519,7 +2519,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2539,7 +2539,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2559,7 +2559,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2579,7 +2579,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mBoxBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
 
             // Test contact points
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
@@ -2633,7 +2633,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2653,7 +2653,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2673,7 +2673,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
@@ -2693,7 +2693,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mConvexMeshBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
 
             // Test contact points
             for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
@@ -2747,7 +2747,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point(2, 3, 0);
@@ -2771,7 +2771,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2792,7 +2792,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2813,7 +2813,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2857,7 +2857,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             localBody1Point = Vector3(0, 5, 0);
@@ -2881,7 +2881,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2902,7 +2902,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2923,7 +2923,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2977,7 +2977,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             Vector3 localBody1Point(0, -5, 0);
@@ -3001,7 +3001,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -3022,7 +3022,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -3043,7 +3043,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getID() != mCapsuleBody1->getID();
+            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
 
             // Test contact points
             test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,

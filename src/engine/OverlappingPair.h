@@ -263,9 +263,9 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
                                                              CollisionBody* body2) {
 
     // Construct the pair of body index
-    bodyindexpair indexPair = body1->getID() < body2->getID() ?
-                                 bodyindexpair(body1->getID(), body2->getID()) :
-                                 bodyindexpair(body2->getID(), body1->getID());
+    bodyindexpair indexPair = body1->getId() < body2->getId() ?
+                                 bodyindexpair(body1->getId(), body2->getId()) :
+                                 bodyindexpair(body2->getId(), body1->getId());
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }

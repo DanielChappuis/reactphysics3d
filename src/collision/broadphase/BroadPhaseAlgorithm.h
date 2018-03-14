@@ -30,7 +30,7 @@
 #include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 #include "containers/LinkedList.h"
 
 /// Namespace ReactPhysics3D
@@ -265,7 +265,7 @@ inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
 inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
+    RP3D_PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 

@@ -217,7 +217,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
-    PROFILE("HeightFieldShape::raycast()", mProfiler);
+    RP3D_PROFILE("HeightFieldShape::raycast()", mProfiler);
 
     TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this, allocator);
 

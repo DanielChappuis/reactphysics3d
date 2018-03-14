@@ -23,17 +23,80 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifdef IS_LOGGING_ACTIVE
+
 // Libraries
-#include "Joint.h"
+#include "Logger.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(uint id, const JointInfo& jointInfo)
-           :mId(id), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
-            mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
+Logger::Logger()
+       : mDestinations(MemoryManager::getBaseAllocator()), mFormatters(MemoryManager::getBaseAllocator())
+{
 
-    assert(mBody1 != nullptr);
-    assert(mBody2 != nullptr);
+    // Create the log formatters
+    mFormatters.add(Pair<Format, Formatter*>(Format::Text, new TextFormatter()));
+    mFormatters.add(Pair<Format, Formatter*>(Format::HTML, new HtmlFormatter()));
 }
+
+// Destructor
+Logger::~Logger() {
+
+    removeAllDestinations();
+
+    // Remove all the loggers
+    for (auto it = mFormatters.begin(); it != mFormatters.end(); ++it) {
+
+       delete it->second;
+    }
+}
+
+// Return the corresponding formatter
+Logger::Formatter* Logger::getFormatter(Format format) const {
+
+   auto it = mFormatters.find(format);
+   if (it != mFormatters.end()) {
+       return it->second;
+   }
+
+   return nullptr;
+}
+
+// Add a log file destination to the logger
+void Logger::addFileDestination(const std::string& filePath, uint logLevelFlag, Format format) {
+
+    FileDestination* destination = new FileDestination(filePath, logLevelFlag, getFormatter(format));
+    mDestinations.add(destination);
+}
+
+/// Add a stream destination to the logger
+void Logger::addStreamDestination(std::ostream& outputStream, uint logLevelFlag, Format format) {
+
+    StreamDestination* destination = new StreamDestination(outputStream, logLevelFlag, getFormatter(format));
+    mDestinations.add(destination);
+}
+
+// Remove all logs destination previously set
+void Logger::removeAllDestinations() {
+
+    // Delete all the destinations
+    for (uint i=0; i<mDestinations.size(); i++) {
+        delete mDestinations[i];
+    }
+
+    mDestinations.clear();
+}
+
+// Log something
+void Logger::log(Level level, Category category, const std::string& message) {
+
+    // For each destination
+    for (auto it = mDestinations.begin(); it != mDestinations.end(); ++it) {
+
+        (*it)->write(message, level, category);
+    }
+}
+
+#endif

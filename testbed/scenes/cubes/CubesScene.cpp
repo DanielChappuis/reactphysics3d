@@ -44,13 +44,7 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
-
-#ifdef IS_PROFILING_ACTIVE
-
-    mPhysicsWorld->setProfilerName(name + "_profiler");
-
-#endif
+    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, name);
 
     // Create all the cubes of the scene
     for (int i=0; i<NB_CUBES; i++) {

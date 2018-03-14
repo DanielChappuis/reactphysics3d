@@ -163,6 +163,9 @@ struct Quaternion {
         /// Overloaded operator for equality condition
         bool operator==(const Quaternion& quaternion) const;
 
+        /// Return the string representation
+        std::string to_string() const;
+
     private:
 
         /// Initialize the quaternion using Euler angles
@@ -377,6 +380,12 @@ inline Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
 inline bool Quaternion::operator==(const Quaternion& quaternion) const {
     return (x == quaternion.x && y == quaternion.y &&
             z == quaternion.z && w == quaternion.w);
+}
+
+// Get the string representation
+inline std::string Quaternion::to_string() const {
+    return "Quaternion(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," +
+            std::to_string(w) + ")";
 }
 
 }

@@ -459,7 +459,7 @@ void RigidBody::recomputeMassInformation() {
 // Update the broad-phase state for this body (because it has moved for instance)
 void RigidBody::updateBroadPhaseState() const {
 
-    PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
+    RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
 
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;

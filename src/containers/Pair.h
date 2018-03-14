@@ -86,7 +86,7 @@ class Pair {
 
 }
 
-// Hash function for struct VerticesPair
+// Hash function for a reactphysics3d Pair
 namespace std {
 
   template <typename T1, typename T2> struct hash<reactphysics3d::Pair<T1, T2>> {

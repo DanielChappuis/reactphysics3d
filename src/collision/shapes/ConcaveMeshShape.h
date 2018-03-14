@@ -32,7 +32,7 @@
 #include "collision/TriangleMesh.h"
 #include "collision/shapes/TriangleShape.h"
 #include "containers/List.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 namespace reactphysics3d {
 

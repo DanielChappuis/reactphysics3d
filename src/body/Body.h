@@ -92,7 +92,7 @@ class Body {
         virtual ~Body() = default;
 
         /// Return the ID of the body
-        bodyindex getID() const;
+        bodyindex getId() const;
 
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
@@ -137,9 +137,9 @@ class Body {
 
 // Return the id of the body
 /**
- * @return The ID of the body
+ * @return The id of the body
  */
-inline bodyindex Body::getID() const {
+inline bodyindex Body::getId() const {
     return mID;
 }
 
