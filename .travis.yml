@@ -56,8 +56,8 @@ script:
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
   - make && make test ARGS="-V"
   # Build in debug mode with logs and profiler enabled
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DPROFILING_ENABLED=True -DLOGS_ENABLED=True
+  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DPROFILING_ENABLED=True -DLOGS_ENABLED=True ../
   - make
   # Build in release mode with logs and profiler enabled
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DPROFILING_ENABLED=True -DLOGS_ENABLED=True
+  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DPROFILING_ENABLED=True -DLOGS_ENABLED=True ../
   - make
