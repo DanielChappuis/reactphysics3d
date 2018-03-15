@@ -36,9 +36,11 @@ using namespace std;
 uint CollisionWorld::mNbWorlds = 0;
 
 // Constructor
-CollisionWorld::CollisionWorld(const string& name, const WorldSettings& worldSettings)
+CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
-                 mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(name) {
+                 mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
+                 mProfiler(profiler), mLogger(logger), mIsProfilerCreatedByUser(profiler != nullptr),
+                 mIsLoggerCreatedByUser(logger != nullptr) {
 
     // Automatically generate a name for the world
     if (mName == "") {
@@ -55,20 +57,33 @@ CollisionWorld::CollisionWorld(const string& name, const WorldSettings& worldSet
 
 #ifdef IS_PROFILING_ACTIVE
 
-    // Add a destination file for the profiling data
-    mProfiler.addFileDestination("rp3d_profiling_" + mName + ".txt", Profiler::Format::Text);
+    // If the user has not provided its own profiler, we create one
+    if (mProfiler == nullptr) {
+
+       mProfiler = new Profiler();
+
+        // Add a destination file for the profiling data
+        mProfiler->addFileDestination("rp3d_profiling_" + mName + ".txt", Profiler::Format::Text);
+    }
+
 
     // Set the profiler
-    mCollisionDetection.setProfiler(&mProfiler);
+    mCollisionDetection.setProfiler(mProfiler);
 
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
 
-    // Add a log destination file
-    uint logLevel = static_cast<uint>(Logger::Level::Info) | static_cast<uint>(Logger::Level::Warning) |
-                    static_cast<uint>(Logger::Level::Error);
-    mLogger.addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
+    // If the user has not provided its own logger, we create one
+    if (mLogger == nullptr) {
+
+       mLogger = new Logger();
+
+        // Add a log destination file
+        uint logLevel = static_cast<uint>(Logger::Level::Info) | static_cast<uint>(Logger::Level::Warning) |
+                static_cast<uint>(Logger::Level::Error);
+        mLogger->addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
+    }
 
 #endif
 
@@ -88,6 +103,24 @@ CollisionWorld::~CollisionWorld() {
     for (int i=mBodies.size() - 1 ; i >= 0; i--) {
         destroyCollisionBody(mBodies[i]);
     }
+
+#ifdef IS_PROFILING_ACTIVE
+
+    /// Delete the profiler
+    if (!mIsProfilerCreatedByUser) {
+        delete mProfiler;
+    }
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+    /// Delete the logger
+    if (!mIsLoggerCreatedByUser) {
+        delete mLogger;
+    }
+
+#endif
 
     assert(mBodies.size() == 0);
 }
@@ -117,7 +150,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
 #ifdef IS_PROFILING_ACTIVE
 
-	collisionBody->setProfiler(&mProfiler);
+    collisionBody->setProfiler(mProfiler);
 
 #endif
 

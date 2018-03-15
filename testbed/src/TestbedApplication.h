@@ -199,6 +199,9 @@ class TestbedApplication : public Screen {
         /// Enable/Disable Vertical synchronization
         void enableVSync(bool enable);
 
+        /// Notify that the engine settings have changed
+        void notifyEngineSetttingsChanged();
+
         // -------------------- Friendship -------------------- //
 
         friend class Gui;

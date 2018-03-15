@@ -151,6 +151,9 @@ class SceneDemo : public Scene {
         /// Render the scene (possibly in multiple passes for shadow mapping)
         virtual void render() override;
 
+        /// Update the engine settings
+        virtual void updateEngineSettings() override;
+
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 

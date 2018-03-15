@@ -162,8 +162,8 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity, const std::string& name = "",
-                      const WorldSettings& worldSettings = WorldSettings());
+        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings(),
+                      Logger* logger = nullptr, Profiler* profiler = nullptr);
 
         /// Destructor
         virtual ~DynamicsWorld() override;

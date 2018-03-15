@@ -170,6 +170,7 @@ void Gui::createSettingsPanel() {
     checkboxSleeping->setChecked(mApp->mEngineSettings.isSleepingEnabled);
     checkboxSleeping->setCallback([&](bool value) {
         mApp->mEngineSettings.isSleepingEnabled = value;
+        mApp->notifyEngineSetttingsChanged();
     });
 
     // Enabled/Disable Gravity
@@ -177,6 +178,7 @@ void Gui::createSettingsPanel() {
     checkboxGravity->setChecked(mApp->mEngineSettings.isGravityEnabled);
     checkboxGravity->setCallback([&](bool value) {
         mApp->mEngineSettings.isGravityEnabled = value;
+        mApp->notifyEngineSetttingsChanged();
     });
 
     // Timestep
@@ -202,6 +204,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 1 || finalValue > 1000) return false;
 
             mApp->mEngineSettings.timeStep = finalValue / 1000.0f;
+            mApp->notifyEngineSetttingsChanged();
             textboxTimeStep->setValue(out.str());
         }
         catch (...) {
@@ -233,6 +236,7 @@ void Gui::createSettingsPanel() {
             if (value < 1 || value > 1000) return false;
 
             mApp->mEngineSettings.nbVelocitySolverIterations = value;
+            mApp->notifyEngineSetttingsChanged();
             textboxVelocityIterations->setValue(out.str());
         }
         catch (...) {
@@ -264,6 +268,7 @@ void Gui::createSettingsPanel() {
             if (value < 1 || value > 1000) return false;
 
             mApp->mEngineSettings.nbPositionSolverIterations = value;
+            mApp->notifyEngineSetttingsChanged();
             textboxPositionIterations->setValue(out.str());
         }
         catch (...) {
@@ -298,6 +303,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 1 || finalValue > 100000) return false;
 
             mApp->mEngineSettings.timeBeforeSleep = finalValue / 1000.0f;
+            mApp->notifyEngineSetttingsChanged();
             textboxTimeSleep->setValue(out.str());
         }
         catch (...) {
@@ -332,6 +338,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 0 || finalValue > 10000) return false;
 
             mApp->mEngineSettings.sleepLinearVelocity = finalValue;
+            mApp->notifyEngineSetttingsChanged();
             textboxSleepLinearVel->setValue(out.str());
         }
         catch (...) {
@@ -366,6 +373,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 0 || finalValue > 10000) return false;
 
             mApp->mEngineSettings.sleepAngularVelocity = finalValue;
+            mApp->notifyEngineSetttingsChanged();
             textboxSleepAngularVel->setValue(out.str());
         }
         catch (...) {

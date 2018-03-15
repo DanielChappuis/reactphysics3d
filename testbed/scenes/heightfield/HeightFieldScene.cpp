@@ -45,8 +45,11 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
+    rp3d::WorldSettings worldSettings;
+    worldSettings.worldName = name;
+
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, name);
+    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
 
 	for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 

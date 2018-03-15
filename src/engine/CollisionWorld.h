@@ -87,14 +87,20 @@ class CollisionWorld {
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Real-time hierarchical profiler
-		Profiler mProfiler;
+        Profiler* mProfiler;
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
 
         /// Logger
-        Logger mLogger;
+        Logger* mLogger;
 #endif
+
+        /// True if the profiler has been created by the user
+        bool mIsProfilerCreatedByUser;
+
+        /// True if the logger has been created by the user
+        bool mIsLoggerCreatedByUser;
 
         /// Total number of worlds
         static uint mNbWorlds;
@@ -112,7 +118,8 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionWorld(const std::string& name = "", const WorldSettings& worldSettings = WorldSettings());
+        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
+                       Profiler* profiler = nullptr);
 
         /// Destructor
         virtual ~CollisionWorld();
@@ -161,14 +168,14 @@ class CollisionWorld {
 #ifdef IS_PROFILING_ACTIVE
 
         /// Return a reference to the profiler
-        Profiler& getProfiler();
+        Profiler* getProfiler();
 
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
 
         /// Return a reference to the logger
-        Logger& getLogger();
+        Logger* getLogger();
 
 #endif
 
@@ -255,8 +262,8 @@ inline const std::string& CollisionWorld::getName() const {
 
 #ifdef IS_PROFILING_ACTIVE
 
-// Return a reference to the profiler
-inline Profiler& CollisionWorld::getProfiler() {
+// Return a pointer to the profiler
+inline Profiler* CollisionWorld::getProfiler() {
     return mProfiler;
 }
 
@@ -264,8 +271,8 @@ inline Profiler& CollisionWorld::getProfiler() {
 
 #ifdef IS_LOGGING_ACTIVE
 
-// Return a reference to the logger
-inline Logger& CollisionWorld::getLogger() {
+// Return a pointer to the logger
+inline Logger* CollisionWorld::getLogger() {
     return mLogger;
 }
 

@@ -26,7 +26,6 @@
 #ifndef REACTPHYSICS3D_LOGGER_H
 #define REACTPHYSICS3D_LOGGER_H
 
-#ifdef IS_LOGGING_ACTIVE
 
 // Libraries
 #include "containers/List.h"
@@ -35,6 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -56,6 +56,26 @@ class Logger {
 
         /// Log verbosity level
         enum class Format {Text, HTML};
+
+        /// Return the name of a category
+        static std::string getCategoryName(Category category) {
+
+            switch(category) {
+                case Category::World: return "World";
+                case Category::Body: return "Body";
+                case Category::Joint: return "Joint";
+            }
+        }
+
+        /// Return the name of a level
+        static std::string getLevelName(Level level) {
+
+            switch(level) {
+                case Level::Info: return "Information";
+                case Level::Warning: return "Warning";
+                case Level::Error: return "Error";
+            }
+        }
 
         /// Log formatter
         class Formatter {
@@ -83,7 +103,7 @@ class Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const std::string& message, Level level, Category category) = 0;
+                virtual std::string format(const time_t& time, const std::string& message, Level level, Category category) = 0;
         };
 
         class TextFormatter : public Formatter {
@@ -101,8 +121,8 @@ class Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const std::string& message, Level level,
-                                           Category category) override {
+                virtual std::string format(const time_t& time, const std::string& message,
+                                           Level level, Category category) override {
                     return message;
                 }
         };
@@ -120,6 +140,7 @@ class Logger {
                     ss << "<html>" << std::endl;
                     ss << "<head>" << std::endl;
                     ss << "<title>ReactPhysics3D Logs</title>" << std::endl;
+                    ss << "<style>" << generateCSS() << "</style>" << std::endl;
                     ss << "</head>" << std::endl;
                     ss << "<body>" << std::endl;
 
@@ -137,6 +158,60 @@ class Logger {
                     return ss.str();
                 }
 
+            std::string generateCSS() const {
+                return "body {"
+                       "  background-color: #f7f7f9;"
+                       "} "
+                      "body > div { clear:both; } "
+                      "body > div > div { float: left; } "
+                      ".line { "
+                        "font-family: SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace; "
+                        "font-size: 13px; "
+                        "color: #212529; "
+                        "margin: 0px 5px 2px 5px; "
+                      "} "
+                      ".time { "
+                         "margin-right: 10px; "
+                         "width:100px; "
+                      "} "
+                      ".level { "
+                         "margin-right: 10px; "
+                         "width: 110px; "
+                      "}"
+                      ".category { "
+                         "margin-right: 10px; "
+                         "width: 120px; "
+                         "font-weight: bold; "
+                      "}"
+                      ".message { "
+                        "color: #2e2e2e; "
+                        "word-wrap: break-word; "
+                        "max-width: 800px; "
+                      "} "
+                      ".body > .category { "
+                        "color: #007bff; "
+                      "} "
+                      ".world > .category { "
+                        "color: #4f9fcf; "
+                      "} "
+                      ".joint > .category { "
+                        "color: #6c757d; "
+                      "} "
+                      ".warning { "
+                        "color: #f0ad4e; "
+                      "} "
+                      ".error { "
+                        "color: #d44950; "
+                      "} ";
+            }
+
+            /// Convert a string to lower case
+            std::string toLowerCase(const std::string& text) {
+                std::string textLower = text;
+                std::transform(textLower.begin(), textLower.end(), textLower.begin(), ::tolower);
+                return textLower;
+            }
+
             public:
 
                 /// Constructor
@@ -150,14 +225,34 @@ class Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const std::string& message, Level level,
-                                           Category category) override {
+                virtual std::string format(const time_t& time, const std::string& message,
+                                           Level level, Category category) override {
 
                     std::stringstream ss;
 
-                    ss << "<p>";
+                    ss << "<div class='line " + toLowerCase(getCategoryName(category)) + " " + toLowerCase(getLevelName(level)) + "'>";
+
+                    // Time
+                    ss << "<div class='time'>";
+                    ss << std::put_time(std::localtime(&time), "%X");
+                    ss << "</div>";
+
+                    // Level
+                    ss << "<div class='level'>";
+                    ss << getLevelName(level);
+                    ss << "</div>";
+
+                    // Category
+                    ss << "<div class='category'>";
+                    ss << getCategoryName(category);
+                    ss << "</div>";
+
+                    // Message
+                    ss << "<div class='message'>";
                     ss << message;
-                    ss << "</p>";
+                    ss << "</div>";
+
+                    ss << "</div>";
 
                     return ss.str();
                 }
@@ -187,7 +282,7 @@ class Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const std::string& message, Level level, Category category) = 0;
+                virtual void write(const time_t& time, const std::string& message, Level level, Category category) = 0;
         };
 
         class FileDestination : public Destination {
@@ -228,8 +323,8 @@ class Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const std::string& message, Level level, Category category) override {
-                    mFileStream << formatter->format(message, level, category) << std::endl;
+                virtual void write(const time_t& time, const std::string& message, Level level, Category category) override {
+                    mFileStream << formatter->format(time, message, level, category) << std::endl << std::flush;
                 }
         };
 
@@ -259,8 +354,9 @@ class Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const std::string& message, Level level, Category category) override {
-                    mOutputStream << message << std::endl;
+                virtual void write(const time_t& time, const std::string& message, Level level, Category category) override {
+                    mOutputStream << std::put_time(std::localtime(&time), "%Y-%m-%d %X") << ": ";
+                    mOutputStream << message << std::endl << std::flush;
                 }
         };
 
@@ -303,12 +399,12 @@ class Logger {
         void log(Level level, Category category, const std::string& message);
 };
 
+}
+
+#ifdef IS_LOGGING_ACTIVE
 
 // Use this macro to log something
-#define RP3D_LOG(logger, level, category, message) logger.log(level, category, message)
-
-
-}
+#define RP3D_LOG(logger, level, category, message) logger->log(level, category, message)
 
 #else   // If logger is not active
 

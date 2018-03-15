@@ -271,7 +271,14 @@ void TestbedApplication::switchScene(Scene* newScene) {
     // Reset the scene
     mCurrentScene->reset();
 
+    mCurrentScene->updateEngineSettings();
+
     resizeEvent(Vector2i(0, 0));
+}
+
+// Notify that the engine settings have changed
+void TestbedApplication::notifyEngineSetttingsChanged() {
+   mCurrentScene->updateEngineSettings();
 }
 
 // Check the OpenGL errors

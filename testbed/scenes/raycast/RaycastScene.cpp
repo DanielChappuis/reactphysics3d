@@ -44,8 +44,11 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
+    rp3d::WorldSettings worldSettings;
+    worldSettings.worldName = name;
+
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::CollisionWorld(name);
+    mPhysicsWorld = new rp3d::CollisionWorld(worldSettings);
 
     // ---------- Dumbbell ---------- //
 

@@ -39,8 +39,9 @@ using namespace std;
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
  */
-DynamicsWorld::DynamicsWorld(const Vector3& gravity, const string& name, const WorldSettings& worldSettings)
-              : CollisionWorld(name, worldSettings),
+DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
+                             Logger* logger, Profiler* profiler)
+              : CollisionWorld(worldSettings, logger, profiler),
                 mContactSolver(mMemoryManager, mConfig),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations),
@@ -58,13 +59,13 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const string& name, const W
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
-	mConstraintSolver.setProfiler(&mProfiler);
-	mContactSolver.setProfiler(&mProfiler);
+    mConstraintSolver.setProfiler(mProfiler);
+    mContactSolver.setProfiler(mProfiler);
 
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
-             "Dynamics world " + mName + " has been created");
+             "Dynamics World: Dynamics world " + mName + " has been created");
 
 }
 
@@ -87,11 +88,11 @@ DynamicsWorld::~DynamicsWorld() {
 #ifdef IS_PROFILING_ACTIVE
 
     // Print the profiling report into the destinations
-    mProfiler.printReport();
+    mProfiler->printReport();
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
-             "Dynamics world " + mName + " has been destroyed");
+             "Dynamics World: Dynamics world " + mName + " has been destroyed");
 }
 
 // Update the physics simulation
@@ -102,10 +103,10 @@ void DynamicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
-    mProfiler.incrementFrameCounter();
+    mProfiler->incrementFrameCounter();
 #endif
 
-    RP3D_PROFILE("DynamicsWorld::update()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::update()", mProfiler);
 
     mTimeStep = timeStep;
 
@@ -153,7 +154,7 @@ void DynamicsWorld::update(decimal timeStep) {
 /// the sympletic Euler time stepping scheme.
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
-    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", mProfiler);
     
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -192,7 +193,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 // Update the postion/orientation of the bodies
 void DynamicsWorld::updateBodiesState() {
 
-    RP3D_PROFILE("DynamicsWorld::updateBodiesState()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::updateBodiesState()", mProfiler);
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
@@ -229,7 +230,7 @@ void DynamicsWorld::updateBodiesState() {
 // Initialize the bodies velocities arrays for the next simulation step.
 void DynamicsWorld::initVelocityArrays() {
 
-    RP3D_PROFILE("DynamicsWorld::initVelocityArrays()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::initVelocityArrays()", mProfiler);
 
     // Allocate memory for the bodies velocity arrays
     uint nbBodies = mRigidBodies.size();
@@ -271,7 +272,7 @@ void DynamicsWorld::initVelocityArrays() {
 /// contact solver.
 void DynamicsWorld::integrateRigidBodiesVelocities() {
 
-    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", mProfiler);
 
     // Initialize the bodies velocity arrays
     initVelocityArrays();
@@ -333,7 +334,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 // Solve the contacts and constraints
 void DynamicsWorld::solveContactsAndConstraints() {
 
-    RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
@@ -383,7 +384,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
 // Solve the position error correction of the constraints
 void DynamicsWorld::solvePositionCorrection() {
 
-    RP3D_PROFILE("DynamicsWorld::solvePositionCorrection()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::solvePositionCorrection()", mProfiler);
 
     // Do not continue if there is no constraints
     if (mJoints.size() == 0) return;
@@ -426,7 +427,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 
 #ifdef IS_PROFILING_ACTIVE
 
-	rigidBody->setProfiler(&mProfiler);
+    rigidBody->setProfiler(mProfiler);
 
 #endif
 
@@ -645,7 +646,7 @@ uint DynamicsWorld::computeNextAvailableJointId() {
 /// it). Then, we create an island with this group of connected bodies.
 void DynamicsWorld::computeIslands() {
 
-    RP3D_PROFILE("DynamicsWorld::computeIslands()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::computeIslands()", mProfiler);
 
     uint nbBodies = mRigidBodies.size();
 
@@ -792,7 +793,7 @@ void DynamicsWorld::computeIslands() {
 /// time, we put all the bodies of the island to sleep.
 void DynamicsWorld::updateSleepingBodies() {
 
-    RP3D_PROFILE("DynamicsWorld::updateSleepingBodies()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::updateSleepingBodies()", mProfiler);
 
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;

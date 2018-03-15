@@ -31,6 +31,7 @@
 #include <cfloat>
 #include <utility>
 #include <cstdint>
+#include <string>
 #include "decimal.h"
 #include "containers/Pair.h"
 
@@ -109,6 +110,9 @@ constexpr decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
  * This class is used to describe some settings of a physics world.
  */
 struct WorldSettings {
+
+    /// Name of the world
+    std::string worldName = "";
 
     /// Distance threshold for two contact points for a valid persistent contact (in meters)
     decimal persistentContactDistanceThreshold = decimal(0.03);
