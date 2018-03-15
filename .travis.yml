@@ -9,27 +9,26 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-4.9
+            - g++-7
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
     # OS X / GCC
     - os: osx
       osx_image: xcode8
       env:
-       - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+       - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
 
     # Linux / Clang
     - os: linux
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            - llvm-toolchain-trusty-5.0
           packages:
-            - clang-3.6
+            - clang-5.0
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
     # OS X / Clang
     - os: osx
@@ -56,3 +55,9 @@ script:
   # Build in release mode with single precision
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
   - make && make test ARGS="-V"
+  # Build in debug mode with logs and profiler enabled
+  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DPROFILING_ENABLED=True -DLOGS_ENABLED=True
+  - make
+  # Build in release mode with logs and profiler enabled
+  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DPROFILING_ENABLED=True -DLOGS_ENABLED=True
+  - make
