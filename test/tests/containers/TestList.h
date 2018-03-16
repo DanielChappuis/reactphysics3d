@@ -147,21 +147,21 @@ class TestList : public Test {
             test(list3.size() == 3);
             test(list3.capacity() == 4);
             test(it == list3.end());
-            test(list3[0] = 1);
-            test(list3[1] = 2);
-            test(list3[2] = 3);
+            test(list3[0] == 1);
+            test(list3[1] == 2);
+            test(list3[2] == 3);
 
             it = list3.removeAt(1);
             test(list3.size() == 2);
             test(list3.capacity() == 4);
-            test(list3[0] = 1);
-            test(list3[1] = 3);
-            test(*it = 3);
+            test(list3[0] == 1);
+            test(list3[1] == 3);
+            test(*it == 3);
 
             list3.removeAt(0);
             test(list3.size() == 1);
             test(list3.capacity() == 4);
-            test(list3[0] = 3);
+            test(list3[0] == 3);
 
             it = list3.removeAt(0);
             test(list3.size() == 0);
@@ -256,14 +256,14 @@ class TestList : public Test {
 
             list4 = list1;
             test(list4.size() == list1.size())
-            test(list4[0] = list1[0]);
-            test(list4[1] = list1[1]);
-            test(list4[2] = list1[2]);
+            test(list4[0] == list1[0]);
+            test(list4[1] == list1[1]);
+            test(list4[2] == list1[2]);
 
             list5 = list2;
             test(list5.size() == list2.size());
-            test(list5[0] = list2[0]);
-            test(list5[1] = list2[1]);
+            test(list5[0] == list2[0]);
+            test(list5[1] == list2[1]);
         }
 
         void testIndexing() {
