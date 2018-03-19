@@ -214,3 +214,68 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
     }
 }
+
+// Return the string representation of the shape
+std::string ConcaveMeshShape::to_string() const {
+
+    std::stringstream ss;
+
+    ss << "ConcaveMeshShape {" << std::endl;
+    ss << "nbSubparts=" << mTriangleMesh->getNbSubparts() << std::endl;
+
+    // Vertices array
+    for (uint subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
+
+        // Get the triangle vertex array of the current sub-part
+        TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
+
+        ss << "subpart" << subPart << "={" << std::endl;
+        ss << "nbVertices=" << triangleVertexArray->getNbVertices() << std::endl;
+        ss << "nbTriangles=" << triangleVertexArray->getNbTriangles() << std::endl;
+
+        ss << "vertices=[";
+
+        // For each triangle of the concave mesh
+        for (uint v=0; v<triangleVertexArray->getNbVertices(); v++) {
+
+            Vector3 vertex;
+            triangleVertexArray->getVertex(v, &vertex);
+
+            ss << vertex.to_string() << ", ";
+        }
+
+        ss << "], " << std::endl;
+
+        ss << "normals=[";
+
+        // For each triangle of the concave mesh
+        for (uint v=0; v<triangleVertexArray->getNbVertices(); v++) {
+
+            Vector3 normal;
+            triangleVertexArray->getNormal(v, &normal);
+
+            ss << normal.to_string() << ", ";
+        }
+
+        ss << "], " << std::endl;
+
+        ss << "triangles=[";
+
+        // For each triangle of the concave mesh
+        // For each triangle of the concave mesh
+        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+
+            uint indices[3];
+
+            triangleVertexArray->getTriangleVerticesIndices(triangleIndex, indices);
+
+            ss << "(" << indices[0] << "," << indices[1] << "," << indices[2] << "), ";
+        }
+
+        ss << "], " << std::endl;
+
+        ss << "}" << std::endl;
+    }
+
+    return ss.str();
+}

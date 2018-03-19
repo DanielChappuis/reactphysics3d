@@ -105,6 +105,9 @@ class CapsuleShape : public ConvexShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 // Get the radius of the capsule
@@ -183,6 +186,11 @@ inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& di
     else {
         return Vector3(0, -mHalfHeight, 0);
     }
+}
+
+// Return the string representation of the shape
+inline std::string CapsuleShape::to_string() const {
+    return "CapsuleShape {halfHeight=" + std::to_string(mHalfHeight) + ", radius=" + std::to_string(getRadius()) + "}";
 }
 
 }

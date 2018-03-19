@@ -130,6 +130,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 /// Set the scaling vector of the collision shape

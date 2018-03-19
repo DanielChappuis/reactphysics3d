@@ -280,3 +280,55 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3
         }
     }
 }
+
+// Return a vertex of the array
+void TriangleVertexArray::getVertex(uint vertexIndex, Vector3* outVertex) {
+
+    assert(vertexIndex < mNbVertices);
+
+    const uchar* vertexPointerChar = mVerticesStart + vertexIndex * mVerticesStride;
+    const void* vertexPointer = static_cast<const void*>(vertexPointerChar);
+
+    // Get the vertices components of the triangle
+    if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
+        const float* vertices = static_cast<const float*>(vertexPointer);
+        (*outVertex)[0] = decimal(vertices[0]);
+        (*outVertex)[1] = decimal(vertices[1]);
+        (*outVertex)[2] = decimal(vertices[2]);
+    }
+    else if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
+        const double* vertices = static_cast<const double*>(vertexPointer);
+        (*outVertex)[0] = decimal(vertices[0]);
+        (*outVertex)[1] = decimal(vertices[1]);
+        (*outVertex)[2] = decimal(vertices[2]);
+    }
+    else {
+        assert(false);
+    }
+}
+
+// Return a vertex normal of the array
+void TriangleVertexArray::getNormal(uint vertexIndex, Vector3* outNormal) {
+
+    assert(vertexIndex < mNbVertices);
+
+    const uchar* vertexNormalPointerChar = mVerticesNormalsStart + vertexIndex * mVerticesNormalsStride;
+    const void* vertexNormalPointer = static_cast<const void*>(vertexNormalPointerChar);
+
+    // Get the normals from the array
+    if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
+        const float* normal = static_cast<const float*>(vertexNormalPointer);
+        (*outNormal)[0] = decimal(normal[0]);
+        (*outNormal)[1] = decimal(normal[1]);
+        (*outNormal)[2] = decimal(normal[2]);
+    }
+    else if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
+        const double* normal = static_cast<const double*>(vertexNormalPointer);
+        (*outNormal)[0] = decimal(normal[0]);
+        (*outNormal)[1] = decimal(normal[1]);
+        (*outNormal)[2] = decimal(normal[2]);
+    }
+    else {
+        assert(false);
+    }
+}

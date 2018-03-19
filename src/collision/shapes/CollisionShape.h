@@ -138,6 +138,9 @@ class CollisionShape {
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
 
+        /// Return the string representation of the shape
+        virtual std::string to_string() const=0;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler

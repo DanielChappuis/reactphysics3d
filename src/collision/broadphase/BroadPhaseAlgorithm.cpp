@@ -140,7 +140,7 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 // Add a proxy collision shape into the broad-phase collision detection
 void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
-    assert(proxyShape->mBroadPhaseID == -1);
+    assert(proxyShape->getBroadPhaseId() == -1);
 
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
@@ -150,15 +150,15 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
-    addMovedCollisionShape(proxyShape->mBroadPhaseID);
+    addMovedCollisionShape(proxyShape->getBroadPhaseId());
 }
 
 // Remove a proxy collision shape from the broad-phase collision detection
 void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
-    assert(proxyShape->mBroadPhaseID != -1);
+    assert(proxyShape->getBroadPhaseId() != -1);
 
-    int broadPhaseID = proxyShape->mBroadPhaseID;
+    int broadPhaseID = proxyShape->getBroadPhaseId();
 
     proxyShape->mBroadPhaseID = -1;
 
@@ -174,7 +174,7 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
                                                     const Vector3& displacement, bool forceReinsert) {
 
-    int broadPhaseID = proxyShape->mBroadPhaseID;
+    int broadPhaseID = proxyShape->getBroadPhaseId();
 
     assert(broadPhaseID >= 0);
 

@@ -118,9 +118,9 @@ void CollisionDetection::computeMiddlePhase() {
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
 
-        assert(shape1->mBroadPhaseID != -1);
-        assert(shape2->mBroadPhaseID != -1);
-        assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
+        assert(shape1->getBroadPhaseId() != -1);
+        assert(shape2->getBroadPhaseId() != -1);
+        assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
 
         // Check if the two shapes are still overlapping. Otherwise, we destroy the
         // overlapping pair
@@ -308,9 +308,9 @@ void CollisionDetection::computeNarrowPhase() {
 /// This method is called by the broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
 
-    assert(shape1->mBroadPhaseID != -1);
-    assert(shape2->mBroadPhaseID != -1);
-    assert(shape1->mBroadPhaseID != shape2->mBroadPhaseID);
+    assert(shape1->getBroadPhaseId() != -1);
+    assert(shape2->getBroadPhaseId() != -1);
+    assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
 
     // Check if the collision filtering allows collision between the two shapes
     if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
@@ -338,13 +338,13 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
 // Remove a body from the collision detection
 void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
-    assert(proxyShape->mBroadPhaseID != -1);
+    assert(proxyShape->getBroadPhaseId() != -1);
 
     // Remove all the overlapping pairs involving this proxy shape
     Map<Pair<uint, uint>, OverlappingPair*>::Iterator it;
     for (it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
-        if (it->second->getShape1()->mBroadPhaseID == proxyShape->mBroadPhaseID||
-            it->second->getShape2()->mBroadPhaseID == proxyShape->mBroadPhaseID) {
+        if (it->second->getShape1()->getBroadPhaseId() == proxyShape->getBroadPhaseId()||
+            it->second->getShape2()->getBroadPhaseId() == proxyShape->getBroadPhaseId()) {
 
             // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds list of the two bodies involved
 
@@ -637,10 +637,10 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
     ProxyShape* bodyProxyShape = body->getProxyShapesList();
     while (bodyProxyShape != nullptr) {
 
-        if (bodyProxyShape->mBroadPhaseID != -1) {
+        if (bodyProxyShape->getBroadPhaseId() != -1) {
 
             // Get the AABB of the shape
-            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
+            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
             LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
@@ -817,10 +817,10 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
     ProxyShape* bodyProxyShape = body->getProxyShapesList();
     while (bodyProxyShape != nullptr) {
 
-        if (bodyProxyShape->mBroadPhaseID != -1) {
+        if (bodyProxyShape->getBroadPhaseId() != -1) {
 
             // Get the AABB of the shape
-            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->mBroadPhaseID);
+            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
             LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
@@ -996,6 +996,6 @@ EventListener* CollisionDetection::getWorldEventListener() {
 
 // Return the world-space AABB of a given proxy shape
 const AABB CollisionDetection::getWorldAABB(const ProxyShape* proxyShape) const {
-    assert(proxyShape->mBroadPhaseID > -1);
-    return mBroadPhaseAlgorithm.getFatAABB(proxyShape->mBroadPhaseID);
+    assert(proxyShape->getBroadPhaseId() > -1);
+    return mBroadPhaseAlgorithm.getFatAABB(proxyShape->getBroadPhaseId());
 }

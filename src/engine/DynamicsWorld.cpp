@@ -64,7 +64,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
 
 #endif
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Dynamics world " + mName + " has been created");
 
 }
@@ -91,7 +91,7 @@ DynamicsWorld::~DynamicsWorld() {
     mProfiler->printReport();
 #endif
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Dynamics world " + mName + " has been destroyed");
 }
 
@@ -426,13 +426,15 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     mRigidBodies.add(rigidBody);
 
 #ifdef IS_PROFILING_ACTIVE
-
     rigidBody->setProfiler(mProfiler);
-
 #endif
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Body,
-             "Rigid Body " + std::to_string(bodyID) + ": New collision body created");
+#ifdef IS_LOGGING_ACTIVE
+   rigidBody->setLogger(mLogger);
+#endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(bodyID) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -444,8 +446,8 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
  */
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Body,
-             "Rigid Body " + std::to_string(rigidBody->getId()) + ": rigid body destroyed");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(rigidBody->getId()) + ": rigid body destroyed");
 
     // Remove all the collision shapes of the body
     rigidBody->removeAllCollisionShapes();
@@ -549,7 +551,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     // Add the joint into the joint list of the bodies involved in the joint
     addJointToBody(newJoint);
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Joint,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getId()) + ": New joint created");
 
     // Return the pointer to the created joint
@@ -564,7 +566,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != nullptr);
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Joint,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(joint->getId()) + ": joint destroyed");
 
     // If the collision between the two bodies of the constraint was disabled
@@ -863,7 +865,7 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
         }
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
 }
 

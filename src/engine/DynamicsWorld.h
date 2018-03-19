@@ -283,7 +283,7 @@ inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Set nb iterations velocity solver to " + std::to_string(nbIterations));
 }
 
@@ -299,7 +299,7 @@ inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
 inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
     mNbPositionSolverIterations = nbIterations;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Set nb iterations position solver to " + std::to_string(nbIterations));
 }
 
@@ -346,7 +346,7 @@ inline Vector3 DynamicsWorld::getGravity() const {
 inline void DynamicsWorld::setGravity(Vector3& gravity) {
     mGravity = gravity;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Set gravity vector to " + gravity.to_string());
 }
 
@@ -366,7 +366,7 @@ inline bool DynamicsWorld::isGravityEnabled() const {
 inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
     mIsGravityEnabled = isGravityEnabled;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")));
 }
 
@@ -413,7 +413,7 @@ inline void DynamicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
     assert(sleepLinearVelocity >= decimal(0.0));
     mSleepLinearVelocity = sleepLinearVelocity;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity));
 }
 
@@ -436,7 +436,7 @@ inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity)
     assert(sleepAngularVelocity >= decimal(0.0));
     mSleepAngularVelocity = sleepAngularVelocity;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity));
 }
 
@@ -457,7 +457,7 @@ inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
     assert(timeBeforeSleep >= decimal(0.0));
     mTimeBeforeSleep = timeBeforeSleep;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep));
 }
 

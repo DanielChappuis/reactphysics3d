@@ -201,3 +201,47 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* pro
     return true;
 }
 
+// Return the string representation of the shape
+std::string ConvexMeshShape::to_string() const {
+
+    std::stringstream ss;
+    ss << "ConvexMeshShape {" << std::endl;
+    ss << "nbVertices=" << mPolyhedronMesh->getNbVertices() << std::endl;
+    ss << "nbFaces=" << mPolyhedronMesh->getNbFaces() << std::endl;
+
+    ss << "vertices=[";
+
+    for (uint v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
+
+        Vector3 vertex = mPolyhedronMesh->getVertex(v);
+        ss << vertex.to_string();
+        if (v != mPolyhedronMesh->getNbVertices() - 1) {
+            ss << ", ";
+        }
+    }
+
+    ss << "], faces=[";
+
+    HalfEdgeStructure halfEdgeStruct = mPolyhedronMesh->getHalfEdgeStructure();
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStruct.getFace(f);
+
+        ss << "[";
+
+        for (uint v=0; v < face.faceVertices.size(); v++) {
+
+            ss << face.faceVertices[v];
+            if (v != face.faceVertices.size() - 1) {
+               ss << ",";
+            }
+        }
+
+        ss << "]";
+    }
+
+    ss << "]}";
+
+    return ss.str();
+}
+

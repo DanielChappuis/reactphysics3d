@@ -279,8 +279,8 @@ inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
 /// previous frame so that it is tested for collision again in the broad-phase.
 inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
 
-    if (shape->mBroadPhaseID != -1) {
-        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
+    if (shape->getBroadPhaseId() != -1) {
+        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->getBroadPhaseId());
     }
 }
 

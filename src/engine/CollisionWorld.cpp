@@ -80,7 +80,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
        mLogger = new Logger();
 
         // Add a log destination file
-        uint logLevel = static_cast<uint>(Logger::Level::Info) | static_cast<uint>(Logger::Level::Warning) |
+        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
                 static_cast<uint>(Logger::Level::Error);
         mLogger->addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
     }
@@ -89,14 +89,16 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
 
     mNbWorlds++;
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Collision World: Collision world " + mName + " has been created");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Collision World: Initial world settings: " + worldSettings.to_string());
 }
 
 // Destructor
 CollisionWorld::~CollisionWorld() {
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::World,
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Collision World: Collision world " + mName + " has been destroyed");
 
     // Destroy all the collision bodies that have not been removed
@@ -154,8 +156,12 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
 #endif
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Body,
-             "Collision Body " + std::to_string(bodyID) + ": New collision body created");
+#ifdef IS_LOGGING_ACTIVE
+   collisionBody->setLogger(mLogger);
+#endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(bodyID) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -167,8 +173,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
  */
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
-    RP3D_LOG(mLogger, Logger::Level::Info, Logger::Category::Body,
-             "Collision Body " + std::to_string(collisionBody->getId()) + ": collision body destroyed");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(collisionBody->getId()) + ": collision body destroyed");
 
     // Remove all the collision shapes of the body
     collisionBody->removeAllCollisionShapes();
@@ -253,7 +259,7 @@ bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
 // Return the current world-space AABB of given proxy shape
 AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
 
-    if (proxyShape->mBroadPhaseID == -1) {
+    if (proxyShape->getBroadPhaseId() == -1) {
         return AABB();
     }
 

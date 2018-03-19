@@ -30,6 +30,7 @@
 #include <stdexcept>
 #include <cassert>
 #include "configuration.h"
+#include "utils/Logger.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -75,6 +76,12 @@ class Body {
         /// Pointer that can be used to attach user data to the body
         void* mUserData;
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -118,6 +125,12 @@ class Body {
         /// Attach user data to this body
         void setUserData(void* userData);
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
+#endif
+
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 
@@ -159,6 +172,10 @@ inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
     mIsAllowedToSleep = isAllowedToSleep;
 
     if (!mIsAllowedToSleep) setIsSleeping(false);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
+             (mIsAllowedToSleep ? "true" : "false"));
 }
 
 // Return whether or not the body is sleeping
@@ -183,6 +200,10 @@ inline bool Body::isActive() const {
  */
 inline void Body::setIsActive(bool isActive) {
     mIsActive = isActive;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isActive=" +
+             (mIsActive ? "true" : "false"));
 }
 
 // Set the variable to know whether or not the body is sleeping
@@ -198,6 +219,10 @@ inline void Body::setIsSleeping(bool isSleeping) {
     }
 
     mIsSleeping = isSleeping;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isSleeping=" +
+             (mIsSleeping ? "true" : "false"));
 }
 
 // Return a pointer to the user data attached to this body
@@ -215,6 +240,15 @@ inline void* Body::getUserData() const {
 inline void Body::setUserData(void* userData) {
     mUserData = userData;
 }
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void Body::setLogger(Logger* logger) {
+    mLogger = logger;
+}
+
+#endif
 
 // Smaller than operator
 inline bool Body::operator<(const Body& body2) const {

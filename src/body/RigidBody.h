@@ -325,6 +325,10 @@ inline bool RigidBody::isGravityEnabled() const {
  */
 inline void RigidBody::enableGravity(bool isEnabled) {
     mIsGravityEnabled = isEnabled;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
+             (mIsGravityEnabled ? "true" : "false"));
 }
 
 // Return a reference to the material properties of the rigid body
@@ -341,6 +345,9 @@ inline Material& RigidBody::getMaterial() {
  */
 inline void RigidBody::setMaterial(const Material& material) {
     mMaterial = material;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set Material" + mMaterial.to_string());
 }
 
 // Return the linear velocity damping factor
@@ -359,6 +366,9 @@ inline decimal RigidBody::getLinearDamping() const {
 inline void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
     mLinearDamping = linearDamping;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(mLinearDamping));
 }
 
 // Return the angular velocity damping factor
@@ -377,6 +387,9 @@ inline decimal RigidBody::getAngularDamping() const {
 inline void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
     mAngularDamping = angularDamping;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
 }
 
 // Return the first element of the linked list of joints involving this body

@@ -175,6 +175,9 @@ class TriangleShape : public ConvexPolyhedronShape {
                                                      const Transform& shape1ToWorld, const Transform& shape2ToWorld,
                                                      decimal penetrationDepth, Vector3& outSmoothVertexNormal);
 
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
+
         // ---------- Friendship ---------- //
 
         friend class ConcaveMeshRaycastCallback;
@@ -323,6 +326,12 @@ inline TriangleRaycastSide TriangleShape::getRaycastTestType() const {
  */
 inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
     mRaycastTestType = testType;
+}
+
+// Return the string representation of the shape
+inline std::string TriangleShape::to_string() const {
+    return "TriangleShape {v1=" + mPoints[0].to_string() + ", v2=" + mPoints[1].to_string() + "," +
+            "v3=" + mPoints[2].to_string() + "}";
 }
 
 }

@@ -49,10 +49,10 @@ class Logger {
     public:
 
         /// Log verbosity levels
-        enum class Level {Error = 1, Warning = 2, Info = 4};
+        enum class Level {Error = 1, Warning = 2, Information = 4};
 
         /// Log categories
-        enum class Category {World, Body, Joint};
+        enum class Category {World, Body, Joint, ProxyShape};
 
         /// Log verbosity level
         enum class Format {Text, HTML};
@@ -64,6 +64,7 @@ class Logger {
                 case Category::World: return "World";
                 case Category::Body: return "Body";
                 case Category::Joint: return "Joint";
+                case Category::ProxyShape: return "ProxyShape";
             }
         }
 
@@ -71,7 +72,7 @@ class Logger {
         static std::string getLevelName(Level level) {
 
             switch(level) {
-                case Level::Info: return "Information";
+                case Level::Information: return "Information";
                 case Level::Warning: return "Warning";
                 case Level::Error: return "Error";
             }
@@ -120,6 +121,22 @@ class Logger {
 
                 }
 
+                /// Return the header to write at the beginning of the stream
+                virtual std::string getHeader() const override {
+
+                    // Get current date
+                    auto now = std::chrono::system_clock::now();
+                    auto time = std::chrono::system_clock::to_time_t(now);
+
+                    std::stringstream ss;
+                    ss << "ReactPhysics3D Logs" << std::endl;
+                    ss << "ReactPhysics3D Version: " << RP3D_VERSION << std::endl;
+                    ss << "Date: " << std::put_time(std::localtime(&time), "%Y-%m-%d") << std::endl;
+                    ss << "---------------------------------------------------------" << std::endl;
+
+                    return ss.str();
+                }
+
                 /// Format a log message
                 virtual std::string format(const time_t& time, const std::string& message,
                                            Level level, Category category) override {
@@ -134,8 +151,11 @@ class Logger {
                 /// Return the header to write at the beginning of the stream
                 virtual std::string getHeader() const override {
 
-                    std::stringstream ss;
+                    // Get current date
+                    auto now = std::chrono::system_clock::now();
+                    auto time = std::chrono::system_clock::to_time_t(now);
 
+                    std::stringstream ss;
                     ss << "<!DOCTYPE HTML>" << std::endl;
                     ss << "<html>" << std::endl;
                     ss << "<head>" << std::endl;
@@ -143,6 +163,12 @@ class Logger {
                     ss << "<style>" << generateCSS() << "</style>" << std::endl;
                     ss << "</head>" << std::endl;
                     ss << "<body>" << std::endl;
+                    ss << "<h1>ReactPhysics3D Logs</h1>" << std::endl;
+                    ss << "<div class='general_info'>" << std::endl;
+                    ss << "<p>ReactPhysics3D version: " << RP3D_VERSION << "</p>" << std::endl;
+                    ss << "<p>Date: " << std::put_time(std::localtime(&time), "%Y-%m-%d") << "</p>" << std::endl;
+                    ss << "</div>" << std::endl;
+                    ss << "<hr>";
 
                     return ss.str();
                 }
@@ -161,26 +187,33 @@ class Logger {
             std::string generateCSS() const {
                 return "body {"
                        "  background-color: #f7f7f9;"
+                       "  font-family: SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace; "
                        "} "
                       "body > div { clear:both; } "
                       "body > div > div { float: left; } "
+                      "h1 {"
+                      "  margin: 5px 5px 5px 5px;"
+                      "} "
+                      ".general_info > p {"
+                        "margin: 5px;"
+                        "font-weight: bold;"
+                      "} "
                       ".line { "
-                        "font-family: SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace; "
                         "font-size: 13px; "
                         "color: #212529; "
                         "margin: 0px 5px 2px 5px; "
                       "} "
                       ".time { "
-                         "margin-right: 10px; "
-                         "width:100px; "
+                         "margin-right: 20px; "
+                         "width:80px; "
                       "} "
                       ".level { "
-                         "margin-right: 10px; "
-                         "width: 110px; "
+                         "margin-right: 20px; "
+                         "width: 90px; "
                       "}"
                       ".category { "
-                         "margin-right: 10px; "
-                         "width: 120px; "
+                         "margin-right: 20px; "
+                         "width: 100px; "
                          "font-weight: bold; "
                       "}"
                       ".message { "
@@ -188,20 +221,23 @@ class Logger {
                         "word-wrap: break-word; "
                         "max-width: 800px; "
                       "} "
-                      ".body > .category { "
-                        "color: #007bff; "
+                      ".body > .category, .body > .message { "
+                        "color: #8bc34a;"
                       "} "
-                      ".world > .category { "
+                      ".world > .category, .world > .message { "
                         "color: #4f9fcf; "
                       "} "
-                      ".joint > .category { "
-                        "color: #6c757d; "
+                      ".joint .category, .joint > .message { "
+                        "color: #aa00ff; "
+                      "} "
+                      ".proxyshape .category, .proxyshape > .message { "
+                        "color: #009933; "
                       "} "
                       ".warning { "
-                        "color: #f0ad4e; "
+                        "color: #ff9900 !important; "
                       "} "
                       ".error { "
-                        "color: #d44950; "
+                        "color: red !important; "
                       "} ";
             }
 
@@ -248,7 +284,8 @@ class Logger {
                     ss << "</div>";
 
                     // Message
-                    ss << "<div class='message'>";
+                    ss << "<div class='message " << toLowerCase(getCategoryName(category)) <<
+                          " " + toLowerCase(getLevelName(level)) << "'>" << std::endl;
                     ss << message;
                     ss << "</div>";
 

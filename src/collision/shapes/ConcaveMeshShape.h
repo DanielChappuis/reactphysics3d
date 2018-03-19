@@ -186,6 +186,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
 
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
+
 #ifdef IS_PROFILING_ACTIVE
 
         /// Set the profiler
@@ -276,6 +279,7 @@ inline void ConcaveMeshShape::setProfiler(Profiler* profiler) {
 
     mDynamicAABBTree.setProfiler(profiler);
 }
+
 
 #endif
 

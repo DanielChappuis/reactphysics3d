@@ -123,6 +123,9 @@ class BoxShape : public ConvexPolyhedronShape {
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 // Return the extents of the box
@@ -235,6 +238,11 @@ inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the box
 inline Vector3 BoxShape::getCentroid() const {
     return Vector3::zero();
+}
+
+// Return the string representation of the shape
+inline std::string BoxShape::to_string() const {
+    return "BoxShape {extents=" + mExtent.to_string() + "}";
 }
 
 // Return the number of half-edges of the polyhedron

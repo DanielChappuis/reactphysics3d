@@ -169,6 +169,12 @@ class TriangleVertexArray {
 
         /// Return the indices of the three vertices of a given triangle in the array
         void getTriangleVerticesIndices(uint triangleIndex, uint* outVerticesIndices) const;
+
+        /// Return a vertex of the array
+        void getVertex(uint vertexIndex, Vector3* outVertex);
+
+        /// Return a vertex normal of the array
+        void getNormal(uint vertexIndex, Vector3* outNormal);
 };
 
 // Return the vertex data type
