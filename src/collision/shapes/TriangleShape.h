@@ -127,9 +127,6 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
-
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
@@ -212,16 +209,6 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     min -= Vector3(mMargin, mMargin, mMargin);
     max += Vector3(mMargin, mMargin, mMargin);
-}
-
-// Set the local scaling vector of the collision shape
-inline void TriangleShape::setLocalScaling(const Vector3& scaling) {
-
-    mPoints[0] = (mPoints[0] / mScaling) * scaling;
-    mPoints[1] = (mPoints[1] / mScaling) * scaling;
-    mPoints[2] = (mPoints[2] / mScaling) * scaling;
-
-    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the local inertia tensor of the triangle shape

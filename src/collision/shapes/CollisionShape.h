@@ -68,9 +68,6 @@ class CollisionShape {
 		/// Name of the colision shape
 		CollisionShapeName mName;
 
-        /// Scaling vector of the collision shape
-        Vector3 mScaling;
-
         /// Unique identifier of the shape inside an overlapping pair
         uint mId;
 
@@ -126,9 +123,6 @@ class CollisionShape {
         /// Return the scaling vector of the collision shape
         Vector3 getLocalScaling() const;
 
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
-
         /// Return the id of the shape
         uint getId() const;
 
@@ -168,16 +162,6 @@ inline CollisionShapeName CollisionShape::getName() const {
  */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
-}
-
-// Return the scaling vector of the collision shape
-inline Vector3 CollisionShape::getLocalScaling() const {
-    return mScaling;
-}
-
-// Set the scaling vector of the collision shape
-inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
-    mScaling = scaling;
 }
 
 // Return the id of the shape

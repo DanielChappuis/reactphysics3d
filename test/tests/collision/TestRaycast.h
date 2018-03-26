@@ -1303,7 +1303,6 @@ class TestRaycast : public Test {
             Vector3 point2 = mLocalShapeToWorld * Vector3(1, 2, -4);
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
-            Transform inverse = mLocalShapeToWorld.getInverse();
 
             mCallback.shapeToTest = mConvexMeshProxyShape;
 

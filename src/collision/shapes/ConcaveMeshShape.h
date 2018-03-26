@@ -140,6 +140,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// if the user did not provide its own vertices normals)
         Vector3** mComputedVerticesNormals;
 
+        /// Scaling
+        const Vector3 mScaling;
+
         // -------------------- Methods -------------------- //
 
         /// Raycast method with feedback information
@@ -163,7 +166,7 @@ class ConcaveMeshShape : public ConcaveShape {
     public:
 
         /// Constructor
-        ConcaveMeshShape(TriangleMesh* triangleMesh);
+        ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling = Vector3(1, 1, 1));
 
         /// Destructor
         virtual ~ConcaveMeshShape() = default;
@@ -174,11 +177,11 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Deleted assignment operator
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
+        /// Return the scaling vector
+        const Vector3& getScaling() const;
+
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
-
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
@@ -207,6 +210,11 @@ inline size_t ConcaveMeshShape::getSizeInBytes() const {
     return sizeof(ConcaveMeshShape);
 }
 
+// Return the scaling vector
+inline const Vector3& ConcaveMeshShape::getScaling() const {
+    return mScaling;
+}
+
 // Return the local bounds of the shape in x, y and z directions.
 // This method is used to compute the AABB of the box
 /**
@@ -220,18 +228,6 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     min = treeAABB.getMin();
     max = treeAABB.getMax();
-}
-
-// Set the local scaling vector of the collision shape
-inline void ConcaveMeshShape::setLocalScaling(const Vector3& scaling) {
-
-    CollisionShape::setLocalScaling(scaling);
-
-    // Reset the Dynamic AABB Tree
-    mDynamicAABBTree.reset();
-
-    // Rebuild Dynamic AABB Tree here
-    initBVHTree();
 }
 
 // Return the local inertia tensor of the shape

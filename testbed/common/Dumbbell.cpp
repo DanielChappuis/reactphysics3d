@@ -272,30 +272,3 @@ void Dumbbell::createVBOAndVAO() {
     // Unbind the VAO
     mVAO.unbind();
 }
-
-// Set the scaling of the object
-void Dumbbell::setScaling(const openglframework::Vector3& scaling) {
-
-    // Scale the collision shape
-    rp3d::Vector3 newScaling(scaling.x, scaling.y, scaling.z);
-    mProxyShapeCapsule->setLocalScaling(newScaling);
-    mProxyShapeSphere1->setLocalScaling(newScaling);
-    mProxyShapeSphere2->setLocalScaling(newScaling);
-
-    mDistanceBetweenSphere = (mDistanceBetweenSphere / mScalingMatrix.getValue(1, 1)) * scaling.y;
-
-    // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
-
-    // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
-
-    mProxyShapeSphere1->setLocalToBodyTransform(transformSphereShape1);
-    mProxyShapeSphere2->setLocalToBodyTransform(transformSphereShape2);
-
-    // Scale the graphics object
-    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
-                                              0, scaling.y, 0, 0,
-                                              0, 0, scaling.z, 0,
-                                              0, 0, 0, 1);
-}

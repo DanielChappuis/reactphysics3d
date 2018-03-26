@@ -30,7 +30,7 @@
 #include "ConvexPolyhedronShape.h"
 #include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
-#include "collision/TriangleMesh.h"
+
 #include "collision/PolyhedronMesh.h"
 #include "collision/narrowphase/GJK/GJKAlgorithm.h"
 
@@ -62,6 +62,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Mesh maximum bounds in the three local x, y and z directions
         Vector3 mMaxBounds;
 
+        /// Local scaling
+        const Vector3 mScaling;
+
         // -------------------- Methods -------------------- //
 
         /// Recompute the bounds of the mesh
@@ -84,7 +87,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMeshShape(PolyhedronMesh* polyhedronMesh);
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling = Vector3(1,1,1));
 
         /// Destructor
         virtual ~ConvexMeshShape() override = default;
@@ -95,8 +98,8 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Deleted assignment operator
         ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
+        /// Return the scaling vector
+        const Vector3& getScaling() const;
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
@@ -135,15 +138,14 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual std::string to_string() const override;
 };
 
-/// Set the scaling vector of the collision shape
-inline void ConvexMeshShape::setLocalScaling(const Vector3& scaling) {
-    ConvexShape::setLocalScaling(scaling);
-    recalculateBounds();
-}
-
 // Return the number of bytes used by the collision shape
 inline size_t ConvexMeshShape::getSizeInBytes() const {
     return sizeof(ConvexMeshShape);
+}
+
+// Return the scaling vector
+inline const Vector3& ConvexMeshShape::getScaling() const {
+    return mScaling;
 }
 
 // Return the local bounds of the shape in x, y and z directions

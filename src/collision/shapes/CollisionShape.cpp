@@ -33,7 +33,7 @@ using namespace reactphysics3d;
 
 // Constructor
 CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
-               : mType(type), mName(name), mScaling(1.0, 1.0, 1.0), mId(0) {
+               : mType(type), mName(name), mId(0) {
     
 }
 

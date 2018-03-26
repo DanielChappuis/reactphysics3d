@@ -175,12 +175,6 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
-        /// Return the local scaling vector of the collision shape
-        Vector3 getLocalScaling() const;
-
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
-
         /// Return the broad-phase id
         int getBroadPhaseId() const;
 
@@ -359,35 +353,6 @@ inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBit
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collideWithMaskBits=" +
              std::to_string(mCollideWithMaskBits));
-}
-
-// Return the local scaling vector of the collision shape
-/**
- * @return The local scaling vector
- */
-inline Vector3 ProxyShape::getLocalScaling() const {
-    return mCollisionShape->getLocalScaling();
-}
-
-// Set the local scaling vector of the collision shape
-/**
- * @param scaling The new local scaling vector
- */
-inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
-
-    // TODO : Do not use a local of the collision shape in case of shared collision shapes
-
-    // Set the local scaling of the collision shape
-    mCollisionShape->setLocalScaling(scaling);
-
-    mBody->setIsSleeping(false);
-
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localScaling=" +
-             mCollisionShape->getLocalScaling().to_string());
 }
 
 // Return the broad-phase id

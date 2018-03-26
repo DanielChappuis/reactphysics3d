@@ -41,11 +41,11 @@ using namespace reactphysics3d;
  */
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
-                                   decimal integerHeightScale)
+                                   decimal integerHeightScale, const Vector3& scaling)
                  : ConcaveShape(CollisionShapeName::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
-                   mHeightDataType(dataType) {
+                   mHeightDataType(dataType), mScaling(scaling) {
 
     assert(nbGridColumns >= 2);
     assert(nbGridRows >= 2);

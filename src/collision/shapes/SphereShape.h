@@ -82,9 +82,6 @@ class SphereShape : public ConvexShape {
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
-
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
@@ -109,14 +106,6 @@ inline decimal SphereShape::getRadius() const {
 // Return true if the collision shape is a polyhedron
 inline bool SphereShape::isPolyhedron() const {
         return false;
-}
-
-// Set the scaling vector of the collision shape
-inline void SphereShape::setLocalScaling(const Vector3& scaling) {
-
-    mMargin = (mMargin / mScaling.x) * scaling.x;
-
-    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
