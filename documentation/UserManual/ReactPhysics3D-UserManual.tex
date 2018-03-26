@@ -154,7 +154,7 @@
                                                     In debugging mode, the library might run a bit slow due to all the debugging information.
                                                     However, if this variable is set to \texttt{Release}, no debugging information is stored
                                                     and therefore, it will run much faster. This mode must be used when you compile the final
-                                                    release of you application.
+                                                    release of your application.
 
          \item[COMPILE\_TESTBED] If this variable is \texttt{ON}, the tesbed application of the library will be compiled.
                                                          The testbed application uses OpenGL for rendering.
@@ -163,14 +163,13 @@
          \item[COMPILE\_TESTS] If this variable is \texttt{ON}, the unit tests of the library will be compiled. You will then
                                              be able to launch the tests to make sure that they are running fine on your system.
 
-          TODO : Edit the profiling info bellow
-          \item[PROFILING\_ENABLED] If this variable is \texttt{ON}, the integrated profiler will collect data while the application is running
-                                                      and the profiling report will be displayed in the console at the end of the application (in the
-                                                      destructor of the \texttt{DynamicsWorld} class). This might be useful to see what part of the reactphysics3d
+          \item[PROFILING\_ENABLED] If this variable is \texttt{ON}, the integrated profiler will collect data during the execution of the application.
+                                                      This might be useful to see which part of the ReactPhysics3D
                                                       library takes time during its execution. This variable must be set to \texttt{OFF} when you compile
-                                                      the final release of your application.
+						      the final release of your application. You can find more information about the profiler in section \ref{sec:profiler}.
 
-	TODO : Add info to enable logs here
+         \item[LOGS\_ENABLED] Set this variable to \texttt{ON} if you want to enable the internal logger of ReactPhysics3D. Logs can be useful for debugging the application.
+		              You can find more information about the logger in section \ref{sec:logger}.
 
           \item[DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the library will be compiled with double floating point precision.
                                                                     Otherwise, the library will be compiled with single precision.
@@ -280,12 +279,20 @@ rp3d::CollisionWorld world;
     a \texttt{WorldSettings} object and give it in paramater when you create your world as in the following example: \\
 
     \begin{lstlisting}
-    TODO: ADD CODE HERE
+    // Create the world settings
+    rp3d::WorldSettings settings;
+    settings.nbVelocitySolverIterations = 20;
+    settings.isSleepingEnabled = false;
+
+    // Create the world with your settings
+    rp3d::CollisionWorld world(settings);
     \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Take a look at the API documentation to see which world settings you can change.
+    The settings are copied into the world at its creation. Therefore, changing the values of your \texttt{WorldSettings} instance after the world constructor call
+    will not have any effects. However, some methods are available to change settings after the world creation. You can take a look at the API documentation to see what
+    world settings can be changed.
 
     \subsection{Destroying the Collision World}
 
@@ -397,8 +404,6 @@ world.destroyCollisionBody(body);
     activated by default when you create the world. \\
 
     Here is how to create the dynamics world: \\
-
-    TODO : Update this example with new constructor for CollisionWorld
 
     \begin{lstlisting}
 // Gravity vector
@@ -1763,31 +1768,28 @@ for (; listElem != NULL; listElem = listElem->next) {
 
     The following example shows how to get all the contacts of the world using this method: \\
 
-    TODO : Refactor return type of getContactsList()
-
     \begin{lstlisting}
-std::vector<ContactManifold*> manifolds;
+rp3d::List<const rp3d::ContactManifold*> manifolds;
 
 // Get all the contacts of the world
 manifolds = dynamicsWorld->getContactsList();
-std::vector<ContactManifold*>::iterator it;
+rp3d::List<const rp3d::ContactManifold*>::iterator it;
 
-// For each contact manifold of the body
+// For each contact manifold 
 for (it = manifolds.begin(); it != manifolds.end(); ++it) {
-    ContactManifold* manifold = *it;
+    const rp3d::ContactManifold* manifold = *it;
 
-    // For each contact point of the manifold
-    for (int i=0; i<manifold->getNbContactPoints(); i++) {
+        // For each contact point of the manifold
+        rp3d::ContactPoint* contactPoint = manifold->getContactPoints();
+        while (contactPoint != nullptr) {
 
-        // Get the contact point
-        ContactPoint* point = manifold->getContactPoint(i);
+	    // Retrieve the world contact point and normal
+            rp3d::Vector3 worldPoint = manifold->getShape1()->getLocalToWorldTransform() * contactPoint->getLocalPointOnShape1();
+            rp3d::Vector3 worldNormal = contactPoint->getNormal();
 
-        // Get the world-space contact point on body 1
-        Vector3 pos = point->getWorldPointOnBody1();
-
-        // Get the world-space contact normal
-        Vector3 normal = point->getNormal();
-    }
+	    // Move to the next contact point
+            contactPoint = contactPoint->getNext();
+       }
 }
     \end{lstlisting}
 
@@ -1822,36 +1824,74 @@ world.setEventListener(&listener);
    method will be called when a new contact is found.
 
     \section{Profiler}
-
-    TODO : Update this section
+    \label{sec:profiler}
 
     If you build the library with the \texttt{PROFILING\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}), a real-time profiler will collect information while the application
     is running. Then, at the end of your application, when the destructor of the \texttt{DynamicsWorld} class is called, information about the running time of the library will be displayed in the
-    standard output. This can be useful to know where time is spent in the different parts of the ReactPhysics3D library in case your application is too slow.
+    standard output. This can be useful to know where time is spent in the different parts of the ReactPhysics3D library in case your application is too slow. \\
+
+    Each collision or dynamics world has its own profiler. By default, the profiling report wil be written in a text file next to the executable.
+    If you have multiple worlds in your application, there will be one profile file for each world. The profile files will be named after the
+    name of the worlds. By defaults worlds will have names: world, world1, world2, world3, \dots You can change the name of the world by
+    setting it into the \texttt{WorldSettings} object when you create the world (see section \ref{sec:collisionworld}). \\
+
+    It is also possible to output the profiling report to another destination. To do this,
+    you have to create your own profiler object before the creation of the physics world. You will then be able to add one or more profile destinations
+    to the profiler. A destination can be either a file or an output stream (\texttt{std::ostream}) of your choice. For each destination, you also
+    have to select the output format of the profiling report. When this is done, you have to give the pointer to your profiler object in paramater
+    when you create the world. \\
+
+    The following example shows how to create your own profiler object and add a file destination (custom\_profile.txt) and a stream destination (std::cout): \\
+
+    \begin{lstlisting}
+// Create the profiler
+rp3d::Profiler* profiler = new rp3d::Profiler();
+
+// Add a log destination file
+profiler->addFileDestination("custom\_profile.txt", Profiler::Format::Text);
+
+// Add an output stream destination 
+profiler->addStreamDestination(std::cout, Profiler::Format::Text);
+
+// Create the physics world with your profiler
+rp3d::CollisionWorld world(rp3d::WorldSettings(), nullptr, profiler);
+    \end{lstlisting}
 
     \section{Logger}
-
-    TODO : Update this section
+    \label{sec:logger}
 
     ReactPhysics3D has an internal logger that can be used to output logs while running the application. This can be useful for debugging for instance.
-    To enable the logger, you need to build the library with the ????.
+    To enable the logger, you need to build the library with the \texttt{LOGS\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}). \\
 
     Each collision or dynamics world has its own logger. By default, logs wil be written in an HTML file next to the executable.
     If you have multiple worlds in your application, there will be one log file for each world. The logs files will be named after the
     name of the worlds. By defaults worlds will have names: world, world1, world2, world3, \dots You can change the name of the world by
     setting it into the \texttt{WorldSettings} object when you create the world (see section \ref{sec:collisionworld}). \\
 
-    It is also possible to output the logs at another destination. To do this,
-    you have to create your own logger object before the creation of the physics world. You will then be able to add one or more logs destination
+    It is also possible to output the logs to another destination. To do this,
+    you have to create your own logger object before the creation of the physics world. You will then be able to add one or more logs destinations
     to the logger. A destination can be either a file or an output stream (\texttt{std::ostream}) of your choice. For each destination, you also
     have to select the output format of the logs (text or HTML). When this is done, you have to give the pointer to your logger object in paramater
     when you create the world. \\
 
-    The following example shows how to create your own logger object and add a file destination (custom_log.html) and a stream destination (std::cout): \\
+    The following example shows how to create your own logger object and add a file destination (custom\_log.html) and a stream destination (std::cout): \\
 
     \begin{lstlisting}
- 
-    TODO: CREATE CODE HERE
+// Create the logger
+rp3d::Logger* logger = new rp3d::Logger();
+
+// Log level (infor, warning and error
+uint logLevel = static\_cast<uint>(Logger::Level::Info) | static\_cast<uint>(Logger::Level::Warning) |
+static\_cast<uint>(Logger::Level::Error);
+
+// Add a log destination file
+logger->addFileDestination("custom\_log.html", logLevel, Logger::Format::HTML);
+
+// Add an output stream destination 
+logger->addStreamDestination(std::cout, logLevel, Logger::Format::Text);
+
+// Create the physics world with your logger
+rp3d::CollisionWorld world(rp3d::WorldSettings(), logger);
     \end{lstlisting}
 
    \vspace{0.6cm}
