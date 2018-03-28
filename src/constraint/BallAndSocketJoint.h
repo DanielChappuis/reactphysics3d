@@ -133,6 +133,9 @@ class BallAndSocketJoint : public Joint {
         /// Deleted copy-constructor
         BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;
 
+        /// Return a string representation
+        virtual std::string to_string() const override;
+
         /// Deleted assignment operator
         BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint) = delete;
 };
@@ -140,6 +143,12 @@ class BallAndSocketJoint : public Joint {
 // Return the number of bytes used by the joint
 inline size_t BallAndSocketJoint::getSizeInBytes() const {
     return sizeof(BallAndSocketJoint);
+}
+
+// Return a string representation
+inline std::string BallAndSocketJoint::to_string() const {
+    return "BallAndSocketJoint{ localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() +
+            ", localAnchorPointBody2=" + mLocalAnchorPointBody2.to_string() + "}";
 }
 
 }

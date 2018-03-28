@@ -175,7 +175,7 @@ inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* 
 
 // Return the string representation of the shape
 inline std::string SphereShape::to_string() const {
-    return "SphereShape { radius=" + std::to_string(getRadius()) + "}";
+    return "SphereShape{radius=" + std::to_string(getRadius()) + "}";
 }
 
 }

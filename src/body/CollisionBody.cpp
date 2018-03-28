@@ -109,6 +109,10 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
+             proxyShape->getCollisionShape()->to_string());
+
     // Return a pointer to the collision shape
     return proxyShape;
 }

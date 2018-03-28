@@ -548,11 +548,13 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     // Add the joint into the world
     mJoints.add(newJoint);
 
-    // Add the joint into the joint list of the bodies involved in the joint
-    addJointToBody(newJoint);
-
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getId()) + ": New joint created");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+             "Joint " + std::to_string(newJoint->getId()) + ": " + newJoint->to_string());
+
+    // Add the joint into the joint list of the bodies involved in the joint
+    addJointToBody(newJoint);
 
     // Return the pointer to the created joint
     return newJoint;
@@ -614,12 +616,20 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
                                                                      joint->mBody1->mJointsList);
     joint->mBody1->mJointsList = jointListElement1;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(joint->mBody1->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             " added to body");
+
     // Add the joint at the beginning of the linked list of joints of the second body
     void* allocatedMemory2 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                      sizeof(JointListElement));
     JointListElement* jointListElement2 = new (allocatedMemory2) JointListElement(joint,
                                                                      joint->mBody2->mJointsList);
     joint->mBody2->mJointsList = jointListElement2;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(joint->mBody2->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             " added to body");
 }
 
 // Return the next available joint Id

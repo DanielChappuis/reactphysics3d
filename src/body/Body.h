@@ -218,11 +218,14 @@ inline void Body::setIsSleeping(bool isSleeping) {
         }
     }
 
-    mIsSleeping = isSleeping;
+    if (mIsSleeping != isSleeping) {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+        mIsSleeping = isSleeping;
+
+        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set isSleeping=" +
              (mIsSleeping ? "true" : "false"));
+    }
 }
 
 // Return a pointer to the user data attached to this body

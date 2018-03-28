@@ -41,9 +41,9 @@ SliderJoint::SliderJoint(uint id, const SliderJointInfo& jointInfo)
               mIsUpperLimitViolated(false), mMotorSpeed(jointInfo.motorSpeed),
               mMaxMotorForce(jointInfo.maxMotorForce){
 
-    assert(mUpperLimit >= 0.0);
-    assert(mLowerLimit <= 0.0);
-    assert(mMaxMotorForce >= 0.0);
+    assert(mUpperLimit >= decimal(0.0));
+    assert(mLowerLimit <= decimal(0.0));
+    assert(mMaxMotorForce >= decimal(0.0));
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();

@@ -178,7 +178,7 @@ inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& di
 
 // Return the string representation of the shape
 inline std::string CapsuleShape::to_string() const {
-    return "CapsuleShape {halfHeight=" + std::to_string(mHalfHeight) + ", radius=" + std::to_string(getRadius()) + "}";
+    return "CapsuleShape{halfHeight=" + std::to_string(mHalfHeight) + ", radius=" + std::to_string(getRadius()) + "}";
 }
 
 }

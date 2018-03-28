@@ -35,6 +35,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <mutex>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -140,7 +141,21 @@ class Logger {
                 /// Format a log message
                 virtual std::string format(const time_t& time, const std::string& message,
                                            Level level, Category category) override {
-                    return message;
+                    std::stringstream ss;
+
+                    // Time
+                    ss << std::put_time(std::localtime(&time), "%X") << " ";
+
+                    // Level
+                    ss << getLevelName(level) << " ";
+
+                    // Category
+                    ss << getCategoryName(category) << " ";
+
+                    // Message
+                    ss << message << std::endl;
+
+                    return ss.str();
                 }
         };
 
@@ -186,7 +201,7 @@ class Logger {
 
             std::string generateCSS() const {
                 return "body {"
-                       "  background-color: #f7f7f9;"
+                       "  background-color: #e6e6e6;"
                        "  font-family: SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace; "
                        "} "
                       "body > div { clear:both; } "
@@ -222,16 +237,16 @@ class Logger {
                         "max-width: 800px; "
                       "} "
                       ".body > .category, .body > .message { "
-                        "color: #8bc34a;"
+                        "color: #00994d;"
                       "} "
                       ".world > .category, .world > .message { "
-                        "color: #4f9fcf; "
+                        "color: #3477DB; "
                       "} "
                       ".joint .category, .joint > .message { "
-                        "color: #aa00ff; "
+                        "color: #bf8040; "
                       "} "
                       ".proxyshape .category, .proxyshape > .message { "
-                        "color: #009933; "
+                        "color: #9933ff; "
                       "} "
                       ".warning { "
                         "color: #ff9900 !important; "
@@ -392,8 +407,7 @@ class Logger {
 
                 /// Write a message into the output stream
                 virtual void write(const time_t& time, const std::string& message, Level level, Category category) override {
-                    mOutputStream << std::put_time(std::localtime(&time), "%Y-%m-%d %X") << ": ";
-                    mOutputStream << message << std::endl << std::flush;
+                    mOutputStream << formatter->format(time, message, level, category) << std::endl << std::flush;
                 }
         };
 
@@ -407,6 +421,9 @@ class Logger {
 
         /// Map a log format to the given formatter object
         Map<Format, Formatter*> mFormatters;
+
+        /// Mutex
+        std::mutex mMutex;
 
         // -------------------- Methods -------------------- //
 

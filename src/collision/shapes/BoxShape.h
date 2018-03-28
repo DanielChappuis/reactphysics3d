@@ -231,7 +231,7 @@ inline Vector3 BoxShape::getCentroid() const {
 
 // Return the string representation of the shape
 inline std::string BoxShape::to_string() const {
-    return "BoxShape {extents=" + mExtent.to_string() + "}";
+    return "BoxShape{extents=" + mExtent.to_string() + "}";
 }
 
 // Return the number of half-edges of the polyhedron

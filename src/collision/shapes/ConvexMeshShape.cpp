@@ -206,7 +206,7 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* pro
 std::string ConvexMeshShape::to_string() const {
 
     std::stringstream ss;
-    ss << "ConvexMeshShape {" << std::endl;
+    ss << "ConvexMeshShape{" << std::endl;
     ss << "nbVertices=" << mPolyhedronMesh->getNbVertices() << std::endl;
     ss << "nbFaces=" << mPolyhedronMesh->getNbFaces() << std::endl;
 

@@ -221,7 +221,7 @@ std::string ConcaveMeshShape::to_string() const {
 
     std::stringstream ss;
 
-    ss << "ConcaveMeshShape {" << std::endl;
+    ss << "ConcaveMeshShape{" << std::endl;
     ss << "nbSubparts=" << mTriangleMesh->getNbSubparts() << std::endl;
 
     // Vertices array

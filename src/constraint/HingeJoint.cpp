@@ -42,8 +42,8 @@ HingeJoint::HingeJoint(uint id, const HingeJointInfo& jointInfo)
              mIsLowerLimitViolated(false), mIsUpperLimitViolated(false),
              mMotorSpeed(jointInfo.motorSpeed), mMaxMotorTorque(jointInfo.maxMotorTorque) {
 
-    assert(mLowerLimit <= 0 && mLowerLimit >= -2.0 * PI);
-    assert(mUpperLimit >= 0 && mUpperLimit <= 2.0 * PI);
+    assert(mLowerLimit <= decimal(0) && mLowerLimit >= decimal(-2.0) * PI);
+    assert(mUpperLimit >= decimal(0) && mUpperLimit <= decimal(2.0) * PI);
 
     // Compute the local-space anchor point for each body
     Transform transform1 = mBody1->getTransform();

@@ -204,6 +204,9 @@ class Joint {
         /// Return the id of the joint
         uint getId() const;
 
+        /// Return a string representation
+        virtual std::string to_string() const=0;
+
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;

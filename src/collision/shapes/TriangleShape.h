@@ -317,7 +317,7 @@ inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
 
 // Return the string representation of the shape
 inline std::string TriangleShape::to_string() const {
-    return "TriangleShape {v1=" + mPoints[0].to_string() + ", v2=" + mPoints[1].to_string() + "," +
+    return "TriangleShape{v1=" + mPoints[0].to_string() + ", v2=" + mPoints[1].to_string() + "," +
             "v3=" + mPoints[2].to_string() + "}";
 }
 
