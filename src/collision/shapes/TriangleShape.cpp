@@ -27,7 +27,7 @@
 #include "TriangleShape.h"
 #include "collision/ProxyShape.h"
 #include "mathematics/mathematics_functions.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 #include "configuration.h"
 #include <cassert>
 
@@ -213,7 +213,7 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
 /// Real-time Collision Detection by Christer Ericson.
 bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
-    PROFILE("TriangleShape::raycast()", mProfiler);
+    RP3D_PROFILE("TriangleShape::raycast()", mProfiler);
 
     const Vector3 pq = ray.point2 - ray.point1;
     const Vector3 pa = mPoints[0] - ray.point1;

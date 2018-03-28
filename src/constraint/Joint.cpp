@@ -29,8 +29,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(const JointInfo& jointInfo)
-           :mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
+Joint::Joint(uint id, const JointInfo& jointInfo)
+           :mId(id), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
             mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
             mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 

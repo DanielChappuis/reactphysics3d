@@ -29,6 +29,7 @@
 
 // Libraries
 #include <cassert>
+#include <string>
 #include "Vector3.h"
 
 /// ReactPhysics3D namespace
@@ -153,6 +154,9 @@ class Matrix3x3 {
 
         /// Overloaded operator to read/write element of the matrix.
         Vector3& operator[](int row);
+
+        /// Return the string representation
+        std::string to_string() const;
 };
 
 // Constructor of the class Matrix3x3
@@ -390,6 +394,13 @@ inline const Vector3& Matrix3x3::operator[](int row) const {
 /// matrix[row][col].
 inline Vector3& Matrix3x3::operator[](int row) {
     return mRows[row];
+}
+
+// Get the string representation
+inline std::string Matrix3x3::to_string() const {
+    return "Matrix3x3(" + std::to_string(mRows[0][0]) + "," + std::to_string(mRows[0][1]) + "," + std::to_string(mRows[0][2]) + "," +
+           std::to_string(mRows[1][0]) + "," + std::to_string(mRows[1][1]) + "," + std::to_string(mRows[1][2]) + "," +
+           std::to_string(mRows[2][0]) + "," + std::to_string(mRows[2][1]) + "," + std::to_string(mRows[2][2]) + ")";
 }
 
 }

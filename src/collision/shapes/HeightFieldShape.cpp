@@ -41,11 +41,11 @@ using namespace reactphysics3d;
  */
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
-                                   decimal integerHeightScale)
+                                   decimal integerHeightScale, const Vector3& scaling)
                  : ConcaveShape(CollisionShapeName::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
-                   mHeightDataType(dataType) {
+                   mHeightDataType(dataType), mScaling(scaling) {
 
     assert(nbGridColumns >= 2);
     assert(nbGridRows >= 2);
@@ -217,7 +217,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
-    PROFILE("HeightFieldShape::raycast()", mProfiler);
+    RP3D_PROFILE("HeightFieldShape::raycast()", mProfiler);
 
     TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this, allocator);
 
@@ -296,4 +296,24 @@ void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const 
         mSmallestHitFraction = raycastInfo.hitFraction;
         mIsHit = true;
     }
+}
+
+// Return the string representation of the shape
+std::string HeightFieldShape::to_string() const {
+
+    std::stringstream ss;
+
+    ss << "HeightFieldShape{" << std::endl;
+
+    ss << "nbColumns=" << mNbColumns << std::endl;
+    ss << ", nbRows=" << mNbRows << std::endl;
+    ss << ", width=" << mWidth << std::endl;
+    ss << ", length=" << mLength << std::endl;
+    ss << ", minHeight=" << mMinHeight << std::endl;
+    ss << ", maxHeight=" << mMaxHeight << std::endl;
+    ss << ", upAxis=" << mUpAxis << std::endl;
+    ss << ", integerHeightScale=" << mIntegerHeightScale << std::endl;
+    ss << "}";
+
+    return ss.str();
 }

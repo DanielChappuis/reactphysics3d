@@ -30,7 +30,8 @@
 #include <algorithm>
 #include "mathematics/mathematics.h"
 #include "containers/List.h"
-#include "Profiler.h"
+#include "utils/Profiler.h"
+#include "utils/Logger.h"
 #include "body/CollisionBody.h"
 #include "collision/RaycastInfo.h"
 #include "OverlappingPair.h"
@@ -71,25 +72,43 @@ class CollisionWorld {
         /// All the bodies (rigid and soft) of the world
         List<CollisionBody*> mBodies;
 
-        /// Current body ID
-        bodyindex mCurrentBodyID;
+        /// Current body id
+        bodyindex mCurrentBodyId;
 
-        /// List of free ID for rigid bodies
-        List<luint> mFreeBodiesIDs;
+        /// List of free ids for rigid bodies
+        List<luint> mFreeBodiesIds;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
 
+        /// Name of the collision world
+        std::string mName;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Real-time hierarchical profiler
-		Profiler mProfiler;
+        Profiler* mProfiler;
 #endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
+
+        /// True if the profiler has been created by the user
+        bool mIsProfilerCreatedByUser;
+
+        /// True if the logger has been created by the user
+        bool mIsLoggerCreatedByUser;
+
+        /// Total number of worlds
+        static uint mNbWorlds;
 
         // -------------------- Methods -------------------- //
 
-        /// Return the next available body ID
-        bodyindex computeNextAvailableBodyID();
+        /// Return the next available body id
+        bodyindex computeNextAvailableBodyId();
 
         /// Reset all the contact manifolds linked list of each body
         void resetContactManifoldListsOfBodies();
@@ -99,7 +118,8 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionWorld(const WorldSettings& worldSettings = WorldSettings());
+        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
+                       Profiler* profiler = nullptr);
 
         /// Destructor
         virtual ~CollisionWorld();
@@ -147,12 +167,23 @@ class CollisionWorld {
 
 #ifdef IS_PROFILING_ACTIVE
 
-		/// Set the name of the profiler
-		void setProfilerName(std::string name);
+        /// Return a reference to the profiler
+        Profiler* getProfiler();
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Return a reference to the logger
+        Logger* getLogger();
+
 #endif
 
         /// Return the current world-space AABB of given proxy shape
         AABB getWorldAABB(const ProxyShape* proxyShape) const;
+
+        /// Return the name of the world
+        const std::string& getName() const;
 
         // -------------------- Friendship -------------------- //
 
@@ -224,11 +255,25 @@ inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* ov
     mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
 }
 
+// Return the name of the world
+inline const std::string& CollisionWorld::getName() const {
+    return mName;
+}
+
 #ifdef IS_PROFILING_ACTIVE
 
-// Set the name of the profiler
-inline void CollisionWorld::setProfilerName(std::string name) {
-	mProfiler.setName(name);
+// Return a pointer to the profiler
+inline Profiler* CollisionWorld::getProfiler() {
+    return mProfiler;
+}
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Return a pointer to the logger
+inline Logger* CollisionWorld::getLogger() {
+    return mLogger;
 }
 
 #endif

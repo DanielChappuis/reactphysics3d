@@ -248,12 +248,12 @@ inline void OverlappingPair::makeContactsObsolete() {
 
 // Return the pair of bodies index
 inline OverlappingPair::OverlappingPairId OverlappingPair::computeID(ProxyShape* shape1, ProxyShape* shape2) {
-    assert(shape1->mBroadPhaseID >= 0 && shape2->mBroadPhaseID >= 0);
+    assert(shape1->getBroadPhaseId() >= 0 && shape2->getBroadPhaseId() >= 0);
 
     // Construct the pair of body index
-    OverlappingPairId pairID = shape1->mBroadPhaseID < shape2->mBroadPhaseID ?
-                             OverlappingPairId(shape1->mBroadPhaseID, shape2->mBroadPhaseID) :
-                             OverlappingPairId(shape2->mBroadPhaseID, shape1->mBroadPhaseID);
+    OverlappingPairId pairID = shape1->getBroadPhaseId() < shape2->getBroadPhaseId() ?
+                             OverlappingPairId(shape1->getBroadPhaseId(), shape2->getBroadPhaseId()) :
+                             OverlappingPairId(shape2->getBroadPhaseId(), shape1->getBroadPhaseId());
     assert(pairID.first != pairID.second);
     return pairID;
 }
@@ -263,9 +263,9 @@ inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body
                                                              CollisionBody* body2) {
 
     // Construct the pair of body index
-    bodyindexpair indexPair = body1->getID() < body2->getID() ?
-                                 bodyindexpair(body1->getID(), body2->getID()) :
-                                 bodyindexpair(body2->getID(), body1->getID());
+    bodyindexpair indexPair = body1->getId() < body2->getId() ?
+                                 bodyindexpair(body1->getId(), body2->getId()) :
+                                 bodyindexpair(body2->getId(), body1->getId());
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }

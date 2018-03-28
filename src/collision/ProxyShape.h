@@ -93,6 +93,12 @@ class ProxyShape {
 
 #endif
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
+
 		// -------------------- Methods -------------------- //
 
 		/// Return the collision shape
@@ -169,17 +175,20 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
-        /// Return the local scaling vector of the collision shape
-        Vector3 getLocalScaling() const;
-
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        /// Return the broad-phase id
+        int getBroadPhaseId() const;
 
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
 
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
 #endif
 
         // -------------------- Friendship -------------------- //
@@ -265,6 +274,10 @@ inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localToBodyTransform=" +
+             mLocalToBodyTransform.to_string());
 }
 
 // Return the local to world transform
@@ -316,6 +329,10 @@ inline unsigned short ProxyShape::getCollisionCategoryBits() const {
  */
 inline void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
     mCollisionCategoryBits = collisionCategoryBits;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collisionCategoryBits=" +
+             std::to_string(mCollisionCategoryBits));
 }
 
 // Return the collision bits mask
@@ -332,29 +349,15 @@ inline unsigned short ProxyShape::getCollideWithMaskBits() const {
  */
 inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     mCollideWithMaskBits = collideWithMaskBits;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collideWithMaskBits=" +
+             std::to_string(mCollideWithMaskBits));
 }
 
-// Return the local scaling vector of the collision shape
-/**
- * @return The local scaling vector
- */
-inline Vector3 ProxyShape::getLocalScaling() const {
-    return mCollisionShape->getLocalScaling();
-}
-
-// Set the local scaling vector of the collision shape
-/**
- * @param scaling The new local scaling vector
- */
-inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
-
-    // Set the local scaling of the collision shape
-    mCollisionShape->setLocalScaling(scaling);
-
-    mBody->setIsSleeping(false);
-
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
+// Return the broad-phase id
+inline int ProxyShape::getBroadPhaseId() const {
+    return mBroadPhaseID;
 }
 
 /// Test if the proxy shape overlaps with a given AABB
@@ -374,6 +377,16 @@ inline void ProxyShape::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 
 	mCollisionShape->setProfiler(profiler);
+}
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void ProxyShape::setLogger(Logger* logger) {
+
+   mLogger = logger;
 }
 
 #endif

@@ -26,7 +26,7 @@
 // Libraries
 #include "BroadPhaseAlgorithm.h"
 #include "collision/CollisionDetection.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -140,7 +140,7 @@ void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
 // Add a proxy collision shape into the broad-phase collision detection
 void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
-    assert(proxyShape->mBroadPhaseID == -1);
+    assert(proxyShape->getBroadPhaseId() == -1);
 
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
@@ -150,15 +150,15 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
-    addMovedCollisionShape(proxyShape->mBroadPhaseID);
+    addMovedCollisionShape(proxyShape->getBroadPhaseId());
 }
 
 // Remove a proxy collision shape from the broad-phase collision detection
 void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
-    assert(proxyShape->mBroadPhaseID != -1);
+    assert(proxyShape->getBroadPhaseId() != -1);
 
-    int broadPhaseID = proxyShape->mBroadPhaseID;
+    int broadPhaseID = proxyShape->getBroadPhaseId();
 
     proxyShape->mBroadPhaseID = -1;
 
@@ -174,7 +174,7 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
                                                     const Vector3& displacement, bool forceReinsert) {
 
-    int broadPhaseID = proxyShape->mBroadPhaseID;
+    int broadPhaseID = proxyShape->getBroadPhaseId();
 
     assert(broadPhaseID >= 0);
 
@@ -257,7 +257,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
         ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape2ID));
 
         // If the two proxy collision shapes are from the same body, skip it
-        if (shape1->getBody()->getID() != shape2->getBody()->getID()) {
+        if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
 
             // Notify the collision detection about the overlapping pair
             mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);

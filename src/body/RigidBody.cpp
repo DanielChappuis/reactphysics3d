@@ -139,6 +139,9 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
 }
 
 // Set the inverse local inertia tensor of the body (in local-space coordinates)
@@ -160,6 +163,9 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
@@ -183,6 +189,9 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
 }
 
 // Set the mass of the rigid body
@@ -202,6 +211,9 @@ void RigidBody::setMass(decimal mass) {
         mInitMass = decimal(1.0);
         mMassInverse = decimal(1.0);
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set mass=" + std::to_string(mass));
 }
 
 // Remove a joint from the joints list
@@ -266,6 +278,13 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
 #endif
 
+#ifdef IS_LOGGING_ACTIVE
+
+    // Set the logger
+    proxyShape->setLogger(mLogger);
+
+#endif
+
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
@@ -287,6 +306,13 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // Recompute the center of mass, total mass and inertia tensor of the body with the new
     // collision shape
     recomputeMassInformation();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
+             proxyShape->getCollisionShape()->to_string());
 
     // Return a pointer to the proxy collision shape
     return proxyShape;
@@ -324,6 +350,9 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set linearVelocity=" + mLinearVelocity.to_string());
 }
 
 // Set the angular velocity.
@@ -342,6 +371,9 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set angularVelocity=" + mAngularVelocity.to_string());
 }
 
 // Set the current position and orientation
@@ -367,6 +399,9 @@ void RigidBody::setTransform(const Transform& transform) {
 
     // Update the broad-phase state of the body
     updateBroadPhaseState();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all
@@ -459,7 +494,7 @@ void RigidBody::recomputeMassInformation() {
 // Update the broad-phase state for this body (because it has moved for instance)
 void RigidBody::updateBroadPhaseState() const {
 
-    PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
+    RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
 
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
@@ -469,7 +504,7 @@ void RigidBody::updateBroadPhaseState() const {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform *shape->getLocalToBodyTransform());
+        shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
 
         // Update the broad-phase state for the proxy collision shape
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
@@ -494,4 +529,3 @@ void RigidBody::setProfiler(Profiler* profiler) {
 }
 
 #endif
-

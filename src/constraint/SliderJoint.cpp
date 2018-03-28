@@ -32,8 +32,8 @@ using namespace reactphysics3d;
 const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
-SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
-            : Joint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
+SliderJoint::SliderJoint(uint id, const SliderJointInfo& jointInfo)
+            : Joint(id, jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
               mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
               mLowerLimit(jointInfo.minTranslationLimit),
@@ -41,9 +41,9 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
               mIsUpperLimitViolated(false), mMotorSpeed(jointInfo.motorSpeed),
               mMaxMotorForce(jointInfo.maxMotorForce){
 
-    assert(mUpperLimit >= 0.0);
-    assert(mLowerLimit <= 0.0);
-    assert(mMaxMotorForce >= 0.0);
+    assert(mUpperLimit >= decimal(0.0));
+    assert(mLowerLimit <= decimal(0.0));
+    assert(mMaxMotorForce >= decimal(0.0));
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();

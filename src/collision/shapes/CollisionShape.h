@@ -35,7 +35,7 @@
 #include "AABB.h"
 #include "collision/RaycastInfo.h"
 #include "memory/PoolAllocator.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -67,9 +67,6 @@ class CollisionShape {
 
 		/// Name of the colision shape
 		CollisionShapeName mName;
-
-        /// Scaling vector of the collision shape
-        Vector3 mScaling;
 
         /// Unique identifier of the shape inside an overlapping pair
         uint mId;
@@ -126,9 +123,6 @@ class CollisionShape {
         /// Return the scaling vector of the collision shape
         Vector3 getLocalScaling() const;
 
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
-
         /// Return the id of the shape
         uint getId() const;
 
@@ -137,6 +131,9 @@ class CollisionShape {
 
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const=0;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -165,16 +162,6 @@ inline CollisionShapeName CollisionShape::getName() const {
  */
 inline CollisionShapeType CollisionShape::getType() const {
     return mType;
-}
-
-// Return the scaling vector of the collision shape
-inline Vector3 CollisionShape::getLocalScaling() const {
-    return mScaling;
-}
-
-// Set the scaling vector of the collision shape
-inline void CollisionShape::setLocalScaling(const Vector3& scaling) {
-    mScaling = scaling;
 }
 
 // Return the id of the shape

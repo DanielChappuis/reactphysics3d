@@ -120,6 +120,9 @@ class Joint {
 
         // -------------------- Attributes -------------------- //
 
+        /// Id of the joint
+        uint mId;
+
         /// Pointer to the first body of the joint
         RigidBody* const mBody1;
 
@@ -143,6 +146,9 @@ class Joint {
 
         /// True if the joint has already been added into an island
         bool mIsAlreadyInIsland;
+
+        /// Total number of joints
+        static uint mNbTotalNbJoints;
 
         // -------------------- Methods -------------------- //
 
@@ -169,7 +175,7 @@ class Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(const JointInfo& jointInfo);
+        Joint(uint id, const JointInfo& jointInfo);
 
         /// Destructor
         virtual ~Joint() = default;
@@ -194,6 +200,12 @@ class Joint {
 
         /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
+
+        /// Return the id of the joint
+        uint getId() const;
+
+        /// Return a string representation
+        virtual std::string to_string() const=0;
 
         // -------------------- Friendship -------------------- //
 
@@ -241,6 +253,14 @@ inline JointType Joint::getType() const {
  */
 inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
+}
+
+// Return the id of the joint
+/**
+ * @return The id of the joint
+ */
+inline uint Joint::getId() const {
+    return mId;
 }
 
 // Return true if the joint has already been added into an island

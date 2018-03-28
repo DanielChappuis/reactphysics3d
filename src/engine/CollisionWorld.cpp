@@ -26,32 +26,103 @@
 // Libraries
 #include "CollisionWorld.h"
 #include <algorithm>
+#include <sstream>
 
 // Namespaces
 using namespace reactphysics3d;
 using namespace std;
 
+// Initialization of static fields
+uint CollisionWorld::mNbWorlds = 0;
+
 // Constructor
-CollisionWorld::CollisionWorld(const WorldSettings& worldSettings)
-               : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyID(0),
-                 mFreeBodiesIDs(mMemoryManager.getPoolAllocator()), mEventListener(nullptr) {
+CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
+               : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
+                 mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
+                 mProfiler(profiler), mLogger(logger), mIsProfilerCreatedByUser(profiler != nullptr),
+                 mIsLoggerCreatedByUser(logger != nullptr) {
+
+    // Automatically generate a name for the world
+    if (mName == "") {
+
+        std::stringstream ss;
+        ss << "world";
+
+        if (mNbWorlds > 0) {
+            ss << mNbWorlds;
+        }
+
+        mName = ss.str();
+    }
 
 #ifdef IS_PROFILING_ACTIVE
 
-	// Set the profiler
-	mCollisionDetection.setProfiler(&mProfiler);
+    // If the user has not provided its own profiler, we create one
+    if (mProfiler == nullptr) {
+
+       mProfiler = new Profiler();
+
+        // Add a destination file for the profiling data
+        mProfiler->addFileDestination("rp3d_profiling_" + mName + ".txt", Profiler::Format::Text);
+    }
+
+
+    // Set the profiler
+    mCollisionDetection.setProfiler(mProfiler);
 
 #endif
 
+#ifdef IS_LOGGING_ACTIVE
+
+    // If the user has not provided its own logger, we create one
+    if (mLogger == nullptr) {
+
+       mLogger = new Logger();
+
+        // Add a log destination file
+        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
+                static_cast<uint>(Logger::Level::Error);
+        mLogger->addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
+    }
+
+#endif
+
+    mNbWorlds++;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Collision World: Collision world " + mName + " has been created");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Collision World: Initial world settings: " + worldSettings.to_string());
 }
 
 // Destructor
 CollisionWorld::~CollisionWorld() {
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Collision World: Collision world " + mName + " has been destroyed");
+
     // Destroy all the collision bodies that have not been removed
     for (int i=mBodies.size() - 1 ; i >= 0; i--) {
         destroyCollisionBody(mBodies[i]);
     }
+
+#ifdef IS_PROFILING_ACTIVE
+
+    /// Delete the profiler
+    if (!mIsProfilerCreatedByUser) {
+        delete mProfiler;
+    }
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+    /// Delete the logger
+    if (!mIsLoggerCreatedByUser) {
+        delete mLogger;
+    }
+
+#endif
 
     assert(mBodies.size() == 0);
 }
@@ -64,7 +135,7 @@ CollisionWorld::~CollisionWorld() {
 CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
     // Get the next available body ID
-    bodyindex bodyID = computeNextAvailableBodyID();
+    bodyindex bodyID = computeNextAvailableBodyId();
 
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
@@ -81,9 +152,16 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
 #ifdef IS_PROFILING_ACTIVE
 
-	collisionBody->setProfiler(&mProfiler);
+    collisionBody->setProfiler(mProfiler);
 
 #endif
+
+#ifdef IS_LOGGING_ACTIVE
+   collisionBody->setLogger(mLogger);
+#endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(bodyID) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -95,11 +173,14 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
  */
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(collisionBody->getId()) + ": collision body destroyed");
+
     // Remove all the collision shapes of the body
     collisionBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
-    mFreeBodiesIDs.add(collisionBody->getID());
+    mFreeBodiesIds.add(collisionBody->getId());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
@@ -112,17 +193,17 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 }
 
 // Return the next available body ID
-bodyindex CollisionWorld::computeNextAvailableBodyID() {
+bodyindex CollisionWorld::computeNextAvailableBodyId() {
 
     // Compute the body ID
     bodyindex bodyID;
-    if (mFreeBodiesIDs.size() != 0) {
-        bodyID = mFreeBodiesIDs[mFreeBodiesIDs.size() - 1];
-        mFreeBodiesIDs.removeAt(mFreeBodiesIDs.size() - 1);
+    if (mFreeBodiesIds.size() != 0) {
+        bodyID = mFreeBodiesIds[mFreeBodiesIds.size() - 1];
+        mFreeBodiesIds.removeAt(mFreeBodiesIds.size() - 1);
     }
     else {
-        bodyID = mCurrentBodyID;
-        mCurrentBodyID++;
+        bodyID = mCurrentBodyId;
+        mCurrentBodyId++;
     }
 
     return bodyID;
@@ -178,7 +259,7 @@ bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
 // Return the current world-space AABB of given proxy shape
 AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
 
-    if (proxyShape->mBroadPhaseID == -1) {
+    if (proxyShape->getBroadPhaseId() == -1) {
         return AABB();
     }
 

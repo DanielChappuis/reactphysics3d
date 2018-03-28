@@ -39,8 +39,9 @@ using namespace std;
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
  */
-DynamicsWorld::DynamicsWorld(const Vector3 &gravity, const WorldSettings& worldSettings)
-              : CollisionWorld(worldSettings),
+DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
+                             Logger* logger, Profiler* profiler)
+              : CollisionWorld(worldSettings, logger, profiler),
                 mContactSolver(mMemoryManager, mConfig),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations),
@@ -52,15 +53,19 @@ DynamicsWorld::DynamicsWorld(const Vector3 &gravity, const WorldSettings& worldS
                 mConstrainedOrientations(nullptr), mNbIslands(0), mIslands(nullptr),
                 mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity),
-                mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep) {
+                mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
+                mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
 
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
-	mConstraintSolver.setProfiler(&mProfiler);
-	mContactSolver.setProfiler(&mProfiler);
+    mConstraintSolver.setProfiler(mProfiler);
+    mContactSolver.setProfiler(mProfiler);
 
 #endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: Dynamics world " + mName + " has been created");
 
 }
 
@@ -82,13 +87,12 @@ DynamicsWorld::~DynamicsWorld() {
 
 #ifdef IS_PROFILING_ACTIVE
 
-    // Print the profiling report
-	ofstream myfile;
-	myfile.open(mProfiler.getName() + ".txt");
-    mProfiler.printReport(myfile);
-	myfile.close();
+    // Print the profiling report into the destinations
+    mProfiler->printReport();
 #endif
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: Dynamics world " + mName + " has been destroyed");
 }
 
 // Update the physics simulation
@@ -99,10 +103,10 @@ void DynamicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
-    mProfiler.incrementFrameCounter();
+    mProfiler->incrementFrameCounter();
 #endif
 
-    PROFILE("DynamicsWorld::update()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::update()", mProfiler);
 
     mTimeStep = timeStep;
 
@@ -150,7 +154,7 @@ void DynamicsWorld::update(decimal timeStep) {
 /// the sympletic Euler time stepping scheme.
 void DynamicsWorld::integrateRigidBodiesPositions() {
 
-    PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", mProfiler);
     
     // For each island of the world
     for (uint i=0; i < mNbIslands; i++) {
@@ -189,7 +193,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 // Update the postion/orientation of the bodies
 void DynamicsWorld::updateBodiesState() {
 
-    PROFILE("DynamicsWorld::updateBodiesState()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::updateBodiesState()", mProfiler);
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
@@ -226,7 +230,7 @@ void DynamicsWorld::updateBodiesState() {
 // Initialize the bodies velocities arrays for the next simulation step.
 void DynamicsWorld::initVelocityArrays() {
 
-    PROFILE("DynamicsWorld::initVelocityArrays()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::initVelocityArrays()", mProfiler);
 
     // Allocate memory for the bodies velocity arrays
     uint nbBodies = mRigidBodies.size();
@@ -268,7 +272,7 @@ void DynamicsWorld::initVelocityArrays() {
 /// contact solver.
 void DynamicsWorld::integrateRigidBodiesVelocities() {
 
-    PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", mProfiler);
 
     // Initialize the bodies velocity arrays
     initVelocityArrays();
@@ -330,7 +334,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 // Solve the contacts and constraints
 void DynamicsWorld::solveContactsAndConstraints() {
 
-    PROFILE("DynamicsWorld::solveContactsAndConstraints()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
@@ -380,7 +384,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
 // Solve the position error correction of the constraints
 void DynamicsWorld::solvePositionCorrection() {
 
-    PROFILE("DynamicsWorld::solvePositionCorrection()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::solvePositionCorrection()", mProfiler);
 
     // Do not continue if there is no constraints
     if (mJoints.size() == 0) return;
@@ -407,7 +411,7 @@ void DynamicsWorld::solvePositionCorrection() {
 RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 
     // Compute the body ID
-    bodyindex bodyID = computeNextAvailableBodyID();
+    bodyindex bodyID = computeNextAvailableBodyId();
 
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
@@ -422,10 +426,15 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     mRigidBodies.add(rigidBody);
 
 #ifdef IS_PROFILING_ACTIVE
-
-	rigidBody->setProfiler(&mProfiler);
-
+    rigidBody->setProfiler(mProfiler);
 #endif
+
+#ifdef IS_LOGGING_ACTIVE
+   rigidBody->setLogger(mLogger);
+#endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(bodyID) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -437,11 +446,14 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
  */
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(rigidBody->getId()) + ": rigid body destroyed");
+
     // Remove all the collision shapes of the body
     rigidBody->removeAllCollisionShapes();
 
     // Add the body ID to the list of free IDs
-    mFreeBodiesIDs.add(rigidBody->getID());
+    mFreeBodiesIds.add(rigidBody->getId());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
@@ -472,6 +484,9 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
     Joint* newJoint = nullptr;
 
+    // Get the next available joint ID
+    uint jointId = computeNextAvailableJointId();
+
     // Allocate memory to create the new joint
     switch(jointInfo.type) {
 
@@ -482,7 +497,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
                                                             sizeof(BallAndSocketJoint));
             const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
-            newJoint = new (allocatedMemory) BallAndSocketJoint(info);
+            newJoint = new (allocatedMemory) BallAndSocketJoint(jointId, info);
             break;
         }
 
@@ -492,7 +507,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) SliderJoint(info);
+            newJoint = new (allocatedMemory) SliderJoint(jointId, info);
             break;
         }
 
@@ -502,7 +517,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(HingeJoint));
             const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) HingeJoint(info);
+            newJoint = new (allocatedMemory) HingeJoint(jointId, info);
             break;
         }
 
@@ -512,7 +527,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) FixedJoint(info);
+            newJoint = new (allocatedMemory) FixedJoint(jointId, info);
             break;
         }
 
@@ -533,6 +548,11 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     // Add the joint into the world
     mJoints.add(newJoint);
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+             "Joint " + std::to_string(newJoint->getId()) + ": New joint created");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+             "Joint " + std::to_string(newJoint->getId()) + ": " + newJoint->to_string());
+
     // Add the joint into the joint list of the bodies involved in the joint
     addJointToBody(newJoint);
 
@@ -547,6 +567,9 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 void DynamicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != nullptr);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+             "Joint " + std::to_string(joint->getId()) + ": joint destroyed");
 
     // If the collision between the two bodies of the constraint was disabled
     if (!joint->isCollisionEnabled()) {
@@ -568,8 +591,14 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 
     size_t nbBytes = joint->getSizeInBytes();
 
+    // Add the joint ID to the list of free IDs
+    mFreeJointsIDs.add(joint->getId());
+
     // Call the destructor of the joint
     joint->~Joint();
+
+    // Add the joint ID to the list of free IDs
+    mFreeJointsIDs.add(joint->getId());
 
     // Release the allocated memory
     mMemoryManager.release(MemoryManager::AllocationType::Pool, joint, nbBytes);
@@ -587,12 +616,37 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
                                                                      joint->mBody1->mJointsList);
     joint->mBody1->mJointsList = jointListElement1;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(joint->mBody1->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             " added to body");
+
     // Add the joint at the beginning of the linked list of joints of the second body
     void* allocatedMemory2 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                      sizeof(JointListElement));
     JointListElement* jointListElement2 = new (allocatedMemory2) JointListElement(joint,
                                                                      joint->mBody2->mJointsList);
     joint->mBody2->mJointsList = jointListElement2;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(joint->mBody2->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             " added to body");
+}
+
+// Return the next available joint Id
+uint DynamicsWorld::computeNextAvailableJointId() {
+
+    // Compute the joint ID
+    uint jointId;
+    if (mFreeJointsIDs.size() != 0) {
+        jointId = mFreeJointsIDs[mFreeJointsIDs.size() - 1];
+        mFreeJointsIDs.removeAt(mFreeJointsIDs.size() - 1);
+    }
+    else {
+        jointId = mCurrentJointId;
+        mCurrentJointId++;
+    }
+
+    return jointId;
 }
 
 // Compute the islands of awake bodies.
@@ -604,7 +658,7 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
 /// it). Then, we create an island with this group of connected bodies.
 void DynamicsWorld::computeIslands() {
 
-    PROFILE("DynamicsWorld::computeIslands()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::computeIslands()", mProfiler);
 
     uint nbBodies = mRigidBodies.size();
 
@@ -693,7 +747,7 @@ void DynamicsWorld::computeIslands() {
                 // Get the other body of the contact manifold
                 RigidBody* body1 = static_cast<RigidBody*>(contactManifold->getBody1());
                 RigidBody* body2 = static_cast<RigidBody*>(contactManifold->getBody2());
-                RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
+                RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
                 if (otherBody->mIsAlreadyInIsland) continue;
@@ -721,7 +775,7 @@ void DynamicsWorld::computeIslands() {
                 // Get the other body of the contact manifold
                 RigidBody* body1 = static_cast<RigidBody*>(joint->getBody1());
                 RigidBody* body2 = static_cast<RigidBody*>(joint->getBody2());
-                RigidBody* otherBody = (body1->getID() == bodyToVisit->getID()) ? body2 : body1;
+                RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
 
                 // Check if the other body has already been added to the island
                 if (otherBody->mIsAlreadyInIsland) continue;
@@ -751,7 +805,7 @@ void DynamicsWorld::computeIslands() {
 /// time, we put all the bodies of the island to sleep.
 void DynamicsWorld::updateSleepingBodies() {
 
-    PROFILE("DynamicsWorld::updateSleepingBodies()", &mProfiler);
+    RP3D_PROFILE("DynamicsWorld::updateSleepingBodies()", mProfiler);
 
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
@@ -820,6 +874,9 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
             (*it)->setIsSleeping(false);
         }
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
 }
 
 /// Return the list of all contacts of the world

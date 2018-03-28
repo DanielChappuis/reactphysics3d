@@ -287,7 +287,7 @@ class HingeJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJoint(const HingeJointInfo& jointInfo);
+        HingeJoint(uint id, const HingeJointInfo& jointInfo);
 
         /// Destructor
         virtual ~HingeJoint() override = default;
@@ -336,6 +336,9 @@ class HingeJoint : public Joint {
 
         /// Return the intensity of the current torque applied for the joint motor
         decimal getMotorTorque(decimal timeStep) const;
+
+        /// Return a string representation
+        virtual std::string to_string() const override;
 };
 
 // Return true if the limits of the joint are enabled
@@ -398,6 +401,17 @@ inline decimal HingeJoint::getMotorTorque(decimal timeStep) const {
 // Return the number of bytes used by the joint
 inline size_t HingeJoint::getSizeInBytes() const {
     return sizeof(HingeJoint);
+}
+
+// Return a string representation
+inline std::string HingeJoint::to_string() const {
+    return "HingeJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
+            "localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() + ", localAnchorPointBody2=" +
+            mLocalAnchorPointBody2.to_string() + ", hingeLocalAxisBody1=" + mHingeLocalAxisBody1.to_string() +
+            ", hingeLocalAxisBody2=" + mHingeLocalAxisBody2.to_string() + ", initOrientationDifferenceInv=" +
+            mInitOrientationDifferenceInv.to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
+            ", maxMotorTorque=" + std::to_string(mMaxMotorTorque) + ", isLimitEnabled=" +
+            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }
 
 }

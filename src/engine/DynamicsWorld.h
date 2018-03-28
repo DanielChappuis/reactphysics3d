@@ -116,6 +116,12 @@ class DynamicsWorld : public CollisionWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
+        /// List of free ID for joints
+        List<luint> mFreeJointsIDs;
+
+        /// Current joint id
+        uint mCurrentJointId;
+
         // -------------------- Methods -------------------- //
 
         /// Integrate the positions and orientations of rigid bodies.
@@ -148,12 +154,16 @@ class DynamicsWorld : public CollisionWorld {
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
 
+        /// Return the next available joint id
+        uint computeNextAvailableJointId();
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings());
+        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings(),
+                      Logger* logger = nullptr, Profiler* profiler = nullptr);
 
         /// Destructor
         virtual ~DynamicsWorld() override;
@@ -272,6 +282,9 @@ inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
  */
 inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
     mNbVelocitySolverIterations = nbIterations;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: Set nb iterations velocity solver to " + std::to_string(nbIterations));
 }
 
 // Get the number of iterations for the position constraint solver
@@ -285,6 +298,9 @@ inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
  */
 inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
     mNbPositionSolverIterations = nbIterations;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: Set nb iterations position solver to " + std::to_string(nbIterations));
 }
 
 // Set the position correction technique used for contacts
@@ -329,6 +345,9 @@ inline Vector3 DynamicsWorld::getGravity() const {
  */
 inline void DynamicsWorld::setGravity(Vector3& gravity) {
     mGravity = gravity;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: Set gravity vector to " + gravity.to_string());
 }
 
 // Return if the gravity is enaled
@@ -346,6 +365,9 @@ inline bool DynamicsWorld::isGravityEnabled() const {
  */
 inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
     mIsGravityEnabled = isGravityEnabled;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")));
 }
 
 // Return the number of rigid bodies in the world
@@ -390,6 +412,9 @@ inline decimal DynamicsWorld::getSleepLinearVelocity() const {
 inline void DynamicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
     assert(sleepLinearVelocity >= decimal(0.0));
     mSleepLinearVelocity = sleepLinearVelocity;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity));
 }
 
 // Return the current sleep angular velocity
@@ -410,6 +435,9 @@ inline decimal DynamicsWorld::getSleepAngularVelocity() const {
 inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
     assert(sleepAngularVelocity >= decimal(0.0));
     mSleepAngularVelocity = sleepAngularVelocity;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity));
 }
 
 // Return the time a body is required to stay still before sleeping
@@ -428,6 +456,9 @@ inline decimal DynamicsWorld::getTimeBeforeSleep() const {
 inline void DynamicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
     assert(timeBeforeSleep >= decimal(0.0));
     mTimeBeforeSleep = timeBeforeSleep;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Dynamics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep));
 }
 
 // Set an event listener object to receive events callbacks.

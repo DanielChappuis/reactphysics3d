@@ -82,9 +82,6 @@ class SphereShape : public ConvexShape {
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
-
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
@@ -93,6 +90,9 @@ class SphereShape : public ConvexShape {
 
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 // Get the radius of the sphere
@@ -106,14 +106,6 @@ inline decimal SphereShape::getRadius() const {
 // Return true if the collision shape is a polyhedron
 inline bool SphereShape::isPolyhedron() const {
         return false;
-}
-
-// Set the scaling vector of the collision shape
-inline void SphereShape::setLocalScaling(const Vector3& scaling) {
-
-    mMargin = (mMargin / mScaling.x) * scaling.x;
-
-    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -179,6 +171,11 @@ inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) con
 // Return true if a point is inside the collision shape
 inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return (localPoint.lengthSquare() < mMargin * mMargin);
+}
+
+// Return the string representation of the shape
+inline std::string SphereShape::to_string() const {
+    return "SphereShape{radius=" + std::to_string(getRadius()) + "}";
 }
 
 }

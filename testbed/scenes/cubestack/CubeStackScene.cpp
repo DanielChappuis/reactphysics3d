@@ -43,14 +43,11 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
+    rp3d::WorldSettings worldSettings;
+    worldSettings.worldName = name;
+
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity);
-
-#ifdef IS_PROFILING_ACTIVE
-
-    mPhysicsWorld->setProfilerName(name + "_profiler");
-
-#endif
+    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
 
     // Create all the cubes of the scene
     for (int i=1; i<=NB_FLOORS; i++) {

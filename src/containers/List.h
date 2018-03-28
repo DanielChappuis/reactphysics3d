@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "memory/MemoryAllocator.h"
+#include <cassert>
 #include <cstring>
 #include <iterator>
 

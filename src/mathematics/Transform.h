@@ -116,6 +116,9 @@ class Transform {
 
         /// Assignment operator
         Transform& operator=(const Transform& transform);
+
+        /// Return the string representation
+        std::string to_string() const;
 };
 
 // Constructor
@@ -266,6 +269,11 @@ inline Transform& Transform::operator=(const Transform& transform) {
         mOrientation = transform.mOrientation;
     }
     return *this;
+}
+
+// Get the string representation
+inline std::string Transform::to_string() const {
+    return "Transform(" + mPosition.to_string() + "," + mOrientation.to_string() + ")";
 }
 
 }

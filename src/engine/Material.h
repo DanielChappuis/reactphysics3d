@@ -84,6 +84,9 @@ class Material {
         /// Set the rolling resistance factor
         void setRollingResistance(decimal rollingResistance);
 
+        /// Return a string representation for the material
+        std::string to_string() const;
+
         /// Overloaded assignment operator
         Material& operator=(const Material& material);
 };
@@ -145,6 +148,18 @@ inline decimal Material::getRollingResistance() const {
 inline void Material::setRollingResistance(decimal rollingResistance) {
     assert(rollingResistance >= 0);
     mRollingResistance = rollingResistance;
+}
+
+// Return a string representation for the material
+inline std::string Material::to_string() const {
+
+    std::stringstream ss;
+
+    ss << "frictionCoefficient=" << mFrictionCoefficient << std::endl;
+    ss << "rollingResistance=" << mRollingResistance << std::endl;
+    ss << "bounciness=" << mBounciness << std::endl;
+
+    return ss.str();
 }
 
 // Overloaded assignment operator

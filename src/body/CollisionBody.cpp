@@ -81,6 +81,13 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
 
 #endif
 
+#ifdef IS_LOGGING_ACTIVE
+
+    // Set the logger
+    proxyShape->setLogger(mLogger);
+
+#endif
+
     // Add it to the list of proxy collision shapes of the body
     if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
@@ -99,6 +106,13 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
 
     mNbCollisionShapes++;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
+             proxyShape->getCollisionShape()->to_string());
+
     // Return a pointer to the collision shape
     return proxyShape;
 }
@@ -114,11 +128,14 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     ProxyShape* current = mProxyCollisionShapes;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " removed from body");
+
     // If the the first proxy shape is the one to remove
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
 
-        if (mIsActive && proxyShape->mBroadPhaseID != -1) {
+        if (mIsActive && proxyShape->getBroadPhaseId() != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
@@ -138,7 +155,7 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
 
-            if (mIsActive && proxyShape->mBroadPhaseID != -1) {
+            if (mIsActive && proxyShape->getBroadPhaseId() != -1) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
             }
 
@@ -164,7 +181,7 @@ void CollisionBody::removeAllCollisionShapes() {
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
 
-        if (mIsActive && current->mBroadPhaseID != -1) {
+        if (mIsActive && current->getBroadPhaseId() != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
@@ -209,7 +226,7 @@ void CollisionBody::updateBroadPhaseState() const {
 // Update the broad-phase state of a proxy collision shape of the body
 void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
-    if (proxyShape->mBroadPhaseID != -1) {
+    if (proxyShape->getBroadPhaseId() != -1) {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;
@@ -250,7 +267,7 @@ void CollisionBody::setIsActive(bool isActive) {
         // For each proxy shape of the body
         for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
-            if (shape->mBroadPhaseID != -1) {
+            if (shape->getBroadPhaseId() != -1) {
 
                 // Remove the proxy shape from the collision detection
                 mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
@@ -260,6 +277,10 @@ void CollisionBody::setIsActive(bool isActive) {
         // Reset the contact manifold list of the body
         resetContactManifoldsList();
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isActive=" +
+             (mIsActive ? "true" : "false"));
 }
 
 // Ask the broad-phase to test again the collision shapes of the body for collision

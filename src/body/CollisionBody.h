@@ -36,7 +36,7 @@
 #include "collision/RaycastInfo.h"
 #include "memory/PoolAllocator.h"
 #include "configuration.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -231,6 +231,10 @@ inline void CollisionBody::setType(BodyType type) {
         // Update the broad-phase state of the body
         updateBroadPhaseState();
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set type=" +
+             (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
 }
 
 // Return the current position and orientation
@@ -254,6 +258,9 @@ inline void CollisionBody::setTransform(const Transform& transform) {
 
     // Update the broad-phase state of the body
     updateBroadPhaseState();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
 }
 
 // Return the first element of the linked list of contact manifolds involving this body

@@ -279,8 +279,8 @@ inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
 /// previous frame so that it is tested for collision again in the broad-phase.
 inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
 
-    if (shape->mBroadPhaseID != -1) {
-        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->mBroadPhaseID);
+    if (shape->getBroadPhaseId() != -1) {
+        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->getBroadPhaseId());
     }
 }
 
@@ -314,7 +314,7 @@ inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
                                         const Ray& ray,
                                         unsigned short raycastWithCategoryMaskBits) const {
 
-    PROFILE("CollisionDetection::raycast()", mProfiler);
+    RP3D_PROFILE("CollisionDetection::raycast()", mProfiler);
 
     RaycastTest rayCastTest(raycastCallback);
 

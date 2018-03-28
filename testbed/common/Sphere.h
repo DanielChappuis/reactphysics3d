@@ -92,9 +92,6 @@ class Sphere : public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
-
-        /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling) override;
 };
 
 // Update the transform matrix of the object

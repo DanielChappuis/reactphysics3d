@@ -82,9 +82,6 @@ class PhysicsObject : public openglframework::Mesh {
 
         /// Return a pointer to the rigid body of the box
         reactphysics3d::RigidBody* getRigidBody();
-
-        /// Set the scaling of the object
-        virtual void setScaling(const openglframework::Vector3& scaling)=0;
 };
 
 // Set the color of the box

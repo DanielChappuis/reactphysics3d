@@ -234,16 +234,3 @@ void Sphere::createVBOAndVAO() {
     // Unbind the VAO
     mVAO.unbind();
 }
-
-// Set the scaling of the object
-void Sphere::setScaling(const openglframework::Vector3& scaling) {
-
-    // Scale the collision shape
-    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
-
-    // Scale the graphics object
-    mScalingMatrix = openglframework::Matrix4(mRadius * scaling.x, 0, 0, 0,
-                                              0, mRadius * scaling.y, 0, 0,
-                                              0, 0, mRadius * scaling.z, 0,
-                                              0, 0, 0, 1);
-}

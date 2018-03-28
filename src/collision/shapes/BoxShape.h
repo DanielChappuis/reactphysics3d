@@ -88,9 +88,6 @@ class BoxShape : public ConvexPolyhedronShape {
         /// Return the extents of the box
         Vector3 getExtent() const;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling) override;
-
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
@@ -123,6 +120,9 @@ class BoxShape : public ConvexPolyhedronShape {
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 // Return the extents of the box
@@ -131,14 +131,6 @@ class BoxShape : public ConvexPolyhedronShape {
  */
 inline Vector3 BoxShape::getExtent() const {
     return mExtent;
-}
-
-// Set the scaling vector of the collision shape
-inline void BoxShape::setLocalScaling(const Vector3& scaling) {
-
-    mExtent = (mExtent / mScaling) * scaling;
-
-    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the local bounds of the shape in x, y and z directions
@@ -235,6 +227,11 @@ inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the box
 inline Vector3 BoxShape::getCentroid() const {
     return Vector3::zero();
+}
+
+// Return the string representation of the shape
+inline std::string BoxShape::to_string() const {
+    return "BoxShape{extents=" + mExtent.to_string() + "}";
 }
 
 // Return the number of half-edges of the polyhedron

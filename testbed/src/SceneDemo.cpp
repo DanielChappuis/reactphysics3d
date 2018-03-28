@@ -123,18 +123,6 @@ void SceneDemo::updatePhysics() {
 
     if (getDynamicsWorld() != nullptr) {
 
-        // Update the physics engine parameters
-        getDynamicsWorld()->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
-        rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
-                         mEngineSettings.gravity.z);
-        getDynamicsWorld()->setGravity(gravity);
-        getDynamicsWorld()->enableSleeping(mEngineSettings.isSleepingEnabled);
-        getDynamicsWorld()->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-        getDynamicsWorld()->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-        getDynamicsWorld()->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-        getDynamicsWorld()->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-        getDynamicsWorld()->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
-
         // Take a simulation step
         getDynamicsWorld()->update(mEngineSettings.timeStep);
     }
@@ -447,4 +435,23 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsW
     }
 
     return contactPoints;
+}
+
+// Update the engine settings
+void SceneDemo::updateEngineSettings() {
+
+    if (getDynamicsWorld() != nullptr) {
+
+        // Update the physics engine parameters
+        getDynamicsWorld()->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+        rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
+                         mEngineSettings.gravity.z);
+        getDynamicsWorld()->setGravity(gravity);
+        getDynamicsWorld()->enableSleeping(mEngineSettings.isSleepingEnabled);
+        getDynamicsWorld()->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+        getDynamicsWorld()->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+        getDynamicsWorld()->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+        getDynamicsWorld()->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+        getDynamicsWorld()->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
+    }
 }

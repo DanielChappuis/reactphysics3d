@@ -29,6 +29,7 @@
 // Libraries
 #include <cmath>
 #include <cassert>
+#include <string>
 #include "mathematics_functions.h"
 #include "decimal.h"
 
@@ -146,6 +147,9 @@ struct Vector3 {
 
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector3& vector) const;
+
+        /// Get the string representation
+        std::string to_string() const;
 
         /// Return a vector taking the minimum components of two vectors
         static Vector3 min(const Vector3& vector1, const Vector3& vector2);
@@ -389,6 +393,11 @@ inline decimal Vector3::getMinValue() const {
 // Return the maximum value among the three components of a vector
 inline decimal Vector3::getMaxValue() const {
     return std::max(std::max(x, y), z);
+}
+
+// Get the string representation
+inline std::string Vector3::to_string() const {
+    return "Vector3(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + ")";
 }
 
 // Return the zero vector

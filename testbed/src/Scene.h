@@ -232,6 +232,9 @@ class Scene {
 
         /// Return all the contact points of the scene
         std::vector<ContactPoint> virtual getContactPoints();
+
+        /// Update the engine settings
+        virtual void updateEngineSettings() = 0;
 };
 
 // Called when a keyboard event occurs

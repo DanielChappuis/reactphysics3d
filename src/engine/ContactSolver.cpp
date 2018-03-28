@@ -27,7 +27,7 @@
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
 #include "body/RigidBody.h"
-#include "Profiler.h"
+#include "utils/Profiler.h"
 #include <limits>
 
 using namespace reactphysics3d;
@@ -50,7 +50,7 @@ ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& 
 // Initialize the contact constraints
 void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
 
-    PROFILE("ContactSolver::init()", mProfiler);
+    RP3D_PROFILE("ContactSolver::init()", mProfiler);
 
     mTimeStep = timeStep;
 
@@ -98,7 +98,7 @@ void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
 // Initialize the constraint solver for a given island
 void ContactSolver::initializeForIsland(Island* island) {
 
-    PROFILE("ContactSolver::initializeForIsland()", mProfiler);
+    RP3D_PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
     assert(island != nullptr);
     assert(island->getNbBodies() > 0);
@@ -326,7 +326,7 @@ void ContactSolver::initializeForIsland(Island* island) {
 /// the solution of the linear system
 void ContactSolver::warmStart() {
 
-    PROFILE("ContactSolver::warmStart()", mProfiler);
+    RP3D_PROFILE("ContactSolver::warmStart()", mProfiler);
 
     uint contactPointIndex = 0;
 
@@ -479,7 +479,7 @@ void ContactSolver::warmStart() {
 // Solve the contacts
 void ContactSolver::solve() {
 
-    PROFILE("ContactSolver::solve()", mProfiler);
+    RP3D_PROFILE("ContactSolver::solve()", mProfiler);
 
     decimal deltaLambda;
     decimal lambdaTemp;
@@ -758,7 +758,7 @@ void ContactSolver::solve() {
 // warm start the solver at the next iteration
 void ContactSolver::storeImpulses() {
 
-    PROFILE("ContactSolver::storeImpulses()", mProfiler);
+    RP3D_PROFILE("ContactSolver::storeImpulses()", mProfiler);
 
     uint contactPointIndex = 0;
 
@@ -786,7 +786,7 @@ void ContactSolver::storeImpulses() {
 void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactManifoldSolver& contact) const {
 
-    PROFILE("ContactSolver::computeFrictionVectors()", mProfiler);
+    RP3D_PROFILE("ContactSolver::computeFrictionVectors()", mProfiler);
 
     assert(contact.normal.length() > decimal(0.0));
 

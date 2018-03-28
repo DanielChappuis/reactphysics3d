@@ -31,6 +31,8 @@
 #include <cfloat>
 #include <utility>
 #include <cstdint>
+#include <sstream>
+#include <string>
 #include "decimal.h"
 #include "containers/Pair.h"
 
@@ -104,11 +106,17 @@ constexpr decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 /// followin constant with the linear velocity and the elapsed time between two frames.
 constexpr decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
+/// Current version of ReactPhysics3D
+const std::string RP3D_VERSION = std::string("0.7.0");
+
 /// Structure WorldSettings
 /**
  * This class is used to describe some settings of a physics world.
  */
 struct WorldSettings {
+
+    /// Name of the world
+    std::string worldName = "";
 
     /// Distance threshold for two contact points for a valid persistent contact (in meters)
     decimal persistentContactDistanceThreshold = decimal(0.03);
@@ -157,6 +165,30 @@ struct WorldSettings {
     /// merge them. If the cosine of the angle between the normals of the two manifold are larger
     /// than the value bellow, the manifold are considered to be similar.
     decimal cosAngleSimilarContactManifold = decimal(0.95);
+
+    /// Return a string with the world settings
+    std::string to_string() const {
+
+        std::stringstream ss;
+
+        ss << "worldName=" << worldName << std::endl;
+        ss << "persistentContactDistanceThreshold=" << persistentContactDistanceThreshold << std::endl;
+        ss << "defaultFrictionCoefficient=" << defaultFrictionCoefficient << std::endl;
+        ss << "defaultBounciness=" << defaultBounciness << std::endl;
+        ss << "restitutionVelocityThreshold=" << restitutionVelocityThreshold << std::endl;
+        ss << "defaultRollingRestistance=" << defaultRollingRestistance << std::endl;
+        ss << "isSleepingEnabled=" << isSleepingEnabled << std::endl;
+        ss << "defaultVelocitySolverNbIterations=" << defaultVelocitySolverNbIterations << std::endl;
+        ss << "defaultPositionSolverNbIterations=" << defaultPositionSolverNbIterations << std::endl;
+        ss << "defaultTimeBeforeSleep=" << defaultTimeBeforeSleep << std::endl;
+        ss << "defaultSleepLinearVelocity=" << defaultSleepLinearVelocity << std::endl;
+        ss << "defaultSleepAngularVelocity=" << defaultSleepAngularVelocity << std::endl;
+        ss << "nbMaxContactManifoldsConvexShape=" << nbMaxContactManifoldsConvexShape << std::endl;
+        ss << "nbMaxContactManifoldsConcaveShape=" << nbMaxContactManifoldsConcaveShape << std::endl;
+        ss << "cosAngleSimilarContactManifold=" << cosAngleSimilarContactManifold << std::endl;
+
+        return ss.str();
+    }
 };
 
 }
