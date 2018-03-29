@@ -463,7 +463,7 @@ class Logger {
 #else   // If logger is not active
 
 // Empty macro in case logs are not enabled
-#define RP3D_LOG(logger, level, message)
+#define RP3D_LOG(logger, level, category, message)
 
 #endif
 

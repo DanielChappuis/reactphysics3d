@@ -39,7 +39,7 @@ uint CollisionWorld::mNbWorlds = 0;
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
                  mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
-                 mProfiler(profiler), mLogger(logger), mIsProfilerCreatedByUser(profiler != nullptr),
+                 mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
 
     // Automatically generate a name for the world
@@ -57,6 +57,8 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
 
 #ifdef IS_PROFILING_ACTIVE
 
+    mProfiler = profiler;
+
     // If the user has not provided its own profiler, we create one
     if (mProfiler == nullptr) {
 
@@ -73,6 +75,8 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
+
+    mLogger = logger;
 
     // If the user has not provided its own logger, we create one
     if (mLogger == nullptr) {
