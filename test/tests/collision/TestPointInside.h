@@ -170,11 +170,12 @@ class TestPointInside : public Test {
 
         /// Destructor
         virtual ~TestPointInside() {
+            delete mWorld;
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;
             delete mConvexMeshShape;
-            delete mConvexMeshPolygonFaces;
+            delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;
             delete mConvexMeshPolyhedronMesh;
         }

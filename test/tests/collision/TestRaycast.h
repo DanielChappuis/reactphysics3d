@@ -308,6 +308,7 @@ class TestRaycast : public Test {
 
         /// Destructor
         virtual ~TestRaycast() {
+            delete mWorld;
             delete mBoxShape;
             delete mSphereShape;
             delete mCapsuleShape;

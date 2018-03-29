@@ -462,7 +462,7 @@ class TestCollisionWorld : public Test {
 			delete mConvexMesh2PolyhedronMesh;
 			delete mConvexMesh1PolygonVertexArray;
 			delete mConvexMesh2PolygonVertexArray;
-			delete mConvexMeshPolygonFaces;
+            delete[] mConvexMeshPolygonFaces;
 
             delete mConcaveMeshShape;
             delete mConcaveTriangleMesh;
