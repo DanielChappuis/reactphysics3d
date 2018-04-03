@@ -163,7 +163,21 @@ Profiler::Profiler() :mRootNode("Root", nullptr), mDestinations(MemoryManager::g
 
 // Destructor
 Profiler::~Profiler() {
+
+    removeAllDestinations();
+
 	destroy();
+}
+
+// Remove all logs destination previously set
+void Profiler::removeAllDestinations() {
+
+    // Delete all the destinations
+    for (uint i=0; i<mDestinations.size(); i++) {
+        delete mDestinations[i];
+    }
+
+    mDestinations.clear();
 }
 
 // Method called when we want to start profiling a block of code.
@@ -212,17 +226,6 @@ void Profiler::printReport() {
         // Destroy the iterator
         destroyIterator(iterator);
     }
-}
-
-// Remove all output profiling destinations previously set
-void Profiler::removeAllDestinations() {
-
-    // Delete all the destinations
-    for (size_t i=0; i<mDestinations.size(); i++) {
-        delete mDestinations[i];
-    }
-
-    mDestinations.clear();
 }
 
 // Add a file destination to the profiler
