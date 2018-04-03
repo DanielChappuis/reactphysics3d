@@ -273,7 +273,7 @@ class List {
               // Move the elements to fill in the empty slot
               char* dest = static_cast<char*>(mBuffer) + index * sizeof(T);
               char* src = dest + sizeof(T);
-              std::memcpy(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
+              std::memmove(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
           }
 
           // Return an iterator pointing to the element after the removed one
