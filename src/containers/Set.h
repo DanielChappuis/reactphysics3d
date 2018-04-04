@@ -67,10 +67,16 @@ class Set {
                 value = nullptr;
             }
 
+            /// Copy-constructor
+            Entry(const Entry& entry) {
+                hashCode = entry.hashCode;
+                next = entry.next;
+                value = entry.value;
+            }
+
             /// Destructor
             ~Entry() {
 
-                assert(value == nullptr);
             }
 
         };
@@ -154,8 +160,16 @@ class Set {
                 newBuckets[i] = -1;
             }
 
-            // Copy the old entries to the new allocated memory location
-            std::memcpy(newEntries, mEntries, mNbUsedEntries * sizeof(Entry));
+            if (mNbUsedEntries > 0) {
+
+                // Copy the old entries to the new allocated memory location
+                std::uninitialized_copy(mEntries, mEntries + mNbUsedEntries, newEntries); 
+
+                // Destruct the old entries at previous location
+                for (int i=0; i<mNbUsedEntries; i++) {
+                    mEntries[i].~Entry();
+                }
+            }
 
             // Construct the new entries
             for (int i=mNbUsedEntries; i<newCapacity; i++) {
@@ -390,7 +404,7 @@ class Set {
                 mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                 // Copy the buckets
-                std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
+                std::uninitialized_copy(set.mBuckets, set.mBuckets + mCapacity, mBuckets);
 
                 // Copy the entries
                 for (int i=0; i < mCapacity; i++) {
@@ -651,7 +665,7 @@ class Set {
                     mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                     // Copy the buckets
-                    std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
+                    std::uninitialized_copy(set.mBuckets, set.mBuckets + mCapacity, mBuckets);
 
                     // Copy the entries
                     for (int i=0; i < mCapacity; i++) {

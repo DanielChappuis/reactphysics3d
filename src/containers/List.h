@@ -32,6 +32,7 @@
 #include <cassert>
 #include <cstring>
 #include <iterator>
+#include <memory>
 
 namespace reactphysics3d {
 
@@ -204,8 +205,18 @@ class List {
 
             if (mBuffer != nullptr) {
 
-                // Copy the elements to the new allocated memory location
-                std::memcpy(newMemory, mBuffer, mSize * sizeof(T));
+                if (mSize > 0) {
+
+                    // Copy the elements to the new allocated memory location
+                    T* destination = static_cast<T*>(newMemory);
+                    T* items = static_cast<T*>(mBuffer);
+                    std::uninitialized_copy(items, items + mSize, destination);
+
+                    // Destruct the previous items
+                    for (size_t i=0; i<mSize; i++) {
+                        items[i].~T();
+                    }
+                }
 
                 // Release the previously allocated memory
                 mAllocator.release(mBuffer, mCapacity * sizeof(T));

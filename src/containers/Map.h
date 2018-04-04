@@ -68,10 +68,16 @@ class Map {
                 keyValue = nullptr;
             }
 
+            /// Copy-constructor
+            Entry(const Entry& entry) {
+                hashCode = entry.hashCode;
+                next = entry.next;
+                keyValue = entry.keyValue;
+            }
+
             /// Destructor
             ~Entry() {
 
-                assert(keyValue == nullptr);
             }
 
         };
@@ -155,8 +161,16 @@ class Map {
                 newBuckets[i] = -1;
             }
 
-            // Copy the old entries to the new allocated memory location
-            std::memcpy(newEntries, mEntries, mNbUsedEntries * sizeof(Entry));
+            if (mNbUsedEntries > 0) {
+
+                // Copy the old entries to the new allocated memory location
+                std::uninitialized_copy(mEntries, mEntries + mNbUsedEntries, newEntries);
+
+                // Destruct the old entries in the previous location
+                for (int i=0; i < mNbUsedEntries; i++) {
+                    mEntries[i].~Entry();
+                }
+            }
 
             // Construct the new entries
             for (int i=mNbUsedEntries; i<newCapacity; i++) {
@@ -391,7 +405,7 @@ class Map {
                 mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                 // Copy the buckets
-                std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
+                std::uninitialized_copy(map.mBuckets, map.mBuckets + mCapacity, mBuckets); 
 
                 // Copy the entries
                 for (int i=0; i < mCapacity; i++) {
@@ -710,7 +724,7 @@ class Map {
                     mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                     // Copy the buckets
-                    std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
+                    std::uninitialized_copy(map.mBuckets, map.mBuckets + mCapacity, mBuckets);
 
                     // Copy the entries
                     for (int i=0; i < mCapacity; i++) {
