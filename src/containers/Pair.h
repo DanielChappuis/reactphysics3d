@@ -81,6 +81,7 @@ class Pair {
         Pair<T1, T2>& operator=(const Pair<T1, T2>& pair) {
             first = pair.first;
             second = pair.second;
+            return *this;
         }
 };
 
