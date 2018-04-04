@@ -15,6 +15,9 @@ SET(LIBRARY_OUTPUT_PATH "lib")
 # Where to build the executables
 SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
+# CMake modules path
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+
 ENABLE_TESTING()
 
 # Options
@@ -22,11 +25,20 @@ OPTION(COMPILE_TESTBED "Select this if you want to build the testbed application
 OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
 OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
 OPTION(LOGS_ENABLED "Select this if you want to compile with logs enabled during execution" OFF)
+OPTION(CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
 
 # Warning Compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
+IF(CODE_COVERAGE_ENABLED)
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+        INCLUDE(CodeCoverage)
+        SETUP_TARGET_FOR_COVERAGE(${PROJECT_NAME}_coverage tests coverage)
+    ENDIF()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+ENDIF()
 
 # C++11 flags
 IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -37,6 +49,10 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	ELSE()
 		message("The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 	ENDIF()
+ENDIF()
+
+IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++abi")
 ENDIF()
 
 # Headers
