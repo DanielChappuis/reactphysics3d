@@ -380,25 +380,28 @@ class Map {
         /// Copy constructor
         Map(const Map<K, V>& map)
           :mNbUsedEntries(map.mNbUsedEntries), mNbFreeEntries(map.mNbFreeEntries), mCapacity(map.mCapacity),
-           mAllocator(map.mAllocator), mFreeIndex(map.mFreeIndex) {
+           mBuckets(nullptr), mEntries(nullptr), mAllocator(map.mAllocator), mFreeIndex(map.mFreeIndex) {
 
-            // Allocate memory for the buckets
-            mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
+            if (mCapacity > 0) {
 
-            // Allocate memory for the entries
-            mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
+                // Allocate memory for the buckets
+                mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
 
-            // Copy the buckets
-            std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
+                // Allocate memory for the entries
+                mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
-            // Copy the entries
-            for (int i=0; i < mCapacity; i++) {
+                // Copy the buckets
+                std::memcpy(mBuckets, map.mBuckets, mCapacity * sizeof(int));
 
-                new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+                // Copy the entries
+                for (int i=0; i < mCapacity; i++) {
 
-                if (map.mEntries[i].keyValue != nullptr) {
-                   mEntries[i].keyValue = static_cast<Pair<K,V>*>(mAllocator.allocate(sizeof(Pair<K, V>)));
-                   new (mEntries[i].keyValue) Pair<K,V>(*(map.mEntries[i].keyValue));
+                    new (&mEntries[i]) Entry(map.mEntries[i].hashCode, map.mEntries[i].next);
+
+                    if (map.mEntries[i].keyValue != nullptr) {
+                       mEntries[i].keyValue = static_cast<Pair<K,V>*>(mAllocator.allocate(sizeof(Pair<K, V>)));
+                       new (mEntries[i].keyValue) Pair<K,V>(*(map.mEntries[i].keyValue));
+                    }
                 }
             }
         }

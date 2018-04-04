@@ -379,25 +379,28 @@ class Set {
         /// Copy constructor
         Set(const Set<V>& set)
           :mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
-           mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
+           mBuckets(nullptr), mEntries(nullptr), mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
 
-            // Allocate memory for the buckets
-            mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
+            if (mCapacity > 0) {
 
-            // Allocate memory for the entries
-            mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
+                // Allocate memory for the buckets
+                mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
 
-            // Copy the buckets
-            std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
+                // Allocate memory for the entries
+                mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
-            // Copy the entries
-            for (int i=0; i < mCapacity; i++) {
+                // Copy the buckets
+                std::memcpy(mBuckets, set.mBuckets, mCapacity * sizeof(int));
 
-                new (&mEntries[i]) Entry(set.mEntries[i].hashCode, set.mEntries[i].next);
+                // Copy the entries
+                for (int i=0; i < mCapacity; i++) {
 
-                if (set.mEntries[i].value != nullptr) {
-                   mEntries[i].value = static_cast<V*>(mAllocator.allocate(sizeof(V)));
-                   new (mEntries[i].value) V(*(set.mEntries[i].value));
+                    new (&mEntries[i]) Entry(set.mEntries[i].hashCode, set.mEntries[i].next);
+
+                    if (set.mEntries[i].value != nullptr) {
+                       mEntries[i].value = static_cast<V*>(mAllocator.allocate(sizeof(V)));
+                       new (mEntries[i].value) V(*(set.mEntries[i].value));
+                    }
                 }
             }
         }
