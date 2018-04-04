@@ -961,6 +961,9 @@ convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in counter clockwise order
     as seen from the outside of your convex mesh. \\
 
+    You can also specify a scaling factor in the constructor when you create a \texttt{ConvexMeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
+    when used in the collision shape. \\
+
     Note that collision detection with a \texttt{ConvexMeshShape} is more expensive than with a \texttt{SphereShape} or a \texttt{CapsuleShape}. \\
 
   \subsection{Concave Mesh Shape}
@@ -1021,6 +1024,9 @@ ConcaveMeshShape* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
   When you specify the vertices for each triangle face of your mesh, be careful with the order of the vertices. They must be specified in counter clockwise order
   as seen from the outside of your mesh. \\
 
+  You can also specify a scaling factor in the constructor when you create a \texttt{ConcaveMeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
+  when used in the collision shape. \\
+
   In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
   vertex normals, you can do it by using another constructor for the \texttt{TriangleVertexArray}. \\
 
@@ -1069,6 +1075,9 @@ maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   Note that the array of height values are not copied into the \texttt{HeightFieldShape}. Therefore, you need to make sure
   they exist during the lifetime of the \texttt{HeightFieldShape} and you must not forget to release their memory when you
   destroy the collision shape or at the end of your application. \\
+
+  You can also specify a scaling factor in the constructor when you create a \texttt{HeightFieldShape}. All the vertices of your mesh will be scaled from the origin by this factor
+  when used in the collision shape. \\
 
   When creating a \texttt{HeightFieldShape}, the origin of the shape will be at the center of its bounding volume.
   Therefore, if you create a \texttt{HeightFieldShape} with a minimum height of 100 and a maximum height of 500, the

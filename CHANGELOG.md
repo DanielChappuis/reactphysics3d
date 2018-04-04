@@ -1,6 +1,6 @@
 #Changelog
 
-## Version 0.7.0 (March, 2018)
+## Version 0.7.0 (April, 2018)
 
 ### Added
  
@@ -31,6 +31,8 @@
  
  - Quaternion constructor with Euler angles has been removed. The Quaternion::fromEulerAngles() method should be used instead.
  - Cylinder and Cone collision shapes have been removed. The ConvexMeshShape collision shape should be used instead.
+ - The ProxyShape::setLocalScaling() method has been removed. The ConvexMeshShape, ConcaveMeshShape and HeightFieldShape
+   collision shapes can be scaled directly.
 
 ### Fixed
 
