@@ -100,17 +100,17 @@ void Gui::createSimulationPanel() {
     new Label(mSimulationPanel, "Controls","sans-bold");
     Widget* panelControls = new Widget(mSimulationPanel);
     panelControls->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
-    ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_PLAY);
+    ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PLAY);
     buttonPlay->setFlags(Button::NormalButton);
     buttonPlay->setCallback([&] {
         mApp->playSimulation();
     });
-    ToolButton* buttonPause = new ToolButton(panelControls, ENTYPO_ICON_PAUS);
+    ToolButton* buttonPause = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PAUS);
     buttonPause->setFlags(Button::NormalButton);
     buttonPause->setCallback([&] {
         mApp->pauseSimulation();
     });
-    ToolButton* buttonPlayStep = new ToolButton(panelControls, ENTYPO_ICON_TO_END);
+    ToolButton* buttonPlayStep = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_NEXT);
     buttonPlayStep->setFlags(Button::NormalButton);
     buttonPlayStep->setCallback([&] {
         mApp->toggleTakeSinglePhysicsStep();
@@ -128,10 +128,11 @@ void Gui::createSimulationPanel() {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     new Label(mSimulationPanel, "Scene","sans-bold");
-    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames, [&, scenes](int index) {
+    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
+    comboBoxScenes->setFixedWidth(150);
+    comboBoxScenes->setCallback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
-    comboBoxScenes->setFixedWidth(150);
 }
 
 void Gui::createSettingsPanel() {

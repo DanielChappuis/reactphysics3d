@@ -1,7 +1,7 @@
 /*
     src/combobox.cpp -- simple combo box widget based on a popup button
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
@@ -19,10 +19,8 @@ NAMESPACE_BEGIN(nanogui)
 ComboBox::ComboBox(Widget *parent) : PopupButton(parent), mSelectedIndex(0) {
 }
 
-ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items,
-                   const std::function<void(int)>& callback)
+ComboBox::ComboBox(Widget *parent, const std::vector<std::string> &items)
     : PopupButton(parent), mSelectedIndex(0) {
-    setCallback(callback);
     setItems(items);
 }
 
@@ -65,6 +63,21 @@ void ComboBox::setItems(const std::vector<std::string> &items, const std::vector
         index++;
     }
     setSelectedIndex(mSelectedIndex);
+}
+
+bool ComboBox::scrollEvent(const Vector2i &p, const Vector2f &rel) {
+    if (rel.y() < 0) {
+        setSelectedIndex(std::min(mSelectedIndex+1, (int)(items().size()-1)));
+        if (mCallback)
+            mCallback(mSelectedIndex);
+        return true;
+    } else if (rel.y() > 0) {
+        setSelectedIndex(std::max(mSelectedIndex-1, 0));
+        if (mCallback)
+            mCallback(mSelectedIndex);
+        return true;
+    }
+    return Widget::scrollEvent(p, rel);
 }
 
 void ComboBox::save(Serializer &s) const {
