@@ -28,6 +28,7 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - g++-5
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
