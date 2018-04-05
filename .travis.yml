@@ -25,11 +25,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            - llvm-toolchain-precise-3.8
           packages:
-            - clang-3.6
+            - clang-3.8
+            - g++-7
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
 
     # OS X / Clang
     - os: osx
