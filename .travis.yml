@@ -24,11 +24,12 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-4.0
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
           packages:
-            - clang-4.0
+            - clang-3.6
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
 
     # OS X / Clang
     - os: osx
