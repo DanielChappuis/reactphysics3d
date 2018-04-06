@@ -1,5 +1,5 @@
 # Minimum cmake version required
-cmake_minimum_required(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
 
 # Project configuration
 PROJECT(Testbed)
@@ -19,7 +19,7 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "glew/include/" "nanogui/ext/glfw/include/" "nanogui/ext/glew/include/" "nanogui/include/" "nanogui/ext/nanovg/src/" "nanogui/ext/eigen/" "opengl-framework/src/" "common/" "scenes/")
+INCLUDE_DIRECTORIES("src/" "nanogui/include/" "opengl-framework/src/" "common/" "scenes/" ${NANOGUI_EXTRA_INCS})
 
 # OpenGLFramework source files
 SET(OPENGLFRAMEWORK_SOURCES
@@ -123,6 +123,9 @@ SET(USER_FILE testbed.vcxproj.user)
 SET(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
 CONFIGURE_FILE(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
+
+# Compile definitions
+ADD_DEFINITIONS(${NANOGUI_EXTRA_DEFS})
 
 # Create the executable
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})

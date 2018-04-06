@@ -1,8 +1,11 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
 
 # Project configuration
-PROJECT(REACTPHYSICS3D CXX)
+PROJECT(REACTPHYSICS3D LANGUAGES CXX)
+
+# In order to install libraries into correct locations on all platforms.
+include(GNUInstallDirs)
 
 # Build type
 IF (NOT CMAKE_BUILD_TYPE)
@@ -18,6 +21,7 @@ SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 # CMake modules path
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
+# Enable testing
 ENABLE_TESTING()
 
 # Options
@@ -56,9 +60,6 @@ ENDIF()
 #    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 #ENDIF()
 
-# Headers
-INCLUDE_DIRECTORIES(src)
-
 IF(PROFILING_ENABLED)
     ADD_DEFINITIONS(-DIS_PROFILING_ACTIVE)
 ENDIF(PROFILING_ENABLED)
@@ -71,150 +72,86 @@ IF(DOUBLE_PRECISION_ENABLED)
     ADD_DEFINITIONS(-DIS_DOUBLE_PRECISION_ENABLED)
 ENDIF(DOUBLE_PRECISION_ENABLED)
 
-# Source files
-SET (REACTPHYSICS3D_SOURCES
+# Headers files
+SET (REACTPHYSICS3D_HEADERS
     "src/configuration.h"
     "src/decimal.h"
     "src/reactphysics3d.h"
     "src/body/Body.h"
-    "src/body/Body.cpp"
     "src/body/CollisionBody.h"
-    "src/body/CollisionBody.cpp"
     "src/body/RigidBody.h"
-    "src/body/RigidBody.cpp"
     "src/collision/ContactPointInfo.h"
     "src/collision/ContactManifoldInfo.h"
-    "src/collision/ContactManifoldInfo.cpp"
     "src/collision/broadphase/BroadPhaseAlgorithm.h"
-    "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
     "src/collision/broadphase/DynamicAABBTree.h"
-    "src/collision/broadphase/DynamicAABBTree.cpp"
     "src/collision/narrowphase/CollisionDispatch.h"
     "src/collision/narrowphase/DefaultCollisionDispatch.h"
-    "src/collision/narrowphase/DefaultCollisionDispatch.cpp"
     "src/collision/narrowphase/GJK/VoronoiSimplex.h"
-    "src/collision/narrowphase/GJK/VoronoiSimplex.cpp"
     "src/collision/narrowphase/GJK/GJKAlgorithm.h"
-    "src/collision/narrowphase/GJK/GJKAlgorithm.cpp"
     "src/collision/narrowphase/SAT/SATAlgorithm.h"
-    "src/collision/narrowphase/SAT/SATAlgorithm.cpp"
     "src/collision/narrowphase/NarrowPhaseAlgorithm.h"
     "src/collision/narrowphase/SphereVsSphereAlgorithm.h"
-    "src/collision/narrowphase/SphereVsSphereAlgorithm.cpp"
     "src/collision/narrowphase/CapsuleVsCapsuleAlgorithm.h"
-    "src/collision/narrowphase/CapsuleVsCapsuleAlgorithm.cpp"
     "src/collision/narrowphase/SphereVsCapsuleAlgorithm.h"
-    "src/collision/narrowphase/SphereVsCapsuleAlgorithm.cpp"
     "src/collision/narrowphase/SphereVsConvexPolyhedronAlgorithm.h"
-    "src/collision/narrowphase/SphereVsConvexPolyhedronAlgorithm.cpp"
     "src/collision/narrowphase/CapsuleVsConvexPolyhedronAlgorithm.h"
-    "src/collision/narrowphase/CapsuleVsConvexPolyhedronAlgorithm.cpp"
     "src/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
-    "src/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.cpp"
     "src/collision/shapes/AABB.h"
-    "src/collision/shapes/AABB.cpp"
     "src/collision/shapes/ConvexShape.h"
-    "src/collision/shapes/ConvexShape.cpp"
     "src/collision/shapes/ConvexPolyhedronShape.h"
-    "src/collision/shapes/ConvexPolyhedronShape.cpp"
     "src/collision/shapes/ConcaveShape.h"
-    "src/collision/shapes/ConcaveShape.cpp"
     "src/collision/shapes/BoxShape.h"
-    "src/collision/shapes/BoxShape.cpp"
     "src/collision/shapes/CapsuleShape.h"
-    "src/collision/shapes/CapsuleShape.cpp"
     "src/collision/shapes/CollisionShape.h"
-    "src/collision/shapes/CollisionShape.cpp"
     "src/collision/shapes/ConvexMeshShape.h"
-    "src/collision/shapes/ConvexMeshShape.cpp"
     "src/collision/shapes/SphereShape.h"
-    "src/collision/shapes/SphereShape.cpp"
     "src/collision/shapes/TriangleShape.h"
-    "src/collision/shapes/TriangleShape.cpp"
     "src/collision/shapes/ConcaveMeshShape.h"
-    "src/collision/shapes/ConcaveMeshShape.cpp"
     "src/collision/shapes/HeightFieldShape.h"
-    "src/collision/shapes/HeightFieldShape.cpp"
     "src/collision/RaycastInfo.h"
-    "src/collision/RaycastInfo.cpp"
     "src/collision/ProxyShape.h"
-    "src/collision/ProxyShape.cpp"
     "src/collision/TriangleVertexArray.h"
-    "src/collision/TriangleVertexArray.cpp"
     "src/collision/PolygonVertexArray.h"
-    "src/collision/PolygonVertexArray.cpp"
     "src/collision/TriangleMesh.h"
-    "src/collision/TriangleMesh.cpp"
     "src/collision/PolyhedronMesh.h"
-    "src/collision/PolyhedronMesh.cpp"
     "src/collision/HalfEdgeStructure.h"
-    "src/collision/HalfEdgeStructure.cpp"
     "src/collision/CollisionDetection.h"
-    "src/collision/CollisionDetection.cpp"
     "src/collision/NarrowPhaseInfo.h"
-    "src/collision/NarrowPhaseInfo.cpp"
     "src/collision/ContactManifold.h"
-    "src/collision/ContactManifold.cpp"
     "src/collision/ContactManifoldSet.h"
-    "src/collision/ContactManifoldSet.cpp"
     "src/collision/MiddlePhaseTriangleCallback.h"
-    "src/collision/MiddlePhaseTriangleCallback.cpp"
     "src/constraint/BallAndSocketJoint.h"
-    "src/constraint/BallAndSocketJoint.cpp"
     "src/constraint/ContactPoint.h"
-    "src/constraint/ContactPoint.cpp"
     "src/constraint/FixedJoint.h"
-    "src/constraint/FixedJoint.cpp"
     "src/constraint/HingeJoint.h"
-    "src/constraint/HingeJoint.cpp"
     "src/constraint/Joint.h"
-    "src/constraint/Joint.cpp"
     "src/constraint/SliderJoint.h"
-    "src/constraint/SliderJoint.cpp"
     "src/engine/CollisionWorld.h"
-    "src/engine/CollisionWorld.cpp"
     "src/engine/ConstraintSolver.h"
-    "src/engine/ConstraintSolver.cpp"
     "src/engine/ContactSolver.h"
-    "src/engine/ContactSolver.cpp"
     "src/engine/DynamicsWorld.h"
-    "src/engine/DynamicsWorld.cpp"
     "src/engine/EventListener.h"
     "src/engine/Island.h"
-    "src/engine/Island.cpp"
     "src/engine/Material.h"
-    "src/engine/Material.cpp"
     "src/engine/OverlappingPair.h"
-    "src/engine/OverlappingPair.cpp"
     "src/engine/Timer.h"
     "src/engine/Timer.cpp"
     "src/collision/CollisionCallback.h"
-    "src/collision/CollisionCallback.cpp"
     "src/collision/OverlapCallback.h"
     "src/mathematics/mathematics.h"
     "src/mathematics/mathematics_functions.h"
-    "src/mathematics/mathematics_functions.cpp"
     "src/mathematics/Matrix2x2.h"
-    "src/mathematics/Matrix2x2.cpp"
     "src/mathematics/Matrix3x3.h"
-    "src/mathematics/Matrix3x3.cpp"
     "src/mathematics/Quaternion.h"
-    "src/mathematics/Quaternion.cpp"
     "src/mathematics/Transform.h"
-    "src/mathematics/Transform.cpp"
     "src/mathematics/Vector2.h"
-    "src/mathematics/Vector2.cpp"
     "src/mathematics/Vector3.h"
     "src/mathematics/Ray.h"
-    "src/mathematics/Vector3.cpp"
     "src/memory/MemoryAllocator.h"
     "src/memory/PoolAllocator.h"
-    "src/memory/PoolAllocator.cpp"
     "src/memory/SingleFrameAllocator.h"
-    "src/memory/SingleFrameAllocator.cpp"
     "src/memory/DefaultAllocator.h"
     "src/memory/MemoryManager.h"
-    "src/memory/MemoryManager.cpp"
     "src/containers/Stack.h"
     "src/containers/LinkedList.h"
     "src/containers/List.h"
@@ -222,13 +159,91 @@ SET (REACTPHYSICS3D_SOURCES
     "src/containers/Set.h"
     "src/containers/Pair.h"
     "src/utils/Profiler.h"
-    "src/utils/Profiler.cpp"
     "src/utils/Logger.h"
+)
+
+# Source files
+SET (REACTPHYSICS3D_SOURCES
+    "src/body/Body.cpp"
+    "src/body/CollisionBody.cpp"
+    "src/body/RigidBody.cpp"
+    "src/collision/ContactManifoldInfo.cpp"
+    "src/collision/broadphase/BroadPhaseAlgorithm.cpp"
+    "src/collision/broadphase/DynamicAABBTree.cpp"
+    "src/collision/narrowphase/DefaultCollisionDispatch.cpp"
+    "src/collision/narrowphase/GJK/VoronoiSimplex.cpp"
+    "src/collision/narrowphase/GJK/GJKAlgorithm.cpp"
+    "src/collision/narrowphase/SAT/SATAlgorithm.cpp"
+    "src/collision/narrowphase/SphereVsSphereAlgorithm.cpp"
+    "src/collision/narrowphase/CapsuleVsCapsuleAlgorithm.cpp"
+    "src/collision/narrowphase/SphereVsCapsuleAlgorithm.cpp"
+    "src/collision/narrowphase/SphereVsConvexPolyhedronAlgorithm.cpp"
+    "src/collision/narrowphase/CapsuleVsConvexPolyhedronAlgorithm.cpp"
+    "src/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.cpp"
+    "src/collision/shapes/AABB.cpp"
+    "src/collision/shapes/ConvexShape.cpp"
+    "src/collision/shapes/ConvexPolyhedronShape.cpp"
+    "src/collision/shapes/ConcaveShape.cpp"
+    "src/collision/shapes/BoxShape.cpp"
+    "src/collision/shapes/CapsuleShape.cpp"
+    "src/collision/shapes/CollisionShape.cpp"
+    "src/collision/shapes/ConvexMeshShape.cpp"
+    "src/collision/shapes/SphereShape.cpp"
+    "src/collision/shapes/TriangleShape.cpp"
+    "src/collision/shapes/ConcaveMeshShape.cpp"
+    "src/collision/shapes/HeightFieldShape.cpp"
+    "src/collision/RaycastInfo.cpp"
+    "src/collision/ProxyShape.cpp"
+    "src/collision/TriangleVertexArray.cpp"
+    "src/collision/PolygonVertexArray.cpp"
+    "src/collision/TriangleMesh.cpp"
+    "src/collision/PolyhedronMesh.cpp"
+    "src/collision/HalfEdgeStructure.cpp"
+    "src/collision/CollisionDetection.cpp"
+    "src/collision/NarrowPhaseInfo.cpp"
+    "src/collision/ContactManifold.cpp"
+    "src/collision/ContactManifoldSet.cpp"
+    "src/collision/MiddlePhaseTriangleCallback.cpp"
+    "src/constraint/BallAndSocketJoint.cpp"
+    "src/constraint/ContactPoint.cpp"
+    "src/constraint/FixedJoint.cpp"
+    "src/constraint/HingeJoint.cpp"
+    "src/constraint/Joint.cpp"
+    "src/constraint/SliderJoint.cpp"
+    "src/engine/CollisionWorld.cpp"
+    "src/engine/ConstraintSolver.cpp"
+    "src/engine/ContactSolver.cpp"
+    "src/engine/DynamicsWorld.cpp"
+    "src/engine/Island.cpp"
+    "src/engine/Material.cpp"
+    "src/engine/OverlappingPair.cpp"
+    "src/engine/Timer.cpp"
+    "src/collision/CollisionCallback.cpp"
+    "src/mathematics/mathematics_functions.cpp"
+    "src/mathematics/Matrix2x2.cpp"
+    "src/mathematics/Matrix3x3.cpp"
+    "src/mathematics/Quaternion.cpp"
+    "src/mathematics/Transform.cpp"
+    "src/mathematics/Vector2.cpp"
+    "src/mathematics/Vector3.cpp"
+    "src/memory/PoolAllocator.cpp"
+    "src/memory/SingleFrameAllocator.cpp"
+    "src/memory/MemoryManager.cpp"
+    "src/utils/Profiler.cpp"
     "src/utils/Logger.cpp"
 )
 
 # Create the library
-ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_SOURCES})
+ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
+
+# Set the public headers
+#SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER ${REACTPHYSICS3D_HEADERS})
+
+# Headers
+TARGET_INCLUDE_DIRECTORIES(reactphysics3d PUBLIC
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+              $<INSTALL_INTERFACE:include>
+)
 
 # If we need to compile the testbed application
 IF(COMPILE_TESTBED)
@@ -239,3 +254,11 @@ ENDIF(COMPILE_TESTBED)
 IF(COMPILE_TESTS)
    add_subdirectory(test/)
 ENDIF(COMPILE_TESTS)
+
+# Install target
+INSTALL(TARGETS reactphysics3d
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
