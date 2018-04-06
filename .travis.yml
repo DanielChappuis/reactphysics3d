@@ -140,5 +140,7 @@ branches:
     - develop
 
 script:
+    - mkdir build_directory
+    - cd build_directory
     - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DDOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DCOMPILE_TESTS=True ../
     - make && make test ARGS="-V"
