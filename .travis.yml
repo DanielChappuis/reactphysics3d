@@ -218,8 +218,8 @@ after_success:
  # Generate code coverage report
  - if [ "${CODE_COVERAGE}" == "True" ]; then
      cd build_directory
-     lcov --directory . --capture --output-file coverage.info
-     lcov --remove coverage.info '/usr/*' 'test/*' --output-file coverage.info
+     lcov --directory 'src/' --capture --output-file coverage.info
+     lcov --remove coverage.info '/usr/*' --output-file coverage.info
      lcov --list coverage.info
      bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
    fi
