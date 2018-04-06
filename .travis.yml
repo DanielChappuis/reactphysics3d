@@ -1,7 +1,7 @@
 language: cpp
 matrix:
 
-  # Linux / GCC
+  # ----- Linux / GCC -----
   include:
     - os: linux
       addons:
@@ -12,21 +12,56 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" RUN_CODE_COVERAGE="True"
 
-    # OS X / GCC
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+
+    # ----- OS X / GCC -----
     - os: osx
       osx_image: xcode8
       env:
        - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+    - os: osx
+      osx_image: xcode8
+      env:
        - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+    - os: osx
+      osx_image: xcode8
+      env:
        - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+    - os: osx
+      osx_image: xcode8
+      env:
        - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
 
-    # Linux / Clang
+    # ----- Linux / Clang -----
     - os: linux
       addons:
         apt:
@@ -38,23 +73,72 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
 
-    # OS X / Clang
+    # ----- OS X / Clang -----
     - os: osx
       osx_image: xcode8
       env:
         - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
+    - os: osx
+      osx_image: xcode8
+      env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+
+    - os: osx
+      osx_image: xcode8
+      env:
         - BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: osx
+      osx_image: xcode8
+      env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="True"
 
 before_install:
   - eval "${MATRIX_EVAL}"
+
 branches:
   only:
     - master
     - develop
-script: ./travis_build.sh
+
+script:
+    - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DDOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DCOMPILE_TESTS=True ../
+    - make && make test ARGS="-V"
