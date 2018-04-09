@@ -70,6 +70,16 @@ matrix:
             - lcov
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - valgrind
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
 
     # ----- OS X / GCC -----
     - os: osx
@@ -212,6 +222,9 @@ script:
     - cd build_directory
     - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DDOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DCOMPILE_TESTS=True -DLOGS_ENABLE=${LOGGER} -DPROFILING_ENABLED=${PROFILER} -DCODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
     - make && make test ARGS="-V"
+    - if ["${VALGRIND}" == "True" ]; then
+        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode test/tests
+      fi
 
 after_success:
  
@@ -219,7 +232,8 @@ after_success:
  - if [ "${CODE_COVERAGE}" == "True" ]; then
      cd build_directory
      lcov --directory . --capture --output-file coverage.info
-     lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
+     lcov --remove coverage.info '/usr/*' --output-file coverage.info
+     lcov --remove coverage.info '/test/*' --output-file coverage.info
      lcov --list coverage.info
      bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
    fi
