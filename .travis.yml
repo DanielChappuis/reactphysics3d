@@ -229,7 +229,6 @@ script:
     - make && make test ARGS="-V"
     - if [ "${VALGRIND}" == "True" ]; then
         echo "Test"
-        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode test/tests
       fi
 
 after_success:
