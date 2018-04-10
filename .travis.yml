@@ -1,4 +1,9 @@
 language: cpp
+
+install:
+    - sudo apt-get update -qq
+    - sudo apt-get install valgrind
+
 matrix:
 
   # ----- Linux / GCC -----
