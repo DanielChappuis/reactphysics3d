@@ -33,8 +33,10 @@ OPTION(CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage
 OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
 
-# Warning Compiler flags
+# Warning, Optimization Compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
 IF(CODE_COVERAGE_ENABLED)
     IF(CMAKE_COMPILER_IS_GNUCXX)
