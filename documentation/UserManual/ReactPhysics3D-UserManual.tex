@@ -125,7 +125,9 @@
 
     \texttt{make}
 
-    TODO : Add "make install" information here
+    Finally, you can use the following command to install the static library and headers on your system: \\
+
+    \texttt{make install}
 
     \subsection{CMake using the graphical interface (Linux, Mac OS X and Windows)}
 
@@ -156,33 +158,31 @@
                                                     and therefore, it will run much faster. This mode must be used when you compile the final
                                                     release of your application.
 
-         \item[COMPILE\_TESTBED] If this variable is \texttt{ON}, the tesbed application of the library will be compiled.
+         \item[RP3D\_COMPILE\_TESTBED] If this variable is \texttt{ON}, the tesbed application of the library will be compiled.
                                                          The testbed application uses OpenGL for rendering.
                                                          Take a look at the section \ref{sec:testbed} for more information about the testbed application.
 
-         \item[COMPILE\_TESTS] If this variable is \texttt{ON}, the unit tests of the library will be compiled. You will then
+         \item[RP3D\_COMPILE\_TESTS] If this variable is \texttt{ON}, the unit tests of the library will be compiled. You will then
                                              be able to launch the tests to make sure that they are running fine on your system.
 
-          \item[PROFILING\_ENABLED] If this variable is \texttt{ON}, the integrated profiler will collect data during the execution of the application.
+          \item[RP3D\_PROFILING\_ENABLED] If this variable is \texttt{ON}, the integrated profiler will collect data during the execution of the application.
                                                       This might be useful to see which part of the ReactPhysics3D
                                                       library takes time during its execution. This variable must be set to \texttt{OFF} when you compile
 						      the final release of your application. You can find more information about the profiler in section \ref{sec:profiler}.
 
-         \item[LOGS\_ENABLED] Set this variable to \texttt{ON} if you want to enable the internal logger of ReactPhysics3D. Logs can be useful for debugging the application.
+         \item[RP3D\_LOGS\_ENABLED] Set this variable to \texttt{ON} if you want to enable the internal logger of ReactPhysics3D. Logs can be useful for debugging the application.
 		              You can find more information about the logger in section \ref{sec:logger}.
 
-          \item[DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the library will be compiled with double floating point precision.
+          \item[RP3D\_DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the library will be compiled with double floating point precision.
                                                                     Otherwise, the library will be compiled with single precision.
        \end{description}
 
 
     \section{Using ReactPhysics3D in your application}
 
-    TODO : Update this section with "make install" way
-
     In order to use ReactPhysics3D in your own application, first build
-    the static library as described above to get the
-    static library file in the \texttt{lib/} folder. Then, in your code, you have to include
+    and install the static library and headers as described above.
+    Then, in your code, you have to include
     the ReactPhysics3D header file with the line: \\
 
     \begin{lstlisting}
@@ -1835,7 +1835,7 @@ world.setEventListener(&listener);
     \section{Profiler}
     \label{sec:profiler}
 
-    If you build the library with the \texttt{PROFILING\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}), a real-time profiler will collect information while the application
+    If you build the library with the \texttt{RP3D\_PROFILING\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}), a real-time profiler will collect information while the application
     is running. Then, at the end of your application, when the destructor of the \texttt{DynamicsWorld} class is called, information about the running time of the library will be displayed in the
     standard output. This can be useful to know where time is spent in the different parts of the ReactPhysics3D library in case your application is too slow. \\
 
@@ -1870,7 +1870,7 @@ rp3d::CollisionWorld world(rp3d::WorldSettings(), nullptr, profiler);
     \label{sec:logger}
 
     ReactPhysics3D has an internal logger that can be used to output logs while running the application. This can be useful for debugging for instance.
-    To enable the logger, you need to build the library with the \texttt{LOGS\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}). \\
+    To enable the logger, you need to build the library with the \texttt{RP3D\_LOGS\_ENABLED} variable enabled (see section \ref{sec:cmakevariables}). \\
 
     Each collision or dynamics world has its own logger. By default, logs wil be written in an HTML file next to the executable.
     If you have multiple worlds in your application, there will be one log file for each world. The logs files will be named after the
