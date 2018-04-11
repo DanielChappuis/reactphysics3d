@@ -1,8 +1,8 @@
 language: cpp
 
 install:
-    - sudo apt-get update -qq
-    - sudo apt-get install valgrind
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install valgrind; fi
 
 matrix:
 
@@ -228,7 +228,7 @@ script:
     - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DDOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DCOMPILE_TESTS=True -DLOGS_ENABLE=${LOGGER} -DPROFILING_ENABLED=${PROFILER} -DCODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
     - make && make test ARGS="-V"
     - if [ "${VALGRIND}" == "True" ]; then
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode test/tests;
+        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
       fi
 
 after_success:
