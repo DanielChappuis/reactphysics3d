@@ -25,6 +25,7 @@
  - The raycasting of a ConvexMeshShape does not use GJK algorithm anymore.
  - The test do detect if a point is inside of a ConvexMeshShape does not use GJK algorithm anymore.
  - A lot of optimizations have been performed and the library is now faster.
+ - Release code is now compiled with -O2 compiler optimization level (instead of none)
  - Documentation has been updated
 
 ### Removed

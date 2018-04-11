@@ -10,7 +10,7 @@ include(GNUInstallDirs)
 # Build type
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "Release")
-ENDIF (NOT CMAKE_BUILD_TYPE)
+ENDIF()
 
 # Where to build the library
 SET(LIBRARY_OUTPUT_PATH "lib")
@@ -25,20 +25,18 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 ENABLE_TESTING()
 
 # Options
-OPTION(COMPILE_TESTBED "Select this if you want to build the testbed application" OFF)
-OPTION(COMPILE_TESTS "Select this if you want to build the tests" OFF)
-OPTION(PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
-OPTION(LOGS_ENABLED "Select this if you want to compile with logs enabled during execution" OFF)
-OPTION(CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
-OPTION(DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
+OPTION(RP3D_COMPILE_TESTBED "Select this if you want to build the testbed application" OFF)
+OPTION(RP3D_COMPILE_TESTS "Select this if you want to build the tests" OFF)
+OPTION(RP3D_PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
+OPTION(RP3D_LOGS_ENABLED "Select this if you want to compile with logs enabled during execution" OFF)
+OPTION(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
+OPTION(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
                                  values" OFF)
 
-# Warning, Optimization Compiler flags
+# Warning Compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
-IF(CODE_COVERAGE_ENABLED)
+IF(RP3D_CODE_COVERAGE_ENABLED)
     IF(CMAKE_COMPILER_IS_GNUCXX)
         INCLUDE(CodeCoverage)
         SETUP_TARGET_FOR_COVERAGE(${PROJECT_NAME}_coverage tests coverage)
@@ -62,17 +60,17 @@ ENDIF()
 #    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 #ENDIF()
 
-IF(PROFILING_ENABLED)
+IF(RP3D_PROFILING_ENABLED)
     ADD_DEFINITIONS(-DIS_PROFILING_ACTIVE)
-ENDIF(PROFILING_ENABLED)
+ENDIF()
 
-IF(LOGS_ENABLED)
+IF(RP3D_LOGS_ENABLED)
     ADD_DEFINITIONS(-DIS_LOGGING_ACTIVE)
-ENDIF(LOGS_ENABLED)
+ENDIF()
 
-IF(DOUBLE_PRECISION_ENABLED)
+IF(RP3D_DOUBLE_PRECISION_ENABLED)
     ADD_DEFINITIONS(-DIS_DOUBLE_PRECISION_ENABLED)
-ENDIF(DOUBLE_PRECISION_ENABLED)
+ENDIF()
 
 # Headers files
 SET (REACTPHYSICS3D_HEADERS
@@ -239,7 +237,7 @@ SET (REACTPHYSICS3D_SOURCES
 ADD_LIBRARY(reactphysics3d STATIC ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
 
 # Set the public headers
-SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_HEADERS}")
+#SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER ${REACTPHYSICS3D_HEADERS})
 
 # Headers
 TARGET_INCLUDE_DIRECTORIES(reactphysics3d PUBLIC
@@ -248,19 +246,19 @@ TARGET_INCLUDE_DIRECTORIES(reactphysics3d PUBLIC
 )
 
 # If we need to compile the testbed application
-IF(COMPILE_TESTBED)
+IF(RP3D_COMPILE_TESTBED)
    add_subdirectory(testbed/)
-ENDIF(COMPILE_TESTBED)
+ENDIF()
 
 # If we need to compile the tests
-IF(COMPILE_TESTS)
+IF(RP3D_COMPILE_TESTS)
    add_subdirectory(test/)
-ENDIF(COMPILE_TESTS)
+ENDIF()
 
 # Install target
 INSTALL(TARGETS reactphysics3d
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/rp3d"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/rp3d"
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/rp3d"
-        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/rp3d/"
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
