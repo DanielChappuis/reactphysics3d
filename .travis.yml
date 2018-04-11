@@ -225,7 +225,7 @@ branches:
 script:
     - mkdir build_directory
     - cd build_directory
-    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DDOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DCOMPILE_TESTS=True -DLOGS_ENABLE=${LOGGER} -DPROFILING_ENABLED=${PROFILER} -DCODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
+    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DRP3D_DOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DRP3D_COMPILE_TESTS=True -DRP3D_LOGS_ENABLE=${LOGGER} -DRP3D_PROFILING_ENABLED=${PROFILER} -DRP3D_CODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
     - make && make test ARGS="-V"
     - if [ "${VALGRIND}" == "True" ]; then
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
