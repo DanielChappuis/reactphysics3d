@@ -93,18 +93,24 @@ decimal ContactManifoldInfo::getLargestPenetrationDepth() const {
 
 // Reduce the number of contact points of the currently computed manifold
 // This is based on the technique described by Dirk Gregorius in his
-// "Contacts Creation" GDC presentation
+// "Contacts Creation" GDC presentation. This method will reduce the number of
+// contact points to a maximum of 4 points (but it can be less).
 void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
 
     assert(mContactPointsList != nullptr);
 
-    // The following algorithm only works to reduce to 4 contact points
+    // The following algorithm only works to reduce to a maximum of 4 contact points
     assert(MAX_CONTACT_POINTS_IN_MANIFOLD == 4);
 
     // If there are too many contact points in the manifold
     if (mNbContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
 
+        uint nbReducedPoints = 0;
+
         ContactPointInfo* pointsToKeep[MAX_CONTACT_POINTS_IN_MANIFOLD];
+        for (int i=0; i<MAX_CONTACT_POINTS_IN_MANIFOLD; i++) {
+            pointsToKeep[i] = nullptr;
+        }
 
         //  Compute the initial contact point we need to keep.
         // The first point we keep is always the point in a given
@@ -123,6 +129,7 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
         pointsToKeep[0] = element;
         decimal maxDotProduct = searchDirection.dot(element->localPoint1);
         element = element->next;
+        nbReducedPoints = 1;
         while(element != nullptr) {
 
             decimal dotProduct = searchDirection.dot(element->localPoint1);
@@ -132,6 +139,8 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
             }
             element = element->next;
         }
+        assert(pointsToKeep[0] != nullptr);
+        assert(nbReducedPoints == 1);
 
         // Compute the second contact point we need to keep.
         // The second point we keep is the one farthest away from the first point.
@@ -149,10 +158,12 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
             if (distance >= maxDistance) {
                 maxDistance = distance;
                 pointsToKeep[1] = element;
+                nbReducedPoints = 2;
             }
             element = element->next;
         }
         assert(pointsToKeep[1] != nullptr);
+        assert(nbReducedPoints == 2);
 
         // Compute the third contact point we need to keep.
         // The second point is the one producing the triangle with the larger area
@@ -193,12 +204,13 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
         if (maxArea > (-minArea)) {
             isPreviousAreaPositive = true;
             pointsToKeep[2] = thirdPointMaxArea;
+            nbReducedPoints = 3;
         }
         else {
             isPreviousAreaPositive = false;
             pointsToKeep[2] = thirdPointMinArea;
+            nbReducedPoints = 3;
         }
-        assert(pointsToKeep[2] != nullptr);
 
         // Compute the 4th point by choosing the triangle that add the most
         // triangle area to the previous triangle and has opposite sign area (opposite winding)
@@ -206,16 +218,18 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
         decimal largestArea = decimal(0.0); // Largest area (positive or negative)
         element = mContactPointsList;
 
-        // For each remaining point
-        while(element != nullptr) {
+        if (nbReducedPoints == 3) {
 
-            if (element == pointsToKeep[0] || element == pointsToKeep[1] || element == pointsToKeep[2]) {
+            // For each remaining point
+            while(element != nullptr) {
+
+                if (element == pointsToKeep[0] || element == pointsToKeep[1] || element == pointsToKeep[2]) {
                 element = element->next;
                 continue;
-            }
+                }
 
-            // For each edge of the triangle made by the first three points
-            for (uint i=0; i<3; i++) {
+                // For each edge of the triangle made by the first three points
+                for (uint i=0; i<3; i++) {
 
                 uint edgeVertex1Index = i;
                 uint edgeVertex2Index = i < 2 ? i + 1 : 0;
@@ -229,51 +243,61 @@ void ContactManifoldInfo::reduce(const Transform& shape1ToWorldTransform) {
                 // We are looking at the triangle with maximal area (positive or negative).
                 // If the previous area is positive, we are looking at negative area now.
                 // If the previous area is negative, we are looking at the positive area now.
-                if (isPreviousAreaPositive && area < largestArea) {
+                if (isPreviousAreaPositive && area <= largestArea) {
                     largestArea = area;
                     pointsToKeep[3] = element;
+                    nbReducedPoints = 4;
                 }
-                else if (!isPreviousAreaPositive && area > largestArea) {
+                else if (!isPreviousAreaPositive && area >= largestArea) {
                     largestArea = area;
                     pointsToKeep[3] = element;
+                    nbReducedPoints = 4;
                 }
-            }
+                }
 
-            element = element->next;
+                element = element->next;
+            }
         }
-        assert(pointsToKeep[3] != nullptr);
 
         // Delete the contact points we do not want to keep from the linked list
         element = mContactPointsList;
         ContactPointInfo* previousElement = nullptr;
         while(element != nullptr) {
 
+            bool deletePoint = true;
+
             // Skip the points we want to keep
-            if (element == pointsToKeep[0] || element == pointsToKeep[1] ||
-                element == pointsToKeep[2] || element == pointsToKeep[3]) {
+            for (uint i=0; i<nbReducedPoints; i++) {
 
-                previousElement = element;
+                if (element == pointsToKeep[i]) {
+
+                    previousElement = element;
+                    element = element->next;
+                    deletePoint = false;
+                }
+            }
+
+            if (deletePoint) {
+
+                ContactPointInfo* elementToDelete = element;
+                if (previousElement != nullptr) {
+                    previousElement->next = elementToDelete->next;
+                }
+                else {
+                    mContactPointsList = elementToDelete->next;
+                }
                 element = element->next;
-                continue;
-            }
 
-            ContactPointInfo* elementToDelete = element;
-            if (previousElement != nullptr) {
-                previousElement->next = elementToDelete->next;
-            }
-            else {
-                mContactPointsList = elementToDelete->next;
-            }
-            element = element->next;
+                // Call the destructor
+                elementToDelete->~ContactPointInfo();
 
-            // Call the destructor
-            elementToDelete->~ContactPointInfo();
-
-            // Delete the current element
-            mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
+                // Delete the current element
+                mAllocator.release(elementToDelete, sizeof(ContactPointInfo));
+            }
         }
 
-        mNbContactPoints = 4;
+        assert(nbReducedPoints > 0 && nbReducedPoints <= 4);
+        mNbContactPoints = nbReducedPoints;
     }
 }
 
