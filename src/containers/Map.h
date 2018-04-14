@@ -183,7 +183,7 @@ class Map {
             for (int i=0; i<mNbUsedEntries; i++) {
 
                 // If the entry is not free
-                if (newEntries[i].hashCode != -1) {
+                if (newEntries[i].keyValue != nullptr) {
 
                     // Get the corresponding bucket
                     int bucket = newEntries[i].hashCode % newCapacity;
@@ -551,7 +551,7 @@ class Map {
                             mAllocator.release(mEntries[i].keyValue, sizeof(Pair<K,V>));
                             mEntries[i].keyValue = nullptr;
                         }
-                        mEntries[i].hashCode = -1;
+                        assert(mEntries[i].keyValue == nullptr);
                         mEntries[i].next = mFreeIndex;
                         mFreeIndex = i;
                         mNbFreeEntries++;

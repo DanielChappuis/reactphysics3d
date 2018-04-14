@@ -50,9 +50,9 @@ class Set {
         /// An entry of the set
         struct Entry {
 
-            size_t hashCode;			// Hash code of the entry
-            int next;					// Index of the next entry
-            V* value;					// Pointer to the value stored in the entry
+            size_t hashCode;		// Hash code of the entry
+            int next;				// Index of the next entry
+            V* value;				// Pointer to the value stored in the entry
 
             /// Constructor
             Entry() {
@@ -182,7 +182,7 @@ class Set {
             for (int i=0; i<mNbUsedEntries; i++) {
 
                 // If the entry is not free
-                if (newEntries[i].hashCode != -1) {
+                if (newEntries[i].value != nullptr) {
 
                     // Get the corresponding bucket
                     int bucket = newEntries[i].hashCode % newCapacity;
@@ -426,7 +426,7 @@ class Set {
         }
 
         /// Allocate memory for a given number of elements
-        void reserve(size_t capacity) {
+        void reserve(int capacity) {
 
            if (capacity <= mCapacity) return;
 
@@ -537,7 +537,7 @@ class Set {
                             mAllocator.release(mEntries[i].value, sizeof(V));
                             mEntries[i].value = nullptr;
                         }
-                        mEntries[i].hashCode = -1;
+                        assert(mEntries[i].value == nullptr);
                         mEntries[i].next = mFreeIndex;
                         mFreeIndex = i;
                         mNbFreeEntries++;

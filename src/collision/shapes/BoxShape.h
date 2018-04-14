@@ -206,6 +206,9 @@ inline Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
         case 6: return Vector3(extent.x, extent.y, -extent.z);
         case 7: return Vector3(-extent.x, extent.y, -extent.z);
     }
+
+    assert(false);
+    return Vector3::zero();
 }
 
 // Return the normal vector of a given face of the polyhedron

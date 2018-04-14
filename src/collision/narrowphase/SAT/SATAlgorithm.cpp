@@ -170,7 +170,6 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
     // Minimum penetration depth
     decimal minPenetrationDepth = DECIMAL_LARGEST;
     uint minFaceIndex = 0;
-    uint minEdgeIndex = 0;
     bool isMinPenetrationFaceNormal = false;
     Vector3 separatingAxisCapsuleSpace;
     Vector3 separatingPolyhedronEdgeVertex1;
@@ -235,7 +234,6 @@ bool SATAlgorithm::testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfo* narro
             // Check if we have found a new minimum penetration axis
             if (penetrationDepth < minPenetrationDepth) {
                 minPenetrationDepth = penetrationDepth;
-                minEdgeIndex = e;
                 isMinPenetrationFaceNormal = false;
                 separatingAxisCapsuleSpace = outAxis;
                 separatingPolyhedronEdgeVertex1 = edgeVertex1;
@@ -474,7 +472,8 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
     uint minFaceIndex = 0;
     bool isMinPenetrationFaceNormal = false;
     bool isMinPenetrationFaceNormalPolyhedron1 = false;
-    uint minSeparatingEdge1Index, minSeparatingEdge2Index;
+    uint minSeparatingEdge1Index = 0;
+    uint minSeparatingEdge2Index = 0;
     Vector3 separatingEdge1A, separatingEdge1B;
     Vector3 separatingEdge2A, separatingEdge2B;
     Vector3 minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
