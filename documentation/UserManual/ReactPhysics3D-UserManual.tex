@@ -1669,8 +1669,6 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     \section{Testbed application}
     \label{sec:testbed}
 
-    TODO : Update screenshot here
-
     \begin{figure}[h]
         \centering
         \includegraphics{testbed.png}
@@ -1857,7 +1855,7 @@ world.setEventListener(&listener);
 rp3d::Profiler* profiler = new rp3d::Profiler();
 
 // Add a log destination file
-profiler->addFileDestination("custom\_profile.txt", Profiler::Format::Text);
+profiler->addFileDestination("custom_profile.txt", Profiler::Format::Text);
 
 // Add an output stream destination 
 profiler->addStreamDestination(std::cout, Profiler::Format::Text);
@@ -1890,11 +1888,11 @@ rp3d::CollisionWorld world(rp3d::WorldSettings(), nullptr, profiler);
 rp3d::Logger* logger = new rp3d::Logger();
 
 // Log level (infor, warning and error
-uint logLevel = static\_cast<uint>(Logger::Level::Info) | static\_cast<uint>(Logger::Level::Warning) |
-static\_cast<uint>(Logger::Level::Error);
+uint logLevel = static_cast<uint>(Logger::Level::Info) | static_cast<uint>(Logger::Level::Warning) |
+static_cast<uint>(Logger::Level::Error);
 
 // Add a log destination file
-logger->addFileDestination("custom\_log.html", logLevel, Logger::Format::HTML);
+logger->addFileDestination("custom_log.html", logLevel, Logger::Format::HTML);
 
 // Add an output stream destination 
 logger->addStreamDestination(std::cout, logLevel, Logger::Format::Text);
