@@ -97,10 +97,12 @@ class MemoryManager {
 inline void* MemoryManager::allocate(AllocationType allocationType, size_t size) {
 
     switch (allocationType) {
-       case AllocationType::Base: return mBaseAllocator->allocate(size); break;
-       case AllocationType::Pool: return mPoolAllocator.allocate(size); break;
-       case AllocationType::Frame: return mSingleFrameAllocator.allocate(size); break;
+       case AllocationType::Base: return mBaseAllocator->allocate(size);
+       case AllocationType::Pool: return mPoolAllocator.allocate(size);
+       case AllocationType::Frame: return mSingleFrameAllocator.allocate(size);
     }
+
+    return nullptr;
 }
 
 // Release previously allocated memory.

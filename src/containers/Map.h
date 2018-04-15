@@ -427,7 +427,7 @@ class Map {
         }
 
         /// Allocate memory for a given number of elements
-        void reserve(size_t capacity) {
+        void reserve(int capacity) {
 
            if (capacity <= mCapacity) return;
 
