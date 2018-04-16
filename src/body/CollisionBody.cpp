@@ -41,6 +41,10 @@ CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, 
               : Body(id), mType(BodyType::DYNAMIC), mTransform(transform), mProxyCollisionShapes(nullptr),
                 mNbCollisionShapes(0), mContactManifoldsList(nullptr), mWorld(world) {
 
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
+
 }
 
 // Destructor

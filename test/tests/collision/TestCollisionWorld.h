@@ -2620,10 +2620,7 @@ class TestCollisionWorld : public Test {
             test(collisionData->getNbContactManifolds() == 1);
             test(collisionData->getTotalNbContactPoints() == 4);
 
-            // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
-
-            for (int i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
+            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
                 test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 

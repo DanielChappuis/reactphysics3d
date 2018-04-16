@@ -54,22 +54,15 @@ const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 // Constructor
 TestbedApplication::TestbedApplication(bool isFullscreen)
                    : Screen(Vector2i(1280, 800), "Testbed ReactPhysics3D", true, isFullscreen),
-                     mIsInitialized(false), mGui(this), mFPS(0), mNbFrames(0), mPreviousTime(0),
-                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0) {
-
-    mCurrentScene = NULL;
-    mIsMultisamplingActive = true;
-    mWidth = 1280;
-    mHeight = 720;
-    mEngineSettings = EngineSettings::defaultSettings();
-    mSinglePhysicsStepEnabled = false;
-    mSinglePhysicsStepDone = false;
-    mWindowToFramebufferRatio = Vector2(1, 1);
-    mIsShadowMappingEnabled = true;
-    mIsVSyncEnabled = true;
-    mIsContactPointsDisplayed = false;
-    mIsAABBsDisplayed = false;
-    mIsWireframeEnabled = false;
+                     mIsInitialized(false), mGui(this), mCurrentScene(nullptr),
+                     mEngineSettings(EngineSettings::defaultSettings()),
+                     mFPS(0), mNbFrames(0), mPreviousTime(0),
+                     mLastTimeComputedFPS(0), mFrameTime(0), mPhysicsTime(0),
+                     mIsMultisamplingActive(true), mWidth(1280), mHeight(720),
+                     mSinglePhysicsStepEnabled(false), mSinglePhysicsStepDone(false),
+                     mWindowToFramebufferRatio(Vector2(1, 1)), mIsShadowMappingEnabled(true),
+                     mIsContactPointsDisplayed(false), mIsAABBsDisplayed(false), mIsWireframeEnabled(false),
+                     mIsVSyncEnabled(true) {
 
     init();
 

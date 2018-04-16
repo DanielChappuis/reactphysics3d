@@ -100,7 +100,7 @@ void SingleFrameAllocator::reset() {
 
             // Divide the total memory to allocate by two
             mTotalSizeBytes /= 2;
-            if (mTotalSizeBytes <= 0) mTotalSizeBytes = 1;
+            if (mTotalSizeBytes == 0) mTotalSizeBytes = 1;
 
             // Allocate a whole block of memory at the beginning
             mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));

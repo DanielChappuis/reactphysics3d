@@ -34,7 +34,11 @@ using namespace reactphysics3d;
 // Constructor
 CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
                : mType(type), mName(name), mId(0) {
-    
+
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
+
 }
 
 // Compute the world-space AABB of the collision shape given a transform from shape

@@ -45,6 +45,10 @@ ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& 
                mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
 
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
+
 }
 
 // Initialize the contact constraints

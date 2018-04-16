@@ -47,6 +47,10 @@ const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 // Constructor
 SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
 
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
+
 }
 
 // Test collision between a sphere and a convex mesh

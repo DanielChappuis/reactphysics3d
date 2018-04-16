@@ -31,7 +31,7 @@ using namespace openglframework;
 
 // Constructor
 Scene::Scene(const std::string& name, EngineSettings& engineSettings, bool isShadowMappingEnabled)
-      : mName(name), mEngineSettings(engineSettings), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
+      : mName(name), mEngineSettings(engineSettings), mLastMouseX(0), mLastMouseY(0), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
         mIsContactPointsDisplayed(true), mIsAABBsDisplayed(false), mIsWireframeEnabled(false) {
 

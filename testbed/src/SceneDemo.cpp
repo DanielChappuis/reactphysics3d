@@ -48,7 +48,8 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sc
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
-                     mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/") {
+                     mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/"),
+                     mPhysicsWorld(nullptr) {
 
     shadowMapTextureLevel++;
 
