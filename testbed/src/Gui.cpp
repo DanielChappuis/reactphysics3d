@@ -39,7 +39,10 @@ double Gui::mCachedUpdateTime = 0;
 double Gui::mCachedPhysicsUpdateTime = 0;
 
 // Constructor
-Gui::Gui(TestbedApplication* app) : mApp(app), mSimulationPanel(nullptr) {
+Gui::Gui(TestbedApplication* app)
+    : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
+      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mPhysicsTimeLabel(nullptr)
+{
 
 }
 

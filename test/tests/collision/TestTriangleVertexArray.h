@@ -47,7 +47,7 @@ class TestTriangleVertexArray : public Test {
         double mVertices2[4*3];
         float mNormals2[4*3];
         uint mIndices1[6];
-        uint mIndices2[6];
+        short mIndices2[6];
         TriangleVertexArray* mTriangleVertexArray1;
         TriangleVertexArray* mTriangleVertexArray2;
 

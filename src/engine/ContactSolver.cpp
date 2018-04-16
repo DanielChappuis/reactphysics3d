@@ -42,7 +42,7 @@ const decimal ContactSolver::SLOP = decimal(0.01);
 ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
                mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
-               mLinearVelocities(nullptr), mAngularVelocities(nullptr),
+               mContactPoints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
                mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
 
 #ifdef IS_PROFILING_ACTIVE

@@ -28,7 +28,7 @@
 
 
 // Constructor
-Timer::Timer() : mIsRunning(false) {
+Timer::Timer() : mLastUpdateTime(0), mDeltaTime(0), mAccumulator(0), mIsRunning(false) {
 
 }
 

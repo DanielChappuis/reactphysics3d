@@ -273,7 +273,6 @@ class ContactSolver {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
-
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
