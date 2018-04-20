@@ -215,15 +215,15 @@ class TestTriangleVertexArray : public Test {
 
             mTriangleVertexArray2->getTriangleVerticesIndices(0, triangle0Indices);
 
-            test(triangle0Indices[0] == mIndices2[0]);
-            test(triangle0Indices[1] == mIndices2[1]);
-            test(triangle0Indices[2] == mIndices2[2]);
+            test(triangle0Indices[0] == static_cast<short>(mIndices2[0]));
+            test(triangle0Indices[1] == static_cast<short>(mIndices2[1]));
+            test(triangle0Indices[2] == static_cast<short>(mIndices2[2]));
 
             mTriangleVertexArray2->getTriangleVerticesIndices(1, triangle1Indices);
 
-            test(triangle1Indices[0] == mIndices2[3]);
-            test(triangle1Indices[1] == mIndices2[4]);
-            test(triangle1Indices[2] == mIndices2[5]);
+            test(triangle1Indices[0] == static_cast<short>(mIndices2[3]));
+            test(triangle1Indices[1] == static_cast<short>(mIndices2[4]));
+            test(triangle1Indices[2] == static_cast<short>(mIndices2[5]));
 
             // Get triangle vertices
 
