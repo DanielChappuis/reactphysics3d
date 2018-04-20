@@ -26,6 +26,7 @@
 // Libraries
 #include "SphereVsSphereAlgorithm.h"
 #include "collision/shapes/SphereShape.h"
+#include "collision/NarrowPhaseInfo.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  

@@ -30,6 +30,7 @@
 #include "Test.h"
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "memory/MemoryManager.h"
+#include "utils/Profiler.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

@@ -26,11 +26,11 @@
 #ifndef REACTPHYSICS3D_OVERLAP_CALLBACK_H
 #define REACTPHYSICS3D_OVERLAP_CALLBACK_H
 
-// Libraries
-#include "body/CollisionBody.h"
-
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
 
 // Class OverlapCallback
 /**

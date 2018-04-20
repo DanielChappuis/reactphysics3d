@@ -27,9 +27,7 @@
 #define REACTPHYSICS3D_VECTOR3_H
 
 // Libraries
-#include <cmath>
 #include <cassert>
-#include <string>
 #include "mathematics_functions.h"
 #include "decimal.h"
 
@@ -37,7 +35,7 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class Vector3
+// Struct Vector3
 /**
  * This class represents a 3D vector.
  */
@@ -58,7 +56,7 @@ struct Vector3 {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor of the class Vector3D
+        /// Constructor of the struct Vector3
         Vector3();
 
         /// Constructor with arguments
@@ -172,7 +170,7 @@ struct Vector3 {
         friend Vector3 operator/(const Vector3& vector1, const Vector3& vector2);
 };
 
-// Constructor of the class Vector3D
+// Constructor of the struct Vector3
 inline Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
 
 }

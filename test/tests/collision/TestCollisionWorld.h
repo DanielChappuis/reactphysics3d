@@ -29,6 +29,8 @@
 // Libraries
 #include "reactphysics3d.h"
 #include "Test.h"
+#include "constraint/ContactPoint.h"
+#include "collision/ContactManifold.h"
 #include <map>
 
 /// Reactphysics3D namespace

@@ -27,24 +27,23 @@
 #define REACTPHYSICS3D_COLLISION_BODY_H
 
 // Libraries
-#include <stdexcept>
 #include <cassert>
 #include "Body.h"
-#include "mathematics/Transform.h"
 #include "collision/shapes/AABB.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/RaycastInfo.h"
-#include "memory/PoolAllocator.h"
+#include "mathematics/Transform.h"
 #include "configuration.h"
-#include "utils/Profiler.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
-// Class declarations
+// Declarations
 struct ContactManifoldListElement;
 class ProxyShape;
 class CollisionWorld;
+class CollisionShape;
+struct RaycastInfo;
+class PoolAllocator;
+class Profiler;
 
 /// Enumeration for the type of a body
 /// STATIC : A static body has infinite mass, zero velocity but the position can be
@@ -210,33 +209,6 @@ inline BodyType CollisionBody::getType() const {
     return mType;
 }
 
-// Set the type of the body
-/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-/**
- * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
- */
-inline void CollisionBody::setType(BodyType type) {
-    mType = type;
-
-    if (mType == BodyType::STATIC) {
-
-        // Update the broad-phase state of the body
-        updateBroadPhaseState();
-    }
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set type=" +
-             (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
-}
-
 // Return the current position and orientation
 /**
  * @return The current transformation of the body that transforms the local-space
@@ -244,23 +216,6 @@ inline void CollisionBody::setType(BodyType type) {
  */
 inline const Transform& CollisionBody::getTransform() const {
     return mTransform;
-}
-
-// Set the current position and orientation
-/**
- * @param transform The transformation of the body that transforms the local-space
- *                  of the body into world-space
- */
-inline void CollisionBody::setTransform(const Transform& transform) {
-
-    // Update the transform of the body
-    mTransform = transform;
-
-    // Update the broad-phase state of the body
-    updateBroadPhaseState();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
 }
 
 // Return the first element of the linked list of contact manifolds involving this body

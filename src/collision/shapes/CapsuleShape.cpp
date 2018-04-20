@@ -27,6 +27,7 @@
 #include "CapsuleShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
 
 using namespace reactphysics3d;

@@ -26,6 +26,7 @@
 // Libraries
 #include "Quaternion.h"
 #include "Vector3.h"
+#include "Matrix3x3.h"
 #include <cassert>
 
 // Namespace

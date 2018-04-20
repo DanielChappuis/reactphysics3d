@@ -25,6 +25,9 @@
 
 // Libraries
 #include "ProxyShape.h"
+#include "utils/Logger.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
@@ -55,6 +58,45 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
     const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
     return mCollisionShape->testPointInside(localPoint, this);
+}
+
+// Set the collision category bits
+/**
+ * @param collisionCategoryBits The collision category bits mask of the proxy shape
+ */
+void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
+    mCollisionCategoryBits = collisionCategoryBits;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collisionCategoryBits=" +
+             std::to_string(mCollisionCategoryBits));
+}
+
+// Set the collision bits mask
+/**
+ * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
+ */
+void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
+    mCollideWithMaskBits = collideWithMaskBits;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collideWithMaskBits=" +
+             std::to_string(mCollideWithMaskBits));
+}
+
+// Set the local to parent body transform
+void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
+
+    mLocalToBodyTransform = transform;
+
+    mBody->setIsSleeping(false);
+
+    // Notify the body that the proxy shape has to be updated in the broad-phase
+    mBody->updateProxyShapeInBroadPhase(this, true);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localToBodyTransform=" +
+             mLocalToBodyTransform.to_string());
 }
 
 // Raycast method with feedback information

@@ -29,9 +29,9 @@
 #include "collision/ContactManifoldInfo.h"
 #include "collision/NarrowPhaseInfo.h"
 #include "containers/containers_common.h"
+#include "collision/ContactPointInfo.h"
 
 using namespace reactphysics3d;
-
 
 // Constructor
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,

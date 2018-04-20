@@ -27,6 +27,7 @@
 #include "TriangleShape.h"
 #include "collision/ProxyShape.h"
 #include "mathematics/mathematics_functions.h"
+#include "collision/RaycastInfo.h"
 #include "utils/Profiler.h"
 #include "configuration.h"
 #include <cassert>
@@ -206,6 +207,25 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
 
     // We compute the contact normal as the barycentric interpolation of the three vertices normals
     return (u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2]).getUnit();
+}
+
+// Update the AABB of a body using its collision shape
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
+void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
+
+    const Vector3 worldPoint1 = transform * mPoints[0];
+    const Vector3 worldPoint2 = transform * mPoints[1];
+    const Vector3 worldPoint3 = transform * mPoints[2];
+
+    const Vector3 xAxis(worldPoint1.x, worldPoint2.x, worldPoint3.x);
+    const Vector3 yAxis(worldPoint1.y, worldPoint2.y, worldPoint3.y);
+    const Vector3 zAxis(worldPoint1.z, worldPoint2.z, worldPoint3.z);
+    aabb.setMin(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()));
+    aabb.setMax(Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
 }
 
 // Raycast method with feedback information

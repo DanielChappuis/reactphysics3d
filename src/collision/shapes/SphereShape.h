@@ -28,11 +28,13 @@
 
 // Libraries
 #include "ConvexShape.h"
-#include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
 
 // Class SphereShape
 /**
@@ -150,22 +152,6 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
     tensor.setAllValues(diag, 0.0, 0.0,
                         0.0, diag, 0.0,
                         0.0, 0.0, diag);
-}
-
-// Update the AABB of a body using its collision shape
-/**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
- */
-inline void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
-
-    // Get the local extents in x,y and z direction
-    Vector3 extents(mMargin, mMargin, mMargin);
-
-    // Update the AABB with the new minimum and maximum coordinates
-    aabb.setMin(transform.getPosition() - extents);
-    aabb.setMax(transform.getPosition() + extents);
 }
 
 // Return true if a point is inside the collision shape

@@ -29,6 +29,7 @@
 // Libraries
 #include "Test.h"
 #include "mathematics/Transform.h"
+#include "mathematics/Matrix3x3.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

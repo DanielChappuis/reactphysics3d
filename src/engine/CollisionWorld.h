@@ -27,24 +27,24 @@
 #define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
-#include <algorithm>
 #include "mathematics/mathematics.h"
 #include "containers/List.h"
-#include "utils/Profiler.h"
-#include "utils/Logger.h"
-#include "body/CollisionBody.h"
-#include "collision/RaycastInfo.h"
-#include "OverlappingPair.h"
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
-#include "constraint/ContactPoint.h"
 #include "memory/MemoryManager.h"
-#include "EventListener.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
 // Declarations
+class Profiler;
+class Logger;
+class EventListener;
+class Joint;
+class ContactPoint;
+class OverlappingPair;
+class CollisionBody;
+struct RaycastInfo;
 class CollisionCallback;
 class OverlapCallback;
 

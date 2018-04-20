@@ -27,17 +27,18 @@
 #define	REACTPHYSICS3D_CONTACT_MANIFOLD_H
 
 // Libraries
-#include "body/CollisionBody.h"
 #include "collision/ProxyShape.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
-#include "memory/PoolAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Class declarations
 class ContactManifold;
+class ContactManifoldInfo;
+struct ContactPointInfo;
+class CollisionBody;
+class ContactPoint;
+class PoolAllocator;
 
 // Structure ContactManifoldListElement
 /**
@@ -353,25 +354,6 @@ inline bool ContactManifold::isAlreadyInIsland() const {
     return mIsAlreadyInIsland;
 }
 
-// Return the largest depth of all the contact points
-inline decimal ContactManifold::getLargestContactDepth() const {
-    decimal largestDepth = 0.0f;
-
-    assert(mNbContactPoints > 0);
-
-    ContactPoint* contactPoint = mContactPoints;
-    while(contactPoint != nullptr){
-        decimal depth = contactPoint->getPenetrationDepth();
-        if (depth > largestDepth) {
-            largestDepth = depth;
-        }
-
-        contactPoint = contactPoint->getNext();
-    }
-
-    return largestDepth;
-}
-
 // Return a pointer to the previous element in the linked-list
 inline ContactManifold* ContactManifold::getPrevious() const {
     return mPrevious;
@@ -395,20 +377,6 @@ inline void ContactManifold::setNext(ContactManifold* nextManifold) {
 // Return true if the manifold is obsolete
 inline bool ContactManifold::getIsObsolete() const {
     return mIsObsolete;
-}
-
-// Set to true to make the manifold obsolete
-inline void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoints) {
-    mIsObsolete = isObsolete;
-
-    if (setContactPoints) {
-        ContactPoint* contactPoint = mContactPoints;
-        while (contactPoint != nullptr) {
-            contactPoint->setIsObsolete(isObsolete);
-
-            contactPoint = contactPoint->getNext();
-        }
-    }
 }
 
 }

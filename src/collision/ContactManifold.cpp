@@ -24,8 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include <iostream>
 #include "ContactManifold.h"
+#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 
 using namespace reactphysics3d;
 
@@ -98,6 +99,25 @@ void ContactManifold::removeContactPoint(ContactPoint* contactPoint) {
     assert(mNbContactPoints >= 0);
 }
 
+// Return the largest depth of all the contact points
+decimal ContactManifold::getLargestContactDepth() const {
+    decimal largestDepth = 0.0f;
+
+    assert(mNbContactPoints > 0);
+
+    ContactPoint* contactPoint = mContactPoints;
+    while(contactPoint != nullptr){
+        decimal depth = contactPoint->getPenetrationDepth();
+        if (depth > largestDepth) {
+            largestDepth = depth;
+        }
+
+        contactPoint = contactPoint->getNext();
+    }
+
+    return largestDepth;
+}
+
 // Add a contact point
 void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) {
 
@@ -115,6 +135,20 @@ void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) 
     mContactPoints = contactPoint;
 
     mNbContactPoints++;
+}
+
+// Set to true to make the manifold obsolete
+void ContactManifold::setIsObsolete(bool isObsolete, bool setContactPoints) {
+    mIsObsolete = isObsolete;
+
+    if (setContactPoints) {
+        ContactPoint* contactPoint = mContactPoints;
+        while (contactPoint != nullptr) {
+            contactPoint->setIsObsolete(isObsolete);
+
+            contactPoint = contactPoint->getNext();
+        }
+    }
 }
 
 // Clear the obsolete contact points

@@ -27,7 +27,6 @@
 #define	REACTPHYSICS3D_TRANSFORM_H
 
 // Libraries
-#include "Matrix3x3.h"
 #include "Vector3.h"
 #include "Quaternion.h"
 
@@ -169,28 +168,6 @@ inline void Transform::setToIdentity() {
     mPosition = Vector3(0.0, 0.0, 0.0);
     mOrientation = Quaternion::identity();
 }                                           
-
-// Set the transform from an OpenGL transform matrix
-inline void Transform::setFromOpenGL(decimal* openglMatrix) {
-    Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],
-                     openglMatrix[1], openglMatrix[5], openglMatrix[9],
-                     openglMatrix[2], openglMatrix[6], openglMatrix[10]);
-    mOrientation = Quaternion(matrix);
-    mPosition.setAllValues(openglMatrix[12], openglMatrix[13], openglMatrix[14]);
-}
-
-// Get the OpenGL matrix of the transform
-inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
-    const Matrix3x3& matrix = mOrientation.getMatrix();
-    openglMatrix[0] = matrix[0][0]; openglMatrix[1] = matrix[1][0];
-    openglMatrix[2] = matrix[2][0]; openglMatrix[3] = 0.0;
-    openglMatrix[4] = matrix[0][1]; openglMatrix[5] = matrix[1][1];
-    openglMatrix[6] = matrix[2][1]; openglMatrix[7] = 0.0;
-    openglMatrix[8] = matrix[0][2]; openglMatrix[9] = matrix[1][2];
-    openglMatrix[10] = matrix[2][2]; openglMatrix[11] = 0.0;
-    openglMatrix[12] = mPosition.x; openglMatrix[13] = mPosition.y;
-    openglMatrix[14] = mPosition.z; openglMatrix[15] = 1.0;
-}
 
 // Return the inverse of the transform
 inline Transform Transform::getInverse() const {

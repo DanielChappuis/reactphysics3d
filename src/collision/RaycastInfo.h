@@ -28,7 +28,6 @@
 
 // Libraries
 #include "mathematics/Vector3.h"
-#include "mathematics/Ray.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -37,6 +36,7 @@ namespace reactphysics3d {
 class CollisionBody;
 class ProxyShape;
 class CollisionShape;
+struct Ray;
 
 // Structure RaycastInfo
 /**

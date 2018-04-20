@@ -25,7 +25,6 @@
 
 // Libraries
 #include "Vector3.h"
-#include <iostream>
 
 // Namespaces
 using namespace reactphysics3d;

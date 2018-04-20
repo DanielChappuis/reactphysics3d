@@ -25,8 +25,8 @@
 
 // Libraries
 #include "CollisionWorld.h"
-#include <algorithm>
-#include <sstream>
+#include "utils/Profiler.h"
+#include "utils/Logger.h"
 
 // Namespaces
 using namespace reactphysics3d;

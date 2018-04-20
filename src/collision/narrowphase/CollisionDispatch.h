@@ -27,9 +27,12 @@
 #define	REACTPHYSICS3D_COLLISION_DISPATCH_H
 
 // Libraries
-#include "NarrowPhaseAlgorithm.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class NarrowPhaseAlgorithm;
+class Profiler;
 
 // Class CollisionDispatch
 /**

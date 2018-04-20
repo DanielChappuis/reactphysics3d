@@ -27,13 +27,17 @@
 #define REACTPHYSICS3D_GJK_ALGORITHM_H
 
 // Libraries
-#include "collision/ContactManifoldInfo.h"
-#include "collision/NarrowPhaseInfo.h"
-#include "collision/shapes/ConvexShape.h"
-#include "VoronoiSimplex.h"
+#include "decimal.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class ContactManifoldInfo;
+struct NarrowPhaseInfo;
+class ConvexShape;
+class Profiler;
+class VoronoiSimplex;
 
 // Constants
 constexpr decimal REL_ERROR = decimal(1.0e-3);

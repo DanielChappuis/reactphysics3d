@@ -37,6 +37,9 @@
 #include "collision/shapes/TriangleShape.h"
 #include "collision/shapes/ConcaveMeshShape.h"
 #include "collision/shapes/HeightFieldShape.h"
+#include "collision/TriangleMesh.h"
+#include "collision/TriangleVertexArray.h"
+#include "collision/RaycastInfo.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

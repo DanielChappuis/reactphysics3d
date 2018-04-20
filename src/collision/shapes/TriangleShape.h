@@ -221,25 +221,6 @@ inline void TriangleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal 
     tensor.setToZero();
 }
 
-// Update the AABB of a body using its collision shape
-/**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
- */
-inline void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
-
-    const Vector3 worldPoint1 = transform * mPoints[0];
-    const Vector3 worldPoint2 = transform * mPoints[1];
-    const Vector3 worldPoint3 = transform * mPoints[2];
-
-    const Vector3 xAxis(worldPoint1.x, worldPoint2.x, worldPoint3.x);
-    const Vector3 yAxis(worldPoint1.y, worldPoint2.y, worldPoint3.y);
-    const Vector3 zAxis(worldPoint1.z, worldPoint2.z, worldPoint3.z);
-    aabb.setMin(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()));
-    aabb.setMax(Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
-}
-
 // Return true if a point is inside the collision shape
 inline bool TriangleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return false;

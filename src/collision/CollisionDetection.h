@@ -29,23 +29,24 @@
 // Libraries
 #include "body/CollisionBody.h"
 #include "broadphase/BroadPhaseAlgorithm.h"
+#include "collision/shapes/CollisionShape.h"
 #include "engine/OverlappingPair.h"
-#include "engine/EventListener.h"
-#include "narrowphase/DefaultCollisionDispatch.h"
-#include "memory/MemoryManager.h"
-#include "constraint/ContactPoint.h"
+#include "collision/narrowphase/DefaultCollisionDispatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
-#include <utility>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declarations
-class BroadPhaseAlgorithm;
 class CollisionWorld;
 class CollisionCallback;
 class OverlapCallback;
+class RaycastCallback;
+class ContactPoint;
+class MemoryManager;
+class EventListener;
+class CollisionDispatch;
 
 // Class CollisionDetection
 /**
@@ -83,10 +84,6 @@ class CollisionDetection {
 
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
-
-        /// Narrow-phase GJK algorithm
-        // TODO : Delete this
-        GJKAlgorithm mNarrowPhaseGJKAlgorithm;
 
         /// Set of pair of bodies that cannot collide between each other
         Set<bodyindexpair> mNoCollisionPairs;
@@ -307,20 +304,6 @@ inline NarrowPhaseAlgorithm* CollisionDetection::selectNarrowPhaseAlgorithm(cons
     assert(shape1Index <= shape2Index);
 
     return mCollisionMatrix[shape1Index][shape2Index];
-}
-
-// Ray casting method
-inline void CollisionDetection::raycast(RaycastCallback* raycastCallback,
-                                        const Ray& ray,
-                                        unsigned short raycastWithCategoryMaskBits) const {
-
-    RP3D_PROFILE("CollisionDetection::raycast()", mProfiler);
-
-    RaycastTest rayCastTest(raycastCallback);
-
-    // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
-    // callback method for each proxy shape hit by the ray in the broad-phase
-    mBroadPhaseAlgorithm.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
 }
 
 // Return a pointer to the world

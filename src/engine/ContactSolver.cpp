@@ -27,8 +27,10 @@
 #include "ContactSolver.h"
 #include "DynamicsWorld.h"
 #include "body/RigidBody.h"
+#include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
-#include <limits>
+#include "engine/Island.h"
+#include "collision/ContactManifold.h"
 
 using namespace reactphysics3d;
 using namespace std;
@@ -756,6 +758,30 @@ void ContactSolver::solve() {
             mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * deltaLambdaRolling;
         }
     }
+}
+
+// Compute the collision restitution factor from the restitution factor of each body
+decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
+                                                            RigidBody* body2) const {
+    decimal restitution1 = body1->getMaterial().getBounciness();
+    decimal restitution2 = body2->getMaterial().getBounciness();
+
+    // Return the largest restitution factor
+    return (restitution1 > restitution2) ? restitution1 : restitution2;
+}
+
+// Compute the mixed friction coefficient from the friction coefficient of each body
+decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
+                                                              RigidBody *body2) const {
+    // Use the geometric mean to compute the mixed friction coefficient
+    return std::sqrt(body1->getMaterial().getFrictionCoefficient() *
+                body2->getMaterial().getFrictionCoefficient());
+}
+
+// Compute th mixed rolling resistance factor between two bodies
+inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
+                                                            RigidBody* body2) const {
+    return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
 }
 
 // Store the computed impulses to use them to

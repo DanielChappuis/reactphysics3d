@@ -28,6 +28,7 @@
 #include "engine/OverlappingPair.h"
 #include "memory/MemoryAllocator.h"
 #include "collision/ContactManifold.h"
+#include "memory/MemoryManager.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

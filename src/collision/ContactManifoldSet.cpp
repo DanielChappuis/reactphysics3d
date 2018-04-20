@@ -25,6 +25,10 @@
 
 // Libraries
 #include "ContactManifoldSet.h"
+#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
+#include "ProxyShape.h"
+#include "collision/ContactManifold.h"
 
 using namespace reactphysics3d;
 
@@ -64,6 +68,34 @@ void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactMa
         createManifold(contactManifoldInfo);
     }
 }
+
+// Return the total number of contact points in the set of manifolds
+int ContactManifoldSet::getTotalNbContactPoints() const {
+    int nbPoints = 0;
+
+    ContactManifold* manifold = mManifolds;
+    while (manifold != nullptr) {
+        nbPoints += manifold->getNbContactPoints();
+
+        manifold = manifold->getNext();
+    }
+
+    return nbPoints;
+}
+
+// Return the maximum number of contact manifolds allowed between to collision shapes
+int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape* shape1, const CollisionShape* shape2) {
+
+    // If both shapes are convex
+    if (shape1->isConvex() && shape2->isConvex()) {
+        return mWorldSettings.nbMaxContactManifoldsConvexShape;
+
+    }   // If there is at least one concave shape
+    else {
+        return mWorldSettings.nbMaxContactManifoldsConcaveShape;
+    }
+}
+
 
 // Update a previous similar manifold with a new one
 void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold) {

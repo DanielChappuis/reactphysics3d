@@ -26,13 +26,16 @@
 #ifndef REACTPHYSICS3D_COLLISION_CALLBACK_H
 #define REACTPHYSICS3D_COLLISION_CALLBACK_H
 
-// Libraries
-#include "collision/ContactManifold.h"
-
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Declarations
 class OverlappingPair;
+class ContactManifold;
+struct ContactManifoldListElement;
+class CollisionBody;
+class ProxyShape;
+class MemoryManager;
 
 // Class CollisionCallback
 /**

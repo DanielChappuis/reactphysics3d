@@ -28,10 +28,12 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "shapes/CollisionShape.h"
-#include "memory/MemoryManager.h"
+#include "collision/shapes/CollisionShape.h"
 
 namespace  reactphysics3d {
+
+// Declarations
+class MemoryManager;
 
 // Class ProxyShape
 /**
@@ -265,21 +267,6 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
-// Set the local to parent body transform
-inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
-
-    mLocalToBodyTransform = transform;
-
-    mBody->setIsSleeping(false);
-
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localToBodyTransform=" +
-             mLocalToBodyTransform.to_string());
-}
-
 // Return the local to world transform
 /**
  * @return The transformation that transforms the local-space of the collision
@@ -323,36 +310,12 @@ inline unsigned short ProxyShape::getCollisionCategoryBits() const {
     return mCollisionCategoryBits;
 }
 
-// Set the collision category bits
-/**
- * @param collisionCategoryBits The collision category bits mask of the proxy shape
- */
-inline void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
-    mCollisionCategoryBits = collisionCategoryBits;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collisionCategoryBits=" +
-             std::to_string(mCollisionCategoryBits));
-}
-
 // Return the collision bits mask
 /**
  * @return The bits mask that specifies with which collision category this shape will collide
  */
 inline unsigned short ProxyShape::getCollideWithMaskBits() const {
     return mCollideWithMaskBits;
-}
-
-// Set the collision bits mask
-/**
- * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
- */
-inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
-    mCollideWithMaskBits = collideWithMaskBits;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collideWithMaskBits=" +
-             std::to_string(mCollideWithMaskBits));
 }
 
 // Return the broad-phase id

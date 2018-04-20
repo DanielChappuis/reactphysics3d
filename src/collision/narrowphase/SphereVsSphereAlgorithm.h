@@ -27,13 +27,14 @@
 #define	REACTPHYSICS3D_SPHERE_VS_SPHERE_ALGORITHM_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
 #include "NarrowPhaseAlgorithm.h"
-
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+// Declarations
+class ContactPoint;
+class Body;
 
 // Class SphereVsSphereAlgorithm
 /**

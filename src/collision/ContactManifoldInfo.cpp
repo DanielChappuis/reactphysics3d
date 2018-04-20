@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ContactManifoldInfo.h"
+#include "collision/ContactPointInfo.h"
 
 using namespace reactphysics3d;
 

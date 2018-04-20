@@ -27,13 +27,14 @@
 #define REACTPHYSICS3D_BODY_H
 
 // Libraries
-#include <stdexcept>
 #include <cassert>
 #include "configuration.h"
-#include "utils/Logger.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Declarations
+class Logger;
 
 // TODO : Make this class abstract
 // Class Body
@@ -164,20 +165,6 @@ inline bool Body::isAllowedToSleep() const {
     return mIsAllowedToSleep;
 }
 
-// Set whether or not the body is allowed to go to sleep
-/**
- * @param isAllowedToSleep True if the body is allowed to sleep
- */
-inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
-
-    if (!mIsAllowedToSleep) setIsSleeping(false);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
-             (mIsAllowedToSleep ? "true" : "false"));
-}
-
 // Return whether or not the body is sleeping
 /**
  * @return True if the body is currently sleeping and false otherwise
@@ -192,40 +179,6 @@ inline bool Body::isSleeping() const {
  */
 inline bool Body::isActive() const {
     return mIsActive;
-}
-
-// Set whether or not the body is active
-/**
- * @param isActive True if you want to activate the body
- */
-inline void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
-}
-
-// Set the variable to know whether or not the body is sleeping
-inline void Body::setIsSleeping(bool isSleeping) {
-
-    if (isSleeping) {
-        mSleepTime = decimal(0.0);
-    }
-    else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
-        }
-    }
-
-    if (mIsSleeping != isSleeping) {
-
-        mIsSleeping = isSleeping;
-
-        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isSleeping=" +
-             (mIsSleeping ? "true" : "false"));
-    }
 }
 
 // Return a pointer to the user data attached to this body

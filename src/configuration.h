@@ -30,7 +30,6 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
-#include <cstdint>
 #include <sstream>
 #include <string>
 #include "decimal.h"

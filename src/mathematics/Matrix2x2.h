@@ -28,7 +28,6 @@
 
 // Libraries
 #include <cassert>
-#include <string>
 #include "Vector2.h"
 
 /// ReactPhysics3D namespace

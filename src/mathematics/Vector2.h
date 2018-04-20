@@ -27,9 +27,7 @@
 #define REACTPHYSICS3D_VECTOR2_H
 
 // Libraries
-#include <cmath>
 #include <cassert>
-#include <string>
 #include "mathematics_functions.h"
 #include "decimal.h"
 
@@ -55,7 +53,7 @@ struct Vector2 {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor of the class Vector3D
+        /// Constructor of the struct Vector2
         Vector2();
 
         /// Constructor with arguments

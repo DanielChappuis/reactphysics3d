@@ -27,7 +27,7 @@
 #define	REACTPHYSICS3D_VORONOI_SIMPLEX_H
 
 // Libraries
-#include "mathematics/mathematics.h"
+#include "mathematics/Vector3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

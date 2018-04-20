@@ -25,6 +25,9 @@
 
 // Libraries
 #include "collision/MiddlePhaseTriangleCallback.h"
+#include "engine/OverlappingPair.h"
+#include "collision/NarrowPhaseInfo.h"
+#include "collision/shapes/TriangleShape.h"
 
 using namespace reactphysics3d;
 

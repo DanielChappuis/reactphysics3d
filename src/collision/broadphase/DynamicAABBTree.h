@@ -29,8 +29,6 @@
 // Libraries
 #include "configuration.h"
 #include "collision/shapes/AABB.h"
-#include "body/CollisionBody.h"
-#include "memory/MemoryAllocator.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -39,7 +37,12 @@ namespace reactphysics3d {
 class BroadPhaseAlgorithm;
 class BroadPhaseRaycastTestCallback;
 class DynamicAABBTreeOverlapCallback;
+class CollisionBody;
 struct RaycastTest;
+class AABB;
+class Profiler;
+class MemoryAllocator;
+
 
 // Structure TreeNode
 /**

@@ -28,12 +28,13 @@
 
 // Libraries
 #include "ConcaveShape.h"
-#include "collision/shapes/TriangleShape.h"
-#include "utils/Profiler.h"
+#include "collision/shapes/AABB.h"
 
 namespace reactphysics3d {
 
 class HeightFieldShape;
+class Profiler;
+class TriangleShape;
 
 // Class TriangleOverlapCallback
 /**

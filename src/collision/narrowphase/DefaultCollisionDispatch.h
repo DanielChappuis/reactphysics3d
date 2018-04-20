@@ -34,7 +34,6 @@
 #include "CapsuleVsCapsuleAlgorithm.h"
 #include "CapsuleVsConvexPolyhedronAlgorithm.h"
 #include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
 
 namespace reactphysics3d {
 

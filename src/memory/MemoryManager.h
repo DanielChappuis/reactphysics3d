@@ -27,13 +27,15 @@
 #define REACTPHYSICS3D_MEMORY_MANAGER_H
 
 // Libraries
-#include "memory/MemoryAllocator.h"
 #include "memory/DefaultAllocator.h"
 #include "memory/PoolAllocator.h"
 #include "memory/SingleFrameAllocator.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+// Declarations
+class MemoryAllocator;
 
 // Class MemoryManager
 /**

@@ -27,15 +27,21 @@
 #define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
-#include "constraint/ContactPoint.h"
 #include "configuration.h"
-#include "constraint/Joint.h"
-#include "collision/ContactManifold.h"
-#include "Island.h"
+#include "mathematics/Vector3.h"
+#include "mathematics/Matrix3x3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Declarations
+class ContactPoint;
+class Joint;
+class ContactManifold;
+class MemoryManager;
+class Profiler;
+class Island;
+class RigidBody;
 
 // Class Contact Solver
 /**
@@ -316,8 +322,8 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Compute the collision restitution factor from the restitution factor of each body
-        decimal computeMixedRestitutionFactor(RigidBody *body1,
-                                              RigidBody *body2) const;
+        decimal computeMixedRestitutionFactor(RigidBody* body1,
+                                              RigidBody* body2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each body
         decimal computeMixedFrictionCoefficient(RigidBody* body1,
@@ -410,30 +416,6 @@ inline bool ContactSolver::isSplitImpulseActive() const {
 // Activate or Deactivate the split impulses for contacts
 inline void ContactSolver::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
-}
-
-// Compute the collision restitution factor from the restitution factor of each body
-inline decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
-                                                            RigidBody* body2) const {
-    decimal restitution1 = body1->getMaterial().getBounciness();
-    decimal restitution2 = body2->getMaterial().getBounciness();
-
-    // Return the largest restitution factor
-    return (restitution1 > restitution2) ? restitution1 : restitution2;
-}
-
-// Compute the mixed friction coefficient from the friction coefficient of each body
-inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
-                                                              RigidBody *body2) const {
-    // Use the geometric mean to compute the mixed friction coefficient
-    return std::sqrt(body1->getMaterial().getFrictionCoefficient() *
-                body2->getMaterial().getFrictionCoefficient());
-}
-
-// Compute th mixed rolling resistance factor between two bodies
-inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
-                                                            RigidBody* body2) const {
-    return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
 }
 
 #ifdef IS_PROFILING_ACTIVE

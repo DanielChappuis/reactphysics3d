@@ -28,6 +28,7 @@
 #include "constraint/Joint.h"
 #include "collision/shapes/CollisionShape.h"
 #include "engine/DynamicsWorld.h"
+#include "utils/Profiler.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -332,6 +333,55 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
+}
+
+// Set the variable to know if the gravity is applied to this rigid body
+/**
+ * @param isEnabled True if you want the gravity to be applied to this body
+ */
+void RigidBody::enableGravity(bool isEnabled) {
+    mIsGravityEnabled = isEnabled;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
+             (mIsGravityEnabled ? "true" : "false"));
+}
+
+// Set the linear damping factor. This is the ratio of the linear velocity
+// that the body will lose every at seconds of simulation.
+/**
+ * @param linearDamping The linear damping factor of this body
+ */
+void RigidBody::setLinearDamping(decimal linearDamping) {
+    assert(linearDamping >= decimal(0.0));
+    mLinearDamping = linearDamping;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(mLinearDamping));
+}
+
+// Set the angular damping factor. This is the ratio of the angular velocity
+// that the body will lose at every seconds of simulation.
+/**
+ * @param angularDamping The angular damping factor of this body
+ */
+void RigidBody::setAngularDamping(decimal angularDamping) {
+    assert(angularDamping >= decimal(0.0));
+    mAngularDamping = angularDamping;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
+}
+
+// Set a new material for this rigid body
+/**
+ * @param material The material you want to set to the body
+ */
+void RigidBody::setMaterial(const Material& material) {
+    mMaterial = material;
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set Material" + mMaterial.to_string());
 }
 
 // Set the linear velocity of the rigid body.

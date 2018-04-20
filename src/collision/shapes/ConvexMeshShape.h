@@ -28,16 +28,15 @@
 
 // Libraries
 #include "ConvexPolyhedronShape.h"
-#include "engine/CollisionWorld.h"
 #include "mathematics/mathematics.h"
-
 #include "collision/PolyhedronMesh.h"
-#include "collision/narrowphase/GJK/GJKAlgorithm.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declaration
+class CollisionWorld;
+class GJKAlgorithm;
 class CollisionWorld;
 
 // Class ConvexMeshShape

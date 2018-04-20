@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Island.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 

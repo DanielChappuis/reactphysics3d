@@ -31,11 +31,9 @@
 #include "collision/shapes/SphereShape.h"
 #include "engine/OverlappingPair.h"
 #include "collision/shapes/TriangleShape.h"
+#include "collision/NarrowPhaseInfo.h"
 #include "configuration.h"
 #include "utils/Profiler.h"
-#include <algorithm>
-#include <cmath>
-#include <cfloat>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

@@ -27,14 +27,15 @@
 #define REACTPHYSICS3D_BOX_SHAPE_H
 
 // Libraries
-#include <cfloat>
 #include "ConvexPolyhedronShape.h"
-#include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
-#include "memory/DefaultAllocator.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
+class DefaultAllocator;
 
 // Class BoxShape
 /**

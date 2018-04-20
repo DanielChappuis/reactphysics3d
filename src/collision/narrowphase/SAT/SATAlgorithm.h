@@ -27,16 +27,20 @@
 #define REACTPHYSICS3D_SAT_ALGORITHM_H
 
 // Libraries
-#include "collision/ContactManifoldInfo.h"
-#include "collision/NarrowPhaseInfo.h"
-#include "collision/shapes/ConvexPolyhedronShape.h"
-
+#include "decimal.h"
+#include "collision/HalfEdgeStructure.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Declarations
 class CapsuleShape;
 class SphereShape;
+class ContactManifoldInfo;
+struct NarrowPhaseInfo;
+class ConvexPolyhedronShape;
+class MemoryAllocator;
+class Profiler;
 
 // Class SATAlgorithm
 class SATAlgorithm {

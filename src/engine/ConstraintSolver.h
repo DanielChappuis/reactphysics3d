@@ -29,10 +29,13 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "constraint/Joint.h"
-#include "Island.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class Joint;
+class Island;
+class Profiler;
 
 // Structure ConstraintSolverData
 /**

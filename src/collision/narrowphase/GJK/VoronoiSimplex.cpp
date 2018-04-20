@@ -25,7 +25,7 @@
 
 // Libraries
 #include "VoronoiSimplex.h"
-#include <cfloat>
+#include "mathematics/Vector2.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

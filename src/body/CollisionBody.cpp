@@ -27,6 +27,8 @@
 #include "CollisionBody.h"
 #include "engine/CollisionWorld.h"
 #include "collision/ContactManifold.h"
+#include "collision/RaycastInfo.h"
+#include "utils/Logger.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -390,3 +392,49 @@ AABB CollisionBody::getAABB() const {
 
     return bodyAABB;
 }
+
+// Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
+void CollisionBody::setTransform(const Transform& transform) {
+
+    // Update the transform of the body
+    mTransform = transform;
+
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+}
+
+
+// Set the type of the body
+/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+/**
+ * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
+void CollisionBody::setType(BodyType type) {
+    mType = type;
+
+    if (mType == BodyType::STATIC) {
+
+        // Update the broad-phase state of the body
+        updateBroadPhaseState();
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set type=" +
+             (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
+}
+

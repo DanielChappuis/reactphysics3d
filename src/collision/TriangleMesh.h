@@ -28,11 +28,13 @@
 
 // Libraries
 #include <cassert>
-#include "TriangleVertexArray.h"
-#include "memory/MemoryManager.h"
 #include "containers/List.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class TriangleVertexArray;
+class MemoryManager;
 
 // Class TriangleMesh
 /**
@@ -52,9 +54,7 @@ class TriangleMesh {
     public:
 
         /// Constructor
-        TriangleMesh() : mTriangleArrays(MemoryManager::getBaseAllocator()) {
-
-        }
+        TriangleMesh();
 
         /// Destructor
         ~TriangleMesh() = default;

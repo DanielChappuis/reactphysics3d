@@ -28,9 +28,13 @@
 
 // Libraries
 #include "mathematics/mathematics.h"
-#include "engine/ConstraintSolver.h"
+#include "body/RigidBody.h"
+#include "Joint.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class ConstraintSolver;
 
 // Structure SliderJointInfo
 /**

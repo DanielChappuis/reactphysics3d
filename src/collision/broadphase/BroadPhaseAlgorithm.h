@@ -27,10 +27,7 @@
 #define REACTPHYSICS3D_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
-#include "body/CollisionBody.h"
-#include "collision/ProxyShape.h"
 #include "DynamicAABBTree.h"
-#include "utils/Profiler.h"
 #include "containers/LinkedList.h"
 
 /// Namespace ReactPhysics3D
@@ -39,6 +36,10 @@ namespace reactphysics3d {
 // Declarations
 class CollisionDetection;
 class BroadPhaseAlgorithm;
+class CollisionBody;
+class ProxyShape;
+class MemoryManager;
+class Profiler;
 
 // Structure BroadPhasePair
 /**
@@ -242,34 +243,9 @@ inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const Broad
     return false;
 }
 
-// Return true if the two broad-phase collision shapes are overlapping
-inline bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
-                                                       const ProxyShape* shape2) const {
-
-    if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
-
-    // Get the two AABBs of the collision shapes
-    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->getBroadPhaseId());
-    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->getBroadPhaseId());
-
-    // Check if the two AABBs are overlapping
-    return aabb1.testCollision(aabb2);
-}
-
 // Return the fat AABB of a given broad-phase shape
 inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
-}
-
-// Ray casting method
-inline void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
-                                         unsigned short raycastWithCategoryMaskBits) const {
-
-    RP3D_PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
-
-    BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
-
-    mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
 }
 
 // Return the proxy shape corresponding to the broad-phase node id in parameter

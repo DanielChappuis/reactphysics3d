@@ -28,17 +28,20 @@
 
 // Libraries
 #include <cassert>
-#include <typeinfo>
-#include "mathematics/Vector3.h"
-#include "mathematics/Matrix3x3.h"
-#include "mathematics/Ray.h"
-#include "AABB.h"
-#include "collision/RaycastInfo.h"
-#include "memory/PoolAllocator.h"
-#include "utils/Profiler.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class Profiler;
+class PoolAllocator;
+class AABB;
+class Transform;
+struct Ray;
+struct RaycastInfo;
+struct Vector3;
+class Matrix3x3;
     
 /// Type of collision shapes
 enum class CollisionShapeType {SPHERE, CAPSULE, CONVEX_POLYHEDRON, CONCAVE_SHAPE};

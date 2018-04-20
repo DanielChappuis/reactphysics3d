@@ -77,40 +77,7 @@ class ContactManager : public rp3d::CollisionCallback {
         }
 
         /// This method will be called for each reported contact point
-        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override {
-
-            // For each contact manifold
-            rp3d::ContactManifoldListElement* manifoldElement = collisionCallbackInfo.contactManifoldElements;
-            while (manifoldElement != nullptr) {
-
-                // Get the contact manifold
-                rp3d::ContactManifold* contactManifold = manifoldElement->getContactManifold();
-
-                // For each contact point
-                rp3d::ContactPoint* contactPoint = contactManifold->getContactPoints();
-                while (contactPoint != nullptr) {
-
-                    // Contact normal
-                    rp3d::Vector3 normal = contactPoint->getNormal();
-                    openglframework::Vector3 contactNormal(normal.x, normal.y, normal.z);
-
-                    rp3d::Vector3 point1 = contactPoint->getLocalPointOnShape1();
-                    point1 = collisionCallbackInfo.proxyShape1->getLocalToWorldTransform() * point1;
-
-                    openglframework::Vector3 position1(point1.x, point1.y, point1.z);
-                    mContactPoints.push_back(ContactPoint(position1, contactNormal, openglframework::Color::red()));
-
-                    rp3d::Vector3 point2 = contactPoint->getLocalPointOnShape2();
-                    point2 = collisionCallbackInfo.proxyShape2->getLocalToWorldTransform() * point2;
-                    openglframework::Vector3 position2(point2.x, point2.y, point2.z);
-                    mContactPoints.push_back(ContactPoint(position2, contactNormal, openglframework::Color::blue()));
-
-                    contactPoint = contactPoint->getNext();
-                }
-
-				manifoldElement = manifoldElement->getNext();
-            }
-        }
+        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override;
 
         void resetPoints() {
 

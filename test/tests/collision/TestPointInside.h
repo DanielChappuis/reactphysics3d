@@ -32,6 +32,8 @@
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
+#include "engine/CollisionWorld.h"
+#include "collision/PolygonVertexArray.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

@@ -29,7 +29,10 @@
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"
 #include "constraint/FixedJoint.h"
-#include <fstream>
+#include "utils/Profiler.h"
+#include "engine/EventListener.h"
+#include "engine/Island.h"
+#include "collision/ContactManifold.h"
 
 // Namespaces
 using namespace reactphysics3d;

@@ -24,7 +24,6 @@
 ********************************************************************************/
 
 // Libraries
-#include <iostream>
 #include "Matrix3x3.h"
 
 // Namespaces

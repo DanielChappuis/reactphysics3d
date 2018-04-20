@@ -35,10 +35,13 @@
 #include "collision/CollisionCallback.h"
 #include "collision/MiddlePhaseTriangleCallback.h"
 #include "collision/OverlapCallback.h"
+#include "collision/NarrowPhaseInfo.h"
+#include "collision/ContactManifold.h"
+#include "collision/ContactManifoldInfo.h"
+#include "utils/Profiler.h"
+#include "engine/EventListener.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
-#include <complex>
-#include <utility>
-#include <utility>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -374,6 +377,20 @@ void CollisionDetection::addAllContactManifoldsToBodies() {
         // of the two bodies involved in the contact
         addContactManifoldToBody(it->second);
     }
+}
+
+// Ray casting method
+void CollisionDetection::raycast(RaycastCallback* raycastCallback,
+                                        const Ray& ray,
+                                        unsigned short raycastWithCategoryMaskBits) const {
+
+    RP3D_PROFILE("CollisionDetection::raycast()", mProfiler);
+
+    RaycastTest rayCastTest(raycastCallback);
+
+    // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
+    // callback method for each proxy shape hit by the ray in the broad-phase
+    mBroadPhaseAlgorithm.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
 }
 
 // Add a contact manifold to the linked list of contact manifolds of the two bodies involved

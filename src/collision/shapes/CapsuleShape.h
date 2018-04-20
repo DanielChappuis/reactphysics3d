@@ -28,11 +28,13 @@
 
 // Libraries
 #include "ConvexShape.h"
-#include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
 
 // Class CapsuleShape
 /**

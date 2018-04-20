@@ -29,12 +29,10 @@
 
 // Libraries
 #include <cassert>
-#include <string>
 #include "Vector3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
-
 
 // Class Matrix3x3
 /**

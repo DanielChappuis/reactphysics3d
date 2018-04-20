@@ -29,13 +29,16 @@
 // Libraries
 #include "collision/ContactManifoldSet.h"
 #include "collision/ProxyShape.h"
-#include "collision/shapes/CollisionShape.h"
 #include "containers/Map.h"
 #include "containers/Pair.h"
 #include "containers/containers_common.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+struct NarrowPhaseInfo;
+class CollisionShape;
 
 // Structure LastFrameCollisionInfo
 /**

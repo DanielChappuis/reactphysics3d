@@ -27,6 +27,8 @@
 #include "BroadPhaseAlgorithm.h"
 #include "collision/CollisionDetection.h"
 #include "utils/Profiler.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryManager.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -94,6 +96,31 @@ void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
     assert(mMovedShapes != nullptr);
     mMovedShapes[mNbMovedShapes] = broadPhaseID;
     mNbMovedShapes++;
+}
+
+// Return true if the two broad-phase collision shapes are overlapping
+bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
+                                                       const ProxyShape* shape2) const {
+
+    if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
+
+    // Get the two AABBs of the collision shapes
+    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->getBroadPhaseId());
+    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->getBroadPhaseId());
+
+    // Check if the two AABBs are overlapping
+    return aabb1.testCollision(aabb2);
+}
+
+// Ray casting method
+void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
+                                         unsigned short raycastWithCategoryMaskBits) const {
+
+    RP3D_PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
+
+    BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
+
+    mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
 }
 
 // Remove a collision shape from the array of shapes that have moved in the last simulation step

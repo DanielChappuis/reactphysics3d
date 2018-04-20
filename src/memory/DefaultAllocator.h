@@ -42,7 +42,7 @@ class DefaultAllocator : public MemoryAllocator {
     public:
 
         /// Destructor
-        virtual ~DefaultAllocator() = default;
+        virtual ~DefaultAllocator() override = default;
 
         /// Assignment operator
         DefaultAllocator& operator=(DefaultAllocator& allocator) = default;

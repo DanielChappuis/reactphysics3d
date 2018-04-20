@@ -25,7 +25,7 @@
 
 // Libraries
 #include "ConvexShape.h"
-
+#include "mathematics/Vector3.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

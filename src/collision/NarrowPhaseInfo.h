@@ -27,14 +27,16 @@
 #define REACTPHYSICS3D_NARROW_PHASE_INFO_H
 
 // Libraries
-#include "shapes/CollisionShape.h"
-#include "collision/ContactManifoldInfo.h"
 #include "engine/OverlappingPair.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
+// Declarations
+class CollisionShape;
 struct LastFrameCollisionInfo;
+class ContactManifoldInfo;
+struct ContactPointInfo;
 
 // Class NarrowPhaseInfo
 /**

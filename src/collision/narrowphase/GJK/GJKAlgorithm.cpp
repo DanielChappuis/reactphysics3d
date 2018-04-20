@@ -30,9 +30,8 @@
 #include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "utils/Profiler.h"
-#include <algorithm>
-#include <cmath>
-#include <cfloat>
+#include "collision/NarrowPhaseInfo.h"
+#include "collision/narrowphase/GJK/VoronoiSimplex.h"
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

@@ -29,14 +29,15 @@
 // Libraries
 #include "ConcaveShape.h"
 #include "collision/broadphase/DynamicAABBTree.h"
-#include "collision/TriangleMesh.h"
-#include "collision/shapes/TriangleShape.h"
 #include "containers/List.h"
-#include "utils/Profiler.h"
 
 namespace reactphysics3d {
 
+// Declarations
 class ConcaveMeshShape;
+class Profiler;
+class TriangleShape;
+class TriangleMesh;
 
 // class ConvexTriangleAABBOverlapCallback
 class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback {

@@ -27,6 +27,7 @@
 #include "SphereShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -38,6 +39,22 @@ using namespace reactphysics3d;
 SphereShape::SphereShape(decimal radius)
             : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {
     assert(radius > decimal(0.0));
+}
+
+// Update the AABB of a body using its collision shape
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
+void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
+
+    // Get the local extents in x,y and z direction
+    Vector3 extents(mMargin, mMargin, mMargin);
+
+    // Update the AABB with the new minimum and maximum coordinates
+    aabb.setMin(transform.getPosition() - extents);
+    aabb.setMax(transform.getPosition() + extents);
 }
 
 // Raycast method with feedback information

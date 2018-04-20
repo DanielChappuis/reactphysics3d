@@ -24,7 +24,6 @@
 ********************************************************************************/
 
 // Libraries
-#include <iostream>
 #include "NarrowPhaseInfo.h"
 #include "ContactPointInfo.h"
 #include "collision/shapes/TriangleShape.h"

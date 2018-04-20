@@ -27,8 +27,6 @@
 #define REACTPHYSICS3D_TIMER_H
 
 // Libraries
-#include <stdexcept>
-#include <iostream>
 #include <ctime>
 #include <cassert>
 #include "configuration.h"

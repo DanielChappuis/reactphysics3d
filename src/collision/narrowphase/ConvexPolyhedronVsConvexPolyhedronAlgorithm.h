@@ -27,13 +27,14 @@
 #define	REACTPHYSICS3D_CONVEX_POLYHEDRON_VS_CONVEX_POLYHEDRON_ALGORITHM_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
 #include "NarrowPhaseAlgorithm.h"
-
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
+
+// Declarations
+class Body;
+class ContactPoint;
 
 // Class ConvexPolyhedronVsConvexPolyhedronAlgorithm
 /**

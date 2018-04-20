@@ -29,10 +29,12 @@
 // Libraries
 #include "mathematics/mathematics.h"
 #include "HalfEdgeStructure.h"
-#include "collision/PolygonVertexArray.h"
-#include "memory/DefaultAllocator.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class DefaultAllocator;
+class PolygonVertexArray;
 
 // Class PolyhedronMesh
 /**

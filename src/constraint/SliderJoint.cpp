@@ -25,6 +25,7 @@
 
 // Libraries
 #include "SliderJoint.h"
+#include "engine/ConstraintSolver.h"
 
 using namespace reactphysics3d;
 

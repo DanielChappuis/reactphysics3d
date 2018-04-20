@@ -31,6 +31,7 @@
 
 namespace reactphysics3d {
 
+// Declarations
 struct Vector3;
 
 // Class TriangleVertexArray

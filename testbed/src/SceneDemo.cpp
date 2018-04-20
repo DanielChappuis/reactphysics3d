@@ -27,6 +27,8 @@
 #include "SceneDemo.h"
 #include <GLFW/glfw3.h>
 #include "AABB.h"
+#include "constraint/ContactPoint.h"
+#include "collision/ContactManifold.h"
 
 using namespace openglframework;
 

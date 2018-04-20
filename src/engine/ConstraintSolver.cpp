@@ -26,6 +26,7 @@
 // Libraries
 #include "ConstraintSolver.h"
 #include "utils/Profiler.h"
+#include "engine/Island.h"
 
 using namespace reactphysics3d;
 

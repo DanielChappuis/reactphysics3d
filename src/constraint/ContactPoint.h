@@ -27,13 +27,15 @@
 #define REACTPHYSICS3D_CONTACT_POINT_H
 
 // Libraries
-#include "body/CollisionBody.h"
-#include "collision/ContactPointInfo.h"
 #include "configuration.h"
 #include "mathematics/mathematics.h"
+#include "collision/ContactPointInfo.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
 
 struct NarrowPhaseInfo;
 

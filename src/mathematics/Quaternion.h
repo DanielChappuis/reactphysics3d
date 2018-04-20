@@ -27,13 +27,14 @@
 #define REACTPHYSICS3D_QUATERNION_H
 
 // Libraries
-#include <cmath>
-#include "Vector3.h"
-#include "Matrix3x3.h"
 #include "decimal.h"
+#include "Vector3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class Matrix3x3;
 
 // Class Quaternion
 /**
