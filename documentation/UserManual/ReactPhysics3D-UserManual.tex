@@ -10,12 +10,12 @@
 \usepackage{listings}
 \usepackage{url}
 \usepackage{hyperref}
-\usepackage[usenames]{xcolor}
+\usepackage[dvipsnames]{xcolor}
 \hypersetup{
    colorlinks,
-   linkcolor={blue!70!black},
-   citecolor={blue!200!black},
-   urlcolor={blue!80!black}
+   linkcolor={MidnightBlue},
+   citecolor={MidnightBlue},
+   urlcolor={MidnightBlue}
 }
 \usepackage[top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
 
@@ -34,11 +34,12 @@
   xleftmargin=\parindent,
   language=C++,
   showstringspaces=false,
-  basicstyle=\ttfamily\footnotesize,
-  keywordstyle=\bfseries\color{green!40!black},
-  commentstyle=\itshape\color{purple!40!black},
-  identifierstyle=\color{blue},
-  stringstyle=\color{orange},
+  basicstyle=\small\ttfamily,
+  keywordstyle=\bfseries\color{purple},
+  commentstyle=\bfseries\color{gray},
+  identifierstyle=\bfseries\color{black},
+  stringstyle=\bfseries\color{blue},
+  tabsize=2
 }
 \lstset{style=customcpp}
 
@@ -132,9 +133,8 @@
     \subsection{CMake using the graphical interface (Linux, Mac OS X and Windows)}
 
      You can also use the graphical user interface of CMake. To do this,
-     run the \texttt{cmake-gui} program. The program will ask you for the
-     source folder which is the \texttt{reactphysics3d-0.7.0/} folder of
-     the library. You will also have to select a folder where you want to
+     run the \texttt{cmake-gui} program. First, the program will ask you for the
+     source folder. You need to select the \texttt{reactphysics3d-0.7.0/} folder. You will also have to select a folder where you want to
      build the library and the testbed application. Select any empty folder that
      is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to choose an IDE that is on
      your system. For instance, you can select Visual Studio, Qt Creator, XCode, ... Then, you
@@ -310,12 +310,12 @@ rp3d::CollisionWorld world;
 
     \begin{description}
        \item[testOverlap()] Those methods can be used to test whether the collision shapes of two bodies overlap or not. You can use this if you just want to
-	       know if bodies are colliding but your are not interested in the contact information. This method can be called on a \texttt{CollisionWorld}.
+	       know if bodies are colliding but your are not interested in the contact information. This method can be called on a \texttt{Collision\allowbreak World}.
        \item[testCollision()] Those methods will give you the collision information (contact points, normals, ...) for colliding bodies.
-	                      This method can be called on a \texttt{CollisionWorld}. 
+	                      This method can be called on a \texttt{Collision\allowbreak World}. 
        \item[testAABBOverlap()] Those methods will test whether AABBs of bodies overlap. This is faster than \texttt{testOverlap()} but less precise because it only
-	                                        use the AABBs and not the actual collision shapes of the bodies. This method can be called on a \texttt{CollisionWorld}.
-					\item[testPointInside()] This method will tell if you if a 3D point is inside a given \texttt{CollisionBody} or \texttt{ProxyShape}. 
+	                                        use the AABBs and not the actual collision shapes of the bodies. This method can be called on a \texttt{Collision\allowbreak World}.
+					\item[testPointInside()] This method will tell if you if a 3D point is inside a given \texttt{Collision\allowbreak Body} or \texttt{Proxy\allowbreak Shape}. 
     \end{description}
 
     Take a look at the API documentation for more information about those methods.
@@ -520,7 +520,7 @@ while (accumulator >= timeStep) {
 
     \vspace{0.6cm}
 
-    A nice article to read about this is the one from Glenn Fiedler at \url{https://gafferongames.com/post/fix_your_timestep/}.
+    If you want to know more about physics simulation time interpolation, you can read the nice article from Glenn Fiedler at \url{https://gafferongames.com/post/fix_your_timestep/}.
 
     \subsection{Destroying the Dynamics World}
 
@@ -601,20 +601,20 @@ rigidBody->enableGravity(false);
     \subsubsection{Material of a Rigid Body}
 
     The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
-    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::getMaterial()} method. Then, you will be able to change some
+    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. Then, you will be able to change some
     properties. \\
 
     For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy object and the value 0 means that
-    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::setBounciness()} method. \\
+    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
 
     You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be applied when the body is in contact with
     another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
-    \texttt{Material::setFrictionCoefficient()} method. \\
+    \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
 
     You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
     a rolling object on a flat surface for instance. You should use this only with SphereShape or
     CapsuleShape collision shapes. By default, rolling resistance is zero but you can
-    set a positive value using the \texttt{Material::setRollingResistance()} method to increase resistance. \\
+    set a positive value using the \texttt{Material::\allowbreak setRollingResistance()} method to increase resistance. \\
 
     Here is how to get the material of a rigid body and how to modify some of its properties: \\
 
@@ -652,7 +652,7 @@ rigidBody->setIsAllowedToSleep(false);
     \subsubsection{Applying Force or Torque to a Rigid Body}
 
     During the simulation, you can apply a force or a torque to a given rigid body. This force can be applied to the center of mass of the rigid body by using the
-    \texttt{RigidBody::applyForceToCenter()} method. You need to specify the force vector (in Newton) as a parameter. If the force is applied to the center of mass, no
+    \texttt{RigidBody::\allowbreak applyForceToCenter()} method. You need to specify the force vector (in Newton) as a parameter. If the force is applied to the center of mass, no
     torque will be created and only the linear motion of the body will be affected. \\
 
     \begin{lstlisting}
@@ -961,7 +961,7 @@ convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in counter clockwise order
     as seen from the outside of your convex mesh. \\
 
-    You can also specify a scaling factor in the constructor when you create a \texttt{ConvexMeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
+    You can also specify a scaling factor in the constructor when you create a \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
     when used in the collision shape. \\
 
     Note that collision detection with a \texttt{ConvexMeshShape} is more expensive than with a \texttt{SphereShape} or a \texttt{CapsuleShape}. \\
@@ -982,7 +982,7 @@ convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
   In order to create a concave mesh shape, you need to supply a pointer to a \texttt{TriangleMesh}. A \texttt{TriangleMesh} class
   describes a mesh made of triangles. It may contain several parts (submeshes). Each part is a set of
   triangles represented by a \texttt{TriangleVertexArray} object. A \texttt{TriangleVertexArray} represents
-  a continuous array of vertices and indexes for a triangular mesh. When you create a \texttt{TriangleVertexArray}, no data is copied
+  a continuous array of vertices and indexes for a triangular mesh. When you create a \texttt{TriangleVertex\allowbreak Array}, no data is copied
   into the array. It only stores a pointer to the data. The idea is to allow the user to share vertices data between the physics engine and the rendering
   part. Therefore, make sure that the data pointed by a \texttt{TriangleVertexArray} remains valid during the whole \texttt{TriangleVertexArray} life.
   \\
@@ -1024,7 +1024,7 @@ ConcaveMeshShape* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
   When you specify the vertices for each triangle face of your mesh, be careful with the order of the vertices. They must be specified in counter clockwise order
   as seen from the outside of your mesh. \\
 
-  You can also specify a scaling factor in the constructor when you create a \texttt{ConcaveMeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
+  You can also specify a scaling factor in the constructor when you create a \texttt{Concave\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
   when used in the collision shape. \\
 
   In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
@@ -1073,10 +1073,10 @@ maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   \vspace{0.6cm}
 
   Note that the array of height values are not copied into the \texttt{HeightFieldShape}. Therefore, you need to make sure
-  they exist during the lifetime of the \texttt{HeightFieldShape} and you must not forget to release their memory when you
+  they exist during the lifetime of the \texttt{HeightField\allowbreak Shape} and you must not forget to release their memory when you
   destroy the collision shape or at the end of your application. \\
 
-  You can also specify a scaling factor in the constructor when you create a \texttt{HeightFieldShape}. All the vertices of your mesh will be scaled from the origin by this factor
+  You can also specify a scaling factor in the constructor when you create a \texttt{Height\allowbreak FieldShape}. All the vertices of your mesh will be scaled from the origin by this factor
   when used in the collision shape. \\
 
   When creating a \texttt{HeightFieldShape}, the origin of the shape will be at the center of its bounding volume.
@@ -1222,7 +1222,7 @@ rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPoint);
 
     \vspace{0.6cm}
 
-    Now, it is time to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Now, it is time to create the actual joint in the dynamics world using the \texttt{Dynamics\allowbreak World::createJoint()} method.
     Note that this method will also return a pointer to the \texttt{BallAndSocketJoint} object that has been created internally. You will then
     be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
 
@@ -1260,7 +1260,7 @@ rp3d::HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
 
     \vspace{0.6cm}
 
-    Now, it is time to create the actual joint in the dynamics world using the \texttt{DynamicsWorld::createJoint()} method.
+    Now, it is time to create the actual joint in the dynamics world using the \texttt{Dynamics\allowbreak World::createJoint()} method.
     Note that this method will also return a pointer to the \texttt{HingeJoint} object that has been created internally. You will then
     be able to use that pointer to change properties of the joint and also to destroy it at the end. \\
 
@@ -1738,13 +1738,13 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     Here is an example showing how to get the contact points of a given rigid body: \\
 
     \begin{lstlisting}
-const ContactManifoldListElement* listElem;
 
 // Get the head of the linked list of contact manifolds of the body
+const ContactManifoldListElement* listElem;
 listElem = rigidbody->getContactManifoldsList();
 
 // For each contact manifold of the body
-for (; listElem != NULL; listElem = listElem->next) {
+for (; listElem != nullptr; listElem = listElem->next) {
     ContactManifold* manifold = listElem->contactManifold;
 
     // For each contact point of the manifold
@@ -1764,7 +1764,7 @@ for (; listElem != NULL; listElem = listElem->next) {
 
      \vspace{0.6cm}
 
-    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts at the end of
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{Dynamics\allowbreak World::update()} calls, will only give you the contacts at the end of
     each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
     see how to get all the contact occuring in the physis sub-steps of the engine. 
 
@@ -1802,7 +1802,7 @@ for (it = manifolds.begin(); it != manifolds.end(); ++it) {
 
      \vspace{0.6cm}
 
-    Note that this technique to retrieve the contacts, if you use it between the \texttt{DynamicsWorld::update()} calls, will only give you the contacts are the end of
+    Note that this technique to retrieve the contacts, if you use it between the \texttt{Dynamics\allowbreak World::update()} calls, will only give you the contacts are the end of
     each frame. You will probably miss several contacts that have occured in the physics internal sub-steps. In section \ref{sec:receiving_feedback}, you will
     see how to get all the contact occuring in the physis sub-steps of the engine. 
 
@@ -1901,18 +1901,17 @@ logger->addStreamDestination(std::cout, logLevel, Logger::Format::Text);
 rp3d::CollisionWorld world(rp3d::WorldSettings(), logger);
     \end{lstlisting}
 
-   \vspace{0.6cm}
-
-   Do not forget to build the ReactPhysics3D library without the logs when you release your final application.
 
    \section{API Documentation}
 
    Some documentation about the API of the code has been generated
    using Doxygen. You will be able to find this documentation in the library archive in the folder \texttt{/documentation/API/html/}. You just
-   need to open the \texttt{index.html} file with your favorite web browser.
+   need to open the \texttt{index.html} file with your favorite web browser. \\
+
+   The API documentation is also available online here: \url{http://www.reactphysics3d.com/documentation/api/html/}
 
 
-   \section{Bugs}
+   \section{Issues}
 
    If you find some bugs, do not hesitate to report them on our issue tracker here: \\
 
