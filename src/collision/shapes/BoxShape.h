@@ -226,6 +226,7 @@ inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
     }
 
     assert(false);
+    return Vector3::zero();
 }
 
 // Return the centroid of the box

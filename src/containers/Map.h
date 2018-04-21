@@ -765,6 +765,7 @@ class Map {
             }
 
             assert(false);
+            return end();
         }
 
         /// Return a end iterator

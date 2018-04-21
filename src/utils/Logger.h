@@ -67,6 +67,9 @@ class Logger {
                 case Category::Joint: return "Joint";
                 case Category::ProxyShape: return "ProxyShape";
             }
+
+            assert(false);
+            return "";
         }
 
         /// Return the name of a level
@@ -77,6 +80,9 @@ class Logger {
                 case Level::Warning: return "Warning";
                 case Level::Error: return "Error";
             }
+
+            assert(false);
+            return "";
         }
 
         /// Log formatter
